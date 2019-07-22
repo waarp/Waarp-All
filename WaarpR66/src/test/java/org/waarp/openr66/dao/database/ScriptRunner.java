@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.openr66.dao.database;
 /*
@@ -66,9 +66,9 @@ public class ScriptRunner {
    * regex to detect delimiter. ignores spaces, allows delimiter in comment,
    * allows an equals-sign
    */
-  public static final Pattern delimP =
-      Pattern.compile("^\\s*(--)?\\s*delimiter\\s*=?\\s*([^\\s]+)+\\s*.*$",
-                      Pattern.CASE_INSENSITIVE);
+  public static final Pattern delimP = Pattern
+      .compile("^\\s*(--)?\\s*delimiter\\s*=?\\s*([^\\s]+)+\\s*.*$",
+               Pattern.CASE_INSENSITIVE);
   private static final String DEFAULT_DELIMITER = ";";
   private final Connection connection;
 
@@ -91,15 +91,15 @@ public class ScriptRunner {
     this.connection = connection;
     this.autoCommit = autoCommit;
     this.stopOnError = stopOnError;
-    File logFile = new File("create_db.log");
-    File errorLogFile = new File("create_db_error.log");
+    final File logFile = new File("create_db.log");
+    final File errorLogFile = new File("create_db_error.log");
     try {
       if (logFile.exists()) {
         logWriter = new PrintWriter(new FileWriter(logFile, true));
       } else {
         logWriter = new PrintWriter(new FileWriter(logFile, false));
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       System.err.println("Unable to access or create the db_create log");
     }
     try {
@@ -108,10 +108,10 @@ public class ScriptRunner {
       } else {
         errorLogWriter = new PrintWriter(new FileWriter(errorLogFile, false));
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       System.err.println("Unable to access or create the db_create error log");
     }
-    String timeStamp = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss")
+    final String timeStamp = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss")
         .format(new java.util.Date());
     println("\n-------\n" + timeStamp + "\n-------\n");
     printlnError("\n-------\n" + timeStamp + "\n-------\n");
@@ -141,7 +141,8 @@ public class ScriptRunner {
   /**
    * Setter for errorLogWriter property
    *
-   * @param errorLogWriter - the new value of the errorLogWriter property
+   * @param errorLogWriter - the new value of the errorLogWriter
+   *     property
    */
   public void setErrorLogWriter(PrintWriter errorLogWriter) {
     this.errorLogWriter = errorLogWriter;
@@ -154,20 +155,20 @@ public class ScriptRunner {
    */
   public void runScript(Reader reader) throws IOException, SQLException {
     try {
-      boolean originalAutoCommit = connection.getAutoCommit();
+      final boolean originalAutoCommit = connection.getAutoCommit();
       try {
-        if (originalAutoCommit != this.autoCommit) {
-          connection.setAutoCommit(this.autoCommit);
+        if (originalAutoCommit != autoCommit) {
+          connection.setAutoCommit(autoCommit);
         }
         runScript(connection, reader);
       } finally {
         connection.setAutoCommit(originalAutoCommit);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw e;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException("Error running script.  Cause: " + e, e);
     }
   }
@@ -182,36 +183,31 @@ public class ScriptRunner {
    * @throws SQLException if any SQL errors occur
    * @throws IOException if there is an error reading from the Reader
    */
-  private void runScript(Connection conn, Reader reader) throws IOException,
-                                                                SQLException {
+  private void runScript(Connection conn, Reader reader)
+      throws IOException, SQLException {
     StringBuffer command = null;
     try {
-      LineNumberReader lineReader = new LineNumberReader(reader);
+      final LineNumberReader lineReader = new LineNumberReader(reader);
       String line;
       while ((line = lineReader.readLine()) != null) {
         if (command == null) {
           command = new StringBuffer();
         }
-        String trimmedLine = line.trim();
+        final String trimmedLine = line.trim();
         final Matcher delimMatch = delimP.matcher(trimmedLine);
-        if (trimmedLine.length() < 1
-            || trimmedLine.startsWith("//")) {
+        if (trimmedLine.length() < 1 || trimmedLine.startsWith("//")) {
           // Do nothing
         } else if (delimMatch.matches()) {
           setDelimiter(delimMatch.group(2), false);
         } else if (trimmedLine.startsWith("--")) {
           println(trimmedLine);
-        } else if (trimmedLine.length() < 1
-                   || trimmedLine.startsWith("--")) {
+        } else if (trimmedLine.length() < 1 || trimmedLine.startsWith("--")) {
           // Do nothing
-        } else if (!fullLineDelimiter
-                   && trimmedLine.endsWith(getDelimiter())
-                   || fullLineDelimiter
-                      && trimmedLine.equals(getDelimiter())) {
-          command.append(line.substring(0, line
-              .lastIndexOf(getDelimiter())));
+        } else if (!fullLineDelimiter && trimmedLine.endsWith(getDelimiter()) ||
+                   fullLineDelimiter && trimmedLine.equals(getDelimiter())) {
+          command.append(line.substring(0, line.lastIndexOf(getDelimiter())));
           command.append(" ");
-          this.execCommand(conn, command, lineReader);
+          execCommand(conn, command, lineReader);
           command = null;
         } else {
           command.append(line);
@@ -219,12 +215,12 @@ public class ScriptRunner {
         }
       }
       if (command != null) {
-        this.execCommand(conn, command, lineReader);
+        execCommand(conn, command, lineReader);
       }
       if (!autoCommit) {
         conn.commit();
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new IOException(
           String.format("Error executing '%s': %s", command, e.getMessage()),
           e);
@@ -245,17 +241,17 @@ public class ScriptRunner {
 
   private void execCommand(Connection conn, StringBuffer command,
                            LineNumberReader lineReader) throws SQLException {
-    Statement statement = conn.createStatement();
+    final Statement statement = conn.createStatement();
 
     println(command);
 
     boolean hasResults = false;
     try {
       hasResults = statement.execute(command.toString());
-    } catch (SQLException e) {
-      final String errText = String.format("Error executing '%s' (line %d): %s",
-                                           command, lineReader.getLineNumber(),
-                                           e.getMessage());
+    } catch (final SQLException e) {
+      final String errText = String
+          .format("Error executing '%s' (line %d): %s", command,
+                  lineReader.getLineNumber(), e.getMessage());
       printlnError(errText);
       System.err.println(errText);
       if (stopOnError) {
@@ -267,18 +263,18 @@ public class ScriptRunner {
       conn.commit();
     }
 
-    ResultSet rs = statement.getResultSet();
+    final ResultSet rs = statement.getResultSet();
     if (hasResults && rs != null) {
-      ResultSetMetaData md = rs.getMetaData();
-      int cols = md.getColumnCount();
+      final ResultSetMetaData md = rs.getMetaData();
+      final int cols = md.getColumnCount();
       for (int i = 1; i <= cols; i++) {
-        String name = md.getColumnLabel(i);
+        final String name = md.getColumnLabel(i);
         print(name + "\t");
       }
       println("");
       while (rs.next()) {
         for (int i = 1; i <= cols; i++) {
-          String value = rs.getString(i);
+          final String value = rs.getString(i);
           print(value + "\t");
         }
         println("");
@@ -287,7 +283,7 @@ public class ScriptRunner {
 
     try {
       statement.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       // Ignore to workaround a bug in Jakarta DBCP
     }
   }

@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import io.netty.buffer.ByteBuf;
@@ -50,9 +50,10 @@ import org.waarp.openr66.protocol.utils.R66Future;
 /**
  * <b>WARNING: This class is not functional neither integrated</b><br>
  * <p>
- * Test class for Send Through to another R66 Server as forward<br> Only a
- * subpart of SenThroughClient is to be made
- * since steps 1-2 and steps 7-8 are only for client, not for server.
+ * Test class for Send Through to another R66 Server as forward<br>
+ * Only a subpart of SenThroughClient is to be made since steps 1-2 and steps
+ * 7-8 are only for client, not for
+ * server.
  * <p>
  * 3) Prepare the request of transfer:<br>
  * <tt>     R66Future futureReq = new R66Future(true);</tt><br>
@@ -64,8 +65,8 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * TestRecvThroughForwardHandler:<br>
  * <br>
  * 5) Once you have finished, so this is the last block, you have to do the
- * following:<br> If the last block is not
- * empty:<br>
+ * following:<br>
+ * If the last block is not empty:<br>
  * <tt>     DataBlock block = transaction.transformToDataBlock(data);</tt><br>
  * <tt>     block.setEOF(true);</tt><br>
  * <tt>     futureWrite = transaction.writeWhenPossible(block);</tt><br>
@@ -82,7 +83,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * <tt>     R66Result result = futureReq.getResult();</tt><br>
  * <br>
  *
- * @author Frederic Bregier
+ *
  */
 public class TestSendThroughForward extends SendThroughClient {
   public TestRecvThroughForwardHandler handler;
@@ -105,8 +106,7 @@ public class TestSendThroughForward extends SendThroughClient {
    */
   public TestSendThroughForward(R66Future future, String remoteHost,
                                 String filename, String rulename,
-                                String fileinfo, boolean isMD5,
-                                int blocksize,
+                                String fileinfo, boolean isMD5, int blocksize,
                                 NetworkTransaction networkTransaction, long idt,
                                 DbSession dbSession, DbTaskRunner runner) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
@@ -114,7 +114,7 @@ public class TestSendThroughForward extends SendThroughClient {
     handler = new TestRecvThroughForwardHandler();
     handler.client = this;
     this.dbSession = dbSession;
-    this.sourceRunner = runner;
+    sourceRunner = runner;
   }
 
   @Override
@@ -125,7 +125,7 @@ public class TestSendThroughForward extends SendThroughClient {
     DbRule rule;
     try {
       rule = new DbRule(rulename);
-    } catch (WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException e) {
       logger.error("Cannot get Rule: " + rulename, e);
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
@@ -137,20 +137,18 @@ public class TestSendThroughForward extends SendThroughClient {
     if (isMD5) {
       mode = RequestPacket.getModeMD5(mode);
     }
-    String sep = PartnerConfiguration.getSeparator(remoteHost);
-    RequestPacket request = new RequestPacket(rulename,
-                                              mode, filename, blocksize,
-                                              sourceRunner.getRank(),
-                                              id, fileinfo, -1, sep);
+    final String sep = PartnerConfiguration.getSeparator(remoteHost);
+    final RequestPacket request =
+        new RequestPacket(rulename, mode, filename, blocksize,
+                          sourceRunner.getRank(), id, fileinfo, -1, sep);
     // Not isRecv since it is the requester, so send => isSender is true
-    boolean isSender = true;
+    final boolean isSender = true;
     try {
       try {
         // no delay
         taskRunner =
-            new DbTaskRunner(rule, isSender, request,
-                             remoteHost, null);
-      } catch (WaarpDatabaseException e) {
+            new DbTaskRunner(rule, isSender, request, remoteHost, null);
+      } catch (final WaarpDatabaseException e) {
         logger.error("Cannot get task", e);
         future.setResult(
             new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
@@ -158,7 +156,7 @@ public class TestSendThroughForward extends SendThroughClient {
         future.setFailure(e);
         return false;
       }
-      ClientRunner runner =
+      final ClientRunner runner =
           new ClientRunner(networkTransaction, taskRunner, future);
       runner.setRecvThroughHandler(handler);
       runner.setSendThroughMode();
@@ -168,28 +166,28 @@ public class TestSendThroughForward extends SendThroughClient {
           localChannelReference = runner.initRequest();
           exc = null;
           break;
-        } catch (OpenR66RunnerErrorException e) {
+        } catch (final OpenR66RunnerErrorException e) {
           logger.error("Cannot Transfer", e);
-          future.setResult(new R66Result(e, null, true,
-                                         ErrorCode.Internal, taskRunner));
+          future.setResult(
+              new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
           future.setFailure(e);
           return false;
-        } catch (OpenR66ProtocolNoConnectionException e) {
+        } catch (final OpenR66ProtocolNoConnectionException e) {
           logger.error("Cannot Connect", e);
-          future.setResult(new R66Result(e, null, true,
-                                         ErrorCode.ConnectionImpossible,
-                                         taskRunner));
+          future.setResult(
+              new R66Result(e, null, true, ErrorCode.ConnectionImpossible,
+                            taskRunner));
           finalizeInErrorTransferRequest(runner, taskRunner,
                                          ErrorCode.ConnectionImpossible);
           future.setFailure(e);
           return false;
-        } catch (OpenR66ProtocolPacketException e) {
+        } catch (final OpenR66ProtocolPacketException e) {
           logger.error("Bad Protocol", e);
-          future.setResult(new R66Result(e, null, true,
-                                         ErrorCode.TransferError, taskRunner));
+          future.setResult(new R66Result(e, null, true, ErrorCode.TransferError,
+                                         taskRunner));
           future.setFailure(e);
           return false;
-        } catch (OpenR66ProtocolNotYetConnectionException e) {
+        } catch (final OpenR66ProtocolNotYetConnectionException e) {
           logger.debug("Not Yet Connected", e);
           exc = e;
           continue;
@@ -198,18 +196,18 @@ public class TestSendThroughForward extends SendThroughClient {
       if (exc != null) {
         taskRunner.setLocalChannelReference(new LocalChannelReference());
         logger.error("Cannot Connect", exc);
-        future.setResult(new R66Result(exc, null, true,
-                                       ErrorCode.ConnectionImpossible,
-                                       taskRunner));
+        future.setResult(
+            new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
+                          taskRunner));
         future.setFailure(exc);
         return false;
       }
       try {
         localChannelReference.waitReadyForSendThrough();
-      } catch (OpenR66Exception e) {
+      } catch (final OpenR66Exception e) {
         logger.error("Cannot Transfer", e);
-        future.setResult(new R66Result(e, null, true,
-                                       ErrorCode.Internal, taskRunner));
+        future.setResult(
+            new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
         future.setFailure(e);
         return false;
       }
@@ -250,7 +248,7 @@ public class TestSendThroughForward extends SendThroughClient {
     @Override
     public void writeByteBuf(ByteBuf buffer)
         throws OpenR66ProtocolBusinessException {
-      DataBlock block = new DataBlock();
+      final DataBlock block = new DataBlock();
       if (buffer.readableBytes() <= 0) {
         // last block
         block.setEOF(true);
@@ -260,13 +258,13 @@ public class TestSendThroughForward extends SendThroughClient {
       try {
         client.writeWhenPossible(block)
               .await(Configuration.configuration.getTIMEOUTCON());
-      } catch (OpenR66RunnerErrorException e) {
+      } catch (final OpenR66RunnerErrorException e) {
         client.transferInError(e);
-      } catch (OpenR66ProtocolPacketException e) {
+      } catch (final OpenR66ProtocolPacketException e) {
         client.transferInError(e);
-      } catch (OpenR66ProtocolSystemException e) {
+      } catch (final OpenR66ProtocolSystemException e) {
         client.transferInError(e);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         client.transferInError(new OpenR66ProtocolSystemException(e));
       }
       if (block.isEOF()) {

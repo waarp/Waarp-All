@@ -2,7 +2,7 @@
 package org.waarp.ftp.core.utils;
 
 /**
- * Provides the version information of WaarpFtp.
+ * Provides the version information of Waarp Ftp.
  */
 public final class Version {
  /**

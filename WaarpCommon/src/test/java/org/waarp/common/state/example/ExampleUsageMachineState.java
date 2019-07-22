@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.common.state.example;
 
 import org.waarp.common.exception.IllegalFiniteStateException;
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Example of usage for MachineState based on ExampleEnumState enum class
  *
- * @author Frederic Bregier
+ *
  */
 public class ExampleUsageMachineState {
   /**
@@ -39,33 +39,32 @@ public class ExampleUsageMachineState {
    *
    * @param args
    */
-  @SuppressWarnings({
-      "unchecked", "rawtypes"
-  })
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public static void main(String[] args) {
     WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
 
     // Example
 
     // First create a HashMap and fill it directly
-    ConcurrentHashMap<ExampleEnumState, EnumSet<ExampleEnumState>> stateMap =
+    final ConcurrentHashMap<ExampleEnumState, EnumSet<ExampleEnumState>>
+        stateMap =
         new ConcurrentHashMap<ExampleEnumState, EnumSet<ExampleEnumState>>();
     stateMap.put(ExampleTransition.tRUNNING.elt.getState(),
                  (EnumSet<ExampleEnumState>) ExampleTransition.tRUNNING.elt
                      .getSet());
     // Second create the MachineState with the right Map
-    MachineState<ExampleEnumState> machineState1 =
+    final MachineState<ExampleEnumState> machineState1 =
         new MachineState(ExampleEnumState.PAUSED, stateMap);
     // Third, if not already done, fill the Map with the transitions
-    for (ExampleTransition trans : ExampleTransition.values()) {
+    for (final ExampleTransition trans : ExampleTransition.values()) {
       machineState1.addNewAssociation(trans.elt);
     }
 
     // Or First create the MachineSate but empty
-    MachineState<ExampleEnumState> machineState2 =
+    final MachineState<ExampleEnumState> machineState2 =
         new MachineState(ExampleEnumState.PAUSED);
     // Second fill the associations with transitions since none exist yet
-    for (ExampleTransition trans : ExampleTransition.values()) {
+    for (final ExampleTransition trans : ExampleTransition.values()) {
       machineState2.addNewAssociation(trans.elt);
     }
 
@@ -88,22 +87,22 @@ public class ExampleUsageMachineState {
     changeState(machineState2, ExampleEnumState.PAUSED);
   }
 
-  static private void changeState(MachineState<ExampleEnumState> mach,
+  private static void changeState(MachineState<ExampleEnumState> mach,
                                   ExampleEnumState desired) {
     try {
       printState(mach);
       mach.setCurrent(desired);
       printState(mach);
-    } catch (IllegalFiniteStateException e) {
+    } catch (final IllegalFiniteStateException e) {
       printWrongState(mach, desired);
     }
   }
 
-  static private void printState(MachineState<ExampleEnumState> mach) {
+  private static void printState(MachineState<ExampleEnumState> mach) {
     System.out.println("State is " + mach.getCurrent());
   }
 
-  static private void printWrongState(MachineState<ExampleEnumState> mach,
+  private static void printWrongState(MachineState<ExampleEnumState> mach,
                                       ExampleEnumState desired) {
     System.out.println(
         "Cannot go from State " + mach.getCurrent() + " to State " + desired);

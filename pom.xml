@@ -1,3 +1,23 @@
+<!--
+  ~ This file is part of Waarp Project (named also Waarp or GG).
+  ~
+  ~  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+  ~  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+  ~  individual contributors.
+  ~
+  ~  All Waarp Project is free software: you can redistribute it and/or
+  ~  modify it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation, either version 3 of the License, or (at your
+  ~  option) any later version.
+  ~
+  ~  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+  ~  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  ~  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License along with
+  ~  Waarp . If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -55,6 +75,12 @@
     </developerConnection>
     <url>https://github.com/waarp/${project.artifactId}</url>
   </scm>
+  <distributionManagement>
+    <site>
+      <id>github.waarp</id>
+      <url>file://${root.directory}/target/fullsite/</url>
+    </site>
+  </distributionManagement>
 
   <repositories>
     <repository>
@@ -143,6 +169,8 @@
   </modules>
 
   <properties>
+    <root.directory>${maven.multiModuleProjectDirectory}</root.directory>
+    <module.project>false</module.project>
     <java.version>1.6</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -157,26 +185,29 @@
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.language>java</sonar.language>
     <sonar.skipDesign>true</sonar.skipDesign>
-    <jacoco.outputDir>${user.dir}/target/jacoco</jacoco.outputDir>
+    <jacoco.outputDir>${root.directory}/target/jacoco</jacoco.outputDir>
     <jacoco.out.ut.file>jacoco-ut.exec</jacoco.out.ut.file>
     <!-- Tells Sonar where the Jacoco coverage result file is located for Unit Tests -->
-    <sonar.jacoco.reportPaths>${jacoco.outputDir}/${jacoco.out.ut.file}</sonar.jacoco.reportPaths>
+    <sonar.jacoco.reportPaths>${jacoco.outputDir}/${jacoco.out.ut.file}
+    </sonar.jacoco.reportPaths>
     <!-- Jacoco output file for ITs -->
     <jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
     <!-- Tells Sonar where the Jacoco coverage result file is located for Integration Tests -->
-    <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
+    <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}
+    </sonar.jacoco.itReportPath>
     <sonar.exclusions>
       file:**/target/generated-sources/**,
       file:**/target/generated-test-sources/**,
       file:**/target/test-classes/**,
     </sonar.exclusions>
-    <sonar.surefire.reportsPath>target/surefire-reports</sonar.surefire.reportsPath>
+    <sonar.surefire.reportsPath>target/surefire-reports
+    </sonar.surefire.reportsPath>
 
     <!-- Others -->
     <filtermodule>**</filtermodule>
     <filterexclude></filterexclude>
-    <waarp.directory.version></waarp.directory.version>
-    <waarp.module.version></waarp.module.version>
+    <waarp.directory.version>org.waarp</waarp.directory.version>
+    <waarp.module.version>org/waarp</waarp.module.version>
 
     <!-- Waarp Versions -->
     <waarp.directory.version>test</waarp.directory.version>
@@ -209,7 +240,6 @@
     <jaxen.version>1.1.6</jaxen.version>
     <dom4j.version>1.6.1</dom4j.version>
     <javasysmon.version>0.3.6</javasysmon.version>
-    <beanutils.version>1.8.3</beanutils.version>
     <gson.version>2.8.5</gson.version>
     <resteasy.client.version>3.6.3.Final</resteasy.client.version>
     <javax.ws.rs.version>2.1.1</javax.ws.rs.version>
@@ -274,10 +304,11 @@
   <build>
     <pluginManagement>
       <plugins>
-       <!--This plugin's configuration is used to store Eclipse 
-                m2e settings only. It has no influence on the Maven build itself. -->
-         <!-- Workaround for the 'M2E plugin execution not covered' problem.
-             See: http://wiki.eclipse.org/M2E_plugin_execution_not_covered -->
+        <!--This plugin's configuration is used to store Eclipse
+                 m2e settings only. It has no influence on the Maven build itself. -->
+        <!-- Workaround for the 'M2E plugin execution not covered' problem.
+            See: http://wiki.eclipse.org/M2E_plugin_execution_not_covered -->
+        <!--
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -383,6 +414,7 @@
             </lifecycleMappingMetadata>
           </configuration>
         </plugin>
+        -->
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
@@ -399,6 +431,9 @@
             <forkCount>1</forkCount>
             <trimStackTrace>false</trimStackTrace>
             <systemPropertyVariables>
+              <io.netty.leakDetection.level>paranoid
+              </io.netty.leakDetection.level>
+
               <logback.configurationFile>
                 ${project.basedir}/src/test/resources/logback-test.xml
               </logback.configurationFile>
@@ -452,6 +487,14 @@
         <plugin>
           <artifactId>maven-jxr-plugin</artifactId>
           <version>${maven-jxr-plugin.version}</version>
+          <executions>
+            <execution>
+              <phase>pre-site</phase>
+              <goals>
+                <goal>aggregate</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-antrun-plugin</artifactId>
@@ -489,24 +532,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>${maven.site.version}</version>
-          <dependencies>
-            <!-- For SyntaxHighlighter macro: http://code.google.com/p/m2-site-tools/ -->
-            <dependency>
-              <groupId>com.anasoft.os</groupId>
-              <artifactId>m2st-doxia-macros</artifactId>
-              <version>2.0</version>
-            </dependency>
-            <dependency>
-              <groupId>org.apache.maven.doxia</groupId>
-              <artifactId>doxia-sink-api</artifactId>
-              <version>1.9</version><!-- 1.4 -->
-            </dependency>
-            <dependency>
-              <groupId>org.apache.maven.doxia</groupId>
-              <artifactId>doxia-core</artifactId>
-              <version>1.9</version><!-- 1.4 -->
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -536,7 +561,7 @@
           </configuration>
           <executions>
             <execution>
-              <id>default-prepare-agent</id>
+              <id>pre-unit-test</id>
               <goals>
                 <goal>prepare-agent</goal>
               </goals>
@@ -548,7 +573,14 @@
               </configuration>
             </execution>
             <execution>
-              <id>default-prepare-agent-integration</id>
+              <id>post-unit-test</id>
+              <phase>test</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>pre-integration-test</id>
               <goals>
                 <goal>prepare-agent-integration</goal>
               </goals>
@@ -560,21 +592,57 @@
               </configuration>
             </execution>
             <execution>
+              <id>post-integration-test</id>
+              <goals>
+                <goal>report-integration</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>merge-results</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>merge</goal>
+              </goals>
+              <configuration>
+                <fileSets>
+                  <fileSet>
+                    <directory>${jacoco.outputDir}</directory>
+                    <includes>
+                      <include>*.exec</include>
+                    </includes>
+                    <excludes>
+                      <exclude>aggregate.exec</exclude>
+                    </excludes>
+                  </fileSet>
+                </fileSets>
+                <destFile>${jacoco.outputDir}/aggregate.exec</destFile>
+              </configuration>
+            </execution>
+            <execution>
               <id>report-aggregate</id>
               <phase>prepare-package</phase>
               <goals>
                 <goal>report-aggregate</goal>
               </goals>
+              <configuration>
+                <dataFileIncludes>
+                  <dataFileInclude>${jacoco.outputDir}/aggregate.exec
+                  </dataFileInclude>
+                </dataFileIncludes>
+                <outputDirectory>${jacoco.outputDir}/jacoco-aggregate
+                </outputDirectory>
+              </configuration>
             </execution>
             <execution>
-              <id>report</id>
-              <phase>prepare-package</phase>
+              <id>post-merge-report</id>
+              <phase>verify</phase>
               <goals>
                 <goal>report</goal>
               </goals>
               <configuration>
-                <!-- Specific configuration for the non aggregate report -->
-                <!--<skip>true</skip>-->
+                <dataFile>${jacoco.outputDir}/aggregate.exec</dataFile>
+                <outputDirectory>${jacoco.outputDir}/jacoco-aggregate
+                </outputDirectory>
               </configuration>
             </execution>
           </executions>
@@ -601,7 +669,7 @@
           <version>1.5</version>
           <configuration>
             <deb>
-              ${project.build.directory}/waarp-${project.name}-${project.version}.deb
+              ${root.directory}/waarp-${project.name}-${project.version}.deb
             </deb>
             <snapshotExpand>true</snapshotExpand>
             <skip>true</skip>
@@ -766,10 +834,9 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
         <version>${versions-maven-plugin.version}</version>
-        <inherited>false</inherited>
         <configuration>
           <rulesUri>
-            file:///${session.executionRootDirectory}/maven-version-rules.xml
+            file:///${project.basedir}/maven-version-rules.xml
           </rulesUri>
         </configuration>
       </plugin>
@@ -1125,6 +1192,7 @@
       </build>
     </profile>
   </profiles>
+
   <reporting>
     <excludeDefaults>true</excludeDefaults>
     <plugins>
@@ -1136,9 +1204,12 @@
           <skipProvidedScope>true</skipProvidedScope>
           <skipRuntimeScope>true</skipRuntimeScope>
           <skipTestScope>true</skipTestScope>
+          <!-- <skip>${module.project}</skip>-->
         </configuration>
         <reportSets>
           <reportSet>
+            <inherited>false</inherited>
+            <id>aggregate</id>
             <reports>
               <report>aggregate</report>
             </reports>
@@ -1158,15 +1229,8 @@
         </configuration>
         <reportSets>
           <reportSet>
-            <id>non-aggregate</id>
-            <configuration>
-              <!-- Specific configuration for the non aggregate report -->
-              <skip>true</skip>
-            </configuration>
-          </reportSet>
-          <reportSet>
-            <id>aggregate</id>
             <inherited>false</inherited>
+            <id>aggregate</id>
             <reports>
               <report>aggregate</report>
             </reports>
@@ -1178,8 +1242,11 @@
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>${maven-project-info-reports-plugin.version}
         </version><!-- 2.7 -->
+        <inherited>false</inherited>
         <configuration>
+          <skipEmptyReport>true</skipEmptyReport>
           <dependencyDetailsEnabled>true</dependencyDetailsEnabled>
+          <!-- <skip>${module.project}</skip> -->
         </configuration>
         <reportSets>
           <reportSet>
@@ -1201,10 +1268,11 @@
           </reportSet>
         </reportSets>
       </plugin>
+      <!-- To keep until under Github
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>
-        <version>${maven-changes-plugin.version}</version><!-- 2.10 -->
+        <version>${maven-changes-plugin.version}</version>
         <configuration>
           <githubAPIServerId>github</githubAPIServerId>
           <githubAPIScheme>https</githubAPIScheme>
@@ -1214,6 +1282,7 @@
         </configuration>
         <reportSets>
           <reportSet>
+            <id>aggregate</id>
             <reports>
               <report>changes-report</report>
               <report>github-report</report>
@@ -1221,6 +1290,7 @@
           </reportSet>
         </reportSets>
       </plugin>
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changelog-plugin</artifactId>
@@ -1229,6 +1299,7 @@
           <reportSet>
             <id>dual-report</id>
             <configuration>
+              <skip>${module.project}</skip>
               <basedir>.</basedir>
               <type>range</type>
               <range>3650</range>
@@ -1277,6 +1348,17 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>analyze-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
         <version>${findbugs-maven-plugin.version}</version>
@@ -1285,6 +1367,7 @@
           <xmlOutputDirectory>target/site</xmlOutputDirectory>
           <failOnError>false</failOnError>
           <effort>Default</effort>
+          <!-- <skip>${module.project}</skip>-->
         </configuration>
       </plugin>
       <plugin>
@@ -1294,29 +1377,25 @@
         <configuration>
           <targetJdk>1.6</targetJdk>
           <rulesets>
-            <ruleset>/category/java/bestpractices.xml</ruleset>
-            <ruleset>/category/java/design.xml</ruleset>
-            <ruleset>/category/java/errorprone.xml</ruleset>
-            <ruleset>/category/java/multithreading.xml</ruleset>
-            <ruleset>/category/java/performance.xml</ruleset>
-            <ruleset>/category/java/security.xml</ruleset>
+            <ruleset>${root.directory}/src/assembly/pmd-exclude.xml</ruleset>
           </rulesets>
           <format>xml</format>
           <linkXRef>true</linkXRef>
           <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
           <minimumTokens>100</minimumTokens>
           <failOnViolation>false</failOnViolation>
+          <!-- <skip>${module.project}</skip>-->
           <aggregate>true</aggregate>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <inherited>false</inherited>
         <reportSets>
           <reportSet>
             <id>aggregate</id>
             <configuration>
+              <skip>${module.project}</skip>
               <aggregate>true</aggregate>
               <doclet>org.jboss.apiviz.APIviz</doclet>
               <docletArtifact>
@@ -1326,8 +1405,8 @@
               </docletArtifact>
               <attach>false</attach>
               <useStandardDocletOptions>true</useStandardDocletOptions>
-              <outputDirectory>${project.build.directory}/api</outputDirectory>
-              <reportOutputDirectory>${project.build.directory}/api
+              <outputDirectory>${root.directory}/target/api</outputDirectory>
+              <reportOutputDirectory>${root.directory}/target/api
               </reportOutputDirectory>
               <destDir>api</destDir>
               <charset>UTF-8</charset>
@@ -1336,20 +1415,211 @@
               <version>true</version>
               <author>true</author>
               <keywords>true</keywords>
-              <overview>${basedir}/src/javadoc/overview.html</overview>
+              <overview>${project.basedir}/src/javadoc/overview.html</overview>
               <doctitle>${project.name} ${project.version} API Reference
               </doctitle>
               <windowtitle>${project.name} ${project.version} API Reference
               </windowtitle>
+              <sourcepath>
+                ${root.directory}/WaarpAdministrator/src/main/java:${root.directory}/WaarpAdministrator/target/generated-sources/annotations:${root.directory}/WaarpXmlEditor/src/main/java:${root.directory}/WaarpXmlEditor/target/generated-sources/annotations:${root.directory}/WaarpR66Gui/src/main/java:${root.directory}/WaarpR66Gui/target/generated-sources/annotations:${root.directory}/WaarpR66/src/main/java:${root.directory}/WaarpR66/target/generated-sources/annotations:${root.directory}/WaarpProxyR66/src/main/java:${root.directory}/WaarpProxyR66/target/generated-sources/annotations:${root.directory}/WaarpGatewayKernel/src/main/java:${root.directory}/WaarpGatewayKernel/target/generated-sources/annotations:${root.directory}/WaarpGatewayFtp/src/main/java:${root.directory}/WaarpGatewayFtp/target/generated-sources/annotations:${root.directory}/WaarpFtpClient/src/main/java:${root.directory}/WaarpFtpClient/target/generated-sources/annotations:${root.directory}/WaarpPassword/src/main/java:${root.directory}/WaarpPassword/target/generated-sources/annotations:${root.directory}/WaarpThrift/src/main/java:${root.directory}/WaarpThrift/target/generated-sources/annotations:${root.directory}/WaarpSnmp/src/main/java:${root.directory}/WaarpSnmp/target/generated-sources/annotations:${root.directory}/WaarpExec/src/main/java:${root.directory}/WaarpExec/target/generated-sources/annotations:${root.directory}/WaarpCommon/src/main/java:${root.directory}/WaarpCommon/target/generated-sources/annotations:${root.directory}/WaarpDigest/src/main/java:${root.directory}/WaarpDigest/target/generated-sources/annotations:${root.directory}/WaarpFtp/core/src/main/java:${root.directory}/WaarpFtp/core/target/generated-sources/annotations:${root.directory}/WaarpFtp/filesystem/src/main/java:${root.directory}/WaarpFtp/filesystem/target/generated-sources/annotations:${root.directory}/WaarpFtp/simpleimpl/src/main/java:${root.directory}/WaarpFtp/simpleimpl/target/generated-sources/annotations
+              </sourcepath>
               <additionalOptions>
-                -sourceclasspath ${project.build.outputDirectory}
+                -sourceclasspath ${root.directory}/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpAdministrator/target/classes
+                -sourceclasspath ${root.directory}/WaarpDigest/target/classes
+                -sourceclasspath ${root.directory}/WaarpCommon/target/classes
+                -sourceclasspath ${root.directory}/WaarpExec/target/classes
+                -sourceclasspath ${root.directory}/WaarpSnmp/target/classes
+                -sourceclasspath ${root.directory}/WaarpThrift/target/classes
+                -sourceclasspath ${root.directory}/WaarpPassword/target/classes
+                -sourceclasspath ${root.directory}/WaarpFtp/target/classes
+                -sourceclasspath ${root.directory}/WaarpFtp/core/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpFtp/filesystem/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpFtp/simpleimpl/target/classes
+                -sourceclasspath ${root.directory}/WaarpFtpClient/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpGatewayKernel/target/classes
+                -sourceclasspath ${root.directory}/WaarpR66/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpGatewayFtp/target/classes
+                -sourceclasspath ${root.directory}/WaarpProxyR66/target/classes
+                -sourceclasspath ${root.directory}/WaarpR66Gui/target/classes
+                -sourceclasspath ${root.directory}/WaarpXmlEditor/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpAdministrator/target/classes
               </additionalOptions>
-              <additionalparam>
-                -link http://docs.oracle.com/javaee/6/api/
-                -link http://www.slf4j.org/apidocs/
+              <groups>
+                <group>
+                  <title>Waarp Common Digest package</title>
+                  <packages>org.waarp.common.digest*</packages>
+                </group>
 
-                -group "Waarp Main Profile" "org.waarp.profile*"
-              </additionalparam>
+                <group>
+                  <title>Waarp Common Command Authentication Session and File
+                    package
+                  </title>
+                  <packages>
+                    org.waarp.common.command*:org.waarp.common.file*:org.waarp.common.filemonitor*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp Common Crypto package</title>
+                  <packages>org.waarp.common.crypto*</packages>
+                </group>
+                <group>
+                  <title>Waarp Common Database package</title>
+                  <packages>org.waarp.common.database*</packages>
+                </group>
+                <group>
+                  <title>Waarp Common GUID CPU STATE and ROLE package</title>
+                  <packages>
+                    org.waarp.common.guid*:org.waarp.common.cpu*:org.waarp.common.state*:org.waarp.common.role*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp Common Utility package</title>
+                  <packages>
+                    org.waarp.common.tar*:org.waarp.common.utility*:org.waarp.common.xml*:org.waarp.common.json*:org.waarp.common.lru*:org.waarp.common.service*:org.waarp.common.transcode*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp Common Excepion, Logging and Future package
+                  </title>
+                  <packages>
+                    org.waarp.common.exception*:org.waarp.common.future*:org.waarp.common.logging*
+                  </packages>
+                </group>
+
+                <group>
+                  <title>Waarp Exec package</title>
+                  <packages>org.waarp.commandexec*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp SNMP Support package</title>
+                  <packages>org.waarp.snmp*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Thrift package</title>
+                  <packages>org.waarp.thrift*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Gui and Console Password Management package
+                  </title>
+                  <packages>org.waarp.uip*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp FTP Main Core package</title>
+                  <packages>org.waarp.ftp.core*</packages>
+                </group>
+                <group>
+                  <title>Waarp FTP Filesystem Implementation package</title>
+                  <packages>org.waarp.ftp.filesystembased*</packages>
+                </group>
+                <group>
+                  <title>Waarp Simple FTP Server package</title>
+                  <packages>org.waarp.ftp.simpleimpl*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp FTP Client for R66 package</title>
+                  <packages>org.waarp.ftp.client*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Gateway Http Kernel package</title>
+                  <packages>org.waarp.gateway.kernel*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp R66 Server package</title>
+                  <packages>org.waarp.openr66.server*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Client package</title>
+                  <packages>org.waarp.openr66.client*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Protocol package</title>
+                  <packages>
+                    org.waarp.openr66.protocol*:org.waarp.openr66.exception*:org.waarp.openr66.thrift*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Database package</title>
+                  <packages>
+                    org.waarp.openr66.database*:org.waarp.openr66.dao*:org.waarp.openr66.pojo*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Configuration file based loaders package
+                  </title>
+                  <packages>org.waarp.openr66.configuration*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Context Commander package</title>
+                  <packages>
+                    org.waarp.openr66.context*:org.waarp.openr66.commander*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Service Windows package</title>
+                  <packages>org.waarp.openr66.service*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Gateway Ftp package</title>
+                  <packages>org.waarp.gateway.ftp*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp R66 Proxy package</title>
+                  <packages>org.waarp.openr66.proxy*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp R66 Client Gui package</title>
+                  <packages>org.waarp.openr66.r66gui*:com.swtdesigner*
+                  </packages>
+                </group>
+
+                <group>
+                  <title>Waarp WaarpXmlEditor package</title>
+                  <packages>org.waarp.xample*</packages>
+                </group>
+                <group>
+                  <title>XmlEditor adapted package</title>
+                  <packages>com.fg*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Administrator Gui package</title>
+                  <packages>
+                    org.waarp.administrator*:org.waarp.administrator.guipwd*
+                  </packages>
+                </group>
+
+                <group>
+                  <title>Extra Netty patch package</title>
+                  <packages>io.cdap*:io.netty*</packages>
+                </group>
+              </groups>
+              <javaApiLinks>
+                <property>
+                  <name>api_1.6</name>
+                  <value>http://docs.oracle.com/javaee/6/api/</value>
+                </property>
+              </javaApiLinks>
+              <links>
+                <link>http://docs.oracle.com/javaee/6/api/</link>
+                <link>http://www.slf4j.org/apidocs/</link>
+              </links>
               <encoding>UTF-8</encoding>
               <locale>en_US</locale>
               <excludePackageNames>
@@ -1357,7 +1627,207 @@
               </excludePackageNames>
             </configuration>
             <reports>
-              <report>aggregate</report>
+              <report>aggregate-no-fork</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <configuration>
+              <attach>false</attach>
+              <useStandardDocletOptions>true</useStandardDocletOptions>
+              <charset>UTF-8</charset>
+              <docencoding>UTF-8</docencoding>
+              <breakiterator>true</breakiterator>
+              <version>true</version>
+              <author>true</author>
+              <keywords>true</keywords>
+              <doctitle>${project.name} ${project.version}
+              </doctitle>
+              <windowtitle>${project.name} ${project.version}
+              </windowtitle>
+              <groups>
+                <group>
+                  <title>Waarp Common Digest package</title>
+                  <packages>org.waarp.common.digest*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Common Command Authentication Session and File
+                    package
+                  </title>
+                  <packages>
+                    org.waarp.common.command*:org.waarp.common.file*:org.waarp.common.filemonitor*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp Common Crypto package</title>
+                  <packages>org.waarp.common.crypto*</packages>
+                </group>
+                <group>
+                  <title>Waarp Common Database package</title>
+                  <packages>org.waarp.common.database*</packages>
+                </group>
+                <group>
+                  <title>Waarp Common GUID CPU STATE and ROLE package</title>
+                  <packages>
+                    org.waarp.common.guid*:org.waarp.common.cpu*:org.waarp.common.state*:org.waarp.common.role*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp Common Utility package</title>
+                  <packages>
+                    org.waarp.common.tar*:org.waarp.common.utility*:org.waarp.common.xml*:org.waarp.common.json*:org.waarp.common.lru*:org.waarp.common.service*:org.waarp.common.transcode*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp Common Excepion, Logging and Future package
+                  </title>
+                  <packages>
+                    org.waarp.common.exception*:org.waarp.common.future*:org.waarp.common.logging*
+                  </packages>
+                </group>
+
+                <group>
+                  <title>Waarp Exec package</title>
+                  <packages>org.waarp.commandexec*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp SNMP Support package</title>
+                  <packages>org.waarp.snmp*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Thrift package</title>
+                  <packages>org.waarp.thrift*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Gui and Console Password Management package
+                  </title>
+                  <packages>org.waarp.uip*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp FTP Main Core package</title>
+                  <packages>org.waarp.ftp.core*</packages>
+                </group>
+                <group>
+                  <title>Waarp FTP Filesystem Implementation package</title>
+                  <packages>org.waarp.ftp.filesystembased*</packages>
+                </group>
+                <group>
+                  <title>Waarp Simple FTP Server package</title>
+                  <packages>org.waarp.ftp.simpleimpl*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp FTP Client for R66 package</title>
+                  <packages>org.waarp.ftp.client*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Gateway Http Kernel package</title>
+                  <packages>org.waarp.gateway.kernel*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp R66 Server package</title>
+                  <packages>org.waarp.openr66.server*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Client package</title>
+                  <packages>org.waarp.openr66.client*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Protocol package</title>
+                  <packages>
+                    org.waarp.openr66.protocol*:org.waarp.openr66.exception*:org.waarp.openr66.thrift*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Database package</title>
+                  <packages>
+                    org.waarp.openr66.database*:org.waarp.openr66.dao*:org.waarp.openr66.pojo*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Configuration file based loaders package
+                  </title>
+                  <packages>org.waarp.openr66.configuration*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Context Commander package</title>
+                  <packages>
+                    org.waarp.openr66.context*:org.waarp.openr66.commander*
+                  </packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Service Windows package</title>
+                  <packages>org.waarp.openr66.service*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Gateway Ftp package</title>
+                  <packages>org.waarp.gateway.ftp*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp R66 Proxy package</title>
+                  <packages>org.waarp.openr66.proxy*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp R66 Client Gui package</title>
+                  <packages>org.waarp.openr66.r66gui*:com.swtdesigner*
+                  </packages>
+                </group>
+
+                <group>
+                  <title>Waarp WaarpXmlEditor package</title>
+                  <packages>org.waarp.xample*</packages>
+                </group>
+                <group>
+                  <title>XmlEditor adapted package</title>
+                  <packages>com.fg*</packages>
+                </group>
+
+                <group>
+                  <title>Waarp Administrator Gui package</title>
+                  <packages>
+                    org.waarp.administrator*:org.waarp.administrator.guipwd*
+                  </packages>
+                </group>
+
+                <group>
+                  <title>Extra Netty patch package</title>
+                  <packages>io.cdap*:io.netty*</packages>
+                </group>
+              </groups>
+              <javaApiLinks>
+                <property>
+                  <name>api_1.6</name>
+                  <value>http://docs.oracle.com/javaee/6/api/</value>
+                </property>
+              </javaApiLinks>
+              <links>
+                <link>http://docs.oracle.com/javaee/6/api/</link>
+                <link>http://www.slf4j.org/apidocs/</link>
+              </links>
+              <encoding>UTF-8</encoding>
+              <locale>en_US</locale>
+              <excludePackageNames>
+                ${project.groupId}.test*:${project.groupId}.example*:${project.groupId}.util.internal*
+              </excludePackageNames>
+            </configuration>
+            <reports>
+              <report>javadoc-no-fork</report>
+              <!--
+              <report>javadoc-no-fork</report>
+              <report>test-aggregate-no-fork</report>
+              <report>test-javadoc-no-fork</report>
+              <report>javadoc</report>
+              <report>test-javadoc</report>
+              -->
             </reports>
           </reportSet>
         </reportSets>
@@ -1367,14 +1837,23 @@
         <artifactId>maven-site-plugin</artifactId>
         <reportSets>
           <reportSet>
-            <id>non-aggregate</id>
             <configuration>
-              <!-- Specific configuration for the non aggregate report -->
-              <skip>true</skip>
+              <!-- Specific configuration for the aggregate report -->
             </configuration>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <!-- <skip>${module.project}</skip>-->
+        </configuration>
+        <reportSets>
+          <reportSet>
             <reports>
-              <report>javadoc-no-fork</report>
-              <report>test-javadoc-no-fork</report>
+              <!-- select non-aggregate reports -->
+              <report>report</report>
             </reports>
           </reportSet>
         </reportSets>
@@ -1399,13 +1878,11 @@
         <groupId>com.h2database</groupId>
         <artifactId>h2</artifactId>
         <version>${h2.version}</version>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.mariadb.jdbc</groupId>
         <artifactId>mariadb-java-client</artifactId>
         <version>${mariadb.version}</version>
-        <optional>true</optional>
         <exclusions>
           <exclusion>
             <artifactId>jna</artifactId>
@@ -1417,7 +1894,6 @@
         <groupId>mysql</groupId>
         <artifactId>mysql-connector-java</artifactId>
         <version>${mysql.version}</version>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>Oracle</groupId>
@@ -1429,7 +1905,6 @@
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${postgresql.version}</version>
-        <optional>true</optional>
       </dependency>
 
       <!-- ######################## Netty dependencies ######################## -->
@@ -1626,7 +2101,6 @@
         <groupId>commons-daemon</groupId>
         <artifactId>commons-daemon</artifactId>
         <version>${commons.daemon.version}</version>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -1691,12 +2165,6 @@
         <groupId>org.glassfish.jersey.core</groupId>
         <artifactId>jersey-common</artifactId>
         <version>${jersey-common.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!-- ################ Jackson #################### -->
@@ -1720,7 +2188,6 @@
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
         <artifactId>jackson-jaxrs-smile-provider</artifactId>
         <version>${jackson.version}</version>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -1805,12 +2272,6 @@
         <groupId>com.google.code.findbugs</groupId>
         <artifactId>jsr305</artifactId>
         <version>${findbugs.version}</version>
-        <optional>true</optional>
-      </dependency>
-      <dependency>
-        <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils-core</artifactId>
-        <version>${beanutils.version}</version>
       </dependency>
       <dependency>
         <groupId>jaxen</groupId>

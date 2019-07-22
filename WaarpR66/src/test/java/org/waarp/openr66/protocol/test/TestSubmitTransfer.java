@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -33,22 +33,20 @@ import java.util.concurrent.Executors;
 /**
  * Test class for multiple SubmitTransfer
  *
- * @author Frederic Bregier
+ *
  */
 public class TestSubmitTransfer extends SubmitTransfer {
   static int nb = 100;
 
   public TestSubmitTransfer(R66Future future, String remoteHost,
                             String filename, String rulename, String fileinfo,
-                            boolean isMD5, int blocksize,
-                            Timestamp starttime) {
+                            boolean isMD5, int blocksize, Timestamp starttime) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           DbConstant.ILLEGALVALUE, starttime);
   }
 
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        null));
+    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);
     }
@@ -62,8 +60,8 @@ public class TestSubmitTransfer extends SubmitTransfer {
     }
     getSpecialParams(args, 1);
 
-    ExecutorService executorService = Executors.newCachedThreadPool();
-    R66Future[] arrayFuture = new R66Future[nb];
+    final ExecutorService executorService = Executors.newCachedThreadPool();
+    final R66Future[] arrayFuture = new R66Future[nb];
 
     logger.warn("Start Test Submit");
     for (int i = 0; i < nb; i++) {
@@ -73,12 +71,9 @@ public class TestSubmitTransfer extends SubmitTransfer {
         // delay of 10 ms between each
         newstart = new Timestamp(newstart.getTime() + i * 10);
       }
-      TestSubmitTransfer transaction = new TestSubmitTransfer(arrayFuture[i],
-                                                              rhost,
-                                                              localFilename,
-                                                              rule, fileInfo,
-                                                              ismd5, block,
-                                                              newstart);
+      final TestSubmitTransfer transaction =
+          new TestSubmitTransfer(arrayFuture[i], rhost, localFilename, rule,
+                                 fileInfo, ismd5, block, newstart);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       // executorService.execute(transaction);
       transaction.run();
@@ -86,7 +81,7 @@ public class TestSubmitTransfer extends SubmitTransfer {
     int success = 0;
     int error = 0;
     for (int i = 0; i < nb; i++) {
-      arrayFuture[i].awaitUninterruptibly();
+      arrayFuture[i].awaitOrInterruptible();
       if (arrayFuture[i].isSuccess()) {
         success++;
       } else {

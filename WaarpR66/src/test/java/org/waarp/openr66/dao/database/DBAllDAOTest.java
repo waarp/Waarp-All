@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.openr66.dao.database;
 
@@ -56,7 +56,7 @@ import static org.junit.Assert.*;
 public abstract class DBAllDAOTest {
 
   private Connection con;
-  private DAOFactoryTest factoryTest = new DAOFactoryTest();
+  private final DAOFactoryTest factoryTest = new DAOFactoryTest();
 
   public DAOFactory getDaoFactory() {
     return factoryTest;
@@ -68,7 +68,7 @@ public abstract class DBAllDAOTest {
     public BusinessDAO getBusinessDAO() throws DAOConnectionException {
       try {
         return new DBBusinessDAO(getConnection());
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         fail(e.getMessage());
         return null;
       }
@@ -78,7 +78,7 @@ public abstract class DBAllDAOTest {
     public HostDAO getHostDAO() throws DAOConnectionException {
       try {
         return new DBHostDAO(getConnection());
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         fail(e.getMessage());
         return null;
       }
@@ -88,7 +88,7 @@ public abstract class DBAllDAOTest {
     public LimitDAO getLimitDAO() throws DAOConnectionException {
       try {
         return new DBLimitDAO(getConnection());
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         fail(e.getMessage());
         return null;
       }
@@ -99,7 +99,7 @@ public abstract class DBAllDAOTest {
         throws DAOConnectionException {
       try {
         return new DBMultipleMonitorDAO(getConnection());
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         fail(e.getMessage());
         return null;
       }
@@ -109,7 +109,7 @@ public abstract class DBAllDAOTest {
     public RuleDAO getRuleDAO() throws DAOConnectionException {
       try {
         return new DBRuleDAO(getConnection());
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         fail(e.getMessage());
         return null;
       }
@@ -119,7 +119,7 @@ public abstract class DBAllDAOTest {
     public TransferDAO getTransferDAO() throws DAOConnectionException {
       try {
         return getDAO(getConnection());
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         fail(e.getMessage());
         return null;
       }
@@ -128,11 +128,11 @@ public abstract class DBAllDAOTest {
 
   public void runScript(String script) {
     try {
-      ScriptRunner runner = new ScriptRunner(con, false, true);
-      URL url =
+      final ScriptRunner runner = new ScriptRunner(con, false, true);
+      final URL url =
           Thread.currentThread().getContextClassLoader().getResource(script);
       runner.runScript(new BufferedReader(new FileReader(url.getPath())));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -142,7 +142,7 @@ public abstract class DBAllDAOTest {
     try {
       con = getConnection();
       initDB();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -158,13 +158,12 @@ public abstract class DBAllDAOTest {
       if (con != null) {
         con.close();
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
   public abstract void cleanDB() throws SQLException;
-
 
   /*******************
    * BUSINESS
@@ -172,13 +171,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteAllBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.deleteAll();
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT * FROM hostconfig");
+      final ResultSet res =
+          con.createStatement().executeQuery("SELECT * FROM hostconfig");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -186,14 +185,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.delete(new Business("server1", "", "", "", ""));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM hostconfig where hostid = 'server1'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM hostconfig where hostid = 'server1'");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -201,9 +199,9 @@ public abstract class DBAllDAOTest {
   @Test
   public void testGetAllBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertEquals(5, dao.getAll().size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -211,8 +209,8 @@ public abstract class DBAllDAOTest {
   @Test
   public void testSelectBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
-      Business business = dao.select("server1");
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final Business business = dao.select("server1");
 
       assertEquals("joyaux", business.getBusiness());
       assertEquals("marchand", business.getRoles());
@@ -223,10 +221,10 @@ public abstract class DBAllDAOTest {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
-      } catch (DAONoDataException e) {
+      } catch (final DAONoDataException e) {
         // Ignore since OK
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -234,32 +232,28 @@ public abstract class DBAllDAOTest {
   @Test
   public void testExistBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertEquals(true, dao.exist("server1"));
       assertEquals(false, dao.exist("ghost"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testInsertBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
-      dao.insert(new Business("chacha",
-                              "lolo", "lala", "minou", "ect",
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      dao.insert(new Business("chacha", "lolo", "lala", "minou", "ect",
                               UpdatedInfo.TOSUBMIT));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT COUNT(1) as count FROM hostconfig");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT COUNT(1) as count FROM hostconfig");
       res.next();
       assertEquals(6, res.getInt("count"));
 
-      ResultSet res2 = con.createStatement()
-                          .executeQuery(
-                              "SELECT * FROM hostconfig WHERE hostid = 'chacha'");
+      final ResultSet res2 = con.createStatement().executeQuery(
+          "SELECT * FROM hostconfig WHERE hostid = 'chacha'");
       res2.next();
       assertEquals("chacha", res2.getString("hostid"));
       assertEquals("lolo", res2.getString("business"));
@@ -267,7 +261,7 @@ public abstract class DBAllDAOTest {
       assertEquals("minou", res2.getString("aliases"));
       assertEquals("ect", res2.getString("others"));
       assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res2.getInt("updatedInfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -275,14 +269,12 @@ public abstract class DBAllDAOTest {
   @Test
   public void testUpdateBusiness() {
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
-      dao.update(new Business("server2",
-                              "lolo", "lala", "minou", "ect",
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      dao.update(new Business("server2", "lolo", "lala", "minou", "ect",
                               UpdatedInfo.RUNNING));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM hostconfig WHERE hostid = 'server2'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM hostconfig WHERE hostid = 'server2'");
       res.next();
       assertEquals("server2", res.getString("hostid"));
       assertEquals("lolo", res.getString("business"));
@@ -290,20 +282,19 @@ public abstract class DBAllDAOTest {
       assertEquals("minou", res.getString("aliases"));
       assertEquals("ect", res.getString("others"));
       assertEquals(UpdatedInfo.RUNNING.ordinal(), res.getInt("updatedInfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testFindBusiness() {
-    ArrayList<Filter> map = new ArrayList<Filter>();
+    final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBBusinessDAO.BUSINESS_FIELD, "=", "ba"));
     try {
-      BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertEquals(2, dao.find(map).size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -315,13 +306,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteAllHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       dao.deleteAll();
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT * FROM hosts");
+      final ResultSet res =
+          con.createStatement().executeQuery("SELECT * FROM hosts");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -329,14 +320,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       dao.delete(new Host("server1", "", 666, null, false, false));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM hosts where hostid = 'server1'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM hosts where hostid = 'server1'");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -344,9 +334,9 @@ public abstract class DBAllDAOTest {
   @Test
   public void testGetAllHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       assertEquals(3, dao.getAll().size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -354,13 +344,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testSelectHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
-      Host host = dao.select("server1");
+      final HostDAO dao = getDaoFactory().getHostDAO();
+      final Host host = dao.select("server1");
 
       assertEquals("server1", host.getHostid());
       assertEquals("127.0.0.1", host.getAddress());
       assertEquals(6666, host.getPort());
-      //HostKey is tested in Insert and Update
+      // HostKey is tested in Insert and Update
       assertEquals(true, host.isSSL());
       assertEquals(true, host.isClient());
       assertEquals(true, host.isProxified());
@@ -371,10 +361,10 @@ public abstract class DBAllDAOTest {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
-      } catch (DAONoDataException e) {
+      } catch (final DAONoDataException e) {
         // Ignore since OK
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -382,31 +372,29 @@ public abstract class DBAllDAOTest {
   @Test
   public void testExistHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       assertEquals(true, dao.exist("server1"));
       assertEquals(false, dao.exist("ghost"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testInsertHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       dao.insert(
           new Host("chacha", "address", 666, "aaa".getBytes("utf-8"), false,
                    false));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT COUNT(1) as count FROM hosts");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT COUNT(1) as count FROM hosts");
       res.next();
       assertEquals(4, res.getInt("count"));
 
-      ResultSet res2 = con.createStatement()
-                          .executeQuery(
-                              "SELECT * FROM hosts WHERE hostid = 'chacha'");
+      final ResultSet res2 = con.createStatement().executeQuery(
+          "SELECT * FROM hosts WHERE hostid = 'chacha'");
       res2.next();
       assertEquals("chacha", res2.getString("hostid"));
       assertEquals("address", res2.getString("address"));
@@ -418,7 +406,7 @@ public abstract class DBAllDAOTest {
       assertEquals(true, res2.getBoolean("adminrole"));
       assertEquals(true, res2.getBoolean("isactive"));
       assertEquals(0, res2.getInt("updatedinfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -426,14 +414,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testUpdateHost() {
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       dao.update(
           new Host("server2", "address", 666, "password".getBytes("utf-8"),
                    false, false));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM hosts WHERE hostid = 'server2'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM hosts WHERE hostid = 'server2'");
       res.next();
       assertEquals("server2", res.getString("hostid"));
       assertEquals("address", res.getString("address"));
@@ -445,25 +432,23 @@ public abstract class DBAllDAOTest {
       assertEquals(true, res.getBoolean("adminrole"));
       assertEquals(true, res.getBoolean("isactive"));
       assertEquals(0, res.getInt("updatedinfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testFindHost() {
-    ArrayList<Filter> map = new ArrayList<Filter>();
+    final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBHostDAO.ADDRESS_FIELD, "=", "127.0.0.1"));
     try {
-      HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO();
       assertEquals(2, dao.find(map).size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
       fail(e.getMessage());
     }
   }
-
 
   /*********************
    * LIMIT
@@ -472,13 +457,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteAllLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.deleteAll();
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT * FROM configuration");
+      final ResultSet res =
+          con.createStatement().executeQuery("SELECT * FROM configuration");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -486,14 +471,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.delete(new Limit("server1", 0l));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM configuration where hostid = 'server1'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM configuration where hostid = 'server1'");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -501,9 +485,9 @@ public abstract class DBAllDAOTest {
   @Test
   public void testGetAllLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertEquals(3, dao.getAll().size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -511,8 +495,8 @@ public abstract class DBAllDAOTest {
   @Test
   public void testSelectLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
-      Limit limit = dao.select("server1");
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final Limit limit = dao.select("server1");
 
       assertEquals("server1", limit.getHostid());
       assertEquals(1, limit.getReadGlobalLimit());
@@ -525,10 +509,10 @@ public abstract class DBAllDAOTest {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
-      } catch (DAONoDataException e) {
+      } catch (final DAONoDataException e) {
         // Ignore since OK
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -536,32 +520,28 @@ public abstract class DBAllDAOTest {
   @Test
   public void testExistLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertEquals(true, dao.exist("server1"));
       assertEquals(false, dao.exist("ghost"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testInsertLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
-      dao.insert(new Limit("chacha", 4l,
-                           1l, 5l, 13l, 12,
-                           UpdatedInfo.TOSUBMIT));
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      dao.insert(
+          new Limit("chacha", 4l, 1l, 5l, 13l, 12, UpdatedInfo.TOSUBMIT));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT COUNT(1) as count FROM configuration");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT COUNT(1) as count FROM configuration");
       res.next();
       assertEquals(4, res.getInt("count"));
 
-      ResultSet res2 = con.createStatement()
-                          .executeQuery(
-                              "SELECT * FROM configuration WHERE hostid = 'chacha'");
+      final ResultSet res2 = con.createStatement().executeQuery(
+          "SELECT * FROM configuration WHERE hostid = 'chacha'");
       res2.next();
       assertEquals("chacha", res2.getString("hostid"));
       assertEquals(4, res2.getLong("delaylimit"));
@@ -570,7 +550,7 @@ public abstract class DBAllDAOTest {
       assertEquals(13, res2.getLong("readSessionLimit"));
       assertEquals(12, res2.getLong("writeSessionLimit"));
       assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res2.getInt("updatedInfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -578,14 +558,12 @@ public abstract class DBAllDAOTest {
   @Test
   public void testUpdateLimit() {
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
-      dao.update(new Limit("server2", 4l,
-                           1l, 5l, 13l, 12l,
-                           UpdatedInfo.RUNNING));
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      dao.update(
+          new Limit("server2", 4l, 1l, 5l, 13l, 12l, UpdatedInfo.RUNNING));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM configuration WHERE hostid = 'server2'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM configuration WHERE hostid = 'server2'");
       res.next();
       assertEquals("server2", res.getString("hostid"));
       assertEquals(4, res.getLong("delaylimit"));
@@ -594,44 +572,41 @@ public abstract class DBAllDAOTest {
       assertEquals(13, res.getLong("readSessionLimit"));
       assertEquals(12, res.getLong("writeSessionLimit"));
       assertEquals(UpdatedInfo.RUNNING.ordinal(), res.getInt("updatedInfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
-
 
   @Test
   public void testFindLimit() {
-    ArrayList<Filter> map = new ArrayList<Filter>();
+    final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBLimitDAO.READ_SESSION_LIMIT_FIELD, ">", 2));
     try {
-      LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertEquals(2, dao.find(map).size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
-
 
   /*********************
    * MULTIPLE MONITOR
    *********************/
 
-
   @Test
   public void testDeleteAllMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       dao.deleteAll();
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT * FROM multiplemonitor");
+      final ResultSet res =
+          con.createStatement().executeQuery("SELECT * FROM multiplemonitor");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -639,18 +614,17 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       dao.delete(new MultipleMonitor("server1", 0, 0, 0));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM multiplemonitor where hostid = 'server1'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM multiplemonitor where hostid = 'server1'");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -658,13 +632,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testGetAllMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       assertEquals(4, dao.getAll().size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -672,12 +646,12 @@ public abstract class DBAllDAOTest {
   @Test
   public void testSelectMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
-      MultipleMonitor multiple = dao.select("server1");
+      final MultipleMonitor multiple = dao.select("server1");
 
       assertEquals("server1", multiple.getHostid());
       assertEquals(11, multiple.getCountConfig());
@@ -686,10 +660,10 @@ public abstract class DBAllDAOTest {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
-      } catch (DAONoDataException e) {
+      } catch (final DAONoDataException e) {
         // Ignore since OK
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -697,44 +671,41 @@ public abstract class DBAllDAOTest {
   @Test
   public void testExistMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       assertEquals(true, dao.exist("server1"));
       assertEquals(false, dao.exist("ghost"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testInsertMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       dao.insert(new MultipleMonitor("chacha", 31, 19, 98));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT COUNT(1) as count FROM multiplemonitor");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT COUNT(1) as count FROM multiplemonitor");
       res.next();
       assertEquals(5, res.getInt("count"));
 
-      ResultSet res2 = con.createStatement()
-                          .executeQuery(
-                              "SELECT * FROM multiplemonitor WHERE hostid = 'chacha'");
+      final ResultSet res2 = con.createStatement().executeQuery(
+          "SELECT * FROM multiplemonitor WHERE hostid = 'chacha'");
       res2.next();
       assertEquals("chacha", res2.getString("hostid"));
       assertEquals(98, res2.getInt("countRule"));
       assertEquals(19, res2.getInt("countHost"));
       assertEquals(31, res2.getInt("countConfig"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -742,59 +713,55 @@ public abstract class DBAllDAOTest {
   @Test
   public void testUpdateMultipleMonitor() {
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       dao.update(new MultipleMonitor("server2", 31, 19, 98));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM multiplemonitor WHERE hostid = 'server2'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM multiplemonitor WHERE hostid = 'server2'");
       res.next();
       assertEquals("server2", res.getString("hostid"));
       assertEquals(98, res.getInt("countRule"));
       assertEquals(19, res.getInt("countHost"));
       assertEquals(31, res.getInt("countConfig"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testFindMultipleMonitor() {
-    ArrayList<Filter> map = new ArrayList<Filter>();
+    final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBMultipleMonitorDAO.COUNT_CONFIG_FIELD, "=", 0));
     try {
-      MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
         // ignore since XML
         return;
       }
       assertEquals(2, dao.find(map).size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
-
 
   /*********************
    * RULE
    *********************/
 
-
   @Test
   public void testDeleteAllRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.deleteAll();
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT * FROM rules");
+      final ResultSet res =
+          con.createStatement().executeQuery("SELECT * FROM rules");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -802,14 +769,13 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.delete(new Rule("default", 1));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM rules where idrule = 'default'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM rules where idrule = 'default'");
       assertEquals(false, res.next());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -817,9 +783,9 @@ public abstract class DBAllDAOTest {
   @Test
   public void testGetAllRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       assertEquals(3, dao.getAll().size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -827,8 +793,8 @@ public abstract class DBAllDAOTest {
   @Test
   public void testSelectRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
-      Rule rule = dao.select("dummy");
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final Rule rule = dao.select("dummy");
 
       assertEquals("dummy", rule.getName());
       assertEquals(1, rule.getMode());
@@ -847,10 +813,10 @@ public abstract class DBAllDAOTest {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
-      } catch (DAONoDataException e) {
+      } catch (final DAONoDataException e) {
         // Ignore since OK
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -858,29 +824,27 @@ public abstract class DBAllDAOTest {
   @Test
   public void testExistRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       assertEquals(true, dao.exist("dummy"));
       assertEquals(false, dao.exist("ghost"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
 
-
   @Test
   public void testInsertRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.insert(new Rule("chacha", 2));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery("SELECT COUNT(1) as count FROM rules");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT COUNT(1) as count FROM rules");
       res.next();
       assertEquals(4, res.getInt("count"));
 
-      ResultSet res2 = con.createStatement()
-                          .executeQuery(
-                              "SELECT * FROM rules WHERE idrule = 'chacha'");
+      final ResultSet res2 = con.createStatement().executeQuery(
+          "SELECT * FROM rules WHERE idrule = 'chacha'");
       res2.next();
       assertEquals("chacha", res2.getString("idrule"));
       assertEquals(2, res2.getInt("modetrans"));
@@ -900,7 +864,7 @@ public abstract class DBAllDAOTest {
       assertEquals("<tasks></tasks>", res2.getString("sposttasks"));
       assertEquals("<tasks></tasks>", res2.getString("serrortasks"));
       assertEquals(0, res2.getInt("updatedInfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
@@ -908,12 +872,11 @@ public abstract class DBAllDAOTest {
   @Test
   public void testUpdateRule() {
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.update(new Rule("dummy", 2));
 
-      ResultSet res = con.createStatement()
-                         .executeQuery(
-                             "SELECT * FROM rules WHERE idrule = 'dummy'");
+      final ResultSet res = con.createStatement().executeQuery(
+          "SELECT * FROM rules WHERE idrule = 'dummy'");
       res.next();
       assertEquals("dummy", res.getString("idrule"));
       assertEquals(2, res.getInt("modetrans"));
@@ -933,24 +896,22 @@ public abstract class DBAllDAOTest {
       assertEquals("<tasks></tasks>", res.getString("sposttasks"));
       assertEquals("<tasks></tasks>", res.getString("serrortasks"));
       assertEquals(0, res.getInt("updatedInfo"));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
-
 
   @Test
   public void testFindRule() {
-    ArrayList<Filter> map = new ArrayList<Filter>();
+    final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBRuleDAO.MODE_TRANS_FIELD, "=", 1));
     try {
-      RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO();
       assertEquals(2, dao.find(map).size());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
     }
   }
-
 
   /*********************
    * TRANSFER
@@ -958,65 +919,62 @@ public abstract class DBAllDAOTest {
 
   @Test
   public void testDeleteAllTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
+    final TransferDAO dao = getDAO(getConnection());
     dao.deleteAll();
 
-    ResultSet res = con.createStatement()
-                       .executeQuery("SELECT * FROM runner");
+    final ResultSet res =
+        con.createStatement().executeQuery("SELECT * FROM runner");
     assertEquals(false, res.next());
   }
 
-  public abstract TransferDAO getDAO(Connection con) throws
-                                                     DAOConnectionException;
+  public abstract TransferDAO getDAO(Connection con)
+      throws DAOConnectionException;
 
   @Test
   public void testDeleteTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
-    dao.delete(new Transfer(0l, "", 1, "", "", "", false, 0, false,
-                            "server1", "server1", "server2", "",
-                            Transfer.TASKSTEP.NOTASK, Transfer.TASKSTEP.NOTASK,
-                            0,
-                            ErrorCode.Unknown, ErrorCode.Unknown, 0, null,
-                            null));
+    final TransferDAO dao = getDAO(getConnection());
+    dao.delete(new Transfer(0l, "", 1, "", "", "", false, 0, false, "server1",
+                            "server1", "server2", "", Transfer.TASKSTEP.NOTASK,
+                            Transfer.TASKSTEP.NOTASK, 0, ErrorCode.Unknown,
+                            ErrorCode.Unknown, 0, null, null));
 
-    ResultSet res = con.createStatement()
-                       .executeQuery(
-                           "SELECT * FROM runner where specialid = 0");
+    final ResultSet res = con.createStatement().executeQuery(
+        "SELECT * FROM runner where specialid = 0");
     assertEquals(false, res.next());
   }
 
   @Test
   public void testGetAllTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
+    final TransferDAO dao = getDAO(getConnection());
     assertEquals(4, dao.getAll().size());
   }
 
   @Test
   public void testSelectTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
-    Transfer transfer = dao.select(0l, "server1", "server2", "server1");
+    final TransferDAO dao = getDAO(getConnection());
+    final Transfer transfer = dao.select(0l, "server1", "server2", "server1");
 
     assertEquals(0, transfer.getId());
     try {
       dao.select(1l, "server1", "server2", "server1");
       fail("Should raised an exception");
-    } catch (DAONoDataException e) {
+    } catch (final DAONoDataException e) {
       // Ignore since OK
     }
   }
 
   @Test
   public void testExistTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
+    final TransferDAO dao = getDAO(getConnection());
     assertEquals(true, dao.exist(0l, "server1", "server2", "server1"));
     assertEquals(false, dao.exist(1l, "server1", "server2", "server1"));
   }
 
   @Test
   public void testInsertTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
-    Transfer transfer = new Transfer("server2", "rule", 1, false,
-                                     "file", "info", 3);
+    final TransferDAO dao = getDAO(getConnection());
+    final Transfer transfer =
+        new Transfer("server2", "rule", 1, false, "file", "info", 3);
     // Requester and requested are setup manualy
     transfer.setRequester("dummy");
     transfer.setOwnerRequest("dummy");
@@ -1025,14 +983,13 @@ public abstract class DBAllDAOTest {
     transfer.setTransferInfo("transfer info");
     dao.insert(transfer);
 
-    ResultSet res = con.createStatement()
-                       .executeQuery("SELECT COUNT(1) as count FROM runner");
+    final ResultSet res = con.createStatement().executeQuery(
+        "SELECT COUNT(1) as count FROM runner");
     res.next();
     assertEquals(5, res.getInt("count"));
 
-    ResultSet res2 = con.createStatement()
-                        .executeQuery(
-                            "SELECT * FROM runner WHERE idrule = 'rule'");
+    final ResultSet res2 = con.createStatement().executeQuery(
+        "SELECT * FROM runner WHERE idrule = 'rule'");
     res2.next();
     assertEquals("rule", res2.getString("idrule"));
     assertEquals(1, res2.getInt("modetrans"));
@@ -1045,22 +1002,20 @@ public abstract class DBAllDAOTest {
 
   @Test
   public void testUpdateTransfer() throws Exception {
-    TransferDAO dao = getDAO(getConnection());
+    final TransferDAO dao = getDAO(getConnection());
 
-    dao.update(new Transfer(0l, "rule", 13, "test", "testOrig",
-                            "testInfo", true, 42, true, "server1", "server1",
-                            "server2", "transferInfo",
-                            Transfer.TASKSTEP.ERRORTASK,
-                            Transfer.TASKSTEP.TRANSFERTASK, 27,
-                            ErrorCode.CompleteOk,
-                            ErrorCode.Unknown, 64, new Timestamp(192l),
-                            new Timestamp(1511l), UpdatedInfo.TOSUBMIT));
+    dao.update(
+        new Transfer(0l, "rule", 13, "test", "testOrig", "testInfo", true, 42,
+                     true, "server1", "server1", "server2", "transferInfo",
+                     Transfer.TASKSTEP.ERRORTASK,
+                     Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
+                     ErrorCode.Unknown, 64, new Timestamp(192l),
+                     new Timestamp(1511l), UpdatedInfo.TOSUBMIT));
 
-    ResultSet res = con.createStatement()
-                       .executeQuery(
-                           "SELECT * FROM runner WHERE specialid=0 and " +
-                           "ownerreq='server1' and requester='server1' and " +
-                           "requested='server2'");
+    final ResultSet res = con.createStatement().executeQuery(
+        "SELECT * FROM runner WHERE specialid=0 and " +
+        "ownerreq='server1' and requester='server1' and " +
+        "requested='server2'");
     if (!res.next()) {
       fail("Result not found");
     }
@@ -1090,16 +1045,14 @@ public abstract class DBAllDAOTest {
     assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res.getInt("updatedInfo"));
   }
 
-
   @Test
   public void testFindTransfer() throws Exception {
-    ArrayList<Filter> map = new ArrayList<Filter>();
+    final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBTransferDAO.ID_RULE_FIELD, "=", "default"));
     map.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=", "server1"));
 
-    TransferDAO dao = getDAO(getConnection());
+    final TransferDAO dao = getDAO(getConnection());
     assertEquals(3, dao.find(map).size());
   }
 
 }
-

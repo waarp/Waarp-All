@@ -1,29 +1,29 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.guid.JvmProcessId;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
-import org.waarp.common.utility.UUID;
 import org.waarp.openr66.client.DirectTransfer;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
@@ -41,26 +41,23 @@ import java.util.concurrent.Executors;
 /**
  * Test class for multiple DirectTransfer
  *
- * @author Frederic Bregier
+ *
  */
 public class TestTransferNoDb extends DirectTransfer {
-    static int nb = 100;
-    static int size = 1000;
-    static long bandwidth = 0;
+  static int nb = 100;
+  static int size = 1000;
+  static long bandwidth = 0;
 
-  public TestTransferNoDb(R66Future future, String remoteHost,
-                          String filename, String rulename, String fileinfo,
-                          boolean isMD5, int blocksize,
-                          long id,
+  public TestTransferNoDb(R66Future future, String remoteHost, String filename,
+                          String rulename, String fileinfo, boolean isMD5,
+                          int blocksize, long id,
                           NetworkTransaction networkTransaction) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
-          id,
-          networkTransaction);
+          id, networkTransaction);
   }
 
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        null));
+    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);
     }
@@ -74,10 +71,10 @@ public class TestTransferNoDb extends DirectTransfer {
     }
     getSpecialParams(args, 1);
     File file = new File(localFilename);
-    boolean exists = file.exists();
+    final boolean exists = file.exists();
     if (!exists) {
       localFilename =
-          file.getAbsolutePath() + UUID.jvmProcessId() + ".txt";
+          file.getAbsolutePath() + JvmProcessId.jvmProcessId() + ".txt";
       file = new File(localFilename);
       FileWriter fileWriterBig;
       try {
@@ -87,7 +84,7 @@ public class TestTransferNoDb extends DirectTransfer {
         }
         fileWriterBig.flush();
         fileWriterBig.close();
-      } catch (IOException e) {
+      } catch (final IOException e) {
         logger.error(e);
         return;
       }
@@ -100,35 +97,32 @@ public class TestTransferNoDb extends DirectTransfer {
     }
     Configuration.configuration.setCLIENT_THREAD(nb);
     Configuration.configuration.pipelineInit();
-    NetworkTransaction networkTransaction = new NetworkTransaction();
+    final NetworkTransaction networkTransaction = new NetworkTransaction();
     try {
-      ExecutorService executorService = Executors.newCachedThreadPool();
+      final ExecutorService executorService = Executors.newCachedThreadPool();
 
-      R66Future[] arrayFuture = new R66Future[nb];
+      final R66Future[] arrayFuture = new R66Future[nb];
       logger.info("Start of Test Transfer");
-      long time1 = System.currentTimeMillis();
+      final long time1 = System.currentTimeMillis();
       for (int i = 0; i < nb; i++) {
         arrayFuture[i] = new R66Future(true);
-        TestTransferNoDb transaction = new TestTransferNoDb(arrayFuture[i],
-                                                            rhost,
-                                                            localFilename, rule,
-                                                            fileInfo, ismd5,
-                                                            block,
-                                                            DbConstant.ILLEGALVALUE,
-                                                            networkTransaction);
+        final TestTransferNoDb transaction =
+            new TestTransferNoDb(arrayFuture[i], rhost, localFilename, rule,
+                                 fileInfo, ismd5, block,
+                                 DbConstant.ILLEGALVALUE, networkTransaction);
         transaction.normalInfoAsWarn = snormalInfoAsWarn;
         executorService.execute(transaction);
         try {
           Thread.sleep(10);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
         }
       }
       int success = 0;
       int error = 0;
       int warn = 0;
       for (int i = 0; i < nb; i++) {
-        arrayFuture[i].awaitForDoneOrInterruptible();
-        R66Result result = arrayFuture[i].getResult();
+        arrayFuture[i].awaitOrInterruptible();
+        final R66Result result = arrayFuture[i].getResult();
         if (arrayFuture[i].isSuccess()) {
           if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
             warn++;
@@ -144,24 +138,24 @@ public class TestTransferNoDb extends DirectTransfer {
           }
         }
       }
-      long time2 = System.currentTimeMillis();
+      final long time2 = System.currentTimeMillis();
       long length = 0;
       // Get the first result as testing only
-      R66Result result = arrayFuture[0].getResult();
+      final R66Result result = arrayFuture[0].getResult();
       logger.warn("Final file: " +
                   (result.getFile() != null? result.getFile().toString() :
                       "no file"));
       try {
         length = result.getFile() != null? result.getFile().length() : 0L;
-      } catch (CommandAbstractException e) {
+      } catch (final CommandAbstractException e) {
       }
-      long delay = time2 - time1;
+      final long delay = time2 - time1;
       float nbs = success * 1000;
       nbs /= delay;
-      float mbs = nbs * length / 1024;
-      logger.warn("Success: " + success + " Warning: " + warn + " Error: " +
-                  error + " delay: " + delay + " NB/s: " + nbs + " KB/s: " +
-                  mbs);
+      final float mbs = nbs * length / 1024;
+      logger.warn(
+          "Success: " + success + " Warning: " + warn + " Error: " + error +
+          " delay: " + delay + " NB/s: " + nbs + " KB/s: " + mbs);
       executorService.shutdown();
       if (!exists) {
         file.delete();

@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.common.digest;
 
@@ -41,8 +41,8 @@ public class FilesystemBasedDigestTest {
   public void testGetHashByteBufDigestAlgo() {
 
     try {
-      for (DigestAlgo algo : DigestAlgo.values()) {
-        long start = System.currentTimeMillis();
+      for (final DigestAlgo algo : DigestAlgo.values()) {
+        final long start = System.currentTimeMillis();
         byte[] bmd5 = null;
         for (int i = 0; i < 10000; i++) {
           FilesystemBasedDigest.setUseFastMd5(false);
@@ -60,56 +60,54 @@ public class FilesystemBasedDigestTest {
           assertTrue(algo + " Hex Not Equals",
                      FilesystemBasedDigest.digestEquals(hex, bmd5));
           FilesystemBasedDigest.setUseFastMd5(true);
-          FilesystemBasedDigest digest2 = new FilesystemBasedDigest(algo);
+          final FilesystemBasedDigest digest2 = new FilesystemBasedDigest(algo);
           digest2.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
-          byte[] bmd52 = digest2.Final();
-          String hex2 = FilesystemBasedDigest.getHex(bmd52);
+          final byte[] bmd52 = digest2.Final();
+          final String hex2 = FilesystemBasedDigest.getHex(bmd52);
           assertTrue(algo + " Hex Not Equals",
                      FilesystemBasedDigest.digestEquals(hex2, bmd52));
           assertTrue(algo + " FastMD5 vs MD5 Not Equals",
                      FilesystemBasedDigest.digestEquals(bmd52, bmd5));
           FilesystemBasedDigest.setUseFastMd5(false);
           buf = Unpooled.wrappedBuffer(TESTPHRASEBYTES);
-          byte[] bmd53 = FilesystemBasedDigest.getHash(buf, algo);
+          final byte[] bmd53 = FilesystemBasedDigest.getHash(buf, algo);
           buf.release();
-          String hex3 = FilesystemBasedDigest.getHex(bmd53);
+          final String hex3 = FilesystemBasedDigest.getHex(bmd53);
           assertTrue(algo + " Hex Not Equals",
                      FilesystemBasedDigest.digestEquals(hex3, bmd53));
           assertTrue(algo + " Through ByteBuf vs Direct Not Equals",
                      FilesystemBasedDigest.digestEquals(bmd53, bmd5));
-          assertTrue(algo + " FromHex Not Equals",
-                     FilesystemBasedDigest.digestEquals(bmd53,
-                                                        FilesystemBasedDigest
-                                                            .getFromHex(hex3)));
+          assertTrue(algo + " FromHex Not Equals", FilesystemBasedDigest
+              .digestEquals(bmd53, FilesystemBasedDigest.getFromHex(hex3)));
         }
-        long end = System.currentTimeMillis();
+        final long end = System.currentTimeMillis();
         System.out.println(
             "Algo: " + algo + " KeyLength: " + bmd5.length + " Time: " +
             (end - start));
       }
       FilesystemBasedDigest.setUseFastMd5(false);
-      ByteBuf buf = Unpooled.wrappedBuffer(TESTPHRASEBYTES);
-      byte[] bmd5 = FilesystemBasedDigest.getHashMd5(buf);
-      byte[] bmd52 = FilesystemBasedDigest.getHash(buf, DigestAlgo.MD5);
+      final ByteBuf buf = Unpooled.wrappedBuffer(TESTPHRASEBYTES);
+      final byte[] bmd5 = FilesystemBasedDigest.getHashMd5(buf);
+      final byte[] bmd52 = FilesystemBasedDigest.getHash(buf, DigestAlgo.MD5);
       assertTrue(DigestAlgo.MD5 + " Hex Not Equals",
                  FilesystemBasedDigest.digestEquals(bmd52, bmd5));
-    } catch (NoSuchAlgorithmException e) {
+    } catch (final NoSuchAlgorithmException e) {
       fail(e.getMessage());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testGetHashFileDigestAlgo() throws IOException {
-    File file = File.createTempFile("testHash", ".txt", new File("/tmp"));
-    FileWriter fileWriterBig = new FileWriter(file);
+    final File file = File.createTempFile("testHash", ".txt", new File("/tmp"));
+    final FileWriter fileWriterBig = new FileWriter(file);
     fileWriterBig.write(TESTPHRASE);
     fileWriterBig.flush();
     fileWriterBig.close();
     try {
-      for (DigestAlgo algo : DigestAlgo.values()) {
-        long start = System.currentTimeMillis();
+      for (final DigestAlgo algo : DigestAlgo.values()) {
+        final long start = System.currentTimeMillis();
         byte[] bmd5 = null;
         for (int i = 0; i < 1000; i++) {
           FilesystemBasedDigest.setUseFastMd5(false);
@@ -133,12 +131,12 @@ public class FilesystemBasedDigestTest {
           assertTrue(algo + " Hex Not Equals",
                      FilesystemBasedDigest.digestEquals(bmd5, bmd53));
         }
-        long end = System.currentTimeMillis();
+        final long end = System.currentTimeMillis();
         System.out.println(
             "Algo: " + algo + " KeyLength: " + bmd5.length + " Time: " +
             (end - start));
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       fail(e.getMessage());
     } finally {
       file.delete();
@@ -147,12 +145,12 @@ public class FilesystemBasedDigestTest {
 
   @Test
   public void testPasswdCryptString() {
-    long start = System.currentTimeMillis();
+    final long start = System.currentTimeMillis();
     byte[] bmd5 = null;
     for (int i = 0; i < 100000; i++) {
       FilesystemBasedDigest.setUseFastMd5(false);
-      String crypt = FilesystemBasedDigest.passwdCrypt(TESTPHRASE);
-      byte[] bcrypt = FilesystemBasedDigest.passwdCrypt(TESTPHRASEBYTES);
+      final String crypt = FilesystemBasedDigest.passwdCrypt(TESTPHRASE);
+      final byte[] bcrypt = FilesystemBasedDigest.passwdCrypt(TESTPHRASEBYTES);
       bmd5 = bcrypt;
       assertTrue("Password Hex Not Equals",
                  FilesystemBasedDigest.digestEquals(crypt, bcrypt));
@@ -161,7 +159,7 @@ public class FilesystemBasedDigestTest {
       assertTrue("Password Not Equals",
                  FilesystemBasedDigest.equalPasswd(TESTPHRASE, crypt));
     }
-    long end = System.currentTimeMillis();
+    final long end = System.currentTimeMillis();
     System.out.println(
         "Algo: CRYPT KeyLength: " + bmd5.length + " Time: " + (end - start));
   }
@@ -174,21 +172,20 @@ public class FilesystemBasedDigestTest {
     assertFalse(FilesystemBasedDigest.isUseFastMd5());
     assertEquals(DigestAlgo.MD5.getByteSize() * 2, DigestAlgo.MD5.getHexSize());
 
-    File file = File.createTempFile("testHash", ".txt", new File("/tmp"));
-    FileWriter fileWriterBig = new FileWriter(file);
+    final File file = File.createTempFile("testHash", ".txt", new File("/tmp"));
+    final FileWriter fileWriterBig = new FileWriter(file);
     fileWriterBig.write(TESTPHRASE);
     fileWriterBig.flush();
     fileWriterBig.close();
     try {
-      DigestAlgo algo = DigestAlgo.MD5;
-      long start = System.currentTimeMillis();
+      final DigestAlgo algo = DigestAlgo.MD5;
+      final long start = System.currentTimeMillis();
       byte[] bmd5 = null;
       for (int i = 0; i < 1000; i++) {
         FilesystemBasedDigest.setUseFastMd5(false);
         byte[] bmd51 = FilesystemBasedDigest.getHashMd5Nio(file);
         bmd5 = bmd51;
         byte[] bmd52 = FilesystemBasedDigest.getHashMd5(file);
-
 
         assertTrue(algo + " Hex Not Equals",
                    FilesystemBasedDigest.digestEquals(bmd51, bmd52));
@@ -201,11 +198,11 @@ public class FilesystemBasedDigestTest {
         assertTrue(algo + " Hex Not Equals",
                    FilesystemBasedDigest.digestEquals(bmd5, bmd52));
       }
-      long end = System.currentTimeMillis();
+      final long end = System.currentTimeMillis();
       System.out.println(
           "Algo: " + algo + " KeyLength: " + bmd5.length + " Time: " +
           (end - start));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       fail(e.getMessage());
     } finally {
       file.delete();

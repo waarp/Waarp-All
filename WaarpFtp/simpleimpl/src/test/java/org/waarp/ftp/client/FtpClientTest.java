@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /**
  *
@@ -49,7 +49,7 @@ import static junit.framework.TestCase.*;
  * Simple test example using predefined scenario (Note: this uses the configuration example for user shutdown
  * command)
  *
- * @author frederic
+ *
  *
  */
 public class FtpClientTest {
@@ -77,8 +77,7 @@ public class FtpClientTest {
     int numberThread = 1;
     int numberIteration = 1;
     if (args.length < 8) {
-      System.err.println("Usage: " + FtpClientTest.class.getSimpleName()
-                         +
+      System.err.println("Usage: " + FtpClientTest.class.getSimpleName() +
                          " server port user pwd acct localfilename nbThread nbIter");
       DetectionUtils.SystemExit(1);
       return;
@@ -109,19 +108,18 @@ public class FtpClientTest {
     if (args.length > 11) {
       shutdown = Integer.parseInt(args[11]) > 0;
     }
-    FtpClientTest ftpClient = new FtpClientTest();
+    final FtpClientTest ftpClient = new FtpClientTest();
     ftpClient.testFtp4J(server, port, username, passwd, account, isSSL,
-                        localFilename, type, delay, shutdown,
-                        numberThread, numberIteration);
+                        localFilename, type, delay, shutdown, numberThread,
+                        numberIteration);
   }
 
   public void testFtp4J(String server, int port, String username, String passwd,
-                        String account, int isSSL,
-                        String localFilename, int type, int delay,
-                        boolean shutdown, int numberThread,
+                        String account, int isSSL, String localFilename,
+                        int type, int delay, boolean shutdown, int numberThread,
                         int numberIteration) {
     // initiate Directories
-    Ftp4JClientTransactionTest client =
+    final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest(server, port, username, passwd, account,
                                        isSSL);
 
@@ -149,26 +147,26 @@ public class FtpClientTest {
     if (isSSL > 0) {
       try {
         Thread.sleep(100);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
       }
     }
-    ExecutorService executorService = Executors.newCachedThreadPool();
+    final ExecutorService executorService = Executors.newCachedThreadPool();
     logger.warn("Will start {} Threads", numberThread);
-    long date1 = System.currentTimeMillis();
+    final long date1 = System.currentTimeMillis();
     for (int i = 0; i < numberThread; i++) {
       executorService.execute(
           new FtpClientThread("T" + i, server, port, username, passwd, account,
-                              localFilename,
-                              numberIteration, type, delay, isSSL));
+                              localFilename, numberIteration, type, delay,
+                              isSSL));
       if (delay > 0) {
         try {
-          long newdel = ((delay / 3) / 10) * 10;
+          final long newdel = ((delay / 3) / 10) * 10;
           if (newdel == 0) {
             Thread.yield();
           } else {
             Thread.sleep(newdel);
           }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
         }
       } else {
         Thread.yield();
@@ -176,7 +174,7 @@ public class FtpClientTest {
     }
     try {
       Thread.sleep(100);
-    } catch (InterruptedException e1) {
+    } catch (final InterruptedException e1) {
       e1.printStackTrace();
       executorService.shutdownNow();
       // Thread.currentThread().interrupt();
@@ -193,7 +191,7 @@ public class FtpClientTest {
       } else {
         date2 = System.currentTimeMillis();
       }
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
       executorService.shutdownNow();
@@ -203,10 +201,9 @@ public class FtpClientTest {
 
     logger.warn(
         localFilename + " " + numberThread + " " + numberIteration + " " +
-        type + " Real: "
-        + (date2 - date1) + " OK: " + numberOK.get() + " KO: " +
-        numberKO.get() + " Trf/s: "
-        + numberOK.get() * 1000 / (date2 - date1));
+        type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
+        " KO: " + numberKO.get() + " Trf/s: " +
+        numberOK.get() * 1000 / (date2 - date1));
     assertTrue("No KO", numberKO.get() == 0);
   }
 
@@ -216,8 +213,8 @@ public class FtpClientTest {
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
 
     FtpServer.startFtpServer("config.xml");
-    File localFilename = new File("/tmp/ftpfile.bin");
-    FileWriter fileWriterBig = new FileWriter(localFilename);
+    final File localFilename = new File("/tmp/ftpfile.bin");
+    final FileWriter fileWriterBig = new FileWriter(localFilename);
     for (int i = 0; i < 100; i++) {
       fileWriterBig.write("0123456789");
     }
@@ -231,9 +228,9 @@ public class FtpClientTest {
     logger.warn("Will shutdown from client");
     try {
       Thread.sleep(500);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
     }
-    Ftp4JClientTransactionTest client =
+    final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest("127.0.0.1", 2021, "fredo", "fred1", "a",
                                        0);
     if (!client.connect()) {
@@ -242,9 +239,10 @@ public class FtpClientTest {
       return;
     }
     try {
-      String[] results = client.executeSiteCommand("internalshutdown abcdef");
+      final String[] results =
+          client.executeSiteCommand("internalshutdown abcdef");
       System.err.print("SHUTDOWN: ");
-      for (String string : results) {
+      for (final String string : results) {
         System.err.println(string);
       }
     } finally {
@@ -254,7 +252,7 @@ public class FtpClientTest {
     FtpServer.stopFtpServer();
     try {
       Thread.sleep(1000);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
     }
   }
 
@@ -262,7 +260,7 @@ public class FtpClientTest {
   public void testFtp4JSimple() throws IOException {
     numberKO.set(0);
     numberOK.set(0);
-    File localFilename = new File("/tmp/ftpfile.bin");
+    final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", 2021, "fred", "fred2", "a", 0,
               localFilename.getAbsolutePath(), 0, 50, true, 1, 1);
   }

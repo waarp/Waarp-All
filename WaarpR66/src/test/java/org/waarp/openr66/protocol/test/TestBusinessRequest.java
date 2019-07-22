@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import org.waarp.common.logging.WaarpLogLevel;
@@ -39,7 +39,7 @@ import java.util.concurrent.Executors;
 /**
  * Test class for internal Business test
  *
- * @author Frederic Bregier
+ *
  */
 public class TestBusinessRequest extends AbstractBusinessRequest {
   /**
@@ -55,26 +55,24 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
   }
 
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        WaarpLogLevel.WARN));
+    WaarpLoggerFactory
+        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestBusinessRequest.class);
     }
     if (args.length < 1) {
-      logger
-          .error("Needs at least the configuration file as first argument");
+      logger.error("Needs at least the configuration file as first argument");
       return;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger
-          .error("Needs a correct configuration file as first argument");
+      logger.error("Needs a correct configuration file as first argument");
       return;
     }
     Configuration.configuration.pipelineInit();
 
-    NetworkTransaction networkTransaction = new NetworkTransaction();
-    DbHostAuth host = Configuration.configuration.getHOST_AUTH();
+    final NetworkTransaction networkTransaction = new NetworkTransaction();
+    final DbHostAuth host = Configuration.configuration.getHOST_AUTH();
     runTest(networkTransaction, host, 1);
     networkTransaction.closeAll();
   }
@@ -84,26 +82,26 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestBusinessRequest.class);
     }
-    ExecutorService executorService = Executors.newCachedThreadPool();
-    int nb = nbToDo;
+    final ExecutorService executorService = Executors.newCachedThreadPool();
+    final int nb = nbToDo;
 
-    R66Future[] arrayFuture = new R66Future[nb];
+    final R66Future[] arrayFuture = new R66Future[nb];
     logger.info("Start Test of Transaction");
     long time1 = System.currentTimeMillis();
     for (int i = 0; i < nb; i++) {
       arrayFuture[i] = new R66Future(true);
-      BusinessRequestPacket packet = new BusinessRequestPacket(
+      final BusinessRequestPacket packet = new BusinessRequestPacket(
           TestExecJavaTask.class.getName() +
           " business 0 simple business request", 0);
-      TestBusinessRequest transaction = new TestBusinessRequest(
-          networkTransaction, arrayFuture[i], host.getHostid(),
-          packet);
+      final TestBusinessRequest transaction =
+          new TestBusinessRequest(networkTransaction, arrayFuture[i],
+                                  host.getHostid(), packet);
       executorService.execute(transaction);
     }
     int success = 0;
     int error = 0;
     for (int i = 0; i < nb; i++) {
-      arrayFuture[i].awaitUninterruptibly();
+      arrayFuture[i].awaitOrInterruptible();
       if (arrayFuture[i].isSuccess()) {
         success++;
       } else {
@@ -113,68 +111,67 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     long time2 = System.currentTimeMillis();
     logger.warn(
         "Simple TestExecJavaTask Success: " + success + " Error: " + error +
-        " NB/s: " +
-        success * 100 * 1000 / (time2 - time1));
+        " NB/s: " + success * 100 * 1000 / (time2 - time1));
     R66Future future = new R66Future(true);
     classname = BusinessRequest.DEFAULT_CLASS;
     BusinessRequestPacket packet =
         new BusinessRequestPacket(classname + " LOG warn some information 1",
                                   0);
-    BusinessRequest transaction = new BusinessRequest(
-        networkTransaction, future, host.getHostid(), packet);
+    BusinessRequest transaction =
+        new BusinessRequest(networkTransaction, future, host.getHostid(),
+                            packet);
     transaction.run();
-    future.awaitUninterruptibly();
+    future.awaitOrInterruptible();
     if (future.isSuccess()) {
       success++;
     } else {
       error++;
     }
-    long time3 = System.currentTimeMillis();
+    final long time3 = System.currentTimeMillis();
     logger.warn(
         "Simple DefaultClass LOG Success: " + success + " Error: " + error +
-        " NB/s: " +
-        1000 / (time3 - time2));
+        " NB/s: " + 1000 / (time3 - time2));
 
     future = new R66Future(true);
     classname = BusinessRequest.DEFAULT_CLASS;
-    packet =
-        new BusinessRequestPacket(
-            classname + " EXECJAVA " + TestExecJavaTask.class.getName()
-            + " business 0 execjava business request 0", 0);
-    transaction = new BusinessRequest(
-        networkTransaction, future, host.getHostid(), packet);
+    packet = new BusinessRequestPacket(
+        classname + " EXECJAVA " + TestExecJavaTask.class.getName() +
+        " business 0 execjava business request 0", 0);
+    transaction =
+        new BusinessRequest(networkTransaction, future, host.getHostid(),
+                            packet);
     transaction.run();
-    future.awaitUninterruptibly();
+    future.awaitOrInterruptible();
     if (future.isSuccess()) {
       success++;
     } else {
       error++;
     }
-    long time4 = System.currentTimeMillis();
+    final long time4 = System.currentTimeMillis();
     logger.warn(
         "Simple ExecJava Success: " + success + " Error: " + error + " NB/s: " +
         1000 / (time4 - time3));
 
     logger.info("Start Test of Increasing Transaction");
     time1 = System.currentTimeMillis();
-    String argsAdd =
+    final String argsAdd =
         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
     String value = " business 0 ";
     int lastnb = nb;
     for (int i = 0; i < nb; i++) {
       arrayFuture[i] = new R66Future(true);
       try {
-        value += argsAdd + argsAdd + argsAdd + argsAdd + argsAdd +
-                 argsAdd + argsAdd + argsAdd + argsAdd
-                 + argsAdd;
-      } catch (OutOfMemoryError e) {
+        value += argsAdd + argsAdd + argsAdd + argsAdd + argsAdd + argsAdd +
+                 argsAdd + argsAdd + argsAdd + argsAdd;
+      } catch (final OutOfMemoryError e) {
         logger.warn("Send size: " + value.length());
         lastnb = i;
         break;
       }
-      packet = new BusinessRequestPacket(
-          TestExecJavaTask.class.getName() + value, 0);
-      TestBusinessRequest transaction2 =
+      packet =
+          new BusinessRequestPacket(TestExecJavaTask.class.getName() + value,
+                                    0);
+      final TestBusinessRequest transaction2 =
           new TestBusinessRequest(networkTransaction, arrayFuture[i],
                                   host.getHostid(), packet);
       executorService.execute(transaction2);
@@ -182,7 +179,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     int success2 = 0;
     int error2 = 0;
     for (int i = 0; i < lastnb; i++) {
-      arrayFuture[i].awaitForDoneOrInterruptible();
+      arrayFuture[i].awaitOrInterruptible();
       if (arrayFuture[i].isSuccess()) {
         success2++;
       } else {
@@ -192,8 +189,8 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     time2 = System.currentTimeMillis();
     logger.warn(
         "Simple TestExecJavaTask with increasing argument size Success: " +
-        success2 + " Error: " + error2
-        + " NB/s: " + success2 * nb * 1000 / (time2 - time1));
+        success2 + " Error: " + error2 + " NB/s: " +
+        success2 * nb * 1000 / (time2 - time1));
     executorService.shutdown();
     return error + error2;
   }

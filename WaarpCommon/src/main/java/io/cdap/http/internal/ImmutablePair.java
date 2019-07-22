@@ -1,4 +1,24 @@
 /*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * Copyright © 2017-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -19,10 +39,14 @@ package io.cdap.http.internal;
 import java.util.Arrays;
 
 /**
- * An {@link ImmutablePair} consists of two elements within. The elements once set in the ImmutablePair cannot
- * be modified. The class itself is final, so that it cannot be subclassed. This is general norm for creating
- * Immutable classes. Please note that the {@link ImmutablePair} cannot be modified once set, but the objects
- * within them can be, so in general it means that if there are mutable objects within the pair then the pair
+ * An {@link ImmutablePair} consists of two elements within. The elements once
+ * set in the ImmutablePair cannot
+ * be modified. The class itself is final, so that it cannot be subclassed. This
+ * is general norm for creating
+ * Immutable classes. Please note that the {@link ImmutablePair} cannot be
+ * modified once set, but the objects
+ * within them can be, so in general it means that if there are mutable objects
+ * within the pair then the pair
  * itself is effectively mutable.
  *
  * <pre>
@@ -39,100 +63,102 @@ import java.util.Arrays;
  * @param <B> type B
  */
 final class ImmutablePair<A, B> {
-    private final A first;
-    private final B second;
+  private final A first;
+  private final B second;
 
-    public static <A, B> ImmutablePair<A, B> of(A first, B second) {
-        return new ImmutablePair<A, B>(first, second);
-    }
+  public static <A, B> ImmutablePair<A, B> of(A first, B second) {
+    return new ImmutablePair<A, B>(first, second);
+  }
 
-    /**
-     * Constructs a Immutable Pair.
-     * 
-     * @param first  object in pair
-     * @param second object in pair
-     */
-    private ImmutablePair(A first, B second) {
-        this.first = first;
-        this.second = second;
-    }
+  /**
+   * Constructs a Immutable Pair.
+   *
+   * @param first object in pair
+   * @param second object in pair
+   */
+  private ImmutablePair(A first, B second) {
+    this.first = first;
+    this.second = second;
+  }
 
-    /**
-     * Returns first object from pair.
-     * 
-     * @return first object from pair.
-     */
-    public A getFirst() {
-        return first;
-    }
+  /**
+   * Returns first object from pair.
+   *
+   * @return first object from pair.
+   */
+  public A getFirst() {
+    return first;
+  }
 
-    /**
-     * Return second object from pair.
-     * 
-     * @return second object from pair.
-     */
-    public B getSecond() {
-        return second;
-    }
+  /**
+   * Return second object from pair.
+   *
+   * @return second object from pair.
+   */
+  public B getSecond() {
+    return second;
+  }
 
-    /**
-     * Returns a string representation of {@link ImmutablePair} object.
-     * 
-     * @return string representation of this object.
-     */
-    @Override
-    public String toString() {
-        return "ImmutablePair{" + "first=" + first + ", second=" + second + '}';
-    }
+  /**
+   * Returns a string representation of {@link ImmutablePair} object.
+   *
+   * @return string representation of this object.
+   */
+  @Override
+  public String toString() {
+    return "ImmutablePair{" + "first=" + first + ", second=" + second + '}';
+  }
 
-    /**
-     * Returns a hash code value for this object.
-     * 
-     * @return hash code value of this object.
-     */
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(new Object[] { first, second });
-    }
+  /**
+   * Returns a hash code value for this object.
+   *
+   * @return hash code value of this object.
+   */
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(new Object[] { first, second });
+  }
 
-    /**
-     * Helper method that replaces Objects.equals(first, second)
-     * 
-     * @param first
-     * @param otherFirst
-     * @return True if equals
-     */
-    private boolean equals(Object first, Object otherFirst) {
-        boolean fst;
-        if (first == null) {
-            if (otherFirst == null) {
-                fst = true;
-            } else {
-                return false;
-            }
-        } else if (otherFirst == null) {
-            return false;
-        } else {
-            fst = first.equals(otherFirst);
-        }
-        return fst;
+  /**
+   * Helper method that replaces Objects.equals(first, second)
+   *
+   * @param first
+   * @param otherFirst
+   *
+   * @return True if equals
+   */
+  private boolean equals(Object first, Object otherFirst) {
+    boolean fst;
+    if (first == null) {
+      if (otherFirst == null) {
+        fst = true;
+      } else {
+        return false;
+      }
+    } else if (otherFirst == null) {
+      return false;
+    } else {
+      fst = first.equals(otherFirst);
     }
+    return fst;
+  }
 
-    /**
-     * Returns whether some other object "is equal" to this object.
-     * 
-     * @param o reference object with which to compare
-     * @return true if object is the same as the obj argument; false otherwise.
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (!(o instanceof ImmutablePair)) {
-            return false;
-        }
-        ImmutablePair<?, ?> other = (ImmutablePair<?, ?>) o;
-        return equals(first, other.first) && equals(second, other.second);
+  /**
+   * Returns whether some other object "is equal" to this object.
+   *
+   * @param o reference object with which to compare
+   *
+   * @return true if object is the same as the obj argument; false otherwise.
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (o == null) {
+      return false;
     }
+    if (!(o instanceof ImmutablePair)) {
+      return false;
+    }
+    final ImmutablePair<?, ?> other = (ImmutablePair<?, ?>) o;
+    return equals(first, other.first) && equals(second, other.second);
+  }
 }

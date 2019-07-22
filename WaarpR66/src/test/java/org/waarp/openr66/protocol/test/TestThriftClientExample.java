@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import org.apache.thrift.TException;
@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * Example of Java class to interact with the Thrift R66 service
  *
- * @author "Frederic Bregier"
+ *
  */
 public class TestThriftClientExample {
   private static final int PORT = 4266;
@@ -46,8 +46,8 @@ public class TestThriftClientExample {
     TTransport transport = null;
     try {
       transport = new TSocket("localhost", PORT);
-      TProtocol protocol = new TBinaryProtocol(transport);
-      R66Service.Client client = new R66Service.Client(protocol);
+      final TProtocol protocol = new TBinaryProtocol(transport);
+      final R66Service.Client client = new R66Service.Client(protocol);
       transport.open();
       R66Request request = new R66Request(RequestMode.INFOFILE);
       request.setDestuid("hostas");
@@ -58,55 +58,50 @@ public class TestThriftClientExample {
       System.out.println("REQUEST1: " + request.toString());
       List<String> list = client.infoListQuery(request);
       System.out.println("RESULT1: " + list.size());
-      for (String slist : list) {
+      for (final String slist : list) {
         System.out.println(slist);
       }
 
-      long start = System.currentTimeMillis();
+      final long start = System.currentTimeMillis();
       for (int i = 0; i < tries; i++) {
         list = client.infoListQuery(request);
       }
-      long end = System.currentTimeMillis();
-      System.out
-          .println("Delay: " + (end - start) + " : " +
-                   ((tries * 1000) / (end - start)));
+      final long end = System.currentTimeMillis();
+      System.out.println(
+          "Delay: " + (end - start) + " : " + ((tries * 1000) / (end - start)));
 
-      long startEx = System.currentTimeMillis();
+      final long startEx = System.currentTimeMillis();
       boolean dontknow = false;
       for (int i = 0; i < tries; i++) {
         dontknow = client.isStillRunning("tests", "hostas", 1346080633424L);
       }
-      long endEx = System.currentTimeMillis();
+      final long endEx = System.currentTimeMillis();
       System.out.println("StillRunning: " + dontknow);
-      System.out
-          .println("Delay: " + (endEx - startEx) + " : " +
-                   ((tries * 1000) / (endEx - startEx)));
+      System.out.println("Delay: " + (endEx - startEx) + " : " +
+                         ((tries * 1000) / (endEx - startEx)));
 
       request.setMode(RequestMode.INFOREQUEST);
       request.setTid(1346080633424L);
       request.setAction(Action.Detail);
       R66Result result = client.infoTransferQuery(request);
       System.out.println("RESULT2: " + result.toString());
-      long startQu = System.currentTimeMillis();
+      final long startQu = System.currentTimeMillis();
       for (int i = 0; i < tries; i++) {
         result = client.infoTransferQuery(request);
       }
-      long endQu = System.currentTimeMillis();
-      System.out
-          .println("Delay: " + (endQu - startQu) + " : " +
-                   ((tries * 1000) / (endQu - startQu)));
+      final long endQu = System.currentTimeMillis();
+      System.out.println("Delay: " + (endQu - startQu) + " : " +
+                         ((tries * 1000) / (endQu - startQu)));
 
-      System.out.println("Exist: "
-                         +
-                         client.isStillRunning(request.getFromuid(),
-                                               request.getDestuid(),
-                                               request.getTid()));
+      System.out.println("Exist: " + client
+          .isStillRunning(request.getFromuid(), request.getDestuid(),
+                          request.getTid()));
 
       request.setMode(RequestMode.INFOFILE);
       request.setAction(Action.Mlsx);
       list = client.infoListQuery(request);
       System.out.println("RESULT3: " + list.size());
-      for (String slist : list) {
+      for (final String slist : list) {
         System.out.println(slist);
       }
 
@@ -132,13 +127,13 @@ public class TestThriftClientExample {
       System.out.println("WRONG REQUEST: " + request.toString());
       list = client.infoListQuery(request);
       System.out.println("RESULT of Wrong Request: " + list.size());
-      for (String slist : list) {
+      for (final String slist : list) {
         System.out.println(slist);
       }
 
-    } catch (TTransportException e) {
+    } catch (final TTransportException e) {
       e.printStackTrace();
-    } catch (TException e) {
+    } catch (final TException e) {
       e.printStackTrace();
     }
     transport.close();

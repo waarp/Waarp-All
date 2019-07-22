@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.commandexec.ssl.client.test;
 
 import io.netty.bootstrap.Bootstrap;
@@ -62,13 +62,16 @@ import static org.junit.Assert.*;
  * This class is an example of client.
  * <p>
  * No client authentication On a bi-core Centrino2 vPro: 5/s in 50 sequential,
- * 29/s in 10 threads with 50 sequential<br>
+ * 29/s in 10 threads with 50
+ * sequential<br>
  * With client authentication On a bi-core Centrino2 vPro: 3/s in 50 sequential,
  * 27/s in 10 threads with 50
- * sequential<br> No client authentication On a quad-core i7: 20/s in 50
- * sequential, 178/s in 10 threads with 50
- * sequential<br> With client authentication On a quad-core i7: 17/s in 50
- * sequential, 176/s in 10 threads with 50
+ * sequential<br>
+ * No client authentication On a quad-core i7: 20/s in 50 sequential, 178/s in
+ * 10 threads with 50
+ * sequential<br>
+ * With client authentication On a quad-core i7: 17/s in 50 sequential, 176/s in
+ * 10 threads with 50
  * sequential<br>
  */
 public class LocalExecSslClientTest extends Thread {
@@ -78,8 +81,8 @@ public class LocalExecSslClientTest extends Thread {
   static int port = 9999;
   static InetSocketAddress address;
   static LocalExecResult result;
-  static int ok = 0;
-  static int ko = 0;
+  static int ok;
+  static int ko;
   static AtomicInteger atomicInteger = new AtomicInteger();
   static EventLoopGroup workerGroup = new NioEventLoopGroup();
   static EventExecutorGroup executor =
@@ -103,14 +106,14 @@ public class LocalExecSslClientTest extends Thread {
 
   @Test
   public void testSslClient() throws Exception {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        WaarpLogLevel.WARN));
+    WaarpLoggerFactory
+        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     DetectionUtils.setJunit(true);
     InetAddress addr;
-    byte[] loop = { 127, 0, 0, 1 };
+    final byte[] loop = { 127, 0, 0, 1 };
     try {
       addr = InetAddress.getByAddress(loop);
-    } catch (UnknownHostException e) {
+    } catch (final UnknownHostException e) {
       return;
     }
     address = new InetSocketAddress(addr, port);
@@ -120,50 +123,51 @@ public class LocalExecSslClientTest extends Thread {
     // Configure the pipeline factory.
     // First create the SSL part
     // Load the KeyStore (No certificates)
-    ClassLoader classLoader = LocalExecSslClientTest.class.getClassLoader();
-    String keyStoreFilename = "certs/testsslnocert.jks";
-    URL url = classLoader.getResource(keyStoreFilename);
+    final ClassLoader classLoader =
+        LocalExecSslClientTest.class.getClassLoader();
+    final String keyStoreFilename = "certs/testsslnocert.jks";
+    final URL url = classLoader.getResource(keyStoreFilename);
     assertNotNull(url);
-    File file = new File(url.getFile());
+    final File file = new File(url.getFile());
     assertTrue("File Should exists", file.exists());
-    String keyStorePasswd = "testsslnocert";
-    String keyPassword = "testalias";
-    WaarpSecureKeyStore waarpSecureKeyStore =
+    final String keyStorePasswd = "testsslnocert";
+    final String keyPassword = "testalias";
+    final WaarpSecureKeyStore waarpSecureKeyStore =
         new WaarpSecureKeyStore(file.getAbsolutePath(), keyStorePasswd,
                                 keyPassword);
-    WaarpSecureKeyStore waarpSecureKeyStoreClient =
+    final WaarpSecureKeyStore waarpSecureKeyStoreClient =
         new WaarpSecureKeyStore(file.getAbsolutePath(), keyStorePasswd,
                                 keyPassword);
     // Include certificates
-    String trustStoreFilename = "certs/testcert.jks";
-    File file2 =
+    final String trustStoreFilename = "certs/testcert.jks";
+    final File file2 =
         new File(classLoader.getResource(trustStoreFilename).getFile());
     assertTrue("File2 Should exists", file2.exists());
-    String trustStorePasswd = "testcert";
+    final String trustStorePasswd = "testcert";
     waarpSecureKeyStore
         .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, true);
 
     // configure the server
-    ServerBootstrap bootstrapServer = new ServerBootstrap();
+    final ServerBootstrap bootstrapServer = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(bootstrapServer, workerGroup, 1000);
 
     // Configure the pipeline factory.
-    WaarpSslContextFactory waarpSslContextFactoryServer =
+    final WaarpSslContextFactory waarpSslContextFactoryServer =
         new WaarpSslContextFactory(waarpSecureKeyStore, true);
-    LocalExecSslServerInitializer localExecServerInitializer =
-        new LocalExecSslServerInitializer(
-            waarpSslContextFactoryServer,
-            LocalExecDefaultResult.MAXWAITPROCESS, executor);
+    final LocalExecSslServerInitializer localExecServerInitializer =
+        new LocalExecSslServerInitializer(waarpSslContextFactoryServer,
+                                          LocalExecDefaultResult.MAXWAITPROCESS,
+                                          executor);
     bootstrapServer.childHandler(localExecServerInitializer);
 
     // Bind and start to accept incoming connections only on local address.
-    ChannelFuture future =
+    final ChannelFuture future =
         bootstrapServer.bind(new InetSocketAddress(addr, port));
 
     // Finalize client configuration
     waarpSecureKeyStoreClient
         .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, false);
-    WaarpSslContextFactory waarpSslContextFactoryClient =
+    final WaarpSslContextFactory waarpSslContextFactoryClient =
         new WaarpSslContextFactory(waarpSecureKeyStoreClient);
 
     localExecClientInitializer =
@@ -175,7 +179,7 @@ public class LocalExecSslClientTest extends Thread {
 
     try {
       // Parse options.
-      LocalExecSslClientTest client = new LocalExecSslClientTest();
+      final LocalExecSslClientTest client = new LocalExecSslClientTest();
       // run once
       long first = System.currentTimeMillis();
       if (client.connect()) {
@@ -185,8 +189,7 @@ public class LocalExecSslClientTest extends Thread {
       long second = System.currentTimeMillis();
       // print time for one exec
       System.err.println("1=Total time in ms: " + (second - first) + " or " +
-                         (1 * 1000 / (second - first))
-                         + " exec/s");
+                         1 * 1000 / (second - first) + " exec/s");
       System.err.println("Result: " + ok + ":" + ko);
       ok = 0;
       ko = 0;
@@ -201,15 +204,16 @@ public class LocalExecSslClientTest extends Thread {
       }
       second = System.currentTimeMillis();
       // print time for one exec
-      System.err.println(nit + "=Total time in ms: " + (second - first) + " or "
-                         + (nit * 1000 / (second - first)) + " exec/s");
+      System.err.println(
+          nit + "=Total time in ms: " + (second - first) + " or " +
+          nit * 1000 / (second - first) + " exec/s");
       System.err.println("Result: " + ok + ":" + ko);
       ok = 0;
       ko = 0;
 
       // Now run multiple within multiple threads
       // Create multiple threads
-      ExecutorService executorService = Executors.newFixedThreadPool(nth);
+      final ExecutorService executorService = Executors.newFixedThreadPool(nth);
       first = System.currentTimeMillis();
       // Starts all thread with a default number of execution
       for (int i = 0; i < nth; i++) {
@@ -224,8 +228,8 @@ public class LocalExecSslClientTest extends Thread {
 
       // print time for one exec
       System.err.println(
-          (nit * nth) + "=Total time in ms: " + (second - first) + " or "
-          + (nit * nth * 1000 / (second - first)) + " exec/s");
+          nit * nth + "=Total time in ms: " + (second - first) + " or " +
+          nit * nth * 1000 / (second - first) + " exec/s");
       System.err.println("Result: " + ok + ":" + ko);
       ok = 0;
       ko = 0;
@@ -239,8 +243,7 @@ public class LocalExecSslClientTest extends Thread {
       second = System.currentTimeMillis();
       // print time for one exec
       System.err.println("1=Total time in ms: " + (second - first) + " or " +
-                         (1 * 1000 / (second - first))
-                         + " exec/s");
+                         1 * 1000 / (second - first) + " exec/s");
       System.err.println("Result: " + ok + ":" + ko);
       assertEquals(0, ko);
       ok = 0;
@@ -262,7 +265,7 @@ public class LocalExecSslClientTest extends Thread {
    */
   private boolean connect() {
     // Start the connection attempt.
-    ChannelFuture future = bootstrap.connect(address);
+    final ChannelFuture future = bootstrap.connect(address);
 
     // Wait until the connection attempt succeeds or fails.
     channel = WaarpSslUtility.waitforChannelReady(future);
@@ -282,17 +285,17 @@ public class LocalExecSslClientTest extends Thread {
    */
   private void runOnce() {
     // Initialize the command context
-    LocalExecSslClientHandler clientHandler =
+    final LocalExecSslClientHandler clientHandler =
         (LocalExecSslClientHandler) channel.pipeline().last();
     // Command to execute
-    String line = command + " " + atomicInteger.incrementAndGet();
+    final String line = command + " " + atomicInteger.incrementAndGet();
     clientHandler.initExecClient(0, line);
     // Wait for the end of the exec command
-    LocalExecResult localExecResult = clientHandler.waitFor(10000);
-    int status = localExecResult.getStatus();
+    final LocalExecResult localExecResult = clientHandler.waitFor(10000);
+    final int status = localExecResult.getStatus();
     if (status < 0) {
-      System.err.println("Status: " + status + "\nResult: " +
-                         localExecResult.getResult());
+      System.err.println(
+          "Status: " + status + "\nResult: " + localExecResult.getResult());
       ko++;
     } else {
       ok++;
@@ -313,16 +316,16 @@ public class LocalExecSslClientTest extends Thread {
    */
   private void runFinal() {
     // Initialize the command context
-    LocalExecSslClientHandler clientHandler =
+    final LocalExecSslClientHandler clientHandler =
         (LocalExecSslClientHandler) channel.pipeline().last();
     // Command to execute
     clientHandler.initExecClient(-1000, "stop");
     // Wait for the end of the exec command
-    LocalExecResult localExecResult = clientHandler.waitFor(10000);
-    int status = localExecResult.getStatus();
+    final LocalExecResult localExecResult = clientHandler.waitFor(10000);
+    final int status = localExecResult.getStatus();
     if (status < 0) {
-      System.err.println("Status: " + status + "\nResult: " +
-                         localExecResult.getResult());
+      System.err.println(
+          "Status: " + status + "\nResult: " + localExecResult.getResult());
       ok++;
     } else {
       ok++;
@@ -333,10 +336,11 @@ public class LocalExecSslClientTest extends Thread {
   /**
    * Run method for thread
    */
+  @Override
   public void run() {
     if (connect()) {
       for (int i = 0; i < nit; i++) {
-        this.runOnce();
+        runOnce();
       }
       disconnect();
     }

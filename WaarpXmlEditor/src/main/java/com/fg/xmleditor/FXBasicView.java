@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /*
  * Copyright (c) 2002 Felix Golubov
@@ -78,8 +78,11 @@ import java.util.Vector;
 // FXModelStatusListener, FXModel, FXDocumentModelImpl, FXStatusEvent,
 // FXViewStatusListener, XSRef, NSQualifiersDialog, SearchDialog
 
-public class FXBasicView extends JComponent
-    implements FXModelStatusListener {
+public class FXBasicView extends JComponent implements FXModelStatusListener {
+  /**
+   *
+   */
+  private static final long serialVersionUID = 4353436426114132650L;
   FXModel model;
   FTree tree;
   JTextField mouseInfo;
@@ -125,24 +128,24 @@ public class FXBasicView extends JComponent
     mNS = new JMenuItem("Edit NS Qualifiers");
     searchDialog = null;
     setLayout(new BorderLayout());
-    JSplitPane mainSplitPane = new JSplitPane(0);
+    final JSplitPane mainSplitPane = new JSplitPane(0);
     mainSplitPane.setResizeWeight(0.80000000000000004D);
     mainSplitPane.setDividerSize(8);
     mainSplitPane.setDoubleBuffered(false);
     add(mainSplitPane, "Center");
-    JScrollPane sp = new JScrollPane();
+    final JScrollPane sp = new JScrollPane();
     tree = new GgFTree();
     setFXModel(model);
-    Insets insets = tree.getInsets();
+    final Insets insets = tree.getInsets();
     insets.top = 20;
     tree.setInsets(insets);
     sp.getViewport().add(tree, null);
     mainSplitPane.add(sp, "left");
-    JPanel infoPanel = new JPanel(new BorderLayout());
-    JSplitPane infoSplitPane = new JSplitPane(1);
+    final JPanel infoPanel = new JPanel(new BorderLayout());
+    final JSplitPane infoSplitPane = new JSplitPane(1);
     infoSplitPane.setResizeWeight(0.5D);
     infoSplitPane.setDividerSize(8);
-    JScrollPane nodesInfoAreaSP = new JScrollPane();
+    final JScrollPane nodesInfoAreaSP = new JScrollPane();
     nodesInfoAreaSP.setHorizontalScrollBarPolicy(31);
     nodesInfoArea = new JTextArea();
     nodesInfoArea.setLineWrap(true);
@@ -150,7 +153,7 @@ public class FXBasicView extends JComponent
     nodesInfoArea.setEditable(false);
     nodesInfoAreaSP.getViewport().add(nodesInfoArea, null);
     infoSplitPane.add(nodesInfoAreaSP, "left");
-    JScrollPane errorInfoAreaSP = new JScrollPane();
+    final JScrollPane errorInfoAreaSP = new JScrollPane();
     errorInfoAreaSP.setHorizontalScrollBarPolicy(31);
     errorInfoArea = new JTextArea();
     errorInfoArea.setLineWrap(true);
@@ -192,10 +195,11 @@ public class FXBasicView extends JComponent
   }
 
   static boolean hasValue(FToggleNode node) {
-    XSRef ref = (XSRef) node.getAssociate();
+    final XSRef ref = (XSRef) node.getAssociate();
     return ref.hasValue();
   }
 
+  @Override
   public void newDocumentLoaded(FXStatusEvent e) {
     if (e.getStatus()) {
       tree.setNodeExpanded(model.getRoot(), true);
@@ -216,9 +220,10 @@ public class FXBasicView extends JComponent
       return;
     }
     _insert = insert;
-    FXStatusEvent e = new FXStatusEvent(this, _insert);
+    final FXStatusEvent e = new FXStatusEvent(this, _insert);
     for (int i = 0; i < viewListeners.size(); i++) {
-      FXViewStatusListener fxl = (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl =
+          (FXViewStatusListener) viewListeners.get(i);
       fxl.canInsertStatusChanged(e);
     }
 
@@ -229,9 +234,10 @@ public class FXBasicView extends JComponent
       return;
     }
     _remove = remove;
-    FXStatusEvent e = new FXStatusEvent(this, _remove);
+    final FXStatusEvent e = new FXStatusEvent(this, _remove);
     for (int i = 0; i < viewListeners.size(); i++) {
-      FXViewStatusListener fxl = (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl =
+          (FXViewStatusListener) viewListeners.get(i);
       fxl.canRemoveStatusChanged(e);
     }
 
@@ -242,9 +248,10 @@ public class FXBasicView extends JComponent
       return;
     }
     _moveUp = moveUp;
-    FXStatusEvent e = new FXStatusEvent(this, _moveUp);
+    final FXStatusEvent e = new FXStatusEvent(this, _moveUp);
     for (int i = 0; i < viewListeners.size(); i++) {
-      FXViewStatusListener fxl = (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl =
+          (FXViewStatusListener) viewListeners.get(i);
       fxl.canMoveUpStatusChanged(e);
     }
 
@@ -255,14 +262,16 @@ public class FXBasicView extends JComponent
       return;
     }
     _moveDown = moveDown;
-    FXStatusEvent e = new FXStatusEvent(this, _moveDown);
+    final FXStatusEvent e = new FXStatusEvent(this, _moveDown);
     for (int i = 0; i < viewListeners.size(); i++) {
-      FXViewStatusListener fxl = (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl =
+          (FXViewStatusListener) viewListeners.get(i);
       fxl.canMoveDownStatusChanged(e);
     }
 
   }
 
+  @Override
   public void docValidityStatusChanged(FXStatusEvent fxstatusevent) {
   }
 
@@ -286,6 +295,7 @@ public class FXBasicView extends JComponent
     return tree;
   }
 
+  @Override
   public void updateUI() {
     super.updateUI();
     SwingUtilities.updateComponentTreeUI(popup);
@@ -298,110 +308,109 @@ public class FXBasicView extends JComponent
     mSelect.setIcon(FLoader.getIcon(this, "SelectNode.gif"));
     mSelect.addActionListener(new ActionListener() {
 
-                                public void actionPerformed(ActionEvent e) {
-                                  FToggleNode node = innerListener.treeNode;
-                                  if (innerListener.treeNode != null) {
-                                    tree.setSelectedPath(innerListener.treeNode.getPath());
-                                  }
-                                }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (innerListener.treeNode != null) {
+          tree.setSelectedPath(innerListener.treeNode.getPath());
+        }
+      }
 
-                              }
-    );
+    });
     popup.add(mSelect);
     mUnselect.setIcon(FLoader.getIcon(this, "UnselectNode.gif"));
     mUnselect.addActionListener(new ActionListener() {
 
-                                  public void actionPerformed(ActionEvent e) {
-                                    tree.setSelectedPath(null);
-                                  }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        tree.setSelectedPath(null);
+      }
 
-                                }
-    );
+    });
     popup.add(mUnselect);
     popup.addSeparator();
     mInsBefore.setIcon(FLoader.getIcon(this, "InsNodeBefore.gif"));
     mInsBefore.addActionListener(new ActionListener() {
 
-                                   public void actionPerformed(ActionEvent e) {
-                                     insertNodeBefore();
-                                   }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        insertNodeBefore();
+      }
 
-                                 }
-    );
+    });
     popup.add(mInsBefore);
     mInsAfter.setIcon(FLoader.getIcon(this, "InsNodeAfter.gif"));
     mInsAfter.addActionListener(new ActionListener() {
 
-                                  public void actionPerformed(ActionEvent e) {
-                                    insertNodeAfter();
-                                  }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        insertNodeAfter();
+      }
 
-                                }
-    );
+    });
     popup.add(mInsAfter);
     popup.addSeparator();
     mRemove.setIcon(FLoader.getIcon(this, "RemoveNode.gif"));
     mRemove.addActionListener(new ActionListener() {
 
-                                public void actionPerformed(ActionEvent e) {
-                                  removeNode();
-                                }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        removeNode();
+      }
 
-                              }
-    );
+    });
     popup.add(mRemove);
     popup.addSeparator();
     mMoveUp.setIcon(FLoader.getIcon(this, "MoveNodeUp.gif"));
     mMoveUp.addActionListener(new ActionListener() {
 
-                                public void actionPerformed(ActionEvent e) {
-                                  moveNodeUp();
-                                }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        moveNodeUp();
+      }
 
-                              }
-    );
+    });
     popup.add(mMoveUp);
     mMoveDown.setIcon(FLoader.getIcon(this, "MoveNodeDown.gif"));
     mMoveDown.addActionListener(new ActionListener() {
 
-                                  public void actionPerformed(ActionEvent e) {
-                                    moveNodeDown();
-                                  }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        moveNodeDown();
+      }
 
-                                }
-    );
+    });
     popup.add(mMoveDown);
     popup.addSeparator();
     mNS.setIcon(FLoader.getIcon(this, "NSQualifiers.gif"));
     mNS.addActionListener(new ActionListener() {
 
-                            public void actionPerformed(ActionEvent e) {
-                              showNSQualifiersDialog();
-                            }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showNSQualifiersDialog();
+      }
 
-                          }
-    );
+    });
     popup.add(mNS);
     popup.addSeparator();
     mFindInvalid.setIcon(FLoader.getIcon(this, "FindInvalidNode.gif"));
     mFindInvalid.addActionListener(new ActionListener() {
 
-                                     public void actionPerformed(ActionEvent e) {
-                                       showInvalidNode();
-                                     }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showInvalidNode();
+      }
 
-                                   }
-    );
+    });
     popup.add(mFindInvalid);
     mFindNode.setIcon(FLoader.getIcon(this, "FindNode.gif"));
     mFindNode.addActionListener(new ActionListener() {
 
-                                  public void actionPerformed(ActionEvent e) {
-                                    showSearchDialog();
-                                  }
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showSearchDialog();
+      }
 
-                                }
-    );
+    });
     popup.add(mFindNode);
   }
 
@@ -417,6 +426,7 @@ public class FXBasicView extends JComponent
     tree.removeAllDialogs();
   }
 
+  @Override
   public void setBackground(Color color) {
     super.setBackground(color);
     if (tree != null) {
@@ -433,11 +443,11 @@ public class FXBasicView extends JComponent
 
   public void setReducedView(boolean reduced) {
     tree.setReducedView(reduced);
-    FToggleNode node = (FToggleNode) tree.getSelectedNode();
+    final FToggleNode node = (FToggleNode) tree.getSelectedNode();
     if (node == null) {
       return;
     }
-    FToggleNode parent = (FToggleNode) node.getParent();
+    final FToggleNode parent = (FToggleNode) node.getParent();
     if (parent == null) {
       return;
     } else {
@@ -447,13 +457,13 @@ public class FXBasicView extends JComponent
   }
 
   void setEditorFlags(FToggleNode parent, FToggleNode node) {
-    int count = parent.getRealChildCount();
-    XSRef ref = (XSRef) parent.getAssociate();
-    boolean b = !tree.isReducedView();
+    final int count = parent.getRealChildCount();
+    final XSRef ref = (XSRef) parent.getAssociate();
+    final boolean b = !tree.isReducedView();
     if (ref.isArray()) {
-      XSParticle particle = ref.getParticle();
-      int minOccurs = Math.max(particle.getMinOccurs(), 1);
-      int maxOccurs = particle.getMaxOccursUnbounded()? 0x7fffffff :
+      final XSParticle particle = ref.getParticle();
+      final int minOccurs = Math.max(particle.getMinOccurs(), 1);
+      final int maxOccurs = particle.getMaxOccursUnbounded()? 0x7fffffff :
           particle.getMaxOccurs();
       setInsert(b && count < maxOccurs);
       setRemove(b && count > minOccurs);
@@ -523,15 +533,15 @@ public class FXBasicView extends JComponent
     if (!canInsert()) {
       return;
     }
-    FToggleNode node = (FToggleNode) tree.getSelectedNode();
+    final FToggleNode node = (FToggleNode) tree.getSelectedNode();
     if (node == null) {
       return;
     }
-    FToggleNode parent = (FToggleNode) node.getParent();
+    final FToggleNode parent = (FToggleNode) node.getParent();
     if (parent == null) {
       return;
     }
-    int index = parent.getIndex(node);
+    final int index = parent.getIndex(node);
     if (model.insertInstance(parent, index) != null) {
       tree.setSelectedPath(node.getPath());
       setEditorFlags(parent, node);
@@ -542,15 +552,15 @@ public class FXBasicView extends JComponent
     if (!canInsert()) {
       return;
     }
-    FToggleNode node = (FToggleNode) tree.getSelectedNode();
+    final FToggleNode node = (FToggleNode) tree.getSelectedNode();
     if (node == null) {
       return;
     }
-    FToggleNode parent = (FToggleNode) node.getParent();
+    final FToggleNode parent = (FToggleNode) node.getParent();
     if (parent == null) {
       return;
     }
-    int index = parent.getIndex(node);
+    final int index = parent.getIndex(node);
     if (model.insertInstance(parent, index + 1) != null) {
       tree.setSelectedPath(node.getPath());
       setEditorFlags(parent, node);
@@ -565,11 +575,11 @@ public class FXBasicView extends JComponent
     if (node == null) {
       return;
     }
-    FToggleNode parent = (FToggleNode) node.getParent();
+    final FToggleNode parent = (FToggleNode) node.getParent();
     if (parent == null) {
       return;
     }
-    int index = model.removeInstance(node);
+    final int index = model.removeInstance(node);
     if (index < 0) {
       return;
     }
@@ -586,15 +596,15 @@ public class FXBasicView extends JComponent
     if (!canMoveUp()) {
       return;
     }
-    FToggleNode node = (FToggleNode) tree.getSelectedNode();
+    final FToggleNode node = (FToggleNode) tree.getSelectedNode();
     if (node == null) {
       return;
     }
-    FToggleNode parent = (FToggleNode) node.getParent();
+    final FToggleNode parent = (FToggleNode) node.getParent();
     if (parent == null) {
       return;
     } else {
-      int index = parent.getIndex(node);
+      final int index = parent.getIndex(node);
       parent.remove(index);
       parent.insert(node, index - 1);
       model.fireTreeModelDataChanged(true);
@@ -608,15 +618,15 @@ public class FXBasicView extends JComponent
     if (!canMoveDown()) {
       return;
     }
-    FToggleNode node = (FToggleNode) tree.getSelectedNode();
+    final FToggleNode node = (FToggleNode) tree.getSelectedNode();
     if (node == null) {
       return;
     }
-    FToggleNode parent = (FToggleNode) node.getParent();
+    final FToggleNode parent = (FToggleNode) node.getParent();
     if (parent == null) {
       return;
     } else {
-      int index = parent.getIndex(node);
+      final int index = parent.getIndex(node);
       parent.remove(index);
       parent.insert(node, index + 1);
       model.fireTreeModelDataChanged(true);
@@ -627,9 +637,9 @@ public class FXBasicView extends JComponent
   }
 
   void setDialogLocation(JDialog dlg) {
-    Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
-    Dimension size = getSize();
-    Dimension dlgSize = dlg.getSize();
+    final Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
+    final Dimension size = getSize();
+    final Dimension dlgSize = dlg.getSize();
     int x = getLocationOnScreen().x + (size.width - dlgSize.width) / 2;
     if (x < 0) {
       x = 0;
@@ -648,24 +658,24 @@ public class FXBasicView extends JComponent
   }
 
   public void showNSQualifiersDialog() {
-    Frame frame =
+    final Frame frame =
         (Frame) SwingUtilities.getAncestorOfClass(java.awt.Frame.class, this);
-    NSQualifiersDialog dlg = new NSQualifiersDialog(frame, model);
+    final NSQualifiersDialog dlg = new NSQualifiersDialog(frame, model);
     setDialogLocation(dlg);
     dlg.setVisible(true);
   }
 
   int[] createPath(FBasicNode treeNode) {
-    Vector v = new Vector();
+    final Vector v = new Vector();
     for (FBasicNode node = treeNode; node != null;
          node = (FBasicNode) node.getParent()) {
       v.add(0, node);
     }
 
-    int path[] = new int[v.size()];
+    final int path[] = new int[v.size()];
     FBasicNode parent = (FBasicNode) v.get(0);
     for (int i = 1; i < v.size(); i++) {
-      FBasicNode child = (FBasicNode) v.get(i);
+      final FBasicNode child = (FBasicNode) v.get(i);
       path[i - 1] = parent.getIndex(child);
       parent = child;
     }
@@ -675,12 +685,12 @@ public class FXBasicView extends JComponent
   }
 
   FToggleNode getInvalidNode(FToggleNode parent, int startPath[], int level) {
-    int startIndex = startPath[level];
+    final int startIndex = startPath[level];
     FToggleNode node = null;
     for (int i = startIndex; i < parent.getRealChildCount(); i++) {
-      FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
-      if (child.isToggleSelected()
-          && (!child.getChildrenValidity() || !child.getNodeValidity())) {
+      final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
+      if (child.isToggleSelected() &&
+          (!child.getChildrenValidity() || !child.getNodeValidity())) {
         if (i == startIndex && level + 1 < startPath.length) {
           node = getInvalidNode(child, startPath, level + 1);
         } else {
@@ -699,11 +709,10 @@ public class FXBasicView extends JComponent
     if (!parent.getNodeValidity()) {
       return parent;
     }
-    FToggleNode node = null;
     for (int i = 0; i < parent.getRealChildCount(); i++) {
-      FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
-      if (child.isToggleSelected()
-          && (!child.getChildrenValidity() || !child.getNodeValidity())) {
+      final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
+      if (child.isToggleSelected() &&
+          (!child.getChildrenValidity() || !child.getNodeValidity())) {
         return getInvalidNode(child);
       }
     }
@@ -716,13 +725,13 @@ public class FXBasicView extends JComponent
       return;
     }
     FToggleNode node = null;
-    FToggleNode rootNode = (FToggleNode) tree.getRoot();
+    final FToggleNode rootNode = (FToggleNode) tree.getRoot();
     FToggleNode startNode = (FToggleNode) tree.getSelectedNode();
     if (startNode != null) {
       startNode = (FToggleNode) startNode.getSubstituteNode();
     }
     if (startNode != null) {
-      int startPath[] = createPath(startNode);
+      final int startPath[] = createPath(startNode);
       node = getInvalidNode(rootNode, startPath, 0);
     }
     if (node == null) {
@@ -732,7 +741,7 @@ public class FXBasicView extends JComponent
       if (node.getParent() instanceof FToggleSwitchNode) {
         node = (FToggleNode) node.getParent();
       }
-      Object path[] = node.getPath();
+      final Object path[] = node.getPath();
       tree.makeVisible(path);
       tree.setSelectedPath(path);
     }
@@ -740,7 +749,7 @@ public class FXBasicView extends JComponent
 
   public void showSearchDialog() {
     if (searchDialog == null) {
-      Frame frame =
+      final Frame frame =
           (Frame) SwingUtilities.getAncestorOfClass(java.awt.Frame.class, this);
       searchDialog = new SearchDialog(frame, this);
       searchDialog.pack();
@@ -749,10 +758,9 @@ public class FXBasicView extends JComponent
     searchDialog.setVisible(true);
   }
 
-  class InnerListener
-      implements FTreeExpansionListener, FTreeExpansBarListener,
-                 FTreeEditorListener,
-                 FTreeActionListener, FTreeSelectionListener, MouseListener {
+  class InnerListener implements FTreeExpansionListener, FTreeExpansBarListener,
+                                 FTreeEditorListener, FTreeActionListener,
+                                 FTreeSelectionListener, MouseListener {
 
     FToggleNode treeNode;
 
@@ -760,19 +768,22 @@ public class FXBasicView extends JComponent
       treeNode = null;
     }
 
+    @Override
     public void nodeWillExpand(FTreeNodeEvent e) {
       FToggleNode node = (FToggleNode) e.getTreeNode();
       node = (FToggleNode) node.getSubstituteNode();
       if (node != null && model.populateNode(node)) {
-        Object selPath[] = tree.getSelectedPath();
+        final Object selPath[] = tree.getSelectedPath();
         model.fireTreeModelDataChanged(true);
         tree.setSelectedPath(selPath);
       }
     }
 
+    @Override
     public void nodeWillCollapse(FTreeNodeEvent ftreenodeevent) {
     }
 
+    @Override
     public void nodeExpanded(FTreeNodeEvent e) {
       if (isSelectedNodeShowingChanged(e)) {
         selectedNodeShown();
@@ -780,15 +791,15 @@ public class FXBasicView extends JComponent
     }
 
     boolean isSelectedNodeShowingChanged(FTreeNodeEvent expansionEvent) {
-      FToggleNode selNode = (FToggleNode) tree.getSelectedNode();
+      final FToggleNode selNode = (FToggleNode) tree.getSelectedNode();
       if (selNode == null) {
         return false;
       }
-      FToggleNode node = (FToggleNode) expansionEvent.getTreeNode();
+      final FToggleNode node = (FToggleNode) expansionEvent.getTreeNode();
       FToggleNode curr;
       for (curr = (FToggleNode) selNode.getParent();
-           curr != node && curr != null; curr = (FToggleNode) curr
-          .getParent()) {
+           curr != node && curr != null;
+           curr = (FToggleNode) curr.getParent()) {
         if (!tree.isNodeExpanded(curr)) {
           return false;
         }
@@ -802,7 +813,7 @@ public class FXBasicView extends JComponent
       if (node == null) {
         return;
       }
-      FToggleNode parent = (FToggleNode) node.getParent();
+      final FToggleNode parent = (FToggleNode) node.getParent();
       if (parent != null) {
         setEditorFlags(parent, node);
       }
@@ -812,7 +823,8 @@ public class FXBasicView extends JComponent
       }
       nodesInfoArea.setText(model.getNodeMessage(node));
       if (FXBasicView.hasValue(node)) {
-        String errMessage = model.getValidityMessage(node, node.getValue());
+        final String errMessage =
+            model.getValidityMessage(node, node.getValue());
         if (errMessage != null) {
           errorInfoArea.setText("Error: " + errMessage);
         } else {
@@ -823,6 +835,7 @@ public class FXBasicView extends JComponent
       }
     }
 
+    @Override
     public void nodeCollapsed(FTreeNodeEvent e) {
       if (isSelectedNodeShowingChanged(e)) {
         selectedNodeHidden();
@@ -835,18 +848,19 @@ public class FXBasicView extends JComponent
       errorInfoArea.setText("");
     }
 
+    @Override
     public void enteredExpansBar(FTreeNodeEvent e) {
-      FToggleNode node = (FToggleNode) e.getTreeNode();
-      FToggleNode parent = (FToggleNode) node.getParent();
+      final FToggleNode node = (FToggleNode) e.getTreeNode();
+      final FToggleNode parent = (FToggleNode) node.getParent();
       String text = "  Folder: ";
       if (parent != null) {
-        XSRef ref = (XSRef) parent.getAssociate();
+        final XSRef ref = (XSRef) parent.getAssociate();
         if (ref.isArray()) {
           text = "  Folder: #" + (parent.getIndex(node) + 1) + " ";
         }
       }
       text = text + node.getLabelText();
-      FAbstractToggleNode subNode = node.getSubstituteNode();
+      final FAbstractToggleNode subNode = node.getSubstituteNode();
       if (subNode != null && subNode != node) {
         text = text + " " + subNode.getLabelText();
       }
@@ -857,13 +871,16 @@ public class FXBasicView extends JComponent
       mouseInfo.setCaretPosition(0);
     }
 
+    @Override
     public void exitedExpansBar(FTreeNodeEvent e) {
       mouseInfo.setText("  Folder:");
     }
 
+    @Override
     public void cellEditingStarted(FTreeEditorEvent ftreeeditorevent) {
     }
 
+    @Override
     public void cellEditingWillStop(FTreeEditorEvent e) {
       if (e.isCanceled()) {
         return;
@@ -873,14 +890,15 @@ public class FXBasicView extends JComponent
       if (node == null || !FXBasicView.hasValue(node) || !node.isEditable()) {
         return;
       }
-      JComponent editor = e.getEditor();
+      final JComponent editor = e.getEditor();
       if (editor == null) {
         return;
       }
-      JComponent extraControl = ((FToggleControl) editor).getExtraControl();
+      final JComponent extraControl =
+          ((FToggleControl) editor).getExtraControl();
       if (extraControl instanceof ICellControl) {
-        Object newValue = ((ICellControl) extraControl).getData();
-        Object oldValue = node.getValue();
+        final Object newValue = ((ICellControl) extraControl).getData();
+        final Object oldValue = node.getValue();
         if (!equal(oldValue, newValue)) {
           model.setNodeValue(node, newValue);
         }
@@ -891,25 +909,27 @@ public class FXBasicView extends JComponent
       return a == null && b == null || a != null && a.equals(b);
     }
 
+    @Override
     public void cellEditingStopped(FTreeEditorEvent e) {
       if (e.isCanceled()) {
         selectedNodeShown();
       }
     }
 
+    @Override
     public void cellEditorValueChanged(FTreeEditorEvent e) {
       FToggleNode node = (FToggleNode) e.getTreeNode();
       node = (FToggleNode) node.getSubstituteNode();
       if (node == null) {
         return;
       }
-      Object editor = e.getEditor();
+      final Object editor = e.getEditor();
       if (!(editor instanceof ICellControl)) {
         return;
       }
-      Object obj = ((ICellControl) editor).getData();
-      String editorValue = obj != null? obj.toString() : "";
-      String errMessage = model.getValidityMessage(node, editorValue);
+      final Object obj = ((ICellControl) editor).getData();
+      final String editorValue = obj != null? obj.toString() : "";
+      final String errMessage = model.getValidityMessage(node, editorValue);
       if (errMessage != null) {
         errorInfoArea.setText("Error: " + errMessage);
       } else {
@@ -917,21 +937,25 @@ public class FXBasicView extends JComponent
       }
     }
 
+    @Override
     public void treeActionPerformed(FTreeActionEvent e) {
       if (e.containsAction(1)) {
-        FToggleNode node = (FToggleNode) e.getTreeNode();
+        final FToggleNode node = (FToggleNode) e.getTreeNode();
         model.toggleSelectionChanged(node);
       }
     }
 
+    @Override
     public void nodeSelected(FTreeNodeEvent e) {
       selectedNodeShown();
     }
 
+    @Override
     public void nodeUnselected(FTreeNodeEvent e) {
       selectedNodeHidden();
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
       showPopup(e);
     }
@@ -941,11 +965,11 @@ public class FXBasicView extends JComponent
         return;
       } else {
         treeNode = (FToggleNode) tree.getNodeAt(e.getX(), e.getY());
-        boolean b = treeNode != null && treeNode == tree.getSelectedNode();
-        mSelect
-            .setEnabled(treeNode != null && treeNode != tree.getSelectedNode()
-                        && treeNode.isToggleSelected() &&
-                        treeNode.isPathSelected());
+        final boolean b =
+            treeNode != null && treeNode == tree.getSelectedNode();
+        mSelect.setEnabled(
+            treeNode != null && treeNode != tree.getSelectedNode() &&
+            treeNode.isToggleSelected() && treeNode.isPathSelected());
         mUnselect.setEnabled(b);
         mInsBefore.setEnabled(b && canInsert());
         mInsAfter.setEnabled(b && canInsert());
@@ -960,16 +984,20 @@ public class FXBasicView extends JComponent
       }
     }
 
+    @Override
     public void mouseClicked(MouseEvent mouseevent) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
       showPopup(e);
     }
 
+    @Override
     public void mouseEntered(MouseEvent mouseevent) {
     }
 
+    @Override
     public void mouseExited(MouseEvent mouseevent) {
     }
   }

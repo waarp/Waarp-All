@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.common.lru;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 
-abstract public class LruCacheTest {
+public abstract class LruCacheTest {
   private static String[] keys;
   private static String[] values;
   private static String key;
@@ -38,8 +38,9 @@ abstract public class LruCacheTest {
   @BeforeClass
   public static void setUpClass() {
     keys = new String[] { "aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh" };
-    values =
-        new String[] { "aaa", "bbb", "ccc", "ddd", "eer", "fff", "ggg", "hhh" };
+    values = new String[] {
+        "aaa", "bbb", "ccc", "ddd", "eer", "fff", "ggg", "hhh"
+    };
     key = "cc";
     value = "ccc";
     capacity = keys.length * 2;
@@ -51,7 +52,7 @@ abstract public class LruCacheTest {
     createCache(0, ttl);
   }
 
-  abstract protected InterfaceLruCache<String, String> createCache(int capacity,
+  protected abstract InterfaceLruCache<String, String> createCache(int capacity,
                                                                    long ttl);
 
   @Test(expected = IllegalArgumentException.class)
@@ -71,13 +72,13 @@ abstract public class LruCacheTest {
 
   @Test
   public void clearTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
     insertData(cache);
     cache.clear();
 
     assertEquals(0, cache.size());
-    for (int i = 0; i < keys.length; ++i) {
-      assertFalse(cache.contains(keys[i]));
+    for (final String key2 : keys) {
+      assertFalse(cache.contains(key2));
     }
   }
 
@@ -89,11 +90,11 @@ abstract public class LruCacheTest {
 
   @Test
   public void containsTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
     insertData(cache);
 
-    for (int i = 0; i < keys.length; ++i) {
-      assertTrue(cache.contains(keys[i]));
+    for (final String key2 : keys) {
+      assertTrue(cache.contains(key2));
     }
 
     assertFalse(cache.contains("a"));
@@ -104,7 +105,7 @@ abstract public class LruCacheTest {
 
   @Test
   public void getPutTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
     cache.put(key, value);
 
@@ -113,17 +114,17 @@ abstract public class LruCacheTest {
 
   @Test
   public void getCallableTest() throws Exception {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
-    String val = cache.get(key, new SimpleCallable());
+    final String val = cache.get(key, new SimpleCallable());
 
     assertEquals(SimpleCallable.str, val);
   }
 
   @Test
   public void getCallableTtl() throws Exception {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
-    String val = cache.get(key, new SimpleCallable(), 10);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final String val = cache.get(key, new SimpleCallable(), 10);
 
     assertTrue(cache.contains(key));
     assertEquals(SimpleCallable.str, val);
@@ -137,19 +138,19 @@ abstract public class LruCacheTest {
 
   @Test
   public void getCapacityTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
     assertEquals(capacity, cache.getCapacity());
   }
 
   @Test
   public void getSizeTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
     insertData(cache);
     assertEquals(keys.length, cache.size());
 
-    //retest
+    // retest
     insertData(cache);
     assertEquals(keys.length, cache.size());
 
@@ -160,7 +161,7 @@ abstract public class LruCacheTest {
 
   @Test
   public void getTtlTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
     assertEquals(ttl, cache.getTtl());
     cache.setNewTtl(ttl);
@@ -169,7 +170,7 @@ abstract public class LruCacheTest {
 
   @Test
   public void isEmptyTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
     assertTrue(cache.isEmpty());
 
@@ -180,7 +181,7 @@ abstract public class LruCacheTest {
 
   @Test
   public void ttlTest() throws InterruptedException {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
     cache.put(key, value, 10);
 
     assertTrue(cache.contains(key));
@@ -200,7 +201,7 @@ abstract public class LruCacheTest {
     try {
       cache.setNewTtl(-5);
       fail("Should throw IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // OK
     }
 
@@ -208,16 +209,16 @@ abstract public class LruCacheTest {
 
   @Test
   public void nullsNotStoredTest() {
-    InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
+    final InterfaceLruCache<String, String> cache = createCache(capacity, ttl);
 
-    for (int i = 0; i < keys.length; ++i) {
-      cache.put(keys[i], null);
+    for (final String key2 : keys) {
+      cache.put(key2, null);
     }
 
     assertEquals(0, cache.size());
 
-    for (int i = 0; i < keys.length; ++i) {
-      assertFalse(cache.contains(keys[i]));
+    for (final String key2 : keys) {
+      assertFalse(cache.contains(key2));
     }
   }
 

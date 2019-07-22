@@ -2,7 +2,7 @@
 package org.waarp.administrator;
 
 /**
- * Provides the version information of WaarpAdministrator.
+ * Provides the version information of Waarp Administrator.
  */
 public final class Version {
  /**

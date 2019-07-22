@@ -1,4 +1,24 @@
 /*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * Copyright © 2017-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -36,14 +56,16 @@ import java.nio.ByteBuffer;
  * Wrap HttpResponder to call post handler hook.
  */
 final class WrappedHttpResponder extends AbstractHttpResponder {
-  private static final Logger LOG = LoggerFactory.getLogger(WrappedHttpResponder.class);
+  private static final Logger LOG =
+      LoggerFactory.getLogger(WrappedHttpResponder.class);
 
   private final HttpResponder delegate;
   private final Iterable<? extends HandlerHook> handlerHooks;
   private final HttpRequest httpRequest;
   private final HandlerInfo handlerInfo;
 
-  WrappedHttpResponder(HttpResponder delegate, Iterable<? extends HandlerHook> handlerHooks,
+  WrappedHttpResponder(HttpResponder delegate,
+                       Iterable<? extends HandlerHook> handlerHooks,
                        HttpRequest httpRequest, HandlerInfo handlerInfo) {
     this.delegate = delegate;
     this.handlerHooks = handlerHooks;
@@ -52,8 +74,10 @@ final class WrappedHttpResponder extends AbstractHttpResponder {
   }
 
   @Override
-  public ChunkResponder sendChunkStart(final HttpResponseStatus status, HttpHeaders headers) {
-    final ChunkResponder chunkResponder = delegate.sendChunkStart(status, headers);
+  public ChunkResponder sendChunkStart(final HttpResponseStatus status,
+                                       HttpHeaders headers) {
+    final ChunkResponder chunkResponder =
+        delegate.sendChunkStart(status, headers);
     return new ChunkResponder() {
       @Override
       public void sendChunk(ByteBuffer chunk) throws IOException {
@@ -74,7 +98,8 @@ final class WrappedHttpResponder extends AbstractHttpResponder {
   }
 
   @Override
-  public void sendContent(HttpResponseStatus status, ByteBuf content, HttpHeaders headers) {
+  public void sendContent(HttpResponseStatus status, ByteBuf content,
+                          HttpHeaders headers) {
     delegate.sendContent(status, content, headers);
     runHook(status);
   }
@@ -86,16 +111,17 @@ final class WrappedHttpResponder extends AbstractHttpResponder {
   }
 
   @Override
-  public void sendContent(HttpResponseStatus status, BodyProducer bodyProducer, HttpHeaders headers) {
+  public void sendContent(HttpResponseStatus status, BodyProducer bodyProducer,
+                          HttpHeaders headers) {
     delegate.sendContent(status, bodyProducer, headers);
     runHook(status);
   }
 
   private void runHook(HttpResponseStatus status) {
-    for (HandlerHook hook : handlerHooks) {
+    for (final HandlerHook hook : handlerHooks) {
       try {
         hook.postCall(httpRequest, status, handlerInfo);
-      } catch (Throwable t) {
+      } catch (final Throwable t) {
         LOG.error("Post handler hook threw exception: ", t);
       }
     }

@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import io.netty.channel.ChannelFuture;
@@ -43,7 +43,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
 /**
  * Test class for Send Through client
  *
- * @author Frederic Bregier
+ *
  */
 public class TestSendThroughClient extends SendThroughClient {
 
@@ -59,8 +59,7 @@ public class TestSendThroughClient extends SendThroughClient {
    */
   public TestSendThroughClient(R66Future future, String remoteHost,
                                String filename, String rulename,
-                               String fileinfo, boolean isMD5,
-                               int blocksize,
+                               String fileinfo, boolean isMD5, int blocksize,
                                NetworkTransaction networkTransaction) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           DbConstant.ILLEGALVALUE, networkTransaction);
@@ -70,8 +69,7 @@ public class TestSendThroughClient extends SendThroughClient {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        null));
+    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestSendThroughClient.class);
     }
@@ -84,19 +82,14 @@ public class TestSendThroughClient extends SendThroughClient {
       return;
     }
     Configuration.configuration.pipelineInit();
-    NetworkTransaction networkTransaction = new NetworkTransaction();
+    final NetworkTransaction networkTransaction = new NetworkTransaction();
     try {
-      R66Future future = new R66Future(true);
-      TestSendThroughClient transaction = new TestSendThroughClient(future,
-                                                                    rhost,
-                                                                    localFilename,
-                                                                    rule,
-                                                                    fileInfo,
-                                                                    ismd5,
-                                                                    block,
-                                                                    networkTransaction);
+      final R66Future future = new R66Future(true);
+      final TestSendThroughClient transaction =
+          new TestSendThroughClient(future, rhost, localFilename, rule,
+                                    fileInfo, ismd5, block, networkTransaction);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
-      long time1 = System.currentTimeMillis();
+      final long time1 = System.currentTimeMillis();
       if (!transaction.initiateRequest()) {
         logger.error("Transfer in Error", future.getCause());
         return;
@@ -106,30 +99,28 @@ public class TestSendThroughClient extends SendThroughClient {
       } else {
         transaction.transferInError(null);
       }
-      future.awaitForDoneOrInterruptible();
+      future.awaitOrInterruptible();
 
-      long time2 = System.currentTimeMillis();
-      long delay = time2 - time1;
-      R66Result result = future.getResult();
+      final long time2 = System.currentTimeMillis();
+      final long delay = time2 - time1;
+      final R66Result result = future.getResult();
       if (future.isSuccess()) {
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-          logger.warn("Warning with Id: " +
-                      result.getRunner().getSpecialId() + " on file: " +
+          logger.warn("Warning with Id: " + result.getRunner().getSpecialId() +
+                      " on file: " +
                       (result.getFile() != null? result.getFile().toString() :
-                          "no file")
-                      + " delay: " + delay);
+                          "no file") + " delay: " + delay);
         } else {
-          logger.warn("Success with Id: " +
-                      result.getRunner().getSpecialId() + " on Final file: " +
+          logger.warn("Success with Id: " + result.getRunner().getSpecialId() +
+                      " on Final file: " +
                       (result.getFile() != null? result.getFile().toString() :
-                          "no file")
-                      + " delay: " + delay);
+                          "no file") + " delay: " + delay);
         }
         if (nolog || result.getRunner().shallIgnoreSave()) {
           // In case of success, delete the runner
           try {
             result.getRunner().delete();
-          } catch (WaarpDatabaseException e) {
+          } catch (final WaarpDatabaseException e) {
             logger
                 .warn("Cannot apply nolog to " + result.getRunner().toString(),
                       e);
@@ -148,8 +139,9 @@ public class TestSendThroughClient extends SendThroughClient {
           networkTransaction.closeAll();
           DetectionUtils.SystemExit(result.getCode().ordinal());
         } else {
-          logger.error("Transfer in Error with Id: " +
-                       result.getRunner().getSpecialId(), future.getCause());
+          logger.error(
+              "Transfer in Error with Id: " + result.getRunner().getSpecialId(),
+              future.getCause());
           networkTransaction.closeAll();
           DetectionUtils.SystemExit(result.getCode().ordinal());
         }
@@ -161,13 +153,13 @@ public class TestSendThroughClient extends SendThroughClient {
   }
 
   public boolean sendFile() {
-    R66File r66file = localChannelReference.getSession().getFile();
+    final R66File r66file = localChannelReference.getSession().getFile();
     boolean retrieveDone = false;
     try {
       DataBlock block = null;
       try {
         block = r66file.readDataBlock();
-      } catch (FileEndOfTransferException e) {
+      } catch (final FileEndOfTransferException e) {
         // Last block (in fact, no data to read)
         retrieveDone = true;
         return retrieveDone;
@@ -180,48 +172,48 @@ public class TestSendThroughClient extends SendThroughClient {
       ChannelFuture future1 = null, future2 = null;
       if (block != null) {
         block.getBlock().retain();
-        future1 = this.writeWhenPossible(block);
+        future1 = writeWhenPossible(block);
       }
       // While not last block
       while (block != null && !block.isEOF()) {
-        WaarpNettyUtil.awaitDoneOrInterrupted(future1);
+        WaarpNettyUtil.awaitOrInterrupted(future1);
         if (!future1.isSuccess()) {
           return false;
         }
         try {
           block = r66file.readDataBlock();
-        } catch (FileEndOfTransferException e) {
+        } catch (final FileEndOfTransferException e) {
           // Wait for last write
           retrieveDone = true;
-          WaarpNettyUtil.awaitDoneOrInterrupted(future1);
+          WaarpNettyUtil.awaitOrInterrupted(future1);
           return future1.isSuccess();
         }
         block.getBlock().retain();
-        future2 = this.writeWhenPossible(block);
+        future2 = writeWhenPossible(block);
         future1 = future2;
       }
       // Wait for last write
       if (future1 != null) {
-        WaarpNettyUtil.awaitDoneOrInterrupted(future1);
+        WaarpNettyUtil.awaitOrInterrupted(future1);
         return future1.isSuccess();
       }
       retrieveDone = true;
       return retrieveDone;
-    } catch (FileTransferException e) {
+    } catch (final FileTransferException e) {
       // An error occurs!
-      this.transferInError(new OpenR66ProtocolSystemException(e));
+      transferInError(new OpenR66ProtocolSystemException(e));
       return false;
-    } catch (OpenR66ProtocolPacketException e) {
+    } catch (final OpenR66ProtocolPacketException e) {
       // An error occurs!
-      this.transferInError(e);
+      transferInError(e);
       return false;
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       // An error occurs!
-      this.transferInError(e);
+      transferInError(e);
       return false;
-    } catch (OpenR66ProtocolSystemException e) {
+    } catch (final OpenR66ProtocolSystemException e) {
       // An error occurs!
-      this.transferInError(e);
+      transferInError(e);
       return false;
     }
   }

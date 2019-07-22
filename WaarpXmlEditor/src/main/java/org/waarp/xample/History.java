@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.xample;
 
@@ -59,13 +59,13 @@ public class History {
     if (k < 0) {
       return "..." + path.substring(path.length() - limitLength + 3);
     }
-    String prefix = path.substring(0, k + 1);
+    final String prefix = path.substring(0, k + 1);
     String suffix = path.substring(k + 1);
     k = suffix.indexOf('/', 1);
     if (k < 0) {
       return "..." + path.substring(path.length() - limitLength + 3);
     }
-    int limit = MAX_LABEL_LENGTH - prefix.length() - 3;
+    final int limit = MAX_LABEL_LENGTH - prefix.length() - 3;
     while (k >= 0 && suffix.length() > limit) {
       suffix = suffix.substring(k);
       k = suffix.indexOf('/', 1);
@@ -77,17 +77,19 @@ public class History {
     }
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof History)) {
       return false;
     }
-    History history = (History) obj;
+    final History history = (History) obj;
     if (path == null) {
       return (history.path == null);
     }
     return path.equals(history.path);
   }
 
+  @Override
   public String toString() {
     return label;
   }
@@ -97,7 +99,7 @@ public class History {
       items = new ArrayList();
     }
     History child = new History(childPath);
-    int index = items.indexOf(child);
+    final int index = items.indexOf(child);
     if (index >= 0) {
       child = (History) items.remove(index);
     }
@@ -119,12 +121,11 @@ public class History {
     if (items == null) {
       items = new ArrayList();
     }
-    History child = new History(childPath);
-    int index = items.indexOf(child);
+    final History child = new History(childPath);
+    final int index = items.indexOf(child);
     if (index >= 0) {
       items.remove(index);
     }
   }
 
 }
-

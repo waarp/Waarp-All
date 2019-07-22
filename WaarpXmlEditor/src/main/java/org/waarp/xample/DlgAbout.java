@@ -1,27 +1,23 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
-package org.waarp.xample;
-
-/*
- * Copyright (c) 2002 Felix Golubov
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
+package org.waarp.xample;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,15 +34,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 
+/*
+ * Copyright (c) 2002 Felix Golubov
+ */
+
 /**
  * "About" dialog for the XAmple application.
  *
  * @author Felix Golubov
- * @author Frederic Bregier
+ *
  * @version 1.0
  */
 
 public class DlgAbout extends JDialog implements ActionListener {
+  /**
+   *
+   */
+  private static final long serialVersionUID = -2724699673221265107L;
   JPanel panel1 = new JPanel();
   JPanel panel2 = new JPanel();
   JPanel insetsPanel1 = new JPanel();
@@ -70,7 +74,7 @@ public class DlgAbout extends JDialog implements ActionListener {
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try {
       jbInit();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
     pack();
@@ -78,10 +82,9 @@ public class DlgAbout extends JDialog implements ActionListener {
 
   private void jbInit() throws Exception {
     border1 = BorderFactory.createCompoundBorder(
-        BorderFactory.createEtchedBorder(Color.white,
-                                         new Color(148, 145, 140)),
+        BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)),
         BorderFactory.createEmptyBorder(20, 20, 20, 20));
-    this.setTitle("About");
+    setTitle("About");
     setResizable(false);
     panel1.setLayout(borderLayout1);
     panel2.setLayout(borderLayout2);
@@ -96,7 +99,7 @@ public class DlgAbout extends JDialog implements ActionListener {
     insetsPanel3.setBorder(border1);
     button1.setText("Ok");
     button1.addActionListener(this);
-    this.getContentPane().add(panel1, null);
+    getContentPane().add(panel1, null);
     insetsPanel3.add(label1, null);
     insetsPanel3.add(label2, null);
     insetsPanel3.add(label3, null);
@@ -107,6 +110,7 @@ public class DlgAbout extends JDialog implements ActionListener {
     panel1.add(panel2, BorderLayout.NORTH);
   }
 
+  @Override
   protected void processWindowEvent(WindowEvent e) {
     if (e.getID() == WindowEvent.WINDOW_CLOSING) {
       dispose();
@@ -114,6 +118,7 @@ public class DlgAbout extends JDialog implements ActionListener {
     super.processWindowEvent(e);
   }
 
+  @Override
   public void actionPerformed(ActionEvent e) {
     if (e.getSource() == button1) {
       dispose();

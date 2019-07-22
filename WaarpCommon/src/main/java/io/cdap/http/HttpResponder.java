@@ -1,4 +1,24 @@
 /*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * Copyright © 2014-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -30,7 +50,8 @@ import java.nio.ByteBuffer;
 public interface HttpResponder {
 
   /**
-   * Sends json response back to the client. This is a convenient method to send json encoded string with
+   * Sends json response back to the client. This is a convenient method to
+   * send json encoded string with
    * content type automatically set to {@code application/json}.
    *
    * @param status Status of the response.
@@ -71,83 +92,104 @@ public interface HttpResponder {
   void sendStatus(HttpResponseStatus status, HttpHeaders headers);
 
   /**
-   * Send a response containing raw bytes. Default content type is "application/octet-stream", but can be
+   * Send a response containing raw bytes. Default content type is
+   * "application/octet-stream", but can be
    * overridden by the headers parameter.
    *
    * @param status status of the Http response.
    * @param bytes bytes to be sent back.
    * @param headers additional headers to send with the response.
    */
-  void sendByteArray(HttpResponseStatus status, byte[] bytes, HttpHeaders headers);
+  void sendByteArray(HttpResponseStatus status, byte[] bytes,
+                     HttpHeaders headers);
 
   /**
-   * Sends a response containing raw bytes. Default content type is "application/octet-stream", but can be
+   * Sends a response containing raw bytes. Default content type is
+   * "application/octet-stream", but can be
    * overridden by the headers parameter.
    *
    * @param status status of the Http response
    * @param buffer bytes to send
    * @param headers additional headers to send with the response.
    */
-  void sendBytes(HttpResponseStatus status, ByteBuffer buffer, HttpHeaders headers);
+  void sendBytes(HttpResponseStatus status, ByteBuffer buffer,
+                 HttpHeaders headers);
 
   /**
-   * Respond to the client saying the response will be in chunks. The response body can be sent in chunks
-   * using the {@link ChunkResponder} returned.
+   * Respond to the client saying the response will be in chunks. The response
+   * body can be sent in chunks using
+   * the {@link ChunkResponder} returned.
    *
    * @param status the status code to respond with
+   *
    * @return chunk responder for sending the response
    */
   ChunkResponder sendChunkStart(HttpResponseStatus status);
 
   /**
-   * Respond to the client saying the response will be in chunks. The response body can be sent in chunks
-   * using the {@link ChunkResponder} returned.
+   * Respond to the client saying the response will be in chunks. The response
+   * body can be sent in chunks using
+   * the {@link ChunkResponder} returned.
    *
    * @param status the status code to respond with
    * @param headers additional headers to send with the response.
+   *
    * @return chunk responder for sending the response
    */
   ChunkResponder sendChunkStart(HttpResponseStatus status, HttpHeaders headers);
 
   /**
-   * Send response back to client. Default content type is "application/octet-stream", but can be
-   * overridden by the headers parameter.
+   * Send response back to client. Default content type is
+   * "application/octet-stream", but can be overridden by
+   * the headers parameter.
    *
    * @param status Status of the response.
    * @param content Content to be sent back.
    * @param headers additional headers to send with the response.
    */
-  void sendContent(HttpResponseStatus status, ByteBuf content, HttpHeaders headers);
+  void sendContent(HttpResponseStatus status, ByteBuf content,
+                   HttpHeaders headers);
 
   /**
-   * Sends a file content back to client with response status 200 with content type as "application/octet-stream".
+   * Sends a file content back to client with response status 200 with content
+   * type as
+   * "application/octet-stream".
    *
    * @param file The file to send
+   *
    * @throws IOException if failed to open and read the file
-   * @throws Throwable 
+   * @throws Throwable
    */
   void sendFile(File file) throws IOException, Throwable;
 
   /**
-   * Sends a file content back to client with response status 200. Default content type is "application/octet-stream",
-   * but can be overridden by the headers parameter.
+   * Sends a file content back to client with response status 200. Default
+   * content type is
+   * "application/octet-stream", but can be overridden by the headers
+   * parameter.
    *
    * @param file The file to send
    * @param headers additional headers to send with the response.
+   *
    * @throws IOException if failed to open and read the file
-   * @throws Throwable 
+   * @throws Throwable
    */
   void sendFile(File file, HttpHeaders headers) throws IOException, Throwable;
 
   /**
-   * Sends response back to client. The response body is produced by the given {@link BodyProducer}. This method
-   * will return immediate after it is called. Invocation of methods on the given {@link BodyProducer} will be
-   * triggered from another thread. Default content type is "application/octet-stream", but can be
-   * overridden by the headers parameter.
+   * Sends response back to client. The response body is produced by the given
+   * {@link BodyProducer}. This method
+   * will return immediate after it is called. Invocation of methods on the
+   * given {@link BodyProducer} will be
+   * triggered from another thread. Default content type is
+   * "application/octet-stream", but can be overridden by
+   * the headers parameter.
    *
    * @param status Status of the response.
-   * @param bodyProducer a {@link BodyProducer} to produce response body.
+   * @param bodyProducer a {@link BodyProducer} to produce response
+   *     body.
    * @param headers additional headers to send with the response.
    */
-  void sendContent(HttpResponseStatus status, BodyProducer bodyProducer, HttpHeaders headers);
+  void sendContent(HttpResponseStatus status, BodyProducer bodyProducer,
+                   HttpHeaders headers);
 }

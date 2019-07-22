@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.ftp;
 
@@ -46,18 +46,18 @@ public class FtpServer {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(FtpServer.class);
     }
-    ClassLoader classLoader = FtpServer.class.getClassLoader();
-    File file = new File(classLoader.getResource(config).getFile());
+    final ClassLoader classLoader = FtpServer.class.getClassLoader();
+    final File file = new File(classLoader.getResource(config).getFile());
     if (file.exists()) {
       dir = file.getParentFile();
-      File base = new File("/tmp/GGFTP");
+      final File base = new File("/tmp/GGFTP");
       base.mkdirs();
       FileUtils.forceDeleteRecursiveDir(base);
       base.mkdirs();
-      configuration = new FileBasedConfiguration(
-          SimpleGatewayFtpServer.class, SimpleBusinessHandler.class,
-          FileSystemBasedDataBusinessHandler.class,
-          new FilesystemBasedFileParameterImpl());
+      configuration = new FileBasedConfiguration(SimpleGatewayFtpServer.class,
+                                                 SimpleBusinessHandler.class,
+                                                 FileSystemBasedDataBusinessHandler.class,
+                                                 new FilesystemBasedFileParameterImpl());
       if (!configuration.setConfigurationFromXml(file.getAbsolutePath())) {
         logger.error("Bad configuration");
         return;
@@ -66,7 +66,7 @@ public class FtpServer {
       // Start server.
       try {
         configuration.serverStartup();
-      } catch (FtpNoConnectionException e) {
+      } catch (final FtpNoConnectionException e) {
         logger.error("FTP not started", e);
       }
       logger.info("FTP started");

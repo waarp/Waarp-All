@@ -2,7 +2,7 @@
 package org.waarp.snmp.utils;
 
 /**
- * Provides the version information of WaarpSnmp.
+ * Provides the version information of Waarp Snmp.
  */
 public final class Version {
  /**

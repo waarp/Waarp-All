@@ -1,3 +1,23 @@
+/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.waarp.openr66.dao.xml;
 
 import org.w3c.dom.Document;
@@ -15,7 +35,11 @@ import org.xml.sax.SAXException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,164 +49,164 @@ import java.util.concurrent.ConcurrentHashMap;
 //TODO
 public class XMLLimitDAO implements LimitDAO {
 
-    private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(
-        XMLLimitDAO.class);
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(XMLLimitDAO.class);
 
-    /**
-     * HashTable in case of lack of database
-     */
-    private static final ConcurrentHashMap<String, Limit> dbR66ConfigurationHashMap =
-        new ConcurrentHashMap<String, Limit>();
+  /**
+   * HashTable in case of lack of database
+   */
+  private static final ConcurrentHashMap<String, Limit>
+      dbR66ConfigurationHashMap = new ConcurrentHashMap<String, Limit>();
 
-    public static final String HOSTID_FIELD = "hostid";
-    public static final String SESSION_LIMIT_FILED = "sessionlimit";
-    public static final String GOLBAL_LIMIT_FILED = "globallimit";
-    public static final String DELAY_LIMIT_FILED = "delaylimit";
-    public static final String RUN_LIMIT_FILED = "runlimit";
-    public static final String DELAY_COMMAND_LIMIT_FILED = "delaycommand";
-    public static final String DELAY_RETRY_LIMIT_FILED = "delayretry";
+  public static final String HOSTID_FIELD = "hostid";
+  public static final String SESSION_LIMIT_FILED = "sessionlimit";
+  public static final String GOLBAL_LIMIT_FILED = "globallimit";
+  public static final String DELAY_LIMIT_FILED = "delaylimit";
+  public static final String RUN_LIMIT_FILED = "runlimit";
+  public static final String DELAY_COMMAND_LIMIT_FILED = "delaycommand";
+  public static final String DELAY_RETRY_LIMIT_FILED = "delayretry";
 
-    private static final String XML_SELECT = "/config/identity[hostid=$hostid]";
+  private static final String XML_SELECT = "/config/identity[hostid=$hostid]";
 
-    private File file;
+  private final File file;
 
-    public XMLLimitDAO(String filePath) throws DAOConnectionException {
-        this.file = new File(filePath);
+  public XMLLimitDAO(String filePath) throws DAOConnectionException {
+    file = new File(filePath);
+  }
+
+  @Override
+  public void close() {
+  }
+
+  @Override
+  public void delete(Limit limit) throws DAOConnectionException {
+    dbR66ConfigurationHashMap.remove(limit.getHostid());
+  }
+
+  @Override
+  public void deleteAll() throws DAOConnectionException {
+    dbR66ConfigurationHashMap.clear();
+  }
+
+  @Override
+  public List<Limit> getAll() throws DAOConnectionException {
+    if (!file.exists()) {
+      throw new DAOConnectionException("File doesn't exist");
     }
-
-    public void close() {}
-
-    public void delete(Limit limit) throws DAOConnectionException {
-        dbR66ConfigurationHashMap.remove(limit.getHostid());
+    try {
+      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final Document document = dbf.newDocumentBuilder().parse(file);
+      // File contains only 1 entry
+      final List<Limit> res = new ArrayList<Limit>(1);
+      final Limit limit = getFromNode(document.getDocumentElement());
+      res.add(limit);
+      dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
+      // Iterate through all found nodes
+      return res;
+    } catch (final SAXException e) {
+      throw new DAOConnectionException(e);
+    } catch (final ParserConfigurationException e) {
+      throw new DAOConnectionException(e);
+    } catch (final IOException e) {
+      throw new DAOConnectionException(e);
     }
+  }
 
-    public void deleteAll() throws DAOConnectionException {
-        dbR66ConfigurationHashMap.clear();
+  @Override
+  public boolean exist(String hostid) throws DAOConnectionException {
+    if (dbR66ConfigurationHashMap.containsKey(hostid)) {
+      return true;
     }
-
-    public List<Limit> getAll() throws DAOConnectionException {
-        if (!file.exists()) {
-            throw new DAOConnectionException("File doesn't exist");
-        }
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document document = dbf.newDocumentBuilder().parse(file);
-            // File contains only 1 entry
-            List<Limit> res = new ArrayList<Limit>(1);
-            Limit limit = getFromNode(document.getDocumentElement());
-            res.add(limit);
-            dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
-            // Iterate through all found nodes
-            return res;
-        } catch (SAXException e) {
-            throw new DAOConnectionException(e);
-        } catch (ParserConfigurationException e) {
-            throw new DAOConnectionException(e);
-        } catch (IOException e) {
-            throw new DAOConnectionException(e);
-        }
+    if (!file.exists()) {
+      throw new DAOConnectionException("File doesn't exist");
     }
-
-    public boolean exist(String hostid) throws DAOConnectionException {
-        if (dbR66ConfigurationHashMap.containsKey(hostid)) {
-            return true;
-        }
-        if (!file.exists()) {
-            throw new DAOConnectionException("File doesn't exist");
-        }
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document document = dbf.newDocumentBuilder().parse(file);
-            // Setup XPath variable
-            SimpleVariableResolver resolver = new SimpleVariableResolver();
-            resolver.addVariable(new QName(null, "hostid"), hostid);
-            // Setup XPath query
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            xPath.setXPathVariableResolver(resolver);
-            XPathExpression xpe = xPath.compile(XML_SELECT);
-            // Query will return "" if nothing is found
-            return(!"".equals(xpe.evaluate(document)));
-        } catch (SAXException e) {
-            throw new DAOConnectionException(e);
-        } catch (XPathExpressionException e) {
-            throw new DAOConnectionException(e);
-        } catch (ParserConfigurationException e) {
-            throw new DAOConnectionException(e);
-        } catch (IOException e) {
-            throw new DAOConnectionException(e);
-        }
+    try {
+      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final Document document = dbf.newDocumentBuilder().parse(file);
+      // Setup XPath variable
+      final SimpleVariableResolver resolver = new SimpleVariableResolver();
+      resolver.addVariable(new QName(null, "hostid"), hostid);
+      // Setup XPath query
+      final XPath xPath = XPathFactory.newInstance().newXPath();
+      xPath.setXPathVariableResolver(resolver);
+      final XPathExpression xpe = xPath.compile(XML_SELECT);
+      // Query will return "" if nothing is found
+      return (!"".equals(xpe.evaluate(document)));
+    } catch (final SAXException e) {
+      throw new DAOConnectionException(e);
+    } catch (final XPathExpressionException e) {
+      throw new DAOConnectionException(e);
+    } catch (final ParserConfigurationException e) {
+      throw new DAOConnectionException(e);
+    } catch (final IOException e) {
+      throw new DAOConnectionException(e);
     }
+  }
 
-    public List<Limit> find(List<Filter> fitlers) throws
-                                                  DAOConnectionException {
-        throw new DAOConnectionException("Operation not supported on XML DAO");
+  @Override
+  public List<Limit> find(List<Filter> fitlers) throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  @Override
+  public void insert(Limit limit) throws DAOConnectionException {
+    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
+  }
+
+  @Override
+  public Limit select(String hostid)
+      throws DAOConnectionException, DAONoDataException {
+    Limit limit = dbR66ConfigurationHashMap.get(hostid);
+    if (limit != null) {
+      return limit;
     }
-
-    public void insert(Limit limit) throws DAOConnectionException {
+    if (!file.exists()) {
+      throw new DAOConnectionException("File doesn't exist");
+    }
+    try {
+      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final Document document = dbf.newDocumentBuilder().parse(file);
+      // Setup XPath variable
+      final SimpleVariableResolver resolver = new SimpleVariableResolver();
+      resolver.addVariable(new QName(null, "hostid"), hostid);
+      // Setup XPath query
+      final XPath xPath = XPathFactory.newInstance().newXPath();
+      xPath.setXPathVariableResolver(resolver);
+      final XPathExpression xpe = xPath.compile(XML_SELECT);
+      // Retrieve node and instantiate object
+      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);
+      if (node != null) {
+        limit = getFromNode(document.getDocumentElement());
         dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
+        return limit;
+      }
+      throw new DAONoDataException("Limit not found");
+    } catch (final SAXException e) {
+      throw new DAOConnectionException(e);
+    } catch (final XPathExpressionException e) {
+      throw new DAOConnectionException(e);
+    } catch (final ParserConfigurationException e) {
+      throw new DAOConnectionException(e);
+    } catch (final IOException e) {
+      throw new DAOConnectionException(e);
     }
+  }
 
-    public Limit select(String hostid)
-        throws DAOConnectionException, DAONoDataException {
-        Limit limit = dbR66ConfigurationHashMap.get(hostid);
-        if (limit != null) {
-            return limit;
-        }
-        if (!file.exists()) {
-            throw new DAOConnectionException("File doesn't exist");
-        }
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document document = dbf.newDocumentBuilder().parse(file);
-            // Setup XPath variable
-            SimpleVariableResolver resolver = new SimpleVariableResolver();
-            resolver.addVariable(new QName(null, "hostid"), hostid);
-            // Setup XPath query
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            xPath.setXPathVariableResolver(resolver);
-            XPathExpression xpe = xPath.compile(XML_SELECT);
-            // Retrieve node and instantiate object
-            Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);
-            if (node != null) {
-                limit = getFromNode(document.getDocumentElement());
-                dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
-                return limit;
-            }
-            throw new DAONoDataException("Limit not found");
-        } catch (SAXException e) {
-            throw new DAOConnectionException(e);
-        } catch (XPathExpressionException e) {
-            throw new DAOConnectionException(e);
-        } catch (ParserConfigurationException e) {
-            throw new DAOConnectionException(e);
-        } catch (IOException e) {
-            throw new DAOConnectionException(e);
-        }
+  @Override
+  public void update(Limit limit) throws DAOConnectionException {
+    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
+  }
+
+  private Limit getFromNode(Node parent) {
+    final Limit res = new Limit();
+
+    final NodeList children = parent.getChildNodes();
+    for (int j = 0; j < children.getLength(); j++) {
+      final Node node = children.item(j);
+      if (node.getNodeName().equals(HOSTID_FIELD)) {
+        res.setHostid(node.getTextContent());
+      }
     }
-
-    public void update(Limit limit) throws DAOConnectionException {
-        dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
-    }
-
-    private Limit getFromNode(Node parent) {
-        Limit res = new Limit();
-
-        NodeList children = parent.getChildNodes();
-        for (int j = 0; j < children.getLength(); j++) {
-            Node node = children.item(j);
-            if (node.getNodeName().equals(HOSTID_FIELD)) {
-                res.setHostid(node.getTextContent());
-            }
-        }
-        return res;
-    }
-
-    private Node getNode(Document doc, Limit limit) {
-        Node res = doc.createElement("config");
-        Node tmp = res.appendChild(doc.createElement("identity"));
-        tmp.appendChild(XMLUtils.createNode(doc, HOSTID_FIELD,
-                limit.getHostid()));
-        tmp = res.appendChild(doc.createElement("limit"));
-        return res;
-    }
+    return res;
+  }
 }

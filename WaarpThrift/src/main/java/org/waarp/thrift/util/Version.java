@@ -2,7 +2,7 @@
 package org.waarp.thrift.util;
 
 /**
- * Provides the version information of WaarpThrift.
+ * Provides the version information of Waarp Thrift.
  */
 public final class Version {
  /**

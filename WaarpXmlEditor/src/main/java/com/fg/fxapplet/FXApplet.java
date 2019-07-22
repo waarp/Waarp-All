@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package com.fg.fxapplet;
 
@@ -52,6 +52,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -70,6 +71,10 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class FXApplet extends JApplet {
+  /**
+   *
+   */
+  private static final long serialVersionUID = -5319051608936731642L;
   public static final String DOC_NAME = "DOC_NAME";
   public static final String XML_SCHEMA = "XML_SCHEMA";
   public static final String XML_SOURCE = "XML_SOURCE";
@@ -86,7 +91,7 @@ public class FXApplet extends JApplet {
     try {
       UIManager
           .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-    } catch (Exception ignore) {
+    } catch (final Exception ignore) {
     }
   }
 
@@ -191,6 +196,7 @@ public class FXApplet extends JApplet {
     prmXMLDest = normalize(xmlDest);
   }
 
+  @Override
   public void init() {
     setDocName(getParameter("DOC_NAME"));
     setXMLSchema(getParameter("XML_SCHEMA"));
@@ -204,7 +210,7 @@ public class FXApplet extends JApplet {
     prmOnSave = normalize(getParameter("ON_SAVE"));
     try {
       jbInit();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
     doLoadXMLDocument(null);
@@ -219,19 +225,18 @@ public class FXApplet extends JApplet {
     }
   }
 
-  private void jbInit()
-      throws Exception {
+  private void jbInit() throws Exception {
     setSize(new Dimension(812, 526));
     model.addModelStatusListener(innerListener);
     getContentPane().add(dblView, "Center");
     getContentPane().add(toolbar, "North");
-    ImageIcon imgXsd = FLoader.getIcon(this, "OpenXSD.gif");
-    ImageIcon imgXml = FLoader.getIcon(this, "OpenXML.gif");
-    ImageIcon imgReload = FLoader.getIcon(this, "Reload.gif");
-    ImageIcon imgSave = FLoader.getIcon(this, "Save.gif");
-    ImageIcon imgHorizSplit = FLoader.getIcon(this, "HorizSplit.gif");
-    ImageIcon imgVertSplit = FLoader.getIcon(this, "VertSplit.gif");
-    ImageIcon imgSync = FLoader.getIcon(this, "Sync.gif");
+    final ImageIcon imgXsd = FLoader.getIcon(this, "OpenXSD.gif");
+    final ImageIcon imgXml = FLoader.getIcon(this, "OpenXML.gif");
+    final ImageIcon imgReload = FLoader.getIcon(this, "Reload.gif");
+    final ImageIcon imgSave = FLoader.getIcon(this, "Save.gif");
+    final ImageIcon imgHorizSplit = FLoader.getIcon(this, "HorizSplit.gif");
+    final ImageIcon imgVertSplit = FLoader.getIcon(this, "VertSplit.gif");
+    final ImageIcon imgSync = FLoader.getIcon(this, "Sync.gif");
     btnXsdLoad = new Btn(imgXsd, "Load XSD schema");
     btnXmlLoad = new Btn(imgXml, "Load XML Document");
     btnReload = new Btn(imgReload, "Reload XML Document");
@@ -251,14 +256,15 @@ public class FXApplet extends JApplet {
     mSave = new MItem("Save XML Document", imgSave);
     menuDocument.add(mSave);
     menuBar.add(menuDocument);
-    javax.swing.UIManager.LookAndFeelInfo lfi[] =
+    final javax.swing.UIManager.LookAndFeelInfo lfi[] =
         UIManager.getInstalledLookAndFeels();
-    LookAndFeel lf = UIManager.getLookAndFeel();
-    ButtonGroup group = new ButtonGroup();
-    for (int i = 0; i < lfi.length; i++) {
-      JRadioButtonMenuItem mi = new JRadioButtonMenuItem(lfi[i].getName());
+    final LookAndFeel lf = UIManager.getLookAndFeel();
+    final ButtonGroup group = new ButtonGroup();
+    for (final LookAndFeelInfo element2 : lfi) {
+      final JRadioButtonMenuItem mi =
+          new JRadioButtonMenuItem(element2.getName());
       group.add(mi);
-      if (lfi[i].getClassName().equals(lf.getClass().getName())) {
+      if (element2.getClassName().equals(lf.getClass().getName())) {
         mi.setSelected(true);
       }
       mi.addActionListener(innerListener);
@@ -269,7 +275,7 @@ public class FXApplet extends JApplet {
     menuBar.setBorder(BorderFactory.createEtchedBorder());
     setJMenuBar(menuBar);
 
-    JLabel lblXsdFile = new JLabel("XSD File");
+    final JLabel lblXsdFile = new JLabel("XSD File");
     lblXsdFile.setHorizontalAlignment(SwingConstants.RIGHT);
     lblXsdFile.setPreferredSize(new Dimension(60, 14));
     lblXsdFile.setMinimumSize(new Dimension(60, 14));
@@ -279,7 +285,7 @@ public class FXApplet extends JApplet {
     menuBar.add(textField);
     textField.setColumns(10);
 
-    JLabel lblXmlFile = new JLabel("XML File");
+    final JLabel lblXmlFile = new JLabel("XML File");
     lblXmlFile.setHorizontalAlignment(SwingConstants.RIGHT);
     lblXmlFile.setPreferredSize(new Dimension(60, 14));
     lblXmlFile.setMinimumSize(new Dimension(60, 14));
@@ -304,8 +310,8 @@ public class FXApplet extends JApplet {
           xsdURL = new URL(getCodeBase() + prmXMLSchema);
         }
         if (xmlContent != null) {
-          StringReader reader = new StringReader(xmlContent);
-          InputSource src = new InputSource(reader);
+          final StringReader reader = new StringReader(xmlContent);
+          final InputSource src = new InputSource(reader);
           src.setSystemId(getXMLBaseURL().toString());
           xmlContent = null;
           lostElements = model.openDocument(xsdURL, src);
@@ -317,24 +323,24 @@ public class FXApplet extends JApplet {
           } else {
             xmlURL = new URL(getCodeBase() + prmXMLSource);
           }
-          URLConnection con = xmlURL.openConnection();
+          final URLConnection con = xmlURL.openConnection();
           con.connect();
-          InputStream in = con.getInputStream();
+          final InputStream in = con.getInputStream();
           try {
-            InputStreamReader reader = new InputStreamReader(in, "UTF-8");
-            InputSource src = new InputSource(reader);
+            final InputStreamReader reader = new InputStreamReader(in, "UTF-8");
+            final InputSource src = new InputSource(reader);
             src.setSystemId(getXMLBaseURL().toString());
             lostElements = model.openDocument(xsdURL, src);
           } finally {
             try {
               in.close();
-            } catch (Exception exception1) {
+            } catch (final Exception exception1) {
             }
             if (con instanceof HttpURLConnection) {
-              HttpURLConnection httpConn = (HttpURLConnection) con;
+              final HttpURLConnection httpConn = (HttpURLConnection) con;
               try {
                 httpConn.disconnect();
-              } catch (Exception ignore) {
+              } catch (final Exception ignore) {
               }
             }
           }
@@ -346,12 +352,12 @@ public class FXApplet extends JApplet {
           model.newDocument(xsdURL);
         }
         if (lostElements != null) {
-          StringBuffer sb = new StringBuffer(
+          final StringBuffer sb = new StringBuffer(
               "Error: The source XML document is invalid.\nThe following elements have not been loaded:");
           for (int i = 0; i < lostElements.size(); i++) {
             sb.append("\n");
-            int k = sb.length();
-            Node element = (Node) lostElements.get(i);
+            final int k = sb.length();
+            final Node element = (Node) lostElements.get(i);
             sb.append(element.getNodeName());
             for (Node node = element.getParentNode();
                  node != null && !(node instanceof Document);
@@ -367,7 +373,7 @@ public class FXApplet extends JApplet {
           dblView.showInfoMessage(prmDocName);
         }
         showStatus("XML document has been loaded");
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         showStatus("");
         dblView.showErrorMessage(ex.getMessage());
         ex.printStackTrace();
@@ -375,8 +381,7 @@ public class FXApplet extends JApplet {
     }
   }
 
-  URL getXMLBaseURL()
-      throws Exception {
+  URL getXMLBaseURL() throws Exception {
     if (prmBaseURL != null) {
       return new URL(getCodeBase() + prmBaseURL);
     }
@@ -387,6 +392,7 @@ public class FXApplet extends JApplet {
     }
   }
 
+  @Override
   public void start() {
     if (prmOnStart != null) {
       callJavascriptHandler(prmOnStart);
@@ -395,11 +401,9 @@ public class FXApplet extends JApplet {
 
   void callJavascriptHandler(String methodName) {
     try {
-      JSObject win = JSObject.getWindow(this);
-      win.call(methodName, new Object[] {
-          this
-      });
-    } catch (Exception ex) {
+      final JSObject win = JSObject.getWindow(this);
+      win.call(methodName, new Object[] { this });
+    } catch (final Exception ex) {
       dblView.showErrorMessage(ex.toString());
     }
   }
@@ -409,20 +413,20 @@ public class FXApplet extends JApplet {
   }
 
   public String getXMLDocumentAsText() {
-    Document doc = model.getDocument();
+    final Document doc = model.getDocument();
     if (doc == null) {
       return "";
     }
-    StringWriter writer = new StringWriter();
+    final StringWriter writer = new StringWriter();
     try {
       try {
-        OutputFormat format = new OutputFormat(doc, "UTF-8", true);
-        XMLSerializer serial = new XMLSerializer(writer, format);
+        final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+        final XMLSerializer serial = new XMLSerializer(writer, format);
         serial.asDOMSerializer();
         serial.serialize(doc);
-        String s = writer.toString();
+        final String s = writer.toString();
         return s;
-      } catch (IOException ex) {
+      } catch (final IOException ex) {
         dblView.showErrorMessage(ex.toString());
         ex.printStackTrace();
       }
@@ -430,7 +434,7 @@ public class FXApplet extends JApplet {
     } finally {
       try {
         writer.close();
-      } catch (Exception ignore) {
+      } catch (final Exception ignore) {
       }
     }
   }
@@ -446,33 +450,33 @@ public class FXApplet extends JApplet {
     }
     prmXMLDest = null;
     if (prmXMLDest == null) {
-      String cur = textFieldXml.getText();
+      final String cur = textFieldXml.getText();
       JFileChooser fc = null;
       if (cur != null && !cur.isEmpty()) {
-        File parent = new File(cur).getParentFile();
+        final File parent = new File(cur).getParentFile();
         fc = new JFileChooser(parent);
       } else {
         fc = new JFileChooser();
       }
-      int val = fc.showSaveDialog(rootPane);
+      final int val = fc.showSaveDialog(rootPane);
       if (val == JFileChooser.APPROVE_OPTION) {
-        File file = fc.getSelectedFile();
+        final File file = fc.getSelectedFile();
         textFieldXml.setText(file.getAbsolutePath());
         prmXMLDest = textFieldXml.getText();
         OutputStream out = null;
         try {
-          Document doc = model.getDocument();
+          final Document doc = model.getDocument();
           if (doc == null) {
             return;
           }
           out = new FileOutputStream(file);
-          OutputFormat format = new OutputFormat(doc, "UTF-8", true);
-          java.io.Writer writer = new OutputStreamWriter(out);
-          XMLSerializer serial = new XMLSerializer(writer, format);
+          final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+          final java.io.Writer writer = new OutputStreamWriter(out);
+          final XMLSerializer serial = new XMLSerializer(writer, format);
           serial.asDOMSerializer();
           serial.serialize(doc);
           dblView.showErrorMessage("File written");
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
           dblView.showErrorMessage(ex.toString());
           ex.printStackTrace();
         } finally {
@@ -480,7 +484,7 @@ public class FXApplet extends JApplet {
             if (out != null) {
               out.close();
             }
-          } catch (Exception exception2) {
+          } catch (final Exception exception2) {
           }
         }
         return;
@@ -493,20 +497,20 @@ public class FXApplet extends JApplet {
     OutputStream out = null;
     BufferedReader reader = null;
     try {
-      Document doc = model.getDocument();
+      final Document doc = model.getDocument();
       if (doc == null) {
         return;
       }
-      URL url = new URL(getCodeBase() + prmXMLDest);
+      final URL url = new URL(getCodeBase() + prmXMLDest);
       httpConn = (HttpURLConnection) url.openConnection();
       httpConn.setDoInput(true);
       httpConn.setDoOutput(true);
       httpConn.setUseCaches(false);
       httpConn.setRequestProperty("Content-Type", "text/plain");
       out = httpConn.getOutputStream();
-      OutputFormat format = new OutputFormat(doc, "UTF-8", true);
-      java.io.Writer writer = new OutputStreamWriter(out);
-      XMLSerializer serial = new XMLSerializer(writer, format);
+      final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+      final java.io.Writer writer = new OutputStreamWriter(out);
+      final XMLSerializer serial = new XMLSerializer(writer, format);
       serial.asDOMSerializer();
       serial.serialize(doc);
       reader =
@@ -515,53 +519,55 @@ public class FXApplet extends JApplet {
       String line;
       for (message = ""; (line = reader.readLine()) != null;
            message = message + line + "\n") {
-        ;
+
       }
       dblView.showErrorMessage("Server response: " + message.trim());
-    } catch (Exception ex) {
+    } catch (final Exception ex) {
       dblView.showErrorMessage(ex.toString());
       ex.printStackTrace();
     } finally {
       try {
         reader.close();
-      } catch (Exception exception1) {
+      } catch (final Exception exception1) {
       }
       try {
         out.close();
-      } catch (Exception exception2) {
+      } catch (final Exception exception2) {
       }
       try {
         httpConn.disconnect();
-      } catch (Exception ignore) {
+      } catch (final Exception ignore) {
       }
     }
   }
 
   void updateLookAndFeel(String lfName) {
-    LookAndFeel lf = UIManager.getLookAndFeel();
+    final LookAndFeel lf = UIManager.getLookAndFeel();
     if (lf != null && lf.getName().equals(lfName)) {
       return;
     }
-    javax.swing.UIManager.LookAndFeelInfo lfi[] =
+    final javax.swing.UIManager.LookAndFeelInfo lfi[] =
         UIManager.getInstalledLookAndFeels();
-    for (int i = 0; i < lfi.length; i++) {
-      if (lfi[i].getName().equals(lfName)) {
+    for (final LookAndFeelInfo element2 : lfi) {
+      if (element2.getName().equals(lfName)) {
         try {
           dblView.stopEditing();
-          UIManager.setLookAndFeel(lfi[i].getClassName());
+          UIManager.setLookAndFeel(element2.getClassName());
           SwingUtilities.updateComponentTreeUI(this);
           return;
-        } catch (Exception exception) {
+        } catch (final Exception exception) {
         }
       }
     }
 
   }
 
+  @Override
   public String getAppletInfo() {
     return "XML Editor Applet. Author: Felix Golubov, WMG 2003.";
   }
 
+  @Override
   public String[][] getParameterInfo() {
     return (new String[][] {
         new String[] {
@@ -595,11 +601,17 @@ public class FXApplet extends JApplet {
     });
   }
 
+  @Override
   public void destroy() {
     Thread.yield();
   }
 
   class Btn extends JButton {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 7556957719356707384L;
 
     public Btn(ImageIcon icon, String toolTipText) {
       super(icon);
@@ -616,6 +628,11 @@ public class FXApplet extends JApplet {
 
   class ToggleBtn extends JToggleButton {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = -2731668382902219913L;
+
     public ToggleBtn(ImageIcon icon, String toolTipText) {
       super(icon);
       setFocusPainted(false);
@@ -631,6 +648,11 @@ public class FXApplet extends JApplet {
 
   class MItem extends JMenuItem {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = -6743687839953167701L;
+
     public MItem(String text, ImageIcon icon) {
       super(text);
       if (icon != null) {
@@ -641,8 +663,7 @@ public class FXApplet extends JApplet {
     }
   }
 
-  class XMLDocumentLoader
-      implements Runnable {
+  class XMLDocumentLoader implements Runnable {
 
     String xmlContent;
 
@@ -650,19 +671,20 @@ public class FXApplet extends JApplet {
       this.xmlContent = xmlContent;
     }
 
+    @Override
     public void run() {
       doLoadXMLDocument(xmlContent);
     }
   }
 
-  class InnerListener
-      implements ActionListener, FXModelStatusListener {
+  class InnerListener implements ActionListener, FXModelStatusListener {
 
     InnerListener() {
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-      Object source = e.getSource();
+      final Object source = e.getSource();
       if (source == btnReload || source == mReload) {
         if (prmOnLoad != null) {
           callJavascriptHandler(prmOnLoad);
@@ -676,33 +698,33 @@ public class FXApplet extends JApplet {
           saveXMLDocument();
         }
       } else if (source == btnXmlLoad || source == mXmlLoad) {
-        String cur = textFieldXml.getText();
+        final String cur = textFieldXml.getText();
         JFileChooser fc = null;
         if (cur != null && !cur.isEmpty()) {
-          File parent = new File(cur).getParentFile();
+          final File parent = new File(cur).getParentFile();
           fc = new JFileChooser(parent);
         } else {
           fc = new JFileChooser();
         }
-        int val = fc.showOpenDialog(rootPane);
+        final int val = fc.showOpenDialog(rootPane);
         if (val == JFileChooser.APPROVE_OPTION) {
-          File file = fc.getSelectedFile();
+          final File file = fc.getSelectedFile();
           textFieldXml.setText(file.getAbsolutePath());
         }
         setXMLSource(textFieldXml.getText());
         doLoadXMLDocument(null);
       } else if (source == btnXsdLoad || source == mXsdLoad) {
-        String cur = textField.getText();
+        final String cur = textField.getText();
         JFileChooser fc = null;
         if (cur != null && !cur.isEmpty()) {
-          File parent = new File(cur).getParentFile();
+          final File parent = new File(cur).getParentFile();
           fc = new JFileChooser(parent);
         } else {
           fc = new JFileChooser();
         }
-        int val = fc.showOpenDialog(rootPane);
+        final int val = fc.showOpenDialog(rootPane);
         if (val == JFileChooser.APPROVE_OPTION) {
-          File file = fc.getSelectedFile();
+          final File file = fc.getSelectedFile();
           textField.setText(file.getAbsolutePath());
         }
         setXMLSchema(textField.getText());
@@ -718,11 +740,13 @@ public class FXApplet extends JApplet {
       }
     }
 
+    @Override
     public void newDocumentLoaded(FXStatusEvent e) {
       btnSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
       mSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
     }
 
+    @Override
     public void docValidityStatusChanged(FXStatusEvent e) {
       btnSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
       mSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());

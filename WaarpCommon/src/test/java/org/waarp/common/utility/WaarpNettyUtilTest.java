@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.common.utility;
 
@@ -77,30 +77,30 @@ public class WaarpNettyUtilTest {
     WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
     clientBootstrap.handler(new HttpClientInitializer(null));
 
-    ServerBootstrap bootstrap = new ServerBootstrap();
+    final ServerBootstrap bootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
       future = bootstrap.bind(PORT).sync();
-      Channel channel = future.channel();
-      Channel clientChannel =
+      future.channel();
+      final Channel clientChannel =
           clientBootstrap.connect("localhost", PORT).sync().channel();
-      HttpRequest request =
+      final HttpRequest request =
           new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
       request.headers().set(HttpHeaderNames.HOST, "localhost")
              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
              .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
       clientChannel.writeAndFlush(request);
       clientChannel.closeFuture().sync();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail("Should not " + e.getMessage());
     } finally {
       if (future != null) {
-        Channel channel = future.channel();
+        final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           e.printStackTrace();
         }
       }
@@ -117,16 +117,16 @@ public class WaarpNettyUtilTest {
     WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
     clientBootstrap.handler(new HttpClientInitializer(null));
 
-    ServerBootstrap bootstrap = new ServerBootstrap();
+    final ServerBootstrap bootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
       future = bootstrap.bind(PORT).sync();
-      Channel channel = future.channel();
-      Channel clientChannel =
+      future.channel();
+      final Channel clientChannel =
           clientBootstrap.connect("localhost", PORT).sync().channel();
-      HttpRequest request =
+      final HttpRequest request =
           new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
       request.headers().set(HttpHeaderNames.HOST, "localhost")
              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
@@ -134,14 +134,14 @@ public class WaarpNettyUtilTest {
       clientChannel.writeAndFlush(request);
       clientChannel.closeFuture().sync();
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail("Should not " + e.getMessage());
     } finally {
       if (future != null) {
-        Channel channel = future.channel();
+        final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           e.printStackTrace();
         }
       }
@@ -153,26 +153,26 @@ public class WaarpNettyUtilTest {
   @Test
   public void setServerSslBootstrap() throws CryptoException {
     // Load the KeyStore (No certificates)
-    String keyStoreFilename = "certs/testsslnocert.jks";
-    ClassLoader classLoader = WaarpNettyUtilTest.class.getClassLoader();
-    URL url = classLoader.getResource(keyStoreFilename);
+    final String keyStoreFilename = "certs/testsslnocert.jks";
+    final ClassLoader classLoader = WaarpNettyUtilTest.class.getClassLoader();
+    final URL url = classLoader.getResource(keyStoreFilename);
     assertNotNull(url);
-    File file = new File(url.getFile());
+    final File file = new File(url.getFile());
     assertTrue("File Should exists", file.exists());
-    String keyStorePasswd = "testsslnocert";
-    String keyPassword = "testalias";
-    WaarpSecureKeyStore WaarpSecureKeyStore =
+    final String keyStorePasswd = "testsslnocert";
+    final String keyPassword = "testalias";
+    final WaarpSecureKeyStore WaarpSecureKeyStore =
         new WaarpSecureKeyStore(file.getAbsolutePath(), keyStorePasswd,
                                 keyPassword);
     // Include certificates
-    String trustStoreFilename = "certs/testcert.jks";
-    File file2 =
+    final String trustStoreFilename = "certs/testcert.jks";
+    final File file2 =
         new File(classLoader.getResource(trustStoreFilename).getFile());
     assertTrue("File2 Should exists", file2.exists());
-    String trustStorePasswd = "testcert";
+    final String trustStorePasswd = "testcert";
     WaarpSecureKeyStore
         .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, true);
-    WaarpSslContextFactory waarpSslContextFactory =
+    final WaarpSslContextFactory waarpSslContextFactory =
         new WaarpSslContextFactory(WaarpSecureKeyStore);
 
     final EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -182,31 +182,31 @@ public class WaarpNettyUtilTest {
 
     clientBootstrap.handler(new HttpClientInitializer(waarpSslContextFactory));
 
-    ServerBootstrap bootstrap = new ServerBootstrap();
+    final ServerBootstrap bootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(waarpSslContextFactory));
     ChannelFuture future = null;
     try {
       future = bootstrap.bind(PORT).sync();
-      Channel channel = future.channel();
-      Channel clientChannel =
+      future.channel();
+      final Channel clientChannel =
           clientBootstrap.connect("localhost", PORT).sync().channel();
       WaarpSslUtility.waitForHandshake(clientChannel);
-      HttpRequest request =
+      final HttpRequest request =
           new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
       request.headers().set(HttpHeaderNames.HOST, "localhost")
              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
              .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
       clientChannel.writeAndFlush(request);
       clientChannel.closeFuture().sync();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail("Should not " + e.getMessage());
     } finally {
       if (future != null) {
-        Channel channel = future.channel();
+        final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           e.printStackTrace();
         }
       }
@@ -220,26 +220,26 @@ public class WaarpNettyUtilTest {
   @Test
   public void setServerSslBootstrap1Group() throws CryptoException {
     // Load the KeyStore (No certificates)
-    String keyStoreFilename = "certs/testsslnocert.jks";
-    ClassLoader classLoader = WaarpNettyUtilTest.class.getClassLoader();
-    URL url = classLoader.getResource(keyStoreFilename);
+    final String keyStoreFilename = "certs/testsslnocert.jks";
+    final ClassLoader classLoader = WaarpNettyUtilTest.class.getClassLoader();
+    final URL url = classLoader.getResource(keyStoreFilename);
     assertNotNull(url);
-    File file = new File(url.getFile());
+    final File file = new File(url.getFile());
     assertTrue("File Should exists", file.exists());
-    String keyStorePasswd = "testsslnocert";
-    String keyPassword = "testalias";
-    WaarpSecureKeyStore WaarpSecureKeyStore =
+    final String keyStorePasswd = "testsslnocert";
+    final String keyPassword = "testalias";
+    final WaarpSecureKeyStore WaarpSecureKeyStore =
         new WaarpSecureKeyStore(file.getAbsolutePath(), keyStorePasswd,
                                 keyPassword);
     // Include certificates
-    String trustStoreFilename = "certs/testcert.jks";
-    File file2 =
+    final String trustStoreFilename = "certs/testcert.jks";
+    final File file2 =
         new File(classLoader.getResource(trustStoreFilename).getFile());
     assertTrue("File2 Should exists", file2.exists());
-    String trustStorePasswd = "testcert";
+    final String trustStorePasswd = "testcert";
     WaarpSecureKeyStore
         .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, true);
-    WaarpSslContextFactory waarpSslContextFactory =
+    final WaarpSslContextFactory waarpSslContextFactory =
         new WaarpSslContextFactory(WaarpSecureKeyStore);
 
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -248,20 +248,21 @@ public class WaarpNettyUtilTest {
 
     clientBootstrap.handler(new HttpClientInitializer(waarpSslContextFactory));
 
-    ServerBootstrap bootstrap = new ServerBootstrap();
+    final ServerBootstrap bootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(waarpSslContextFactory));
     ChannelFuture future = null;
     try {
       future = bootstrap.bind(PORT).sync();
-      Channel channel = future.channel();
-      ChannelFuture clientFuture =
+      future.channel();
+      final ChannelFuture clientFuture =
           clientBootstrap.connect("localhost", PORT).sync();
-      Channel clientChannel = WaarpSslUtility.waitforChannelReady(clientFuture);
+      final Channel clientChannel =
+          WaarpSslUtility.waitforChannelReady(clientFuture);
       assertNotNull(clientChannel);
       WaarpSslUtility.waitForHandshake(clientChannel);
       WaarpSslUtility.addSslOpenedChannel(clientChannel);
-      HttpRequest request =
+      final HttpRequest request =
           new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
       request.headers().set(HttpHeaderNames.HOST, "localhost")
              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
@@ -272,15 +273,15 @@ public class WaarpNettyUtilTest {
       clientChannel.closeFuture().sync();
       WaarpSslUtility.closingSslChannel(clientChannel);
       WaarpSslUtility.forceCloseAllSslChannels();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
       fail("Should not " + e.getMessage());
     } finally {
       if (future != null) {
-        Channel channel = future.channel();
+        final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           e.printStackTrace();
         }
       }
@@ -304,13 +305,13 @@ public class WaarpNettyUtilTest {
     WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
     clientBootstrap.handler(new HttpClientInitializer(null));
 
-    ServerBootstrap bootstrap = new ServerBootstrap();
+    final ServerBootstrap bootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
       future = bootstrap.bind(PORT).sync();
-      Channel channel = future.channel();
+      final Channel channel = future.channel();
       channel.pipeline().addFirst("Traffic", trafficShapingHandler);
       Channel clientChannel =
           clientBootstrap.connect("localhost", PORT).sync().channel();
@@ -333,14 +334,14 @@ public class WaarpNettyUtilTest {
       Thread.sleep(10);
       clientChannel.writeAndFlush(request);
       clientChannel.closeFuture().sync();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail("Should not " + e.getMessage());
     } finally {
       if (future != null) {
-        Channel channel = future.channel();
+        final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           e.printStackTrace();
         }
       }
@@ -354,68 +355,36 @@ public class WaarpNettyUtilTest {
   }
 
   /*
-  @Test
-  public void setServerBootstrap1GroupWithConstraint() {
-    final EventLoopGroup workerGroup = new NioEventLoopGroup();
-    final GlobalTrafficShapingHandler trafficShapingHandler =
-        new GlobalTrafficShapingHandler(workerGroup.next());
-    final ExtendedConstraintLimitHandler constraintLimitHandler =
-        new ExtendedConstraintLimitHandler(trafficShapingHandler);
-    constraintLimitHandler.setServer(true);
-    workerGroup.execute(constraintLimitHandler);
-
-    final Bootstrap clientBootstrap = new Bootstrap();
-    WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
-    clientBootstrap.handler(new HttpClientInitializer(null));
-
-    ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
-    bootstrap.childHandler(new HttpServerInitializer(null));
-    ChannelFuture future = null;
-    try {
-      future = bootstrap.bind(PORT).sync();
-      Channel channel = future.channel();
-      channel.pipeline().addFirst("Traffic", trafficShapingHandler);
-      Channel clientChannel =
-          clientBootstrap.connect("localhost", PORT).sync().channel();
-      HttpRequest request =
-          new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-      request.headers().set(HttpHeaderNames.HOST, "localhost")
-             .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
-             .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-      Thread.sleep(10);
-      clientChannel.writeAndFlush(request);
-      assertFalse(constraintLimitHandler.checkConstraints());
-      clientChannel.closeFuture().sync();
-      clientChannel =
-          clientBootstrap.connect("localhost", PORT).sync().channel();
-      request =
-          new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-      request.headers().set(HttpHeaderNames.HOST, "localhost")
-             .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
-             .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-      Thread.sleep(10);
-      clientChannel.writeAndFlush(request);
-      clientChannel.closeFuture().sync();
-    } catch (Exception e) {
-      fail("Should not " + e.getMessage());
-    } finally {
-      if (future != null) {
-        Channel channel = future.channel();
-        try {
-          channel.close().sync();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-      constraintLimitHandler.release();
-      trafficShapingHandler.release();
-      workerGroup.shutdownGracefully();
-      System.out.println("Traffic and Constraint done");
-    }
-
-  }
-*/
+   * @Test public void setServerBootstrap1GroupWithConstraint() { final EventLoopGroup workerGroup = new
+   * NioEventLoopGroup(); final GlobalTrafficShapingHandler trafficShapingHandler = new
+   * GlobalTrafficShapingHandler(workerGroup.next()); final ExtendedConstraintLimitHandler
+   * constraintLimitHandler = new ExtendedConstraintLimitHandler(trafficShapingHandler);
+   * constraintLimitHandler.setServer(true); workerGroup.execute(constraintLimitHandler);
+   *
+   * final Bootstrap clientBootstrap = new Bootstrap(); WaarpNettyUtil.setBootstrap(clientBootstrap,
+   * workerGroup, 10000); clientBootstrap.handler(new HttpClientInitializer(null));
+   *
+   * ServerBootstrap bootstrap = new ServerBootstrap(); WaarpNettyUtil.setServerBootstrap(bootstrap,
+   * workerGroup, 30000); bootstrap.childHandler(new HttpServerInitializer(null)); ChannelFuture future = null;
+   * try { future = bootstrap.bind(PORT).sync(); Channel channel = future.channel();
+   * channel.pipeline().addFirst("Traffic", trafficShapingHandler); Channel clientChannel =
+   * clientBootstrap.connect("localhost", PORT).sync().channel(); HttpRequest request = new
+   * DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+   * request.headers().set(HttpHeaderNames.HOST, "localhost") .set(HttpHeaderNames.CONNECTION,
+   * HttpHeaderValues.CLOSE) .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP); Thread.sleep(10);
+   * clientChannel.writeAndFlush(request); assertFalse(constraintLimitHandler.checkConstraints());
+   * clientChannel.closeFuture().sync(); clientChannel = clientBootstrap.connect("localhost",
+   * PORT).sync().channel(); request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+   * request.headers().set(HttpHeaderNames.HOST, "localhost") .set(HttpHeaderNames.CONNECTION,
+   * HttpHeaderValues.CLOSE) .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP); Thread.sleep(10);
+   * clientChannel.writeAndFlush(request); clientChannel.closeFuture().sync(); } catch (Exception e) {
+   * fail("Should not " + e.getMessage()); } finally { if (future != null) { Channel channel = future.channel();
+   * try { channel.close().sync(); } catch (InterruptedException e) { e.printStackTrace(); } }
+   * constraintLimitHandler.release(); trafficShapingHandler.release(); workerGroup.shutdownGracefully();
+   * System.out.println("Traffic and Constraint done"); }
+   *
+   * }
+   */
 
   public class HttpServerHandler
       extends SimpleChannelInboundHandler<HttpObject> {
@@ -424,12 +393,11 @@ public class WaarpNettyUtilTest {
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
         throws Exception {
       if (msg instanceof LastHttpContent) {
-        ByteBuf content =
+        final ByteBuf content =
             Unpooled.copiedBuffer("Hello World.", CharsetUtil.UTF_8);
-        FullHttpResponse
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                                                   HttpResponseStatus.OK,
-                                                   content);
+        final FullHttpResponse response =
+            new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                                        HttpResponseStatus.OK, content);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
         response.headers()
                 .set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
@@ -453,12 +421,12 @@ public class WaarpNettyUtilTest {
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-      ChannelPipeline pipeline = ch.pipeline();
+      final ChannelPipeline pipeline = ch.pipeline();
       if (sslContextFactory != null) {
         // Add SSL as first element in the pipeline
-        SslHandler sslhandler = sslContextFactory.initInitializer(true,
-                                                                  sslContextFactory
-                                                                      .needClientAuthentication());
+        final SslHandler sslhandler = sslContextFactory.initInitializer(true,
+                                                                        sslContextFactory
+                                                                            .needClientAuthentication());
         pipeline.addLast("ssl", sslhandler);
         WaarpSslUtility.addSslOpenedChannel(ch);
       }
@@ -473,15 +441,15 @@ public class WaarpNettyUtilTest {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
       if (msg instanceof HttpResponse) {
-        HttpResponse response = (HttpResponse) msg;
+        final HttpResponse response = (HttpResponse) msg;
 
         System.err.println("STATUS: " + response.status());
         System.err.println("VERSION: " + response.protocolVersion());
         System.err.println();
 
         if (!response.headers().isEmpty()) {
-          for (CharSequence name : response.headers().names()) {
-            for (CharSequence value : response.headers().getAll(name)) {
+          for (final CharSequence name : response.headers().names()) {
+            for (final CharSequence value : response.headers().getAll(name)) {
               System.err.println("HEADER: " + name + " = " + value);
             }
           }
@@ -495,7 +463,7 @@ public class WaarpNettyUtilTest {
         }
       }
       if (msg instanceof HttpContent) {
-        HttpContent content = (HttpContent) msg;
+        final HttpContent content = (HttpContent) msg;
 
         System.err.print(content.content().toString(CharsetUtil.UTF_8));
         System.err.flush();
@@ -524,14 +492,14 @@ public class WaarpNettyUtilTest {
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-      ChannelPipeline pipeline = ch.pipeline();
+      final ChannelPipeline pipeline = ch.pipeline();
 
       // Enable HTTPS if necessary.
       if (sslContextFactory != null) {
         // Add SSL as first element in the pipeline
-        SslHandler sslhandler = sslContextFactory.initInitializer(false,
-                                                                  sslContextFactory
-                                                                      .needClientAuthentication());
+        final SslHandler sslhandler = sslContextFactory.initInitializer(false,
+                                                                        sslContextFactory
+                                                                            .needClientAuthentication());
         pipeline.addLast("ssl", sslhandler);
         WaarpSslUtility.addSslOpenedChannel(ch);
       }
@@ -550,12 +518,11 @@ public class WaarpNettyUtilTest {
      * This constructor enables both Connection check ability and throttling
      * bandwidth with cpu usage
      *
-     * @param handler the GlobalTrafficShapingHandler associated (null to
-     *     have no proactive cpu limitation)
+     * @param handler the GlobalTrafficShapingHandler associated
+     *     (null to have no proactive cpu limitation)
      */
     public ExtendedConstraintLimitHandler(GlobalTrafficShapingHandler handler) {
-      super(1000, 10000, true, true, 0.99,
-            0, 0, 1, 0.1, handler, 10, 4096);
+      super(1000, 10000, true, true, 0.99, 0, 0, 1, 0.1, handler, 10, 4096);
     }
 
     @Override

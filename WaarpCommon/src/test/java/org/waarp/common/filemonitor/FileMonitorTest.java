@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.common.filemonitor;
 
@@ -38,32 +38,32 @@ public class FileMonitorTest {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    File statusFile = new File("/tmp/status.txt");
+    final File statusFile = new File("/tmp/status.txt");
     statusFile.delete();
-    File stopFile = new File("/tmp/stop.txt");
+    final File stopFile = new File("/tmp/stop.txt");
     stopFile.delete();
-    File directory = new File("/tmp/monitor");
-    File fileTest = new File(directory, "test.txt");
+    final File directory = new File("/tmp/monitor");
+    final File fileTest = new File(directory, "test.txt");
     directory.mkdirs();
     fileTest.delete();
-    File directory2 = new File("/tmp/monitor2");
+    final File directory2 = new File("/tmp/monitor2");
     directory2.mkdirs();
-    File fileTest2 = new File(directory2, "test.txt");
+    final File fileTest2 = new File(directory2, "test.txt");
     fileTest2.delete();
   }
 
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    File statusFile = new File("/tmp/status.txt");
+    final File statusFile = new File("/tmp/status.txt");
     statusFile.delete();
-    File stopFile = new File("/tmp/stop.txt");
+    final File stopFile = new File("/tmp/stop.txt");
     stopFile.delete();
-    File directory = new File("/tmp/monitor");
-    File fileTest = new File(directory, "test.txt");
+    final File directory = new File("/tmp/monitor");
+    final File fileTest = new File(directory, "test.txt");
     fileTest.delete();
     directory.delete();
-    File directory2 = new File("/tmp/monitor2");
-    File fileTest2 = new File(directory2, "test.txt");
+    final File directory2 = new File("/tmp/monitor2");
+    final File fileTest2 = new File(directory2, "test.txt");
     fileTest2.delete();
     directory2.delete();
   }
@@ -78,23 +78,23 @@ public class FileMonitorTest {
 
   @Test
   public void testFileMonitor() throws InterruptedException, IOException {
-    File statusFile = new File("/tmp/status.txt");
+    final File statusFile = new File("/tmp/status.txt");
     statusFile.delete();
-    File stopFile = new File("/tmp/stop.txt");
+    final File stopFile = new File("/tmp/stop.txt");
     stopFile.delete();
-    File directory = new File("/tmp/monitor");
-    File fileTest = new File(directory, "test.txt");
+    final File directory = new File("/tmp/monitor");
+    final File fileTest = new File(directory, "test.txt");
     directory.mkdirs();
     fileTest.delete();
-    File directory2 = new File("/tmp/monitor2");
+    final File directory2 = new File("/tmp/monitor2");
     directory2.mkdirs();
-    File fileTest2 = new File(directory2, "test.txt");
+    final File fileTest2 = new File(directory2, "test.txt");
     fileTest2.delete();
 
     final AtomicInteger countNew = new AtomicInteger();
     final AtomicInteger countDelete = new AtomicInteger();
     final AtomicInteger countCheck = new AtomicInteger();
-    FileMonitorCommandRunnableFuture commandValidFile =
+    final FileMonitorCommandRunnableFuture commandValidFile =
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem file) {
@@ -104,7 +104,7 @@ public class FileMonitorTest {
             finalize(true, 0);
           }
         };
-    FileMonitorCommandRunnableFuture commandRemovedFile =
+    final FileMonitorCommandRunnableFuture commandRemovedFile =
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem file) {
@@ -113,7 +113,7 @@ public class FileMonitorTest {
             countDelete.incrementAndGet();
           }
         };
-    FileMonitorCommandRunnableFuture commandCheckIteration =
+    final FileMonitorCommandRunnableFuture commandCheckIteration =
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem unused) {
@@ -121,10 +121,9 @@ public class FileMonitorTest {
             countCheck.incrementAndGet();
           }
         };
-    FileMonitor fileMonitor =
+    final FileMonitor fileMonitor =
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
-                        100, null, false,
-                        commandValidFile, commandRemovedFile,
+                        100, null, false, commandValidFile, commandRemovedFile,
                         commandCheckIteration);
     commandValidFile.setMonitor(fileMonitor);
 
@@ -165,7 +164,6 @@ public class FileMonitorTest {
     System.err.println("Remove Directory: " + directory2.getAbsolutePath());
     fileMonitor.removeDirectory(directory2);
     Thread.sleep(500);
-
 
     // Full status
     fileMonitor.setNextAsFullStatus();

@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -33,7 +33,7 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 /**
- * @author Frederic Bregier
+ *
  */
 public class TestProgressBarTransfer extends ProgressBarTransfer {
 
@@ -51,17 +51,15 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
    */
   public TestProgressBarTransfer(R66Future future, String remoteHost,
                                  String filename, String rulename,
-                                 String fileinfo, boolean isMD5,
-                                 int blocksize, long id,
-                                 NetworkTransaction networkTransaction,
+                                 String fileinfo, boolean isMD5, int blocksize,
+                                 long id, NetworkTransaction networkTransaction,
                                  long callbackdelay) {
-    super(future, remoteHost, filename, rulename, fileinfo, isMD5,
-          blocksize, id, networkTransaction, callbackdelay);
+    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
+          id, networkTransaction, callbackdelay);
   }
 
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        null));
+    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ProgressBarTransfer.class);
     }
@@ -74,66 +72,45 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
       DetectionUtils.SystemExit(2);
       return;
     }
-    long time1 = System.currentTimeMillis();
-    R66Future future = new R66Future(true);
+    final long time1 = System.currentTimeMillis();
+    final R66Future future = new R66Future(true);
 
     Configuration.configuration.pipelineInit();
-    NetworkTransaction networkTransaction = new NetworkTransaction();
+    final NetworkTransaction networkTransaction = new NetworkTransaction();
     try {
-      TestProgressBarTransfer transaction = new TestProgressBarTransfer(future,
-                                                                        rhost,
-                                                                        localFilename,
-                                                                        rule,
-                                                                        fileInfo,
-                                                                        ismd5,
-                                                                        block,
-                                                                        idt,
-                                                                        networkTransaction,
-                                                                        100);
+      final TestProgressBarTransfer transaction =
+          new TestProgressBarTransfer(future, rhost, localFilename, rule,
+                                      fileInfo, ismd5, block, idt,
+                                      networkTransaction, 100);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       transaction.run();
-      future.awaitUninterruptibly();
-      long time2 = System.currentTimeMillis();
-      long delay = time2 - time1;
-      R66Result result = future.getResult();
+      future.awaitOrInterruptible();
+      final long time2 = System.currentTimeMillis();
+      final long delay = time2 - time1;
+      final R66Result result = future.getResult();
       if (future.isSuccess()) {
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-          logger.warn("Transfer in status: WARNED     "
-                      + result.getRunner().toShortString()
-                      +
-                      "     <REMOTE>"
-                      + rhost
-                      + "</REMOTE>"
-                      +
-                      "     <FILEFINAL>"
-                      +
+          logger.warn("Transfer in status: WARNED     " +
+                      result.getRunner().toShortString() + "     <REMOTE>" +
+                      rhost + "</REMOTE>" + "     <FILEFINAL>" +
                       (result.getFile() != null?
-                          result.getFile().toString() + "</FILEFINAL>"
-                          : "no file")
-                      + "     delay: " + delay);
+                          result.getFile().toString() + "</FILEFINAL>" :
+                          "no file") + "     delay: " + delay);
         } else {
-          logger.info("Transfer in status: SUCCESS     "
-                      + result.getRunner().toShortString()
-                      +
-                      "     <REMOTE>"
-                      + rhost
-                      + "</REMOTE>"
-                      +
-                      "     <FILEFINAL>"
-                      +
+          logger.info("Transfer in status: SUCCESS     " +
+                      result.getRunner().toShortString() + "     <REMOTE>" +
+                      rhost + "</REMOTE>" + "     <FILEFINAL>" +
                       (result.getFile() != null?
-                          result.getFile().toString() + "</FILEFINAL>"
-                          : "no file")
-                      + "     delay: " + delay);
+                          result.getFile().toString() + "</FILEFINAL>" :
+                          "no file") + "     delay: " + delay);
         }
         if (nolog || result.getRunner().shallIgnoreSave()) {
           // In case of success, delete the runner
           try {
             result.getRunner().delete();
-          } catch (WaarpDatabaseException e) {
+          } catch (final WaarpDatabaseException e) {
             logger.warn("Cannot apply nolog to     " +
-                        result.getRunner().toShortString(),
-                        e);
+                        result.getRunner().toShortString(), e);
           }
         }
       } else {
@@ -145,15 +122,14 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
           logger.warn("Transfer is     WARNED     " +
-                      result.getRunner().toShortString() +
-                      "     <REMOTE>" + rhost + "</REMOTE>", future.getCause());
+                      result.getRunner().toShortString() + "     <REMOTE>" +
+                      rhost + "</REMOTE>", future.getCause());
           networkTransaction.closeAll();
           DetectionUtils.SystemExit(result.getCode().ordinal());
         } else {
           logger.error("Transfer in     FAILURE     " +
-                       result.getRunner().toShortString() +
-                       "     <REMOTE>" + rhost + "</REMOTE>",
-                       future.getCause());
+                       result.getRunner().toShortString() + "     <REMOTE>" +
+                       rhost + "</REMOTE>", future.getCause());
           networkTransaction.closeAll();
           DetectionUtils.SystemExit(result.getCode().ordinal());
         }
@@ -174,23 +150,22 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
     if (filesize == 0) {
       System.err.println("Block: " + currentBlock + " BSize: " + blocksize);
     } else {
-      System.err
-          .println("Block: " + currentBlock + " BSize: " + blocksize + " on " +
-                   (int) (Math.ceil(((double) filesize / (double) blocksize))));
+      System.err.println(
+          "Block: " + currentBlock + " BSize: " + blocksize + " on " +
+          (int) (Math.ceil(((double) filesize / (double) blocksize))));
     }
   }
 
   @Override
   public void lastCallBack(boolean success, int currentBlock, int blocksize) {
     if (filesize == 0) {
-      System.err
-          .println("Status: " + success + " Block: " + currentBlock + " BSize: "
-                   + blocksize);
+      System.err.println(
+          "Status: " + success + " Block: " + currentBlock + " BSize: " +
+          blocksize);
     } else {
-      System.err
-          .println("Status: " + success + " Block: " + currentBlock + " BSize: "
-                   + blocksize +
-                   " Size=" + filesize);
+      System.err.println(
+          "Status: " + success + " Block: " + currentBlock + " BSize: " +
+          blocksize + " Size=" + filesize);
     }
   }
 

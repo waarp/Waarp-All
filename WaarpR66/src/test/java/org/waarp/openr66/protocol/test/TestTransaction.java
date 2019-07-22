@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.waarp.openr66.protocol.test;
 
 import org.waarp.common.logging.WaarpLogLevel;
@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 /**
  * Test class for internal ping pong test
  *
- * @author Frederic Bregier
+ *
  */
 public class TestTransaction implements Runnable {
   /**
@@ -70,69 +70,67 @@ public class TestTransaction implements Runnable {
   }
 
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(
-        WaarpLogLevel.WARN));
+    WaarpLoggerFactory
+        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestTransaction.class);
     }
     if (args.length < 1) {
-      logger
-          .error("Needs at least the configuration file as first argument");
+      logger.error("Needs at least the configuration file as first argument");
       return;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger
-          .error("Needs a correct configuration file as first argument");
+      logger.error("Needs a correct configuration file as first argument");
       return;
     }
-    DbHostAuth host = Configuration.configuration.getHOST_AUTH();
+    final DbHostAuth host = Configuration.configuration.getHOST_AUTH();
     final SocketAddress socketServerAddress;
     try {
       socketServerAddress = host.getSocketAddress();
-    } catch (IllegalArgumentException e) {
-      logger
-          .error("Needs a correct configuration file as first argument");
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
       return;
     }
     Configuration.configuration.pipelineInit();
 
     final NetworkTransaction networkTransaction = new NetworkTransaction();
-    ExecutorService executorService = Executors.newCachedThreadPool();
+    final ExecutorService executorService = Executors.newCachedThreadPool();
     int nb = 100;
     if (args.length > 1) {
       nb = Integer.parseInt(args[1]);
     }
-    R66Future[] arrayFuture = new R66Future[nb];
+    final R66Future[] arrayFuture = new R66Future[nb];
     logger.info("Start Test of Transaction");
-    long time1 = System.currentTimeMillis();
+    final long time1 = System.currentTimeMillis();
     for (int i = 0; i < nb; i++) {
       arrayFuture[i] = new R66Future(true);
-      TestPacket packet = new TestPacket("Test", "" + i, 0);
-      TestTransaction transaction = new TestTransaction(
-          networkTransaction, arrayFuture[i], socketServerAddress,
-          packet);
+      final TestPacket packet = new TestPacket("Test", "" + i, 0);
+      final TestTransaction transaction =
+          new TestTransaction(networkTransaction, arrayFuture[i],
+                              socketServerAddress, packet);
       executorService.execute(transaction);
     }
     int success = 0;
     int error = 0;
     for (int i = 0; i < nb; i++) {
-      arrayFuture[i].awaitForDoneOrInterruptible();
+      arrayFuture[i].awaitOrInterruptible();
       if (arrayFuture[i].isSuccess()) {
         success++;
       } else {
         error++;
       }
     }
-    long time2 = System.currentTimeMillis();
+    final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 success * TestPacket.pingpong * 1000 / (time2 - time1));
     executorService.shutdown();
     networkTransaction.closeAll();
   }
 
+  @Override
   public void run() {
-    LocalChannelReference localChannelReference = networkTransaction
+    final LocalChannelReference localChannelReference = networkTransaction
         .createConnectionWithRetry(socketAddress, false, future);
     if (localChannelReference == null) {
       logger.error("Cannot connect: ", future.getCause());
@@ -144,7 +142,7 @@ public class TestTransaction implements Runnable {
     try {
       ChannelUtils
           .writeAbstractLocalPacket(localChannelReference, testPacket, false);
-    } catch (OpenR66ProtocolPacketException e) {
+    } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);
       localChannelReference.getLocalChannel().close();

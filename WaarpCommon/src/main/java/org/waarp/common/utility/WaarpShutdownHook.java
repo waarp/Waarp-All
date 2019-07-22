@@ -1,24 +1,27 @@
-/**
-   This file is part of Waarp Project.
-
-   Copyright 2009, Frederic Bregier, and individual contributors by the @author
-   tags. See the COPYRIGHT.txt in the distribution for a full listing of
-   individual contributors.
-
-   All Waarp Project is free software: you can redistribute it and/or 
-   modify it under the terms of the GNU General Public License as published 
-   by the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   Waarp is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with Waarp .  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 package org.waarp.common.utility;
+
+import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,65 +31,61 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.waarp.common.future.WaarpFuture;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
-
 /**
- * @author "Frederic Bregier"
  *
  */
 public abstract class WaarpShutdownHook extends Thread {
   /**
    * Internal Logger
    */
-  private static final WaarpLogger logger = WaarpLoggerFactory
-      .getLogger(WaarpShutdownHook.class);
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(WaarpShutdownHook.class);
   /**
    * Sun property pointing the main class and its arguments. Might not be
-   * defined on non Hotspot VM implementations.
+   * defined on non Hotspot VM
+   * implementations.
    */
   private static final String SUN_JAVA_COMMAND = "sun.java.command";
   /**
    * Thread for ShutdownHook
    */
-  public static WaarpShutdownHook shutdownHook = null;
+  public static WaarpShutdownHook shutdownHook;
   /**
    * Set if the program is in shutdown
    */
-  private static volatile boolean shutdown = false;
+  private static volatile boolean shutdown;
   /**
    * Set if the program will start shutdown process
    */
-  private static volatile boolean shutdownStarted = false;
+  private static volatile boolean shutdownStarted;
   /**
    * Set if the program is in shutdown
    */
-  private static volatile boolean immediate = false;
+  private static volatile boolean immediate;
   /**
    * Set if the Handler is initialized
    */
-  private static boolean initialized = false;
+  private static boolean initialized;
   /**
    * Is the shutdown finished
    */
-  private static boolean isShutdownOver = false;
-  private static String applArgs = null;
-  private static volatile boolean shouldRestart = false;
-  private ShutdownConfiguration shutdownConfiguration = null;
+  private static boolean isShutdownOver;
+  private static String applArgs;
+  private static volatile boolean shouldRestart;
+  private ShutdownConfiguration shutdownConfiguration;
 
   public WaarpShutdownHook(ShutdownConfiguration configuration) {
     if (initialized) {
       shutdownHook.shutdownConfiguration = configuration;
-      this.setName("WaarpShutdownHook");
-      this.setDaemon(true);
+      setName("WaarpShutdownHook");
+      setDaemon(true);
       shutdownHook = this;
-      this.shutdownConfiguration = configuration;
+      shutdownConfiguration = configuration;
       return;
     }
-    this.shutdownConfiguration = configuration;
-    this.setName("WaarpShutdownHook");
-    this.setDaemon(true);
+    shutdownConfiguration = configuration;
+    setName("WaarpShutdownHook");
+    setDaemon(true);
     shutdownHook = this;
     initialized = true;
   }
@@ -136,9 +135,10 @@ public abstract class WaarpShutdownHook extends Thread {
     if (shutdownHook != null) {
       removeShutdownHook();
       terminate();
+      shutdownHook = null;
     } else {
       logger.error("No ShutdownHook setup");
-      DetectionUtils.SystemExit(1);
+      //FBGEXIT DetectionUtils.SystemExit(1);
     }
   }
 
@@ -157,17 +157,23 @@ public abstract class WaarpShutdownHook extends Thread {
   private static void terminate() {
     shutdownStarted = true;
     shutdown = true;
+    if (isShutdownOver || shutdownHook == null) {
+      shutdown = false;
+      shutdownStarted = false;
+      isShutdownOver = false;
+      initialized = false;
+      return;
+    }
     if (immediate) {
       shutdownHook.exit();
       // Force exit!
       try {
         Thread.sleep(shutdownHook.shutdownConfiguration.timeout / 2);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
       }
       if (logger.isDebugEnabled()) {
-        Map<Thread, StackTraceElement[]> map = Thread
-            .getAllStackTraces();
-        for (Thread thread : map.keySet()) {
+        final Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
+        for (final Thread thread : map.keySet()) {
           printStackTrace(thread, map.get(thread));
         }
       }
@@ -175,7 +181,7 @@ public abstract class WaarpShutdownHook extends Thread {
       logger.info("Should restart? " + isRestart());
       try {
         restartApplication();
-      } catch (IOException e1) {
+      } catch (final IOException e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
       }
@@ -183,9 +189,9 @@ public abstract class WaarpShutdownHook extends Thread {
       System.err.println("Halt System");
       try {
         Thread.sleep(1000);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
       }
-      DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0);
     } else {
       shutdownHook.launchFinalExit();
       immediate = true;
@@ -195,14 +201,17 @@ public abstract class WaarpShutdownHook extends Thread {
       logger.info("Should restart? " + isRestart());
       try {
         restartApplication();
-      } catch (IOException e1) {
+      } catch (final IOException e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
       }
       logger.info("Exit System");
       System.err.println("Exit System");
-      //Runtime.getRuntime().halt(0);
     }
+    shutdown = false;
+    shutdownStarted = false;
+    isShutdownOver = false;
+    initialized = false;
   }
 
   /**
@@ -216,14 +225,14 @@ public abstract class WaarpShutdownHook extends Thread {
    * @param thread
    * @param stacks
    */
-  static private void printStackTrace(Thread thread,
+  private static void printStackTrace(Thread thread,
                                       StackTraceElement[] stacks) {
-    System.err.print(thread.toString() + " : ");
+    System.err.print(thread + " : ");
     for (int i = 0; i < stacks.length - 1; i++) {
-      System.err.print(stacks[i].toString() + " ");
+      System.err.print(stacks[i] + " ");
     }
     if (stacks.length >= 1) {
-      System.err.println(stacks[stacks.length - 1].toString());
+      System.err.println(stacks[stacks.length - 1]);
     } else {
       System.err.println();
     }
@@ -238,8 +247,9 @@ public abstract class WaarpShutdownHook extends Thread {
 
   /**
    * Restart the application using the preset applArgs and computing the
-   * jvmArgs. execute the command in a shutdown
-   * hook, to be sure that all the resources have been disposed before
+   * jvmArgs. execute the command in a
+   * shutdown hook, to be sure that all the resources have been disposed
+   * before
    * restarting the application
    *
    * @throws IOException
@@ -248,12 +258,12 @@ public abstract class WaarpShutdownHook extends Thread {
     if (shouldRestart) {
       try {
         // java binary
-        String java = System.getProperty("java.home") + "/bin/java";
+        final String java = System.getProperty("java.home") + "/bin/java";
         // vm arguments
-        List<String> vmArguments =
+        final List<String> vmArguments =
             ManagementFactory.getRuntimeMXBean().getInputArguments();
-        StringBuilder vmArgsOneLine = new StringBuilder();
-        for (String arg : vmArguments) {
+        final StringBuilder vmArgsOneLine = new StringBuilder();
+        for (final String arg : vmArguments) {
           // if it's the agent argument : we ignore it otherwise the
           // address of the old application and the new one will be in conflict
           if (!arg.contains("-agentlib")) {
@@ -276,10 +286,10 @@ public abstract class WaarpShutdownHook extends Thread {
           System.err.println("Cannot restart!");
         }
         cmd.append(applArgs);
-        logger.debug("Should restart with:\n" + cmd.toString());
+        logger.debug("Should restart with:\n" + cmd);
         logger.warn("Should restart");
         Runtime.getRuntime().exec(cmd.toString());
-      } catch (Throwable e) {
+      } catch (final Throwable e) {
         // something went wrong
         throw new IOException("Error while trying to restart the application",
                               e);
@@ -303,8 +313,8 @@ public abstract class WaarpShutdownHook extends Thread {
     if (DetectionUtils.isJunit()) {
       return;
     }
-    Timer timer = new Timer("R66FinalExit", true);
-    ShutdownTimerTask timerTask = new ShutdownTimerTask();
+    final Timer timer = new Timer("WaarpFinalExit", true);
+    final ShutdownTimerTask timerTask = new ShutdownTimerTask();
     timer.schedule(timerTask, shutdownConfiguration.timeout * 4);
   }
 
@@ -314,21 +324,20 @@ public abstract class WaarpShutdownHook extends Thread {
    * @return null if it cannot
    */
   private static String getArgs() {
-    String test = System.getProperty(SUN_JAVA_COMMAND);
+    final String test = System.getProperty(SUN_JAVA_COMMAND);
     if (test != null && !test.isEmpty()) {
       // compute args directly
       // program main and program arguments
-      String[] mainCommand = test.split(" ");
+      final String[] mainCommand = test.split(" ");
       // program main is a jar
-      StringBuilder args = new StringBuilder();
+      final StringBuilder args = new StringBuilder();
       if (mainCommand[0].endsWith(".jar")) {
         // if it's a jar, add -jar mainJar
         args.append("-jar ").append(new File(mainCommand[0]).getPath());
       } else {
         // else it's a .class, add the classpath and mainClass
         args.append("-cp \"").append(System.getProperty("java.class.path"))
-            .append("\" ")
-            .append(mainCommand[0]);
+            .append("\" ").append(mainCommand[0]);
       }
       // finally add program arguments
       for (int i = 1; i < mainCommand.length; i++) {
@@ -365,8 +374,8 @@ public abstract class WaarpShutdownHook extends Thread {
       applArgs = "-cp " + applArgs;
     }
     applArgs += " " + main.getName();
-    for (int i = 0; i < args.length; i++) {
-      applArgs += " " + args[i];
+    for (final String arg : args) {
+      applArgs += " " + arg;
     }
   }
 
@@ -376,32 +385,32 @@ public abstract class WaarpShutdownHook extends Thread {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
           Thread.sleep(100);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
         }
       }
       // Already stopped
       System.err.println("Halt System now - services already stopped -");
-      DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0);
       return;
     }
     try {
-      terminate();
-    } catch (Throwable t) {
+      terminate(false);
+    } catch (final Throwable t) {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
           Thread.sleep(100);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
         }
       }
     }
     System.err.println("Halt System now");
-    DetectionUtils.SystemExit(0);
+    //FBGEXIT DetectionUtils.SystemExit(0);
   }
 
   /**
    * Class for argument of creation of WaarpShutdownHook
    *
-   * @author "Frederic Bregier"
+   *
    */
   public static class ShutdownConfiguration {
     public long timeout = 30000; // 30s per default
@@ -411,19 +420,19 @@ public abstract class WaarpShutdownHook extends Thread {
   /**
    * Finalize resources attached to handlers
    *
-   * @author Frederic Bregier
+   *
    */
-  private static class ShutdownTimerTask extends TimerTask {
+  static class ShutdownTimerTask extends TimerTask {
     /**
      * Internal Logger
      */
-    private static final WaarpLogger logger = WaarpLoggerFactory
-        .getLogger(ShutdownTimerTask.class);
+    private static final WaarpLogger logger =
+        WaarpLoggerFactory.getLogger(ShutdownTimerTask.class);
 
     /**
      * Internal constructor
      */
-    private ShutdownTimerTask() {
+    ShutdownTimerTask() {
     }
 
     @Override
@@ -433,17 +442,16 @@ public abstract class WaarpShutdownHook extends Thread {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
           Thread.sleep(100);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
         }
       }
       if (logger.isDebugEnabled()) {
-        Map<Thread, StackTraceElement[]> map = Thread
-            .getAllStackTraces();
-        for (Thread thread : map.keySet()) {
+        final Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
+        for (final Thread thread : map.keySet()) {
           printStackTrace(thread, map.get(thread));
         }
       }
-      DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0);
     }
   }
 }

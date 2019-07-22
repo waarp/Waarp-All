@@ -1,22 +1,22 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.waarp.common.utility;
 
@@ -62,11 +62,11 @@ public class FileConvertTest {
 
   @Test
   public void testFileConvert() throws IOException {
-    List<File> files = new ArrayList<File>();
-    File filecomp = new File("/tmp/testFile2.txt");
-    File file = new File("/tmp/testFile.txt");
-    FileWriter fileWriterBig = new FileWriter(filecomp);
-    FileWriter fileWriterBig2 = new FileWriter(file);
+    final List<File> files = new ArrayList<File>();
+    final File filecomp = new File("/tmp/testFile2.txt");
+    final File file = new File("/tmp/testFile.txt");
+    final FileWriter fileWriterBig = new FileWriter(filecomp);
+    final FileWriter fileWriterBig2 = new FileWriter(file);
     for (int i = 0; i < 10; i++) {
       fileWriterBig.write("0123456789\n");
       fileWriterBig2.write("0123456789\n");
@@ -87,17 +87,16 @@ public class FileConvertTest {
 
   @Test
   public void testCharsetsUtil() throws IOException {
-    File fileto = new File("/tmp/to.txt");
-    File filefrom = new File("/tmp/from.txt");
-    FileWriter fileWriterBig = new FileWriter(filefrom);
+    final File fileto = new File("/tmp/to.txt");
+    final File filefrom = new File("/tmp/from.txt");
+    final FileWriter fileWriterBig = new FileWriter(filefrom);
     for (int i = 0; i < 10; i++) {
       fileWriterBig.write("0123456789\n");
     }
     fileWriterBig.flush();
     fileWriterBig.close();
-    String[] args = {
-        "-to", "/tmp/to.txt", "UTF-8", "-from", "/tmp/from.txt"
-        , "UTF-8"
+    final String[] args = {
+        "-to", "/tmp/to.txt", "UTF-8", "-from", "/tmp/from.txt", "UTF-8"
     };
     CharsetsUtil.main(args);
     assertTrue(fileto.exists());

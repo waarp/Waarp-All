@@ -1,23 +1,23 @@
-/*******************************************************************************
+/*
  * This file is part of Waarp Project (named also Waarp or GG).
  *
  *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
  *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
- *  individual contributors.
+ * individual contributors.
  *
  *  All Waarp Project is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or (at your
- *  option) any later version.
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- *  Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
- *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- *  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with
- *  Waarp . If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
-package org.waarp.common.utility;
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.waarp.common.guid;
 
 import org.junit.Test;
 
@@ -27,28 +27,28 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class LongUuidTest {
-  private static final int NB = 100000;
+public class IntegerUuidTest {
+  private static final int NB = 1000000;
 
   @Test
   public void testStructure() {
-    LongUuid id = new LongUuid();
+    IntegerUuid id = new IntegerUuid();
     String str = id.toString();
 
-    assertEquals(16, str.length());
+    assertEquals(str.length(), 8);
   }
 
   @Test
   public void testParsing() {
-    LongUuid id1 = new LongUuid();
-    LongUuid id2 = new LongUuid(id1.toString());
+    IntegerUuid id1 = new IntegerUuid();
+    IntegerUuid id2 = new IntegerUuid(id1.toString());
     assertEquals(id1, id2);
     assertEquals(id1.hashCode(), id2.hashCode());
-    assertEquals(id1.getLong(), id2.getLong());
+    assertEquals(id1.getInt(), id2.getInt());
 
-    LongUuid id3 = new LongUuid(id1.getBytes());
+    IntegerUuid id3 = new IntegerUuid(id1.getBytes());
     assertEquals(id1, id3);
-    LongUuid id4 = new LongUuid(id1.getLong());
+    IntegerUuid id4 = new IntegerUuid(id1.getInt());
     assertEquals(id1, id4);
   }
 
@@ -58,7 +58,7 @@ public class LongUuidTest {
     long[] ids = new long[n];
 
     for (int i = 0; i < n; i++) {
-      ids[i] = new LongUuid().getLong();
+      ids[i] = new IntegerUuid().getInt();
     }
 
     for (int i = 1; i < n; i++) {
@@ -68,53 +68,49 @@ public class LongUuidTest {
 
   @Test
   public void testGetBytesImmutability() {
-    LongUuid id = new LongUuid();
+    IntegerUuid id = new IntegerUuid();
     byte[] bytes = id.getBytes();
     byte[] original = Arrays.copyOf(bytes, bytes.length);
     bytes[0] = 0;
     bytes[1] = 0;
     bytes[2] = 0;
 
-    assertArrayEquals(id.getBytes(), original);
+    assertTrue(Arrays.equals(id.getBytes(), original));
   }
 
   @Test
   public void testConstructorImmutability() {
-    LongUuid id = new LongUuid();
+    IntegerUuid id = new IntegerUuid();
     byte[] bytes = id.getBytes();
     byte[] original = Arrays.copyOf(bytes, bytes.length);
 
-    LongUuid id2 = new LongUuid(bytes);
+    IntegerUuid id2 = new IntegerUuid(bytes);
     bytes[0] = 0;
     bytes[1] = 0;
 
-    assertArrayEquals(id2.getBytes(), original);
-  }
-
-  @Test
-  public void testPIDField() throws Exception {
-    LongUuid id = new LongUuid();
-
-    assertEquals(LongUuid.jvmProcessId(), id.getProcessId());
+    assertTrue(Arrays.equals(id2.getBytes(), original));
   }
 
   @Test
   public void testForDuplicates() {
     int n = NB;
-    Set<Long> uuids = new HashSet<Long>();
-    LongUuid[] uuidArray = new LongUuid[n];
+    Set<Integer> uuids = new HashSet<Integer>();
+    IntegerUuid[] uuidArray = new IntegerUuid[n];
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
-      uuidArray[i] = new LongUuid();
+      uuidArray[i] = new IntegerUuid();
     }
     long stop = System.currentTimeMillis();
+    if (stop == start) {
+      stop += 1;
+    }
     System.out.println(
         "Time = " + (stop - start) + " so " + n * 1000 / (stop - start) +
         " Uuids/s");
 
     for (int i = 0; i < n; i++) {
-      uuids.add(uuidArray[i].getLong());
+      uuids.add(uuidArray[i].getInt());
     }
 
     System.out.println("Create " + n + " and get: " + uuids.size());
@@ -122,31 +118,52 @@ public class LongUuidTest {
     int i = 1;
     int largest = 0;
     for (; i < n; i++) {
-      if (uuidArray[i].getTimestamp() != uuidArray[i - 1].getTimestamp()) {
+      if (uuidArray[i].getInt() != uuidArray[i - 1].getInt()) {
         int j = i + 1;
-        long time = uuidArray[i].getTimestamp();
+        long time = uuidArray[i].getInt();
         for (; j < n; j++) {
-          if (uuidArray[j].getTimestamp() != time) {
-            if (largest < j - i + 1) {
-              largest = j - i + 1;
+          if (uuidArray[j].getInt() != time) {
+            if (largest < j - i + 2) {
+              largest = j - i + 2;
             }
+          } else {
             i = j;
             break;
           }
         }
+        i = j;
       }
     }
     if (largest == 0) {
       largest = n;
     }
     System.out.println(uuidArray[0] + "(" + uuidArray[0].getTimestamp() + ":" +
-                       uuidArray[0].getLong() + ") - " +
-                       uuidArray[n - 1] + "(" +
+                       uuidArray[0].getInt() + ") - " + uuidArray[n - 1] + "(" +
                        uuidArray[n - 1].getTimestamp() + ":" +
-                       uuidArray[n - 1].getLong() + ") = "
-                       + (uuidArray[n - 1].getLong() - uuidArray[0].getLong() +
-                          1));
+                       uuidArray[n - 1].getInt() + ") = " +
+                       (uuidArray[n - 1].getInt() - uuidArray[0].getInt() + 1));
     System.out.println(largest + " different consecutive elements");
+  }
+
+  private static class Generator extends Thread {
+    private final IntegerUuid[] uuids;
+    int id;
+    int n;
+    int numThreads;
+
+    public Generator(int n, IntegerUuid[] uuids, int id, int numThreads) {
+      this.n = n;
+      this.uuids = uuids;
+      this.id = id;
+      this.numThreads = numThreads;
+    }
+
+    @Override
+    public void run() {
+      for (int i = 0; i < n; i++) {
+        uuids[numThreads * i + id] = new IntegerUuid();
+      }
+    }
   }
 
   @Test
@@ -154,7 +171,7 @@ public class LongUuidTest {
     int numThreads = 10;
     Thread[] threads = new Thread[numThreads];
     int n = NB;
-    LongUuid[] uuids = new LongUuid[n];
+    IntegerUuid[] uuids = new IntegerUuid[n];
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < numThreads; i++) {
@@ -170,7 +187,7 @@ public class LongUuidTest {
         "Time = " + (stop - start) + " so " + n * 1000 / (stop - start) +
         " Uuids/s");
 
-    Set<LongUuid> uuidSet = new HashSet<LongUuid>();
+    Set<IntegerUuid> uuidSet = new HashSet<IntegerUuid>();
 
     int effectiveN = n / numThreads * numThreads;
     for (int i = 0; i < effectiveN; i++) {
@@ -178,26 +195,5 @@ public class LongUuidTest {
     }
 
     assertEquals(effectiveN, uuidSet.size());
-  }
-
-  private static class Generator extends Thread {
-    private final LongUuid[] uuids;
-    int id;
-    int n;
-    int numThreads;
-
-    public Generator(int n, LongUuid[] uuids, int id, int numThreads) {
-      this.n = n;
-      this.uuids = uuids;
-      this.id = id;
-      this.numThreads = numThreads;
-    }
-
-    @Override
-    public void run() {
-      for (int i = 0; i < n; i++) {
-        uuids[numThreads * i + id] = new LongUuid();
-      }
-    }
   }
 }

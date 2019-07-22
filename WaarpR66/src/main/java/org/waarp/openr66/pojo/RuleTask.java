@@ -1,3 +1,23 @@
+/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.waarp.openr66.pojo;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -5,10 +25,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.XTASK;
-import static org.waarp.openr66.database.data.DbRule.TASK_DELAY;
-import static org.waarp.openr66.database.data.DbRule.TASK_PATH;
-import static org.waarp.openr66.database.data.DbRule.TASK_TYPE;
+import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
+import static org.waarp.openr66.database.data.DbRule.*;
 
 /**
  * RuleTask data object
@@ -17,53 +35,54 @@ import static org.waarp.openr66.database.data.DbRule.TASK_TYPE;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RuleTask {
 
-    @XmlElement(name = TASK_TYPE)
-    private String type;
+  @XmlElement(name = TASK_TYPE)
+  private String type;
 
-    @XmlElement(name = TASK_PATH)
-    private String path;
+  @XmlElement(name = TASK_PATH)
+  private String path;
 
-    @XmlElement(name = TASK_DELAY)
-    private int delay;
+  @XmlElement(name = TASK_DELAY)
+  private int delay;
 
-    @SuppressWarnings("unused")
-    public RuleTask() {}
+  @SuppressWarnings("unused")
+  public RuleTask() {
+  }
 
-    public RuleTask(String type, String path, int delay) {
-        this.type = type;
-        this.path = path;
-        this.delay = delay;
-    }
+  public RuleTask(String type, String path, int delay) {
+    this.type = type;
+    this.path = path;
+    this.delay = delay;
+  }
 
-    public String getXML() {
-        String res = "<task>";
-        res = res + "<type>" + type + "</type>";
-        res = res + "<path>" + path + "</path>";
-        res = res + "<delay>" + delay + "</delay>";
-        return res + "</task>";
-    }
+  public String getXML() {
+    String res = "<task>";
+    res = res + "<type>" + type + "</type>";
+    res = res + "<path>" + path + "</path>";
+    res = res + "<delay>" + delay + "</delay>";
+    return res + "</task>";
+  }
 
-    public String getType() {
-        return this.type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public String getPath() {
-        return this.path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+  public void setPath(String path) {
+    this.path = path;
+  }
 
-    public int getDelay() {
-        return this.delay;
-    }
+  public int getDelay() {
+    return delay;
+  }
 
-    public void setDelay(int delay) {
-        this.delay = delay;
-    }
+  public void setDelay(int delay) {
+    this.delay = delay;
+  }
 }

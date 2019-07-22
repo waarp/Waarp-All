@@ -2,7 +2,7 @@
 package org.waarp.commandexec.utils;
 
 /**
- * Provides the version information of WaarpExec.
+ * Provides the version information of Waarp Exec.
  */
 public final class Version {
  /**
