@@ -1,0 +1,7 @@
+DROP SEQUENCE runseq;
+DROP TABLE configuration PURGE;
+DROP TABLE hostconfig PURGE;
+DROP TABLE hosts PURGE;
+DROP TABLE multiplemonitor PURGE;
+DROP TABLE rules PURGE;
+DROP TABLE runner PURGE;

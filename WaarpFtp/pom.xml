@@ -1,0 +1,255 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>WaarpFtp</artifactId>
+  <name>WaarpFtp</name>
+  <packaging>pom</packaging>
+  <description>
+    The Waarp FTP project is a proposal of a new fresh FTP server implementation,
+    fully in Java according to the following RFC: RFC 959, RFC 775, RFC 2389, RFC 2428, RFC 3659.
+    It includes also extra commands like XCRC, XMD5, XSHA1, INTERNALSHUTDOWN. It is based mainly
+    on the NETTY framework (NIO great framework support) and is tend to be really efficient, both
+    in term of memory, threads and network bandwidth. Bandwidth limitation can be configured both
+    in store and retrieve, per session (although only one value is set by default, but it can be
+    changed dynamically if needed) or globally to the server and of course with no limitation at
+    all if wanted. Limitation should be enough to change the bandwidth behaviour for instance
+    depending on the time in the day, so as to allow to limit bandwidth usage when users are at
+    work and in contrary to allow more speed when only batchs are running. The specificity of this
+    project is you can adapt this software to your particular needs by: changing the pre or post
+    action on commands (not ony transfer), changing the underlying representation of files and
+    directories (for instance with database entries), using any particular authentication mechanism.
+  </description>
+  <url>http://waarp.github.com/WaarpFtp</url>
+  <inceptionYear>2009</inceptionYear>
+  <parent>
+    <groupId>Waarp</groupId>
+    <artifactId>Waarp-All</artifactId>
+    <version>3.2.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/waarp/WaarpFtp/issues/</url>
+  </issueManagement>
+
+  <modules>
+    <module>core</module>
+    <module>filesystem</module>
+    <module>simpleimpl</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpCommon</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>it.sauronsoftware</groupId>
+      <artifactId>ftp4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <attach-distribution>false</attach-distribution>
+    <filtermodule>**</filtermodule>
+
+    <main.basedir>${project.basedir}</main.basedir>
+    <waarp.directory.version>org.waarp.ftp.core.utils</waarp.directory.version>
+    <waarp.module.version>org/waarp/ftp/core/utils</waarp.module.version>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-license</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+                <if>
+                  <or>
+                    <equals arg2="jar" arg1="${project.packaging}"/>
+                    <equals arg2="bundle" arg1="${project.packaging}"/>
+                  </or>
+                  <then>
+                    <move
+                      file="${project.build.directory}/${project.build.finalName}.jar"
+                      tofile="${project.build.directory}/${project.build.finalName}.orig.jar"/>
+                    <zip
+                      destfile="${project.build.directory}/${project.build.finalName}.jar"
+                      duplicate="preserve">
+                      <zipfileset dir="${basedir}" prefix="META-INF/">
+                        <include name="LICENSE.*"/>
+                        <include name="NOTICE.*"/>
+                        <include name="COPYRIGHT.*"/>
+                      </zipfileset>
+                      <zipfileset dir="${basedir}/license"
+                                  prefix="META-INF/license/">
+                        <exclude name="**/.*/**"/>
+                        <include name="**"/>
+                      </zipfileset>
+                      <zipfileset dir="${basedir}/../src/main/config/"
+                                  prefix="META-INF/config/">
+                        <exclude name="**/.*/**"/>
+                        <include name="**"/>
+                      </zipfileset>
+                      <zipfileset filemode="644"
+                                  src="${project.build.directory}/${project.build.finalName}.orig.jar"
+                                  dirmode="755">
+                      </zipfileset>
+                    </zip>
+                    <delete
+                      file="${project.build.directory}/${project.build.finalName}.orig.jar"/>
+                    <move
+                      file="${project.build.directory}/${project.build.finalName}-sources.jar"
+                      tofile="${project.build.directory}/${project.build.finalName}-sources.orig.jar"/>
+                    <zip
+                      destfile="${project.build.directory}/${project.build.finalName}-sources.jar"
+                      duplicate="preserve">
+                      <zipfileset dir="${basedir}" prefix="META-INF/">
+                        <include name="LICENSE.*"/>
+                        <include name="NOTICE.*"/>
+                        <include name="COPYRIGHT.*"/>
+                        <include name="**/Makefile"/>
+                      </zipfileset>
+                      <zipfileset dir="${basedir}/license"
+                                  prefix="META-INF/license/">
+                        <exclude name="**/.*/**"/>
+                        <include name="**"/>
+                      </zipfileset>
+                      <zipfileset dir="${basedir}/../src/main/config/"
+                                  prefix="META-INF/config/">
+                        <exclude name="**/.*/**"/>
+                        <include name="**"/>
+                      </zipfileset>
+                      <zipfileset filemode="644"
+                                  src="${project.build.directory}/${project.build.finalName}-sources.orig.jar"
+                                  dirmode="755">
+                        <exclude name="**/${filterexclude}/**"/>
+                        <include name="**/${filtermodule}/**"/>
+                      </zipfileset>
+                    </zip>
+                    <delete
+                      file="${project.build.directory}/${project.build.finalName}-sources.orig.jar"/>
+                  </then>
+                </if>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <reporting>
+    <excludeDefaults>true</excludeDefaults>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>non-aggregate</id>
+            <configuration>
+              <!-- Specific configuration for the non aggregate report -->
+              <skip>true</skip>
+            </configuration>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>non-aggregate</id>
+            <configuration>
+              <!-- Specific configuration for the non aggregate report -->
+              <skip>true</skip>
+            </configuration>
+            <reports>
+              <report>javadoc-no-fork</report>
+              <report>test-javadoc-no-fork</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>aggregate</id>
+            <configuration>
+              <aggregate>true</aggregate>
+              <doclet>org.jboss.apiviz.APIviz</doclet>
+              <docletArtifact>
+                <groupId>com.grahamedgecombe.apiviz</groupId>
+                <artifactId>apiviz</artifactId>
+                <version>${apiviz.version}</version>
+              </docletArtifact>
+              <attach>false</attach>
+              <useStandardDocletOptions>true</useStandardDocletOptions>
+              <outputDirectory>${main.basedir}/target/api</outputDirectory>
+              <reportOutputDirectory>${main.basedir}/target/api
+              </reportOutputDirectory>
+              <destDir>api</destDir>
+              <charset>UTF-8</charset>
+              <docencoding>UTF-8</docencoding>
+              <breakiterator>true</breakiterator>
+              <version>true</version>
+              <author>true</author>
+              <keywords>true</keywords>
+              <overview>${main.basedir}/src/javadoc/overview.html</overview>
+              <doctitle>${project.name} ${project.version} API Reference
+              </doctitle>
+              <windowtitle>${project.name} ${project.version} API Reference
+              </windowtitle>
+              <sourcepath>
+                ${main.basedir}/core/src/main/java:${main.basedir}/core/target/generated-sources/annotations:${main.basedir}/filesystem/src/main/java:${main.basedir}/filesystem/target/generated-sources/annotations:${main.basedir}/simpleimpl/src/main/java:${main.basedir}/simpleimpl/target/generated-sources/annotations
+              </sourcepath>
+              <additionalOptions>
+                -sourceclasspath ${main.basedir}/target/classes
+                -sourceclasspath ${main.basedir}/core/target/classes
+                -sourceclasspath ${main.basedir}/filesystem/target/classes
+                -sourceclasspath ${main.basedir}/simpleimpl/target/classes
+              </additionalOptions>
+              <additionalparam>
+                -link http://docs.oracle.com/javaee/6/api/
+                -link http://www.slf4j.org/apidocs/
+
+                -group "Waarp FTP Main Core package" "org.waarp.ftp.core*"
+                -group "Waarp FTP Filesystem Implementation package"
+                "org.waarp.ftp.filesystembased*"
+                -group "Waarp Simple FTP Server package"
+                "org.waarp.ftp.simpleimpl*"
+              </additionalparam>
+              <encoding>UTF-8</encoding>
+              <locale>en_US</locale>
+              <excludePackageNames>
+                ${project.groupId}.test*:${project.groupId}.example*:${project.groupId}.util.internal*
+              </excludePackageNames>
+            </configuration>
+            <reports>
+              <report>aggregate-no-fork</report>
+              <report>test-aggregate-no-fork</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>

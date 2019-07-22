@@ -1,0 +1,87 @@
+WaarpSNMP Configuration
+
+*How to configure Waarp SNMP support
+
+**Configuration file
+
+  In the zip distribution <WaarpSnmp-X.Y.Z-dist.zip> (available at github for download),
+  you will find an extra directory named: <src/main/config> where one example file is located as:
+  <snmpconfig.xml>.
+
+*snmpconfig
+
+  *comment:string Optional
+  
+**config
+
+  *localaddress:nonEmptyString Multiple
+  
+   Local Address to use as listen in format udp:address/port or tcp:address/port
+
+  *nbthread:nonNulInteger Optional default="4"
+  
+   Number of threads to use (4)
+                        
+  *filtered:booleanType default="False" Optional
+  
+   Enables or disables source address filtering for incoming SNMPv1 or SNMPv2c packets. By default source address filtering is disabled! If enabled, only messages received for community based security models are processed, that match an address in the snmpTargetAddressTable with the transport tag associated with the community used.
+   
+  *usetrap:booleanType default="True" Optional
+  
+   Use Trap (True) or Inform (False) when generating push event
+   
+  *trapinformlevel:nonNegInteger default="0" Optional
+  
+   Level of trap or inform event generated: 0 None 1 Start/Stop 2 Critical 3 Error 4 Every events in Warning
+   
+**targets
+
+  *target Multiple Optional
+  
+     *name:nonEmptyString
+     
+      Name To use as target
+      
+     *domain:nonEmptyString default="UdpIpv4"
+     
+      1 Value between: UdpIpV4 UdpIpv6 UdpIpV4e UdpIpv6z TcpIpv4 TcpIpv6 TcpIpv4z TcpIpv6z
+      
+     *address:nonEmptyString
+     
+      As address/port as 192.168.0.1/162
+      
+     *timeout:nonNegInteger default="200" Optional
+     
+      Maximum delay in ms to wait with an Inform mode event
+      
+     *retries:nonNegInteger default="1" Optional
+     
+      Number of retries once the Inform is sent and not acknowledged
+      
+     *isv2:booleanType default="True" Optional
+     
+      Is this entry is conformed with V2C or with V3 of SNMP
+      
+**securities
+
+  *security Multiple Optional
+
+     *securityname:nonEmptyString
+     
+      Name To use as Name Entry for External Manager
+      
+     *securityauthprotocol:nonEmptyString Optional
+     
+      Protocol between SHA or MD5
+      
+     *securityauthpass:string Optional
+     
+      Password (might be empty)
+      
+     *securityprivprotocol:nonEmptyString Optional
+     
+      Optional Protocol as P3DES, PAES128, PAES192, PAES256, PDES
+      
+     *securityprivpass:string Optional
+     
+      Password (might be empty)

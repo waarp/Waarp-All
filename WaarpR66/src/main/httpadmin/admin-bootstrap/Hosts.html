@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>	 <html class="no-js lt-ie9 lt-ie8 lt-ie7 lt-ie10 ie ie6 ie-lt10 ie-lt9 ie-lt8 ie-lt7" lang=""> <![endif]-->
+<!--[if IE 7]>	   <html class="no-js lt-ie10 lt-ie9 lt-ie8 ie ie-lt10 ie-lt9 ie-lt8" lang=""> <![endif]-->
+<!--[if IE 8]>	   <html class="no-js lt-ie10 lt-ie9 ie ie-lt10 ie-lt9" lang=""> <![endif]-->
+<!--[if IE 9 ]>    <html class="no-js lt-ie10 ie ie9 ie-lt10" lang=""> <![endif]-->
+<!--[if gt IE 9]><!--><html class="no-js" lang=""><!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Cache-Control" content="no-cache" />
+	<meta http-equiv="Expires" content="Mon, 15 Jan 2007 12:00:00 GMT" />
+	<meta name="robots" content="noindex,nofollow" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<!-- Datatable -->
+	<link rel="stylesheet" href="datatable/datatables.min.css">
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="css/magic-bootstrap-min.css">
+	<link rel="stylesheet" href="datatable/css/jquery.dataTables.min.css">
+	<!-- JQuery -->
+	<script type="text/javascript" src="js/jquery-1.12.0.min.js"></script>
+	<!-- I18NEXT -->
+	<script type="text/javascript" src="res/i18next-1.11.2.min.js"></script>
+	<script type="text/javascript">
+var setLng="XXXLANGXXX";
+if (setLng.length > 4) { setLng = "en"; }
+var EdgeWindows10=navigator.userAgent.search('Windows NT 10') > 0 && navigator.userAgent.search('Edge/') > 0;
+	</script>
+	<script src="js/modernizr-3.3.1-respond-1.4.2.min.js"></script>
+	<!-- Bootstrap -->
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="datatable/datatables.min.js"></script>
+	<script type="text/javascript" src="datatable/pdfmake-0.1.20/pdfmake.min.js"></script>
+	<script type="text/javascript" src="datatable/pdfmake-0.1.20/vfs_fonts.js"></script>
+    <script type="text/javascript" src="res/tooltip.js"></script>
+
+	<!-- special Javascript -->
+	<script type="text/javascript">
+var table;
+function validButton(rank) {
+	if (rank >= 0) {
+		table.$('tr.selected').removeClass('selected');
+		var row = table.row(rank);
+		row.nodes().to$().addClass('selected');
+		var json = row.data();
+		for (key in json) {
+			if (key != "@model") {
+				switch (key) {
+				case "ISSSL":
+				case "ISPROXIFIED":
+				case "ADMINROLE":
+				case "ISCLIENT":
+				case "ISACTIVE":
+					$('#'+key).prop("checked", json[key]);
+					break;
+				default:
+					$('#'+key).val(json[key]);
+				}
+			}
+		}
+		$('#update-button').removeClass("disabled");
+		$('#delete-button').removeClass("disabled");
+	}
+	return false;
+}
+var prepareTable = function() {
+	var renderGeneric = function (data, type, full, meta) {return changeValueColumn(data, meta.col);};
+	var myData = XXXDATAJSONXXX;
+	var myColumns = [
+					  { data: "HOSTID", title :"Id"},
+					  { data: "ADDRESS", title :"Address"},
+					  { data: "PORT", title :"Port", width:"40px"},
+					  { data: "ISSSL", title :"Ssl"},
+					  { data: "HOSTKEY", title :"Key", render: function (data, type, full, meta) {var res=""; for(var i=data.length; i>0; i--) {res+="*";}return res;}},
+					  { data: "ISPROXIFIED", title :"Proxified"},
+					  { data: "ISCLIENT", title :"Client"},
+					  { data: "ADMINROLE", title :"Admin"},
+					  { data: "ISACTIVE", title :"Active"},
+					  { data: "Connection", title :"Conn"},
+					  { data: "Version", title :"Version"}
+					];
+	var nbcol = myColumns.length;
+	var range=[];for(var i=0;i < nbcol;i++){range[i]=i}
+	var row = document.getElementById("myTable4").createTFoot().insertRow(0);
+	for (var i = 0; i < nbcol; i++) {
+		row.insertCell(0);
+	}
+	var printButton = printButtonFunction(EdgeWindows10, "Page", "XXXHOSTIDXXX-", i18n.t("app.menu3"), { page: 'current'}, ':visible');
+	table = $('#myTable4').DataTable({
+		"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+		"pagingType": "full_numbers",
+		"order": [[1, "asc"]],
+		stateSave: true,// shall be true
+		"data" : myData,
+		"columns": myColumns,
+		fixedHeader: true,
+		dom: 'B<"clear">lfrtip',
+		select: { style: 'single' },
+		buttons: [
+			{ extend: 'colvis' },
+			{ text: 'Edit', enabled: false, action: function () { var id = table.rows( { selected: true } ); if (id.length > 0) {validButton( id[0] );} }
+            },
+			{ extend: 'copy', exportOptions: { orthogonal: 'export', columns: ':visible' }
+			},
+			{ extend: 'excel', title: "XXXHOSTIDXXX-"+i18n.t("app.menu3"),
+			  exportOptions: { orthogonal: 'export', columns: ':visible' }
+			},
+			{ extend: 'csv', title: "XXXHOSTIDXXX-"+i18n.t("app.menu3"),
+			  exportOptions: { orthogonal: 'export', columns: ':visible' }
+			},
+			printButton[0], printButton[1], printButton[2], printButton[3]
+		],
+		initComplete: function () {
+			this.api().columns().every( function () {
+				var column = this;
+				if (column.index() == nbcol-1 || column.index() == 4) {
+					return;
+				}
+				var select = $('<select><option value=""></option></select>')
+					.appendTo( $(column.footer()).empty() )
+					.on( 'change', function () {
+						var val = $.fn.dataTable.util.escapeRegex($(this).val());
+						if (val) {
+							column.search( '^'+val, true, false ).draw();
+							$(this).css({ "background-color": "#f6a520"});
+						} else {
+							column.search( '', true, false ).draw();
+							$(this).css({ "background-color": "#CDCDCD"});
+						}
+					} );
+				column.data().unique().sort().each( function ( val, j ) {select.append( '<option value="'+val+'">'+val+'</option>' )} );
+			} );
+		}
+	 });
+	 table.on( 'select', function ( e, dt, type, indexes ) {
+		var selectedRows = table.rows( { selected: true } ).count();
+		table.button( 1 ).enable( selectedRows === 1 );
+	} )
+	.on( 'deselect', function ( e, dt, type, indexes ) {
+		var selectedRows = table.rows( { selected: true } ).count();
+		table.button( 1 ).enable( selectedRows === 1 );
+	} );
+};
+</script>
+</head>
+<body>
+	<!--[if lt IE 8]>
+		<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+	<![endif]-->
+	<div class="cover">
+		<div class="navbar navbar-default navbar-static-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-ex-collapse">
+						<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="http://waarp.github.com/Waarp/index.html"><img height="30" alt="Waarp" src="img/waarp.jpg"></a>
+				</div>
+				<div class="collapse navbar-collapse" id="navbar-ex-collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a><span class="badge">XXXBANDWIDTHOUTXXX</span><span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+						<span class="badge">XXXBANDWIDTHINXXX</span><span class="glyphicon glyphicon-import" aria-hidden="true"></span></a></li>
+						<li><a data-i18n="app.menu1" href="index.html">START</a></li>
+						<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+							<span class="badge" id="NbActiveTransfers">XXXNBTRANSFERSXXX</span><span data-i18n="app.menu2">TRANSFERS</span> <span class="caret"></span></a>
+						  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
+							<li><a data-i18n="menu2.sous-menu1" href="Listing.html">LISTING</a></li>
+							<li><a data-i18n="menu2.sous-menu2" href="CancelRestart.html">CANCEL-RESTART</a></li>
+							<li><a data-i18n="menu2.sous-menu3" href="Export.html">EXPORT</a></li>
+							<li class="divider"></li>
+							<li><a data-i18n="menu2.sous-menu4" href="Spooled.html">SPOOLED DIRECTORY</a></li>
+						  </ul>
+						</li>
+						<li class="active"><a data-i18n="app.menu3" href="Hosts.html">HOSTS</a></li>
+						<li><a data-i18n="app.menu4" href="Rules.html">RULES</a></li>
+						<li><a data-i18n="app.menu5" href="System.html">SYSTEM</a></li>
+						<li><a data-i18n="app.menu7" href="Logout.html">LOGOUT</a></li>
+						<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Information <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+								<li role="presentation" class="disabled"><label data-i18n="app.haut3">Host:</label><br />XXXHOSTIDXXX</li>
+								<li role="presentation" class="divider"></li>
+								<li role="presentation" class="disabled"><label data-i18n="app.haut2">Network:</label><br />XXXNETWORKXXX</li>
+								<li role="presentation" class="divider"></li>
+								<li role="presentation" class="disabled"><label data-i18n="app.haut1">Local:</label><br />XXXLOCALXXX</li>
+							</ul>
+						</li>
+					</ul>
+					<form class="navbar-form" role="form" method="POST" name="Search" action="/CancelRestart.html">
+						<div class="form-group">
+							<input type="hidden" name="all" value="ON">
+							<input type="hidden" name="LIMITROW" value="XXXLIMITROWXXX">
+							<small><label class="control-label" for="transferId0" data-i18n="menu2.entete1">Transfer Id</label>&nbsp;</small><input type="text" class="form-control input-sm" id="transferId0" name="startid" placeholder="TransferId">
+						</div>
+						<button type="submit" class="btn btn-default btn-sm" value="Search" name="ACTION" data-i18n="[title]app.searchhelp"><label class="control-label" data-i18n="app.search">Search</label></button>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="cover-image"></div>
+	</div>
+	<div class="panel panel-default">
+	   <div class="panel-heading"><h3 class="panel-title" data-i18n="menu3.text1">You can edit Hosts configuration from here.</h3></div>
+	   <div class="panel-body"><small>
+	<form class="form-inline container-fluid" id="editForm" method="POST" name="CREATE" action="/Hosts.html">
+	<div class="row">
+	  <div class="form-group col-md-3 text-right">
+		<label class="control-label" for="HOSTID" data-i18n="menu3.entete1">Host Id</label>
+		<input type="text" class="form-control input-sm" id="HOSTID" name="host" placeholder="host id">
+		<span id="HOSTIDhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("HOSTIDhelp", "menu3.text2");</script>
+	  </div><div class="form-group col-md-3 text-right">
+		<label class="control-label" for="ADDRESS" data-i18n="menu3.entete2">Address</label>
+		<input type="text" class="form-control input-sm" id="ADDRESS" name="address" placeholder="dns or IP address">
+		<span id="ADDRESShelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("ADDRESShelp", "menu3.text3");</script>
+	  </div><div class="form-group col-md-3 text-right">
+		<label class="control-label" for="PORT" data-i18n="menu3.entete3">Port</label>
+		<input type="number" class="form-control input-sm" id="PORT" name="port" placeholder="port">
+		<span id="PORThelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("PORThelp", "menu3.text4");</script>
+	  </div><div class="form-group col-md-3 text-left">
+		<label class="control-label" for="ISSSL" data-i18n="menu3.entete4">SSL</label>
+		<input type="checkbox" class="form-control input-sm" id="ISSSL" name="ssl" placeholder="True or False" value="off">
+		<span id="ISSSLhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("ISSSLhelp", "menu3.text5");</script>
+	  </div>
+	</div><div class="row">
+	  <div class="form-group col-md-3 text-right">
+		<label class="control-label" for="HOSTKEY" data-i18n="menu3.entete5">HostKey</label>
+		<input type="password" class="form-control input-sm" id="HOSTKEY" name="hostkey" placeholder="***">
+		<span id="HOSTKEYhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("HOSTKEYhelp", "menu3.text6");</script>
+	  </div><div class="form-group col-md-3 text-right">
+		<input type="checkbox" id="ISPROXIFIED" name="isproxified" value="off"><label data-i18n="menu3.entete14">Proxified</label>
+		<span id="ISPROXIFIEDhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("ISPROXIFIEDhelp", "menu3.text10");</script>
+		<input type="checkbox" id="ISCLIENT" name="isclient" value="off"><label data-i18n="menu3.entete7">Client</label>
+		<span id="ISCLIENThelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("ISCLIENThelp", "menu3.text8");</script>
+	  </div><div class="form-group col-md-3 text-right">
+		<input type="checkbox" id="ADMINROLE" name="admin" value="off"><label data-i18n="menu3.entete6">Admin</label>
+		<span id="ADMINROLEhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("ADMINROLEhelp", "menu3.text7");</script>
+		<input type="checkbox" id="ISACTIVE" name="isactive" value="on"><label data-i18n="menu3.entete13">Active</label>
+		<span id="ISACTIVEhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("ISACTIVEhelp", "menu3.text9");</script>
+	  </div>
+	</div><div class="row">
+	  <div class="form-group col-md-3 text-right">
+		<input type="reset" value="Clear" class="btn btn-default btn-sm" onclick="$('#delete-button').addClass('disabled');$('#update-button').addClass('disabled');" data-i18n="[title]app.help1">
+	  </div><div class="form-group col-md-3 text-right">
+		<button type="submit" class="btn btn-warning btn-sm" id="create-button" value="Create" name="ACTION" data-i18n="[title]app.help2">Create</button>
+		<button type="submit" class="btn btn-primary btn-sm disabled" id="update-button" value="Update" name="ACTION" data-i18n="[title]app.help3">Update</button>
+		<button type="submit" class="btn btn-danger btn-sm disabled" id="delete-button" value="Delete" name="ACTION" data-i18n="[title]app.help3">Delete</button>
+	  </div>
+	</div>
+	</form></small></div><div class="panel-footer"><small>
+	<form class="form-inline container-fluid" id="filterForm" method="POST" name="FILTER" action="/Hosts.html">
+	<div class="row">
+	  <div class="form-group col-md-3 text-right">
+		<label class="control-label" for="hostidf" data-i18n="menu3.filtre1">Filter on Host Id:</label>
+		<input type="text" class="form-control input-sm" id="hostidf" name="host" placeholder="host Id" value="XXXFHOSTXXX">
+		<span id="hostidfhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("hostidfhelp", "menu3.filtre2");</script>
+	  </div><div class="form-group col-md-3 text-right">
+		<label class="control-label" for="addressf" data-i18n="menu3.filtre3">Filter on Address:</label>
+		<input type="text" class="form-control input-sm" id="addressf" name="host" placeholder="Address" value="XXXFADDRXXX">
+		<span id="addressfhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("addressfhelp", "menu3.filtre4");</script>
+	  </div><div class="form-group col-md-3 text-right">
+		<label class="control-label" for="sslf" data-i18n="menu3.filtre5">Filter on SSL:</label>
+		<input type="checkbox" class="form-control input-sm" id="sslf" name="ssl" value="on" XXXFSSLXXX>
+		<span id="sslfhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("sslfhelp", "menu3.filtre6");</script>
+		<label class="control-label" for="activef" data-i18n="menu3.filtre7">Filter on Active:</label>
+		<input type="checkbox" class="form-control input-sm" id="activef" name="active" value="on" XXXFACTIVXXX>
+		<span id="activefhelp" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<script type="text/javascript">createTooltip("activefhelp", "menu3.filtre8");</script>
+	  </div>
+	</div><div class="row">
+	  <div class="form-group col-md-4 text-right">
+		<label class="control-label" for="LIMITROW" data-i18n="menu2.text16">Limit rows to</label>
+		<input type="number" class="form-control input-sm" id="LIMITROW" name="LIMITROW" size="4" value="XXXLIMITROWXXX"> <label data-i18n="menu2.text17">first results.</label>
+	  </div><div class="form-group col-md-1 text-right">
+		<input type="reset" value="Clear" class="btn btn-default btn-sm" name="ACTION" data-i18n="[title]app.help4">
+	  </div><div class="form-group col-md-1 text-right">
+		<input type="submit" value="Filter" class="btn btn-primary btn-sm" name="ACTION" data-i18n="[title]app.help4">
+	  </div>
+	</div>
+	</form></small></div></div>
+	<table class="table table-condensed table-bordered hover order-column" id="myTable4">
+		<thead></thead>
+		<tbody></tbody>
+	</table>
+	<footer class="section section-primary">
+		<div class="panel panel-default">
+			<div class="panel-body"><div class="bg-info"><p class="text-center">XXXRESULTXXX</p></div></div>
+		</div>
+	</footer>
+<script type="text/javascript">
+i18n.init({lng: setLng, fallbackLng : "en", resGetPath : "res/locales/__lng__/__ns__.json", useLocalStorage: true, localStorageExpirationTime: 86400000}, function(t) { doFinal();});//useLocalStorage: true, localStorageExpirationTime: 86400000 // in ms, default 1 week
+</script>
+</body>
+</html>

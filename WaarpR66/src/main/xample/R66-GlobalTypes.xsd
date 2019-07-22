@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:fg="http://www.FGolubov.com/XMLEditor" elementFormDefault="qualified">
+	<xsd:notation name="versionTypes" system="2.4.9" public="2.4.9" />
+	<xsd:simpleType name="booleanType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-class="com.fg.ftreenodes.FCheckBox">
+					<fg:param>True</fg:param>
+					<fg:param>False</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="True" />
+			<xsd:enumeration value="False" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimalType">
+		<xsd:restriction base="xsd:double" />
+	</xsd:simpleType>
+	<xsd:simpleType name="nonNegInteger">
+		<xsd:restriction base="xsd:nonNegativeInteger" />
+	</xsd:simpleType>
+	<xsd:simpleType name="nonNulInteger">
+		<xsd:restriction base="xsd:positiveInteger"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="nonEmptyString">
+		<xsd:restriction base="xsd:token">
+			<xsd:minLength value="1" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="address">
+		<xsd:restriction base="xsd:token">
+			<xsd:minLength value="1" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="normString">
+		<xsd:restriction base="xsd:normalizedString">
+			<xsd:minLength value="1" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pathType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog" message="Any File">
+					<fg:param>|2Any files: *.*</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>Any file path</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="nonEmptyString" />
+	</xsd:simpleType>
+	<xsd:simpleType name="directoryType">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog" message="Directory">
+					<fg:param>|1Directory: *</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>Any directory path</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="nonEmptyString" />
+	</xsd:simpleType>
+	<xsd:simpleType name="JKS-File">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog" message="JKS KeyStore File">
+					<fg:param>
+						jks|jeks|0JKS Keystore files: *.jks, *.jeks
+					</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>JKS Keystore files: *.jks, *.jeks
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="nonEmptyString" />
+	</xsd:simpleType>
+	<xsd:simpleType name="XML-File">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog" message="XML File">
+					<fg:param>xml|0XML files: *.xml</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>XML files: *.xml</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="nonEmptyString" />
+	</xsd:simpleType>
+	<xsd:simpleType name="Des-File">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog" message="Des Blowfish Key File">
+					<fg:param>
+						des|blf|0Des Blowfish Key files: *.des, *.blf
+					</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>Des Blowfish Key files: *.des, *.blf
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="nonEmptyString" />
+	</xsd:simpleType>
+	<xsd:simpleType name="SODLL-File">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog"
+					message="SO or DLL File">
+					<fg:param>
+						so|dll|0SO or DLL files: *.so, *.dll
+					</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>SO or DLL files: *.so, *.dll</xsd:documentation></xsd:annotation>
+		<xsd:restriction base="nonEmptyString" />
+	</xsd:simpleType>
+	  <xsd:simpleType name="GGP-File">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<fg:node-info editor-id="FileDialog"
+					message="GoldenGate Password File">
+					<fg:param>
+						ggp|0GoldenGate Password files: *.ggp
+					</fg:param>
+				</fg:node-info>
+			</xsd:appinfo>
+			<xsd:documentation>GoldenGate Password files: *.ggp</xsd:documentation></xsd:annotation>
+		<xsd:restriction base="nonEmptyString"/>
+	</xsd:simpleType>
+	
+	<xsd:group name="KeyStore">
+		<xsd:sequence>
+			<xsd:element name="keypath" type="JKS-File">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info
+							message="JKS KeyStore for R66 Access in SSL Mode (containing Server Certificate)" />
+					</xsd:appinfo>
+					<xsd:documentation>JKS KeyStore for R66 Access in SSL Mode
+						(containing Server Certificate)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="keystorepass" type="nonEmptyString">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info message="Password for the KeyStore" />
+					</xsd:appinfo>
+					<xsd:documentation>Password for the KeyStore</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="keypass" type="nonEmptyString">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info
+							message="Password for the Server Certificate within the KeyStore" />
+					</xsd:appinfo>
+					<xsd:documentation>Password for the Server Certificate within the
+						KeyStore
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="TrustKeyStore">
+		<xsd:sequence>
+			<xsd:element name="trustkeypath" type="JKS-File">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info
+							message="JKS Trust KeyStore for R66 Access in SSL Mode with Client Authentication (containing Client Certificate)" />
+					</xsd:appinfo>
+					<xsd:documentation>JKS Trust KeyStore for R66 Access in SSL Mode
+						with Client Authentication (containing Client Certificate)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="trustkeystorepass" type="nonEmptyString">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info message="Password for the Trust KeyStore" />
+					</xsd:appinfo>
+					<xsd:documentation>Password for the Trust KeyStore
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="AdministratorKeyStore">
+		<xsd:sequence>
+			<xsd:element name="admkeypath" type="JKS-File">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info
+							message="JKS HTTP KeyStore for Administrator Access in HTTPS Mode (containing Server Certificate)" />
+					</xsd:appinfo>
+					<xsd:documentation>JKS HTTP KeyStore for Administrator Access in
+						HTTPS Mode (containing Server Certificate)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="admkeystorepass" type="nonEmptyString">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info message="Password for the HTTP KeyStore" />
+					</xsd:appinfo>
+					<xsd:documentation>Password for the HTTP KeyStore
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="admkeypass" type="nonEmptyString">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<fg:node-info
+							message="Password for the HTTP Server Certificate within the HTTP KeyStore" />
+					</xsd:appinfo>
+					<xsd:documentation>Password for the HTTP Server Certificate within
+						the HTTP KeyStore
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+
+</xsd:schema>

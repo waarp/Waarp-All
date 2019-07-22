@@ -1,0 +1,119 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>WaarpGatewayKernel</artifactId>
+  <name>Waarp Gateway Kernel</name>
+  <description>Waarp Gateway contains the kernel for Http Gateway</description>
+  <inceptionYear>2009</inceptionYear>
+  <parent>
+    <groupId>Waarp</groupId>
+    <artifactId>Waarp-All</artifactId>
+    <version>3.2.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <attach-distribution>false</attach-distribution>
+    <filtermodule>**</filtermodule>
+
+    <waarp.directory.version>org.waarp.gateway.kernel</waarp.directory.version>
+    <waarp.module.version>org/waarp/gateway/kernel</waarp.module.version>
+  </properties>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <configuration>
+              <aggregate>true</aggregate>
+              <doclet>org.jboss.apiviz.APIviz</doclet>
+              <docletArtifact>
+                <groupId>com.grahamedgecombe.apiviz</groupId>
+                <artifactId>apiviz</artifactId>
+                <version>${apiviz.version}</version>
+              </docletArtifact>
+              <attach>false</attach>
+              <useStandardDocletOptions>true</useStandardDocletOptions>
+              <outputDirectory>${project.build.directory}/api</outputDirectory>
+              <reportOutputDirectory>${project.build.directory}/api
+              </reportOutputDirectory>
+              <destDir>api</destDir>
+              <charset>UTF-8</charset>
+              <docencoding>UTF-8</docencoding>
+              <breakiterator>true</breakiterator>
+              <version>true</version>
+              <author>true</author>
+              <keywords>true</keywords>
+              <overview>${basedir}/src/javadoc/overview.html</overview>
+              <doctitle>${project.name} ${project.version} API Reference
+              </doctitle>
+              <windowtitle>${project.name} ${project.version} API Reference
+              </windowtitle>
+              <additionalOptions>
+                -sourceclasspath ${project.build.outputDirectory}
+              </additionalOptions>
+              <additionalparam>
+                -link http://docs.oracle.com/javaee/6/api/
+                -link http://www.slf4j.org/apidocs/
+
+                -group "Waarp Gateway Http Kernel Common package"
+                "org.waarp.gateway.kernel.commonfile*:org.waarp.gateway.kernel.exception*"
+                -group "Waarp Gateway Http Kernel Database package"
+                "org.waarp.gateway.kernel.database*"
+                -group "Waarp Gateway Http Kernel Http and Rest packages"
+                "org.waarp.gateway.kernel.http*:org.waarp.gateway.kernel.rest*:org.waarp.gateway.kernel.session*"
+              </additionalparam>
+              <encoding>UTF-8</encoding>
+              <locale>en_US</locale>
+              <excludePackageNames>
+                ${project.groupId}.test*:${project.groupId}.example*:${project.groupId}.util.internal*
+              </excludePackageNames>
+            </configuration>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <dependencies>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpFtpClient</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpExec</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

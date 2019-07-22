@@ -1,0 +1,161 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>WaarpGatewayFtp</artifactId>
+  <name>Waarp Gateway Ftp</name>
+  <description>Full Waarp FTP Server with Gateway support as Waarp Project:
+    this is an extension of Waarp FTP server with execution support at the end of
+    a transfer.
+  </description>
+  <url>http://waarp.github.com/WaarpGatewayFtp</url>
+  <inceptionYear>2009</inceptionYear>
+  <parent>
+    <groupId>Waarp</groupId>
+    <artifactId>Waarp-All</artifactId>
+    <version>3.2.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpR66</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpFtp-Core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpFtp-Filesystem</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>Oracle</groupId>
+      <artifactId>ojdbc6</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javasysmon</groupId>
+      <artifactId>javasysmon</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>commons-daemon</groupId>
+      <artifactId>commons-daemon</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpSnmp</artifactId>
+    </dependency>
+  </dependencies>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <attach-distribution>false</attach-distribution>
+    <filtermodule>**</filtermodule>
+
+    <waarp.directory.version>org.waarp.gateway.ftp.utils
+    </waarp.directory.version>
+    <waarp.module.version>org/waarp/gateway/ftp/utils</waarp.module.version>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <configuration>
+              <aggregate>true</aggregate>
+              <doclet>org.jboss.apiviz.APIviz</doclet>
+              <docletArtifact>
+                <groupId>com.grahamedgecombe.apiviz</groupId>
+                <artifactId>apiviz</artifactId>
+                <version>${apiviz.version}</version>
+              </docletArtifact>
+              <attach>false</attach>
+              <useStandardDocletOptions>true</useStandardDocletOptions>
+              <outputDirectory>${project.build.directory}/api</outputDirectory>
+              <reportOutputDirectory>${project.build.directory}/api
+              </reportOutputDirectory>
+              <destDir>api</destDir>
+              <charset>UTF-8</charset>
+              <docencoding>UTF-8</docencoding>
+              <breakiterator>true</breakiterator>
+              <version>true</version>
+              <author>true</author>
+              <keywords>true</keywords>
+              <overview>${basedir}/src/javadoc/overview.html</overview>
+              <doctitle>${project.name} ${project.version} API Reference
+              </doctitle>
+              <windowtitle>${project.name} ${project.version} API Reference
+              </windowtitle>
+              <additionalOptions>
+                -sourceclasspath ${project.build.outputDirectory}
+              </additionalOptions>
+              <additionalparam>
+                -link http://docs.oracle.com/javaee/6/api/
+                -link http://www.slf4j.org/apidocs/
+
+                -group "Waarp Gateway Ftp Server package"
+                "org.waarp.gateway.ftp.ExecGatewayFtpServer*:org.waarp.gateway.ftp.ServerInitDatabase*"
+                -group "Waarp Gateway Ftp Configuration file based loaders
+                package" "org.waarp.gateway.ftp.config*"
+                -group "Waarp Gateway Ftp Database package"
+                "org.waarp.gateway.ftp.database*"
+                -group "Waarp Gateway Ftp ControlHandler package"
+                "org.waarp.gateway.ftp.control*"
+                -group "Waarp Gateway Ftp Executor package"
+                "org.waarp.gateway.ftp.exec*"
+                -group "Waarp Gateway Ftp DataHandler package"
+                "org.waarp.gateway.ftp.data*"
+                -group "Waarp Gateway Ftp Administrator package"
+                "org.waarp.gateway.ftp.adminssl*"
+                -group "Waarp Gateway Ftp File package"
+                "org.waarp.gateway.ftp.file*"
+                -group "Waarp Gateway Ftp SNMP package"
+                "org.waarp.gateway.ftp.snmp*"
+                -group "Waarp Gateway Ftp Utils package"
+                "org.waarp.gateway.ftp.utils*"
+              </additionalparam>
+              <encoding>UTF-8</encoding>
+              <locale>en_US</locale>
+              <excludePackageNames>
+                ${project.groupId}.test*:${project.groupId}.example*:${project.groupId}.util.internal*
+              </excludePackageNames>
+            </configuration>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>

@@ -1,0 +1,867 @@
+WaarpGWFTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    NOTIFICATION-GROUP, NOTIFICATION-TYPE, enterprises, OBJECT-TYPE, Counter32, Gauge32, Counter64, MODULE-IDENTITY, mib-2
+      FROM SNMPv2-SMI
+    TimeStamp, TEXTUAL-CONVENTION
+      FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    system
+        FROM SNMPv2-MIB;
+
+waarpgwftp MODULE-IDENTITY
+    LAST-UPDATED    "201103050000Z"
+    ORGANIZATION    "Waarp GWFTP"
+    CONTACT-INFO
+      "        Frederic Bregier
+
+       E-Mail: openr66@free.fr"
+    DESCRIPTION
+      "The MIB module describing Waarp Gateway FTP Mib"
+    REVISION        "201103050000Z"
+    DESCRIPTION
+      "This revision is the first setup of the Waarp Gateway FTP MIB."
+-- 1.3.6.1.4.1.66666.21.1.1 -- 
+::= { enterprises 66666 21 1 1 }
+
+-- root
+waarp OBJECT IDENTIFIER ::= { enterprises 66666 }    
+ftpexec OBJECT IDENTIFIER ::= { waarp 21 }    
+
+-- Textual conventions
+
+-- DistinguishedName is used to refer to objects in the
+-- directory.
+
+DistinguishedName ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS current
+    DESCRIPTION
+        "A Distinguished Name represented in accordance with
+         RFC 2253, presented in the UTF-8 charset defined in
+         RFC 2279."
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+-- Uniform Resource Locators are stored in URLStrings.
+
+URLString ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS current
+    DESCRIPTION
+        "A Uniform Resource Locator represented in accordance
+         with RFCs 1738 and 2368, presented in the NVT ASCII
+         charset defined in RFC 854."
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+    
+-- The basic applEntry contains the different elements.
+
+applDefinitions OBJECT IDENTIFIER ::= { ftpexec 1 }
+applGlobalValues OBJECT IDENTIFIER ::= { ftpexec 2 }
+applDetailedValues OBJECT IDENTIFIER ::= { ftpexec 3 }
+applErrorValues OBJECT IDENTIFIER ::= { ftpexec 4 }
+waarptraps  OBJECT IDENTIFIER ::= { ftpexec 5 }
+
+
+applName OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The name the network service application chooses to be
+       known by."
+    ::= {applDefinitions 1}
+
+applServerName OBJECT-TYPE
+    SYNTAX DistinguishedName
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The Server Name of this particular instance."
+    ::= {applDefinitions 2}
+
+applVersion OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The version of network service application software.
+       This field is usually defined by the vendor of the
+       network service application software."
+    ::= {applDefinitions 3}
+
+applDescription OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "A text description of the application.  This information
+       is intended to identify and briefly describe the
+       application in a status display."
+    ::= {applDefinitions 4}
+
+applURL OBJECT-TYPE
+    SYNTAX URLString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "A URL pointing to a description of the application.
+       This information is intended to identify and describe
+       the application in a status display."
+    ::= {applDefinitions 5}
+
+assocApplicationProtocol OBJECT-TYPE
+    SYNTAX OBJECT IDENTIFIER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "An identification of the protocol being used for the
+       application.  For an OSI Application, this will be the
+       Application Context.  For Internet applications, OID
+       values of the form {applTCPProtoID port} or {applUDPProtoID
+       port} are used for TCP-based and UDP-based protocols,
+       respectively. In either case 'port' corresponds to the
+       primary port number being used by the protocol. The
+       usual IANA procedures may be used to register ports for
+       new protocols."
+    ::= {applDefinitions 6}
+
+    
+applUptime OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time the network service
+       application was last initialized.  If the application was
+       last initialized prior to the last initialization of the
+       network management subsystem, then this object contains
+       a zero value."
+    ::= {applGlobalValues 1}
+
+applOperStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+      up(1),
+      down(2),
+      halted(3),
+      congested(4),
+      restarting(5),
+      quiescing(6)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Indicates the operational status of the network service
+       application. 'down' indicates that the network service is
+       not available. 'up' indicates that the network service
+       is operational and available.  'halted' indicates that the
+       service is operational but not available.  'congested'
+       indicates that the service is operational but no additional
+       inbound associations can be accommodated.  'restarting'
+       indicates that the service is currently unavailable but is
+       in the process of restarting and will be available soon.
+       'quiescing' indicates that service is currently operational
+       but is in the process of shutting down. Additional inbound
+       associations may be rejected by applications in the
+       'quiescing' state."
+    ::= {applGlobalValues 2}
+
+applLastChange OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time the network service
+       application entered its current operational state.  If
+       the current state was entered prior to the last
+       initialization of the local network management subsystem,
+       then this object contains a zero value."
+    ::= {applGlobalValues 3}
+
+applInboundAssociations OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The number of current associations to the network service
+       application, where it is the responder.  An inbound
+       association occurs when another application successfully
+       connects to this one."
+    ::= {applGlobalValues 4}
+
+applOutboundAssociations OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The number of current associations to the network service
+       application, where it is the initiator.  An outbound
+       association occurs when this application successfully
+       connects to another one."
+    ::= {applGlobalValues 5}
+
+applAccumInboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number of associations to the application entity
+       since application initialization, where it was the responder."
+    ::= {applGlobalValues 6}
+
+applAccumOutboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number of associations to the application entity
+       since application initialization, where it was the initiator."
+    ::= {applGlobalValues 7}
+
+applLastInboundActivity OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time this application last
+       had an inbound association.  If the last association
+       occurred prior to the last initialization of the network
+       subsystem, then this object contains a zero value."
+    ::= {applGlobalValues 8}
+
+applLastOutboundActivity OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time this application last
+       had an outbound association.  If the last association
+       occurred prior to the last initialization of the network
+       subsystem, then this object contains a zero value."
+    ::= {applGlobalValues 9}
+
+applRejectedInboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number of inbound associations the application
+       entity has rejected, since application initialization.
+       Rejected associations are not counted in the accumulated
+       association totals.  Note that this only counts
+       associations the application entity has rejected itself;
+       it does not count rejections that occur at lower layers
+       of the network.  Thus, this counter may not reflect the
+       true number of failed inbound associations."
+    ::= {applGlobalValues 10}
+
+applFailedOutboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number associations where the application entity
+       is initiator and association establishment has failed,
+       since application initialization.  Failed associations are
+       not counted in the accumulated association totals."
+    ::= {applGlobalValues 11}
+
+    -- Bandwidth
+applInboundBandwidthKBS OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The Inbound bandwidth usage in KB/s."
+    ::= {applGlobalValues 12}
+
+applOutboundBandwidthKBS OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The Outbound bandwidth usage in KB/s."
+    ::= {applGlobalValues 13}
+
+    -- Overall status including past, future and current transfers
+nbInfoUnknown OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Unknown."
+    ::= {applGlobalValues 14}
+
+nbInfoNotUpdated OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as NotUpdated."
+    ::= {applGlobalValues 15}
+    
+nbInfoInterrupted OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Interrupted."
+    ::= {applGlobalValues 16}
+
+nbInfoToSubmit OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as ToSubmit."
+    ::= {applGlobalValues 17}
+
+nbInfoError OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Error."
+    ::= {applGlobalValues 18}
+
+nbInfoRunning OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Running."
+    ::= {applGlobalValues 19}
+
+nbInfoDone OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Done."
+    ::= {applGlobalValues 20}
+
+    
+    -- Current situation of all transfers, running or not
+nbAllTransfer OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in total, running or not."
+    ::= {applGlobalValues 21}
+    
+memoryTotal OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total Allocated Memory in KiloBytes."
+    ::= {applGlobalValues 22}
+
+memoryFree OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total Free Memory in KiloBytes."
+    ::= {applGlobalValues 23}
+    
+memoryUsed OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total Used Memory in KiloBytes."
+    ::= {applGlobalValues 24}
+
+nbThreads OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total number of active threads."
+    ::= {applGlobalValues 25}
+
+nbNetworkConnection OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total number of active network connections."
+    ::= {applGlobalValues 26}
+
+-- detailed part
+reply_000 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Unofficial reply code for no value."
+    ::= {applDetailedValues 1}
+
+reply_110 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+     "110 Restart marker reply. In this case, the text is exact 
+     and not left to the particular implementation), it must read: 
+     MARK yyyy (mmmm Where yyyy is User-process data stream marker, 
+     and mmmm server's equivalent marker(note the spaces between markers and =)."
+    ::= {applDetailedValues 2}
+
+reply_120 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "120 Service ready in nnn minutes."
+    ::= {applDetailedValues 3}
+
+reply_125 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "125 Data connection already open), transfer starting."
+    ::= {applDetailedValues 4}
+
+reply_150 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "150 File status okay, about to open data connection."
+    ::= {applDetailedValues 5}
+
+reply_200 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "200 Command okay."
+    ::= {applDetailedValues 6}
+
+reply_202 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "202 Command not implemented, superfluous at this site."
+    ::= {applDetailedValues 7}
+
+reply_211 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "211 System status, or system help reply."
+    ::= {applDetailedValues 8}
+
+reply_212 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "212 Directory status."
+    ::= {applDetailedValues 9}
+
+reply_213 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "213 File status."
+    ::= {applDetailedValues 10}
+
+reply_214 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "214 Help message. On how to use the server or the 
+      meaning of a particular non-standard command. This 
+      reply is useful only to the human user."
+    ::= {applDetailedValues 11}
+
+reply_215 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "215 NAME system type. Where NAME is an official system name from the list
+       in the Assigned Numbers document."
+    ::= {applDetailedValues 12}
+
+reply_220 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "220 Service ready for new user."
+    ::= {applDetailedValues 13}
+
+reply_221 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "221 Service closing control connection. Logged out if appropriate."
+    ::= {applDetailedValues 14}
+
+reply_225 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "225 Data connection open, no transfer in progress."
+    ::= {applDetailedValues 15}
+    
+reply_226 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "226 Closing data connection. Requested file action successful (for example,
+      file transfer or file abort)."
+    ::= {applDetailedValues 16}
+
+reply_227 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)."
+    ::= {applDetailedValues 17}
+
+reply_229 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "229 Entering Extended Passive Mode (|n|addr|port|)."
+    ::= {applDetailedValues 18}
+
+reply_230 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "230 User logged in, proceed."
+    ::= {applDetailedValues 19}
+
+reply_250 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "250 Requested file action okay, completed."
+    ::= {applDetailedValues 20}
+
+reply_257 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "257 PATHNAME created."
+    ::= {applDetailedValues 21}
+
+reply_331 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "331 User name okay, need password."
+    ::= {applDetailedValues 22}
+
+reply_332 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "332 Need account for login."
+    ::= {applDetailedValues 23}
+
+reply_350 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "350 Requested file action pending further information."
+    ::= {applDetailedValues 24}
+
+-- Error Status on all transfers
+
+reply_421 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "421 Service not available, closing control connection. This may be a
+      reply to any command if the service knows it must shut down."
+    ::= {applErrorValues 1}
+
+reply_425 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "425 Can't open data connection."
+    ::= {applErrorValues 2}
+
+reply_426 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "426 Connection closed, transfer aborted."
+    ::= {applErrorValues 3}
+
+reply_450 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "450 Requested file action not taken. File unavailable (e.g.,
+      file busy)."
+    ::= {applErrorValues 4}
+
+reply_451 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "451 Requested action aborted: local error in processing."
+    ::= {applErrorValues 5}
+
+reply_452 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "452 Requested action not taken. Insufficient storage space in system."
+    ::= {applErrorValues 6}
+
+reply_500 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "500 Syntax error, command unrecognized. This may include errors such as
+      command line too long."
+    ::= {applErrorValues 7}
+
+reply_501 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "501 Syntax error in parameters or arguments."
+    ::= {applErrorValues 8}
+
+reply_502 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "502 Command not implemented."
+    ::= {applErrorValues 9}
+
+reply_503 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "503 Bad sequence of commands."
+    ::= {applErrorValues 10}
+
+reply_504 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "504 Command not implemented for that parameter."
+    ::= {applErrorValues 11}
+
+reply_522 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "522 Extended Port Failure - unknown network protocol."
+    ::= {applErrorValues 12}
+
+reply_530 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "530 Not logged in."
+    ::= {applErrorValues 13}
+
+reply_532 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "532 Need account for storing files."
+    ::= {applErrorValues 14}
+
+reply_550 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "550 Requested action not taken. File unavailable (e.g., file not
+      found, no access)."
+    ::= {applErrorValues 15}
+
+reply_551 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "551 Requested action aborted: page type unknown."
+    ::= {applErrorValues 16}
+
+reply_552 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "552 Requested file action aborted. Exceeded storage allocation (for
+      current directory or dataset)."
+    ::= {applErrorValues 17}
+
+reply_553 OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "553 Requested action not taken. File name not allowed."
+    ::= {applErrorValues 18}
+
+-- test notification
+
+startOrShutdownObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Start Or Shutdown Extra Information."
+::= { startOrShutdownWaarp 1 }
+
+startOrShutdownWaarp NOTIFICATION-TYPE
+       OBJECTS { startOrShutdownObject }
+       STATUS current
+       DESCRIPTION "Start or Shutdown SMIv2 notification"
+       ::= { waarpgroup 1 }
+ 
+errorObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Nature of Error."
+::= { errorWaarp 1 }
+
+errorWaarp NOTIFICATION-TYPE
+       OBJECTS { errorObject }
+       STATUS current
+       DESCRIPTION "Error SMIv2 notification"
+       ::= { waarpgroup 2 }
+
+warningObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Nature of Warning."
+::= { warningWaarp 1 }
+
+warningWaarp NOTIFICATION-TYPE
+       OBJECTS { warningObject }
+       STATUS current
+       DESCRIPTION "Warning SMIv2 notification"
+       ::= { waarpgroup 3 }
+
+overloadedObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Overloaded Server extra information."
+::= { overloadedWaarp 1 }
+
+overloadedWaarp NOTIFICATION-TYPE
+       OBJECTS { overloadedObject }
+       STATUS current
+       DESCRIPTION "Overloaded SMIv2 notification"
+       ::= { waarpgroup 4 }
+
+-- TransferLog
+filenameInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current Filename."
+    ::= { infoWaarp 1 }
+modeTransInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Mode of Transfer."
+    ::= { infoWaarp 2 }
+startTransInfo OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Start Time of this transfer."
+    ::= { infoWaarp 3 }
+infoStatusInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current Status."
+    ::= { infoWaarp 4 }
+userIdInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "User Id for this transfer."
+    ::= { infoWaarp 5 }
+accountIdInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Account Id for this transfer."
+    ::= { infoWaarp 6 }
+specialIdInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Unique Id for this Transfer."
+    ::= { infoWaarp 7 }
+
+infoWaarp NOTIFICATION-TYPE
+       OBJECTS { filenameInfo, modeTransInfo, startTransInfo, infoStatusInfo, userIdInfo, 
+       accountId, specialIdInfo }
+       STATUS current
+       DESCRIPTION "Info SMIv2 notification"
+       ::= { waarpgroup 5 }
+       
+waarpgroup NOTIFICATION-GROUP
+    NOTIFICATIONS  { startOrShutdownWaarp,errorWaarp,warningWaarp,overloadedWaarp,infoWaarp }
+    STATUS         current
+    DESCRIPTION    "Group of Notification in Waarp"
+    ::= { waarptraps 1 }
+    
+END

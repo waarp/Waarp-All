@@ -1,0 +1,44 @@
+To generate the stores for OpenR66 for instance, you need to create 2 JKS keyStore. To generate those files, you can use the "keytool" command from the JDK or using the free tool KeyTool IUI (last known version in 2.4.1).
+
+Using Keytool IUI:
+==================
+
+For SSL connection without authentication of clients:
+=====================================================
+- Server side:
+Create one jks KeyStore (server.jks) with one Private Key Version 3 using RSA algorithm.
+Use this KeyStore as KeyStore for the Server.
+To do that, suing KeyTool IUI:
+1) Create an empty KeyStore
+2) Create a Private Key Version 3 with RSA algorithm added to this KeyStore
+
+- Client side:
+Create one jks TrustStore (clientTrust.jks) with the Certificate Chain of the Server Key from the Server as a Regular Certificate.
+Use this KeyStore as Trustore for the Client.
+To do that, using KeyTool IUI:
+1) From the Server Keytore, export Private Key (2 files with one Certificate Chain)
+2) Create one jks TrustStore (Empty KeyStore)
+3) Import the Trusted Certificate as Regular Certificate (Certificate Chain as .der file)
+
+
+For SSL connection with authentication of clients:
+==================================================
+A) First do as without authentication of clients for the server authentication side.
+server.jks for the Server's KeyStore and clientTrust.jks for the Client's TrustStore.
+
+B) Handle the reverse authentication of multiples clients within the server
+- Client side:
+Create one jks KeyStore with one Private Key Version 3 using RSA algorithm for each Client (client1.jks, client2.jks, clientn.jks).
+Use this KeyStore as KeyStore for the Client.
+To do that, suing KeyTool IUI:
+1) Create an empty KeyStore
+2) Create a Private Key Version 3 with RSA algorithm added to this KeyStore
+
+- Server side:
+Create one jks TrustStore (serverTrust.jks) with the Certificate Chain of the Client Key from the Client as a Regular Certificate.
+Use this KeyStore as Trustore for the Server.
+To do that, using KeyTool IUI:
+1) Create one jks TrustStore (Empty KeyStore)
+2) From the Client Keytore, export Private Key (2 files with one Certificate Chain)
+3) Import the Trusted Certificate as Regular Certificate (Certificate Chain as .der file)
+4) Import all Trusted Certificates as with 2 and 3 in the same TrustStore

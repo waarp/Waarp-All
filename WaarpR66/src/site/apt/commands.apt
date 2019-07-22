@@ -1,0 +1,328 @@
+OpenR66-Command
+
+  OpenR66 is mainly a set of commands,from the server, to the clients, through utilities.
+
+*R66Server
+
+  It launches the OpenR66 Server using as unique argument the full XML configuration file.
+  It loads the rest of the configuration (or update its configuration) from the database
+  specified in the XML configuration file.
+
+  By default, three services are opened:
+
+  * Non SSL file transfer monitor
+
+  * SSL file transfer monitor
+
+  * HTTP file transfer observer
+
+  []
+
+  By default, 5 subdirectories (under the main home) are defined:
+
+  *Config directory where configurations files are stored
+
+  *Archive directory where archive transfer can be put (using post actions) or where transfer logs
+  are placed
+
+  *Input directory where received files are stored (except if a post action moves it)
+
+  *Output directory where to be sent files are stored (or linked)
+
+  *Working directory where currently received files are temporarily placed
+
+*Utilities:
+
+**ServerInitDatabase
+
+  The first step in installation of an OpenR66 Server or heavy client is to construct the XML
+  configuration files and to initiate the database that support file transfers and configurations.
+  This function is an helper for database initialization.
+
+  * The first argument is the JDBC database connection XML file. It will try to create the
+  database tables and to initiate the sequence (unique Id by host of runners from runner table).
+
+  From there any argument are optional but in that order. Any existing data will be replaced. No data are deleted if not replaced.
+
+  * -initdb : try to create database. It stops at the first error but the program continues.
+
+  * -dir directory : This argument is the directory from where to load rules into the database using the XML
+  rule files present in this directory (rules table).
+
+  * -auth fileHost : This argument is to load the host authentication XML file into the database (hosts table).
+
+  * -limit limitConfig : This argument is to load the bandwidth XML file into the database (configuration table).
+
+  []
+
+  From that point, the OpenR66 server (R66Server) can be started.
+
+**ServerExportConfiguration
+
+  One of the ideas of OpenR66 is the ability to centralized some information asynchronously
+  into a centralized database. This centralization can be in two ways:
+
+  * Import new rules, host authentication or bandwidth limitation: this can be done using
+  the ServerInitDatabase after some file transfers from a post operation which could execute
+  this utility.
+
+  * Export rules, hosts authentication and actual runners (done or not): this is the goal
+  of this utility. It takes two arguments:
+
+    * The client configuration XML file
+
+    * The directory where to export files in XML format
+
+  It will export Rules, all present Runners, Host Authentications.
+
+  
+**ConfigExport
+
+	This tool enables to ask the server remotely to export Rules and Hosts configuration into one file each.
+	It could be used before a retrieve of the configuration in a central repository.
+	
+	Options are:
+
+    * The first argument is the client XML configuration file
+	
+	* -hosts : export all Hosts configuration
+	
+	* -rules : export all Rules configuration
+
+**ConfigImport
+
+	This tool enables to ask the server remotely to import Rules and Hosts configuration from one file each.
+	It could be used before a upload the configuration from a central repository after transmission.
+	
+	Options are:
+
+    * The first argument is the client XML configuration file
+	
+	* -hosts : import all Hosts configuration
+	
+	* -purgehosts : purge all hosts configuration before importing new configuration
+	
+	* -rules : import all Rules configuration
+	
+	* -purgerules : purge all rules configuration before importing new configuration
+
+**ServerShutdown
+
+  The OpenR66 Server can be shutdown mainly in two ways:
+
+  * Sending a -SIGTERM signal (or under Unix a -SIGUSR1 signal) to the JVM process hosting
+  the OpenR66 Server.
+
+  * The prefered way is to use the HTTPS Administrator interface.
+
+  * Another preferred way is to use this utility which sends a shutdown request through network
+  but using a key shared physically (adminkey). This utility takes the same XML configuration
+  file than the server (where the admin key is referred but not stored in any database) and
+  uses the SSL service.
+
+  * If one wants to used the non SSL service, it should create a new utility and changing:
+
+    * "SERVER_SSLPORT" to "SERVER_PORT"
+
+    * "createConnectionWithRetry(socketServerAddress,true, null);" to "createConnectionWithRetry(socketServerAddress,false, null);".
+
+**LogExport
+
+  If one wants to centralized in asynchronous way the transfer logs, this utility is made for it.
+  Its purpose is to export logs into the archive directory and to eventually purge them from
+  database. It sends a local request to the server, which really export the logs into a file.
+  No file are transfered, they are just export to a file in the global archive directory.
+  To use it, two main ways can be achieved:
+
+  * The local server runs this tool referring the OpenR66 Server using the client configuration
+  XML file and then running a log request.
+
+  * Directly runs a transfer request where the rule execute at pre processing this utility
+  (again either in receive or send mode according to the initiate server).
+
+  * The First argument is the Client Configuration (eventually without database access).
+
+  * The rest of arguments can be:
+
+    *'-clean' option: Change all UpdatedInfo to Done where GlobalLastTask is ALLDONETASK and
+    status is CompleteOk (sometimes some runners can be done but UpdatedInfo could be erroneous
+     - no impact but clean function -).
+
+    *'-purge' option: This option removes all ALLDONETASK from those that will be exported.
+
+    *'-start' option: This option specifies the low limit to select runners from start runner
+    time. If not specified, there is no low limit.
+
+    *'-stop' option: This option specifies the upper limit to select runners from start runner
+    time. If not specified, there is no upper limit.
+
+**ChangeBandwidthLimits
+
+  This tool enables to change dynamically the bandwidth limitations (only in memory, not in
+  database). To use it, it should be used locally with the admin account.
+
+  * The First argument is the Client Configuration (eventually without database access).
+
+  * The rest of arguments can be:
+
+    *'-wglob' option: Write Global limitation in Bytes by Second (minimum 1024 so 1KBs).
+
+    *'-rglob' option: Read Global limitation in Bytes by Second (minimum 1024 so 1KBs).
+
+    *'-wsess' option: Write Session limitation in Bytes by Second (minimum 1024 so 1KBs).
+
+    *'-rsess' option: Read Session limitation in Bytes by Second (minimum 1024 so 1KBs).
+
+*Clients:
+
+**SubmitTransfer
+
+  To transfer a file, two main methods exist. This one is a submission request, so an
+  asynchronous operation since once the request is submitted, the client returns without
+  waiting for the end of the operation.
+
+  It takes the following argument:
+
+  * The client XML configuration file as first argument, the one including database access
+
+  * At least 3 other arguments are necessary:
+
+    *'-to' option: specifies the remote Host Id (either the Id for SSL or not ).
+
+    *'-file' option: specifies the file to transfer (either in receive or send mode).
+
+    *'-rule' option: specifies the rule to apply (which specifies the transfer mode,
+    the pre, post or error operations, ...).
+
+  * Or at least 2 other arguments are necessary:
+
+    *'-to' option: specifies the remote Host Id (either the Id for SSL or not ).
+
+    *'-id' option: specifies the Id of a previous transfer (stopped or in error).
+
+  * Other options are:
+
+    *'-info' option: specifies the optional information that is send at the same time with
+    the transfer request (extra information that could be needed by the remote host).
+
+    *'-md5' option: specifies that each block transfer will be checked with a MD5 key. If
+    the rule used is already in MD5 mode, this option will change nothing.
+
+    *'-block' option: specifies the block size (default is 64 KB).
+
+    *'-nolog' option: specifies that this transfer will not be logged (only on requester side).
+
+	*'-start' "time start" as yyyyMMddHHmmss (override previous -delay options)
+	
+    *'-delay' "+delay in ms" as delay in ms from current time(override previous -start options)
+
+	*'-delay' "delay in ms" as time in ms (override previous -start options)
+
+**DirectTransfer
+
+  This is the second method to transfer a file. This method is direct, so as a synchronous
+  operation. This time the client will do the real work (transferring the file).
+  The options are exactly the same than with SubmitTransfer. However two cases exist:
+
+  *Heavy client: The client XML configuration file includes the database access.
+  All transfer operations will be logged (eventually deleted at the end from the client side
+  if the '-nolog' option is set). This option is useful for "production" clients in a data center.
+
+  *Light client: The client XML configuration file does not included the database access.
+  All transfer operations will not be logged at all (at client side). This option is useful
+  for "light client" like personal computers where transferring files to or from a data center
+  is a necessity.
+
+  However, both clients can only be the initiator of the transfer (receive or send), since no service is running once the client is over.
+
+**SendThroughClient
+
+  This method is not a full implemented method. It is a way to route a file transfer from
+  one protocol in Java to OpenR66. For instance, if a protocol like HTTP upload or FTP upload
+  allows to get a file upload by packet, you can then route this file transfer through OpenR66
+  to a final OpenR66 Server using the protocol but without writing an intermediary file
+  (directly write the bytes from the upload to the OpenR66 SendThroughClient interface).
+  A simple example is shown in TestSendThroughClient.
+
+  So this method needs some minor developments to be implemented.
+
+**RecvThroughClient
+
+  This method is not a full implemented method. It is a way to route a file transfer to one
+  protocol in Java to OpenR66. For instance, if a protocol like HTTP or FTP download allows to
+  get a file downloaded by packet, you can then route directly the file transfer from OpenR66
+  from a remote OpenR66 Server using the protocol directly but without writing an intermediary
+  file (directly write the bytes from the download from the OpenR66 RecvThroughHandler
+  interface). A simple example is shown in TestRecvThroughClient.
+
+  So this method needs some minor developments to be implemented.
+
+**ProgressBarTransfer
+
+  This method is not a full implemented method. It is a way to implement a file transfer within
+  a Graphical User Interface or to get information on progression during the transfer.
+  Such an example is presented in the R66GUI.
+
+  So this method needs some minor developments to be implemented.
+
+**RequestTransfer
+
+  This utility is used to get information for a specific runner or to have an action on this runner.
+
+  The arguments are the following:
+
+  * The first argument is the client XML configuration file including the database access.
+
+  *'-id' option: this is the Runner Id.
+
+  *'-to' or '-from' option (exclusive): this specifies the way of the request transfer.
+  '-to' specifies that the original request was initiated by the current running host to
+  the remote specified host. '-from' specifies that the original request was initiated by
+  the remote specified host.
+
+  * Optional arguments (exclusive): without any of those arguments, the request only returns
+  the current information of the runner.
+
+    *'-cancel' option: the runner will be canceled. Any file currently in writing will be deleted.
+
+    *'-stop' option: the runner will be stopped (but not canceled).
+
+    *'-restart' option: the runner will be restart (if stopped).
+
+**RequestInformation
+
+  This utility is used to get information for a file, a directory, with or without wildcard
+  characters ('*' and '?").
+
+  The arguments are the following:
+
+  * The first argument is the client XML configuration file including the database access.
+
+  *'-to' option: specifies the requested host.
+
+  *'-rule' option: the rule
+
+  *'-file' the optional file for which to get info (may contain wildcard characters)
+
+  * Optional arguments (exclusive): without any of those arguments, the request only
+  returns the existence of the file or directory.
+
+    *'-exist' to test the existence.
+
+    *'-detail' to get the detail on file.
+
+    *'-list' to get the list of files.
+
+    *'-mlsx' to get the list and details of files
+
+**Message
+
+  This utility is used to send a short message to another server (like a ping in OpenR66 protocol)
+  
+  The arguments are the following:
+  
+  * The first argument is the client XML configuration file
+
+  *'-to' option: specifies the requested host.
+
+  *'-msg' option: the msg to send

@@ -1,0 +1,59 @@
+#!/bin/sh
+export AIXTHREAD_SCOPE=S
+# JDK SUN
+#export JAVABASE="/usr/local/jdk1.6"
+#export JAVAJDK="${JAVABASE}"
+#JAVA_HOME="${JAVAJDK}/jre"
+#JAVA_OPTS1="-server"
+#JAVA_OPTS2="-Xms256m -Xmx4096m"
+#export JAVA_RUN="${JAVA_HOME}/bin/java ${JAVA_OPTS1} ${JAVA_OPTS2} "
+
+# JDK IBM
+export JAVABASE="/usr/java6_64"
+export JAVAJDK="${JAVABASE}"
+JAVA_HOME="${JAVAJDK}/jre"
+JAVA_OPTS1="-Xquickstart -Xgcpolicy:gencon -Xdisableexcessivegc"
+JAVA_OPTS2="-Xms256m -Xmx4096m"
+export JAVA_RUN="${JAVA_HOME}/bin/java ${JAVA_OPTS1} ${JAVA_OPTS2} "
+
+export PATH=${JAVA_HOME}/bin:${JAVAJDK}/bin:$PATH
+export LDR_CNTRL=LARGE_PAGE_DATA=Y
+
+export GGHOME="/usr/local/goldengateftp"
+export GGBIN="${GGHOME}/lib"
+# Logger
+loggerserver=" -Dlogback.configurationFile=${GGHOME}/config/logback.xml "
+loggerclient=" -Dlogback.configurationFile=${GGHOME}/config/logback-client.xml "
+
+GG_CLASSPATH=" ${GGBIN}/WaarpGatewayFtp-2.1.8.jar:${GGBIN}/* "
+
+export GGJAVARUNSERVER="${JAVA_RUN} -cp ${GG_CLASSPATH} ${loggerserver} "
+export GGSERVER="${GGHOME}/config/config.xml"
+
+################
+# GGFTP COMMANDS #
+################
+
+# SERVER SIDE #
+###############
+# start the GoldenGate Ftp Exec server
+# no option
+export GGFTPSERVER="${GGHOME}/bin/ggserver.sh"
+alias ggftpserver="${GGFTPSERVER}"
+
+# shutdown locally the server
+# [ PID ] optional PID of the server process
+export GGFTPSIGNAL="${GGHOME}/bin/gglocalshutdown.sh"
+alias ggftpsignal="${GGFTPSIGNAL}"
+
+# shutdown by network the server
+# no option
+export GGFTPSHUTD="${GGHOME}/bin/ggnetworkshutdown.sh"
+alias ggftpshutd="${GGFTPSHUTD}"
+
+# update the authentication dynamically in the server
+# [ filename ] optional filename - if not given the one used last time is reused
+export GGFTPUPDAUTH="${GGHOME}/bin/ggupdateauthent.sh"
+alias ggftpauth="${GGFTPUPDAUTH}"
+
+

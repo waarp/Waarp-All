@@ -1,0 +1,79 @@
+OpenR66 Rule Configuration File
+	
+*rule
+
+  *comment:string Optional
+
+  *idrule:nonEmptyString
+	
+   Rule ID
+
+  *hostids
+	
+   List of Host Ids allowed to use this rule. No Host Id means all allowed.
+	
+     *hostid:nonEmptyString unbounded
+   
+      Host ID allowed to use this rule
+   	
+  *mode:nonNulInteger
+	
+   1=SEND 2=RECV 3=SEND+MD5 4=RECV+MD5
+   
+  *recvpath:nonEmptyString Optional default="IN"
+	
+   Default Receive Directory
+            
+  *sendpath:nonEmptyString Optional default="OUT"
+	
+   Default Send Directory
+            
+  *archivepath:nonEmptyString Optional default="ARCH"
+	
+   Default Archive Directory
+            
+  *workpath:nonEmptyString Optional default="WORK"
+	
+   Default Working Directory
+        
+  *rpretasks
+   
+   List of tasks -if any- to execute before transfer on receiver side
+   	
+  *rposttasks
+   
+   List of tasks -if any- to execute after transfer on receiver side
+   	
+  *rerrortasks
+   
+   List of tasks -if any- to execute after an error on receiver side
+
+  *spretasks
+   
+   List of tasks -if any- to execute before transfer on sender side
+   	
+  *sposttasks
+   
+   List of tasks -if any- to execute after transfer on sender side
+   
+  *serrortasks
+   
+   List of tasks -if any- to execute after an error on sender side
+   	
+Where List of tasks is
+   
+*tasks
+
+**task Optional unbounded
+      	
+  *type:nonEmptyString
+         
+   Type of Task: LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, EXECJAVA, EXECOUTPUT, LINKRENAME, VALIDFILEPATH, DELETE, TAR, ZIP
+         	
+  *path:nonEmptyString
+   
+   Argument -often a path- applied to the task where substitution can occur like #TRUEFULLPATH#, #FILESIZE#, #RULE#, #DATE#, #TRANSFERID#, ...
+         	
+  *delay:nonNegInteger
+         
+   Maximum delay for execution of the task in ms

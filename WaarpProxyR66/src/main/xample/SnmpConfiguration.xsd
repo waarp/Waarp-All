@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fg="http://www.FGolubov.com/XMLEditor" elementFormDefault="qualified">
+	<xsd:include schemaLocation="R66-GlobalTypes.xsd" />
+	<xsd:notation name="version" system="2.4.9" public="2.4.9"/>
+  
+  <xsd:element name="snmpconfig">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="comment" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+		
+        <xsd:element name="config" >
+			<xsd:complexType>
+			  <xsd:sequence>
+				<xsd:element name="localaddress" type="nonEmptyString" minOccurs="1" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:appinfo>
+							<fg:node-info
+								message="Local Address to use as listen in format udp:address/port or tcp:address/port" />
+						</xsd:appinfo>
+						<xsd:documentation>Local Address to use as listen in format udp:address/port or tcp:address/port</xsd:documentation></xsd:annotation>
+				</xsd:element>
+				<xsd:element name="nbthread" type="nonNulInteger" minOccurs="0" maxOccurs="1" default="4">
+                    <xsd:annotation>
+                    	<xsd:appinfo>
+                    		<fg:node-info
+                    			message="Number of threads to use (4)" />
+                    	</xsd:appinfo>
+                    	<xsd:documentation>Number of threads to use (4)</xsd:documentation></xsd:annotation>
+				</xsd:element>
+				  <xsd:element name="filtered" type="booleanType" default="False" minOccurs="0" maxOccurs="1">
+                    <xsd:annotation>
+                    	<xsd:appinfo>
+                    		<fg:node-info
+                    			message="Enables or disables source address filtering for incoming SNMPv1 or SNMPv2c packets. By default source address filtering is disabled! If enabled, only messages received for community based security models are processed, that match an address in the snmpTargetAddressTable with the transport tag associated with the community used." />
+                    	</xsd:appinfo>
+                    	<xsd:documentation>Enables or disables source address filtering for incoming SNMPv1 or SNMPv2c packets. By default source address filtering is disabled! If enabled, only messages received for community based security models are processed, that match an address in the snmpTargetAddressTable with the transport tag associated with the community used.</xsd:documentation></xsd:annotation>
+				  </xsd:element>
+                <xsd:element name="usetrap" type="booleanType" default="True" minOccurs="0" maxOccurs="1">
+                    <xsd:annotation>
+                    	<xsd:appinfo>
+                    		<fg:node-info
+                    			message="Use Trap (True) or Inform (False) when generating push event" />
+                    	</xsd:appinfo>
+                    	<xsd:documentation>Use Trap (True) or Inform (False) when generating push event</xsd:documentation></xsd:annotation>
+                </xsd:element>
+                <xsd:element name="trapinformlevel" type="nonNegInteger" default="0" minOccurs="0" maxOccurs="1">
+                    <xsd:annotation>
+                    	<xsd:appinfo>
+                    		<fg:node-info
+                    			message="Level of trap or inform event generated: 0 None 1 Start/Stop 2 Critical 3 Error 4 Every events in Warning 5 Every events" />
+                    	</xsd:appinfo>
+                    	<xsd:documentation>Level of trap or inform event generated: 0 None 1 Start/Stop 2 Critical 3 Error 4 Every events in Warning 5 Every events</xsd:documentation></xsd:annotation>
+                </xsd:element>
+			  </xsd:sequence>
+			</xsd:complexType>
+		</xsd:element>
+
+			<xsd:element name="targets">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="target" minOccurs="0" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="name" type="nonEmptyString">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info
+													message="Name To use as target" />
+											</xsd:appinfo>
+											<xsd:documentation>Name To use as target</xsd:documentation></xsd:annotation>
+									</xsd:element>
+									<xsd:element name="domain"
+										default="UdpIpv4">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info
+													message="1 Value between: UdpIpv4 UdpIpv6 UdpIpv4e UdpIpv6z TcpIpv4 TcpIpv6 TcpIpv4z TcpIpv6z" />
+											</xsd:appinfo>
+											<xsd:documentation>1 Value between: UdpIpv4 UdpIpv6 UdpIpv4e UdpIpv6z TcpIpv4 TcpIpv6 TcpIpv4z TcpIpv6z
+											</xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction
+												base="xsd:string">
+												<xsd:enumeration
+													value="UdpIpv4">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="UdpIpv6">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="UdpIpv4e">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="UdpIpv6z">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="TcpIpv4">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="TcpIpv6">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="TcpIpv4z">
+												</xsd:enumeration>
+												<xsd:enumeration
+													value="TcpIpv6z">
+												</xsd:enumeration>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+									<xsd:element name="address">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info
+													message="As address/port as 192.168.0.1/162" />
+											</xsd:appinfo>
+											<xsd:documentation>As address/port as 192.168.0.1/162</xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction
+												base="xsd:string">
+												<xsd:pattern
+													value=".+/\d+">
+												</xsd:pattern>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+									<xsd:element name="timeout" type="nonNegInteger" default="200" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info
+													message="Maximum delay to wait with an Inform mode event" />
+											</xsd:appinfo>
+											<xsd:documentation>Maximum delay to wait with an Inform mode event</xsd:documentation></xsd:annotation>
+									</xsd:element>
+									<xsd:element name="retries" type="nonNegInteger" default="1" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info
+													message="Number of retries once the Inform is sent and not acknowledged" />
+											</xsd:appinfo>
+											<xsd:documentation>Number of retries once the Inform is sent and not acknowledged</xsd:documentation></xsd:annotation>
+									</xsd:element>
+									<xsd:element name="isv2" type="booleanType" default="True" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info
+													message="This entry is conformed with V2C or with V3 of SNMP" />
+											</xsd:appinfo>
+											<xsd:documentation>This entry is conformed with V2C or with V3 of SNMP</xsd:documentation></xsd:annotation>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="securities">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="security" minOccurs="0" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="securityname" type="nonEmptyString">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info message="Name To use as Name Entry for External Manager"/>
+											</xsd:appinfo>
+										</xsd:annotation>
+									</xsd:element>
+									<xsd:element name="securityauthprotocol" type="nonEmptyString" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info message="Protocol between SHA or MD5"/>
+											</xsd:appinfo>
+										</xsd:annotation>
+									</xsd:element>
+									<xsd:element name="securityauthpass" type="xsd:string" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info message="Password (might be empty)"/>
+											</xsd:appinfo>
+										</xsd:annotation>
+									</xsd:element>
+									<xsd:element name="securityprivprotocol" type="nonEmptyString" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info message="Optional Protocol as P3DES, PAES128, PAES192, PAES256, PDES"/>
+											</xsd:appinfo>
+										</xsd:annotation>
+									</xsd:element>
+									<xsd:element name="securityprivpass" type="xsd:string" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:appinfo>
+												<fg:node-info message="Password (might be empty)"/>
+											</xsd:appinfo>
+										</xsd:annotation>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  
+</xsd:schema>

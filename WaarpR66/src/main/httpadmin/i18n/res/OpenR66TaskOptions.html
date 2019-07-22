@@ -1,0 +1,511 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="description" content="Waarp project" />
+<meta http-equiv="imagetoolbar" content="no" />
+<style type="text/css">
+a {
+	color:#0000FF;
+	text-decoration:none;
+}
+a:visited {
+	text-decoration:none;
+}
+a:hover {
+	text-decoration:underline;
+}
+a img {
+	border:#000000 0px none;
+}
+</style>
+<title>Waarp - Waarp R66-TaskOptions</title>
+</head>
+<body class="normal" style="margin:0px;padding:0px;background-color:#FFFFFF;background-position:left top;background-repeat:repeat-y;">
+<h1 class="h1">Waarp R66-TaskOptions</h1>
+<div id="Comp1_sys_doctext"><p style="text-align:justify;"><span style="font-size:11pt;">We focus here on the several tasks that are possible to run before a transfer starts (pre action), after a transfer is finished correctly (post action) or after an error occurs (either in pre or post action or during transfer: error action).</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Those actions are defined in one rule. Each rule contains 2 parts:</span></p>
+<ol>
+<li><div style="text-align:justify;"><span style="font-size:11pt;">Sender actions: A host is a Sender if it is the requester on a SEND rule or if it is the requested on a RECV rule. </span></div></li>
+
+<li>
+<div style="text-align:justify;"><span style="font-size:11pt;">Receiver actions: A host is a Sender if it is the requester on a&nbsp;RECV rule or if it is the requested on a&nbsp;SEND rule.</span></div></li></ol>
+<p style="text-align:justify;"><span style="font-size:11pt;">Each action could be on pre, post or error step, each step can have several actions.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">It is defined with a unified form of XML:</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-family:Courier New;">&lt;tasks&gt;</span></span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;type&gt;NAME&lt;/type&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;path&gt;path&lt;/path&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;delay&gt;x&lt;/delay&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;type&gt;NAME&lt;/type&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;path&gt;path&lt;/path&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;delay&gt;x&lt;/delay&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/tasks&gt;</span></p>
+<ul>
+<li><div style="text-align:justify;"><span style="font-size:11pt;">Type is the type of task to execute (see below the supported types) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">Path is a fixed argument for the task to execute. On this argument, string replacements are done when&nbsp;the following patterns are found:</span></div><ul>
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#TRUEFULLPATH#</strong> : Current full path of current FILENAME </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#TRUEFILENAME#</strong> : Current FILENAME (basename) (change in retrieval part) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#ORIGINALFULLPATH#</strong> : Original full path FILENAME (before changing in retrieval part) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#ORIGINALFILENAME#</strong> : Original FILENAME (basename) (before changing in retrieval part) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#FILESIZE#</strong> : File size if it exists </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#INPATH#</strong> :&nbsp;In (Receive) path&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#OUTPATH#</strong> :&nbsp;Out (Send) path&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#WORKPATH#</strong> :&nbsp;Working (while receiving) path&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#ARCHPATH#</strong> :&nbsp;Archive path (for export Log) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#HOMEPATH#</strong> :&nbsp;Home path (to enable for instance relative path commands)&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#RULE#</strong> :&nbsp;Rule used during transfer&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#DATE#</strong> : Current Date in yyyyMMdd format </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#HOUR#</strong> : Current Hour in HHmmss format </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#REMOTEHOST#</strong> : Remote host id (if not the initiator of the call) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#REMOTEHOSTIP#</strong> : Remote host IP (if not the initiator of the call) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#LOCALHOST#</strong></span><span style="font-size:11pt;"> : Local host Id </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#LOCALHOSTIP#</strong> : Local host IP </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#TRANSFERID#</strong></span><span style="font-size:11pt;"> : Transfer Id </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#REQUESTERHOST#</strong> :&nbsp;Requester host Id&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#REQUESTEDHOST#</strong> : Requested host Id </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#FULLTRANSFERID#</strong> : Full Transfer Id as TRANSFERID_REQUESTERHOST_REQUESTEDHOST&nbsp; </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#RANKTRANSFER#</strong> : Current or final RANK of block </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#BLOCKSIZE#</strong> : Block size used</span> </div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#ERRORMSG#</strong> : The current error message or NoError if no error occurs until this call</span> </div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#ERRORCODE#</strong> : The current error code or&nbsp;'-' (Unknown)&nbsp;if no error occurs until this call</span> </div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#ERRORSTRCODE#</strong> : The current error code message or "Unknown" if no error occurs until this call</span> </div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;"><strong>#NOWAIT#</strong> : Used by Exec type task to specify that the command will be executed in asynchronous mode, without waiting any result from it</span> </div></li>
+
+<li>
+<div style="text-align:justify;"><span style="font-size:11pt;"><strong>#LOCALEXEC#</strong> : Used by Exec type task to specify that the command will be executed not locally (within the JVM) but outside using a LocalExec Daemon (specified in the global configuration)</span></div></li></ul></li>
+
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">Delay is generally the delay (if any) for execution before the execution&nbsp;becomes out of time. </span></div></li>
+
+<li>
+<div style="text-align:justify;"><span style="font-size:11pt;">Additionnaly, a task will use also the argument from the transfer itself (Transfer Information).</span></div></li></ul>
+<p style="text-align:justify;"><span style="font-size:11pt;">Each action is of one of the following items:</span></p>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">LOG</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">This task logs or writes to an external file some info:</span></p>
+<ul>
+<li><div style="text-align:justify;"><span style="font-size:11pt;">if delay is 0, no echo at all will be done</span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">if delay is 1, will echo some information in the normal log</span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">if delay is 2, will echo some information in the file&nbsp;(last deduced argument will be the full path for the file output)</span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">if delay is 3, will echo both in the normal log and in the file&nbsp;(last deduced argument will be the full path for the file output)</span></div></li>
+
+<li>
+<div style="text-align:justify;"><span style="font-size:11pt;">If first word of the log is one of <span style="font-family:MS Sans Serif;"><strong>debug</strong></span>, <span style="font-family:MS Sans Serif;"><strong>info</strong></span>, <span style="font-family:MS Sans Serif;"><strong>warn</strong></span> or <span style="font-family:MS Sans Serif;"><strong>error</strong></span>, this word will be used as the log level</span></div></li></ul></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">MOVE</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Move the file to the path designed by Path and Transfer Information arguments without renaming the filename (same basename). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay is ignored.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">MOVERENAME</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Move the file to the path designed by Path and Transfer Information arguments. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay is ignored.&nbsp;</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">COPY</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Copy the file to the path designed by Path argument without renaming the filename (same basename). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay and Transfer Information are ignored.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">COPYRENAME</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Copy the file to the path designed by Path and Transfer Information arguments.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay is ignored.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">EXEC</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Execute an external command given by Path and Transfer Information arguments. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The Delay is the maximum amount of time in milliseconds before the task should be considered as over time and so in error.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The command path is obtained from Path transformed according to above dynamic replacements, and after a String Format where Transfer Information is used as input (String.format(Path,Info)).</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">The external command is supposed to behave as the following for its exiting value:</span></strong></p>
+<ul>
+<li><div style="text-align:justify;"><strong><span style="font-size:11pt;">exit 0, for a correct execution</span></strong></div></li>
+
+<li><div style="text-align:justify;"><strong><span style="font-size:11pt;">exit 1, for a warned execution (but however correct)</span></strong></div></li>
+
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">other exit values for a failed&nbsp;execution</span></strong></div></li></ul></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">EXECMOVE</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Execute an external command given by Path and Transfer Information arguments. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The Delay is the maximum amount of time in milliseconds before the task should be considered as over time and so in error.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The command path is obtained from Path transformed according to above dynamic replacements, and after a String Format where Transfer Information is used as input (String.format(Path,Info)).</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The last line returned by the external command is interpreted as the new full file path. The external command is responsible to really move the previous file to the new one. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is marked as moved.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">The external command is supposed to <strong>to behave as the following for its exiting value</strong>:</span></strong></p>
+<ul>
+<li><p style="text-align:justify;"><strong><span style="font-size:11pt;">exit 0, for a correct execution</span></strong></p></li>
+
+<li><p style="text-align:justify;"><strong><span style="font-size:11pt;">exit 1, for a warned execution (but however correct)</span></strong></p></li>
+
+<li>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">other exit values for a failed&nbsp;execution</span></strong></p></li></ul></blockquote><strong><span style="font-size:11pt;">
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">EXECOUTPUT</span></strong></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Execute an external command given by Path and Transfer Information arguments. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The Delay is the maximum amount of time in milliseconds before the task should be considered as over time and so in error.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The command path is obtained from Path transformed according to above dynamic replacements, and after a String Format where Transfer Information is used as input (String.format(Path,Info)).</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">All lines returned by the external command (normal output) is interpreted as the possible error message in case of error. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">The external command is supposed to <strong>to behave as the following for its exiting value</strong>:</span></strong></p>
+<ul>
+<li><p style="text-align:justify;"><strong><span style="font-size:11pt;">exit 0, for a correct execution</span></strong></p></li>
+
+<li><p style="text-align:justify;"><strong><span style="font-size:11pt;">exit 1, for a warned execution (but however correct)</span></strong></p></li>
+
+<li>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">other exit values for a failed&nbsp;execution, for which the output (stdout) lines are used as error message, bring back to the remote host as #ERRORMSG# and #ERRORCODE# / #ERRORSTRCODE#</span></strong></p></li></ul></blockquote></span></strong>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;"><span style="font-size:11pt;"><strong>EXECJAVA</strong></span></span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span><span style="font-size:11pt;">Execute an external Java class given by Path and Transfer Information arguments.</span></span></p></blockquote>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">The Delay is the maximum amount of time in milliseconds before the task should be considered as over time and so in error.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The class name (which must implement R66Runnable) is obtained from Path transformed according to above dynamic replacements, and after a String Format where Transfer Information is used as input (String.format(Path,Info)). The first argument is this full classname. The allocation must be of the form new MyClass(), so an empty constructor.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">TRANSFER</span></strong></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Submit a new transfer based on the Path and Transfer Information arguments.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The transfer arguments are obtained from Path transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)).</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The result&nbsp;should be as r66send command except "-info" must be the last field: </span></p>
+<p style="text-align:justify;"><span style="font-size:11pt;"><span>"<strong>-file filepath -to requestedHost -rule rule [-md5]</strong></span><strong> [-start yyyyMMddHHmmss or -delay (delay or +delay)] -info transferInformation</strong><span>" </span></span></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">where each field is separated by blank character. Last field (transferInformation) may contain however blank character.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay is ignored.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">VALIDFILEPATH</span></strong></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Test if the current file is under one of the paths based on the Path and Transfer Information arguments. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The paths arguments are obtained from Path transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)).</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The result&nbsp;should be as: "<strong>path1 path2 ...</strong>" where each path is separated by blank character.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">If Delay is not 0, a log is printed out.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">DELETE</span></strong></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">This task deletes the current file.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The current file is no more valid.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">No arguments are taken into account.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">LINKRENAME</span></strong></div></li></ul>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Create a link of the current file and make the file pointing to it. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The link first tries to be a hard link, then a soft link, and if it is really not possible (not supported by the filesystem), it does a copy and rename task.</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay is ignored. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is not marked as moved.</span></p>
+<p style="text-align:justify;">&nbsp;</p></blockquote>
+<ul dir="ltr">
+<li>
+<div style="text-align:justify;"><span style="font-size:11pt;"><strong>RESCHEDULE</strong></span></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Reschedule Transfer task to a time delayed by the specified number of milliseconds, if the error code is one of the specified code and the optional intervals of date are compatible with the new time schedule<br /><br />Result of arguments will be as following options (the two first are mandatory):</span></p></blockquote>
+<ul>
+<ul>
+<li><div style="text-align:justify;"><span style="font-size:11pt;">"-delay ms" where ms is the added number of ms on current time before retry on schedule </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">"-case code,code,..." where code is one of the following error of the current transfer (either literal or code in 1 character):<br />ConnectionImpossible(C), ServerOverloaded(l), BadAuthent(A), ExternalOp(E), TransferError(T), MD5Error(M), Disconnection(D), RemoteShutdown(r), FinalOp(F), Unimplemented(U), Shutdown(S), RemoteError(R), Internal(I), StoppedTransfer(H), CanceledTransfer(K), Warning(W), Unknown(-), QueryAlreadyFinished(Q), QueryStillRunning(s), NotKnownHost(N), QueryRemotelyUnknown(u), FileNotFound(f), CommandNotFound(c), PassThroughMode(p) </span></div></li>
+
+<li><div style="text-align:justify;"><span style="font-size:11pt;">"-between start;end" and/or "-notbetween start;end" (multiple times are allowed, start or end can be not set) and where start and stop are in the following format:<br />Yn:Mn:Dn:Hn:mn:Sn where n is a number for each time specification, each specification is optional, as Y=Year, M=Month, D=Day, H=Hour, m=minute, s=second.<br />Format can be X+n, X-n, X=n or Xn where X+-n means adding/subtracting n to current date value, while X=n or Xn means setting exact value<br />If one time specification is not set, it is based on the current date.<br /><br />If "-notbetween" is specified, the planned date must not be in the area.<br />If "-between" is specified, the planned date must be found in any such specified areas (could be in any of the occurrence). If not specified, it only depends on "-notbetween".<br />If none is specified, the planned date is always valid.</span></div></li>
+
+<li>
+<div style="text-align:justify;"><span style="font-size:11pt;">"-count limit" will be the limit of retry. The value limit is computed internally using transfer information.</span></div></li></ul></ul>
+<blockquote>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;">Each time this function is called, the limit value will be replaced as newlimit = limit - 1 in the "transfer information". </span></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">To ensure correctness, the value must be in the "transfer information" since this value will be changed statically in the "transfer information". However, a value must be setup in the rule in order to reset the value when the count reach 0. <br />So in the rule, "-count resetlimit" must be present, where resetlimit will be the new value set when the limit reach 0. If it is missing, the condition is not applied. </span></p></blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;"><br /><br /></span></p>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Note that if a previous called to a reschedule was done for this attempt and was successful, the following calls will be ignored.</span></p></blockquote>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;"><strong>Important note: any subsequent task will be ignored and not executed once the reschedule is accepted. On the contrary, if the reschedule is not accepted, the following tasks will be executed normally.<br /></strong><br />In case start &gt; end, end will be +1 day</span></p></blockquote>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">In case start and end &lt; current planned date, both will have +1 day.</span></p></blockquote>
+<blockquote>
+<p style="text-align:justify;"><br /><span style="font-size:11pt;">Example: </span></p></blockquote>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">"-delay 3600000 -case ConnectionImpossible,ServerOverloaded,Shutdown -notbetween H7:m0:S0;H19:m0:S0 -notbetween H1:m0:S0;H=3:m0:S0 -count 1"<br />
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">means retry in case of error during initialization of connection in 1 hour if not between 7AM to 7PM and not between 1AM to 3AM and with a limit of 3 retries (retry will be reset to 1 in case of 3 attempts).</span></p></blockquote></blockquote>
+</blockquote>
+
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">TAR</span></strong></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Create a TAR from the argument as source and destination or UNTAR files from a TAR file. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay of 1 = UNTAR PATH="sourceFile targetDirectory"</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay of 2 = TAR PATH="targetFile sourceDirectory"</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay of 3 = TAR PATH="targetFile sourceFile1 sourceFile2..."</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The current file is not touched.</span></p></blockquote>
+<ul>
+<li>
+<div style="text-align:justify;"><strong><span style="font-size:11pt;">ZIP</span></strong></div></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Create a ZIP from the argument as source and destination or UNZIP files from a&nbsp;ZIP file. </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay of 1 = UNZIP PATH="sourceFile targetDirectory"</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay of 2 =&nbsp;ZIP PATH="targetFile sourceDirectory"</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay of 3 =&nbsp;ZIP PATH="targetFile sourceFile1 sourceFile2..."</span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The current file is not touched.</span></p></blockquote>
+<ul>
+<li>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">TRANSCODE</span></strong></p></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">Allow to transcode a file from a Charset to another one.</span></p>
+<p style="text-align:justify;"></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)). </span></p>
+<ul>
+<li><div style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">"-from fromCharset"</span></div></li>
+<li><div style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">"-to toCharset"</span></div></li>
+<li><div style="text-align:justify;"><span style="font-family:Courier New;"><span style="font-size:11pt;">"-newfile filename" <span style="font-family:Verdana;">optional argument ; if not used, will be current filename.extension ; if used, extension is ignored</span></span></span></div></li>
+<li>
+<div style="text-align:justify;"><span style="font-family:Courier New;"><span style="font-size:11pt;">"-extension extension" <span style="font-family:Verdana;">optional argument ; if not used, will be filename.transcode</span></span></span></div></li></ul>
+<p style="text-align:justify;"></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">fromCharset and toCharset are string representations of the official charsets in Java.</span></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">&nbsp; -dos2unix or -unix2dos allow to transform file after transcoding or even without any transcode (no -from -to specified)</span></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">A convenient method (from Waarp Common) allows to list in html (-html), csv (-csv) or text format (-text) all the supported Charsets from your JVM. To use it, run the following command:</span></p>
+<p style="text-align:justify;"><span style="font-family:courier new, monospace; font-size:11pt;"><strong>java -cp WaarpCommon-1.2.7.jar org.waarp.common.transcode.CharsetsUtil [-csv | -html | -text ]</strong></span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"></p>
+<p style="text-align:justify;"></p>
+<p style="text-align:justify;"><span style="font-size:11pt;">It could also be used as a test of transcode outside R66:</span></p>
+<p style="text-align:justify;"><span style="font-family:courier new, monospace; font-size:11pt;"><strong>java -cp WaarpCommon-1.2.7.jar org.waarp.common.transcode.CharsetsUtil -from fromFilename fromCharset -to toFilename toCharset</strong></span></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-size:11pt;">The current file is not touched and is not marked as moved.</span></p>
+<blockquote>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;">&nbsp;</p></blockquote></blockquote>
+<ul>
+<li>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">SNMP</span></strong></p></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">This task sends a SNMP trap or info according to snmp configuration with the info field:</span></p>
+<ul>
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if delay is 0, only a warning trap/info is sent with the field info and the Transfer ID</span></p></li>
+<li>
+<p style="text-align:justify;"><span style="font-size:11pt;">if delay is 1, a trap/info with full transfer information plus the field info is sent</span></p></li></ul>
+<p style="text-align:justify;">&nbsp;</p></blockquote>
+<ul>
+<li>
+<p style="text-align:justify;"><strong><span style="font-size:11pt;">RENAME</span></strong></p></li></ul>
+<blockquote>
+<p style="text-align:justify;"><span style="font-size:11pt;">This task rename the current file without really touching the real file, which means that the target is changed, while no other action is taken:</span></p>
+<ul>
+<li><span style="font-size:11pt;">
+<p style="text-align:justify;"><span style="font-size:11pt;">After Path is transformed according to above dynamic replacements, it is then used as a String Format where Transfer Information is used as input (String.format(Path,Info)).&nbsp;The path obtained must be an absolute path (not a relative path). </span></p></span></li>
+<li><span style="font-size:11pt;">
+<p style="text-align:justify;"><span style="font-size:11pt;">Delay is ignored.</span></p></span></li>
+<li>
+<p style="text-align:justify;"><span style="font-size:11pt;">The file is marked as moved.</span></p></li></ul></blockquote>
+
+<ul><li><p style="text-align:justify;"><strong><span style="font-size:11pt;">FTP</span></strong></p></li></ul>
+<blockquote>
+<div id="Comp1_sys_doctext"><p style="text-align:justify;"><span style="font-size:11pt;">This task FTP allows to have a synchronous file transfer using FTP in a task. It uses the following parameters:</span></p>
+<blockquote style="margin-right:0px;" dir="ltr">
+<p style="text-align:justify;"><span style="font-size:11pt;"><span style="font-family:Courier New;">"-file filepath <br />-to requestedHost <br />-port port <br />-user user <br />-pwd pwd <br />[-account account] <br />[-mode active/passive] <br />[-ssl no/implicit/explicit]<br />[-cwd remotepath] <br />[-digest (crc,md5,sha1)] <br />[-pre extraCommand1 with ',' as separator of arguments] <br />-command command from (get,put,append) <br />[-post extraCommand2 with ',' as separator of arguments]"</span> <br /><br />The order of commands will be:</span></p></blockquote>
+<ol>
+<li><p style="text-align:justify;"><span style="font-size:11pt;">connection to requestHost on port (if ssl native =&gt; using native ssl link)</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">User user</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">PASS pwd</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if account =&gt; ACCT account</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if -ssl &amp; auth =&gt; AUTH, PBSZ 0, PROT P </span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if passive =&gt; PASV</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">CWD remotepath; if error =&gt; MKD remotepath then CWD remotepath (and ignoring any error)</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if pre =&gt; extraCommand1 with ',' replaced by ' ' (note: do not use standard commands from FTP like <span style="font-family:Courier New;">ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE,MDTM,MLSD,MLST,SIZE,AUTH</span>) </span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">BINARY (binary format)</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if get =&gt; RETR filepath.basename ; if put =&gt; STOR filepath ; if append =&gt; APPE filepath.basename</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if digest &amp; get/put/append &amp; remote site compatible with XCRC,XMD5,XSHA1 =&gt; FEAT (parsing if found corresponding XCRC,XMD5,XSHA1) ; then XCRC/XMD5/XSHA1 filepath.basename ; then locally comparing this XCRC/XMD5/XSHA1 with the local file</span></p></li>
+
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if post =&gt; extraCommand2 with ',' replaced by ' ' (note: do not use standard commands from FTP like <span style="font-family:Courier New;">ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE,MDTM,MLSD,MLST,SIZE,AUTH</span>)</span></p></li>
+
+<li>
+<p style="text-align:justify;"><span style="font-size:11pt;">QUIT</span></p></li></ol>
+<p style="text-align:justify;"><span style="font-size:11pt;">The current file is not touched and is not marked as moved.</span></p>
+</blockquote>
+
+<ul><li><p style="text-align:justify;"><strong><span style="font-size:11pt;">UNZEROED</span></strong></p></li></ul>
+<blockquote><p style="text-align:justify;"><span style="font-size:11pt;">This task unzeroed file, ie if a file has a length of 0, it adds one byte to it (blank).</span></p>
+<ul>
+<li><p style="text-align:justify;"><span style="font-size:11pt;">if delay is 1 or 2, a log with respectively info or warn level is generated</span></p></li>
+</ul>
+<p style="text-align:justify;">&nbsp;</p>
+</blockquote>
+
+<ul><li><p style="text-align:justify;"><strong><span style="font-size:11pt;">CHMOD</span></strong></p></li></ul>
+<blockquote><p style="text-align:justify;"><span style="font-size:11pt;">This task allows to change the mode of the file (as in Unix CHMOD command) according to the following argument:</span></p>
+<ul>
+<li>the full path is get from the current file</li>
+<li>the arg path is transformed as usual (static and dynamic from information transfer)</li>
+<li>this final path arg should be of the form [ua][+-=][rwx] where multiple elements could be specified, separated by blank character</li>
+<li>u/a meaning user(Waarp system user)/all (group and other do not exist in Java), +/-/= meaning add/remove/set (set means all other values are removed), r/w/x meaning Read/Write/Execute</li></ul>
+<br>
+For instance, the final path arg could be:<br>
+<ul><li>u=rwx a=r</li><li>ua+rw</li><li>u=rw a-wx</li><li>a+rw</li></ul>
+Current access mode for the application will be applied as default "user" access mode, and no access mode (-rwx) will be the default for "all" access mode.<br>
+If several access mode are set in sequence, the result will be the sum of the results, step by step.<br>
+"a=r a+w a-r" will result in a=w (first step is r--, second step is rw-, third step is -w-)
+
+<p style="text-align:justify;">&nbsp;</p>
+</blockquote>
+
+<ul><li><p style="text-align:justify;"><strong><span style="font-size:11pt;">CHKFILE</span></strong></p></li></ul>
+<blockquote><p style="text-align:justify;"><span style="font-size:11pt;">This task checks some properties relative to the File according to the following argument:</span></p>
+<ul>
+<li>SIZE LT/GT/LTE/GTE/EQ number : to check the file size according to a limit (less than, greater than, less than or equal, greater than or equal, equal)</li>
+<li>DFCHECK : to check if the future received file size is compatible with the space left on both working and received directories (from general configuration or rule configuration)</li></ul>
+<br>
+For instance "SIZE LT 10000000 SIZE GT 1000 DFCHECK" will test that the current file size is less than 10 MB (base 10), 
+and greater than 1000 bytes, and that the working and received directories have enough space to receive the file.
+<p style="text-align:justify;">&nbsp;</p>
+</blockquote>
+
+
+<p style="text-align:justify;"><strong><em><span style="font-size:11pt;">Example:</span></em></strong></p>
+<p style="text-align:justify;">&nbsp;</p>
+<p style="text-align:justify;"><span style="font-family:MS Sans Serif;"><span style="font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-family:Courier New;">&lt;tasks&gt;</span></span></span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;type&gt;MOVE&lt;/type&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;path&gt;/pathout/&lt;/path&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;comment&gt;move the file to /pathout/#TRUEFILENAME#&lt;/comment&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;delay&gt;0&lt;/delay&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;type&gt;EXEC&lt;/type&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;path&gt;<strong><span style="font-family:ms sans serif;">#HOMEPATH#</span></strong>/pathexec/monscript<strong> #TRUEFULLPATH# #ORIGINALFILENAME# #FILESIZE# #RULE# %s %d #REMOTEHOST#</strong>&lt;/path&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;comment&gt;information passed by transfer is "a_string_without_blank a_number" and replaced respectively in %s and %d&lt;/comment&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;delay&gt;30000&lt;/delay&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;comment&gt;maximum 30 seconds to execute this script&lt;/comment&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/task&gt;</span></p>
+<p style="text-align:justify;"><span style="font-family:Courier New;font-size:11pt;">&nbsp;&nbsp;&nbsp;&lt;/tasks&gt;</span></p>
+<blockquote />
+<blockquote />
+<blockquote />
+<blockquote />
+<p dir="ltr" style="text-align:justify;">&nbsp;</p></div>
+</body>
+</html>

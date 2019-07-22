@@ -1,0 +1,127 @@
+#!/bin/sh
+# JDK SUN
+export JAVABASE="/usr/local/jdk1.6.0_13"
+export JAVAJDK="${JAVABASE}"
+JAVA_HOME="${JAVAJDK}/jre"
+JAVA_OPTS1="-server"
+JAVA_OPTS2="-Xms256m -Xmx4096m"
+export JAVA_RUN="${JAVA_HOME}/bin/java ${JAVA_OPTS1} ${JAVA_OPTS2} "
+
+export PATH=${JAVA_HOME}/bin:${JAVAJDK}/bin:$PATH
+
+# R66 HOME
+export R66HOME="/appli/R66"
+export R66BIN="${R66HOME}/lib"
+
+# command for Client
+# Logger
+LOGSERVER=" -Dlogback.configurationFile=${R66HOME}/conf/logback.xml "
+LOGCLIENT=" -Dlogback.configurationFile=${R66HOME}/conf/logback-client.xml "
+
+R66_CLASSPATH=" ${R66BIN}/WaarpR66-2.4.14.jar:${R66BIN}/* "
+
+export JAVARUNCLIENT="${JAVA_RUN} -cp ${R66_CLASSPATH} ${LOGCLIENT} "
+export JAVARUNSERVER="${JAVA_RUN} -cp ${R66_CLASSPATH} ${LOGSERVER} "
+
+export SERVER_CONFIG="${R66HOME}/conf/config-serverA.xml"
+export CLIENT_CONFIG="${R66HOME}/conf/config-clientA.xml"
+
+################
+# R66 COMMANDS #
+################
+
+# SERVER SIDE #
+###############
+# start the OpenR66 server
+# no option
+export R66SERVER="${R66HOME}/bin/server.sh"
+alias r66server="${R66SERVER} ${SERVER_CONFIG} "
+
+# init database from argument
+# [ -initdb ] [ -loadBusiness businessConfiguration ] [ -loadRoles roleConfiguration ] [ -loadAlias aliasConfig ] [ -dir rulesDirectory ] [ -limit xmlFileLimit ] [ -auth xmlFileAuthent ]
+export R66INIT="${JAVARUNCLIENT} org.waarp.openr66.server.ServerInitDatabase ${SERVER_CONFIG} "
+alias r66init="${R66INIT}"
+
+# export configuration into directory
+# directory
+export R66CNFEXP="${JAVARUNCLIENT} org.waarp.openr66.server.ServerExportConfiguration ${SERVER_CONFIG} "
+alias r66cnfexp="${R66CNFEXP}"
+
+# export configuration as arguments
+# [-hosts] [-rules]
+export R66CONFEXP="${JAVARUNCLIENT} org.waarp.openr66.server.ConfigExport ${SERVER_CONFIG} "
+alias r66confexp="${R66CONFEXP}"
+
+# import configuration as arguments
+# [-hosts host-configuration-file] [-purgehosts] [-rules rule-configuration-file] [-purgerules]
+export R66CONFIMP="${JAVARUNCLIENT} org.waarp.openr66.server.ConfigImport ${SERVER_CONFIG} "
+alias r66confimp="${R66CONFIMP}"
+
+# shutdown locally the server
+# [ PID ] optional PID of the server process
+export R66SIGNAL="${R66HOME}/bin/localshutdown.sh"
+alias r66signal="${R66SIGNAL}"
+
+# shutdown by network the server
+# [-nossl|-ssl] default = -ssl
+export R66SHUTD="${JAVARUNCLIENT} org.waarp.openr66.server.ServerShutdown ${SERVER_CONFIG} "
+alias r66shutd="${R66SHUTD}"
+
+# export the log
+# [ -purge ] [ -clean ] [ -start timestamp ] [ -stop timestamp ] where timestamp are in yyyyMMddHHmmssSSS format eventually truncated and with possible ':- ' as separators
+export R66EXPORT="${JAVARUNCLIENT} org.waarp.openr66.server.LogExport ${SERVER_CONFIG} "
+alias r66export="${R66EXPORT}"
+
+# change limits of bandwidth
+# "[ -wglob x ] [ -rglob w ] [ -wsess x ] [ -rsess x ]"
+export R66LIMIT="${JAVARUNCLIENT} org.waarp.openr66.server.ChangeBandwidthLimits ${SERVER_CONFIG} "
+alias r66limit="${R66LIMIT}"
+
+# Administrator Gui
+# no argument
+export R66ADMIN="${JAVARUNCLIENT} org.waarp.administrator.AdminGui ${SERVER_CONFIG} "
+alias r66admin="${R66ADMIN}"
+
+# CLIENT SIDE #
+###############
+
+# asynchronous transfer
+# (-to hostId -file filepath -rule ruleId) | (-to hostId -id transferId) [ -md5 ] [ -block size ] [ -nolog ] [-start yyyyMMddHHmmssSSS | -delay +durationInMilliseconds | -delay preciseTimeInMilliseconds] [ -info "information" ]
+export R66SEND="${JAVARUNCLIENT} org.waarp.openr66.client.SubmitTransfer ${CLIENT_CONFIG} "
+alias r66send="${R66SEND}"
+
+# synchronous transfer
+# (-to hostId -file filepath -rule ruleId) | (-to hostId -id transferId) [ -md5 ] [ -block size ] [ -nolog ] [-start yyyyMMddHHmmssSSS | -delay +durationInMilliseconds | -delay preciseTimeInMilliseconds] [ -info "information" ]
+export R66SYNCSEND="${JAVARUNCLIENT} org.waarp.openr66.client.DirectTransfer ${CLIENT_CONFIG} "
+alias r66syncsend="${R66SYNCSEND}"
+
+# get information on transfers
+# (-id transferId -to hostId as requested | -id transferId -from hostId as requester) 
+# follow by one of: (-cancel | -stop | -restart [ -start yyyyMMddHHmmss | -delay +durationInMilliseconds | -delay preciseTimeInMilliseconds ]
+export R66REQ="${JAVARUNCLIENT} org.waarp.openr66.client.RequestTransfer ${CLIENT_CONFIG} "
+alias r66req="${R66REQ}"
+
+# get information on remote files or directory
+# "-to host -rule rule [ -file file ] [ -exist | -detail | -list | -mlsx ]
+export R66INFO="${JAVARUNCLIENT} org.waarp.openr66.client.RequestInformation  ${CLIENT_CONFIG} "
+alias r66info="${R66INFO}"
+
+# test the connectivity
+# -to host -msg "message"
+export R66MESG="${JAVARUNCLIENT} org.waarp.openr66.client.Message ${CLIENT_CONFIG} "
+alias r66mesg="${R66MESG}"
+
+# R66 Gui
+# no argument
+export R66GUI="${JAVARUNCLIENT} org.waarp.openr66.r66gui.R66ClientGui ${CLIENT_CONFIG} "
+alias r66gui="${R66GUI}"
+
+# R66 Multiple Submit
+# (-to hostId,hostID -file filepath,filepath -rule ruleId) | (-to hostId -id transferId) [ -md5 ] [ -block size ] [ -nolog ] [-start yyyyMMddHHmmssSSS | -delay +durationInMilliseconds | -delay preciseTimeInMilliseconds] [ -info "information" ]
+export R66MULTISEND="${JAVARUNCLIENT} org.waarp.openr66.client.MultipleSubmitTransfer ${CLIENT_CONFIG} "
+alias r66multisend="${R66MULTISEND}"
+
+# synchronous transfer
+# (-to hostId,hostid -file filepath,filepath -rule ruleId) | (-to hostId -id transferId) [ -md5 ] [ -block size ] [ -nolog ] [-start yyyyMMddHHmmssSSS | -delay +durationInMilliseconds | -delay preciseTimeInMilliseconds] [ -info "information" ]
+export R66MULTISYNCSEND="${JAVARUNCLIENT} org.waarp.openr66.client.MultipleDirectTransfer ${CLIENT_CONFIG} "
+alias r66multisyncsend="${R66MULTISYNCSEND}"
