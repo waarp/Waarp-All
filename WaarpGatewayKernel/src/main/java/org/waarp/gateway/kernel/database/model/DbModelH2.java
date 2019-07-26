@@ -190,7 +190,7 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     return false;
   }
 
@@ -198,7 +198,7 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TOD O Auto-generated method stub
     return false;
   }
 

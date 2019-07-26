@@ -214,7 +214,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         System.out.println(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       if (DetectionUtils.isJunit()) {

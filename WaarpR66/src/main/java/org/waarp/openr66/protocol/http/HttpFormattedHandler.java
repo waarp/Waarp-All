@@ -144,7 +144,7 @@ public class HttpFormattedHandler
     }
   }
 
-  private static enum REPLACEMENT {
+  protected static enum REPLACEMENT {
     XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX,
     XXXLANGXXX;
   }
@@ -154,15 +154,15 @@ public class HttpFormattedHandler
 
   private final R66Session authentHttp = new R66Session();
 
-  private String lang = Messages.getSlocale();
+  protected String lang = Messages.getSlocale();
 
-  private FullHttpRequest request;
+  protected FullHttpRequest request;
 
-  private final StringBuilder responseContent = new StringBuilder();
+  protected final StringBuilder responseContent = new StringBuilder();
 
-  private HttpResponseStatus status;
+  protected HttpResponseStatus status;
 
-  private String uriRequest;
+  protected String uriRequest;
 
   private static final String sINFO = "INFO", sNB = "NB", sDETAIL = "DETAIL";
 
@@ -176,10 +176,10 @@ public class HttpFormattedHandler
    * Does this dbSession is private and so should be closed
    */
   private final boolean isPrivateDbSession = false;
-  private boolean isCurrentRequestXml = false;
-  private boolean isCurrentRequestJson = false;
+  protected boolean isCurrentRequestXml = false;
+  protected boolean isCurrentRequestJson = false;
 
-  private Map<String, List<String>> params = null;
+  protected Map<String, List<String>> params = null;
 
   private String readFileHeader(String filename) {
     String value;
@@ -217,7 +217,7 @@ public class HttpFormattedHandler
     return builder.toString();
   }
 
-  private String getTrimValue(String varname) {
+  protected String getTrimValue(String varname) {
     String value = null;
     try {
       value = params.get(varname).get(0).trim();
@@ -393,7 +393,6 @@ public class HttpFormattedHandler
   /**
    * Add all runners from preparedStatement for type
    *
-   * @param preparedStatement
    * @param type
    * @param nb
    *
@@ -740,7 +739,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
+  protected void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
     responseContent
         .append(Configuration.configuration.getMonitoring().exportXml(detail));
@@ -752,7 +751,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void statusjson(ChannelHandlerContext ctx, long nb, boolean detail) {
+  protected void statusjson(ChannelHandlerContext ctx, long nb, boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
     responseContent
         .append(Configuration.configuration.getMonitoring().exportJson(detail));
@@ -820,7 +819,7 @@ public class HttpFormattedHandler
    *
    * @param ctx
    */
-  private void writeResponse(ChannelHandlerContext ctx) {
+  protected void writeResponse(ChannelHandlerContext ctx) {
     // Convert the response content to a ByteBuf.
     final ByteBuf buf = Unpooled
         .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
@@ -888,10 +887,6 @@ public class HttpFormattedHandler
     // Close the connection after the write operation is done if necessary.
     if (close) {
       future.addListener(ChannelFutureListener.CLOSE);
-      /*
-       * if (this.isPrivateDbSession && dbSession != null) { dbSession.forceDisconnect(); DbAdmin.nbHttpSession--;
-       * dbSession = null; }
-       */
     }
   }
 
@@ -901,7 +896,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param status
    */
-  private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+  protected void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
     responseContent.setLength(0);
     responseContent.append(REQUEST.error.readHeader(this))
                    .append("OpenR66 Web Failure: ").append(status.toString())

@@ -43,6 +43,10 @@ public class NetworkServerInitializer
   public static final String READTIMEOUT = "readTimeout";
   public static final String LIMITGLOBAL = "GLOBALLIMIT";
   public static final String LIMITCHANNEL = "CHANNELLIMIT";
+  public static final String NETWORK_CODEC = "codec";
+  public static final String NETWORK_HANDLER = "handler";
+  public static final String LOCAL_CODEC = "localcodec";
+  public static final String LOCAL_HANDLER = "localhandler";
 
   protected boolean server = false;
 
@@ -70,9 +74,10 @@ public class NetworkServerInitializer
     pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(
         Configuration.configuration.getServerChannelWriteLimit(),
         Configuration.configuration.getServerChannelReadLimit(),
-        Configuration.configuration.getDelayLimit()));
-    pipeline.addLast("codec", new NetworkPacketCodec());
-    pipeline.addLast(Configuration.configuration.getHandlerGroup(), "handler",
+        Configuration.configuration.getDelayLimit(),
+        Configuration.configuration.getTIMEOUTCON()));
+    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());
+    pipeline.addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,
                      new NetworkServerHandler(server));
   }
 }

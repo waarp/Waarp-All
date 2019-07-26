@@ -25,6 +25,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -104,19 +105,12 @@ public class LogExport implements Runnable {
     final byte type = (purgeLog)? LocalPacketFactory.LOGPURGEPACKET :
         LocalPacketFactory.LOGPACKET;
     ValidPacket valid = new ValidPacket(lstart, lstop, type);
-    SocketAddress socketAddress;
-    try {
-      socketAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Cannot Connect to " + host.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + host.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      host = null;
-      future.setFailure(future.getResult().getException());
+    LocalChannelReference localChannelReference = AbstractTransfer
+        .tryConnect(host, future,
+                    networkTransaction);
+    if (localChannelReference == null) {
       return;
     }
-    final boolean isSSL = host.isSsl();
 
     // first clean if ask
     if (clean &&
@@ -131,39 +125,11 @@ public class LogExport implements Runnable {
         logger.warn("Clean cannot be done {}", e.getMessage());
       }
     }
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
-    socketAddress = null;
-    if (localChannelReference == null) {
-      logger.error("Cannot Connect to " + host.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + host.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      host = null;
-      future.setFailure(future.getResult().getException());
-      return;
-    }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, valid, false);
-    } catch (final OpenR66ProtocolPacketException e) {
-      logger.error("Bad Protocol", e);
-      localChannelReference.getLocalChannel().close();
-      localChannelReference = null;
-      host = null;
-      valid = null;
-      future.setResult(
-          new R66Result(e, null, true, ErrorCode.TransferError, null));
-      future.setFailure(e);
-      return;
-    }
-    host = null;
-    future.awaitOrInterruptible();
+    AbstractTransfer
+        .sendValidPacket(host, localChannelReference, valid, future);
     logger
         .info("Request done with " + (future.isSuccess()? "success" : "error"));
-    localChannelReference.getLocalChannel().close();
-    localChannelReference = null;
   }
 
   protected static boolean spurgeLog = false;
@@ -225,7 +191,7 @@ public class LogExport implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       System.exit(1);

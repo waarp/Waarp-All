@@ -100,137 +100,38 @@ public class ExecOutputTask extends AbstractExecTask {
         localExecClient.runOneCommand(finalname, delay, waitForValidation,
                                       futureCompletion);
         final LocalExecResult result = localExecClient.getLocalExecResult();
-        finalize(result.getStatus(), result.getResult(), finalname);
+        finalizeExec(result.getStatus(), result.getResult(), finalname);
         localExecClient.disconnect();
         return;
       } // else continue
     }
 
-    final CommandLine commandLine = buildCommandLine(finalname);
-    if (commandLine == null) {
+    PrepareCommandExec prepareCommandExec =
+        new PrepareCommandExec(finalname, false, waitForValidation).invoke();
+    if (prepareCommandExec.isError()) {
       return;
     }
+    CommandLine commandLine = prepareCommandExec.getCommandLine();
+    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();
+    PipedInputStream inputStream = prepareCommandExec.getInputStream();
+    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
+    PumpStreamHandler pumpStreamHandler =
+        prepareCommandExec.getPumpStreamHandler();
+    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
 
-    final DefaultExecutor defaultExecutor = new DefaultExecutor();
-    final PipedInputStream inputStream = new PipedInputStream();
-    PipedOutputStream outputStream = null;
-    try {
-      outputStream = new PipedOutputStream(inputStream);
-    } catch (final IOException e1) {
-      try {
-        inputStream.close();
-      } catch (final IOException e) {
-      }
-      logger.error("Exception: " + e1.getMessage() + " Exec in error with " +
-                   commandLine.toString(), e1);
-      futureCompletion.setFailure(e1);
-      return;
-    }
-    final PumpStreamHandler pumpStreamHandler =
-        new PumpStreamHandler(outputStream, null);
-    defaultExecutor.setStreamHandler(pumpStreamHandler);
-    final int[] correctValues = { 0, 1 };
-    defaultExecutor.setExitValues(correctValues);
-    ExecuteWatchdog watchdog = null;
-    if (delay > 0) {
-      watchdog = new ExecuteWatchdog(delay);
-      defaultExecutor.setWatchdog(watchdog);
-    }
     final AllLineReader allLineReader = new AllLineReader(inputStream);
     final Thread thread = new Thread(allLineReader, "ExecRename" +
                                                     session.getRunner()
                                                            .getSpecialId());
     thread.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(thread);
-    int status = -1;
-    try {
-      status = defaultExecutor.execute(commandLine);
-    } catch (final ExecuteException e) {
-      if (e.getExitValue() == -559038737) {
-        // Cannot run immediately so retry once
-        try {
-          Thread.sleep(Configuration.RETRYINMS);
-        } catch (final InterruptedException e1) {
-        }
-        try {
-          status = defaultExecutor.execute(commandLine);
-        } catch (final ExecuteException e1) {
-          finalizeFromError(outputStream, pumpStreamHandler, inputStream,
-                            allLineReader, thread, status, commandLine);
-          return;
-        } catch (final IOException e1) {
-          try {
-            outputStream.flush();
-          } catch (final IOException e2) {
-          }
-          try {
-            outputStream.close();
-          } catch (final IOException e2) {
-          }
-          thread.interrupt();
-          try {
-            inputStream.close();
-          } catch (final IOException e2) {
-          }
-          try {
-            pumpStreamHandler.stop();
-          } catch (final IOException e2) {
-          }
-          logger.error(
-              "IOException: " + e.getMessage() + " . Exec in error with " +
-              commandLine.toString());
-          futureCompletion.setFailure(e);
-          return;
-        }
-      } else {
-        finalizeFromError(outputStream, pumpStreamHandler, inputStream,
-                          allLineReader, thread, status, commandLine);
-        return;
-      }
-    } catch (final IOException e) {
-      try {
-        outputStream.close();
-      } catch (final IOException e1) {
-      }
-      thread.interrupt();
-      try {
-        inputStream.close();
-      } catch (final IOException e1) {
-      }
-      try {
-        pumpStreamHandler.stop();
-      } catch (final IOException e2) {
-      }
-      logger.error("IOException: " + e.getMessage() + " . Exec in error with " +
-                   commandLine.toString());
-      futureCompletion.setFailure(e);
+    ExecuteCommand executeCommand =
+        new ExecuteCommand(commandLine, defaultExecutor, inputStream,
+                           outputStream, pumpStreamHandler, thread).invoke();
+    if (executeCommand.isError()) {
       return;
     }
-    try {
-      outputStream.flush();
-    } catch (final IOException e) {
-    }
-    try {
-      outputStream.close();
-    } catch (final IOException e) {
-    }
-    try {
-      pumpStreamHandler.stop();
-    } catch (final IOException e2) {
-    }
-    try {
-      if (delay > 0) {
-        thread.join(delay);
-      } else {
-        thread.join();
-      }
-    } catch (final InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    try {
-      inputStream.close();
-    } catch (final IOException e1) {
-    }
+    int status = executeCommand.getStatus();
     String newname = null;
     if (defaultExecutor.isFailure(status) && watchdog != null &&
         watchdog.killedProcess()) {
@@ -240,10 +141,10 @@ public class ExecOutputTask extends AbstractExecTask {
     } else {
       newname = allLineReader.getLastLine().toString();
     }
-    finalize(status, newname, commandLine.toString());
+    finalizeExec(status, newname, commandLine.toString());
   }
 
-  private void finalize(int status, String newName, String commandLine) {
+  private void finalizeExec(int status, String newName, String commandLine) {
     String newname = newName;
     if (status == 0) {
       final R66Result result =
@@ -295,45 +196,15 @@ public class ExecOutputTask extends AbstractExecTask {
     }
   }
 
-  private void finalizeFromError(PipedOutputStream outputStream,
-                                 PumpStreamHandler pumpStreamHandler,
-                                 PipedInputStream inputStream,
-                                 AllLineReader allLineReader, Thread thread,
-                                 int status, CommandLine commandLine) {
+  @Override
+  void finalizeFromError(Runnable threadReader, int status,
+                                 CommandLine commandLine, Exception e) {
     try {
       Thread.sleep(Configuration.RETRYINMS);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e2) {
     }
-    try {
-      outputStream.flush();
-    } catch (final IOException e2) {
-    }
-    try {
-      Thread.sleep(Configuration.RETRYINMS);
-    } catch (final InterruptedException e) {
-    }
-    try {
-      outputStream.close();
-    } catch (final IOException e1) {
-    }
-    thread.interrupt();
-    try {
-      inputStream.close();
-    } catch (final IOException e1) {
-    }
-    try {
-      Thread.sleep(Configuration.RETRYINMS);
-    } catch (final InterruptedException e) {
-    }
-    try {
-      pumpStreamHandler.stop();
-    } catch (final IOException e2) {
-    }
-    try {
-      Thread.sleep(Configuration.RETRYINMS);
-    } catch (final InterruptedException e) {
-    }
-    final String result = allLineReader.getLastLine().toString();
+    final String result =
+        ((AllLineReader) threadReader).getLastLine().toString();
     logger.error("Status: " + status + " Exec in error with " + commandLine +
                  " returns " + result);
     final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(

@@ -68,17 +68,17 @@ public abstract class WaarpCompletedFuture extends WaarpFuture {
 
   @Override
   public boolean awaitOrInterruptible() {
-    return true;
+    return !Thread.interrupted();
   }
 
   @Override
   public boolean awaitOrInterruptible(final long timeoutMilliseconds) {
-    return true;
+    return !Thread.interrupted();
   }
 
   @Override
   public boolean awaitOrInterruptible(final long timeout, final TimeUnit unit) {
-    return true;
+    return !Thread.interrupted();
   }
 
   @Override

@@ -63,7 +63,7 @@ public class TestTransferNoDb extends DirectTransfer {
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       DetectionUtils.SystemExit(1);

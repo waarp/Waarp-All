@@ -25,6 +25,7 @@ import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.client.RecvThroughHandler;
 import org.waarp.openr66.client.SendThroughClient;
 import org.waarp.openr66.commander.ClientRunner;
@@ -82,8 +83,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * <tt>     futureReq.awaitUninterruptibly();</tt><br>
  * <tt>     R66Result result = futureReq.getResult();</tt><br>
  * <br>
- *
- *
  */
 public class TestSendThroughForward extends SendThroughClient {
   public TestRecvThroughForwardHandler handler;
@@ -256,16 +255,17 @@ public class TestSendThroughForward extends SendThroughClient {
         block.setBlock(buffer);
       }
       try {
-        client.writeWhenPossible(block)
-              .await(Configuration.configuration.getTIMEOUTCON());
+        if (!WaarpNettyUtil
+            .awaitOrInterrupted(client.writeWhenPossible(block))) {
+          client.transferInError(
+              new OpenR66ProtocolSystemException("Write impossible"));
+        }
       } catch (final OpenR66RunnerErrorException e) {
         client.transferInError(e);
       } catch (final OpenR66ProtocolPacketException e) {
         client.transferInError(e);
       } catch (final OpenR66ProtocolSystemException e) {
         client.transferInError(e);
-      } catch (final InterruptedException e) {
-        client.transferInError(new OpenR66ProtocolSystemException(e));
       }
       if (block.isEOF()) {
         client.finalizeRequest();

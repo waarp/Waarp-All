@@ -71,7 +71,7 @@ public class FtpTimerTask extends TimerTask {
     switch (type) {
       case TIMER_EXIT:
         logger.error("System will force EXIT");
-        DetectionUtils.SystemExit(0);
+        //FBGEXIT DetectionUtils.SystemExit(0);
         break;
       case TIMER_CONTROL:
         logger.info("Exit Shutdown Command");

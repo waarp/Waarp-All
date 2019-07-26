@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -597,4 +598,18 @@ public class FileUtils {
     }
   }
 
+  /**
+   * Get the list of files from a given directory and a filter
+   *
+   * @param directory
+   * @param filter
+   *
+   * @return the list of files (as an array)
+   */
+  public final static File[] getFiles(File directory, FilenameFilter filter) {
+    if (directory == null || !directory.isDirectory()) {
+      return null;
+    }
+    return directory.listFiles(filter);
+  }
 }

@@ -31,7 +31,6 @@ import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
-import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -44,8 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Retrieve transfer runner
- *
- *
  */
 public class RetrieveRunner extends Thread {
   /**
@@ -118,10 +115,7 @@ public class RetrieveRunner extends Thread {
         logger.info("End Retrieve in Error");
         return;
       }
-      if (running.get()) {
-        localChannelReference.getFutureEndTransfer()
-                             .awaitOrInterruptible();
-      }
+      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();
       logger.debug("Await future End Transfer done: " +
                    localChannelReference.getFutureEndTransfer().isSuccess());
       if (localChannelReference.getFutureEndTransfer().isDone() &&
@@ -142,8 +136,8 @@ public class RetrieveRunner extends Thread {
                                         true);
         } catch (final OpenR66ProtocolPacketException e) {
         }
-        if (!localChannelReference.getFutureRequest().awaitOrInterruptible(
-            Configuration.configuration.getTIMEOUTCON())) {
+        if (!localChannelReference.getFutureRequest().awaitOrInterruptible() ||
+            Thread.interrupted()) {
           // valid it however
           session.getRunner().setAllDone();
           try {
@@ -292,20 +286,6 @@ public class RetrieveRunner extends Thread {
       throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
              OpenR66ProtocolSystemException {
     return ChannelUtils.writeBackDataBlock(localChannelReference, block);
-    // XXX Keep this in case the bug comes back
-    /*
-     * // Test if channel is writable in order to prevent OOM if (!
-     * localChannelReference.getNetworkChannel().isWritable()) { return
-     * ChannelUtils.writeBackDataBlock(localChannelReference, block); } else if
-     * (Configuration.configuration.anyBandwidthLimitation) { // Patch to limit the impact when no real reason to
-     * wait for writing // double computation of traffic but ok long wait =
-     * ChannelUtils.willBeWaitingWriting(localChannelReference, block.getByteCount()); if (wait == 0) {
-     * ChannelUtils.writeBackDataBlock(localChannelReference, block); return
-     * Channels.succeededFuture(localChannelReference.getNetworkChannel()); } return
-     * ChannelUtils.writeBackDataBlock(localChannelReference, block); } else {
-     * ChannelUtils.writeBackDataBlock(localChannelReference, block); return
-     * Channels.succeededFuture(localChannelReference.getNetworkChannel()); }
-     */
   }
 
   /**
@@ -325,4 +305,19 @@ public class RetrieveRunner extends Thread {
     }
     return block;
   }
+
+  public int getLocalId() {
+    return localChannelReference.getLocalId();
+  }
+
+
+  /**
+   * When submit RetrieveRunner cannot be done since Executor is already stopped
+   */
+  public void notStartRunner() {
+    transferInError(new OpenR66RunnerErrorException(
+        "Cannot Start Runner: " + session.toString()));
+    stopRunner();
+  }
+
 }

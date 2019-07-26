@@ -56,6 +56,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.commander.InternalRunner;
+import org.waarp.openr66.commander.ThreadPoolRunnerExecutor;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.R66BusinessFactoryInterface;
 import org.waarp.openr66.context.R66DefaultBusinessFactory;
@@ -74,6 +75,7 @@ import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
 import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
+import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
@@ -95,11 +97,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Configuration class
@@ -441,14 +448,12 @@ public class Configuration {
   protected final ExecutorService execOtherWorker =
       Executors.newCachedThreadPool(new WaarpThreadFactory("OtherWorker"));
 
-  protected EventLoopGroup bossGroup;
   protected EventLoopGroup workerGroup;
   protected EventLoopGroup handlerGroup;
   protected EventLoopGroup subTaskGroup;
-  protected EventLoopGroup localBossGroup;
   protected EventLoopGroup localWorkerGroup;
-  protected EventLoopGroup httpBossGroup;
   protected EventLoopGroup httpWorkerGroup;
+  protected ExecutorService retrieveRunnerGroup;
 
   /**
    * ExecutorService Scheduled tasks
@@ -493,6 +498,7 @@ public class Configuration {
   private final Timer timerCloseOperations =
       new HashedWheelTimer(new WaarpThreadFactory("TimerClose"), 50,
                            TimeUnit.MILLISECONDS, 1024);
+  private AtomicBoolean timerCloseClosed = new AtomicBoolean(false);
   /**
    * Global TrafficCounter (set from global configuration)
    */
@@ -597,6 +603,12 @@ public class Configuration {
 
   private long timeLimitCache = 180000;
 
+  private java.util.Timer timerCleanLruCache =
+      new java.util.Timer("CleanLruCache", true);
+
+  private java.util.Timer timerStatistic =
+      new java.util.Timer("R66Statistic", true);
+
   public Configuration() {
     // Init signal handler
     getShutdownConfiguration().timeout = getTIMEOUTCON();
@@ -605,8 +617,8 @@ public class Configuration {
     }
     computeNbThreads();
     scheduledExecutorService = Executors
-        .newScheduledThreadPool(getSERVER_THREAD(),
-                                new WaarpThreadFactory("ScheduledTask"));
+        .newScheduledThreadPool(2,
+                                new WaarpThreadFactory("ScheduledRestartTask"));
     // Init FiniteStates
     R66FiniteDualStates.initR66FiniteStates();
     if (!SystemPropertyUtil.isFileEncodingCorrect()) {
@@ -665,8 +677,7 @@ public class Configuration {
     }
     DbTaskRunner.createLruCache(getLimitCache(), getTimeLimitCache());
     if (getLimitCache() > 0 && getTimeLimitCache() > 1000) {
-      launchInFixedDelay(new CleanLruCache(), getTimeLimitCache(),
-                         TimeUnit.MILLISECONDS);
+      timerCleanLruCache.schedule(new CleanLruCache(), getTimeLimitCache());
     }
     if (isHostProxyfied()) {
       setBlacklistBadAuthent(false);
@@ -711,13 +722,41 @@ public class Configuration {
                                         new WaarpThreadFactory("Worker"));
     handlerGroup = new NioEventLoopGroup(getCLIENT_THREAD(),
                                          new WaarpThreadFactory("Handler"));
-    subTaskGroup = new NioEventLoopGroup(getCLIENT_THREAD(),
+    subTaskGroup = new NioEventLoopGroup(getSERVER_THREAD(),
                                          new WaarpThreadFactory("SubTask"));
-    localBossGroup = new NioEventLoopGroup(getCLIENT_THREAD(),
-                                           new WaarpThreadFactory("LocalBoss"));
     localWorkerGroup = new NioEventLoopGroup(3 * getCLIENT_THREAD(),
                                              new WaarpThreadFactory(
                                                  "LocalWorker"));
+    retrieveRunnerGroup =
+        new ThreadPoolRunnerExecutor(10, getRUNNER_THREAD() * 2, 10,
+                                     TimeUnit.SECONDS,
+                                     new SynchronousQueue<Runnable>(),
+                                     new WaarpThreadFactory("RetrieveRunner"),
+                                     new RejectedExecutionHandler() {
+
+                                       @Override
+                                       public void rejectedExecution(Runnable r,
+                                                                     ThreadPoolExecutor executor) {
+                                         if (r instanceof RetrieveRunner) {
+                                           RetrieveRunner retrieveRunner =
+                                               (RetrieveRunner) r;
+                                           logger.info(
+                                               "Try to reschedule RetrieveRunner: {}",
+                                               retrieveRunner.getLocalId());
+                                           try {
+                                             Thread.sleep(WAITFORNETOP * 2);
+                                           } catch (InterruptedException e) {
+                                             retrieveRunner.notStartRunner();
+                                             return;
+                                           }
+                                           retrieveRunnerGroup
+                                               .execute(retrieveRunner);
+                                         } else {
+                                           logger.warn("Not RetrieveRunner: {}",
+                                                       r.getClass().getName());
+                                         }
+                                       }
+                                     });
     localTransaction = new LocalTransaction();
     WaarpLoggerFactory
         .setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
@@ -737,10 +776,6 @@ public class Configuration {
   }
 
   public void serverPipelineInit() {
-    bossGroup = new NioEventLoopGroup(getSERVER_THREAD(),
-                                      new WaarpThreadFactory("Boss", false));
-    httpBossGroup = new NioEventLoopGroup(getSERVER_THREAD(),
-                                          new WaarpThreadFactory("HttpBoss"));
     httpWorkerGroup = new NioEventLoopGroup(getSERVER_THREAD() * 10,
                                             new WaarpThreadFactory(
                                                 "HttpWorker"));
@@ -790,7 +825,8 @@ public class Configuration {
    */
   public void launchStatistics() {
     if (getTimeStat() > 0) {
-      launchInFixedDelay(new UsageStatistic(), getTimeStat(), TimeUnit.SECONDS);
+      timerStatistic.scheduleAtFixedRate(new UsageStatistic(), 1000,
+                                         (long) (getTimeStat()) * 1000L);
     }
   }
 
@@ -808,7 +844,7 @@ public class Configuration {
         new DefaultChannelGroup("OpenR66", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup,
+      WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
                                         (int) getTIMEOUTCON());
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
@@ -831,7 +867,7 @@ public class Configuration {
     if (isUseSSL() && getHOST_SSLID() != null) {
       serverSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil
-          .setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup,
+          .setServerBootstrap(serverSslBootstrap, workerGroup,
                               (int) getTIMEOUTCON());
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
@@ -875,7 +911,7 @@ public class Configuration {
     getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
   }
 
-  public void startHttpSupport() {
+  public void startHttpSupport() throws ServerException {
     // Now start the HTTP support
     logger.info(
         Messages.getString("Configuration.HTTPStart") + getSERVER_HTTPPORT() +
@@ -886,7 +922,7 @@ public class Configuration {
     // Configure the server.
     httpBootstrap = new ServerBootstrap();
     WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup,
+        .setServerBootstrap(httpBootstrap, httpWorkerGroup,
                             (int) getTIMEOUTCON());
     // Set up the event pipeline factory.
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
@@ -897,6 +933,8 @@ public class Configuration {
                        .awaitUninterruptibly();
       if (future.isSuccess()) {
         httpChannelGroup.add(future.channel());
+      } else {
+        throw new ServerException("Can't start HTTP service");
       }
     }
     // Now start the HTTPS support
@@ -904,7 +942,7 @@ public class Configuration {
     httpsBootstrap = new ServerBootstrap();
     // Set up the event pipeline factory.
     WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup,
+        .setServerBootstrap(httpsBootstrap, httpWorkerGroup,
                             (int) getTIMEOUTCON());
     if (getHttpModel() == 0) {
       httpsBootstrap
@@ -921,6 +959,8 @@ public class Configuration {
                         .awaitUninterruptibly();
       if (future.isSuccess()) {
         httpChannelGroup.add(future.channel());
+      } else {
+        throw new ServerException("Can't start HTTPS service");
       }
     }
   }
@@ -930,6 +970,7 @@ public class Configuration {
         .initialize(getBaseDirectory() + "/" + getWorkingPath() + "/httptemp");
     for (final RestConfiguration config : getRestConfigurations()) {
       RestServiceInitializer.initRestService(config);
+      // FIXME REST V1 not started!!!
       // HttpRestR66Handler.initializeService(config);
       logger.info(
           Messages.getString("Configuration.HTTPStart") + " (REST Support) " +
@@ -998,47 +1039,39 @@ public class Configuration {
   }
 
   public void shutdownGracefully() {
-    if (bossGroup != null && !bossGroup.isShuttingDown()) {
-      bossGroup.shutdownGracefully();
-    }
     if (workerGroup != null && !workerGroup.isShuttingDown()) {
       workerGroup.shutdownGracefully();
     }
     if (handlerGroup != null && !handlerGroup.isShuttingDown()) {
       handlerGroup.shutdownGracefully();
     }
-    if (httpBossGroup != null && !httpBossGroup.isShuttingDown()) {
-      httpBossGroup.shutdownGracefully();
-    }
     if (httpWorkerGroup != null && !httpWorkerGroup.isShuttingDown()) {
       httpWorkerGroup.shutdownGracefully();
-    }
-    if (handlerGroup != null && !handlerGroup.isShuttingDown()) {
-      handlerGroup.shutdownGracefully();
     }
     if (subTaskGroup != null && !subTaskGroup.isShuttingDown()) {
       subTaskGroup.shutdownGracefully();
     }
-    if (localBossGroup != null && !localBossGroup.isShuttingDown()) {
-      localBossGroup.shutdownGracefully();
-    }
     if (localWorkerGroup != null && !localWorkerGroup.isShuttingDown()) {
       localWorkerGroup.shutdownGracefully();
+    }
+    if (retrieveRunnerGroup != null && !retrieveRunnerGroup.isShutdown()) {
+
+      retrieveRunnerGroup.shutdown();
+      try {
+        if (!retrieveRunnerGroup
+            .awaitTermination(getTIMEOUTCON() / 2, TimeUnit.MILLISECONDS)) {
+          retrieveRunnerGroup.shutdownNow();
+        }
+      } catch (InterruptedException e) {
+        retrieveRunnerGroup.shutdownNow();
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
   public void shutdownQuickly() {
-    if (bossGroup != null && !bossGroup.isShuttingDown()) {
-      bossGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
-    }
     if (workerGroup != null && !workerGroup.isShuttingDown()) {
       workerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
-    }
-    if (handlerGroup != null && !handlerGroup.isShuttingDown()) {
-      handlerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
-    }
-    if (httpBossGroup != null && !httpBossGroup.isShuttingDown()) {
-      httpBossGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
     }
     if (httpWorkerGroup != null && !httpWorkerGroup.isShuttingDown()) {
       httpWorkerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
@@ -1049,11 +1082,11 @@ public class Configuration {
     if (subTaskGroup != null && !subTaskGroup.isShuttingDown()) {
       subTaskGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
     }
-    if (localBossGroup != null && !localBossGroup.isShuttingDown()) {
-      localBossGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
-    }
     if (localWorkerGroup != null && !localWorkerGroup.isShuttingDown()) {
       localWorkerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
+    }
+    if (retrieveRunnerGroup != null && !retrieveRunnerGroup.isShutdown()) {
+      retrieveRunnerGroup.shutdownNow();
     }
   }
 
@@ -1070,6 +1103,8 @@ public class Configuration {
     if (scheduledExecutorService != null) {
       scheduledExecutorService.shutdown();
     }
+    timerCleanLruCache.cancel();
+    timerStatistic.cancel();
     if (getAgentSnmp() != null) {
       getAgentSnmp().stop();
     } else if (getMonitoring() != null) {
@@ -1078,9 +1113,12 @@ public class Configuration {
     }
     shutdownGracefully();
     if (execOtherWorker != null) {
-      execOtherWorker.shutdownNow();
+      if (!DetectionUtils.isJunit()) {
+        execOtherWorker.shutdownNow();
+      }
     }
     if (timerCloseOperations != null) {
+      timerCloseClosed.set(true);
       timerCloseOperations.stop();
     }
   }
@@ -1107,19 +1145,22 @@ public class Configuration {
     if (scheduledExecutorService != null) {
       scheduledExecutorService.shutdown();
     }
+    timerCleanLruCache.cancel();
+    timerStatistic.cancel();
     if (localTransaction != null) {
       localTransaction.closeAll();
       localTransaction = null;
     }
     if (shutdownQuickly) {
-
+      shutdownQuickly();
     } else {
       shutdownGracefully();
     }
     if (isUseLocalExec()) {
       LocalExecClient.releaseResources();
     }
-    if (timerCloseOperations != null) {
+    if (timerCloseOperations != null && !timerCloseClosed.get()) {
+      timerCloseClosed.set(true);
       timerCloseOperations.stop();
     }
     getR66BusinessFactory().releaseResources();
@@ -1219,7 +1260,9 @@ public class Configuration {
       logger.info(Messages.getString("Configuration.ThreadNumberChange") +
                   nb); //$NON-NLS-1$
       setSERVER_THREAD(nb);
-      setCLIENT_THREAD(getSERVER_THREAD() * 10);
+      if (getCLIENT_THREAD() < getSERVER_THREAD() * 10) {
+        setCLIENT_THREAD(getSERVER_THREAD() * 10);
+      }
     } else if (getCLIENT_THREAD() < nb) {
       setCLIENT_THREAD(nb);
     }
@@ -1247,6 +1290,10 @@ public class Configuration {
 
   public Timer getTimerClose() {
     return timerCloseOperations;
+  }
+
+  public boolean isTimerCloseReady() {
+    return !timerCloseClosed.get();
   }
 
   /**
@@ -1278,10 +1325,10 @@ public class Configuration {
   }
 
   /**
-   * @return the localBossGroup
+   * @return the retrieveRunnerGroup
    */
-  public EventLoopGroup getLocalBossGroup() {
-    return localBossGroup;
+  public ExecutorService getRetrieveRunnerGroup() {
+    return retrieveRunnerGroup;
   }
 
   /**
@@ -1303,13 +1350,6 @@ public class Configuration {
    */
   public EventLoopGroup getSubTaskGroup() {
     return subTaskGroup;
-  }
-
-  /**
-   * @return the httpBossGroup
-   */
-  public EventLoopGroup getHttpBossGroup() {
-    return httpBossGroup;
   }
 
   /**
@@ -1398,13 +1438,11 @@ public class Configuration {
     }
   }
 
-  private static class UsageStatistic extends Thread {
+  private static class UsageStatistic extends TimerTask {
 
     @Override
     public void run() {
       logger.warn(hashStatus());
-      Configuration.configuration
-          .launchInFixedDelay(this, 10, TimeUnit.SECONDS);
     }
 
   }
@@ -2512,16 +2550,12 @@ public class Configuration {
     this.r66BusinessFactory = r66BusinessFactory;
   }
 
-  private static class CleanLruCache extends Thread {
+  private static class CleanLruCache extends TimerTask {
 
     @Override
     public void run() {
       final int nb = DbTaskRunner.clearCache();
       logger.info("Clear Cache: " + nb);
-      Configuration.configuration.launchInFixedDelay(this,
-                                                     Configuration.configuration
-                                                         .getTimeLimitCache(),
-                                                     TimeUnit.MILLISECONDS);
     }
 
   }

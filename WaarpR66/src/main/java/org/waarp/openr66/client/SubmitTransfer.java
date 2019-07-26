@@ -55,6 +55,7 @@ public class SubmitTransfer extends AbstractTransfer {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);
     }
+    // FIXME never true since change for DbAdmin
     if (!DbConstant.admin.isActive()) {
       logger.debug("Client not connected");
       final R66Result result = new R66Result(
@@ -139,7 +140,7 @@ public class SubmitTransfer extends AbstractTransfer {
         System.out.println(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       ChannelUtils.stopLogger();

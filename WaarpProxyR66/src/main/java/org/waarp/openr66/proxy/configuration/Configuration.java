@@ -100,7 +100,7 @@ public class Configuration
         new DefaultChannelGroup("OpenR66", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup,
+      WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
                                         (int) getTIMEOUTCON());
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
@@ -133,7 +133,7 @@ public class Configuration
     if (isUseSSL() && getHOST_SSLID() != null) {
       serverSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil
-          .setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup,
+          .setServerBootstrap(serverSslBootstrap, workerGroup,
                               (int) getTIMEOUTCON());
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
@@ -182,7 +182,7 @@ public class Configuration
     // Configure the server.
     httpBootstrap = new ServerBootstrap();
     WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup,
+        .setServerBootstrap(httpBootstrap, httpWorkerGroup,
                             (int) getTIMEOUTCON());
     // Set up the event pipeline factory.
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
@@ -200,7 +200,7 @@ public class Configuration
     httpsBootstrap = new ServerBootstrap();
     // Set up the event pipeline factory.
     WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup,
+        .setServerBootstrap(httpsBootstrap, httpWorkerGroup,
                             (int) getTIMEOUTCON());
     httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));
     // Bind and start to accept incoming connections.

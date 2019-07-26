@@ -20,6 +20,10 @@
 package org.waarp.openr66.context.task;
 
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -28,11 +32,15 @@ import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.filesystem.R66Dir;
 import org.waarp.openr66.context.filesystem.R66File;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,7 +64,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @param type
    * @param delay
-   * @param arg
+   * @param argRule
    * @param session
    */
   AbstractExecTask(TaskType type, int delay, String argRule, String argTransfer,
@@ -291,5 +299,232 @@ public abstract class AbstractExecTask extends AbstractTask {
       }
     }
     return rv;
+  }
+
+  /**
+   * For External command execution
+   */
+  class PrepareCommandExec {
+    private final boolean noOutput;
+    private final boolean waitForValidation;
+    private final String finalname;
+    private boolean myResult;
+    private CommandLine commandLine;
+    private DefaultExecutor defaultExecutor;
+    private PipedInputStream inputStream;
+    private PipedOutputStream outputStream;
+    private PumpStreamHandler pumpStreamHandler;
+    private ExecuteWatchdog watchdog;
+
+    public PrepareCommandExec(final String finalname, final boolean noOutput,
+                              boolean waitForValidation) {
+      this.finalname = finalname;
+      this.noOutput = noOutput;
+      this.waitForValidation = waitForValidation;
+    }
+
+    boolean isError() {
+      return myResult;
+    }
+
+    public CommandLine getCommandLine() {
+      return commandLine;
+    }
+
+    public DefaultExecutor getDefaultExecutor() {
+      return defaultExecutor;
+    }
+
+    public PipedInputStream getInputStream() {
+      return inputStream;
+    }
+
+    public PipedOutputStream getOutputStream() {
+      return outputStream;
+    }
+
+    public PumpStreamHandler getPumpStreamHandler() {
+      return pumpStreamHandler;
+    }
+
+    public ExecuteWatchdog getWatchdog() {
+      return watchdog;
+    }
+
+    public PrepareCommandExec invoke() {
+      commandLine = buildCommandLine(finalname);
+      if (commandLine == null) {
+        myResult = true;
+        return this;
+      }
+
+      defaultExecutor = new DefaultExecutor();
+      if (noOutput) {
+        pumpStreamHandler = new PumpStreamHandler(null, null);
+      } else {
+        inputStream = new PipedInputStream();
+        outputStream = null;
+        try {
+          outputStream = new PipedOutputStream(inputStream);
+        } catch (final IOException e1) {
+          try {
+            inputStream.close();
+          } catch (final IOException e) {
+          }
+          logger.error(
+              "Exception: " + e1.getMessage() + " Exec in error with " +
+              commandLine.toString(), e1);
+          futureCompletion.setFailure(e1);
+          myResult = true;
+          return this;
+        }
+        pumpStreamHandler = new PumpStreamHandler(outputStream, null);
+      }
+      defaultExecutor.setStreamHandler(pumpStreamHandler);
+      final int[] correctValues = { 0, 1 };
+      defaultExecutor.setExitValues(correctValues);
+      watchdog = null;
+      if (delay > 0 && waitForValidation) {
+        watchdog = new ExecuteWatchdog(delay);
+        defaultExecutor.setWatchdog(watchdog);
+      }
+      myResult = false;
+      return this;
+    }
+  }
+
+  /**
+   * For External command execution
+   */
+  class ExecuteCommand {
+    private final CommandLine commandLine;
+    private final DefaultExecutor defaultExecutor;
+    private final PipedInputStream inputStream;
+    private final PipedOutputStream outputStream;
+    private final PumpStreamHandler pumpStreamHandler;
+    private final Thread thread;
+    private boolean myResult;
+    private int status;
+
+    public ExecuteCommand(final CommandLine commandLine,
+                          final DefaultExecutor defaultExecutor,
+                          final PipedInputStream inputStream,
+                          final PipedOutputStream outputStream,
+                          final PumpStreamHandler pumpStreamHandler,
+                          final Thread thread) {
+      this.commandLine = commandLine;
+      this.defaultExecutor = defaultExecutor;
+      this.inputStream = inputStream;
+      this.outputStream = outputStream;
+      this.pumpStreamHandler = pumpStreamHandler;
+      this.thread = thread;
+    }
+
+    boolean isError() {
+      return myResult;
+    }
+
+    public int getStatus() {
+      return status;
+    }
+
+    public ExecuteCommand invoke() {
+      status = -1;
+      try {
+        status = defaultExecutor.execute(commandLine);
+      } catch (final ExecuteException e) {
+        if (e.getExitValue() == -559038737) {
+          // Cannot run immediately so retry once
+          try {
+            Thread.sleep(Configuration.RETRYINMS);
+          } catch (final InterruptedException e1) {
+          }
+          try {
+            status = defaultExecutor.execute(commandLine);
+          } catch (final ExecuteException e1) {
+            closeAllForExecution(true);
+            finalizeFromError(thread, status, commandLine, e1);
+            myResult = true;
+            return this;
+          } catch (final IOException e1) {
+            closeAllForExecution(true);
+            logger.error(
+                "IOException: " + e.getMessage() + " . Exec in error with " +
+                commandLine.toString());
+            futureCompletion.setFailure(e);
+            myResult = true;
+            return this;
+          }
+        } else {
+          closeAllForExecution(true);
+          finalizeFromError(thread, status, commandLine, e);
+          myResult = true;
+          return this;
+        }
+      } catch (final IOException e) {
+        closeAllForExecution(true);
+        logger.error(
+            "IOException: " + e.getMessage() + " . Exec in error with " +
+            commandLine.toString());
+        futureCompletion.setFailure(e);
+        myResult = true;
+        return this;
+      }
+      closeAllForExecution(false);
+      if (thread != null) {
+        try {
+          if (delay > 0) {
+            thread.join(delay);
+          } else {
+            thread.join();
+          }
+        } catch (final InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (final IOException e1) {
+        }
+      }
+      myResult = false;
+      return this;
+    }
+
+    private void closeAllForExecution(boolean interrupt) {
+      if (outputStream != null) {
+        try {
+          outputStream.flush();
+        } catch (final IOException e2) {
+        }
+        try {
+          outputStream.close();
+        } catch (final IOException e2) {
+        }
+      }
+      if (interrupt && thread != null) {
+        thread.interrupt();
+      }
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (final IOException e2) {
+        }
+      }
+      try {
+        pumpStreamHandler.stop();
+      } catch (final IOException e2) {
+      }
+    }
+  }
+
+  void finalizeFromError(Runnable threadReader, int status,
+                         CommandLine commandLine, Exception e) {
+    logger.error("Status: " + status + " Exec in error with " + commandLine +
+                 " returns " + e.getMessage());
+    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(
+        "<STATUS>" + status + "</STATUS><ERROR>" + e.getMessage() + "</ERROR>");
+    futureCompletion.setFailure(exc);
   }
 }

@@ -221,7 +221,7 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     return false;
   }
 
@@ -229,7 +229,7 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     return false;
   }
 }

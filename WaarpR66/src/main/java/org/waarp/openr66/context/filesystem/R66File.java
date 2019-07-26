@@ -29,6 +29,7 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileImpl;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -135,7 +136,7 @@ public class R66File extends FilesystemBasedFileImpl {
         }
       }
       ChannelFuture future1 = null, future2 = null;
-      if ((block != null && (running.get()))) {
+      if (block != null && running.get() && !Thread.interrupted()) {
         block.getBlock().retain();
         future1 =
             RetrieveRunner.writeWhenPossible(block, localChannelReference);
@@ -144,25 +145,20 @@ public class R66File extends FilesystemBasedFileImpl {
         }
       }
       // While not last block
-      while (block != null && (!block.isEOF())) {
-        try {
-          future1.await();
-        } catch (final InterruptedException e) {
-        }
+      while (block != null && (!block.isEOF()) && running.get() &&
+             !Thread.interrupted()) {
+        WaarpNettyUtil.awaitOrInterrupted(future1);
         if (!future1.isSuccess()) {
           return;
         }
-        if (!running.get()) {
+        if (!running.get() && Thread.interrupted()) {
           return;
         }
         try {
           block = readDataBlock();
         } catch (final FileEndOfTransferException e) {
           // Wait for last write
-          try {
-            future1.await();
-          } catch (final InterruptedException e1) {
-          }
+          WaarpNettyUtil.awaitOrInterrupted(future1);
           if (future1.isSuccess()) {
             retrieveDone = true;
           }
@@ -176,16 +172,13 @@ public class R66File extends FilesystemBasedFileImpl {
         }
         future1 = future2;
       }
-      if (!running.get()) {
+      if (!running.get() && Thread.interrupted()) {
         // stopped
         return;
       }
       // Wait for last write
       if (future1 != null) {
-        try {
-          future1.await();
-        } catch (final InterruptedException e) {
-        }
+        WaarpNettyUtil.awaitOrInterrupted(future1);
         if (!future1.isSuccess()) {
           return;
         }
@@ -499,34 +492,8 @@ public class R66File extends FilesystemBasedFileImpl {
         return true;
       }
       if (parentFile != null && parentFile.canWrite()) {
-        if (!file.renameTo(newFile)) {
-          FileOutputStream fileOutputStream = null;
-          try {
-            try {
-              fileOutputStream = new FileOutputStream(newFile);
-            } catch (final FileNotFoundException e) {
-              logger.warn("Cannot find file: " + newFile.getName(), e);
-              return false;
-            }
-            final FileChannel fileChannelOut = fileOutputStream.getChannel();
-            if (get(fileChannelOut)) {
-              delete();
-            } else {
-              try {
-                fileChannelOut.close();
-              } catch (final IOException e) {
-              }
-              logger.error("Cannot write file: {}", newFile);
-              return false;
-            }
-          } finally {
-            if (fileOutputStream != null) {
-              try {
-                fileOutputStream.close();
-              } catch (final IOException e) {
-              }
-            }
-          }
+        if (renameTo(file, newFile)) {
+          return false;
         }
         currentFile = getRelativePath(newFile);
         isExternal = false;
@@ -537,6 +504,40 @@ public class R66File extends FilesystemBasedFileImpl {
       }
     }
     logger.warn("Cannot read file: {}", file);
+    return false;
+  }
+
+  private boolean renameTo(final File file, final File newFile)
+      throws CommandAbstractException {
+    if (!file.renameTo(newFile)) {
+      FileOutputStream fileOutputStream = null;
+      try {
+        try {
+          fileOutputStream = new FileOutputStream(newFile);
+        } catch (final FileNotFoundException e) {
+          logger.warn("Cannot find file: " + newFile.getName(), e);
+          return true;
+        }
+        final FileChannel fileChannelOut = fileOutputStream.getChannel();
+        if (get(fileChannelOut)) {
+          delete();
+        } else {
+          try {
+            fileChannelOut.close();
+          } catch (final IOException e) {
+          }
+          logger.error("Cannot write file: {}", newFile);
+          return true;
+        }
+      } finally {
+        if (fileOutputStream != null) {
+          try {
+            fileOutputStream.close();
+          } catch (final IOException e) {
+          }
+        }
+      }
+    }
     return false;
   }
 
@@ -581,34 +582,8 @@ public class R66File extends FilesystemBasedFileImpl {
         return true;
       }
       if (parentFile != null && parentFile.canWrite()) {
-        if (!file.renameTo(newFile)) {
-          FileOutputStream fileOutputStream = null;
-          try {
-            try {
-              fileOutputStream = new FileOutputStream(newFile);
-            } catch (final FileNotFoundException e) {
-              logger.warn("Cannot find file: " + newFile.getName(), e);
-              return false;
-            }
-            final FileChannel fileChannelOut = fileOutputStream.getChannel();
-            if (get(fileChannelOut)) {
-              delete();
-            } else {
-              try {
-                fileChannelOut.close();
-              } catch (final IOException e) {
-              }
-              logger.error("Cannot write file: {}", newFile);
-              return false;
-            }
-          } finally {
-            if (fileOutputStream != null) {
-              try {
-                fileOutputStream.close();
-              } catch (final IOException e) {
-              }
-            }
-          }
+        if (renameTo(file, newFile)) {
+          return false;
         }
         currentFile = AbstractDir.normalizePath(newFile.getAbsolutePath());
         isExternal = true;

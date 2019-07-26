@@ -69,7 +69,7 @@ public class BusinessRequest extends AbstractBusinessRequest {
     classname = DEFAULT_CLASS;
     if (!getParams(args) || classarg == null) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       ChannelUtils.stopLogger();

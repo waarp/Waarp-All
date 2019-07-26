@@ -20,28 +20,16 @@
 package org.waarp.openr66.proxy.protocol.http.adminssl;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.traffic.TrafficCounter;
-import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogLevel;
@@ -52,53 +40,24 @@ import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.configuration.Messages;
-import org.waarp.openr66.protocol.exception.OpenR66Exception;
-import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.utils.Version;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
  */
 public class HttpSslHandler
-    extends SimpleChannelInboundHandler<FullHttpRequest> {
+    extends org.waarp.openr66.protocol.http.adminssl.HttpSslHandler {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpSslHandler.class);
-  /**
-   * Session Management
-   */
-  private static final ConcurrentHashMap<String, R66Session> sessions =
-      new ConcurrentHashMap<String, R66Session>();
-  private static final Random random = new Random();
-
-  private R66Session authentHttp = new R66Session();
-
-  private FullHttpRequest request;
-  private boolean newSession = false;
-  private volatile Cookie admin = null;
-  private final StringBuilder responseContent = new StringBuilder();
-  private String uriRequest;
-  private Map<String, List<String>> params;
-  private String lang = Messages.getSlocale();
-  private volatile boolean forceClose = false;
-  private volatile boolean shutdown = false;
-
-  private static final String R66SESSION = "R66SESSION";
-  private static final String I18NEXT = "i18next";
 
   private static enum REQUEST {
     Logon("Logon.html"), index("index.html"), error("error.html"),
@@ -125,17 +84,6 @@ public class HttpSslHandler
           Configuration.configuration.getHttpBasePath() + header);
     }
   }
-
-  private static enum REPLACEMENT {
-    XXXHOSTIDXXX, XXXADMINXXX, XXXVERSIONXXX, XXXBANDWIDTHXXX,
-    XXXXSESSIONLIMITRXXX, XXXXSESSIONLIMITWXXX, XXXXCHANNELLIMITRXXX,
-    XXXXCHANNELLIMITWXXX, XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX, XXXLOCALXXX,
-    XXXNETWORKXXX, XXXERRORMESGXXX, XXXLANGXXX, XXXCURLANGENXXX,
-    XXXCURLANGFRXXX, XXXCURSYSLANGENXXX, XXXCURSYSLANGFRXXX;
-  }
-
-  static final int LIMITROW = 48; // better if it can
-  // be divided by 4
 
   private String readFileHeader(String filename) {
     String value;
@@ -187,14 +135,6 @@ public class HttpSslHandler
     return builder.toString();
   }
 
-  private String getTrimValue(String varname) {
-    String value = params.get(varname).get(0).trim();
-    if (value.isEmpty()) {
-      value = null;
-    }
-    return value;
-  }
-
   private String index() {
     final String index = REQUEST.index.readFileUnique(this);
     final StringBuilder builder = new StringBuilder(index);
@@ -205,34 +145,6 @@ public class HttpSslHandler
     WaarpStringUtils
         .replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(), Version.ID);
     return builder.toString();
-  }
-
-  private String error(String mesg) {
-    final String index = REQUEST.error.readFileUnique(this);
-    return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
-  }
-
-  private String Logon() {
-    return REQUEST.Logon.readFileUnique(this);
-  }
-
-  /**
-   * Applied current lang to system page
-   *
-   * @param builder
-   */
-  private void langHandle(StringBuilder builder) {
-    // i18n: add here any new languages
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(),
-                             lang.equalsIgnoreCase("en")? "checked" : "");
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGFRXXX.name(),
-                             lang.equalsIgnoreCase("fr")? "checked" : "");
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGENXXX.name(),
-                             Messages.getSlocale().equalsIgnoreCase("en")?
-                                 "checked" : "");
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGFRXXX.name(),
-                             Messages.getSlocale().equalsIgnoreCase("fr")?
-                                 "checked" : "");
   }
 
   /**
@@ -610,13 +522,15 @@ public class HttpSslHandler
     if (uriRequest.charAt(0) == '/') {
       find = uriRequest.substring(1);
     }
-    find = find.substring(0, find.indexOf("."));
     REQUEST req = REQUEST.index;
-    try {
-      req = REQUEST.valueOf(find);
-    } catch (final IllegalArgumentException e1) {
-      req = REQUEST.index;
-      logger.debug("NotFound: " + find + ":" + uriRequest);
+    if (find.length() != 0) {
+      find = find.substring(0, find.indexOf("."));
+      try {
+        req = REQUEST.valueOf(find);
+      } catch (final IllegalArgumentException e1) {
+        req = REQUEST.index;
+        logger.debug("NotFound: " + find + ":" + uriRequest);
+      }
     }
     switch (req) {
       case index:
@@ -663,155 +577,5 @@ public class HttpSslHandler
     if (admin == null) {
       logger.debug("NoSession: " + uriRequest + ":{}", admin);
     }
-  }
-
-  private void handleCookies(HttpResponse response) {
-    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
-    boolean i18nextFound = false;
-    if (cookieString != null) {
-      final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
-      if (!cookies.isEmpty()) {
-        // Reset the sessions if necessary.
-        boolean findSession = false;
-        for (final Cookie cookie : cookies) {
-          if (cookie.name().equalsIgnoreCase(
-              R66SESSION + Configuration.configuration.getHOST_ID())) {
-            if (newSession) {
-              findSession = false;
-            } else {
-              findSession = true;
-              response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                     ServerCookieEncoder.LAX.encode(cookie));
-            }
-          } else if (cookie.name().equalsIgnoreCase(I18NEXT)) {
-            i18nextFound = true;
-            cookie.setValue(lang);
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(cookie));
-          } else {
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(cookie));
-          }
-        }
-        if (!i18nextFound) {
-          final Cookie cookie = new DefaultCookie(I18NEXT, lang);
-          response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                 ServerCookieEncoder.LAX.encode(cookie));
-        }
-        newSession = false;
-        if (!findSession) {
-          if (admin != null) {
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(admin));
-            logger.debug("AddSession: " + uriRequest + ":{}", admin);
-          }
-        }
-      }
-    } else {
-      final Cookie cookie = new DefaultCookie(I18NEXT, lang);
-      response.headers().add(HttpHeaderNames.SET_COOKIE,
-                             ServerCookieEncoder.LAX.encode(cookie));
-      if (admin != null) {
-        logger.debug("AddSession: " + uriRequest + ":{}", admin);
-        response.headers().add(HttpHeaderNames.SET_COOKIE,
-                               ServerCookieEncoder.LAX.encode(admin));
-      }
-    }
-  }
-
-  /**
-   * Write the response
-   */
-  private void writeResponse(ChannelHandlerContext ctx) {
-    // Convert the response content to a ByteBuf.
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
-    responseContent.setLength(0);
-
-    // Decide whether to close the connection or not.
-    final boolean keepAlive = HttpUtil.isKeepAlive(request);
-    final boolean close = HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(
-        request.headers().get(HttpHeaderNames.CONNECTION)) || (!keepAlive) ||
-                          forceClose;
-
-    // Build the response object.
-    final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                                    buf);
-    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
-                           response.content().readableBytes());
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-    if (keepAlive) {
-      response.headers()
-              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-    }
-    if (!close) {
-      // There's no need to add 'Content-Length' header
-      // if this is the last response.
-      response.headers().set(HttpHeaderNames.CONTENT_LENGTH,
-                             String.valueOf(buf.readableBytes()));
-    }
-
-    handleCookies(response);
-
-    // Write the response.
-    final ChannelFuture future = ctx.writeAndFlush(response);
-    // Close the connection after the write operation is done if necessary.
-    if (close) {
-      future.addListener(WaarpSslUtility.SSLCLOSE);
-    }
-    if (shutdown) {
-      ChannelUtils.startShutdown();
-    }
-  }
-
-  /**
-   * Send an error and close
-   *
-   * @param ctx
-   * @param status
-   */
-  private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-    responseContent.setLength(0);
-    responseContent.append(error(status.toString()));
-    final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled
-            .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8));
-    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
-                           response.content().readableBytes());
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-    responseContent.setLength(0);
-    clearSession();
-    // Close the connection as soon as the error message is sent.
-    ctx.writeAndFlush(response).addListener(WaarpSslUtility.SSLCLOSE);
-  }
-
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(ctx.channel(), cause);
-    if (exception != null) {
-      if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
-        if (cause instanceof IOException) {
-          // Nothing to do
-          return;
-        }
-        logger.warn("Exception in HttpSslHandler {}", exception.getMessage());
-      }
-      if (ctx.channel().isActive()) {
-        sendError(ctx, HttpResponseStatus.BAD_REQUEST);
-      }
-    } else {
-      // Nothing to do
-      return;
-    }
-  }
-
-  @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    final Channel channel = ctx.channel();
-    Configuration.configuration.getHttpChannelGroup().add(channel);
-    super.channelActive(ctx);
   }
 }

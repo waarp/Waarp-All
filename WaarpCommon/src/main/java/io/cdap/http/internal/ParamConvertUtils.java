@@ -327,13 +327,13 @@ public final class ParamConvertUtils {
     return new Converter<List<String>, Object>() {
       @Override
       public Object convert(List<String> values) throws Exception {
-        Collection<? extends Comparable> collection;
+        Collection<? extends Comparable<String>> collection;
         if (rawType == List.class) {
-          collection = new ArrayList<Comparable>();
+          collection = new ArrayList<Comparable<String>>();
         } else if (rawType == Set.class) {
-          collection = new LinkedHashSet<Comparable>();
+          collection = new LinkedHashSet<Comparable<String>>();
         } else {
-          collection = new TreeSet<Comparable>();
+          collection = new TreeSet<Comparable<String>>();
         }
 
         for (final String value : values) {

@@ -153,6 +153,8 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
     final String notNull = " NOT NULL ";
 
     // Example
+    /*
+
     String action = createTableH2 + DbDataModel.table + "(";
     final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
     for (int i = 0; i < ccolumns.length - 1; i++) {
@@ -231,6 +233,29 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
       request.close();
     }
     logger.warn(action);
+
+     */
+  }
+
+  @Override
+  public void resetSequence(DbSession session, long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+    final String action =
+        "ALTER SEQUENCE " + DbDataModel.fieldseq + " MINVALUE " +
+        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
+    final DbRequest request = new DbRequest(session);
+    try {
+      request.query(action);
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      e.printStackTrace();
+      return;
+    } catch (final WaarpDatabaseSqlException e) {
+      e.printStackTrace();
+      return;
+    } finally {
+      request.close();
+    }
+    System.out.println(action);
   }
 
   @Override

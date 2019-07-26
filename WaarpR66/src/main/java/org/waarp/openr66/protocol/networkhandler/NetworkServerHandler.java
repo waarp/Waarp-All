@@ -52,11 +52,11 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.net.BindException;
 import java.net.SocketAddress;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Network Server Handler (Requester side)
- *
- *
  */
 public class NetworkServerHandler
     extends SimpleChannelInboundHandler<NetworkPacket> {
@@ -91,7 +91,7 @@ public class NetworkServerHandler
   /**
    * To handle the keep alive
    */
-  private volatile int keepAlivedSent = 0;
+  private AtomicInteger keepAlivedSent = new AtomicInteger(0);
   /**
    * Is this network connection being refused (black listed)
    */
@@ -106,30 +106,42 @@ public class NetworkServerHandler
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    if (networkChannelReference != null) {
-      if (networkChannelReference.nbLocalChannels() > 0) {
-        logger.info("Network Channel Closed: {} LocalChannels Left: {}",
-                    ctx.channel().id(),
-                    networkChannelReference.nbLocalChannels());
-        // Give an extra time if necessary to let the local channel being closed
+    try {
+      if (networkChannelReference != null) {
+        if (networkChannelReference.nbLocalChannels() > 0) {
+          logger.info("Network Channel Closed: {} LocalChannels Left: {}",
+                      ctx.channel().id(),
+                      networkChannelReference.nbLocalChannels());
+          // Give an extra time if necessary to let the local channel being closed
+          try {
+            Thread.sleep(Configuration.RETRYINMS * 2);
+          } catch (final InterruptedException e1) {
+          }
+        }
         try {
-          Thread.sleep(Configuration.RETRYINMS * 2);
-        } catch (final InterruptedException e1) {
+          NetworkTransaction.closedNetworkChannel(networkChannelReference);
+        } catch (RejectedExecutionException e) {
+          logger.debug(e);
+        }
+      } else {
+        if (remoteAddress == null) {
+          remoteAddress = ctx.channel().remoteAddress();
+        }
+        try {
+          NetworkTransaction.closedNetworkChannel(remoteAddress);
+        } catch (RejectedExecutionException e) {
+          logger.debug(e);
         }
       }
-      NetworkTransaction.closedNetworkChannel(networkChannelReference);
-    } else {
-      if (remoteAddress == null) {
-        remoteAddress = ctx.channel().remoteAddress();
+      // Now force the close of the database after a wait
+      if (dbSession != null && DbConstant.admin != null &&
+          DbConstant.admin.getSession() != null &&
+          !dbSession.equals(DbConstant.admin.getSession())) {
+        dbSession.forceDisconnect();
+        dbSession = null;
       }
-      NetworkTransaction.closedNetworkChannel(remoteAddress);
-    }
-    // Now force the close of the database after a wait
-    if (dbSession != null && DbConstant.admin != null &&
-        DbConstant.admin.getSession() != null &&
-        !dbSession.equals(DbConstant.admin.getSession())) {
-      dbSession.forceDisconnect();
-      dbSession = null;
+    } catch (RejectedExecutionException e) {
+      logger.debug(e);
     }
   }
 
@@ -164,6 +176,7 @@ public class NetworkServerHandler
       return;
     }
     try {
+      // FIXME always true since change for DbAdmin
       if (DbConstant.admin.isActive()) {
         if (DbConstant.admin.isCompatibleWithThreadSharedConnexion()) {
           dbSession = new DbSession(DbConstant.admin, false);
@@ -193,15 +206,15 @@ public class NetworkServerHandler
                                                      Configuration.configuration
                                                          .getTIMEOUTCON() *
                                                      2) <= 0) {
-        keepAlivedSent = 0;
+        keepAlivedSent.set(0);
         return;
       }
-      if (keepAlivedSent > 0) {
+      if (keepAlivedSent.get() > 0) {
         if (networkChannelReference != null) {
           if (networkChannelReference.nbLocalChannels() > 0 &&
-              keepAlivedSent < 5) {
+              keepAlivedSent.get() < 5) {
             // ignore this time
-            keepAlivedSent++;
+            keepAlivedSent.getAndIncrement();
             return;
           }
         }
@@ -213,7 +226,7 @@ public class NetworkServerHandler
         }
         ChannelCloseTimer.closeFutureChannel(ctx.channel());
       } else {
-        keepAlivedSent = 1;
+        keepAlivedSent.set(1);
         final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
         final NetworkPacket response =
             new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,
@@ -225,7 +238,7 @@ public class NetworkServerHandler
   }
 
   public void setKeepAlivedSent() {
-    keepAlivedSent = 0;
+    keepAlivedSent.set(0);
   }
 
   @Override
@@ -233,6 +246,7 @@ public class NetworkServerHandler
       throws Exception {
     if (isBlackListed) {
       // ignore message since close on going
+      msg.clear();
       return;
     }
     final NetworkPacket packet = msg;
@@ -270,7 +284,7 @@ public class NetworkServerHandler
       if (networkChannelReference != null) {
         networkChannelReference.useIfUsed();
       }
-      keepAlivedSent = 0;
+      keepAlivedSent.set(0);
       try {
         final KeepAlivePacket keepAlivePacket =
             (KeepAlivePacket) LocalPacketCodec
@@ -360,6 +374,13 @@ public class NetworkServerHandler
             packet.clear();
             return;
           }
+          // try to send later
+          logger.error("Cannot get LocalChannel: " + packet + " due to " +
+                       e1.getMessage());
+          final ConnectionErrorPacket error = new ConnectionErrorPacket(
+              "Cannot get localChannel since localId is not found anymore",
+              "" + packet.getLocalId());
+          writeError(channel, packet.getRemoteId(), packet.getLocalId(), error);
           packet.clear();
           return;
         }

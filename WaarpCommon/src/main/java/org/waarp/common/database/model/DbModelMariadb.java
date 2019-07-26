@@ -248,6 +248,8 @@ public abstract class DbModelMariadb extends DbModelAbstract {
     final String notNull = " NOT NULL ";
 
     // Example
+    /*
+
     String action = createTableH2 + DbDataModel.table + "(";
     final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
     for (int i = 0; i < ccolumns.length - 1; i++) {
@@ -289,6 +291,7 @@ public abstract class DbModelMariadb extends DbModelAbstract {
       request.close();
     }
 
+     */
     // example sequence
     /*
      * # Table to handle any number of sequences: CREATE TABLE Sequences ( name VARCHAR(22) NOT NULL, seq INT
@@ -296,6 +299,8 @@ public abstract class DbModelMariadb extends DbModelAbstract {
      * VALUES (?, 0); # Drop a Sequence: DELETE FROM Sequences WHERE name = ?; # Get a sequence number: UPDATE
      * Sequences SET seq = LAST_INSERT_ID(seq + 1) WHERE name = ?; $seq = $db->LastInsertId();
      */
+    /*
+
     action = "CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY," +
              "seq BIGINT NOT NULL)";
     logger.warn(action);
@@ -325,6 +330,7 @@ public abstract class DbModelMariadb extends DbModelAbstract {
     } finally {
       request.close();
     }
+     */
   }
 
   @Override

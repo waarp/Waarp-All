@@ -38,7 +38,7 @@ public class History {
   public static final int MAX_ITEM_COUNT = 20;
   public static final int MAX_LABEL_LENGTH = 70;
 
-  ArrayList items = null;
+  ArrayList<History> items = null;
   String path;
   String label;
 
@@ -96,12 +96,12 @@ public class History {
 
   public History put(String childPath) {
     if (items == null) {
-      items = new ArrayList();
+      items = new ArrayList<History>();
     }
     History child = new History(childPath);
     final int index = items.indexOf(child);
     if (index >= 0) {
-      child = (History) items.remove(index);
+      child = items.remove(index);
     }
     items.add(0, child);
     if (items.size() > MAX_ITEM_COUNT) {
@@ -114,12 +114,12 @@ public class History {
     if (items == null && items.size() == 0) {
       return null;
     }
-    return (History) items.get(0);
+    return items.get(0);
   }
 
   public void remove(String childPath) {
     if (items == null) {
-      items = new ArrayList();
+      items = new ArrayList<History>();
     }
     final History child = new History(childPath);
     final int index = items.indexOf(child);

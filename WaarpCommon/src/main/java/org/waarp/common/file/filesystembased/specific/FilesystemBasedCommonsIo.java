@@ -29,7 +29,10 @@ import java.io.IOException;
  * This class enables to not set a dependencies on Apache Commons IO if wanted,
  * but loosing freespace and
  * wildcard support.
- *
+ * <p>
+ *   Warning: FilesystemUtils from Apache Commons is deprecated but
+ *   replacement FileStore is only from Java 1.7
+ * </p>
  *
  */
 public class FilesystemBasedCommonsIo {

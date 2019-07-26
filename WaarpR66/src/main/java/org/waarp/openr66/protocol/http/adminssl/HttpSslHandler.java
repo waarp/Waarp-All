@@ -114,26 +114,26 @@ public class HttpSslHandler
   /**
    * Session Management
    */
-  private static final ConcurrentHashMap<String, R66Session> sessions =
+  protected static final ConcurrentHashMap<String, R66Session> sessions =
       new ConcurrentHashMap<String, R66Session>();
-  private static final ConcurrentHashMap<String, DbSession> dbSessions =
+  static final ConcurrentHashMap<String, DbSession> dbSessions =
       new ConcurrentHashMap<String, DbSession>();
-  private static final Random random = new Random();
+  protected static final Random random = new Random();
 
-  private R66Session authentHttp = new R66Session();
+  protected R66Session authentHttp = new R66Session();
 
-  private FullHttpRequest request;
-  private boolean newSession = false;
-  private volatile Cookie admin = null;
-  private final StringBuilder responseContent = new StringBuilder();
-  private String uriRequest;
-  private Map<String, List<String>> params;
-  private String lang = Messages.getSlocale();
-  private boolean forceClose = false;
-  private boolean shutdown = false;
+  protected FullHttpRequest request;
+  protected boolean newSession = false;
+  protected volatile Cookie admin = null;
+  protected final StringBuilder responseContent = new StringBuilder();
+  protected String uriRequest;
+  protected Map<String, List<String>> params;
+  protected String lang = Messages.getSlocale();
+  protected boolean forceClose = false;
+  protected boolean shutdown = false;
 
-  private static final String R66SESSION = "R66SESSION";
-  private static final String I18NEXT = "i18next";
+  protected static final String R66SESSION = "R66SESSION";
+  protected static final String I18NEXT = "i18next";
 
   private static enum REQUEST {
     Logon("Logon.html"), Logout("Logon.html"), index("index.html"),
@@ -222,39 +222,41 @@ public class HttpSslHandler
     }
   }
 
-  private static enum REPLACEMENT {
+  protected static enum REPLACEMENT {
     XXXHOSTIDXXX, XXXADMINXXX, XXXVERSIONXXX, XXXBANDWIDTHXXX,
-    XXXXSESSIONLIMITRXXX, XXXXSESSIONLIMITWXXX, XXXXCHANNELLIMITRXXX,
-    XXXXCHANNELLIMITWXXX, XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX,
-    XXXXDELATRAFFICXXX, XXXLOCALXXX, XXXNETWORKXXX, XXXERRORMESGXXX,
-    XXXXBUSINESSXXX, XXXXROLESXXX, XXXXALIASESXXX, XXXXOTHERXXX, XXXLIMITROWXXX,
+    XXXBANDWIDTHINXXX, XXXBANDWIDTHOUTXXX, XXXXSESSIONLIMITRXXX,
+    XXXXSESSIONLIMITWXXX, XXXXCHANNELLIMITRXXX, XXXXCHANNELLIMITWXXX,
+    XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX, XXXXDELATRAFFICXXX, XXXLOCALXXX,
+    XXXNETWORKXXX, XXXNBTRANSFERSXXX, XXXERRORMESGXXX, XXXXBUSINESSXXX,
+    XXXXROLESXXX, XXXXALIASESXXX, XXXXOTHERXXX, XXXLIMITROWXXX, XXXREFRESHXXX,
     XXXLANGXXX, XXXCURLANGENXXX, XXXCURLANGFRXXX, XXXCURSYSLANGENXXX,
     XXXCURSYSLANGFRXXX;
   }
 
   public static final String sLIMITROW = "LIMITROW";
-  private static final String XXXRESULTXXX = "XXXRESULTXXX";
+  static final String XXXRESULTXXX = "XXXRESULTXXX";
 
   private int LIMITROW = 48; // better if it can
   // be divided by 4
+  private int REFRESH = 0;
 
   /**
    * The Database connection attached to this NetworkChannelReference shared
    * among all associated LocalChannels
    * in the session
    */
-  private DbSession dbSession = null;
+  DbSession dbSession = null;
   /**
    * Does this dbSession is private and so should be closed
    */
-  private boolean isPrivateDbSession = false;
+  boolean isPrivateDbSession = false;
 
   public static String hashStatus() {
     return "HttpSslHandler: [sessions: " + sessions.size() + " dbSessions: " +
            dbSessions.size() + "] ";
   }
 
-  private String readFileHeader(String filename) {
+  String readFileHeader(String filename) {
     String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
@@ -270,12 +272,15 @@ public class HttpSslHandler
                              Integer.toString(Configuration.configuration
                                                   .getLocalTransaction()
                                                   .getNumberLocalChannel()) +
-                             " " + Thread.activeCount());
+                             " Thread(" + Thread.activeCount() + ")");
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETWORKXXX.toString(),
                              Integer.toString(DbAdmin.getNbConnection() -
                                               Configuration.getNBDBSESSION()));
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-                             Configuration.configuration.getHOST_ID());
+    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNBTRANSFERSXXX.toString(),
+                             Long.toString(Configuration.configuration
+                                               .getMonitoring().nbCountAllRunningStep));
+    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
+                                Configuration.configuration.getHOST_ID());
     if (authentHttp.isAuthenticated()) {
       WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
                                Messages.getString(
@@ -288,24 +293,33 @@ public class HttpSslHandler
     final TrafficCounter trafficCounter =
         Configuration.configuration.getGlobalTrafficShapingHandler()
                                    .trafficCounter();
+    final long read = trafficCounter.lastReadThroughput();
+    final long write = trafficCounter.lastWriteThroughput();
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
                              Messages.getString("HttpSslHandler.IN") +
-                             (trafficCounter.lastReadThroughput() >> 20) +
-                             //$NON-NLS-1$
+                             (read >> 20) + //$NON-NLS-1$
                              Messages.getString("HttpSslHandler.MOPS") +
                              //$NON-NLS-1$
                              Messages.getString("HttpSslHandler.OUT") +
                              //$NON-NLS-1$
-                             (trafficCounter.lastWriteThroughput() >> 20) +
-                             Messages.getString(
+                             (write >> 20) + Messages.getString(
                                  "HttpSslHandler.MOPS")); //$NON-NLS-1$
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLIMITROWXXX.toString(),
-                             "" + getLIMITROW());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
+    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHINXXX.toString(),
+                             (read >> 20) + Messages.getString(
+                                 "HttpSslHandler.MOPS")); //$NON-NLS-1$
+    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHOUTXXX.toString(),
+                             (write >> 20) + Messages.getString(
+                                 "HttpSslHandler.MOPS")); //$NON-NLS-1$
+    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXLIMITROWXXX.toString(),
+                                "" + getLIMITROW());
+    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXREFRESHXXX.toString(),
+                                "" + (getREFRESH() / 1000));
+    WaarpStringUtils
+        .replaceAll(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
     return builder.toString();
   }
 
-  private String getTrimValue(String varname) {
+  protected String getTrimValue(String varname) {
     final List<String> varlist = params.get(varname);
     if (varlist != null && !varlist.isEmpty()) {
       String value = params.get(varname).get(0).trim();
@@ -317,7 +331,7 @@ public class HttpSslHandler
     return null;
   }
 
-  private String getValue(String varname) {
+  String getValue(String varname) {
     return params.get(varname).get(0);
   }
 
@@ -334,7 +348,7 @@ public class HttpSslHandler
     return builder.toString();
   }
 
-  private String error(String mesg) {
+  protected String error(String mesg) {
     final String index = REQUEST.error.readFileUnique(this);
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
   }
@@ -347,7 +361,7 @@ public class HttpSslHandler
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
   }
 
-  private String Logon() {
+  protected String Logon() {
     return REQUEST.Logon.readFileUnique(this);
   }
 
@@ -355,11 +369,10 @@ public class HttpSslHandler
     return REQUEST.Transfers.readFileUnique(this);
   }
 
-  private String resetOptionTransfer(String header, String startid,
-                                     String stopid, String start, String stop,
-                                     String rule, String req, boolean pending,
-                                     boolean transfer, boolean error,
-                                     boolean done, boolean all) {
+  String resetOptionTransfer(String header, String startid, String stopid,
+                             String start, String stop, String rule, String req,
+                             boolean pending, boolean transfer, boolean error,
+                             boolean done, boolean all) {
     final StringBuilder builder = new StringBuilder(header);
     WaarpStringUtils.replace(builder, "XXXSTARTIDXXX", startid);
     WaarpStringUtils.replace(builder, "XXXSTOPIDXXX", stopid);
@@ -375,7 +388,7 @@ public class HttpSslHandler
     return builder.toString();
   }
 
-  private String checkAuthorizedToSeeAll() {
+  String checkAuthorizedToSeeAll() {
     boolean seeAll = false;
     if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
       DbHostConfiguration dbhc;
@@ -1007,8 +1020,8 @@ public class HttpSslHandler
            errorMsg; //$NON-NLS-1$
   }
 
-  private String resetOptionHosts(String header, String host, String addr,
-                                  boolean ssl, boolean active) {
+  String resetOptionHosts(String header, String host, String addr, boolean ssl,
+                          boolean active) {
     final StringBuilder builder = new StringBuilder(header);
     WaarpStringUtils.replace(builder, "XXXFHOSTXXX", host);
     WaarpStringUtils.replace(builder, "XXXFADDRXXX", addr);
@@ -1187,8 +1200,7 @@ public class HttpSslHandler
                                        .getNetworkTransaction(), result, dbhost,
             packet);
         transaction.run();
-        result.awaitOrInterruptible(
-            Configuration.configuration.getTIMEOUTCON() / 2);
+        result.awaitOrInterruptible();
         head =
             resetOptionHosts(head, "", "", dbhost.isSsl(), dbhost.isActive());
         body = REQUEST.Hosts.readBody();
@@ -1303,8 +1315,8 @@ public class HttpSslHandler
     }
   }
 
-  private String resetOptionRules(String header, String rule,
-                                  RequestPacket.TRANSFERMODE mode, int gmode) {
+  String resetOptionRules(String header, String rule,
+                          RequestPacket.TRANSFERMODE mode, int gmode) {
     final StringBuilder builder = new StringBuilder(header);
     WaarpStringUtils.replace(builder, "XXXRULEXXX", rule);
     if (mode != null) {
@@ -1668,7 +1680,7 @@ public class HttpSslHandler
    *
    * @param builder
    */
-  private void langHandle(StringBuilder builder) {
+  protected void langHandle(StringBuilder builder) {
     // i18n: add here any new languages
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(),
                              lang.equalsIgnoreCase("en")? "checked" : "");
@@ -1690,7 +1702,7 @@ public class HttpSslHandler
     return system;
   }
 
-  private String SystemLimited() {
+  String SystemLimited() {
     getParams();
     DbHostConfiguration config = null;
     try {
@@ -1748,8 +1760,7 @@ public class HttpSslHandler
    * @param config
    * @param builder
    */
-  private void replaceStringSystem(DbHostConfiguration config,
-                                   StringBuilder builder) {
+  void replaceStringSystem(DbHostConfiguration config, StringBuilder builder) {
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXXBUSINESSXXX.toString(),
                              config.getBusiness());
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXXROLESXXX.toString(),
@@ -1821,7 +1832,7 @@ public class HttpSslHandler
     }
   }
 
-  private String Logout() {
+  String Logout() {
     String logon = Logon();
     logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
                              Messages.getString("HttpSslHandler.Disconnected"));
@@ -2206,6 +2217,7 @@ public class HttpSslHandler
       }
       if (dbSession == null) {
         try {
+          // FIXME always true since change for DbAdmin
           if (DbConstant.admin.isActive()) {
             dbSession = new DbSession(DbConstant.admin, false);
             DbAdmin.incHttpSession();
@@ -2339,7 +2351,7 @@ public class HttpSslHandler
     writeResponse(ctx);
   }
 
-  private void checkSession(Channel channel) {
+  void checkSession(Channel channel) {
     final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
     if (cookieString != null) {
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
@@ -2438,7 +2450,7 @@ public class HttpSslHandler
    *
    * @param ctx
    */
-  private void writeResponse(ChannelHandlerContext ctx) {
+  protected void writeResponse(ChannelHandlerContext ctx) {
     // Convert the response content to a ByteBuf.
     final ByteBuf buf = Unpooled
         .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
@@ -2487,7 +2499,7 @@ public class HttpSslHandler
    * @param ctx
    * @param status
    */
-  private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+  void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
     responseContent.setLength(0);
     responseContent.append(error(status.toString()));
     final FullHttpResponse response =
@@ -2541,8 +2553,22 @@ public class HttpSslHandler
   /**
    * @param lIMITROW the lIMITROW to set
    */
-  private void setLIMITROW(int lIMITROW) {
+  void setLIMITROW(int lIMITROW) {
     LIMITROW = lIMITROW;
+  }
+
+  /**
+   * @return the rEFRESH
+   */
+  public int getREFRESH() {
+    return REFRESH;
+  }
+
+  /**
+   * @param rEFRESH the rEFRESH to set
+   */
+  void setREFRESH(int rEFRESH) {
+    REFRESH = rEFRESH;
   }
 
 }

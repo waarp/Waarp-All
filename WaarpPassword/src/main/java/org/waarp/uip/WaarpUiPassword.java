@@ -176,7 +176,6 @@ public class WaarpUiPassword extends JFrame {
     try {
       waarpPassword = new WaarpPassword();
     } catch (final Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
       System.exit(3);
     }

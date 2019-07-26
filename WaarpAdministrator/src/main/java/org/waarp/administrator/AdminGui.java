@@ -124,7 +124,7 @@ public class AdminGui {
       JOptionPane.showMessageDialog(null, Messages
                                         .getString("Configuration.WrongInit"), //$NON-NLS-1$
                                     "Attention", JOptionPane.WARNING_MESSAGE);
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       System.exit(1);

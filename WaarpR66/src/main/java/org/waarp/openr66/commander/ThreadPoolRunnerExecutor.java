@@ -20,6 +20,8 @@
 package org.waarp.openr66.commander;
 
 import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
 
 import java.util.concurrent.BlockingQueue;
@@ -33,7 +35,12 @@ import java.util.concurrent.TimeUnit;
  *
  *
  */
-class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
+public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(ThreadPoolRunnerExecutor.class);
 
   /**
    * RejectedExecutionHandler for this ThreadPoolRunnerExecutor
@@ -45,9 +52,13 @@ class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
 
     @Override
     public void rejectedExecution(Runnable arg0, ThreadPoolExecutor arg1) {
-      final ClientRunner runner = (ClientRunner) arg0;
-      runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.INERROR,
-                               ErrorCode.Unknown, true);
+      if (arg0 instanceof ClientRunner) {
+        ClientRunner runner = (ClientRunner) arg0;
+        runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.INERROR,
+                                 ErrorCode.Unknown, true);
+      } else {
+        logger.warn("Not ClientRunner: {}", arg0.getClass().getName());
+      }
     }
 
   }
@@ -97,7 +108,7 @@ class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
                                   RejectedExecutionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
           handler);
-    setRejectedExecutionHandler(new RunnerRejectedExecutionHandler());
+    setRejectedExecutionHandler(handler);
   }
 
   /**
@@ -116,7 +127,7 @@ class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
                                   RejectedExecutionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
           threadFactory, handler);
-    setRejectedExecutionHandler(new RunnerRejectedExecutionHandler());
+    setRejectedExecutionHandler(handler);
   }
 
 }

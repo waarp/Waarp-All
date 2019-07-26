@@ -28,6 +28,7 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileImpl;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.ftp.core.exception.FtpNoConnectionException;
 import org.waarp.ftp.core.file.FtpFile;
 import org.waarp.ftp.core.session.FtpSession;
@@ -140,10 +141,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
       ChannelFuture future = null;
       while (block != null && !block.isEOF()) {
         future = channel.writeAndFlush(block);
-        try {
-          future.await();
-        } catch (final InterruptedException e) {
-        }
+        WaarpNettyUtil.awaitOrInterrupted(future);
         if (!future.isSuccess()) {
           closeFile();
           throw new FileTransferException("File transfer in error");
@@ -170,10 +168,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
       }
       // Wait for last write
       if (future != null) {
-        try {
-          future.await();
-        } catch (final InterruptedException e) {
-        }
+        WaarpNettyUtil.awaitOrInterrupted(future);
         if (future.isSuccess()) {
           ((FtpSession) session).getDataConn().getFtpTransferControl()
                                 .setPreEndOfTransfer();

@@ -205,7 +205,6 @@ public class AdminR66OperationsGui extends JFrame {
     try {
       comboBoxServer = new JComboBox(DbHostAuth.getAllHosts());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
       return;
     }
@@ -1318,7 +1317,6 @@ public class AdminR66OperationsGui extends JFrame {
       }
       comboBoxServer.setSelectedIndex(idx);
     } catch (final WaarpDatabaseNoConnectionException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
       return;
     }

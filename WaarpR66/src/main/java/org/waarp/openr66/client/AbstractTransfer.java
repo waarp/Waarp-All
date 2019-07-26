@@ -34,20 +34,27 @@ import org.waarp.openr66.context.filesystem.R66Dir;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.FileUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.io.File;
+import java.net.SocketAddress;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,8 +64,6 @@ import java.util.List;
 
 /**
  * Abstract class for Transfer operation
- *
- *
  */
 public abstract class AbstractTransfer implements Runnable {
   /**
@@ -124,6 +129,42 @@ public abstract class AbstractTransfer implements Runnable {
     this.blocksize = blocksize;
     this.id = id;
     startTime = timestart;
+  }
+
+  /**
+   * @param host
+   * @param localChannelReference
+   * @param packet
+   * @param future
+   *
+   * @return True if OK
+   */
+  public static boolean sendValidPacket(DbHostAuth host,
+                                        LocalChannelReference localChannelReference,
+                                        AbstractLocalPacket packet,
+                                        final R66Future future) {
+    try {
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, packet, false);
+    } catch (final OpenR66ProtocolPacketException e) {
+      RequestTransfer.logger.error(Messages.getString("RequestTransfer.63") +
+                                   host.toString()); //$NON-NLS-1$
+      localChannelReference.getLocalChannel().close();
+      localChannelReference = null;
+      host = null;
+      packet = null;
+      RequestTransfer.logger.debug("Bad Protocol", e);
+      future.setResult(
+          new R66Result(e, null, true, ErrorCode.TransferError, null));
+      future.setFailure(e);
+      return false;
+    }
+    packet = null;
+    host = null;
+    future.awaitOrInterruptible();
+
+    localChannelReference.getLocalChannel().close();
+    return true;
   }
 
   /**
@@ -448,4 +489,45 @@ public abstract class AbstractTransfer implements Runnable {
     return files;
   }
 
+  /**
+   * Helper to connect
+   *
+   * @param host
+   * @param future
+   * @param networkTransaction
+   *
+   * @return localChannelReference not null if ok
+   */
+  public static LocalChannelReference tryConnect(DbHostAuth host,
+                                                 R66Future future,
+                                                 NetworkTransaction networkTransaction) {
+    logger.info("Try RequestTransfer to " + host.toString());
+    SocketAddress socketAddress;
+    try {
+      socketAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.debug("Cannot connect to " + host.toString());
+      host = null;
+      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
+          "Cannot connect to server " + host.getHostid()), null, true,
+                                     ErrorCode.ConnectionImpossible, null));
+      future.setFailure(future.getResult().getException());
+      return null;
+    }
+    final boolean isSSL = host.isSsl();
+
+    LocalChannelReference localChannelReference = networkTransaction
+        .createConnectionWithRetry(socketAddress, isSSL, future);
+    socketAddress = null;
+    if (localChannelReference == null) {
+      logger.debug("Cannot connect to " + host.toString());
+      host = null;
+      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
+          "Cannot connect to server " + host.getHostid()), null, true,
+                                     ErrorCode.ConnectionImpossible, null));
+      future.setFailure(future.getResult().getException());
+      return null;
+    }
+    return localChannelReference;
+  }
 }

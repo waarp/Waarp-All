@@ -23,6 +23,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -99,29 +100,10 @@ public class ChangeBandwidthLimits implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
     }
-    SocketAddress socketAddress;
-    try {
-      socketAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Cannot Connect to " + host.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + host.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      host = null;
-      future.setFailure(future.getResult().getException());
-      return;
-    }
-    final boolean isSSL = host.isSsl();
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
-    socketAddress = null;
+    LocalChannelReference localChannelReference = AbstractTransfer
+        .tryConnect(host, future,
+                    networkTransaction);
     if (localChannelReference == null) {
-      host = null;
-      logger.error("Cannot Connect to " + host.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + host.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      future.setFailure(future.getResult().getException());
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
@@ -154,26 +136,10 @@ public class ChangeBandwidthLimits implements Runnable {
                                 LocalPacketFactory.BANDWIDTHPACKET);
       }
     }
-    try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, valid, false);
-    } catch (final OpenR66ProtocolPacketException e) {
-      logger.error("Bad Protocol", e);
-      localChannelReference.getLocalChannel().close();
-      localChannelReference = null;
-      host = null;
-      valid = null;
-      future.setResult(
-          new R66Result(e, null, true, ErrorCode.TransferError, null));
-      future.setFailure(e);
-      return;
-    }
-    host = null;
-    future.awaitOrInterruptible();
+    AbstractTransfer
+        .sendValidPacket(host, localChannelReference, valid, future);
     logger
         .info("Request done with " + (future.isSuccess()? "success" : "error"));
-    localChannelReference.getLocalChannel().close();
-    localChannelReference = null;
   }
 
   protected static long swriteGlobalLimit = -1;
@@ -228,7 +194,7 @@ public class ChangeBandwidthLimits implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       System.exit(1);

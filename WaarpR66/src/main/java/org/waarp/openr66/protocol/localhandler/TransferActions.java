@@ -959,53 +959,8 @@ public class TransferActions extends ServerActions {
       globalDigest = null;
       session.newState(ENDTRANSFERS);
       if (!localChannelReference.getFutureRequest().isDone()) {
-        // Finish with post Operation
-        R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
-                                         session.getRunner());
         session.newState(ENDTRANSFERR);
-        try {
-          session.setFinalizeTransfer(true, result);
-        } catch (final OpenR66RunnerErrorException e) {
-          session.newState(ERROR);
-          ErrorPacket error = null;
-          if (localChannelReference.getFutureRequest().getResult() != null) {
-            result = localChannelReference.getFutureRequest().getResult();
-            error = new ErrorPacket(
-                "Error while finalizing transfer: " + result.getMessage(),
-                result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
-          } else {
-            error = new ErrorPacket("Error while finalizing transfer",
-                                    ErrorCode.FinalOp.getCode(),
-                                    ErrorPacket.FORWARDCLOSECODE);
-          }
-          try {
-            ChannelUtils
-                .writeAbstractLocalPacket(localChannelReference, error, true);
-          } catch (final OpenR66ProtocolPacketException e1) {
-          }
-          session.setStatus(23);
-          ChannelCloseTimer.closeFutureChannel(channel);
-          return;
-        } catch (final OpenR66ProtocolSystemException e) {
-          session.newState(ERROR);
-          ErrorPacket error = null;
-          if (localChannelReference.getFutureRequest().getResult() != null) {
-            result = localChannelReference.getFutureRequest().getResult();
-            error = new ErrorPacket(
-                "Error while finalizing transfer: " + result.getMessage(),
-                result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
-          } else {
-            error = new ErrorPacket("Error while finalizing transfer",
-                                    ErrorCode.FinalOp.getCode(),
-                                    ErrorPacket.FORWARDCLOSECODE);
-          }
-          try {
-            ChannelUtils
-                .writeAbstractLocalPacket(localChannelReference, error, true);
-          } catch (final OpenR66ProtocolPacketException e1) {
-          }
-          session.setStatus(23);
-          ChannelCloseTimer.closeFutureChannel(channel);
+        if (endTransferR(channel)) {
           return;
         }
         // Now can send validation
@@ -1027,55 +982,63 @@ public class TransferActions extends ServerActions {
       session.newState(ENDTRANSFERR);
       if (!localChannelReference.getFutureRequest().isDone()) {
         // Validation of end of transfer
-        R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
-                                         session.getRunner());
-        try {
-          session.setFinalizeTransfer(true, result);
-        } catch (final OpenR66RunnerErrorException e) {
-          session.newState(ERROR);
-          ErrorPacket error = null;
-          if (localChannelReference.getFutureRequest().getResult() != null) {
-            result = localChannelReference.getFutureRequest().getResult();
-            error = new ErrorPacket(
-                "Error while finalizing transfer: " + result.getMessage(),
-                result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
-          } else {
-            error = new ErrorPacket("Error while finalizing transfer",
-                                    ErrorCode.FinalOp.getCode(),
-                                    ErrorPacket.FORWARDCLOSECODE);
-          }
-          try {
-            ChannelUtils
-                .writeAbstractLocalPacket(localChannelReference, error, true);
-          } catch (final OpenR66ProtocolPacketException e1) {
-          }
-          session.setStatus(23);
-          ChannelCloseTimer.closeFutureChannel(channel);
-          return;
-        } catch (final OpenR66ProtocolSystemException e) {
-          session.newState(ERROR);
-          ErrorPacket error = null;
-          if (localChannelReference.getFutureRequest().getResult() != null) {
-            result = localChannelReference.getFutureRequest().getResult();
-            error = new ErrorPacket(
-                "Error while finalizing transfer: " + result.getMessage(),
-                result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
-          } else {
-            error = new ErrorPacket("Error while finalizing transfer",
-                                    ErrorCode.FinalOp.getCode(),
-                                    ErrorPacket.FORWARDCLOSECODE);
-          }
-          try {
-            ChannelUtils
-                .writeAbstractLocalPacket(localChannelReference, error, true);
-          } catch (final OpenR66ProtocolPacketException e1) {
-          }
-          session.setStatus(23);
-          ChannelCloseTimer.closeFutureChannel(channel);
+        if (endTransferR(channel)) {
           return;
         }
       }
     }
+  }
+
+  private boolean endTransferR(final Channel channel) {
+    // Finish with post Operation
+    R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
+                                     session.getRunner());
+    try {
+      session.setFinalizeTransfer(true, result);
+    } catch (final OpenR66RunnerErrorException e) {
+      session.newState(ERROR);
+      ErrorPacket error = null;
+      if (localChannelReference.getFutureRequest().getResult() != null) {
+        result = localChannelReference.getFutureRequest().getResult();
+        error = new ErrorPacket(
+            "Error while finalizing transfer: " + result.getMessage(),
+            result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
+      } else {
+        error = new ErrorPacket("Error while finalizing transfer",
+                                ErrorCode.FinalOp.getCode(),
+                                ErrorPacket.FORWARDCLOSECODE);
+      }
+      try {
+        ChannelUtils
+            .writeAbstractLocalPacket(localChannelReference, error, true);
+      } catch (final OpenR66ProtocolPacketException e1) {
+      }
+      session.setStatus(23);
+      ChannelCloseTimer.closeFutureChannel(channel);
+      return true;
+    } catch (final OpenR66ProtocolSystemException e) {
+      session.newState(ERROR);
+      ErrorPacket error = null;
+      if (localChannelReference.getFutureRequest().getResult() != null) {
+        result = localChannelReference.getFutureRequest().getResult();
+        error = new ErrorPacket(
+            "Error while finalizing transfer: " + result.getMessage(),
+            result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
+      } else {
+        error = new ErrorPacket("Error while finalizing transfer",
+                                ErrorCode.FinalOp.getCode(),
+                                ErrorPacket.FORWARDCLOSECODE);
+      }
+      try {
+        ChannelUtils
+            .writeAbstractLocalPacket(localChannelReference, error, true);
+      } catch (final OpenR66ProtocolPacketException e1) {
+      }
+      session.setStatus(23);
+      ChannelCloseTimer.closeFutureChannel(channel);
+      return true;
+    }
+    return false;
   }
 
   /**

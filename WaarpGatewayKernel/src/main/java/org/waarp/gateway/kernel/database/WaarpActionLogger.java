@@ -104,7 +104,7 @@ public class WaarpActionLogger {
         final DbTransferLog log =
             new DbTransferLog(dbSession, session.getAuth().getUser(),
                               session.getAuth().getAccount(),
-                              org.waarp.common.database.DbConstant.ILLEGALVALUE,
+                              DbConstant.ILLEGALVALUE,
                               isSender, session.getFilename(), code.name(),
                               HttpResponseStatus.OK, message,
                               UpdatedInfo.TOSUBMIT);
@@ -120,7 +120,7 @@ public class WaarpActionLogger {
        * FileBasedConfiguration.fileBasedConfiguration.monitoring .updateLastInBound(); } }
        */
     }
-    session.setLogid(org.waarp.common.database.DbConstant.ILLEGALVALUE);
+    session.setLogid(DbConstant.ILLEGALVALUE);
   }
 
   /**
@@ -139,7 +139,7 @@ public class WaarpActionLogger {
     final long specialId = session.getLogid();
     logger.info(message + " " + sessionContexte);
     if (dbSession != null &&
-        specialId != org.waarp.common.database.DbConstant.ILLEGALVALUE) {
+        specialId != DbConstant.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
         case ERROR:
@@ -188,7 +188,7 @@ public class WaarpActionLogger {
     logger.error(rcode.code() + ":" + message + " " + sessionContexte);
     logger.warn("To Change to debug Log", new Exception("Log"));
     if (dbSession != null &&
-        specialId != org.waarp.common.database.DbConstant.ILLEGALVALUE) {
+        specialId != DbConstant.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
         case ERROR:

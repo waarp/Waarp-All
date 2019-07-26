@@ -36,7 +36,6 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.authentication.R66Auth;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
@@ -99,8 +98,7 @@ public class TransferUtils {
               (taskRunner.getGloballaststep() < TASKSTEP.POSTTASK.ordinal())) {
             // send a VALID packet with VALID code to the requester except if client
             final DbHostAuth host = R66Auth
-                .getServerAuth(DbConstant.admin.getSession(),
-                               taskRunner.getRequester());
+                .getServerAuth(taskRunner.getRequester());
             if (host == null || host.isClient()) {
               // cannot be relaunch from there
               finalResult.setCode(ErrorCode.ConnectionImpossible);

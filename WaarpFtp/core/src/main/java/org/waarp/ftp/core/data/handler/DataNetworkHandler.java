@@ -33,6 +33,7 @@ import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.config.FtpInternalConfiguration;
@@ -54,8 +55,6 @@ import java.nio.channels.NotYetConnectedException;
 
 /**
  * Network handler for Data connections
- *
- *
  */
 public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   /**
@@ -425,13 +424,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     dataBlock.setBlock(buffer);
     ChannelFuture future;
     logger.debug("Will write: " + buffer.toString(WaarpStringUtils.UTF8));
-    try {
-      future = dataChannel.writeAndFlush(dataBlock);
-      future.await(FtpConfiguration.getDATATIMEOUTCON());
-    } catch (final InterruptedException e) {
-      logger.debug("Interrupted", e);
-      return false;
-    }
+    future = dataChannel.writeAndFlush(dataBlock);
+    WaarpNettyUtil.awaitOrInterrupted(future);
     logger.debug("Write result: " + future.isSuccess(), future.cause());
     return future.isSuccess();
   }

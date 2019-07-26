@@ -354,7 +354,7 @@ public class FtpChannelUtils implements Runnable {
     final Timer timer = new Timer(true);
     final FtpTimerTask timerTask = new FtpTimerTask(FtpTimerTask.TIMER_CONTROL);
     timerTask.setConfiguration(configuration);
-    timer.schedule(timerTask, configuration.getTIMEOUTCON() / 4);
+    timer.schedule(timerTask, delay / 2);
     configuration.getFtpInternalConfiguration().getGlobalTrafficShapingHandler()
                  .release();
     configuration.releaseResources();

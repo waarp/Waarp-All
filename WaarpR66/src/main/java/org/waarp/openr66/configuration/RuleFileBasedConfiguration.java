@@ -30,6 +30,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.xml.XmlDecl;
@@ -43,7 +44,6 @@ import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
-import org.waarp.openr66.protocol.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -137,7 +137,8 @@ public class RuleFileBasedConfiguration {
   public static void importRules(File configDirectory)
       throws OpenR66ProtocolSystemException, WaarpDatabaseException {
     File[] files =
-        FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULE));
+        org.waarp.common.file.FileUtils
+            .getFiles(configDirectory, new ExtensionFilter(EXT_RULE));
     for (final File file : files) {
       logger.info("Load rule from {}", file.getAbsolutePath());
       final DbRule rule = getFromFile(file);

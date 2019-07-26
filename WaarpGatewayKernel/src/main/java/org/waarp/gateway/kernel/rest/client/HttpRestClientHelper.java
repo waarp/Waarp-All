@@ -326,7 +326,7 @@ public class HttpRestClientHelper {
    * Finalize the HttpRestClientHelper
    */
   public void closeAll() {
-    bootstrap.group().shutdownGracefully();
+    bootstrap.config().group().shutdownGracefully();
   }
 
   /**

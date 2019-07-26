@@ -144,7 +144,7 @@ public class Message implements Runnable {
     // Connection
     DbHostAuth host = null;
     if (hostAuth == null) {
-      host = R66Auth.getServerAuth(DbConstant.admin.getSession(), requested);
+      host = R66Auth.getServerAuth(requested);
     } else {
       host = hostAuth;
     }
@@ -204,7 +204,7 @@ public class Message implements Runnable {
     }
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       ChannelUtils.stopLogger();

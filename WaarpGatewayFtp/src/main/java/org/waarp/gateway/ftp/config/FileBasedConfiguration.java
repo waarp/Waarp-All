@@ -117,8 +117,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * FtpConfiguration based on a XML file
- *
- *
  */
 public class FileBasedConfiguration extends FtpConfiguration {
   /**
@@ -667,10 +665,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   private ServerBootstrap httpsBootstrap;
   /**
-   * Boss Group for Http
-   */
-  private EventLoopGroup bossGroup;
-  /**
    * Worker Group for Http
    */
   private EventLoopGroup workerGroup;
@@ -1179,7 +1173,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       try {
         DbConstant.gatewayAdmin = DbModelFactory
             .initialize(dbdriver, dbserver, dbuser, dbpasswd, true);
-        org.waarp.common.database.DbConstant.admin = DbConstant.gatewayAdmin;
+        DbConstant.admin = DbConstant.gatewayAdmin;
       } catch (final WaarpDatabaseNoConnectionException e2) {
         logger.error("Unable to Connect to DB", e2);
         return false;
@@ -1374,12 +1368,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
     httpExecutor = new NioEventLoopGroup(getSERVER_THREAD() * 10,
                                          new WaarpThreadFactory(
                                              "HttpExecutor"));
-    bossGroup = new NioEventLoopGroup(getSERVER_THREAD(),
-                                      new WaarpThreadFactory("HTTP_Boss"));
     workerGroup = new NioEventLoopGroup(getSERVER_THREAD() * 10,
                                         new WaarpThreadFactory("HTTP_Worker"));
-    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, bossGroup, workerGroup,
-                                      (int) getTIMEOUTCON());
+    WaarpNettyUtil
+        .setServerBootstrap(httpsBootstrap, workerGroup, (int) getTIMEOUTCON());
 
     // Configure the pipeline factory.
     httpsBootstrap.childHandler(new HttpSslInitializer(useHttpCompression));
@@ -1391,7 +1383,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
                 (useHttpCompression? "" : "no") + " compression support");
     final ChannelFuture future =
         httpsBootstrap.bind(new InetSocketAddress(SERVER_HTTPSPORT));
-    if (future.awaitUninterruptibly().isSuccess()) {
+    if (WaarpNettyUtil.awaitIsSuccessOfInterrupted(future)) {
       httpChannelGroup.add(future.channel());
     }
   }
@@ -1765,9 +1757,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
      * XXXIDXXX XXXUSERXXX XXXACCTXXX XXXFILEXXX XXXMODEXXX XXXSTATUSXXX XXXINFOXXX XXXUPINFXXX XXXSTARTXXX
      * XXXSTOPXXX
      */
-    if (!DbConstant.gatewayAdmin.isActive()) {
-      return "";
-    }
     DbPreparedStatement preparedStatement = null;
     try {
       try {
@@ -1847,28 +1836,20 @@ public class FileBasedConfiguration extends FtpConfiguration {
 
   /**
    * Finalize resources attached to handlers
-   *
-   *
    */
   private static class GgChannelGroupFutureListener
       implements ChannelGroupFutureListener {
-    EventExecutorGroup executorBoss;
     EventExecutorGroup executorWorker;
     String name;
 
     public GgChannelGroupFutureListener(String name,
-                                        EventExecutorGroup executorBoss,
                                         EventExecutorGroup executorWorker) {
       this.name = name;
-      this.executorBoss = executorBoss;
       this.executorWorker = executorWorker;
     }
 
     @Override
     public void operationComplete(ChannelGroupFuture future) throws Exception {
-      if (executorBoss != null) {
-        executorBoss.shutdownGracefully();
-      }
       if (executorWorker != null) {
         executorWorker.shutdownGracefully();
       }
@@ -1883,8 +1864,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       final int result = httpChannelGroup.size();
       logger.debug("HttpChannelGroup: " + result);
       httpChannelGroup.close().addListener(
-          new GgChannelGroupFutureListener("HttpChannelGroup", bossGroup,
-                                           workerGroup));
+          new GgChannelGroupFutureListener("HttpChannelGroup", workerGroup));
     }
     if (httpExecutor != null) {
       httpExecutor.shutdownGracefully();

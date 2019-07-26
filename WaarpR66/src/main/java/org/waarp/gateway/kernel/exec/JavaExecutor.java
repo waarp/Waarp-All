@@ -73,7 +73,7 @@ public class JavaExecutor extends AbstractExecutor {
       status = runnable.getFinalStatus();
     } else {
       final ExecutorService executorService = Executors
-          .newFixedThreadPool(1, new WaarpThreadFactory("JavaExecutor"));
+          .newSingleThreadExecutor(new WaarpThreadFactory("JavaExecutor"));
       executorService.execute(runnable);
       try {
         Thread.yield();

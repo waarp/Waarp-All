@@ -88,10 +88,12 @@ public class NetworkSslServerInitializer
                              .getServerChannelWriteLimit(),
                          Configuration.configuration
                              .getServerChannelReadLimit(),
-                         Configuration.configuration.getDelayLimit()));
+                         Configuration.configuration.getDelayLimit(),
+                         Configuration.configuration.getTIMEOUTCON()));
 
-    pipeline.addLast("codec", new NetworkPacketCodec());
-    pipeline.addLast(Configuration.configuration.getHandlerGroup(), "handler",
+    pipeline.addLast(NetworkServerInitializer.NETWORK_CODEC, new NetworkPacketCodec());
+    pipeline.addLast(Configuration.configuration.getHandlerGroup(),
+                     NetworkServerInitializer.NETWORK_HANDLER,
                      new NetworkSslServerHandler(!isClient));
   }
 

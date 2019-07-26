@@ -74,8 +74,7 @@ public class ServerInitDatabase {
       logger.error(
           "Need at least the configuration file as first argument then optionally\n" +
           "    -initdb");
-      if (DbConstant.gatewayAdmin != null &&
-          DbConstant.gatewayAdmin.isActive()) {
+      if (DbConstant.gatewayAdmin != null) {
         DbConstant.gatewayAdmin.close();
       }
       if (DetectionUtils.isJunit()) {

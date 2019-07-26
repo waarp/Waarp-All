@@ -255,6 +255,7 @@ public class LocalExecSslClientTest extends Thread {
       localExecServerInitializer.releaseResources();
       // Shut down all thread pools to exit.
       workerGroup.shutdownGracefully();
+      executor.shutdownGracefully();
       localExecClientInitializer.releaseResources();
       LocalExecServerHandler.junitSetNotShutdown();
     }

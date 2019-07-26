@@ -27,11 +27,15 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
+import org.waarp.common.logging.SysErrLogger;
 
 /**
  * Utility class for Netty usage
  */
 public class WaarpNettyUtil {
+
+  private static final int TIMEOUT_MILLIS = 1000;
+  private static final int BUFFER_SIZE_1MB = 1048576;
 
   private WaarpNettyUtil() {
   }
@@ -51,8 +55,8 @@ public class WaarpNettyUtil {
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
     bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
-    bootstrap.option(ChannelOption.SO_RCVBUF, 1048576);
-    bootstrap.option(ChannelOption.SO_SNDBUF, 1048576);
+    bootstrap.option(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
+    bootstrap.option(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
     bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }
 
@@ -80,8 +84,8 @@ public class WaarpNettyUtil {
     bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
-    bootstrap.childOption(ChannelOption.SO_RCVBUF, 1048576);
-    bootstrap.childOption(ChannelOption.SO_SNDBUF, 1048576);
+    bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
+    bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
     bootstrap
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }
@@ -103,8 +107,8 @@ public class WaarpNettyUtil {
     bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
-    bootstrap.childOption(ChannelOption.SO_RCVBUF, 1048576);
-    bootstrap.childOption(ChannelOption.SO_SNDBUF, 1048576);
+    bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
+    bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
     bootstrap
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }
@@ -117,11 +121,49 @@ public class WaarpNettyUtil {
   public static boolean awaitOrInterrupted(Future<?> future) {
     try {
       while (!Thread.interrupted()) {
-        if (future.await(1000)) {
+        if (future.await(TIMEOUT_MILLIS)) {
           return true;
         }
       }
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
+    }
+    return false;
+  }
+
+  /**
+   * @param future
+   * @param timeMilliseconds
+   *
+   * @return True if await done, else interruption occurs
+   */
+  public static boolean awaitOrInterrupted(Future<?> future,
+                                           long timeMilliseconds) {
+    try {
+      if (future.await(timeMilliseconds)) {
+        return !Thread.interrupted();
+      }
+    } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
+    }
+    return false;
+  }
+
+  /**
+   * @param future
+   *
+   * @return True if await and isSuccess, else interruption or not success
+   *     occurs
+   */
+  public static boolean awaitIsSuccessOfInterrupted(Future<?> future) {
+    try {
+      while (!Thread.interrupted()) {
+        if (future.await(TIMEOUT_MILLIS)) {
+          return future.isSuccess();
+        }
+      }
+    } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
     }
     return false;
   }

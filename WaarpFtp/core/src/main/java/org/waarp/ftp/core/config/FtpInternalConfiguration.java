@@ -102,11 +102,6 @@ public class FtpInternalConfiguration {
   private ChannelGroup commandChannelGroup;
 
   /**
-   * ExecutorService Boss
-   */
-  private final EventLoopGroup execBoss;
-
-  /**
    * ExecutorService Worker
    */
   private final EventLoopGroup execWorker;
@@ -121,11 +116,6 @@ public class FtpInternalConfiguration {
    * ChannelGroup
    */
   private ChannelGroup dataChannelGroup;
-
-  /**
-   * ExecutorService Data Passive Boss
-   */
-  private final EventLoopGroup execPassiveDataBoss;
 
   /**
    * ExecutorService Command Event Loop
@@ -241,14 +231,8 @@ public class FtpInternalConfiguration {
                                              new WaarpThreadFactory("Command"));
     execDataEvent = new NioEventLoopGroup(configuration.getCLIENT_THREAD(),
                                           new WaarpThreadFactory("Data"));
-    execBoss = new NioEventLoopGroup(configuration.getSERVER_THREAD(),
-                                     new WaarpThreadFactory("CommandBoss",
-                                                            false));
     execWorker = new NioEventLoopGroup(configuration.getCLIENT_THREAD(),
                                        new WaarpThreadFactory("CommandWorker"));
-    execPassiveDataBoss =
-        new NioEventLoopGroup(configuration.getSERVER_THREAD() * 2,
-                              new WaarpThreadFactory("PassiveDataBoss"));
     execDataWorker = new NioEventLoopGroup(configuration.getCLIENT_THREAD() * 2,
                                            new WaarpThreadFactory(
                                                "DataWorker"));
@@ -273,7 +257,7 @@ public class FtpInternalConfiguration {
 
     // Passive Data Connections
     passiveBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(passiveBootstrap, execPassiveDataBoss,
+    WaarpNettyUtil.setServerBootstrap(passiveBootstrap,
                                       execDataWorker,
                                       (int) configuration.getTIMEOUTCON());
     if (usingNativeSsl) {
@@ -288,7 +272,7 @@ public class FtpInternalConfiguration {
     if (acceptAuthProt) {
       passiveSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil
-          .setServerBootstrap(passiveSslBootstrap, execPassiveDataBoss,
+          .setServerBootstrap(passiveSslBootstrap,
                               execDataWorker,
                               (int) configuration.getTIMEOUTCON());
       passiveSslBootstrap.childHandler(
@@ -324,7 +308,7 @@ public class FtpInternalConfiguration {
 
     // Main Command server
     serverBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(serverBootstrap, execBoss, execWorker,
+    WaarpNettyUtil.setServerBootstrap(serverBootstrap, execWorker,
                                       (int) configuration.getTIMEOUTCON());
     if (usingNativeSsl) {
       serverBootstrap.childHandler(
@@ -581,12 +565,8 @@ public class FtpInternalConfiguration {
 
   public void releaseResources() {
     WaarpSslUtility.forceCloseAllSslChannels();
-    execBoss.shutdownGracefully();
     execWorker.shutdownGracefully();
-    execPassiveDataBoss.shutdownGracefully();
     execDataWorker.shutdownGracefully();
-    // execCommandEvent.shutdownGracefully();
-    // execDataEvent.shutdownGracefully();
     globalTrafficShapingHandler.release();
     executorService.shutdown();
   }

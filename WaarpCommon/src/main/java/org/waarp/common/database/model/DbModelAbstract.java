@@ -65,9 +65,7 @@ public abstract class DbModelAbstract implements DbModel {
       }
     }
     DbSession newdbSession = admin.getSession();
-    if (admin.isActive()) {
-      newdbSession = new DbSession(admin, dbSession.isReadOnly());
-    }
+    newdbSession = new DbSession(admin, dbSession.isReadOnly());
     try {
       if (dbSession.getConn() != null) {
         dbSession.getConn().close();

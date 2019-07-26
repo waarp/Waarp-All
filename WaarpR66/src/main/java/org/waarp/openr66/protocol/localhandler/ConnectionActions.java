@@ -158,8 +158,7 @@ public abstract class ConnectionActions {
       } else {
         if (localChannelReference != null) {
           final R66Future fvr = localChannelReference.getFutureValidRequest();
-          fvr.awaitOrInterruptible(
-              Configuration.configuration.getTIMEOUTCON() * 2);
+          fvr.awaitOrInterruptible();
           if (fvr.isDone()) {
             if (!fvr.isSuccess()) {
               // test if remote server was Overloaded
@@ -243,7 +242,8 @@ public abstract class ConnectionActions {
       if (runner != null) {
         runner.clean();
       }
-      if (localChannelReference != null) {
+      LocalTransaction lt = Configuration.configuration.getLocalTransaction();
+      if (localChannelReference != null && lt.contained(localChannelReference.getLocalId())) {
         localChannelReference.close();
       }
     }
@@ -275,9 +275,11 @@ public abstract class ConnectionActions {
                                                          .getFromId(packet
                                                                         .getLocalId());
       if (localChannelReference != null) {
+        session.setLocalChannelReference(localChannelReference);
         break;
       }
     }
+    // FIXME will be there:     packet.clear();
     if (localChannelReference == null) {
       session.newState(ERROR);
       logger.error(Messages.getString("LocalServerHandler.1")); //$NON-NLS-1$
@@ -307,7 +309,6 @@ public abstract class ConnectionActions {
     }
     session.newState(STARTUP);
     localChannelReference.validateStartup(true);
-    session.setLocalChannelReference(localChannelReference);
     channel.writeAndFlush(packet);
     session.setStatus(41);
   }
@@ -440,8 +441,7 @@ public abstract class ConnectionActions {
     if (Configuration.configuration.isCheckRemoteAddress() &&
         !localChannelReference.getPartner().isProxified()) {
       final DbHostAuth host = R66Auth
-          .getServerAuth(localChannelReference.getDbSession(),
-                         packet.getHostId());
+          .getServerAuth(packet.getHostId());
       boolean toTest = false;
       if (!host.isProxified()) {
         if (host.isClient()) {
@@ -541,8 +541,8 @@ public abstract class ConnectionActions {
     // True since closing
     session.newState(ERROR);
     session.setStatus(45);
-    channel.close();
     businessError();
+    channel.close();
   }
 
   /**

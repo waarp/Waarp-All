@@ -20,6 +20,7 @@
 package org.waarp.common.utility;
 
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -182,8 +183,7 @@ public abstract class WaarpShutdownHook extends Thread {
       try {
         restartApplication();
       } catch (final IOException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr("During restart", e1);
       }
       shutdownHook.serviceStopped();
       System.err.println("Halt System");

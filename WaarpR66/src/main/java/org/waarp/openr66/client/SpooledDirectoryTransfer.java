@@ -243,6 +243,7 @@ public class SpooledDirectoryTransfer implements Runnable {
 
   @Override
   public void run() {
+    // FIXME never true since change for DbAdmin
     if (submit && !DbConstant.admin.isActive()) {
       logger.error(
           Messages.getString("SpooledDirectoryTransfer.2")); //$NON-NLS-1$
@@ -418,15 +419,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                     new BusinessRequest(networkTransaction, future, host,
                                         packet);
                 transaction.run();
-                future.awaitOrInterruptible(
-                    Configuration.configuration.getTIMEOUTCON());
-                while (!future.isDone()) {
-                  logger.warn(
-                      "Out of time during information to Waarp server: " +
-                      host);
-                  future.awaitOrInterruptible(
-                      Configuration.configuration.getTIMEOUTCON());
-                }
+                future.awaitOrInterruptible();
                 if (!future.isSuccess()) {
                   logger.info("Can't inform Waarp server: " + host + " since " +
                               future.getCause());
@@ -554,6 +547,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                     transaction2.run();
                     // special task
                     future.awaitOrInterruptible();
+                    // FIXME never true since change for DbAdmin
                     if (!DbConstant.admin.isActive()) {
                       DbTaskRunner.removeNoDbSpecialId(specialId);
                     }
@@ -673,9 +667,11 @@ public class SpooledDirectoryTransfer implements Runnable {
                 runner = r66result.getRunner();
                 if (runner != null) {
                   specialId = runner.getSpecialId();
+                  // FIXME never true since change for DbAdmin
                   if (!DbConstant.admin.isActive() && remoteHosts.size() > 1) {
                     DbTaskRunner.removeNoDbSpecialId(specialId);
                     specialId = DbConstant.ILLEGALVALUE;
+                    // FIXME always true since change for DbAdmin
                   } else if (DbConstant.admin.isActive()) {
                     DbTaskRunner.removeNoDbSpecialId(specialId);
                   }
@@ -1100,6 +1096,7 @@ public class SpooledDirectoryTransfer implements Runnable {
         arg.sname = Configuration.configuration.getHOST_ID() + " : " +
                     arg.localDirectory;
       }
+      // FIXME never true since change for DbAdmin
       if (arg.tosubmit && !DbConstant.admin.isActive()) {
         logger.error(
             Messages.getString("SpooledDirectoryTransfer.2")); //$NON-NLS-1$
@@ -1146,7 +1143,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     arguments.clear();
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       if (normalStart) {

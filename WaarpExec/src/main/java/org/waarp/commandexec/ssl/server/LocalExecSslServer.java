@@ -20,6 +20,7 @@
 package org.waarp.commandexec.ssl.server;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
@@ -41,7 +42,6 @@ import java.net.InetSocketAddress;
  */
 public class LocalExecSslServer {
 
-  static EventLoopGroup bossGroup = new NioEventLoopGroup();
   static EventLoopGroup workerGroup = new NioEventLoopGroup();
   static EventExecutorGroup executor =
       new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),
@@ -94,27 +94,40 @@ public class LocalExecSslServer {
       return;
     }
     // Configure the server.
-    final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
+    try {
+      final ServerBootstrap bootstrap = new ServerBootstrap();
+      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
 
-    // Load the KeyStore (No certificates)
-    final WaarpSecureKeyStore WaarpSecureKeyStore =
-        new WaarpSecureKeyStore(keyStoreFilename, keyStorePasswd, keyPassword);
-    if (trustStoreFilename != null) {
-      // Include certificates
-      WaarpSecureKeyStore
-          .initTrustStore(trustStoreFilename, trustStorePasswd, true);
-    } else {
-      WaarpSecureKeyStore.initEmptyTrustStore();
+      // Load the KeyStore (No certificates)
+      final WaarpSecureKeyStore WaarpSecureKeyStore =
+          new WaarpSecureKeyStore(keyStoreFilename, keyStorePasswd,
+                                  keyPassword);
+      if (trustStoreFilename != null) {
+        // Include certificates
+        WaarpSecureKeyStore
+            .initTrustStore(trustStoreFilename, trustStorePasswd, true);
+      } else {
+        WaarpSecureKeyStore.initEmptyTrustStore();
+      }
+      final WaarpSslContextFactory waarpSslContextFactory =
+          new WaarpSslContextFactory(WaarpSecureKeyStore, true);
+      // Configure the pipeline factory.
+      bootstrap.childHandler(
+          new LocalExecSslServerInitializer(waarpSslContextFactory, delay,
+                                            executor));
+
+      // Bind and start to accept incoming connections only on local address.
+      final ChannelFuture future =
+          bootstrap.bind(new InetSocketAddress(addr, port));
+
+      // Wait until the server socket is closed.
+      future.channel().closeFuture().sync();
+    } finally {
+      // Shut down all event loops to terminate all threads.
+      workerGroup.shutdownGracefully();
+
+      // Wait until all threads are terminated.
+      workerGroup.terminationFuture().sync();
     }
-    final WaarpSslContextFactory waarpSslContextFactory =
-        new WaarpSslContextFactory(WaarpSecureKeyStore, true);
-    // Configure the pipeline factory.
-    bootstrap.childHandler(
-        new LocalExecSslServerInitializer(waarpSslContextFactory, delay,
-                                          executor));
-
-    // Bind and start to accept incoming connections only on local address.
-    bootstrap.bind(new InetSocketAddress(addr, port));
   }
 }

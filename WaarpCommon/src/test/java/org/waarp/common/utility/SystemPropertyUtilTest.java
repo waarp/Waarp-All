@@ -56,6 +56,7 @@ public class SystemPropertyUtilTest {
     assertTrue(SystemPropertyUtil.isFileEncodingCorrect());
     SystemPropertyUtil.refresh();
     assertTrue(SystemPropertyUtil.isFileEncodingCorrect());
+    assertNotNull(StringUtils.LINE_SEP);
   }
 
   @Test

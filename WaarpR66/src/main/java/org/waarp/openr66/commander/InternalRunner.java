@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * This class launch and control the Commander and enable TaskRunner job
  * submissions
- *
- *
  */
 public class InternalRunner {
   /**
@@ -65,6 +63,7 @@ public class InternalRunner {
    */
   public InternalRunner()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+    // FIXME always true since change for DbAdmin
     if (DbConstant.admin.isActive()) {
       commander = new Commander(this, true);
     } else {
@@ -75,10 +74,12 @@ public class InternalRunner {
     isRunning = true;
     final BlockingQueue<Runnable> workQueue =
         new LinkedBlockingQueue<Runnable>();
-    threadPoolExecutor =
-        new ThreadPoolExecutor(Configuration.configuration.getRUNNER_THREAD(),
-                               Configuration.configuration.getRUNNER_THREAD(),
-                               1000, TimeUnit.MILLISECONDS, workQueue);
+    threadPoolExecutor = new ThreadPoolExecutor(10, Configuration.configuration
+                                                        .getRUNNER_THREAD() * 3,
+                                                1000, TimeUnit.MILLISECONDS,
+                                                workQueue,
+                                                new WaarpThreadFactory(
+                                                    "ClientRunner"));
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       Configuration.configuration
                                                                           .getDelayCommander(),
@@ -125,6 +126,9 @@ public class InternalRunner {
   public void prepareStopInternalRunner() {
     isRunning = false;
     scheduledFuture.cancel(false);
+    if (commander != null) {
+      commander.finalize();
+    }
     scheduledExecutorService.shutdown();
     threadPoolExecutor.shutdown();
   }
@@ -136,7 +140,10 @@ public class InternalRunner {
   public void stopInternalRunner() {
     isRunning = false;
     logger.info("Stopping Commander and Runner Tasks");
-    scheduledFuture.cancel(false);
+    scheduledFuture.cancel(true);
+    if (commander != null) {
+      commander.finalize();
+    }
     scheduledExecutorService.shutdownNow();
     threadPoolExecutor.shutdownNow();
     networkTransaction.closeAll(false);
@@ -152,6 +159,7 @@ public class InternalRunner {
     if (commander != null) {
       commander.finalize();
     }
+    // FIXME always true since change for DbAdmin
     if (DbConstant.admin.isActive()) {
       commander = new Commander(this);
     } else {

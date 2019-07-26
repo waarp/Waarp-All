@@ -30,9 +30,9 @@ import org.waarp.common.future.WaarpChannelFuture;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.ftp.core.command.FtpCommandCode;
 import org.waarp.ftp.core.command.service.ABOR;
-import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.ftp.core.control.NetworkHandler;
 import org.waarp.ftp.core.data.handler.DataNetworkHandler;
@@ -47,12 +47,9 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Main class that handles transfers and their execution
- *
- *
  */
 public class FtpTransferControl {
   /**
@@ -183,8 +180,7 @@ public class FtpTransferControl {
    */
   public Channel waitForOpenedDataChannel() throws InterruptedException {
     Channel channel = null;
-    if (waitForOpenedDataChannel.awaitOrInterruptible(
-        session.getConfiguration().getTIMEOUTCON() + 1000)) {
+    if (waitForOpenedDataChannel.awaitOrInterruptible()) {
       if (waitForOpenedDataChannel.isSuccess()) {
         channel = waitForOpenedDataChannel.channel();
       } else {
@@ -291,7 +287,7 @@ public class FtpTransferControl {
       final ChannelFuture future =
           bootstrap.connect(inetSocketAddress, dataAsyncConn.getLocalAddress());
       try {
-        future.await();
+        future.await(session.getConfiguration().getTIMEOUTCON());
       } catch (final InterruptedException e1) {
       }
       if (!future.isSuccess()) {
@@ -340,6 +336,12 @@ public class FtpTransferControl {
       session.getDataConn().getDataNetworkHandler()
              .setFtpTransfer(executingCommand);
     } catch (final FtpNoConnectionException e1) {
+    }
+
+    if (!waitForOpenedDataChannel.awaitOrInterruptible()) {
+      commandFinishing.cancel();
+      endOfCommand.cancel();
+      return;
     }
     waitForOpenedDataChannel.channel().config().setAutoRead(true);
     /*
@@ -712,12 +714,8 @@ public class FtpTransferControl {
   private synchronized void endDataConnection() {
     logger.debug("End Data connection");
     if (isDataNetworkHandlerReady && dataChannel != null) {
-      try {
-        WaarpSslUtility.closingSslChannel(dataChannel)
-                       .await(FtpConfiguration.getDATATIMEOUTCON(),
-                              TimeUnit.MILLISECONDS);
-      } catch (final InterruptedException e) {
-      }
+      WaarpNettyUtil
+          .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(dataChannel));
       isDataNetworkHandlerReady = false;
       // logger.debug("waitForClosedDataChannel over");
       dataChannel = null;

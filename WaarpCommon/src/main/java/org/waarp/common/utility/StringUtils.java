@@ -38,6 +38,7 @@ public final class StringUtils {
   //1.7: private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
   public static final Random RANDOM = new Random();
 
+  public static final String LINE_SEP;
   // default parameters for XML check
   private static final String CDATA_TAG_UNESCAPED = "<![CDATA[";
   private static final String CDATA_TAG_ESCAPED = "&lt;![CDATA[";
@@ -68,6 +69,8 @@ public final class StringUtils {
     RULES.add(ENTITY_TAG_ESCAPED);
     RULES.add(SCRIPT_TAG_UNESCAPED);
     RULES.add(SCRIPT_TAG_ESCAPED);
+    LINE_SEP =
+        SystemPropertyUtil.get("line.separator");
   }
 
   /**

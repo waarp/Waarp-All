@@ -194,7 +194,6 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
           recv = (TransferRequestJsonPacket) JsonPacket.createFromBuffer(
               JsonHandler.writeAsString(ra.getResults().get(0)));
         } catch (final Exception e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
           return newMessage;
         }
@@ -250,7 +249,6 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
           recv = (RestartTransferJsonPacket) JsonPacket.createFromBuffer(
               JsonHandler.writeAsString(ra.getResults().get(0)));
         } catch (final Exception e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
           return newMessage;
         }
@@ -259,7 +257,6 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
               .deleteData(channel, recv.getRequested(), recv.getRequester(),
                           recv.getSpecialid());
         } catch (final HttpInvalidAuthenticationException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
         newMessage = true;
@@ -272,7 +269,6 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
           recv = (BandwidthJsonPacket) JsonPacket.createFromBuffer(
               JsonHandler.writeAsString(ra.getResults().get(0)));
         } catch (final Exception e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
           return newMessage;
         }
@@ -292,7 +288,6 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
           recv = (StopOrCancelJsonPacket) JsonPacket.createFromBuffer(
               JsonHandler.writeAsString(ra.getResults().get(0)));
         } catch (final Exception e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
           return newMessage;
         }

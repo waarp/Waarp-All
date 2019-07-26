@@ -209,6 +209,7 @@ public class LocalExecClientTest extends Thread {
       localExecServerInitializer.releaseResources();
       // Shut down all thread pools to exit.
       workerGroup.shutdownGracefully();
+      executor.shutdownGracefully();
       localExecClientInitializer.releaseResources();
       LocalExecServerHandler.junitSetNotShutdown();
     }
@@ -264,12 +265,9 @@ public class LocalExecClientTest extends Thread {
   private void disconnect() {
     // Close the connection. Make sure the close operation ends because
     // all I/O operations are asynchronous in Netty.
-    try {
-      final ChannelFuture closeFuture =
-          WaarpSslUtility.closingSslChannel(channel);
-      closeFuture.await(30000);
-    } catch (final InterruptedException e) {
-    }
+    final ChannelFuture closeFuture =
+        WaarpSslUtility.closingSslChannel(channel);
+    WaarpNettyUtil.awaitOrInterrupted(closeFuture, 30000);
   }
 
   /**

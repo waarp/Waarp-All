@@ -41,8 +41,6 @@ import java.util.NoSuchElementException;
 
 /**
  * Utilities for SSL support
- *
- *
  */
 public class WaarpSslUtility {
   /**
@@ -133,10 +131,9 @@ public class WaarpSslUtility {
       // Get the SslHandler and begin handshake ASAP.
       // Get notified when SSL handshake is done.
       final Future<Channel> handshakeFuture = sslHandler.handshakeFuture();
-      try {
-        handshakeFuture.await(sslHandler.getHandshakeTimeoutMillis() + 100);
-      } catch (final InterruptedException e1) {
-      }
+      WaarpNettyUtil.awaitOrInterrupted(handshakeFuture,
+                                        sslHandler.getHandshakeTimeoutMillis() +
+                                        100);
       logger.debug("Handshake: " + handshakeFuture.isSuccess() + ": " + channel,
                    handshakeFuture.cause());
       if (!handshakeFuture.isSuccess()) {
@@ -181,11 +178,7 @@ public class WaarpSslUtility {
       for (Channel channel : sslChannelGroup) {
         closingSslChannel(channel);
       }
-      try {
-        sslChannelGroup.close().await();
-      } catch (InterruptedException e) {
-        // ignore
-      }
+      WaarpNettyUtil.awaitOrInterrupted(sslChannelGroup.close());
       SSL_EVENT_EXECUTOR.shutdownGracefully();
     }
   }
@@ -285,33 +278,30 @@ public class WaarpSslUtility {
    *
    * @param channel
    * @param delay
+   *
+   * @return True if an error occurs as an interruption
    */
   public static boolean waitForClosingSslChannel(Channel channel, long delay) {
-    try {
-      if (!channel.closeFuture().await(delay)) {
-        try {
-          channel.pipeline().remove(WaarpSslHandler.class);
-          logger.debug("try to close anyway");
-          if (channel.isActive()) {
-            channel.close().await(delay);
-          }
-          return false;
-        } catch (final NoSuchElementException e) {
-          // ignore;
-          if (channel.isActive()) {
-            channel.closeFuture().await(delay);
-          }
+    if (!WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay)) {
+      try {
+        channel.pipeline().remove(WaarpSslHandler.class);
+        logger.debug("try to close anyway");
+        if (channel.isActive()) {
+          WaarpNettyUtil.awaitOrInterrupted(channel.close(), delay);
+        }
+        return false;
+      } catch (final NoSuchElementException e) {
+        // ignore;
+        if (channel.isActive()) {
+          WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay);
         }
       }
-    } catch (final InterruptedException e) {
     }
     return true;
   }
 
   /**
    * Thread used to ensure we are not in IO thread when waiting
-   *
-   *
    */
   private static class SSLTHREAD extends Thread {
     private final Channel channel;

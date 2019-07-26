@@ -75,7 +75,6 @@ public class WaarpPassword {
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-    // TODO Auto-generated method stub
     if (!loadOptions(args)) {
       // Bad options
       if (DetectionUtils.isJunit()) {

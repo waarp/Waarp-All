@@ -28,10 +28,10 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.util.DateUtils;
-import org.apache.tools.ant.util.StringUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -119,7 +119,7 @@ public class WaarpLoggerListener implements BuildListener, EventListener {
 
       if (Project.MSG_VERBOSE <= msgOutputLevel ||
           !(error instanceof BuildException)) {
-        message.append(StringUtils.getStackTrace(error));
+        message.append(org.apache.tools.ant.util.StringUtils.getStackTrace(error));
       } else {
         message.append(error.toString()).append(lSep);
       }
@@ -248,7 +248,7 @@ public class WaarpLoggerListener implements BuildListener, EventListener {
       }
       final Throwable ex = event.getException();
       if (Project.MSG_DEBUG <= msgOutputLevel && ex != null) {
-        message.append(StringUtils.getStackTrace(ex));
+        message.append(org.apache.tools.ant.util.StringUtils.getStackTrace(ex));
       }
 
       final String msg = message.toString();

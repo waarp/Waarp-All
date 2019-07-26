@@ -28,6 +28,7 @@ import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 
 /**
  * Handles a client-side channel for LocalExec
@@ -78,14 +79,12 @@ public class LocalExecClientHandler
       }
     }
     logger.debug("write command: " + this.command);
-    try {
-      if (this.delay != 0) {
-        channel.writeAndFlush(this.delay + " " + this.command + "\n")
-               .await(30000);
-      } else {
-        channel.writeAndFlush(this.command + "\n").await(30000);
-      }
-    } catch (final InterruptedException e) {
+    if (this.delay != 0) {
+      WaarpNettyUtil.awaitOrInterrupted(
+          channel.writeAndFlush(this.delay + " " + this.command + "\n"));
+    } else {
+      WaarpNettyUtil
+          .awaitOrInterrupted(channel.writeAndFlush(this.command + "\n"));
     }
   }
 

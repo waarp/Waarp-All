@@ -24,19 +24,23 @@ import io.netty.channel.ChannelFuture;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.localhandler.ConnectionActions;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * TimerTask to Close a Channel in the future
- *
- *
  */
 public class ChannelCloseTimer implements TimerTask {
 
-  private final Channel channel;
+  private Channel channel;
   private ChannelFuture future = null;
+  private ConnectionActions connectionActions = null;
+  private DbSession noconcurrencyDbSession = null;
 
   public ChannelCloseTimer(Channel channel) {
     this.channel = channel;
@@ -47,12 +51,60 @@ public class ChannelCloseTimer implements TimerTask {
     this.future = future;
   }
 
+  public ChannelCloseTimer(ConnectionActions connectionActions) {
+    this.connectionActions = connectionActions;
+  }
+
   @Override
   public void run(Timeout timeout) throws Exception {
-    if (future != null) {
-      future.awaitUninterruptibly(Configuration.configuration.getTIMEOUTCON());
+    if (this.future != null) {
+      WaarpNettyUtil.awaitOrInterrupted(future);
     }
-    WaarpSslUtility.closingSslChannel(channel);
+    if (channel != null) {
+      WaarpSslUtility.closingSslChannel(channel);
+    } else if (connectionActions != null) {
+      // TODO connectionActions.channelClosed();
+      if (noconcurrencyDbSession != null && DbConstant.admin != null &&
+          DbConstant.admin.getSession() != null
+          && !noconcurrencyDbSession.equals(DbConstant.admin.getSession())) {
+        noconcurrencyDbSession.forceDisconnect();
+        noconcurrencyDbSession = null;
+      }
+    }
+  }
+  /**
+   * Close in the future this transaction (may need more than 1 WAITFORNETOP)
+   *
+   * @param connectionActions
+   */
+  public static void closeFutureTransaction(
+      ConnectionActions connectionActions) {
+    if (Configuration.configuration.isTimerCloseReady()) {
+      Configuration.configuration.getTimerClose().newTimeout(
+          new ChannelCloseTimer(connectionActions),
+          Configuration.WAITFORNETOP * 2, TimeUnit.MILLISECONDS);
+    }
+  }
+
+  /**
+   * Close in the future this transaction
+   *
+   * @param connectionActions
+   * @param noconcurrencyDbSession
+   */
+  public static void closeFutureTransaction(ConnectionActions connectionActions,
+                                            DbSession noconcurrencyDbSession) {
+    if (Configuration.configuration.isTimerCloseReady()) {
+      ChannelCloseTimer cct = new ChannelCloseTimer(connectionActions);
+      cct.setDbSession(noconcurrencyDbSession);
+      Configuration.configuration.getTimerClose()
+                                 .newTimeout(cct, Configuration.WAITFORNETOP,
+                                             TimeUnit.MILLISECONDS);
+    }
+  }
+
+  public void setDbSession(DbSession dbSession) {
+    this.noconcurrencyDbSession = dbSession;
   }
 
   /**
@@ -61,10 +113,12 @@ public class ChannelCloseTimer implements TimerTask {
    * @param channel
    */
   public static void closeFutureChannel(Channel channel) {
-    Configuration.configuration.getTimerClose()
-                               .newTimeout(new ChannelCloseTimer(channel),
-                                           Configuration.WAITFORNETOP * 2,
-                                           TimeUnit.MILLISECONDS);
+    if (Configuration.configuration.isTimerCloseReady()) {
+      Configuration.configuration.getTimerClose()
+                                 .newTimeout(new ChannelCloseTimer(channel),
+                                             Configuration.WAITFORNETOP,
+                                             TimeUnit.MILLISECONDS);
+    }
   }
 
   /**
@@ -74,8 +128,10 @@ public class ChannelCloseTimer implements TimerTask {
    * @param future future to wait in addition to other constraints
    */
   public static void closeFutureChannel(Channel channel, ChannelFuture future) {
-    Configuration.configuration.getTimerClose().newTimeout(
-        new ChannelCloseTimer(channel, future), Configuration.WAITFORNETOP * 2,
-        TimeUnit.MILLISECONDS);
+    if (Configuration.configuration.isTimerCloseReady()) {
+      Configuration.configuration.getTimerClose().newTimeout(
+          new ChannelCloseTimer(channel, future),
+          Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
+    }
   }
 }

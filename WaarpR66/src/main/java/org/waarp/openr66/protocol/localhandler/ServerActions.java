@@ -803,7 +803,23 @@ public class ServerActions extends ConnectionActions {
             session.setStatus(203);
           }
           session.setStatus(204);
-        }
+        } else {
+          R66Result result = future.getResult();
+          JsonCommandPacket valid =
+              new JsonCommandPacket(node, result.getCode().getCode(),
+                                    LocalPacketFactory.REQUESTUSERPACKET);
+          if (isCodeValid(result.getCode())) {
+            localChannelReference.validateRequest(result);
+          } else {
+            localChannelReference.invalidateRequest(result);
+          }
+          // inform back the requester
+          try {
+            ChannelUtils
+                .writeAbstractLocalPacket(localChannelReference, valid, true);
+          } catch (OpenR66ProtocolPacketException e) {
+          }
+          localChannelReference.close();        }
         break;
       }
       case LocalPacketFactory.INFORMATIONPACKET: {
@@ -1087,12 +1103,20 @@ public class ServerActions extends ConnectionActions {
         final R66Result resulttest =
             new R66Result(session, true, ErrorCode.CompleteOk, null);
         resulttest.setOther(packet);
+        JsonCommandPacket valid =
+            new JsonCommandPacket(json, resulttest.getCode().getCode(),
+                                  LocalPacketFactory.REQUESTUSERPACKET);
         localChannelReference.validateRequest(resulttest);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, valid, true);
+        } catch (OpenR66ProtocolPacketException e) {
+        }
         channel.close();
         break;
       }
       default:
-        logger.info("Validation is ignored: " + packet.getTypeValid());
+        logger.warn("Validation is ignored: " + packet.getTypeValid());
     }
   }
 
@@ -2223,6 +2247,19 @@ public class ServerActions extends ConnectionActions {
         session.setStatus(203);
       }
       session.setStatus(204);
+    } else {
+      R66Result result = future.getResult();
+      LocalChannelReference localChannelReference =
+          session.getLocalChannelReference();
+      if (localChannelReference != null) {
+        localChannelReference.validateRequest(result);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, packet, true);
+        } catch (OpenR66ProtocolPacketException e) {
+        }
+        channel.close();
+      }
     }
     packet.clear();
   }

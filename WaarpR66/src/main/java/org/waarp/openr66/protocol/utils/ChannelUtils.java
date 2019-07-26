@@ -36,6 +36,7 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
@@ -61,8 +62,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Channel Utils
- *
- *
  */
 public class ChannelUtils extends Thread {
   /**
@@ -128,8 +127,6 @@ public class ChannelUtils extends Thread {
 
   /**
    * Finalize resources attached to handlers
-   *
-   *
    */
   private static class R66ChannelGroupFutureListener
       implements ChannelGroupFutureListener {
@@ -163,10 +160,7 @@ public class ChannelUtils extends Thread {
     final int result =
         Configuration.configuration.getServerChannelGroup().size();
     logger.info("ServerChannelGroup: " + result);
-    Configuration.configuration.getServerChannelGroup().close().addListener(
-        new R66ChannelGroupFutureListener("ServerChannelGroup",
-                                          Configuration.configuration
-                                              .getHandlerGroup()));
+    Configuration.configuration.getServerChannelGroup().close();
     return result;
   }
 
@@ -303,12 +297,8 @@ public class ChannelUtils extends Thread {
                                                         .writeAndFlush(
                                                             networkPacket);
       localChannelReference.getNetworkChannelObject().use();
-      try {
-        future.await(Configuration.configuration.getTIMEOUTCON());
-        return future;
-      } catch (final InterruptedException e) {
-        return future;
-      }
+      WaarpNettyUtil.awaitOrInterrupted(future);
+      return future;
     } else {
       return localChannelReference.getNetworkChannel()
                                   .writeAndFlush(networkPacket);
@@ -412,10 +402,15 @@ public class ChannelUtils extends Thread {
                                true, true);
     Configuration.configuration.setShutdown(true);
     Configuration.configuration.prepareServerStop();
-    final long delay = Configuration.configuration.getTIMEOUTCON();
+    long delay = Configuration.configuration.getTIMEOUTCON();
     // Inform others that shutdown
     if (Configuration.configuration.getLocalTransaction() != null) {
+      int nb = Configuration.configuration.getLocalTransaction()
+                                          .getNumberLocalChannel();
       Configuration.configuration.getLocalTransaction().shutdownLocalChannels();
+      if (nb == 1) {
+        delay /= 3;
+      }
     }
     logger.info("Unbind server network services");
     Configuration.configuration.unbindServer();
@@ -425,7 +420,7 @@ public class ChannelUtils extends Thread {
       Thread.sleep(delay);
     } catch (final InterruptedException e) {
     }
-    NetworkTransaction.closeRetrieveExecutors();
+    NetworkTransaction.stopAllEndRetrieve();
     if (Configuration.configuration.getLocalTransaction() != null) {
       Configuration.configuration.getLocalTransaction()
                                  .debugPrintActiveLocalChannels();

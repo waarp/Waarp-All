@@ -23,6 +23,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -119,30 +120,10 @@ public class ConfigExport implements Runnable {
       future.setFailure(future.getResult().getException());
       return;
     }
-    SocketAddress socketAddress;
-    try {
-      socketAddress = dbhost.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Cannot Connect to " + dbhost.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + dbhost.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      dbhost = null;
-      future.setFailure(future.getResult().getException());
-      return;
-    }
-    final boolean isSSL = dbhost.isSsl();
-
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
-    socketAddress = null;
+    LocalChannelReference localChannelReference = AbstractTransfer
+        .tryConnect(dbhost, future,
+                    networkTransaction);
     if (localChannelReference == null) {
-      logger.error("Cannot Connect to " + dbhost.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + dbhost.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      dbhost = null;
-      future.setFailure(future.getResult().getException());
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
@@ -238,7 +219,7 @@ public class ConfigExport implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       System.exit(1);

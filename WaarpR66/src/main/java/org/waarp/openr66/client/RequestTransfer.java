@@ -42,7 +42,6 @@ import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
@@ -54,7 +53,6 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
-import java.net.SocketAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -453,7 +451,7 @@ public class RequestTransfer implements Runnable {
 
   private ErrorCode sendValid(DbTaskRunner runner, byte code) {
     DbHostAuth host;
-    host = R66Auth.getServerAuth(DbConstant.admin.getSession(), requester);
+    host = R66Auth.getServerAuth(requester);
     if (host == null) {
       logger.error(
           Messages.getString("RequestTransfer.39") + requester); //$NON-NLS-1$
@@ -501,7 +499,7 @@ public class RequestTransfer implements Runnable {
         }
       } else {
         // get remote host instead
-        host = R66Auth.getServerAuth(DbConstant.admin.getSession(), requested);
+        host = R66Auth.getServerAuth(requested);
         if (host == null) {
           logger.error(Messages.getString("Message.HostNotFound") +
                        requested); //$NON-NLS-1$
@@ -515,29 +513,9 @@ public class RequestTransfer implements Runnable {
       }
     }
 
-    logger.info("Try RequestTransfer to " + host.toString());
-    SocketAddress socketAddress;
-    try {
-      socketAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.debug("Cannot connect to " + host.toString());
-      host = null;
-      future.setResult(
-          new R66Result(null, true, ErrorCode.ConnectionImpossible, null));
-      future.cancel();
-      return ErrorCode.ConnectionImpossible;
-    }
-    final boolean isSSL = host.isSsl();
-
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
-    socketAddress = null;
+    LocalChannelReference localChannelReference = AbstractTransfer.tryConnect(host, future,
+                                                                              networkTransaction);
     if (localChannelReference == null) {
-      logger.debug("Cannot connect to " + host.toString());
-      host = null;
-      future.setResult(
-          new R66Result(null, true, ErrorCode.ConnectionImpossible, null));
-      future.cancel();
       return ErrorCode.ConnectionImpossible;
     }
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
@@ -578,28 +556,10 @@ public class RequestTransfer implements Runnable {
       }
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
-    } catch (final OpenR66ProtocolPacketException e) {
-      logger.error(Messages.getString("RequestTransfer.63") +
-                   host.toString()); //$NON-NLS-1$
-      localChannelReference.getLocalChannel().close();
-      localChannelReference = null;
-      host = null;
-      packet = null;
-      logger.debug("Bad Protocol", e);
-      future.setResult(
-          new R66Result(e, null, true, ErrorCode.TransferError, null));
-      future.setFailure(e);
+    if (AbstractTransfer
+        .sendValidPacket(host, localChannelReference, packet, future)) {
       return ErrorCode.Internal;
     }
-    packet = null;
-    host = null;
-    future.awaitOrInterruptible();
-
-    localChannelReference.getLocalChannel().close();
-    localChannelReference = null;
 
     logger
         .info("Request done with " + (future.isSuccess()? "success" : "error"));
@@ -612,7 +572,7 @@ public class RequestTransfer implements Runnable {
 
   private ErrorCode sendStopOrCancel(DbTaskRunner runner, byte code) {
     DbHostAuth host;
-    host = R66Auth.getServerAuth(DbConstant.admin.getSession(), requester);
+    host = R66Auth.getServerAuth(requester);
     if (host == null) {
       logger.error(
           Messages.getString("RequestTransfer.39") + requester); //$NON-NLS-1$
@@ -624,31 +584,12 @@ public class RequestTransfer implements Runnable {
       return ErrorCode.Internal;
     }
 
-    logger.info("Try RequestTransfer to " + host.toString());
-    SocketAddress socketAddress;
-    try {
-      socketAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.debug("Cannot connect to " + host.toString());
-      host = null;
-      future.setResult(
-          new R66Result(null, true, ErrorCode.ConnectionImpossible, null));
-      future.cancel();
-      return ErrorCode.ConnectionImpossible;
-    }
-    final boolean isSSL = host.isSsl();
-
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
-    socketAddress = null;
+    LocalChannelReference localChannelReference = AbstractTransfer.tryConnect(host, future,
+                                               networkTransaction);
     if (localChannelReference == null) {
-      logger.debug("Cannot connect to " + host.toString());
-      host = null;
-      future.setResult(
-          new R66Result(null, true, ErrorCode.ConnectionImpossible, null));
-      future.cancel();
       return ErrorCode.ConnectionImpossible;
     }
+
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
     AbstractLocalPacket packet = null;
@@ -665,28 +606,10 @@ public class RequestTransfer implements Runnable {
                                code);
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
-    } catch (final OpenR66ProtocolPacketException e) {
-      logger.error(Messages.getString("RequestTransfer.63") +
-                   host.toString()); //$NON-NLS-1$
-      localChannelReference.getLocalChannel().close();
-      localChannelReference = null;
-      host = null;
-      packet = null;
-      logger.debug("Bad Protocol", e);
-      future.setResult(
-          new R66Result(e, null, true, ErrorCode.TransferError, null));
-      future.setFailure(e);
+    if (! AbstractTransfer
+        .sendValidPacket(host, localChannelReference, packet, future)) {
       return ErrorCode.Internal;
     }
-    packet = null;
-    host = null;
-    future.awaitOrInterruptible();
-
-    localChannelReference.getLocalChannel().close();
-    localChannelReference = null;
 
     logger
         .info("Request done with " + (future.isSuccess()? "success" : "error"));
@@ -711,7 +634,7 @@ public class RequestTransfer implements Runnable {
         System.out.println(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       ChannelUtils.stopLogger();

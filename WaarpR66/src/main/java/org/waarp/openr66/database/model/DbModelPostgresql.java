@@ -288,55 +288,6 @@ public class DbModelPostgresql
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    final String action =
-        "ALTER SEQUENCE " + DbTaskRunner.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      return;
-    } finally {
-      request.close();
-    }
-    System.out.println(action);
-  }
-
-  @Override
-  public long nextSequence(DbSession dbSession)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
-    final String action = "SELECT NEXTVAL('" + DbTaskRunner.fieldseq + "')";
-    final DbPreparedStatement preparedStatement =
-        new DbPreparedStatement(dbSession);
-    try {
-      preparedStatement.createPrepareStatement(action);
-      // Limit the search
-      preparedStatement.executeQuery();
-      if (preparedStatement.getNext()) {
-        try {
-          result = preparedStatement.getResultSet().getLong(1);
-        } catch (final SQLException e) {
-          throw new WaarpDatabaseSqlException(e);
-        }
-        return result;
-      } else {
-        throw new WaarpDatabaseNoDataException(
-            "No sequence found. Must be initialized first");
-      }
-    } finally {
-      preparedStatement.realClose();
-    }
-  }
-
-  @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
     if (PartnerConfiguration

@@ -40,6 +40,7 @@ import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -71,7 +72,6 @@ import org.waarp.openr66.protocol.http.adminssl.HttpResponsiveSslHandler;
 import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
-import org.waarp.openr66.protocol.utils.FileUtils;
 import org.waarp.openr66.server.ServerInitDatabase;
 import org.waarp.snmp.SnmpConfiguration;
 
@@ -1318,6 +1318,7 @@ public class FileBasedConfiguration {
         }
         logger.info("Delay Retry: {}", config.getDelayRetry());
       }
+      // FIXME always true since change for DbAdmin
       if (DbConstant.admin.isActive() && updateLimit) {
         value = hashConfig.get(XML_SERVER_HOSTID);
         if (value != null && (!value.isEmpty())) {
@@ -2396,16 +2397,14 @@ public class FileBasedConfiguration {
         return false;
       }
     }
-    config.setHOST_AUTH(R66Auth.getServerAuth(DbConstant.admin.getSession(),
-                                              config.getHOST_ID()));
+    config.setHOST_AUTH(R66Auth.getServerAuth(config.getHOST_ID()));
     if (config.getHOST_AUTH() == null && config.isUseNOSSL()) {
       logger.error("Cannot find Authentication for current host");
       return false;
     }
     if (config.getHOST_SSLID() != null) {
       config.setHOST_SSLAUTH(R66Auth
-                                 .getServerAuth(DbConstant.admin.getSession(),
-                                                config.getHOST_SSLID()));
+                                 .getServerAuth(config.getHOST_SSLID()));
       if (config.getHOST_SSLAUTH() == null && config.isUseSSL()) {
         logger.error("Cannot find SSL Authentication for current host");
         return false;
@@ -2497,16 +2496,14 @@ public class FileBasedConfiguration {
         return false;
       }
     }
-    config.setHOST_AUTH(R66Auth.getServerAuth(DbConstant.admin.getSession(),
-                                              config.getHOST_ID()));
+    config.setHOST_AUTH(R66Auth.getServerAuth(config.getHOST_ID()));
     if (config.getHOST_AUTH() == null && config.isUseNOSSL()) {
       logger.error("Cannot find Authentication for current host");
       return false;
     }
     if (config.getHOST_SSLID() != null) {
       config.setHOST_SSLAUTH(R66Auth
-                                 .getServerAuth(DbConstant.admin.getSession(),
-                                                config.getHOST_SSLID()));
+                                 .getServerAuth(config.getHOST_SSLID()));
       if (config.getHOST_SSLAUTH() == null && config.isUseSSL()) {
         logger.error("Cannot find SSL Authentication for current host");
         return false;
@@ -2592,16 +2589,14 @@ public class FileBasedConfiguration {
         return false;
       }
     }
-    config.setHOST_AUTH(R66Auth.getServerAuth(DbConstant.admin.getSession(),
-                                              config.getHOST_ID()));
+    config.setHOST_AUTH(R66Auth.getServerAuth(config.getHOST_ID()));
     if (config.getHOST_AUTH() == null && config.isUseNOSSL()) {
       logger.error("Cannot find Authentication for current host");
       return false;
     }
     if (config.getHOST_SSLID() != null) {
       config.setHOST_SSLAUTH(R66Auth
-                                 .getServerAuth(DbConstant.admin.getSession(),
-                                                config.getHOST_SSLID()));
+                                 .getServerAuth(config.getHOST_SSLID()));
       if (config.getHOST_SSLAUTH() == null && config.isUseSSL()) {
         logger.error("Cannot find SSL Authentication for current host");
         return false;
@@ -2667,8 +2662,6 @@ public class FileBasedConfiguration {
       logger.error("Cannot load Database configuration");
       return false;
     }
-    logger.info(
-        "Is Client connected to database: " + DbConstant.admin.isActive());
     if (!loadClientParam(config)) {
       logger.error("Cannot load Client Parameters");
       return false;
@@ -2706,8 +2699,7 @@ public class FileBasedConfiguration {
     }
     if (config.getHOST_SSLID() != null) {
       config.setHOST_SSLAUTH(R66Auth
-                                 .getServerAuth(DbConstant.admin.getSession(),
-                                                config.getHOST_SSLID()));
+                                 .getServerAuth(config.getHOST_SSLID()));
       if (config.getHOST_SSLAUTH() == null) {
         logger.error("Cannot find SSL Authentication for current host");
         return false;
@@ -2786,16 +2778,14 @@ public class FileBasedConfiguration {
       hashConfig.clear();
       hashConfig = null;
     }
-    config.setHOST_AUTH(R66Auth.getServerAuth(DbConstant.admin.getSession(),
-                                              config.getHOST_ID()));
+    config.setHOST_AUTH(R66Auth.getServerAuth(config.getHOST_ID()));
     if (config.getHOST_AUTH() == null) {
       logger.error("Cannot find Authentication for current host");
       return false;
     }
     if (config.getHOST_SSLID() != null) {
       config.setHOST_SSLAUTH(R66Auth
-                                 .getServerAuth(DbConstant.admin.getSession(),
-                                                config.getHOST_SSLID()));
+                                 .getServerAuth(config.getHOST_SSLID()));
       if (config.getHOST_SSLAUTH() == null) {
         logger.error("Cannot find SSL Authentication for current host");
         return false;

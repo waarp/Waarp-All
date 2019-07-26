@@ -32,6 +32,7 @@ import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -45,29 +46,19 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
-import org.waarp.openr66.protocol.localhandler.packet.ConnectionErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.StartupPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
-import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
-import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import org.waarp.openr66.protocol.utils.R66Future;
 
-import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class handles Local Transaction connections
- *
- *
  */
 public class LocalTransaction {
   /**
@@ -108,8 +99,7 @@ public class LocalTransaction {
    */
   public LocalTransaction() {
     serverBootstrap.channel(LocalServerChannel.class);
-    serverBootstrap.group(Configuration.configuration.getLocalBossGroup(),
-                          Configuration.configuration.getLocalWorkerGroup());
+    serverBootstrap.group(Configuration.configuration.getLocalWorkerGroup());
     serverBootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS,
                                 (int) Configuration.configuration
                                     .getTIMEOUTCON());
@@ -158,108 +148,6 @@ public class LocalTransaction {
     }
     throw new OpenR66ProtocolSystemException(
         "Cannot find LocalChannelReference");
-  }
-
-  private static class SendLater extends Thread {
-    private static Map<Integer, SendLater> sendLaters =
-        new ConcurrentHashMap<Integer, SendLater>();
-    final LocalTransaction lt;
-    final Channel networkChannel;
-    final SocketAddress remoteAddress;
-    Integer remoteId;
-    final Integer localId;
-    final Queue<NetworkPacket> packets =
-        new ConcurrentLinkedQueue<NetworkPacket>();
-    int step = 0;
-
-    private SendLater(LocalTransaction lt, Channel nc, Integer remoteId,
-                      Integer localId) {
-      this.lt = lt;
-      networkChannel = nc;
-      this.remoteId = remoteId;
-      this.localId = localId;
-      remoteAddress = networkChannel.remoteAddress();
-    }
-
-    private void add(NetworkPacket packet) {
-      if (packets.isEmpty()) {
-        packets.add(packet);
-        Configuration.configuration
-            .launchInFixedDelay(this, Configuration.WAITFORNETOP,
-                                TimeUnit.MILLISECONDS);
-      }
-      packets.add(packet);
-    }
-
-    @Override
-    public void run() {
-      synchronized (sendLaters) {
-        final LocalChannelReference localChannelReference =
-            lt.localChannelHashMap.get(localId);
-        if (localChannelReference != null) {
-          if (localChannelReference.getRemoteId().compareTo(remoteId) != 0) {
-            localChannelReference.setRemoteId(remoteId);
-          }
-          NetworkPacket networkPacket = packets.poll();
-          final LocalChannel localChannel =
-              localChannelReference.getLocalChannel();
-          while (networkPacket != null) {
-            localChannel.write(networkPacket.getBuffer());
-            networkPacket = packets.poll();
-          }
-          localChannel.flush();
-          sendLaters.remove(localId);
-        } else {
-          step++;
-          if (step > 10000) {
-            if (NetworkTransaction
-                    .isShuttingdownNetworkChannel(remoteAddress) ||
-                WaarpShutdownHook.isShutdownStarting()) {
-              // ignore
-              sendLaters.remove(localId);
-              packets.clear();
-              return;
-            }
-            logger.warn("Cannot get LocalChannel: due to LocalId not found: " +
-                        localId);
-            final ConnectionErrorPacket error = new ConnectionErrorPacket(
-                "Cannot get localChannel since localId is not found anymore",
-                "" + localId);
-            NetworkServerHandler
-                .writeError(networkChannel, remoteId, localId, error);
-            sendLaters.remove(localId);
-            packets.clear();
-          } else {
-            Configuration.configuration
-                .launchInFixedDelay(this, Configuration.WAITFORNETOP,
-                                    TimeUnit.MILLISECONDS);
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Get the corresponding LocalChannelReference and set the remoteId if
-   * different
-   *
-   * @param remoteId
-   * @param localId
-   *
-   * @throws OpenR66ProtocolSystemException
-   */
-  public void sendLaterToClient(Channel networkChannel, Integer remoteId,
-                                Integer localId, NetworkPacket packet) {
-    synchronized (SendLater.sendLaters) {
-      SendLater sendLater = SendLater.sendLaters.get(localId);
-      if (sendLater == null) {
-        sendLater = new SendLater(this, networkChannel, remoteId, localId);
-        SendLater.sendLaters.put(localId, sendLater);
-        sendLater.setDaemon(true);
-      }
-      sendLater.remoteId = remoteId;
-      sendLater.add(packet);
-    }
   }
 
   /**
@@ -399,6 +287,15 @@ public class LocalTransaction {
   }
 
   /**
+   * @param id
+   *
+   * @return True if the LocalChannelReference exists
+   */
+  public boolean contained(int id) {
+    return localChannelHashMap.containsKey(id);
+  }
+
+  /**
    * @return the number of active local channels
    */
   public int getNumberLocalChannel() {
@@ -499,7 +396,7 @@ public class LocalTransaction {
    */
   public void closeAll() {
     logger.debug("close All Local Channels");
-    localChannelGroup.close().awaitUninterruptibly();
+    WaarpNettyUtil.awaitOrInterrupted(localChannelGroup.close());
   }
 
 }

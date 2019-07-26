@@ -68,7 +68,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       DetectionUtils.SystemExit(1);
@@ -136,7 +136,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
         throws OpenR66ProtocolBusinessException {
       buffer.skipBytes(buffer.readableBytes());
       // byte [] array = this.getByte(buffer);
-      // FIXME one should use the array for its own goal
+      // one should use the array for its own goal
       // logger.debug("Write {}", array.length);
     }
 

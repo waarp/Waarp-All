@@ -208,6 +208,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
     final String notNull = " NOT NULL ";
 
     // Example
+    /*
+
     String action = createTableH2 + DbDataModel.table + "(";
     final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
     for (int i = 0; i < ccolumns.length - 1; i++) {
@@ -279,6 +281,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
     } finally {
       request.close();
     }
+
+     */
   }
 
   @Override

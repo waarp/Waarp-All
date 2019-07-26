@@ -50,7 +50,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
 
   @Override
   public void afterRunCommandKo(CommandAbstractException e) {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     if (getFtpSession().getCurrentCommand() instanceof MKD) {
       // do nothing
     } else {
@@ -60,38 +60,38 @@ public class SimpleBusinessHandler extends BusinessHandler {
 
   @Override
   public void afterRunCommandOk() throws CommandAbstractException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     // logger.info("GBBH: AFTOK: {}", getFtpSession());
   }
 
   @Override
   public void beforeRunCommand() throws CommandAbstractException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     // logger.info("GBBH: BEFCD: {}", getFtpSession());
   }
 
   @Override
   protected void cleanSession() {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     // logger.info("GBBH: CLNSE: {}", getFtpSession());
   }
 
   @Override
   public void exceptionLocalCaught(Throwable e) {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     logger.warn("GBBH: EXCEP: {} {}", getFtpSession(), e.getMessage());
   }
 
   @Override
   public void executeChannelClosed() {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     // logger.info("GBBH: CLOSED: for user {} with session {} ",
     // getFtpSession().getAuth().getUser(), getFtpSession());
   }
 
   @Override
   public void executeChannelConnected(Channel channel) {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     // logger.info("GBBH: CONNEC: {}", getFtpSession());
   }
 

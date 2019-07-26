@@ -55,15 +55,12 @@ public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
 
   @Override
   public void initialize() {
-    // TODO Auto-generated method stub
     logger.warn("Call");
   }
 
   @Override
   public void releaseResources() {
-    // TODO Auto-generated method stub
     logger.warn("Call");
-
   }
 
   /*
@@ -72,25 +69,19 @@ public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
    */
   public void generalValuesUpdate() {
     synchronized (agent) {
-      // TODO Auto-generated method stub
-
       logger.warn("Call");
     }
   }
 
   public void detailedValuesUpdate() {
     synchronized (agent) {
-      // TODO Auto-generated method stub
       logger.warn("Call");
-
     }
   }
 
   public void errorValuesUpdate() {
     synchronized (agent) {
-      // TODO Auto-generated method stub
       logger.warn("Call");
-
     }
   }
 

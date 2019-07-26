@@ -365,7 +365,7 @@ public class XAmple extends JFrame
       }
     }
     final Font font = new Font(fontName, Font.PLAIN, fontSize);
-    final Enumeration keys = UIManager.getDefaults().keys();
+    final Enumeration<Object> keys = UIManager.getDefaults().keys();
     while (keys.hasMoreElements()) {
       final Object key = keys.nextElement();
       final Object value = UIManager.get(key);
@@ -533,7 +533,8 @@ public class XAmple extends JFrame
     final History childHistory = history.getFirstChild();
     try {
       final URL url = file.toURI().toURL();
-      final List lostElements = model.openDocument(model.getSchemaURL(), url);
+      final List<?> lostElements = model.openDocument(model.getSchemaURL(),
+                                                      url);
       if (lostElements != null) {
         final StringBuffer sb = new StringBuffer(
             "Error: The source XML Configuration document is invalid.\n" +

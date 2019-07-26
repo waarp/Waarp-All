@@ -19,27 +19,12 @@
  */
 package org.waarp.openr66.proxy.protocol.http;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.DefaultCookie;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -48,7 +33,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
-import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
@@ -56,17 +40,12 @@ import org.waarp.openr66.proxy.configuration.Configuration;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Handler for HTTP information support
- *
- *
  */
 public class HttpFormattedHandler
-    extends SimpleChannelInboundHandler<FullHttpRequest> {
+    extends org.waarp.openr66.protocol.http.HttpFormattedHandler {
   /**
    * Internal Logger
    */
@@ -120,30 +99,7 @@ public class HttpFormattedHandler
     }
   }
 
-  private static enum REPLACEMENT {
-    XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX,
-    XXXLANGXXX;
-  }
-
-  static final int LIMITROW = 60; // better if it can be divided by 4
-  private static final String I18NEXT = "i18next";
-
   final R66Session authentHttp = new R66Session();
-
-  private FullHttpRequest request;
-
-  private final StringBuilder responseContent = new StringBuilder();
-
-  private HttpResponseStatus status;
-
-  private String uriRequest;
-
-  private String lang = Messages.getSlocale();
-
-  private boolean isCurrentRequestXml = false;
-  private boolean isCurrentRequestJson = false;
-
-  private Map<String, List<String>> params = null;
 
   private String readFileHeader(String filename) {
     String value;
@@ -181,19 +137,6 @@ public class HttpFormattedHandler
                              "Mbits");
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
     return builder.toString();
-  }
-
-  private String getTrimValue(String varname) {
-    String value = null;
-    try {
-      value = params.get(varname).get(0).trim();
-    } catch (final NullPointerException e) {
-      return null;
-    }
-    if (value.isEmpty()) {
-      value = null;
-    }
-    return value;
   }
 
   @Override
@@ -254,121 +197,6 @@ public class HttpFormattedHandler
       }
     }
     writeResponse(ctx);
-  }
-
-  /**
-   * print only status
-   *
-   * @param ctx
-   * @param nb
-   */
-  private void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
-    Configuration.configuration.getMonitoring().run(nb, detail);
-    responseContent
-        .append(Configuration.configuration.getMonitoring().exportXml(detail));
-  }
-
-  private void statusjson(ChannelHandlerContext ctx, long nb, boolean detail) {
-    Configuration.configuration.getMonitoring().run(nb, detail);
-    responseContent
-        .append(Configuration.configuration.getMonitoring().exportJson(detail));
-  }
-
-  /**
-   * Write the response
-   */
-  private void writeResponse(ChannelHandlerContext ctx) {
-    // Convert the response content to a ByteBuf.
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
-    responseContent.setLength(0);
-    // Decide whether to close the connection or not.
-    final boolean keepAlive = HttpUtil.isKeepAlive(request);
-    final boolean close = HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(
-        request.headers().get(HttpHeaderNames.CONNECTION)) || (!keepAlive);
-
-    // Build the response object.
-    final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buf);
-    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
-                           response.content().readableBytes());
-    if (isCurrentRequestXml) {
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/xml");
-    } else if (isCurrentRequestJson) {
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
-    } else {
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-    }
-    if (keepAlive) {
-      response.headers()
-              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-    }
-    if (!close) {
-      // There's no need to add 'Content-Length' header
-      // if this is the last response.
-      response.headers().set(HttpHeaderNames.CONTENT_LENGTH,
-                             String.valueOf(buf.readableBytes()));
-    }
-
-    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
-    if (cookieString != null) {
-      final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
-      boolean i18nextFound = false;
-      if (!cookies.isEmpty()) {
-        // Reset the cookies if necessary.
-        for (final Cookie cookie : cookies) {
-          if (cookie.name().equalsIgnoreCase(I18NEXT)) {
-            i18nextFound = true;
-            cookie.setValue(lang);
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(cookie));
-          } else {
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(cookie));
-          }
-        }
-        if (!i18nextFound) {
-          final Cookie cookie = new DefaultCookie(I18NEXT, lang);
-          response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                 ServerCookieEncoder.LAX.encode(cookie));
-        }
-      }
-      if (!i18nextFound) {
-        final Cookie cookie = new DefaultCookie(I18NEXT, lang);
-        response.headers().add(HttpHeaderNames.SET_COOKIE,
-                               ServerCookieEncoder.LAX.encode(cookie));
-      }
-    }
-
-    // Write the response.
-    final ChannelFuture future = ctx.writeAndFlush(response);
-    // Close the connection after the write operation is done if necessary.
-    if (close) {
-      future.addListener(ChannelFutureListener.CLOSE);
-    }
-  }
-
-  /**
-   * Send an error and close
-   *
-   * @param ctx
-   * @param status
-   */
-  private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-    responseContent.setLength(0);
-    responseContent.append(REQUEST.error.readHeader(this))
-                   .append("OpenR66 Web Failure: ").append(status.toString())
-                   .append(REQUEST.error.readEnd());
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
-    final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buf);
-    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
-                           response.content().readableBytes());
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-    responseContent.setLength(0);
-    // Close the connection as soon as the error message is sent.
-    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
   }
 
   @Override

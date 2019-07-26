@@ -36,8 +36,6 @@ import java.net.InetSocketAddress;
 
 /**
  * Client to execute external command through Waarp Local Exec
- *
- *
  */
 public class LocalExecClient {
   /**
@@ -162,10 +160,7 @@ public class LocalExecClient {
   public void disconnect() {
     // Close the connection. Make sure the close operation ends because
     // all I/O operations are asynchronous in Netty.
-    try {
-      WaarpSslUtility.closingSslChannel(channel)
-                     .await(Configuration.configuration.getTIMEOUTCON());
-    } catch (final InterruptedException e) {
-    }
+    WaarpNettyUtil
+        .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(channel));
   }
 }

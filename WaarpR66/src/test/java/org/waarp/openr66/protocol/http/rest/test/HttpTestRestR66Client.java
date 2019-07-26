@@ -149,12 +149,10 @@ public class HttpTestRestR66Client implements Runnable {
       HttpTestR66PseudoMain.config =
           HttpTestR66PseudoMain.getTestConfiguration();
     } catch (final CryptoException e2) {
-      // TODO Auto-generated catch block
       e2.printStackTrace();
       assertFalse("Cant connect", true);
       return;
     } catch (final IOException e2) {
-      // TODO Auto-generated catch block
       e2.printStackTrace();
       assertFalse("Cant connect", true);
       return;
@@ -199,7 +197,6 @@ public class HttpTestRestR66Client implements Runnable {
             NBPERTHREAD + "=" + count.get());
         assertTrue("Options", count.get() > 0);
       } catch (final HttpInvalidAuthenticationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
         assertFalse("Cant connect", true);
       }
@@ -210,7 +207,6 @@ public class HttpTestRestR66Client implements Runnable {
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
         assertFalse("Cant connect", true);
       }
@@ -218,7 +214,6 @@ public class HttpTestRestR66Client implements Runnable {
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
         assertFalse("Cant connect", true);
       }
@@ -226,7 +221,6 @@ public class HttpTestRestR66Client implements Runnable {
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
         assertFalse("Cant connect", true);
       }
@@ -234,7 +228,6 @@ public class HttpTestRestR66Client implements Runnable {
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
         assertFalse("Cant connect", true);
       }
@@ -242,7 +235,6 @@ public class HttpTestRestR66Client implements Runnable {
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
         assertFalse("Cant connect", true);
       }
@@ -262,7 +254,6 @@ public class HttpTestRestR66Client implements Runnable {
           try {
             realAllData(handler);
           } catch (final HttpInvalidAuthenticationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             assertFalse("Cant connect", true);
           }
@@ -281,7 +272,6 @@ public class HttpTestRestR66Client implements Runnable {
         try {
           multiDataRequests(RESTHANDLERS.DbTaskRunner);
         } catch (final HttpInvalidAuthenticationException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
           assertFalse("Cant connect", true);
         }
@@ -371,7 +361,6 @@ public class HttpTestRestR66Client implements Runnable {
           try {
             action(handler);
           } catch (final HttpInvalidAuthenticationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             assertFalse("Cant connect", true);
           }
@@ -416,7 +405,6 @@ public class HttpTestRestR66Client implements Runnable {
           try {
             deleteData(handler);
           } catch (final HttpInvalidAuthenticationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             assertFalse("Cant connect", true);
           }
@@ -957,7 +945,6 @@ public class HttpTestRestR66Client implements Runnable {
         try {
           multiDataRequests(RESTHANDLERS.DbTaskRunner);
         } catch (final HttpInvalidAuthenticationException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       }

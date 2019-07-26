@@ -136,12 +136,11 @@ public class HttpRestHandlerTest extends HttpRestHandler {
    */
   public static void initializeService(RestConfiguration restConfiguration) {
     instantiateHandlers(restConfiguration);
-    final EventLoopGroup bossGroup = new NioEventLoopGroup();
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
     WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, bossGroup, workerGroup, 30000);
+        .setServerBootstrap(httpBootstrap, workerGroup, 30000);
 
     // Configure the pipeline factory.
     httpBootstrap.childHandler(new HttpRestInitializer(restConfiguration));
@@ -160,17 +159,8 @@ public class HttpRestHandlerTest extends HttpRestHandler {
       future.await();
       group.add(future.channel());
     } catch (final InterruptedException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
-  }
-
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
-    // TODO Auto-generated method stub
-
   }
 
 }

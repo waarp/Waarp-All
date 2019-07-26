@@ -181,6 +181,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
     if (session != null) {
       dbSession = session;
     } else {
+      // FIXME always true since change for DbAdmin
       if (DbConstant.admin.isActive()) {
         try {
           dbSession = new DbSession(DbConstant.admin, false);

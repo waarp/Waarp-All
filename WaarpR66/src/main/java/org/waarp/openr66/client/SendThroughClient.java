@@ -303,8 +303,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
                                         true);
         } catch (final OpenR66ProtocolPacketException e) {
         }
-        if (!localChannelReference.getFutureRequest().awaitOrInterruptible(
-            Configuration.configuration.getTIMEOUTCON())) {
+        if (!localChannelReference.getFutureRequest().awaitOrInterruptible()) {
           // valid it however
           localChannelReference.validateRequest(
               localChannelReference.getFutureEndTransfer().getResult());

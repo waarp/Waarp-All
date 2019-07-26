@@ -40,7 +40,6 @@ import java.net.InetSocketAddress;
  */
 public class LocalExecServer {
 
-  static EventLoopGroup bossGroup = new NioEventLoopGroup();
   static EventLoopGroup workerGroup = new NioEventLoopGroup();
   static EventExecutorGroup executor =
       new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),
@@ -76,7 +75,7 @@ public class LocalExecServer {
     try {
       final ServerBootstrap bootstrap = new ServerBootstrap();
       WaarpNettyUtil
-          .setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
+          .setServerBootstrap(bootstrap, workerGroup, 30000);
 
       // Configure the pipeline factory.
       bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));
@@ -89,11 +88,9 @@ public class LocalExecServer {
       future.channel().closeFuture().sync();
     } finally {
       // Shut down all event loops to terminate all threads.
-      bossGroup.shutdownGracefully();
       workerGroup.shutdownGracefully();
 
       // Wait until all threads are terminated.
-      bossGroup.terminationFuture().sync();
       workerGroup.terminationFuture().sync();
     }
   }

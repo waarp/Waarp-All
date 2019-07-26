@@ -32,6 +32,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.xml.XmlDecl;
@@ -45,7 +46,6 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
-import org.waarp.openr66.protocol.utils.FileUtils;
 import org.waarp.openr66.proxy.network.ProxyEntry;
 import org.waarp.snmp.SnmpConfiguration;
 
@@ -697,7 +697,8 @@ public class FileBasedConfiguration {
       config.setRUNNER_THREAD(10);
     }
     logger.info("Limit of Runner: {}", config.getRUNNER_THREAD());
-    if (DbConstant.admin.isActive() && updateLimit) {
+    // FIXME always true since change for DbAdmin
+    if (updateLimit) {
       value = hashConfig.get(XML_SERVER_HOSTID);
       if (value != null && (!value.isEmpty())) {
         config.setHOST_ID(value.getString());
@@ -962,8 +963,6 @@ public class FileBasedConfiguration {
   /**
    * Set the Crypto Key from the Document
    *
-   * @param document
-   *
    * @return True if OK
    */
   private static boolean setCryptoKey(Configuration config) {
@@ -992,8 +991,6 @@ public class FileBasedConfiguration {
   /**
    * Load database parameter
    *
-   * @param document
-   *
    * @return True if OK
    */
   private static boolean loadDatabase(Configuration config) {
@@ -1004,7 +1001,6 @@ public class FileBasedConfiguration {
   }
 
   /**
-   * @param document
    * @param fromXML
    *
    * @return the new subpath

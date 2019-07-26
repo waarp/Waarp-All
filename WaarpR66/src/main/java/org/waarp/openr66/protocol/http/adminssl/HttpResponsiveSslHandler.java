@@ -20,30 +20,14 @@
 package org.waarp.openr66.protocol.http.adminssl;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
-import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.command.exception.Reply530Exception;
-import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
@@ -51,8 +35,6 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
-import org.waarp.common.exception.FileTransferException;
-import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
@@ -74,10 +56,7 @@ import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
-import org.waarp.openr66.protocol.exception.OpenR66Exception;
-import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.ServerActions;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
@@ -91,7 +70,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.protocol.utils.TransferUtils;
 import org.waarp.openr66.protocol.utils.Version;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,43 +77,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
  */
-public class HttpResponsiveSslHandler
-    extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class HttpResponsiveSslHandler extends HttpSslHandler {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpResponsiveSslHandler.class);
-  /**
-   * Session Management
-   */
-  private static final ConcurrentHashMap<String, R66Session> sessions =
-      new ConcurrentHashMap<String, R66Session>();
-  private static final ConcurrentHashMap<String, DbSession> dbSessions =
-      new ConcurrentHashMap<String, DbSession>();
-  private static final Random random = new Random();
-
-  private R66Session authentHttp = new R66Session();
-
-  private FullHttpRequest request;
-  private boolean newSession = false;
-  private volatile Cookie admin = null;
-  private final StringBuilder responseContent = new StringBuilder();
-  private String uriRequest;
-  private Map<String, List<String>> params;
-  private String lang = Messages.getSlocale();
-  private boolean forceClose = false;
-  private boolean shutdown = false;
-
-  private static final String R66SESSION = "R66SESSION";
-  private static final String I18NEXT = "i18next";
 
   public static final String LISTING_PAGE = "Listing.html";
 
@@ -181,16 +132,6 @@ public class HttpResponsiveSslHandler
     }
   }
 
-  private static enum REPLACEMENT {
-    XXXHOSTIDXXX, XXXADMINXXX, XXXVERSIONXXX, XXXBANDWIDTHXXX,
-    XXXBANDWIDTHINXXX, XXXBANDWIDTHOUTXXX, XXXXSESSIONLIMITRXXX,
-    XXXXSESSIONLIMITWXXX, XXXXCHANNELLIMITRXXX, XXXXCHANNELLIMITWXXX,
-    XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX, XXXXDELATRAFFICXXX, XXXLOCALXXX,
-    XXXNETWORKXXX, XXXNBTRANSFERSXXX, XXXERRORMESGXXX, XXXXBUSINESSXXX,
-    XXXXROLESXXX, XXXXALIASESXXX, XXXXOTHERXXX, XXXLIMITROWXXX, XXXREFRESHXXX,
-    XXXLANGXXX, XXXCURLANGENXXX, XXXCURLANGFRXXX, XXXCURSYSLANGENXXX,
-    XXXCURSYSLANGFRXXX;
-  }
 
   public static final String sLIMITROW = "LIMITROW";
   public static final String sREFRESH = "REFRESH";
@@ -199,101 +140,6 @@ public class HttpResponsiveSslHandler
   private static final String XXXHOSTSIDSXXX = "XXXHOSTSIDSXXX";
 
   private int LIMITROW = 100;
-  private int REFRESH = 0;
-  /**
-   * The Database connection attached to this NetworkChannelReference shared
-   * among all associated LocalChannels
-   * in the session
-   */
-  private DbSession dbSession = null;
-  /**
-   * Does this dbSession is private and so should be closed
-   */
-  private boolean isPrivateDbSession = false;
-
-  public static String hashStatus() {
-    return "HttpSslHandler: [sessions: " + sessions.size() + " dbSessions: " +
-           dbSessions.size() + "] ";
-  }
-
-  private String readFileHeader(String filename) {
-    String value;
-    try {
-      value = WaarpStringUtils.readFileException(filename);
-    } catch (final InvalidArgumentException e) {
-      logger.error("Error while trying to open: " + filename, e);
-      return "";
-    } catch (final FileTransferException e) {
-      logger.error("Error while trying to read: " + filename, e);
-      return "";
-    }
-    final StringBuilder builder = new StringBuilder(value);
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCALXXX.toString(),
-                             Integer.toString(Configuration.configuration
-                                                  .getLocalTransaction()
-                                                  .getNumberLocalChannel()) +
-                             " Thread(" + Thread.activeCount() + ")");
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETWORKXXX.toString(),
-                             Integer.toString(DbAdmin.getNbConnection() -
-                                              Configuration.getNBDBSESSION()));
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNBTRANSFERSXXX.toString(),
-                             Long.toString(Configuration.configuration
-                                               .getMonitoring().nbCountAllRunningStep));
-    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-                                Configuration.configuration.getHOST_ID());
-    if (authentHttp.isAuthenticated()) {
-      WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
-                               Messages.getString(
-                                   "HttpSslHandler.1")); //$NON-NLS-1$
-    } else {
-      WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
-                               Messages.getString(
-                                   "HttpSslHandler.0")); //$NON-NLS-1$
-    }
-    final TrafficCounter trafficCounter =
-        Configuration.configuration.getGlobalTrafficShapingHandler()
-                                   .trafficCounter();
-    final long read = trafficCounter.lastReadThroughput();
-    final long write = trafficCounter.lastWriteThroughput();
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
-                             Messages.getString("HttpSslHandler.IN") +
-                             (read >> 20) + //$NON-NLS-1$
-                             Messages.getString("HttpSslHandler.MOPS") +
-                             //$NON-NLS-1$
-                             Messages.getString("HttpSslHandler.OUT") +
-                             //$NON-NLS-1$
-                             (write >> 20) + Messages.getString(
-                                 "HttpSslHandler.MOPS")); //$NON-NLS-1$
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHINXXX.toString(),
-                             (read >> 20) + Messages.getString(
-                                 "HttpSslHandler.MOPS")); //$NON-NLS-1$
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHOUTXXX.toString(),
-                             (write >> 20) + Messages.getString(
-                                 "HttpSslHandler.MOPS")); //$NON-NLS-1$
-    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXLIMITROWXXX.toString(),
-                                "" + getLIMITROW());
-    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXREFRESHXXX.toString(),
-                                "" + (getREFRESH() / 1000));
-    WaarpStringUtils
-        .replaceAll(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
-    return builder.toString();
-  }
-
-  private String getTrimValue(String varname) {
-    final List<String> varlist = params.get(varname);
-    if (varlist != null && !varlist.isEmpty()) {
-      String value = params.get(varname).get(0).trim();
-      if (value.isEmpty()) {
-        value = null;
-      }
-      return value;
-    }
-    return null;
-  }
-
-  private String getValue(String varname) {
-    return params.get(varname).get(0);
-  }
 
   private String index() {
     final String index = REQUEST.index.read(this);
@@ -308,7 +154,7 @@ public class HttpResponsiveSslHandler
     return builder.toString();
   }
 
-  private String error(String mesg) {
+  protected String error(String mesg) {
     final String index = REQUEST.error.read(this);
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
   }
@@ -321,46 +167,8 @@ public class HttpResponsiveSslHandler
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
   }
 
-  private String Logon() {
+  protected String Logon() {
     return REQUEST.Logon.read(this);
-  }
-
-  private String resetOptionTransfer(String header, String startid,
-                                     String stopid, String start, String stop,
-                                     String rule, String req, boolean pending,
-                                     boolean transfer, boolean error,
-                                     boolean done, boolean all) {
-    final StringBuilder builder = new StringBuilder(header);
-    WaarpStringUtils.replace(builder, "XXXSTARTIDXXX", startid);
-    WaarpStringUtils.replace(builder, "XXXSTOPIDXXX", stopid);
-    WaarpStringUtils.replace(builder, "XXXSTARTXXX", start);
-    WaarpStringUtils.replace(builder, "XXXSTOPXXX", stop);
-    WaarpStringUtils.replace(builder, "XXXRULEXXX", rule);
-    WaarpStringUtils.replace(builder, "XXXREQXXX", req);
-    WaarpStringUtils.replace(builder, "XXXPENDXXX", pending? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXTRANSXXX", transfer? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXERRXXX", error? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXDONEXXX", done? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXALLXXX", all? "checked" : "");
-    return builder.toString();
-  }
-
-  private String checkAuthorizedToSeeAll() {
-    boolean seeAll = false;
-    if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-      DbHostConfiguration dbhc;
-      try {
-        dbhc =
-            new DbHostConfiguration(Configuration.configuration.getHOST_ID());
-      } catch (final WaarpDatabaseException e) {
-        return null;
-      }
-      seeAll = dbhc != null && dbhc.isSeeAllId(authentHttp.getAuth().getUser());
-    }
-    if (seeAll) {
-      return "*";
-    }
-    return null;
   }
 
   private String setDbTaskRunnerJsonData(String head, String errorText,
@@ -416,47 +224,7 @@ public class HttpResponsiveSslHandler
       final String parm = parms.get(0);
       final boolean isNotReload = !"Reload".equalsIgnoreCase(parm);
       if ("Filter".equalsIgnoreCase(parm) || !isNotReload) {
-        String startid = getTrimValue("startid");
-        String stopid = getTrimValue("stopid");
-        if (isNotReload && startid != null && stopid == null) {
-          stopid = Long.MAX_VALUE + "";
-        }
-        if (isNotReload && stopid != null && startid == null) {
-          startid = (DbConstant.ILLEGALVALUE + 1) + "";
-        }
-        String start = getValue("start");
-        String stop = getValue("stop");
-        final String rule = getTrimValue("rule");
-        final String req = getTrimValue("req");
-        boolean pending, transfer, error, done, all;
-        pending = params.containsKey("pending");
-        transfer = params.containsKey("transfer");
-        error = params.containsKey("error");
-        done = params.containsKey("done");
-        all = params.containsKey("all");
-        if (pending && transfer && error && done) {
-          all = true;
-        } else if (!(pending || transfer || error || done)) {
-          all = true;
-        }
-        final Timestamp tstart = WaarpStringUtils.fixDate(start);
-        if (tstart != null) {
-          start = tstart.toString();
-        }
-        final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);
-        if (tstop != null) {
-          stop = tstop.toString();
-        }
-        final Long idstart = null;
-        head = setDbTaskRunnerJsonData(head, errorText, startid, stopid, tstart,
-                                       tstop, rule, req, pending, transfer,
-                                       error, done, all);
-        head = resetOptionTransfer(head, startid == null?
-                                       (idstart != null? idstart.toString() : "") : startid,
-                                   stopid == null? "" : stopid, start, stop,
-                                   rule == null? "" : rule,
-                                   req == null? "" : req, pending, transfer,
-                                   error, done, all);
+        head = getFilter(errorText, head, isNotReload);
       } else {
         head = resetOptionTransfer(head, "", "", "", "", "", "", false, false,
                                    false, false, true);
@@ -473,6 +241,51 @@ public class HttpResponsiveSslHandler
                                   false, false, false, false, true);
     }
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
+  }
+
+  private String getFilter(final String errorText, String head,
+                           final boolean isNotReload) {
+    String startid = getTrimValue("startid");
+    String stopid = getTrimValue("stopid");
+    if (isNotReload && startid != null && stopid == null) {
+      stopid = Long.MAX_VALUE + "";
+    }
+    if (isNotReload && stopid != null && startid == null) {
+      startid = (DbConstant.ILLEGALVALUE + 1) + "";
+    }
+    String start = getValue("start");
+    String stop = getValue("stop");
+    final String rule = getTrimValue("rule");
+    final String req = getTrimValue("req");
+    boolean pending, transfer, error, done, all;
+    pending = params.containsKey("pending");
+    transfer = params.containsKey("transfer");
+    error = params.containsKey("error");
+    done = params.containsKey("done");
+    all = params.containsKey("all");
+    if (pending && transfer && error && done) {
+      all = true;
+    } else if (!(pending || transfer || error || done)) {
+      all = true;
+    }
+    final Timestamp tstart = WaarpStringUtils.fixDate(start);
+    if (tstart != null) {
+      start = tstart.toString();
+    }
+    final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);
+    if (tstop != null) {
+      stop = tstop.toString();
+    }
+    final Long idstart = null;
+    head =
+        setDbTaskRunnerJsonData(head, errorText, startid, stopid, tstart, tstop,
+                                rule, req, pending, transfer, error, done, all);
+    head = resetOptionTransfer(head, startid == null?
+                                   (idstart != null? idstart.toString() : "") : startid,
+                               stopid == null? "" : stopid, start, stop,
+                               rule == null? "" : rule, req == null? "" : req,
+                               pending, transfer, error, done, all);
+    return head;
   }
 
   private String Listing() {
@@ -510,47 +323,7 @@ public class HttpResponsiveSslHandler
             resetOptionTransfer(head, startid == null? "" : startid, stopid, "",
                                 "", "", "", false, false, false, false, true);
       } else if ("Filter".equalsIgnoreCase(parm) || !isNotReload) {
-        String startid = getTrimValue("startid");
-        String stopid = getTrimValue("stopid");
-        if (isNotReload && startid != null && stopid == null) {
-          stopid = Long.MAX_VALUE + "";
-        }
-        if (isNotReload && stopid != null && startid == null) {
-          startid = (DbConstant.ILLEGALVALUE + 1) + "";
-        }
-        String start = getValue("start");
-        String stop = getValue("stop");
-        final String rule = getTrimValue("rule");
-        final String req = getTrimValue("req");
-        boolean pending, transfer, error, done, all;
-        pending = params.containsKey("pending");
-        transfer = params.containsKey("transfer");
-        error = params.containsKey("error");
-        done = params.containsKey("done");
-        all = params.containsKey("all");
-        if (pending && transfer && error && done) {
-          all = true;
-        } else if (!(pending || transfer || error || done)) {
-          all = true;
-        }
-        final Timestamp tstart = WaarpStringUtils.fixDate(start);
-        if (tstart != null) {
-          start = tstart.toString();
-        }
-        final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);
-        if (tstop != null) {
-          stop = tstop.toString();
-        }
-        final Long idstart = null;
-        head = setDbTaskRunnerJsonData(head, errorText, startid, stopid, tstart,
-                                       tstop, rule, req, pending, transfer,
-                                       error, done, all);
-        head = resetOptionTransfer(head, startid == null?
-                                       (idstart != null? idstart.toString() : "") : startid,
-                                   stopid == null? "" : stopid, start, stop,
-                                   rule == null? "" : rule,
-                                   req == null? "" : req, pending, transfer,
-                                   error, done, all);
+        head = getFilter(errorText, head, isNotReload);
       } else if ("RestartAll".equalsIgnoreCase(parm) ||
                  "StopAll".equalsIgnoreCase(parm) ||
                  "StopCleanAll".equalsIgnoreCase(parm)) {
@@ -920,16 +693,6 @@ public class HttpResponsiveSslHandler
            errorMsg; //$NON-NLS-1$
   }
 
-  private String resetOptionHosts(String header, String host, String addr,
-                                  boolean ssl, boolean active) {
-    final StringBuilder builder = new StringBuilder(header);
-    WaarpStringUtils.replace(builder, "XXXFHOSTXXX", host);
-    WaarpStringUtils.replace(builder, "XXXFADDRXXX", addr);
-    WaarpStringUtils.replace(builder, "XXXFSSLXXX", ssl? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXFACTIVXXX", active? "checked" : "");
-    return builder.toString();
-  }
-
   private String setDbHostAuthJsonData(String head, String errorText,
                                        String host, String addr, boolean ssl,
                                        boolean isactive) {
@@ -1124,8 +887,7 @@ public class HttpResponsiveSslHandler
                                        .getNetworkTransaction(), result, dbhost,
             packet);
         transaction.run();
-        result.awaitOrInterruptible(
-            Configuration.configuration.getTIMEOUTCON() / 2);
+        result.awaitOrInterruptible();
         head =
             resetOptionHosts(head, "", "", dbhost.isSsl(), dbhost.isActive());
         final String json = dbhost.getJsonAsString();
@@ -1273,52 +1035,6 @@ public class HttpResponsiveSslHandler
           Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
     }
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
-  }
-
-  private String resetOptionRules(String header, String rule,
-                                  RequestPacket.TRANSFERMODE mode, int gmode) {
-    final StringBuilder builder = new StringBuilder(header);
-    WaarpStringUtils.replace(builder, "XXXRULEXXX", rule);
-    if (mode != null) {
-      switch (mode) {
-        case RECVMODE:
-          WaarpStringUtils.replace(builder, "XXXRECVXXX", "checked");
-          break;
-        case SENDMODE:
-          WaarpStringUtils.replace(builder, "XXXSENDXXX", "checked");
-          break;
-        case RECVMD5MODE:
-          WaarpStringUtils.replace(builder, "XXXRECVMXXX", "checked");
-          break;
-        case SENDMD5MODE:
-          WaarpStringUtils.replace(builder, "XXXSENDMXXX", "checked");
-          break;
-        case RECVTHROUGHMODE:
-          WaarpStringUtils.replace(builder, "XXXRECVTXXX", "checked");
-          break;
-        case SENDTHROUGHMODE:
-          WaarpStringUtils.replace(builder, "XXXSENDTXXX", "checked");
-          break;
-        case RECVMD5THROUGHMODE:
-          WaarpStringUtils.replace(builder, "XXXRECVMTXXX", "checked");
-          break;
-        case SENDMD5THROUGHMODE:
-          WaarpStringUtils.replace(builder, "XXXSENDMTXXX", "checked");
-          break;
-        case UNKNOWNMODE:
-          break;
-        default:
-          break;
-      }
-    }
-    if (gmode == -1) {// All Recv
-      WaarpStringUtils.replace(builder, "XXXARECVXXX", "checked");
-    } else if (gmode == -2) {// All Send
-      WaarpStringUtils.replace(builder, "XXXASENDXXX", "checked");
-    } else if (gmode == -3) {// All
-      WaarpStringUtils.replace(builder, "XXXALLXXX", "checked");
-    }
-    return builder.toString();
   }
 
   private String Rules() {
@@ -1662,7 +1378,7 @@ public class HttpResponsiveSslHandler
    *
    * @param builder
    */
-  private void langHandle(StringBuilder builder) {
+  protected void langHandle(StringBuilder builder) {
     // i18n: add here any new languages
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(),
                              lang.equalsIgnoreCase("en")? "checked" : "");
@@ -1682,147 +1398,6 @@ public class HttpResponsiveSslHandler
       return REQUEST.System.read(this);
     }
     return system;
-  }
-
-  private String SystemLimited() {
-    getParams();
-    DbHostConfiguration config = null;
-    try {
-      config =
-          new DbHostConfiguration(Configuration.configuration.getHOST_ID());
-    } catch (final WaarpDatabaseException e2) {
-      config =
-          new DbHostConfiguration(Configuration.configuration.getHOST_ID(), "",
-                                  "", "", "");
-      try {
-        config.insert();
-      } catch (final WaarpDatabaseException e) {
-      }
-    }
-    if (params == null) {
-      final String system = SystemLimitedSource();
-      final StringBuilder builder = new StringBuilder(system);
-      replaceStringSystem(config, builder);
-      langHandle(builder);
-      return builder.toString();
-    }
-    String extraInformation = null;
-    if (params.containsKey("ACTION")) {
-      final List<String> action = params.get("ACTION");
-      for (final String act : action) {
-        if (act.equalsIgnoreCase("Language")) {
-          lang = getTrimValue("change");
-          extraInformation =
-              Messages.getString("HttpSslHandler.LangIs") + "Web: " + lang +
-              " OpenR66: " //$NON-NLS-1$
-              + Messages.getSlocale();
-        } else if (act.equalsIgnoreCase("Disconnect")) {
-          String logon = Logon();
-          logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
-                                   Messages
-                                       .getString("HttpSslHandler.DisActive"));
-          newSession = true;
-          clearSession();
-          forceClose = true;
-          return logon;
-        }
-      }
-    }
-    final String system = SystemLimitedSource();
-    final StringBuilder builder = new StringBuilder(system);
-    replaceStringSystem(config, builder);
-    langHandle(builder);
-    if (extraInformation != null) {
-      builder.append(extraInformation);
-    }
-    return builder.toString();
-  }
-
-  /**
-   * @param config
-   * @param builder
-   */
-  private void replaceStringSystem(DbHostConfiguration config,
-                                   StringBuilder builder) {
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXBUSINESSXXX.toString(),
-                             config.getBusiness());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXROLESXXX.toString(),
-                             config.getRoles());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXALIASESXXX.toString(),
-                             config.getAliases());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXOTHERXXX.toString(),
-                             config.getOthers());
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerChannelWriteLimit()));
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerChannelReadLimit()));
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELATRAFFICXXX.toString(),
-                             Long.toString(
-                                 Configuration.configuration.getDelayLimit()));
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
-                             Long.toString(Configuration.configuration
-                                               .getDelayCommander()));
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
-                             Long.toString(
-                                 Configuration.configuration.getDelayRetry()));
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerGlobalWriteLimit()));
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerGlobalReadLimit()));
-    WaarpStringUtils.replace(builder, "XXXBLOCKXXX",
-                             Configuration.configuration.isShutdown()?
-                                 "checked" : "");
-    switch (WaarpLoggerFactory.getLogLevel()) {
-      case DEBUG:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "checked");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
-        break;
-      case INFO:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "checked");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
-        break;
-      case WARN:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "checked");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
-        break;
-      case ERROR:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "checked");
-        break;
-      default:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
-        break;
-
-    }
-  }
-
-  private String Logout() {
-    String logon = Logon();
-    logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
-                             Messages.getString("HttpSslHandler.Disconnected"));
-    newSession = true;
-    clearSession();
-    forceClose = true;
-    return logon;
   }
 
   private void fillHostIds(StringBuilder builder) {
@@ -2263,6 +1838,7 @@ public class HttpResponsiveSslHandler
       }
       if (dbSession == null) {
         try {
+          // FIXME always true since change for DbAdmin
           if (DbConstant.admin.isActive()) {
             dbSession = new DbSession(DbConstant.admin, false);
             DbAdmin.incHttpSession();
@@ -2404,226 +1980,6 @@ public class HttpResponsiveSslHandler
         break;
     }
     writeResponse(ctx);
-  }
-
-  private void checkSession(Channel channel) {
-    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
-    if (cookieString != null) {
-      final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
-      if (!cookies.isEmpty()) {
-        for (final Cookie elt : cookies) {
-          if (elt.name().equalsIgnoreCase(
-              R66SESSION + Configuration.configuration.getHOST_ID())) {
-            logger.debug("Found session: " + elt);
-            admin = elt;
-            final R66Session session = sessions.get(admin.value());
-            if (session != null) {
-              authentHttp = session;
-              authentHttp.setStatus(73);
-            } else {
-              admin = null;
-              continue;
-            }
-            final DbSession dbSession = dbSessions.get(admin.value());
-            if (dbSession != null) {
-              if (dbSession.isDisActive()) {
-                clearSession();
-              }
-              this.dbSession = dbSession;
-            } else {
-              admin = null;
-              continue;
-            }
-          } else if (elt.name().equalsIgnoreCase(I18NEXT)) {
-            logger.debug("Found i18next: " + elt);
-            lang = elt.value();
-          }
-        }
-      }
-    }
-    if (admin == null) {
-      logger.debug("NoSession: " + uriRequest + ":{}", admin);
-    }
-  }
-
-  private void handleCookies(HttpResponse response) {
-    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
-    boolean i18nextFound = false;
-    if (cookieString != null) {
-      final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
-      if (!cookies.isEmpty()) {
-        // Reset the sessions if necessary.
-        boolean findSession = false;
-        for (final Cookie cookie : cookies) {
-          if (cookie.name().equalsIgnoreCase(
-              R66SESSION + Configuration.configuration.getHOST_ID())) {
-            if (newSession) {
-              findSession = false;
-            } else {
-              findSession = true;
-              response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                     ServerCookieEncoder.LAX.encode(cookie));
-            }
-          } else if (cookie.name().equalsIgnoreCase(I18NEXT)) {
-            i18nextFound = true;
-            cookie.setValue(lang);
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(cookie));
-          } else {
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(cookie));
-          }
-        }
-        if (!i18nextFound) {
-          final Cookie cookie = new DefaultCookie(I18NEXT, lang);
-          response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                 ServerCookieEncoder.LAX.encode(cookie));
-        }
-        newSession = false;
-        if (!findSession) {
-          if (admin != null) {
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(admin));
-            logger.debug("AddSession: " + uriRequest + ":{}", admin);
-          }
-        }
-      }
-    } else {
-      final Cookie cookie = new DefaultCookie(I18NEXT, lang);
-      response.headers().add(HttpHeaderNames.SET_COOKIE,
-                             ServerCookieEncoder.LAX.encode(cookie));
-      if (admin != null) {
-        logger.debug("AddSession: " + uriRequest + ":{}", admin);
-        response.headers().add(HttpHeaderNames.SET_COOKIE,
-                               ServerCookieEncoder.LAX.encode(admin));
-      }
-    }
-  }
-
-  /**
-   * Write the response
-   *
-   * @param ctx
-   */
-  private void writeResponse(ChannelHandlerContext ctx) {
-    // Convert the response content to a ByteBuf.
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
-    responseContent.setLength(0);
-
-    // Decide whether to close the connection or not.
-    final boolean keepAlive = HttpUtil.isKeepAlive(request);
-    final boolean close = HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(
-        request.headers().get(HttpHeaderNames.CONNECTION)) || (!keepAlive) ||
-                          forceClose;
-
-    // Build the response object.
-    final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                                    buf);
-    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
-                           response.content().readableBytes());
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-    if (keepAlive) {
-      response.headers()
-              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-    }
-    if (!close) {
-      // There's no need to add 'Content-Length' header
-      // if this is the last response.
-      response.headers().set(HttpHeaderNames.CONTENT_LENGTH,
-                             String.valueOf(buf.readableBytes()));
-    }
-
-    handleCookies(response);
-
-    // Write the response.
-    final ChannelFuture future = ctx.writeAndFlush(response);
-    // Close the connection after the write operation is done if necessary.
-    if (close) {
-      future.addListener(WaarpSslUtility.SSLCLOSE);
-    }
-    if (shutdown) {
-      ChannelUtils.startShutdown();
-    }
-  }
-
-  /**
-   * Send an error and close
-   *
-   * @param ctx
-   * @param status
-   */
-  private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-    responseContent.setLength(0);
-    responseContent.append(error(status.toString()));
-    final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled
-            .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8));
-    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
-                           response.content().readableBytes());
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-    responseContent.setLength(0);
-    clearSession();
-    // Close the connection as soon as the error message is sent.
-    ctx.writeAndFlush(response).addListener(WaarpSslUtility.SSLCLOSE);
-  }
-
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(ctx.channel(), cause);
-    if (exception != null) {
-      if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
-        if (cause instanceof IOException) {
-          // Nothing to do
-          return;
-        }
-        logger.warn("Exception in HttpSslHandler {}", exception.getMessage());
-      }
-      if (ctx.channel().isActive()) {
-        sendError(ctx, HttpResponseStatus.BAD_REQUEST);
-      }
-    } else {
-      // Nothing to do
-      return;
-    }
-  }
-
-  @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    final Channel channel = ctx.channel();
-    Configuration.configuration.getHttpChannelGroup().add(channel);
-    super.channelActive(ctx);
-  }
-
-  /**
-   * @return the lIMITROW
-   */
-  public int getLIMITROW() {
-    return LIMITROW;
-  }
-
-  /**
-   * @param lIMITROW the lIMITROW to set
-   */
-  private void setLIMITROW(int lIMITROW) {
-    LIMITROW = lIMITROW;
-  }
-
-  /**
-   * @return the rEFRESH
-   */
-  public int getREFRESH() {
-    return REFRESH;
-  }
-
-  /**
-   * @param rEFRESH the rEFRESH to set
-   */
-  private void setREFRESH(int rEFRESH) {
-    REFRESH = rEFRESH;
   }
 
 }

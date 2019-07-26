@@ -246,13 +246,11 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   /**
-   * @param dbSession
    * @param server
    *
    * @return the SimpleAuth if any for this user
    */
-  @Deprecated
-  public static DbHostAuth getServerAuth(DbSession dbSession, String server) {
+  public static DbHostAuth getServerAuth(String server) {
     DbHostAuth auth = null;
     try {
       auth = new DbHostAuth(server);
@@ -313,7 +311,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   public boolean connectionHttps(DbSession dbSession, String hostId,
                                  byte[] arg0)
       throws Reply530Exception, Reply421Exception {
-    final DbHostAuth auth = R66Auth.getServerAuth(dbSession, hostId);
+    final DbHostAuth auth = R66Auth.getServerAuth(hostId);
     if (auth == null) {
       logger.error("Cannot find authentication for " + hostId);
       setIsIdentified(false);

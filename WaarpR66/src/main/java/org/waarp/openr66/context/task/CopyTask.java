@@ -19,11 +19,12 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
-import org.waarp.openr66.protocol.utils.FileUtils;
 
 import java.io.File;
 
@@ -59,7 +60,7 @@ public class CopyTask extends AbstractTask {
     final File to = new File(directory, session.getFile().getBasename());
     try {
       FileUtils.copy(from, to, false, false);
-    } catch (final OpenR66ProtocolSystemException e1) {
+    } catch (final Reply550Exception e1) {
       logger
           .error("Copy with " + argRule + ":" + argTransfer + " and " + session,
                  e1);

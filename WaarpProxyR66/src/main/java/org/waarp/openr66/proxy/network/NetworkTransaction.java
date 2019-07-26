@@ -269,7 +269,7 @@ public class NetworkTransaction {
     for (final Channel channel : networkChannelGroup) {
       WaarpSslUtility.closingSslChannel(channel);
     }
-    networkChannelGroup.close().awaitUninterruptibly();
+    WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());
     try {
       Thread.sleep(Configuration.WAITFORNETOP);
     } catch (final InterruptedException e) {

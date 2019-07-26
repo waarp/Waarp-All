@@ -110,7 +110,7 @@ public class ServerInitDatabase {
     }
     if (!getParams(args)) {
       System.out.println(_INFO_ARGS);
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       if (DetectionUtils.isJunit()) {

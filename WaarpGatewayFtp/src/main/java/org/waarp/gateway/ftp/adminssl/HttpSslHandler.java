@@ -375,7 +375,7 @@ public class HttpSslHandler
     final String head = REQUEST.Transfer.readHeader();
     String end = REQUEST.Transfer.readEnd();
     String body = REQUEST.Transfer.readBody();
-    if (params == null || !DbConstant.gatewayAdmin.isActive()) {
+    if (params == null) {
       end = end.replace("XXXRESULTXXX", "");
       body = FileBasedConfiguration.fileBasedConfiguration
           .getHtmlTransfer(body, LIMITROW);
@@ -621,11 +621,9 @@ public class HttpSslHandler
         // load DbSession
         if (dbSession == null) {
           try {
-            if (DbConstant.gatewayAdmin.isActive()) {
-              dbSession = new DbSession(DbConstant.gatewayAdmin, false);
-              DbAdmin.incHttpSession();
-              isPrivateDbSession = true;
-            }
+            dbSession = new DbSession(DbConstant.gatewayAdmin, false);
+            DbAdmin.incHttpSession();
+            isPrivateDbSession = true;
           } catch (final WaarpDatabaseNoConnectionException e1) {
             // Cannot connect so use default connection
             logger.warn("Use default database connection");

@@ -251,7 +251,7 @@ public class ExecBusinessHandler extends BusinessHandler {
     WaarpActionLogger
         .logErrorAction(dbFtpSession, specialId, null, message, e.code, this);
     ((FileBasedAuth) getFtpSession().getAuth())
-        .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);
+        .setSpecialId(DbConstant.ILLEGALVALUE);
   }
 
   @Override
@@ -265,13 +265,13 @@ public class ExecBusinessHandler extends BusinessHandler {
                                   getFtpSession().getReplyCode(),
                                   UpdatedInfo.DONE);
       ((FileBasedAuth) getFtpSession().getAuth())
-          .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);
+          .setSpecialId(DbConstant.ILLEGALVALUE);
     }
   }
 
   @Override
   public void beforeRunCommand() throws CommandAbstractException {
-    long specialId = org.waarp.common.database.DbConstant.ILLEGALVALUE;
+    long specialId = DbConstant.ILLEGALVALUE;
     // if Admin, do nothing
     if (getFtpSession() == null || getFtpSession().getAuth() == null) {
       return;
@@ -434,11 +434,10 @@ public class ExecBusinessHandler extends BusinessHandler {
   @Override
   public void executeChannelConnected(Channel channel) {
     if (AbstractExecutor.useDatabase) {
-      if (org.waarp.common.database.DbConstant.admin != null &&
-          org.waarp.common.database.DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         try {
           dbR66Session =
-              new DbSession(org.waarp.common.database.DbConstant.admin, false);
+              new DbSession(DbConstant.admin, false);
         } catch (final WaarpDatabaseNoConnectionException e1) {
           logger.warn("Database not ready due to {}", e1.getMessage());
           final QUIT command = (QUIT) FtpCommandCode
@@ -449,7 +448,7 @@ public class ExecBusinessHandler extends BusinessHandler {
         }
       }
     }
-    if (DbConstant.gatewayAdmin != null && DbConstant.gatewayAdmin.isActive()) {
+    if (DbConstant.gatewayAdmin != null) {
       try {
         dbFtpSession = new DbSession(DbConstant.gatewayAdmin, false);
       } catch (final WaarpDatabaseNoConnectionException e1) {

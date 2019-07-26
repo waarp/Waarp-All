@@ -19,6 +19,8 @@
  */
 package org.waarp.common.future;
 
+import org.waarp.common.logging.SysErrLogger;
+
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.*;
@@ -307,7 +309,7 @@ public class WaarpFuture {
         }
       }
     } catch (final InterruptedException e) {
-      // ignore
+      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
     }
     return false;
   }

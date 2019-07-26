@@ -24,6 +24,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.client.DirectTransfer;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -187,31 +188,13 @@ public class LogExtendedExport implements Runnable {
 
     JsonCommandPacket valid = new JsonCommandPacket(node, type);
     logger.debug("ExtendedLogCommand: " + valid.getRequest());
-    SocketAddress socketAddress;
-    try {
-      socketAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Cannot Connect to " + host.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + host.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      host = null;
-      future.setFailure(future.getResult().getException());
-      return;
-    }
-    final boolean isSSL = host.isSsl();
-
     final R66Future newFuture = new R66Future(true);
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, newFuture);
-    socketAddress = null;
+    LocalChannelReference localChannelReference = AbstractTransfer
+        .tryConnect(host, newFuture,
+                    networkTransaction);
     if (localChannelReference == null) {
-      logger.error("Cannot Connect to " + host.getHostid());
-      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
-          "Cannot connect to server " + host.getHostid()), null, true,
-                                     ErrorCode.ConnectionImpossible, null));
-      host = null;
-      future.setFailure(future.getResult().getException());
+      future.setResult(newFuture.getResult());
+      future.setFailure(future.getCause());
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
@@ -289,6 +272,7 @@ public class LogExtendedExport implements Runnable {
           } else {
             logsFile = futuretemp.getResult().getFile().getTrueFile();
           }
+          // FIXME always true since change for DbAdmin
           if (tryimport && DbConstant.admin.isActive()) {
             try {
               DbTaskRunner.loadXml(logsFile);
@@ -408,7 +392,7 @@ public class LogExtendedExport implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       System.exit(1);
@@ -420,7 +404,7 @@ public class LogExtendedExport implements Runnable {
         dbhost = new DbHostAuth(stohost);
       } catch (final WaarpDatabaseException e) {
         logger.error("Wrong initialization");
-        if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+        if (DbConstant.admin != null) {
           DbConstant.admin.close();
         }
         System.exit(2);

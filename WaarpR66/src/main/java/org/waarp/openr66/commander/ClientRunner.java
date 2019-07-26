@@ -51,8 +51,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Client Runner from a TaskRunner
- *
- *
  */
 public class ClientRunner extends Thread {
   /**
@@ -83,6 +81,7 @@ public class ClientRunner extends Thread {
     this.networkTransaction = networkTransaction;
     this.taskRunner = taskRunner;
     this.futureRequest = futureRequest;
+    setDaemon(true);
   }
 
   public static String hashStatus() {
@@ -114,7 +113,8 @@ public class ClientRunner extends Thread {
 
   @Override
   public void run() {
-    if (Configuration.configuration.isShutdown()) {
+    if (Configuration.configuration.isShutdown() ||
+        Thread.interrupted()) {
       taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
       taskRunner.forceSaveStatus();
       return;
@@ -215,7 +215,7 @@ public class ClientRunner extends Thread {
     } else {
       tries = tries + 1;
     }
-    if (limit <= tries) {
+    if (limit <= tries || !Thread.interrupted()) {
       taskRunnerRetryHashMap.remove(key);
       return false;
     } else {

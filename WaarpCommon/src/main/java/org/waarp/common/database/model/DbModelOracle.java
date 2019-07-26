@@ -257,6 +257,8 @@ public abstract class DbModelOracle extends DbModelAbstract {
     final String notNull = " NOT NULL ";
 
     // example
+    /*
+
     String action = createTableH2 + DbDataModel.table + "(";
     final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
     for (int i = 0; i < ccolumns.length - 1; i++) {
@@ -314,6 +316,8 @@ public abstract class DbModelOracle extends DbModelAbstract {
     } finally {
       request.close();
     }
+
+     */
   }
 
   @Override

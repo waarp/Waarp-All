@@ -75,7 +75,7 @@ public class JvmProcessId {
       final ClassLoader loader = getSystemClassLoader();
       String value;
       final Object[] emptyObjects = new Object[0];
-      final Class<?>[] emptyClasses = new Class[0];
+      final Class<?>[] emptyClasses = new Class<?>[0];
       value = jvmProcessIdManagementFactory(loader, emptyObjects, emptyClasses);
       final int atIndex = value.indexOf('@');
       if (atIndex >= 0) {

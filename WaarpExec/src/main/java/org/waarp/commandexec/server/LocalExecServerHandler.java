@@ -31,7 +31,7 @@ import org.waarp.commandexec.utils.LocalExecDefaultResult;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -75,11 +75,9 @@ public class LocalExecServerHandler
       channel.writeAndFlush(
           LocalExecDefaultResult.ConnectionRefused.getStatus() + " " +
           LocalExecDefaultResult.ConnectionRefused.getResult() + "\n");
-      try {
-        channel.writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + "\n")
-               .await(30000);
-      } catch (final InterruptedException e) {
-      }
+      WaarpNettyUtil.awaitOrInterrupted(
+          channel.writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + "\n"),
+          30000);
       WaarpSslUtility.closingSslChannel(channel);
       return true;
     }
@@ -111,8 +109,6 @@ public class LocalExecServerHandler
 
   /**
    * Shutdown thread
-   *
-   *
    */
   private static class GGLEThreadShutdown extends Thread {
     long delay = 3000;
@@ -129,15 +125,13 @@ public class LocalExecServerHandler
       final GGLETimerTask ggleTimerTask = new GGLETimerTask();
       timer.schedule(ggleTimerTask, delay);
       factory.releaseResources();
-      DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0);
     }
 
   }
 
   /**
    * TimerTask to terminate the server
-   *
-   *
    */
   private static class GGLETimerTask extends TimerTask {
     /**
@@ -151,9 +145,13 @@ public class LocalExecServerHandler
       logger.error("System will force EXIT");
       final Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
       for (final Thread thread : map.keySet()) {
-        printStackTrace(thread, map.get(thread));
+        try {
+          printStackTrace(thread, map.get(thread));
+        } catch (ArrayIndexOutOfBoundsException e) {
+          // ignore
+        }
       }
-      DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0);
     }
   }
 

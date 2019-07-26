@@ -177,7 +177,7 @@ public class DbModelOracle
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     return false;
   }
 
@@ -185,7 +185,7 @@ public class DbModelOracle
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     return false;
   }
 }

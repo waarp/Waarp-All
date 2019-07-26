@@ -168,7 +168,7 @@ public class DbModelPostgresql
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TO DO Auto-generated method stub
     return false;
   }
 
@@ -176,7 +176,7 @@ public class DbModelPostgresql
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    // TODO Auto-generated method stub
+    // TOD O Auto-generated method stub
     return false;
   }
 }

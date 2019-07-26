@@ -65,7 +65,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null && DbConstant.admin.isActive()) {
+      if (DbConstant.admin != null) {
         DbConstant.admin.close();
       }
       ChannelUtils.stopLogger();

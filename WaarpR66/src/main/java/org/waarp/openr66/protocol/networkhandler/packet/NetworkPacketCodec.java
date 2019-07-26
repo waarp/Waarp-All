@@ -95,14 +95,12 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
           nc.useIfUsed();
         }
         ctx.writeAndFlush(response.getNetworkPacket());
-        buffer.release();
       }
-      // Replaced by a NoOp packet
-      networkPacket =
-          new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
+      buffer.release();
       final NetworkServerHandler nsh =
           (NetworkServerHandler) ctx.pipeline().last();
       nsh.setKeepAlivedSent();
+      return;
     }
     out.add(networkPacket);
   }
@@ -115,7 +113,6 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     final ByteBuf finalBuf = packet.getNetworkPacket();
     out.writeBytes(finalBuf);
     finalBuf.release();
-    // msg.getBuffer().release();
   }
 
 }

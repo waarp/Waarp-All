@@ -40,7 +40,6 @@ import org.waarp.common.lru.ConcurrentUtility;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
-import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -63,15 +62,15 @@ import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
+import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Enumeration;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -79,8 +78,6 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
 /**
  * This class handles Network Transaction connections
- *
- *
  */
 public class NetworkTransaction {
   /**
@@ -139,20 +136,14 @@ public class NetworkTransaction {
       retrieveRunnerConcurrentHashMap =
       new ConcurrentHashMap<Integer, RetrieveRunner>();
 
-  /**
-   * ExecutorService for RetrieveOperation
-   */
-  private static final ExecutorService retrieveExecutor =
-      Executors.newCachedThreadPool(new WaarpThreadFactory("RetrieveExecutor"));
-
   private final Bootstrap clientBootstrap;
   private final Bootstrap clientSslBootstrap;
-  private final ChannelGroup networkChannelGroup;
+  private ChannelGroup networkChannelGroup;
 
   public NetworkTransaction() {
     networkChannelGroup = new DefaultChannelGroup("NetworkChannels",
                                                   Configuration.configuration
-                                                      .getSubTaskGroup()
+                                                      .getHandlerGroup()
                                                       .next());
     final NetworkServerInitializer networkServerInitializer =
         new NetworkServerInitializer(false);
@@ -506,7 +497,8 @@ public class NetworkTransaction {
               "Cannot connect to remote server due to a channel exception");
         }
         try {
-          channelFuture.await(Configuration.configuration.getTIMEOUTCON() / 3);
+          channelFuture
+              .await(Configuration.configuration.getTIMEOUTCON() - 100);
         } catch (final InterruptedException e1) {
         }
         if (channelFuture.isSuccess()) {
@@ -519,7 +511,9 @@ public class NetworkTransaction {
                   "Cannot finish connect to remote server");
             }
           }
-          networkChannelGroup.add(channel);
+          if (networkChannelGroup != null) {
+            networkChannelGroup.add(channel);
+          }
           networkChannelReference =
               new NetworkChannelReference(channel, socketLock);
           addNCR(networkChannelReference);
@@ -714,8 +708,9 @@ public class NetworkTransaction {
         } catch (final OpenR66ProtocolPacketException e) {
         }
       }
-      localChannelReference.getLocalChannel().close()
-                           .awaitUninterruptibly(Configuration.RETRYINMS * 2);
+      WaarpNettyUtil
+          .awaitOrInterrupted(localChannelReference.getLocalChannel().close(),
+                              Configuration.RETRYINMS * 2);
       throw new OpenR66ProtocolNetworkException(
           "Cannot validate connection: " + future.getResult(),
           future.getCause());
@@ -1034,8 +1029,6 @@ public class NetworkTransaction {
   /**
    * Class to close the Network Channel if after some delays it has really no
    * Local Channel attached
-   *
-   *
    */
   private static class CloseFutureChannel implements TimerTask {
 
@@ -1065,7 +1058,8 @@ public class NetworkTransaction {
         if (networkChannelReference.nbLocalChannels() <= 0) {
           long time = networkChannelReference
               .checkLastTime(Configuration.configuration.getTIMEOUTCON() * 2);
-          if (time > Configuration.RETRYINMS) {
+          if (time > Configuration.RETRYINMS &&
+              Configuration.configuration.isTimerCloseReady()) {
             logger.debug("NC reschedule at " + time + " : {}",
                          networkChannelReference);
             // will re execute this request later on
@@ -1234,8 +1228,6 @@ public class NetworkTransaction {
 
   /**
    * Remover of Shutdown Remote Host
-   *
-   *
    */
   private static class R66ShutdownNetworkChannelTimerTask implements TimerTask {
     private static final Set<ChannelId> inShutdownRunning =
@@ -1250,8 +1242,6 @@ public class NetworkTransaction {
 
     /**
      * Constructor from type
-     *
-     * @param href
      *
      * @throws OpenR66RunnerErrorException
      */
@@ -1291,14 +1281,6 @@ public class NetworkTransaction {
     }
   }
 
-  public static ExecutorService getRetrieveExecutor() {
-    return retrieveExecutor;
-  }
-
-  public static ConcurrentHashMap<Integer, RetrieveRunner> getRetrieveRunnerConcurrentHashMap() {
-    return retrieveRunnerConcurrentHashMap;
-  }
-
   /**
    * Start retrieve operation
    *
@@ -1309,8 +1291,8 @@ public class NetworkTransaction {
     final RetrieveRunner retrieveRunner = new RetrieveRunner(session, channel);
     retrieveRunnerConcurrentHashMap
         .put(session.getLocalChannelReference().getLocalId(), retrieveRunner);
-    retrieveRunner.setDaemon(true);
-    Configuration.configuration.getLocalWorkerGroup().execute(retrieveRunner);
+    Configuration.configuration.getRetrieveRunnerGroup()
+                               .execute(retrieveRunner);
   }
 
   /**
@@ -1337,13 +1319,6 @@ public class NetworkTransaction {
   }
 
   /**
-   * Stop all Retrieve Executors
-   */
-  public static void closeRetrieveExecutors() {
-    retrieveExecutor.shutdownNow();
-  }
-
-  /**
    * Close all Network Ttransaction
    */
   public void closeAll() {
@@ -1356,19 +1331,35 @@ public class NetworkTransaction {
   public void closeAll(boolean quickShutdown) {
     logger.debug("close All Network Channels");
     if (!Configuration.configuration.isServer()) {
-      WaarpShutdownHook.shutdownHook.launchFinalExit();
+      if (R66ShutdownHook.shutdownHook != null) {
+        R66ShutdownHook.shutdownHook.launchFinalExit();
+      }
     }
-    closeRetrieveExecutors();
-    networkChannelGroup.close();
+    if (networkChannelGroup != null) {
+      WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());
+      networkChannelGroup = null;
+    }
     try {
       Thread.sleep(Configuration.WAITFORNETOP);
     } catch (final InterruptedException e) {
     }
+    stopAllEndRetrieve();
     DbAdmin.closeAllConnection();
     Configuration.configuration.clientStop(quickShutdown);
     if (!Configuration.configuration.isServer()) {
       logger.debug("Last action before exit");
       ChannelUtils.stopLogger();
     }
+  }
+
+
+  public static void stopAllEndRetrieve() {
+    Enumeration<RetrieveRunner> enumeration =
+        retrieveRunnerConcurrentHashMap.elements();
+    while (enumeration.hasMoreElements()) {
+      final RetrieveRunner runner = enumeration.nextElement();
+      runner.stopRunner();
+    }
+    retrieveRunnerConcurrentHashMap.clear();
   }
 }

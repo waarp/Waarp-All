@@ -192,7 +192,6 @@ public class FtpClientTest {
         date2 = System.currentTimeMillis();
       }
     } catch (final InterruptedException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
       executorService.shutdownNow();
       date2 = System.currentTimeMillis();

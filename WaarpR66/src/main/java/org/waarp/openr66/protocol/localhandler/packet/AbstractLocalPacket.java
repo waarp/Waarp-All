@@ -116,9 +116,8 @@ public abstract class AbstractLocalPacket {
     buf.writeInt(middleLength);
     buf.writeInt(endLength);
     buf.writeByte(getType());
-    final ByteBuf ByteBuf =
+    return
         Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);
-    return ByteBuf;
   }
 
   public void clear() {
