@@ -30,6 +30,7 @@ import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 
 import java.net.SocketAddress;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
@@ -60,7 +61,7 @@ public class HttpPage {
   private PageRole pagerole;
   private String errorpage;
   private String classname;
-  private LinkedHashMap<String, AbstractHttpField> fields;
+  private Map<String, AbstractHttpField> fields;
   private HttpBusinessFactory httpBusinessFactory;
 
   /**
@@ -85,7 +86,7 @@ public class HttpPage {
                   String footer, String beginform, String endform,
                   String nextinform, String uri, PageRole pagerole,
                   String errorpage, String classname,
-                  LinkedHashMap<String, AbstractHttpField> fields)
+                  Map<String, AbstractHttpField> fields)
       throws ClassNotFoundException, InstantiationException,
              IllegalAccessException {
     setPagename(pagename);
@@ -135,8 +136,10 @@ public class HttpPage {
     if (getFileform() != null && value != null) {
       try {
         return WaarpStringUtils.readFileException(getFileform() + value);
-      } catch (final InvalidArgumentException e) {
-      } catch (final FileTransferException e) {
+      } catch (final InvalidArgumentException ignored) {
+        // nothing
+      } catch (final FileTransferException ignored) {
+        // nothing
       }
     }
     return value;
@@ -158,7 +161,7 @@ public class HttpPage {
       if (value == null || value.length() == 0) {
         value = getPageValue(getHeader());
       }
-      StringBuilder builder = null;
+      StringBuilder builder;
       if (value == null) {
         builder = new StringBuilder();
       } else {
@@ -192,14 +195,14 @@ public class HttpPage {
     if (value == null || value.length() == 0) {
       value = getPageValue(getHeader());
     }
-    StringBuilder builder = null;
+    StringBuilder builder;
     if (value == null) {
       builder = new StringBuilder();
     } else {
       builder = new StringBuilder(value);
     }
-    final LinkedHashMap<String, AbstractHttpField> requestFields =
-        reference.getLinkedHashMapHttpFields();
+    final Map<String, AbstractHttpField> requestFields =
+        reference.getMapHttpFields();
     if (!isForm) {
       value = reference.getBeginForm();
       if (value == null || value.length() == 0) {
@@ -297,18 +300,16 @@ public class HttpPage {
   public void setValue(AbstractHttpBusinessRequest reference, String fieldname,
                        String value, FieldPosition position)
       throws HttpIncorrectRequestException {
-    final LinkedHashMap<String, AbstractHttpField> requestFields =
-        reference.getLinkedHashMapHttpFields();
+    final Map<String, AbstractHttpField> requestFields =
+        reference.getMapHttpFields();
     final AbstractHttpField field = requestFields.get(fieldname);
     if (field != null) {
       if (field.getFieldposition() == FieldPosition.ANY ||
           field.getFieldposition() == position) {
         field.setStringValue(value);
-        if (field.isFieldtovalidate()) {
-          if (!reference.isFieldValid(field)) {
-            throw new HttpIncorrectRequestException(
-                "Field unvalid: " + fieldname);
-          }
+        if (field.isFieldtovalidate() && !reference.isFieldValid(field)) {
+          throw new HttpIncorrectRequestException(
+              "Field unvalid: " + fieldname);
         }
       } else {
         throw new HttpIncorrectRequestException(
@@ -331,16 +332,13 @@ public class HttpPage {
   public void setValue(AbstractHttpBusinessRequest reference, String fieldname,
                        FileUpload fileUpload)
       throws HttpIncorrectRequestException {
-    final LinkedHashMap<String, AbstractHttpField> requestFields =
-        reference.getLinkedHashMapHttpFields();
+    final Map<String, AbstractHttpField> requestFields =
+        reference.getMapHttpFields();
     final AbstractHttpField field = requestFields.get(fieldname);
     if (field != null) {
       field.setFileUpload(fileUpload);
-      if (field.isFieldtovalidate()) {
-        if (!reference.isFieldValid(field)) {
-          throw new HttpIncorrectRequestException(
-              "Field unvalid: " + fieldname);
-        }
+      if (field.isFieldtovalidate() && !reference.isFieldValid(field)) {
+        throw new HttpIncorrectRequestException("Field unvalid: " + fieldname);
       }
     }
   }
@@ -351,8 +349,8 @@ public class HttpPage {
    * @return True if the request is fully valid
    */
   public boolean isRequestValid(AbstractHttpBusinessRequest reference) {
-    final LinkedHashMap<String, AbstractHttpField> requestFields =
-        reference.getLinkedHashMapHttpFields();
+    final Map<String, AbstractHttpField> requestFields =
+        reference.getMapHttpFields();
     for (final AbstractHttpField field : requestFields.values()) {
       if (field.isFieldmandatory() && !field.isPresent()) {
         logger.warn("Request invalid since the following field is absent: " +
@@ -370,9 +368,9 @@ public class HttpPage {
    *
    * @return the fields list from the current AbstractHttpBusinessRequest
    */
-  public LinkedHashMap<String, AbstractHttpField> getFieldsForRequest(
+  public Map<String, AbstractHttpField> getFieldsForRequest(
       AbstractHttpBusinessRequest reference) {
-    return reference.getLinkedHashMapHttpFields();
+    return reference.getMapHttpFields();
   }
 
   /**
@@ -385,8 +383,7 @@ public class HttpPage {
    */
   public String getValue(AbstractHttpBusinessRequest reference,
                          String fieldname) {
-    final AbstractHttpField field =
-        reference.getLinkedHashMapHttpFields().get(fieldname);
+    final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);
     if (field != null) {
       return field.fieldvalue;
     }
@@ -403,8 +400,7 @@ public class HttpPage {
    */
   public FileUpload getFileUpload(AbstractHttpBusinessRequest reference,
                                   String fieldname) {
-    final AbstractHttpField field =
-        reference.getLinkedHashMapHttpFields().get(fieldname);
+    final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);
     if (field != null) {
       return field.fileUpload;
     }
@@ -421,7 +417,7 @@ public class HttpPage {
    */
   public AbstractHttpField getField(AbstractHttpBusinessRequest reference,
                                     String fieldname) {
-    return reference.getLinkedHashMapHttpFields().get(fieldname);
+    return reference.getMapHttpFields().get(fieldname);
   }
 
   /**
@@ -581,14 +577,14 @@ public class HttpPage {
   /**
    * @return the fields
    */
-  public LinkedHashMap<String, AbstractHttpField> getFields() {
+  public Map<String, AbstractHttpField> getFields() {
     return fields;
   }
 
   /**
    * @param fields the fields to set
    */
-  private void setFields(LinkedHashMap<String, AbstractHttpField> fields) {
+  private void setFields(Map<String, AbstractHttpField> fields) {
     this.fields = fields;
   }
 

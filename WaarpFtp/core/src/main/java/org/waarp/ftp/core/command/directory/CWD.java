@@ -29,8 +29,6 @@ import org.waarp.ftp.core.file.FtpDir;
 
 /**
  * CWD command
- *
- *
  */
 public class CWD extends AbstractCommand {
   /**
@@ -52,7 +50,7 @@ public class CWD extends AbstractCommand {
     }
     if (current.changeDirectory(nextDir)) {
       getSession().setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                                "\"" + current.getPwd() +
+                                '"' + current.getPwd() +
                                 "\" is the new current directory");
     } else {
       getSession()

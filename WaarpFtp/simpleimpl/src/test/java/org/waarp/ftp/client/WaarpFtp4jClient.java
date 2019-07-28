@@ -41,13 +41,13 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
+
+import static org.waarp.common.digest.WaarpBC.*;
 
 /**
  * FTP client using FTP4J model (working in all modes)
- *
- *
  */
 public class WaarpFtp4jClient {
   /**
@@ -55,6 +55,11 @@ public class WaarpFtp4jClient {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpFtp4jClient.class);
+
+  static {
+    initializedTlsContext();
+  }
+
   protected FTPClient ftpClient;
   protected String result;
   String server;
@@ -113,12 +118,14 @@ public class WaarpFtp4jClient {
       };
       SSLContext sslContext = null;
       try {
-        sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustManager, new SecureRandom());
+        sslContext = getInstance();
+        sslContext.init(null, trustManager, getSecureRandom());
       } catch (final NoSuchAlgorithmException e) {
         throw new IllegalArgumentException("Bad algorithm", e);
       } catch (final KeyManagementException e) {
         throw new IllegalArgumentException("Bad KeyManagement", e);
+      } catch (NoSuchProviderException e) {
+        throw new IllegalArgumentException("Bad Provider", e);
       }
       final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
       ftpClient.setSSLSocketFactory(sslSocketFactory);
@@ -131,8 +138,8 @@ public class WaarpFtp4jClient {
       ftpClient = new FTPClient();
     }
     if (timeout > 0) {
-      System
-          .setProperty("ftp4j.activeDataTransfer.acceptTimeout", "" + timeout);
+      System.setProperty("ftp4j.activeDataTransfer.acceptTimeout",
+                         String.valueOf(timeout));
     }
     System.setProperty("ftp4j.activeDataTransfer.hostAddress", "127.0.0.1");
 
@@ -453,7 +460,6 @@ public class WaarpFtp4jClient {
           logger.error(result, e);
           return false;
         }
-        return true;
       } else {
         result = "Cannot finalize retrieve like operation";
         if (local == null) {
@@ -506,8 +512,8 @@ public class WaarpFtp4jClient {
             return false;
           }
         }
-        return true;
       }
+      return true;
     } catch (final IOException e) {
       result = "Cannot finalize operation";
       logger.error(result, e);

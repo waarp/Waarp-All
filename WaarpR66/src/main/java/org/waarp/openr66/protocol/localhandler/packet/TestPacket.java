@@ -28,17 +28,15 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Test class for packet
  * <p>
  * 3 strings: sheader,smiddle,send
- *
- *
  */
 public class TestPacket extends AbstractLocalPacket {
-  public static final int pingpong = 100;
+  public static final int PINGPONG = 100;
 
   private final String sheader;
 
   private final String smiddle;
 
-  private int code = 0;
+  private int code;
 
   public static TestPacket createFromBuffer(int headerLength, int middleLength,
                                             int endLength, ByteBuf buf) {
@@ -81,7 +79,7 @@ public class TestPacket extends AbstractLocalPacket {
 
   @Override
   public byte getType() {
-    if (code > pingpong) {
+    if (code > PINGPONG) {
       return LocalPacketFactory.VALIDPACKET;
     }
     return LocalPacketFactory.TESTPACKET;
@@ -89,7 +87,7 @@ public class TestPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "TestPacket: " + sheader + ":" + smiddle + ":" + code;
+    return "TestPacket: " + sheader + ':' + smiddle + ':' + code;
   }
 
   public void update() {

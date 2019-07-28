@@ -25,6 +25,8 @@ import org.w3c.dom.Node;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
+import javax.xml.XMLConstants;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -32,10 +34,13 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 
-public class XMLUtils {
+public final class XMLUtils {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(XMLUtils.class);
+
+  private XMLUtils() {
+  }
 
   public static Node createNode(Document document, String tag, String text) {
     final Node res = document.createElement(tag);
@@ -44,10 +49,12 @@ public class XMLUtils {
   }
 
   public static void writeToFile(File file, Document document) {
-    final TransformerFactory transformerFactory =
-        TransformerFactory.newInstance();
+    final TransformerFactory factory =//NOSONAR
+        TransformerFactory.newInstance();//NOSONAR
     try {
-      final Transformer transformer = transformerFactory.newTransformer();
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      final Transformer transformer = factory.newTransformer();
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
       final DOMSource domSource = new DOMSource(document);
       final StreamResult streamResult = new StreamResult(file);
       transformer.transform(domSource, streamResult);

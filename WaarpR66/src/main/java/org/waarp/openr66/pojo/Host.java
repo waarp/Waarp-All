@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import static org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration.*;
+import static org.waarp.openr66.configuration.FileBasedElements.*;
 
 /**
  * Host data object
@@ -56,7 +56,7 @@ public class Host {
   private boolean client;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ISPROXIFIED)
-  private boolean proxified = false;
+  private boolean proxified;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ADMIN)
   private boolean admin = true;

@@ -18,9 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *
- */
 package org.waarp.ftp.client;
 
 import java.io.IOException;
@@ -28,9 +25,6 @@ import java.io.OutputStream;
 
 /**
  * Simple /dev/null output stream
- *
- *
- *
  */
 public class NullOutputStream extends OutputStream {
 

@@ -42,8 +42,6 @@ import org.waarp.openr66.database.data.DbTaskRunner;
  * MB (base 10), and greater than 1000 bytes, and that the working and received
  * directories have enough space
  * to receive the file.
- *
- *
  */
 public class FileCheckTask extends AbstractTask {
   /**
@@ -52,11 +50,11 @@ public class FileCheckTask extends AbstractTask {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(FileCheckTask.class);
 
-  private static enum FC_COMMAND {
+  private enum FC_COMMAND {
     SIZE, DFCHECK
   }
 
-  private static enum FC_ARGSSIZE {
+  private enum FC_ARGSSIZE {
     LT, GT, LTE, GTE, EQ
   }
 
@@ -76,8 +74,7 @@ public class FileCheckTask extends AbstractTask {
     final DbTaskRunner runner = session.getRunner();
     if (runner == null) {
       // no information so in error
-      logger
-          .error("No Runner task so cannot check file: " + session.toString());
+      logger.error("No Runner task so cannot check file: " + session);
       futureCompletion.setFailure(
           new OpenR66RunnerException("No Runner task so cannot check File"));
       return;
@@ -85,16 +82,16 @@ public class FileCheckTask extends AbstractTask {
     final long supposelength = runner.getOriginalSize();
     if (supposelength <= 0) {
       // no information but could be not an error so ignore
-      logger.warn("No file size known: " + session.toString());
+      logger.warn("No file size known: " + session);
       futureCompletion.setSuccess();
       return;
     }
-    final String[] commands = argRule.split(" ");
+    final String[] commands = BLANK.split(argRule);
     int current = 0;
     while (current < commands.length) {
       if (commands[current].equalsIgnoreCase(FC_COMMAND.SIZE.name())) {
         current++;
-        FC_ARGSSIZE arg = null;
+        FC_ARGSSIZE arg;
         try {
           arg = FC_ARGSSIZE.valueOf(commands[current]);
         } catch (final IllegalArgumentException e) {
@@ -105,7 +102,7 @@ public class FileCheckTask extends AbstractTask {
           try {
             final long tocompare = Long.parseLong(commands[current]);
             current++;
-            boolean result = true;
+            boolean result;
             switch (arg) {
               case EQ:
                 result = supposelength == tocompare;
@@ -127,12 +124,12 @@ public class FileCheckTask extends AbstractTask {
                 break;
             }
             logger.debug(
-                "DEBUG: " + supposelength + " " + arg.name() + " " + tocompare);
-            if (result == false) {
+                "DEBUG: " + supposelength + ' ' + arg.name() + ' ' + tocompare);
+            if (!result) {
               // error so stop
               logger.error(
                   "File length is incompatible with specified SIZE comparizon: " +
-                  supposelength + " NOT " + arg.name() + " " + tocompare);
+                  supposelength + " NOT " + arg.name() + ' ' + tocompare);
               futureCompletion.setResult(
                   new R66Result(session, false, ErrorCode.SizeNotAllowed,
                                 runner));
@@ -180,7 +177,6 @@ public class FileCheckTask extends AbstractTask {
     }
     logger.debug("DEBUG: End of check " + supposelength);
     futureCompletion.setSuccess();
-    return;
   }
 
 }

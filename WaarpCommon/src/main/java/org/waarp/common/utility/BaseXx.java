@@ -49,7 +49,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final String getBase16(byte[] bytes) {
+  public static String getBase16(byte[] bytes) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);
     return BASE16.encode(bytes);
   }
@@ -61,7 +61,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final String getBase32(byte[] bytes) {
+  public static String getBase32(byte[] bytes) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);
     return BASE32.encode(bytes);
   }
@@ -73,7 +73,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final String getBase64UrlWithoutPadding(byte[] bytes) {
+  public static String getBase64UrlWithoutPadding(byte[] bytes) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);
     return BASE64_URL_WITHOUT_PADDING.encode(bytes);
   }
@@ -85,7 +85,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final String getBase64UrlWithPadding(byte[] bytes) {
+  public static String getBase64UrlWithPadding(byte[] bytes) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);
     return BASE64_URL_WITH_PADDING.encode(bytes);
   }
@@ -97,7 +97,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final String getBase64(byte[] bytes) {
+  public static String getBase64(byte[] bytes) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);
     return BASE64.encode(bytes);
   }
@@ -109,7 +109,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final byte[] getFromBase16(String base16) {
+  public static byte[] getFromBase16(String base16) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base16);
     return BASE16.decode(base16);
   }
@@ -121,7 +121,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final byte[] getFromBase32(String base32) {
+  public static byte[] getFromBase32(String base32) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base32);
     return BASE32.decode(base32);
   }
@@ -133,7 +133,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final byte[] getFromBase64UrlWithoutPadding(String base64) {
+  public static byte[] getFromBase64UrlWithoutPadding(String base64) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base64);
     return BASE64_URL_WITHOUT_PADDING.decode(base64);
   }
@@ -145,7 +145,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final byte[] getFromBase64UrlPadding(String base64Padding) {
+  public static byte[] getFromBase64UrlPadding(String base64Padding) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base64Padding);
     return BASE64_URL_WITH_PADDING.decode(base64Padding);
   }
@@ -157,7 +157,7 @@ public final class BaseXx {
    *
    * @throws IllegalArgumentException if argument is not compatible
    */
-  public static final byte[] getFromBase64(String base64Padding) {
+  public static byte[] getFromBase64(String base64Padding) {
     ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base64Padding);
     return BASE64.decode(base64Padding);
   }

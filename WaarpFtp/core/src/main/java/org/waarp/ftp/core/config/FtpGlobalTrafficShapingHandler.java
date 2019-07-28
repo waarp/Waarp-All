@@ -26,8 +26,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Global Traffic Shaping Handler for FTP
- *
- *
  */
 public class FtpGlobalTrafficShapingHandler
     extends GlobalChannelTrafficShapingHandler {

@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * XSHA1 command: takes a filename and returns the SHA-1 of the file
- *
- *
  */
 public class XSHA1 extends AbstractCommand {
   @Override

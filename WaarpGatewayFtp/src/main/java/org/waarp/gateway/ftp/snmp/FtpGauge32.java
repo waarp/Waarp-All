@@ -24,8 +24,6 @@ import org.waarp.snmp.interf.WaarpGauge32;
 
 /**
  * Ftp Exec Gauge32 SNMP implementation
- *
- *
  */
 class FtpGauge32 extends WaarpGauge32 {
 
@@ -36,13 +34,13 @@ class FtpGauge32 extends WaarpGauge32 {
   private int type = 1;
   private final int entry;
 
-  public FtpGauge32(int type, int entry) {
+  FtpGauge32(int type, int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  public FtpGauge32(int type, int entry, long value) {
+  FtpGauge32(int type, int entry, long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -50,7 +48,8 @@ class FtpGauge32 extends WaarpGauge32 {
 
   @Override
   protected void setInternalValue() {
-    FileBasedConfiguration.fileBasedConfiguration.monitoring.run(type, entry);
+    FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                 .run(type, entry);
   }
 
   @Override

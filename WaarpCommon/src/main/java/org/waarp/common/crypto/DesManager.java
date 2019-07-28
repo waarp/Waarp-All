@@ -21,8 +21,6 @@ package org.waarp.common.crypto;
 
 /**
  * This class implements a simple Key Manager for DES class from name
- *
- *
  */
 public class DesManager extends KeyManager {
   public static final DesManager desManager = new DesManager();

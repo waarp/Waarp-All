@@ -26,5 +26,5 @@ public interface CommanderInterface extends Runnable {
   /**
    * Finalize internal data
    */
-  public void finalize();
+  void finalizeCommander();
 }

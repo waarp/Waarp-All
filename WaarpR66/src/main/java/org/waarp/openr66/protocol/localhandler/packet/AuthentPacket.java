@@ -36,10 +36,10 @@ import org.waarp.openr66.protocol.utils.R66Versions;
  * header = "hostId" middle = "key bytes" end = localId + way + (optional
  * version: could be a JSON on the form
  * version.{})
- *
- *
  */
 public class AuthentPacket extends AbstractLocalPacket {
+  private static final String NOT_ENOUGH_DATA = "Not enough data";
+
   private static final byte ASKVALIDATE = 0;
 
   private static final byte ANSWERVALIDATE = 1;
@@ -69,13 +69,13 @@ public class AuthentPacket extends AbstractLocalPacket {
                                                ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     if (middleLength <= 0) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     if (endLength < 5) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
@@ -151,7 +151,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (hostId == null) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     header = Unpooled.wrappedBuffer(hostId.getBytes());
   }
@@ -160,7 +160,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (key == null) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     middle = Unpooled.wrappedBuffer(key);
   }
@@ -172,7 +172,7 @@ public class AuthentPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "AuthentPacket: " + hostId + " " + localId + " " + way + " " +
+    return "AuthentPacket: " + hostId + ' ' + localId + ' ' + way + ' ' +
            version;
   }
 
@@ -209,13 +209,13 @@ public class AuthentPacket extends AbstractLocalPacket {
    */
   public void validate(boolean isSSL) {
     way = ANSWERVALIDATE;
-    DbHostAuth auth = isSSL? Configuration.configuration.getHOST_SSLAUTH() :
-        Configuration.configuration.getHOST_AUTH();
+    DbHostAuth auth = isSSL? Configuration.configuration.getHostSslAuth() :
+        Configuration.configuration.getHostAuth();
     try {
       hostId = Configuration.configuration.getHostId(isSSL);
     } catch (final OpenR66ProtocolNoSslException e) {
-      hostId = Configuration.configuration.getHOST_ID();
-      auth = Configuration.configuration.getHOST_AUTH();
+      hostId = Configuration.configuration.getHostId();
+      auth = Configuration.configuration.getHostAuth();
     }
     key = FilesystemBasedDigest.passwdCrypt(auth.getHostkey());
     Configuration.configuration.getVersions().putIfAbsent(hostId,

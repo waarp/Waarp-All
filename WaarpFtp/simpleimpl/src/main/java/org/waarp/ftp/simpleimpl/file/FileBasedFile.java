@@ -28,8 +28,6 @@ import java.io.File;
 
 /**
  * FtpFile implementation based on true directories and files
- *
- *
  */
 public class FileBasedFile extends FilesystemBasedFtpFile {
   /**

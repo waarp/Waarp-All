@@ -283,7 +283,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
     return simpleClassName(this) + '(' + name() + ')';
   }
 
-  private static int BASELEVEL;
+  private static final int BASELEVEL;
   private static int LOGLEVEL;
 
   /**
@@ -291,18 +291,18 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return the default base level
    */
-  private static final int detectLoggingBaseLevel() {
+  private static int detectLoggingBaseLevel() {
     final StackTraceElement[] elt = Thread.currentThread().getStackTrace();
-    int i = 0;
+    int i;
     for (i = 0; i < elt.length; i++) {
-      if (elt[i].getMethodName().equalsIgnoreCase("detectLoggingBaseLevel")) {
+      if ("detectLoggingBaseLevel".equalsIgnoreCase(elt[i].getMethodName())) {
         break;
       }
     }
     return i;
   }
 
-  {
+  static {
     BASELEVEL = detectLoggingBaseLevel();
     LOGLEVEL = BASELEVEL + 2;
   }
@@ -347,7 +347,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return "MethodName(FileName:LineNumber) " from elt
    */
-  private static final String getMethodAndLine(final StackTraceElement elt) {
+  private static String getMethodAndLine(final StackTraceElement elt) {
     final StringBuilder builder =
         new StringBuilder(elt.getClassName()).append('.')
                                              .append(elt.getMethodName())

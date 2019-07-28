@@ -30,8 +30,6 @@ import java.util.List;
 
 /**
  * Local Packet Decoder
- *
- *
  */
 public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
   /**
@@ -86,9 +84,6 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
   @Override
   protected void encode(ChannelHandlerContext ctx, AbstractLocalPacket msg,
                         ByteBuf out) throws Exception {
-    /*
-     * if (msg instanceof ByteBuf) { out.writeBytes((ByteBuf) msg); return; }
-     */
     logger.trace("sending local packet {}", msg.getType());
     final ByteBuf buf = msg.getLocalPacket(null);
     out.writeBytes(buf);

@@ -26,6 +26,8 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.TrustManagerUtils;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -39,25 +41,25 @@ import java.net.SocketException;
 /**
  * FTP Client using Apache Commons net FTP client (not working using FTPS or
  * FTPSE)
- *
- *
  */
 public class WaarpFtpClient {
+  private static final String LOGIN_IN_ERROR = "Login in error";
+
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpFtpClient.class);
 
-  String server;
+  final String server;
   int port = 21;
-  String user;
-  String pwd;
-  String acct;
+  final String user;
+  final String pwd;
+  final String acct;
   int timeout;
   boolean isPassive;
-  int ssl; // -1 native, 1 auth
-  protected FTPClient ftpClient;
+  final int ssl; // -1 native, 1 auth
+  protected final FTPClient ftpClient;
   protected String result;
   private boolean binaryTransfer = true;
 
@@ -135,18 +137,18 @@ public class WaarpFtpClient {
           // no account
           if (!ftpClient.login(user, pwd)) {
             logout();
-            result = "Login in error";
+            result = LOGIN_IN_ERROR;
             logger.error(result);
             return false;
           }
         } else if (!ftpClient.login(user, pwd, acct)) {
           logout();
-          result = "Login in error";
+          result = LOGIN_IN_ERROR;
           logger.error(result);
           return false;
         }
       } catch (final IOException e) {
-        result = "Login in error";
+        result = LOGIN_IN_ERROR;
         logger.error(result, e);
         return false;
       }
@@ -299,7 +301,7 @@ public class WaarpFtpClient {
   public boolean transferFile(String local, String remote,
                               int getStoreOrAppend) {
     result = null;
-    boolean status = false;
+    boolean status;
     FileOutputStream output = null;
     FileInputStream fileInputStream = null;
     try {
@@ -311,43 +313,28 @@ public class WaarpFtpClient {
           // append
           status = ftpClient.appendFile(remote, fileInputStream);
         }
-        fileInputStream.close();
-        fileInputStream = null;
         if (!status) {
           result = "Cannot finalize store like operation";
           logger.error(result);
           return false;
         }
-        return true;
       } else {
         output = new FileOutputStream(new File(local, remote));
         status = ftpClient.retrieveFile(remote, output);
-        output.flush();
-        output.close();
-        output = null;
         if (!status) {
           result = "Cannot finalize retrieve like operation";
           logger.error(result);
           return false;
         }
-        return true;
       }
+      return true;
     } catch (final IOException e) {
-      if (output != null) {
-        try {
-          output.close();
-        } catch (final IOException e1) {
-        }
-      }
-      if (fileInputStream != null) {
-        try {
-          fileInputStream.close();
-        } catch (final IOException e1) {
-        }
-      }
       result = "Cannot finalize operation";
       logger.error(result, e);
       return false;
+    } finally {
+      FileUtils.close(output);
+      FileUtils.close(fileInputStream);
     }
   }
 
@@ -378,10 +365,10 @@ public class WaarpFtpClient {
    */
   public boolean featureEnabled(String feature) {
     try {
-      System.err.println(ftpClient.features());
+      SysErrLogger.FAKE_LOGGER.syserr(ftpClient.features());
       if (ftpClient.featureValue(feature) == null) {
-        final String result = ftpClient.getReplyString();
-        return result.contains(feature.toUpperCase());
+        final String resultNew = ftpClient.getReplyString();
+        return resultNew.contains(feature.toUpperCase());
       }
       return true;
     } catch (final IOException e) {
@@ -399,7 +386,7 @@ public class WaarpFtpClient {
   public String[] executeCommand(String params) {
     result = null;
     try {
-      System.err.println(params);
+      SysErrLogger.FAKE_LOGGER.syserr(params);
       final int pos = params.indexOf(' ');
       String command = params;
       String args = null;
@@ -428,7 +415,7 @@ public class WaarpFtpClient {
   public String[] executeSiteCommand(String params) {
     result = null;
     try {
-      System.err.println("SITE " + params);
+      SysErrLogger.FAKE_LOGGER.syserr("SITE " + params);
       String[] results = ftpClient.doCommandAsStrings("SITE", params);
       if (results == null) {
         results = new String[1];

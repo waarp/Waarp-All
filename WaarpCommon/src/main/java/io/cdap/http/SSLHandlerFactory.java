@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
 /**
@@ -61,7 +62,14 @@ public class SSLHandlerFactory {
   public SSLHandlerFactory(SSLConfig sslConfig) {
     String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
     if (algorithm == null) {
-      algorithm = "SunX509";
+      algorithm = "“X509";
+      try {
+        if (KeyManagerFactory.getInstance(algorithm) == null) {
+          algorithm = "SunX509";
+        }
+      } catch (NoSuchAlgorithmException e) {
+        algorithm = "SunX509";
+      }
     }
     try {
       final KeyStore ks =

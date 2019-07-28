@@ -33,6 +33,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -65,17 +66,18 @@ import java.util.List;
 
 /**
  * Rule Table object
- *
- *
  */
 public class DbRule extends AbstractDbData {
+  private static final String RULE_NOT_FOUND = "Rule not found";
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbRule.class);
+  private static final String[] STRING_0_LENGTH = new String[0];
+  private static final String[][] STRINGS_0_0_LENGTH = new String[0][0];
 
-  public static enum Columns {
+  public enum Columns {
     HOSTIDS, MODETRANS, RECVPATH, SENDPATH, ARCHIVEPATH, WORKPATH, RPRETASKS,
     RPOSTTASKS, RERRORTASKS, SPRETASKS, SPOSTTASKS, SERRORTASKS, UPDATEDINFO,
     IDRULE
@@ -89,54 +91,6 @@ public class DbRule extends AbstractDbData {
   };
 
   public static final String table = " RULES ";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLHOSTIDS =
-      "<" + RuleFileBasedConfiguration.XHOSTIDS + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLENDHOSTIDS =
-      "</" + RuleFileBasedConfiguration.XHOSTIDS + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLHOSTID =
-      "<" + RuleFileBasedConfiguration.XHOSTID + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLENDHOSTID =
-      "</" + RuleFileBasedConfiguration.XHOSTID + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLTASKS =
-      "<" + RuleFileBasedConfiguration.XTASKS + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLENDTASKS =
-      "</" + RuleFileBasedConfiguration.XTASKS + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLTASK =
-      "<" + RuleFileBasedConfiguration.XTASK + ">";
-
-  /**
-   * Internal context XML fields
-   */
-  private static final String XMLENDTASK =
-      "</" + RuleFileBasedConfiguration.XTASK + ">";
 
   /**
    * Internal context XML fields
@@ -166,13 +120,13 @@ public class DbRule extends AbstractDbData {
   public static final int NBPRKEY = 1;
 
   protected static final String selectAllFields =
-      Columns.HOSTIDS.name() + "," + Columns.MODETRANS.name() + "," +
-      Columns.RECVPATH.name() + "," + Columns.SENDPATH.name() + "," +
-      Columns.ARCHIVEPATH.name() + "," + Columns.WORKPATH.name() + "," +
-      Columns.RPRETASKS.name() + "," + Columns.RPOSTTASKS.name() + "," +
-      Columns.RERRORTASKS.name() + "," + Columns.SPRETASKS.name() + "," +
-      Columns.SPOSTTASKS.name() + "," + Columns.SERRORTASKS.name() + "," +
-      Columns.UPDATEDINFO.name() + "," + Columns.IDRULE.name();
+      Columns.HOSTIDS.name() + ',' + Columns.MODETRANS.name() + ',' +
+      Columns.RECVPATH.name() + ',' + Columns.SENDPATH.name() + ',' +
+      Columns.ARCHIVEPATH.name() + ',' + Columns.WORKPATH.name() + ',' +
+      Columns.RPRETASKS.name() + ',' + Columns.RPOSTTASKS.name() + ',' +
+      Columns.RERRORTASKS.name() + ',' + Columns.SPRETASKS.name() + ',' +
+      Columns.SPOSTTASKS.name() + ',' + Columns.SERRORTASKS.name() + ',' +
+      Columns.UPDATEDINFO.name() + ',' + Columns.IDRULE.name();
 
   protected static final String updateAllFields =
       Columns.HOSTIDS.name() + "=?," + Columns.MODETRANS.name() + "=?," +
@@ -353,7 +307,6 @@ public class DbRule extends AbstractDbData {
                 String sendPath, String archivePath, String workPath,
                 String rpreTasks, String rpostTasks, String rerrorTasks,
                 String spreTasks, String spostTasks, String serrorTasks) {
-    super();
     rule = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,
                     sendPath, archivePath, workPath,
                     fromLegacyTasks(getTasksRule(rpreTasks)),
@@ -371,7 +324,6 @@ public class DbRule extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public DbRule(String idRule) throws WaarpDatabaseException {
-    super();
     RuleDAO ruleAccess = null;
     try {
       ruleAccess = DAOFactory.getInstance().getRuleDAO();
@@ -380,7 +332,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Rule not found", e);
+      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
     } finally {
       if (ruleAccess != null) {
         ruleAccess.close();
@@ -389,7 +341,6 @@ public class DbRule extends AbstractDbData {
   }
 
   public DbRule(Rule rule) {
-    super();
     if (rule == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -419,9 +370,8 @@ public class DbRule extends AbstractDbData {
                 String[][] rpretasksArray, String[][] rposttasksArray,
                 String[][] rerrortasksArray, String[][] spretasksArray,
                 String[][] sposttasksArray, String[][] serrortasksArray) {
-    super();
     if (idsArrayRef == null) {
-      idsArrayRef = new String[0];
+      idsArrayRef = STRING_0_LENGTH;
     }
     rule =
         new Rule(idrule, mode, Arrays.asList(idsArrayRef), recvpath, sendpath,
@@ -442,7 +392,6 @@ public class DbRule extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public DbRule(ObjectNode source) throws WaarpDatabaseSqlException {
-    super();
     rule = new Rule();
     setFromJson(source, false);
     if (getIdRule() == null || getIdRule().isEmpty()) {
@@ -467,7 +416,7 @@ public class DbRule extends AbstractDbData {
    */
   public static DbRule[] deleteAll() throws WaarpDatabaseException {
     RuleDAO ruleAccess = null;
-    List<Rule> rules = null;
+    List<Rule> rules;
     try {
       ruleAccess = DAOFactory.getInstance().getRuleDAO();
       rules = ruleAccess.getAll();
@@ -497,7 +446,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Rule not found", e);
+      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
     } finally {
       if (ruleAccess != null) {
         ruleAccess.close();
@@ -545,7 +494,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Rule not found", e);
+      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
     } finally {
       if (ruleAccess != null) {
         ruleAccess.close();
@@ -563,7 +512,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Rule not found", e);
+      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
     } finally {
       if (ruleAccess != null) {
         ruleAccess.close();
@@ -575,7 +524,6 @@ public class DbRule extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbRule() {
-    super();
     rule = new Rule();
   }
 
@@ -591,7 +539,7 @@ public class DbRule extends AbstractDbData {
   public static DbRule[] getAllRules()
       throws WaarpDatabaseNoConnectionException {
     RuleDAO ruleAccess = null;
-    List<Rule> rules = null;
+    List<Rule> rules;
     try {
       ruleAccess = DAOFactory.getInstance().getRuleDAO();
       rules = ruleAccess.getAll();
@@ -680,10 +628,10 @@ public class DbRule extends AbstractDbData {
   private String[] getIdsRule(String idsref) {
     if (idsref == null) {
       // No ids so setting to the default!
-      return new String[0];
+      return STRING_0_LENGTH;
     }
     final StringReader reader = new StringReader(idsref);
-    Document document = null;
+    Document document;
     try {
       document = new SAXReader().read(reader);
       final XmlValue[] values =
@@ -692,9 +640,9 @@ public class DbRule extends AbstractDbData {
     } catch (final DocumentException e) {
       logger.warn("Unable to read the ids for Rule: " + idsref, e);
       // No ids so setting to the default!
-      return new String[0];
+      return STRING_0_LENGTH;
     } finally {
-      reader.close();
+      FileUtils.close(reader);
     }
   }
 
@@ -711,23 +659,23 @@ public class DbRule extends AbstractDbData {
   private String[][] getTasksRule(String tasks) {
     if (tasks == null) {
       // No tasks so setting to the default!
-      return new String[0][0];
+      return STRINGS_0_0_LENGTH;
     }
     final StringReader reader = new StringReader(tasks);
-    Document document = null;
+    Document document;
     try {
       document = new SAXReader().read(reader);
     } catch (final DocumentException e) {
       logger.info("Unable to read the tasks for Rule: " + tasks, e);
       // No tasks so setting to the default!
-      reader.close();
-      return new String[0][0];
+      FileUtils.close(reader);
+      return STRINGS_0_0_LENGTH;
     }
     final XmlValue[] values =
         XmlUtil.read(document, RuleFileBasedConfiguration.tasksDecl);
     final String[][] result =
         RuleFileBasedConfiguration.getTasksRule(values[0]);
-    reader.close();
+    FileUtils.close(reader);
     return result;
   }
 
@@ -829,7 +777,7 @@ public class DbRule extends AbstractDbData {
    * @return True if this rule is adapted for SENDMODE
    */
   public boolean isSendMode() {
-    return (!RequestPacket.isRecvMode(getMode()));
+    return !RequestPacket.isRecvMode(getMode());
   }
 
   /**
@@ -844,13 +792,12 @@ public class DbRule extends AbstractDbData {
    *
    * @return the string that displays this object
    *
-   * @see java.lang.Object#toString()
+   * @see Object#toString()
    */
   @Override
   public String toString() {
     return "Rule Name:" + getIdRule() + " IDS:" + rule.getXMLHostids() +
-           " MODETRANS: " +
-           RequestPacket.TRANSFERMODE.values()[getMode()].toString() +
+           " MODETRANS: " + RequestPacket.TRANSFERMODE.values()[getMode()] +
            " RECV:" + getRecvPath() + " SEND:" + getSendPath() + " ARCHIVE:" +
            getArchivePath() + " WORK:" + getWorkPath() + " RPRET:{" +
            rule.getXMLRPreTasks().replace('\n', ' ') + "} RPOST:{" +
@@ -858,7 +805,7 @@ public class DbRule extends AbstractDbData {
            rule.getXMLRErrorTasks().replace('\n', ' ') + "} SPRET:{" +
            rule.getXMLSPreTasks().replace('\n', ' ') + "} SPOST:{" +
            rule.getXMLSPostTasks().replace('\n', ' ') + "} SERROR:{" +
-           rule.getXMLSErrorTasks().replace('\n', ' ') + "}";
+           rule.getXMLSErrorTasks().replace('\n', ' ') + '}';
   }
 
   /**
@@ -871,22 +818,22 @@ public class DbRule extends AbstractDbData {
     if (isSender) {
       switch (step) {
         case PRETASK:
-          return "S:{" + rule.getXMLRPreTasks().replace('\n', ' ') + "}";
+          return "S:{" + rule.getXMLRPreTasks().replace('\n', ' ') + '}';
         case POSTTASK:
-          return "S:{" + rule.getXMLRPostTasks().replace('\n', ' ') + "}";
+          return "S:{" + rule.getXMLRPostTasks().replace('\n', ' ') + '}';
         case ERRORTASK:
-          return "S:{" + rule.getXMLRErrorTasks().replace('\n', ' ') + "}";
+          return "S:{" + rule.getXMLRErrorTasks().replace('\n', ' ') + '}';
         default:
           return "S:{no task}";
       }
     } else {
       switch (step) {
         case PRETASK:
-          return "R:{" + rule.getXMLSPreTasks().replace('\n', ' ') + "}";
+          return "R:{" + rule.getXMLSPreTasks().replace('\n', ' ') + '}';
         case POSTTASK:
-          return "R:{" + rule.getXMLSPostTasks().replace('\n', ' ') + "}";
+          return "R:{" + rule.getXMLSPostTasks().replace('\n', ' ') + '}';
         case ERRORTASK:
-          return "R:{" + rule.getXMLSErrorTasks().replace('\n', ' ') + "}";
+          return "R:{" + rule.getXMLSErrorTasks().replace('\n', ' ') + '}';
         default:
           return "R:{no task}";
       }
@@ -898,11 +845,11 @@ public class DbRule extends AbstractDbData {
    *
    * @return the string that displays this object
    *
-   * @see java.lang.Object#toString()
+   * @see Object#toString()
    */
   public String toShortString() {
     return "Rule Name:" + getIdRule() + " MODETRANS: " +
-           RequestPacket.TRANSFERMODE.values()[getMode()].toString();
+           RequestPacket.TRANSFERMODE.values()[getMode()];
   }
 
   /**
@@ -968,7 +915,7 @@ public class DbRule extends AbstractDbData {
       preparedStatement.executeQuery();
       int nb = 0;
       while (preparedStatement.getNext()) {
-        final DbRule rule = DbRule.getFromStatement(preparedStatement);
+        final DbRule rule = getFromStatement(preparedStatement);
         final ObjectNode node = rule.getInternalJson();
         arrayNode.add(node);
         nb++;
@@ -985,7 +932,7 @@ public class DbRule extends AbstractDbData {
 
   private ObjectNode getInternalJson() {
     final ObjectNode node = getJson();
-    if (rule.getHostids().size() == 0) {
+    if (rule.getHostids().isEmpty()) {
       node.put(Columns.HOSTIDS.name(), "");
     }
     if (rule.getRecvPath() == null) {
@@ -1000,22 +947,22 @@ public class DbRule extends AbstractDbData {
     if (rule.getWorkPath() == null) {
       node.put(Columns.WORKPATH.name(), "");
     }
-    if (rule.getRPreTasks().size() == 0) {
+    if (rule.getRPreTasks().isEmpty()) {
       node.put(Columns.RPRETASKS.name(), "");
     }
-    if (rule.getRPostTasks().size() == 0) {
+    if (rule.getRPostTasks().isEmpty()) {
       node.put(Columns.RPOSTTASKS.name(), "");
     }
-    if (rule.getRErrorTasks().size() == 0) {
+    if (rule.getRErrorTasks().isEmpty()) {
       node.put(Columns.RERRORTASKS.name(), "");
     }
-    if (rule.getSPreTasks().size() == 0) {
+    if (rule.getSPreTasks().isEmpty()) {
       node.put(Columns.SPRETASKS.name(), "");
     }
-    if (rule.getSPostTasks().size() == 0) {
+    if (rule.getSPostTasks().isEmpty()) {
       node.put(Columns.SPOSTTASKS.name(), "");
     }
-    if (rule.getSErrorTasks().size() == 0) {
+    if (rule.getSErrorTasks().isEmpty()) {
       node.put(Columns.SERRORTASKS.name(), "");
     }
     return node;
@@ -1192,7 +1139,7 @@ public class DbRule extends AbstractDbData {
    * @return the idsArray
    */
   public String[] getIdsArray() {
-    return rule.getHostids().toArray(new String[0]);
+    return rule.getHostids().toArray(STRING_0_LENGTH);
   }
 
   /**
@@ -1240,9 +1187,8 @@ public class DbRule extends AbstractDbData {
   private List<RuleTask> fromLegacyTasks(String[][] tasks) {
     final int size = tasks.length;
     final List<RuleTask> res = new ArrayList<RuleTask>(size);
-    for (int i = 0; i < size; i++) {
-      res.add(new RuleTask(tasks[i][0], tasks[i][1],
-                           Integer.parseInt(tasks[i][2])));
+    for (final String[] task : tasks) {
+      res.add(new RuleTask(task[0], task[1], Integer.parseInt(task[2])));
     }
     return res;
   }

@@ -23,8 +23,6 @@ import org.waarp.common.file.FileParameterInterface;
 
 /**
  * FileParameter implementation for Filesystem Based
- *
- *
  */
 public class FilesystemBasedFileParameterImpl
     implements FileParameterInterface {

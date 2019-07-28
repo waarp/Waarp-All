@@ -40,8 +40,8 @@ import java.net.InetSocketAddress;
  */
 public class LocalExecServer {
 
-  static EventLoopGroup workerGroup = new NioEventLoopGroup();
-  static EventExecutorGroup executor =
+  static final EventLoopGroup workerGroup = new NioEventLoopGroup();
+  static final EventExecutorGroup executor =
       new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),
                                     new WaarpThreadFactory("LocalExecServer"));
 
@@ -74,8 +74,7 @@ public class LocalExecServer {
     // Configure the server.
     try {
       final ServerBootstrap bootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(bootstrap, workerGroup, 30000);
+      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
 
       // Configure the pipeline factory.
       bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));

@@ -37,15 +37,16 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Class that filter exceptions
- *
- *
  */
-public class OpenR66ExceptionTrappedFactory {
+public final class OpenR66ExceptionTrappedFactory {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(OpenR66ExceptionTrappedFactory.class);
+
+  private OpenR66ExceptionTrappedFactory() {
+  }
 
   /**
    * @param channel
@@ -57,97 +58,92 @@ public class OpenR66ExceptionTrappedFactory {
    */
   public static OpenR66Exception getExceptionFromTrappedException(
       Channel channel, Throwable throwable) {
-    final Throwable e1 = throwable;
-    if (e1 instanceof ConnectException) {
-      final ConnectException e2 = (ConnectException) e1;
+    if (throwable instanceof ConnectException) {
+      final ConnectException e2 = (ConnectException) throwable;
       logger.debug("Connection impossible since {} with Channel {}",
                    e2.getMessage(), channel);
       return new OpenR66ProtocolNoConnectionException("Connection impossible",
                                                       e2);
-    } else if (e1 instanceof ChannelException) {
-      final ChannelException e2 = (ChannelException) e1;
+    } else if (throwable instanceof ChannelException) {
+      final ChannelException e2 = (ChannelException) throwable;
       logger.info(
           "Connection (example: timeout) impossible since {} with Channel {}",
           e2.getMessage(), channel);
       return new OpenR66ProtocolNetworkException(
           "Connection (example: timeout) impossible", e2);
-    } else if (e1 instanceof CancelledKeyException) {
-      final CancelledKeyException e2 = (CancelledKeyException) e1;
+    } else if (throwable instanceof CancelledKeyException) {
+      final CancelledKeyException e2 = (CancelledKeyException) throwable;
       logger.error("Connection aborted since {}", e2.getMessage());
       // Is it really what we should do ?
       // Yes, No action
       return null;
-    } else if (e1 instanceof ClosedChannelException) {
+    } else if (throwable instanceof ClosedChannelException) {
       logger.debug("Connection closed before end");
       return new OpenR66ProtocolBusinessNoWriteBackException(
-          "Connection closed before end", e1);
-    } else if (e1 instanceof IllegalMonitorStateException) {
-      logger.debug("Try to release a lock incorrectly", e1);
+          "Connection closed before end", throwable);
+    } else if (throwable instanceof IllegalMonitorStateException) {
+      logger.debug("Try to release a lock incorrectly", throwable);
       return new OpenR66ProtocolBusinessNoWriteBackException(
-          "Ignored exception", e1);
-    } else if (e1 instanceof OpenR66ProtocolBusinessCancelException) {
+          "Ignored exception", throwable);
+    } else if (throwable instanceof OpenR66ProtocolBusinessCancelException) {
       final OpenR66ProtocolBusinessCancelException e2 =
-          (OpenR66ProtocolBusinessCancelException) e1;
+          (OpenR66ProtocolBusinessCancelException) throwable;
       logger.debug("Request is canceled: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66ProtocolBusinessStopException) {
+    } else if (throwable instanceof OpenR66ProtocolBusinessStopException) {
       final OpenR66ProtocolBusinessStopException e2 =
-          (OpenR66ProtocolBusinessStopException) e1;
+          (OpenR66ProtocolBusinessStopException) throwable;
       logger.debug("Request is stopped: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66ProtocolBusinessQueryAlreadyFinishedException) {
+    } else if (throwable instanceof OpenR66ProtocolBusinessQueryAlreadyFinishedException) {
       final OpenR66ProtocolBusinessQueryAlreadyFinishedException e2 =
-          (OpenR66ProtocolBusinessQueryAlreadyFinishedException) e1;
+          (OpenR66ProtocolBusinessQueryAlreadyFinishedException) throwable;
       logger.debug("Request is already finished: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66ProtocolBusinessQueryStillRunningException) {
+    } else if (throwable instanceof OpenR66ProtocolBusinessQueryStillRunningException) {
       final OpenR66ProtocolBusinessQueryStillRunningException e2 =
-          (OpenR66ProtocolBusinessQueryStillRunningException) e1;
+          (OpenR66ProtocolBusinessQueryStillRunningException) throwable;
       logger.debug("Request is still running: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66ProtocolBusinessRemoteFileNotFoundException) {
+    } else if (throwable instanceof OpenR66ProtocolBusinessRemoteFileNotFoundException) {
       final OpenR66ProtocolBusinessRemoteFileNotFoundException e2 =
-          (OpenR66ProtocolBusinessRemoteFileNotFoundException) e1;
+          (OpenR66ProtocolBusinessRemoteFileNotFoundException) throwable;
       logger.debug("Remote server did not find file: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66ProtocolBusinessNoWriteBackException) {
+    } else if (throwable instanceof OpenR66ProtocolBusinessNoWriteBackException) {
       final OpenR66ProtocolBusinessNoWriteBackException e2 =
-          (OpenR66ProtocolBusinessNoWriteBackException) e1;
+          (OpenR66ProtocolBusinessNoWriteBackException) throwable;
       logger.error("Command Error Reply: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66ProtocolShutdownException) {
+    } else if (throwable instanceof OpenR66ProtocolShutdownException) {
       final OpenR66ProtocolShutdownException e2 =
-          (OpenR66ProtocolShutdownException) e1;
+          (OpenR66ProtocolShutdownException) throwable;
       logger.debug("Command Shutdown {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof OpenR66Exception) {
-      final OpenR66Exception e2 = (OpenR66Exception) e1;
+    } else if (throwable instanceof OpenR66Exception) {
+      final OpenR66Exception e2 = (OpenR66Exception) throwable;
       logger.debug("Command Error Reply: {}", e2.getMessage());
       return e2;
-    } else if (e1 instanceof BindException) {
-      final BindException e2 = (BindException) e1;
+    } else if (throwable instanceof BindException) {
+      final BindException e2 = (BindException) throwable;
       logger.debug("Address already in use {}", e2.getMessage());
       return new OpenR66ProtocolNetworkException("Address already in use", e2);
-    } else if (e1 instanceof NotYetConnectedException) {
-      final NotYetConnectedException e2 = (NotYetConnectedException) e1;
+    } else if (throwable instanceof NotYetConnectedException) {
+      final NotYetConnectedException e2 = (NotYetConnectedException) throwable;
       logger.debug("Timeout occurs {}", e2.getMessage());
       return new OpenR66ProtocolNetworkException("Timeout occurs", e2);
-    } else if (e1 instanceof ConnectException) {
-      final ConnectException e2 = (ConnectException) e1;
-      logger.debug("Timeout occurs {}", e2.getMessage());
-      return new OpenR66ProtocolNetworkException("Timeout occurs", e2);
-    } else if (e1 instanceof NullPointerException) {
-      final NullPointerException e2 = (NullPointerException) e1;
+    } else if (throwable instanceof NullPointerException) {
+      final NullPointerException e2 = (NullPointerException) throwable;
       logger.error("Null pointer Exception", e2);
       return new OpenR66ProtocolSystemException("Null Pointer Exception", e2);
-    } else if (e1 instanceof SSLException) {
-      final SSLException e2 = (SSLException) e1;
+    } else if (throwable instanceof SSLException) {
+      final SSLException e2 = (SSLException) throwable;
       logger.debug("Connection aborted since SSL Error {} with Channel {}",
                    e2.getMessage(), channel);
       return new OpenR66ProtocolBusinessNoWriteBackException(
           "SSL Connection aborted", e2);
-    } else if (e1 instanceof IOException) {
-      final IOException e2 = (IOException) e1;
+    } else if (throwable instanceof IOException) {
+      final IOException e2 = (IOException) throwable;
       logger
           .debug("Connection aborted since {} with Channel {}", e2.getMessage(),
                  channel);
@@ -158,8 +154,9 @@ public class OpenR66ExceptionTrappedFactory {
         return new OpenR66ProtocolBusinessNoWriteBackException(
             "Connection aborted due to " + e2.getMessage(), e2);
       }
-    } else if (e1 instanceof RejectedExecutionException) {
-      final RejectedExecutionException e2 = (RejectedExecutionException) e1;
+    } else if (throwable instanceof RejectedExecutionException) {
+      final RejectedExecutionException e2 =
+          (RejectedExecutionException) throwable;
       logger
           .debug("Connection aborted since {} with Channel {}", e2.getMessage(),
                  channel);
@@ -169,26 +166,28 @@ public class OpenR66ExceptionTrappedFactory {
         return new OpenR66ProtocolBusinessNoWriteBackException(
             "Execution aborted", e2);
       }
-    } else if (e1 instanceof OutOfMemoryError) {
+    } else if (throwable instanceof OutOfMemoryError) {
       final OpenR66ProtocolShutdownException e2 =
-          new OpenR66ProtocolShutdownException("Restart since OOME raized", e1);
+          new OpenR66ProtocolShutdownException("Restart since OOME raized",
+                                               throwable);
       logger.debug("Force Shutdown and Restart : {}", e2.getMessage());
       if (Configuration.configuration.getR66Mib() != null) {
         Configuration.configuration.getR66Mib().notifyWarning(
-            "OOME so shutdown and restart", e1.getMessage());
+            "OOME so shutdown and restart", throwable.getMessage());
       }
       WaarpShutdownHook.setRestart(true);
       return e2;
     } else {
-      logger.error("Unexpected exception from Outband" + " Ref Channel: " +
-                   channel.toString(), e1);
+      logger.error(
+          "Unexpected exception from Outband" + " Ref Channel: " + channel,
+          throwable);
     }
     if (Configuration.configuration.getR66Mib() != null) {
       Configuration.configuration.getR66Mib()
                                  .notifyWarning("Unexpected exception",
-                                                e1.getMessage());
+                                                throwable.getMessage());
     }
     return new OpenR66ProtocolSystemException(
-        "Unexpected exception: " + e1.getMessage(), e1);
+        "Unexpected exception: " + throwable.getMessage(), throwable);
   }
 }

@@ -29,6 +29,8 @@ import static org.junit.Assert.*;
 
 public class MessageFormatterTest {
 
+  private static final Object[] OBJECT_ARRAY_0 = new Object[0];
+
   @Test
   public void testGlobal() {
     boolean boolean0 = MessageFormatter.isDoubleEscaped("ENUM$VALUES", 5);
@@ -51,7 +53,7 @@ public class MessageFormatterTest {
     assertNotNull(formattingTuple0);
     formattingTuple0 = MessageFormatter.format(null, null);
     assertNotNull(formattingTuple0);
-    objectArray0 = new Object[0];
+    objectArray0 = OBJECT_ARRAY_0;
     formattingTuple0 = MessageFormatter.arrayFormat("6J]Ulo:L>", objectArray0);
     assertNotNull(formattingTuple0);
     formattingTuple0 =
@@ -103,7 +105,7 @@ public class MessageFormatterTest {
     assertTrue(sbuild.length() > 0);
     sbuild.setLength(0);
 
-    final float[] of = { (float) 1.5 };
+    final float[] of = { 1.5f };
     MessageFormatter.deeplyAppendParameter(sbuild, of, seenMap);
     assertTrue(sbuild.length() > 0);
     sbuild.setLength(0);

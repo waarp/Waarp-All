@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol Exception when no SSL is supported
- *
- *
  */
 public class OpenR66ProtocolNoSslException extends OpenR66Exception {
   /**
@@ -34,7 +32,6 @@ public class OpenR66ProtocolNoSslException extends OpenR66Exception {
    *
    */
   public OpenR66ProtocolNoSslException() {
-    super();
   }
 
   /**

@@ -30,8 +30,6 @@ import java.sql.SQLException;
 
 /**
  * Empty DbModel
- *
- *
  */
 public class EmptyDbModel implements DbModel {
 
@@ -39,6 +37,7 @@ public class EmptyDbModel implements DbModel {
    *
    */
   public EmptyDbModel() {
+    // nothing
   }
 
   @Override
@@ -49,6 +48,7 @@ public class EmptyDbModel implements DbModel {
 
   @Override
   public void releaseResources() {
+    // nothing
   }
 
   @Override
@@ -64,11 +64,13 @@ public class EmptyDbModel implements DbModel {
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
+    // nothing
   }
 
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
+    // nothing
   }
 
   @Override
@@ -81,6 +83,7 @@ public class EmptyDbModel implements DbModel {
   @Override
   public void validConnection(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
+    // nothing
   }
 
   @Override

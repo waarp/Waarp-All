@@ -28,8 +28,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * ACCT command
- *
- *
  */
 public class ACCT extends AbstractCommand {
   @Override

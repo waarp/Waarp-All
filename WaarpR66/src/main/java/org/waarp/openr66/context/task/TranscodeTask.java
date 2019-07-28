@@ -60,8 +60,6 @@ import java.io.File;
  * toFilename toCharset<br>
  * <p>
  * The current file is not touched and is not marked as moved.
- *
- *
  */
 public class TranscodeTask extends AbstractTask {
   /**
@@ -83,40 +81,41 @@ public class TranscodeTask extends AbstractTask {
 
   @Override
   public void run() {
-    boolean success = false;
+    boolean success;
     final DbTaskRunner runner = session.getRunner();
     String arg = argRule;
-    arg = getReplacedValue(arg, argTransfer.split(" "));
-    final String[] args = arg.split(" ");
-    boolean dos2unix = false, unix2dos = false;
+    arg = getReplacedValue(arg, BLANK.split(argTransfer));
+    final String[] args = BLANK.split(arg);
+    boolean dos2unix = false;
+    boolean unix2dos = false;
     String fromCharset = null;
     String toCharset = null;
     String newfilename = null;
     String extension = null;
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-from")) {
+      if ("-from".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           fromCharset = args[i];
         }
-      } else if (args[i].equalsIgnoreCase("-to")) {
+      } else if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           toCharset = args[i];
         }
-      } else if (args[i].equalsIgnoreCase("-newfile")) {
+      } else if ("-newfile".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           newfilename = args[i];
         }
-      } else if (args[i].equalsIgnoreCase("-extension")) {
+      } else if ("-extension".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           extension = args[i];
         }
-      } else if (args[i].equalsIgnoreCase("-dos2unix")) {
+      } else if ("-dos2unix".equalsIgnoreCase(args[i])) {
         dos2unix = true;
-      } else if (args[i].equalsIgnoreCase("-unix2dos")) {
+      } else if ("-unix2dos".equalsIgnoreCase(args[i])) {
         unix2dos = true;
       }
     }
@@ -152,7 +151,7 @@ public class TranscodeTask extends AbstractTask {
               new R66Result(session, false, ErrorCode.Internal, runner);
           futureCompletion.setResult(result);
           logger.error(
-              "Cannot Transcode " + argRule + ":" + argTransfer + " and " +
+              "Cannot Transcode " + argRule + ':' + argTransfer + " and " +
               session);
           futureCompletion.setFailure(
               new OpenR66ProtocolSystemException("Cannot Transcode file"));
@@ -165,7 +164,7 @@ public class TranscodeTask extends AbstractTask {
     if (newfilename != null) {
       finalname = newfilename;
     } else if (extension != null) {
-      finalname = from.getAbsolutePath() + "." + extension;
+      finalname = from.getAbsolutePath() + '.' + extension;
     } else {
       finalname = from.getAbsolutePath() + ".transcode";
     }
@@ -181,7 +180,7 @@ public class TranscodeTask extends AbstractTask {
         futureCompletion.setSuccess();
       } else {
         // only warning
-        logger.warn("Cannot Unix/Dos Transcode " + to + " : " + argRule + ":" +
+        logger.warn("Cannot Unix/Dos Transcode " + to + " : " + argRule + ':' +
                     argTransfer + " and " + session);
         futureCompletion.setSuccess();
       }
@@ -191,7 +190,7 @@ public class TranscodeTask extends AbstractTask {
       futureCompletion.setSuccess();
     } else {
       logger.error("Cannot Transcode from " + fromCharset + " to " + toCharset +
-                   " with " + argRule + ":" + argTransfer + " and " + session);
+                   " with " + argRule + ':' + argTransfer + " and " + session);
       futureCompletion.setFailure(
           new OpenR66ProtocolSystemException("Cannot Transcode file"));
     }

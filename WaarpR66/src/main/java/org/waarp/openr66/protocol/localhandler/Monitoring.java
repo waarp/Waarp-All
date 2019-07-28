@@ -33,7 +33,6 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.commander.CommanderNoDb;
 import org.waarp.openr66.context.ErrorCode;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -45,130 +44,130 @@ import org.waarp.snmp.r66.WaarpPrivateMib.WaarpDetailedValuesIndex;
 import org.waarp.snmp.r66.WaarpPrivateMib.WaarpErrorValuesIndex;
 import org.waarp.snmp.r66.WaarpPrivateMib.WaarpGlobalValuesIndex;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Monitoring class as an helper to get values of interest. Also used by SNMP
  * support.
- *
- *
  */
 public class Monitoring implements WaarpInterfaceMonitor {
   /**
    * Internal Logger
    */
-  private static WaarpLogger logger =
+  private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(Monitoring.class);
 
   public WaarpSnmpAgent agent;
 
   // global informations
-  public long nbNetworkConnection = 0;
-  public long secondsRunning = 0;
-  public long nbThread = 0;
-  public long bandwidthIn = 0;
-  public long bandwidthOut = 0;
+  public long nbNetworkConnection;
+  public long secondsRunning;
+  public long nbThread;
+  public long bandwidthIn;
+  public long bandwidthOut;
 
   // Internal data
   private final long startMonitor = System.currentTimeMillis();
-  private long pastLimit = 0;
-  private long currentLimit = 0;
-  private long minimalDelay = 0;
-  private long lastTry = 0;
-  private DbSession dbSession = null;
+  private final long pastLimit;
+  private long currentLimit;
+  private final long minimalDelay;
+  private long lastTry;
+  private DbSession dbSession;
   private final TrafficCounter trafficCounter =
       Configuration.configuration.getGlobalTrafficShapingHandler()
                                  .trafficCounter();
 
   // Overall status including past, future and current transfers
-  private DbPreparedStatement countInfo = null;
+  private DbPreparedStatement countInfo;
 
   // Current situation of all transfers, running or not
-  private DbPreparedStatement countInActiveTransfer = null;
-  private DbPreparedStatement countOutActiveTransfer = null;
-  private DbPreparedStatement countInTotalTransfer = null;
-  private DbPreparedStatement countOutTotalTransfer = null;
-  private DbPreparedStatement countInErrorTransfer = null;
-  private DbPreparedStatement countOutErrorTransfer = null;
-  private DbPreparedStatement countStepAllTransfer = null;
-  private DbPreparedStatement countStepNotask = null;
-  private DbPreparedStatement countStepPretask = null;
-  private DbPreparedStatement countStepTransfer = null;
-  private DbPreparedStatement countStepPosttask = null;
-  private DbPreparedStatement countStepAllDone = null;
-  private DbPreparedStatement countStepError = null;
+  private DbPreparedStatement countInActiveTransfer;
+  private DbPreparedStatement countOutActiveTransfer;
+  private DbPreparedStatement countInTotalTransfer;
+  private DbPreparedStatement countOutTotalTransfer;
+  private DbPreparedStatement countInErrorTransfer;
+  private DbPreparedStatement countOutErrorTransfer;
+  private DbPreparedStatement countStepAllTransfer;
+  private DbPreparedStatement countStepNotask;
+  private DbPreparedStatement countStepPretask;
+  private DbPreparedStatement countStepTransfer;
+  private DbPreparedStatement countStepPosttask;
+  private DbPreparedStatement countStepAllDone;
+  private DbPreparedStatement countStepError;
 
   // First on Running Transfers only
-  private DbPreparedStatement countAllRunningStep = null;
-  private DbPreparedStatement countRunningStep = null;
-  private DbPreparedStatement countInitOkStep = null;
-  private DbPreparedStatement countPreProcessingOkStep = null;
-  private DbPreparedStatement countTransferOkStep = null;
-  private DbPreparedStatement countPostProcessingOkStep = null;
-  private DbPreparedStatement countCompleteOkStep = null;
+  private DbPreparedStatement countAllRunningStep;
+  private DbPreparedStatement countRunningStep;
+  private DbPreparedStatement countInitOkStep;
+  private DbPreparedStatement countPreProcessingOkStep;
+  private DbPreparedStatement countTransferOkStep;
+  private DbPreparedStatement countPostProcessingOkStep;
+  private DbPreparedStatement countCompleteOkStep;
 
   // Error Status on all transfers
-  private DbPreparedStatement countStatus = null;
+  private DbPreparedStatement countStatus;
 
   // Overall status including past, future and current transfers
-  public long nbCountInfoUnknown = 0;
-  public long nbCountInfoNotUpdated = 0;
-  public long nbCountInfoInterrupted = 0;
-  public long nbCountInfoToSubmit = 0;
-  public long nbCountInfoError = 0;
-  public long nbCountInfoRunning = 0;
-  public long nbCountInfoDone = 0;
+  public long nbCountInfoUnknown;
+  public long nbCountInfoNotUpdated;
+  public long nbCountInfoInterrupted;
+  public long nbCountInfoToSubmit;
+  public long nbCountInfoError;
+  public long nbCountInfoRunning;
+  public long nbCountInfoDone;
 
-  public long nbInActiveTransfer = 0;
-  public long nbOutActiveTransfer = 0;
+  public long nbInActiveTransfer;
+  public long nbOutActiveTransfer;
   public long lastInActiveTransfer = System.currentTimeMillis();
   public long lastOutActiveTransfer = System.currentTimeMillis();
-  public long nbInTotalTransfer = 0;
-  public long nbOutTotalTransfer = 0;
-  public long nbInErrorTransfer = 0;
-  public long nbOutErrorTransfer = 0;
+  public long nbInTotalTransfer;
+  public long nbOutTotalTransfer;
+  public long nbInErrorTransfer;
+  public long nbOutErrorTransfer;
 
   // Current situation of all transfers, running or not
-  public long nbCountStepAllTransfer = 0;
-  public long nbCountStepNotask = 0;
-  public long nbCountStepPretask = 0;
-  public long nbCountStepTransfer = 0;
-  public long nbCountStepPosttask = 0;
-  public long nbCountStepAllDone = 0;
-  public long nbCountStepError = 0;
+  public long nbCountStepAllTransfer;
+  public long nbCountStepNotask;
+  public long nbCountStepPretask;
+  public long nbCountStepTransfer;
+  public long nbCountStepPosttask;
+  public long nbCountStepAllDone;
+  public long nbCountStepError;
 
   // First on Running Transfers only
-  public long nbCountAllRunningStep = 0;
-  public long nbCountRunningStep = 0;
-  public long nbCountInitOkStep = 0;
-  public long nbCountPreProcessingOkStep = 0;
-  public long nbCountTransferOkStep = 0;
-  public long nbCountPostProcessingOkStep = 0;
-  public long nbCountCompleteOkStep = 0;
+  public long nbCountAllRunningStep;
+  public long nbCountRunningStep;
+  public long nbCountInitOkStep;
+  public long nbCountPreProcessingOkStep;
+  public long nbCountTransferOkStep;
+  public long nbCountPostProcessingOkStep;
+  public long nbCountCompleteOkStep;
 
   // Error Status on all transfers
-  public long nbCountStatusConnectionImpossible = 0;
-  public long nbCountStatusServerOverloaded = 0;
-  public long nbCountStatusBadAuthent = 0;
-  public long nbCountStatusExternalOp = 0;
-  public long nbCountStatusTransferError = 0;
-  public long nbCountStatusMD5Error = 0;
-  public long nbCountStatusDisconnection = 0;
-  public long nbCountStatusFinalOp = 0;
-  public long nbCountStatusUnimplemented = 0;
-  public long nbCountStatusInternal = 0;
-  public long nbCountStatusWarning = 0;
-  public long nbCountStatusQueryAlreadyFinished = 0;
-  public long nbCountStatusQueryStillRunning = 0;
-  public long nbCountStatusNotKnownHost = 0;
-  public long nbCountStatusQueryRemotelyUnknown = 0;
-  public long nbCountStatusCommandNotFound = 0;
-  public long nbCountStatusPassThroughMode = 0;
-  public long nbCountStatusRemoteShutdown = 0;
-  public long nbCountStatusShutdown = 0;
-  public long nbCountStatusRemoteError = 0;
-  public long nbCountStatusStopped = 0;
-  public long nbCountStatusCanceled = 0;
-  public long nbCountStatusFileNotFound = 0;
-  public long nbCountStatusUnknown = 0;
+  public long nbCountStatusConnectionImpossible;
+  public long nbCountStatusServerOverloaded;
+  public long nbCountStatusBadAuthent;
+  public long nbCountStatusExternalOp;
+  public long nbCountStatusTransferError;
+  public long nbCountStatusMD5Error;
+  public long nbCountStatusDisconnection;
+  public long nbCountStatusFinalOp;
+  public long nbCountStatusUnimplemented;
+  public long nbCountStatusInternal;
+  public long nbCountStatusWarning;
+  public long nbCountStatusQueryAlreadyFinished;
+  public long nbCountStatusQueryStillRunning;
+  public long nbCountStatusNotKnownHost;
+  public long nbCountStatusQueryRemotelyUnknown;
+  public long nbCountStatusCommandNotFound;
+  public long nbCountStatusPassThroughMode;
+  public long nbCountStatusRemoteShutdown;
+  public long nbCountStatusShutdown;
+  public long nbCountStatusRemoteError;
+  public long nbCountStatusStopped;
+  public long nbCountStatusCanceled;
+  public long nbCountStatusFileNotFound;
+  public long nbCountStatusUnknown;
 
   /**
    * @param pastLimit
@@ -182,14 +181,14 @@ public class Monitoring implements WaarpInterfaceMonitor {
       dbSession = session;
     } else {
       // FIXME always true since change for DbAdmin
-      if (DbConstant.admin.isActive()) {
+      if (admin.isActive()) {
         try {
-          dbSession = new DbSession(DbConstant.admin, false);
+          dbSession = new DbSession(admin, false);
         } catch (final WaarpDatabaseNoConnectionException e) {
-          dbSession = DbConstant.admin.getSession();
+          dbSession = admin.getSession();
         }
       } else {
-        dbSession = DbConstant.admin.getSession();
+        dbSession = admin.getSession();
       }
     }
     initialize();
@@ -262,8 +261,10 @@ public class Monitoring implements WaarpInterfaceMonitor {
 
       // Error Status on all transfers
       countStatus = DbTaskRunner.getCountStatusPrepareStatement(dbSession);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-    } catch (final WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseNoConnectionException ignored) {
+      // ignore
+    } catch (final WaarpDatabaseSqlException ignored) {
+      // ignore
     }
   }
 
@@ -307,9 +308,10 @@ public class Monitoring implements WaarpInterfaceMonitor {
 
       // Error Status on all transfers
       countStatus.realClose();
-    } catch (final Exception e) {
+    } catch (final Exception ignored) {
+      // nothing
     }
-    if (!dbSession.equals(DbConstant.admin.getSession())) {
+    if (!dbSession.equals(admin.getSession())) {
       if (DbAdmin.getNbConnection() > 0) {
         dbSession.forceDisconnect();
       }
@@ -328,14 +330,14 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * Default execution of testing with default pastLimit
    */
   public void run() {
-    this.run(-1, false);
+    run(-1, false);
   }
 
   /**
    * @param nbSecond as specific PastLimit
    */
   public void run(long nbSecond) {
-    this.run(nbSecond, false);
+    run(nbSecond, false);
   }
 
   /**
@@ -344,7 +346,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param detail as to get detailed information
    */
   public void run(boolean detail) {
-    this.run(-1, detail);
+    run(-1, detail);
   }
 
   /**
@@ -367,7 +369,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
   public void run(long nbSecond, boolean detail) {
     synchronized (trafficCounter) {
       long limitDate = System.currentTimeMillis();
-      long nbMs = pastLimit;
+      long nbMs;
       if (nbSecond <= 0) {
         nbMs = pastLimit;
       } else {
@@ -630,8 +632,10 @@ public class Monitoring implements WaarpInterfaceMonitor {
                 .getResultCountPrepareStatement(countStatus, ErrorCode.Unknown,
                                                 limitDate);
           }
-        } catch (final WaarpDatabaseNoConnectionException e) {
-        } catch (final WaarpDatabaseSqlException e) {
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // ignore
+        } catch (final WaarpDatabaseSqlException ignored) {
+          // ignore
         }
       }
     }
@@ -645,12 +649,12 @@ public class Monitoring implements WaarpInterfaceMonitor {
   public String exportXml(boolean detail) {
     final StringBuilder builder = new StringBuilder("<STATUS>")
         // Global Informations
-        .append("<HostID>").append(Configuration.configuration.getHOST_ID())
-        .append("</HostID>").append("<Date>").append(new DateTime().toString())
-        .append("</Date>").append("<LastRun>")
-        .append(new DateTime(lastTry).toString()).append("</LastRun>")
-        .append("<FromDate>").append(new DateTime(currentLimit).toString())
-        .append("</FromDate>").append("<SecondsRunning>").append(secondsRunning)
+        .append("<HostID>").append(Configuration.configuration.getHostId())
+        .append("</HostID>").append("<Date>").append(new DateTime())
+        .append("</Date>").append("<LastRun>").append(new DateTime(lastTry))
+        .append("</LastRun>").append("<FromDate>")
+        .append(new DateTime(currentLimit)).append("</FromDate>")
+        .append("<SecondsRunning>").append(secondsRunning)
         .append("</SecondsRunning>").append("<NetworkConnections>")
         .append(nbNetworkConnection).append("</NetworkConnections>")
         .append("<NbThreads>").append(nbThread).append("</NbThreads>")
@@ -671,9 +675,8 @@ public class Monitoring implements WaarpInterfaceMonitor {
         .append("<InRunning>").append(nbInActiveTransfer).append("</InRunning>")
         .append("<OutRunning>").append(nbOutActiveTransfer)
         .append("</OutRunning>").append("<LastInRunning>")
-        .append(new DateTime(lastInActiveTransfer).toString())
-        .append("</LastInRunning>").append("<LastOutRunning>")
-        .append(new DateTime(lastOutActiveTransfer).toString())
+        .append(new DateTime(lastInActiveTransfer)).append("</LastInRunning>")
+        .append("<LastOutRunning>").append(new DateTime(lastOutActiveTransfer))
         .append("</LastOutRunning>").append("<InAll>").append(nbInTotalTransfer)
         .append("</InAll>").append("<OutAll>").append(nbOutTotalTransfer)
         .append("</OutAll>").append("<InError>").append(nbInErrorTransfer)
@@ -771,7 +774,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
     ObjectNode node = JsonHandler.createObjectNode();
     node = node.putObject("STATUS");
     // Global Informations
-    node.put("HostID", Configuration.configuration.getHOST_ID());
+    node.put("HostID", Configuration.configuration.getHostId());
     node.put("Date", new DateTime().toString());
     node.put("LastRun", new DateTime(lastTry).toString());
     node.put("FromDate", new DateTime(currentLimit).toString());
@@ -804,7 +807,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
     node2 = node.putObject("STEPS");
     node2.put("Notask", nbCountStepNotask);
     node2.put("Pretask", nbCountStepPretask);
-    node2.put("Data.TransferInitializer", nbCountStepTransfer);
+    node2.put("Transfer", nbCountStepTransfer);
     node2.put("Posttask", nbCountStepPosttask);
     node2.put("AllDone", nbCountStepAllDone);
     node2.put("Error", nbCountStepError);
@@ -885,10 +888,8 @@ public class Monitoring implements WaarpInterfaceMonitor {
           run(nbMs, WaarpErrorValuesIndex.values()[entry]);
         }
         return;
-      case staticInfo:
-        break;
       case trapInfo:
-        break;
+      case staticInfo:
       default:
         break;
     }
@@ -932,15 +933,16 @@ public class Monitoring implements WaarpInterfaceMonitor {
    */
   protected void run(long nbMs, WaarpGlobalValuesIndex entry) {
     synchronized (trafficCounter) {
-      long val = 0;
+      long val;
       final long limitDate = System.currentTimeMillis() - nbMs;
       if (dbSession == null || dbSession.isDisActive()) {
         switch (entry) {
           case applUptime:
-            return;
-          case applOperStatus:
-            return;
+          case memoryUsed:
+          case memoryFree:
+          case memoryTotal:
           case applLastChange:
+          case applOperStatus:
             return;
           case applInboundAssociations:
             updateGlobalValue(entry.ordinal(), nbInActiveTransfer);
@@ -1009,12 +1011,6 @@ public class Monitoring implements WaarpInterfaceMonitor {
           case nbStepAllTransfer:
             updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);
             return;
-          case memoryTotal:
-            return;
-          case memoryFree:
-            return;
-          case memoryUsed:
-            return;
           case nbThreads:
             nbThread = Thread.activeCount();
             updateGlobalValue(entry.ordinal(), nbThread);
@@ -1032,10 +1028,11 @@ public class Monitoring implements WaarpInterfaceMonitor {
       try {
         switch (entry) {
           case applUptime:
-            return;
-          case applOperStatus:
-            return;
+          case memoryUsed:
+          case memoryFree:
+          case memoryTotal:
           case applLastChange:
+          case applOperStatus:
             return;
           case applInboundAssociations:
             DbTaskRunner
@@ -1159,12 +1156,6 @@ public class Monitoring implements WaarpInterfaceMonitor {
                 .getResultCountPrepareStatement(countStepAllTransfer);
             updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);
             return;
-          case memoryTotal:
-            return;
-          case memoryFree:
-            return;
-          case memoryUsed:
-            return;
           case nbThreads:
             nbThread = Thread.activeCount();
             updateGlobalValue(entry.ordinal(), nbThread);
@@ -1172,10 +1163,11 @@ public class Monitoring implements WaarpInterfaceMonitor {
           case nbNetworkConnection:
             nbNetworkConnection = DbAdmin.getNbConnection();
             updateGlobalValue(entry.ordinal(), nbNetworkConnection);
-            return;
         }
-      } catch (final WaarpDatabaseNoConnectionException e) {
-      } catch (final WaarpDatabaseSqlException e) {
+      } catch (final WaarpDatabaseNoConnectionException ignored) {
+        // ignore
+      } catch (final WaarpDatabaseSqlException ignored) {
+        // ignore
       }
     }
   }
@@ -1334,21 +1326,22 @@ public class Monitoring implements WaarpInterfaceMonitor {
             nbCountCompleteOkStep = DbTaskRunner
                 .getResultCountPrepareStatement(countCompleteOkStep);
             updateDetailedValue(entry.ordinal(), nbCountCompleteOkStep);
-            return;
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         logger
             .info("Database No Connection Error: Cannot execute Monitoring", e);
         try {
           dbSession.getAdmin().getDbModel().validConnection(dbSession);
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // ignore
         }
       } catch (final WaarpDatabaseSqlException e) {
         logger
             .info("Database No Connection Error: Cannot execute Monitoring", e);
         try {
           dbSession.getAdmin().getDbModel().validConnection(dbSession);
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // ignore
         }
       }
     }
@@ -1526,7 +1519,6 @@ public class Monitoring implements WaarpInterfaceMonitor {
               .getResultCountPrepareStatement(countStatus, ErrorCode.Unknown,
                                               limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusUnknown);
-          return;
       }
     }
   }

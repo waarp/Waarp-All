@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol Exception to enable Shutdown
- *
- *
  */
 public class OpenR66ProtocolShutdownException extends OpenR66Exception {
 
@@ -35,7 +33,6 @@ public class OpenR66ProtocolShutdownException extends OpenR66Exception {
    *
    */
   public OpenR66ProtocolShutdownException() {
-    super();
   }
 
   /**

@@ -87,7 +87,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
 public class TestSendThroughForward extends SendThroughClient {
   public TestRecvThroughForwardHandler handler;
   public DbSession dbSession;
-  public volatile boolean foundEOF = false;
+  public volatile boolean foundEOF;
   protected DbTaskRunner sourceRunner;
 
   /**

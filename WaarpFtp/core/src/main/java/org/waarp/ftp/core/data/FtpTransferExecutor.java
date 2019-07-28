@@ -31,8 +31,6 @@ import java.util.List;
 
 /**
  * Class that implements the execution of the Transfer itself.
- *
- *
  */
 class FtpTransferExecutor implements Runnable {
   /**
@@ -57,13 +55,12 @@ class FtpTransferExecutor implements Runnable {
    * @param session
    * @param executeTransfer
    */
-  public FtpTransferExecutor(FtpSession session, FtpTransfer executeTransfer) {
+  FtpTransferExecutor(FtpSession session, FtpTransfer executeTransfer) {
     this.session = session;
     this.executeTransfer = executeTransfer;
     if (this.executeTransfer == null) {
       this.session.getDataConn().getFtpTransferControl().setEndOfTransfer();
       logger.error("No Execution to do");
-      return;
     }
   }
 

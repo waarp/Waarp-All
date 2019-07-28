@@ -49,8 +49,6 @@ import org.waarp.snmp.utils.WaarpUptime;
 
 /**
  * FTP Private MIB implementation
- *
- *
  */
 public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
@@ -76,7 +74,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * SnmpConstants.sysObjectID
    */
-  public OID ggObjectId; // will be smiPrivateCode.typeWaarp
+  public final OID ggObjectId; // will be smiPrivateCode.typeWaarp
 
   /**
    * SnmpConstants.sysUpTime
@@ -88,37 +86,37 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * <p>
    * example: rootEnterpriseMib+"66666"+".1.1.4.";
    */
-  public String applicationProtocolBase;
+  public final String applicationProtocolBase;
 
   /**
    * will be = new OID(applicationProtocolBase+port);
    */
-  public OID applicationProtocol;
+  public final OID applicationProtocol;
 
   /**
    * root OID in String
    */
-  public String srootOIDWaarp;
+  public final String srootOIDWaarp;
 
   /**
    * root OID
    */
-  public OID rootOIDWaarp;
+  public final OID rootOIDWaarp;
 
   /**
    * Used in Notify
    */
-  public OID rootOIDWaarpNotif;
+  public final OID rootOIDWaarpNotif;
 
   /**
    * Used in Notify Start or Shutdown
    */
-  public OID rootOIDWaarpNotifStartOrShutdown;
+  public final OID rootOIDWaarpNotifStartOrShutdown;
 
   /**
    * Info static part
    */
-  public OID rootOIDWaarpInfo;
+  public final OID rootOIDWaarpInfo;
 
   /**
    * Info Row access
@@ -128,7 +126,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Global dynamic part
    */
-  public OID rootOIDWaarpGlobal;
+  public final OID rootOIDWaarpGlobal;
 
   /**
    * Global Row access
@@ -138,7 +136,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Uptime OID
    */
-  public OID rootOIDWaarpGlobalUptime;
+  public final OID rootOIDWaarpGlobalUptime;
 
   /**
    * Corresponding UpTime in Mib
@@ -148,7 +146,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Detailed dynamic part
    */
-  public OID rootOIDWaarpDetailed;
+  public final OID rootOIDWaarpDetailed;
 
   /**
    * Detailed Row access
@@ -158,7 +156,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Error dynamic part
    */
-  public OID rootOIDWaarpError;
+  public final OID rootOIDWaarpError;
 
   /**
    * Error Row access
@@ -179,7 +177,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param port port used by FTP server
    */
   public FtpPrivateMib(int port) {
-    srootOIDWaarp = rootEnterpriseMib + "." + SnmpPrivateId + "." + SnmpFtpId;
+    srootOIDWaarp = rootEnterpriseMib + "." + SnmpPrivateId + '.' + SnmpFtpId;
     applicationProtocolBase = srootOIDWaarp + ".1.1.4.";
     ggObjectId = new OID(srootOIDWaarp);
     applicationProtocol = new OID(applicationProtocolBase + port);
@@ -218,9 +216,9 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     snmpv2.registerMOs(agent.getServer(), null);
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "SNMPV2: " + snmpv2.getContact() + ":" + snmpv2.getDescr() + ":" +
-          snmpv2.getLocation() + ":" + snmpv2.getName() + ":" +
-          snmpv2.getObjectID() + ":" + snmpv2.getServices() + ":" +
+          "SNMPV2: " + snmpv2.getContact() + ':' + snmpv2.getDescr() + ':' +
+          snmpv2.getLocation() + ':' + snmpv2.getName() + ':' +
+          snmpv2.getObjectID() + ':' + snmpv2.getServices() + ':' +
           snmpv2.getUpTime());
     }
     // Save UpTime reference since used everywhere
@@ -239,7 +237,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
                              MibLevel.staticInfo.ordinal());
     rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(), "Waarp OpenR66");
     rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),
-                     FileBasedConfiguration.fileBasedConfiguration.HOST_ID);
+                     FileBasedConfiguration.fileBasedConfiguration.getHostId());
     rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);
     rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),
                      "Waarp OpenR66: File Transfer Monitor");
@@ -291,14 +289,14 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void registerMOs(MOServer arg0, OctetString arg1)
+  public void registerMOs(MOServer moServer, OctetString octetString)
       throws DuplicateRegistrationException {
     agentRegisterSystem();
     agentRegisterWaarpMib();
   }
 
   @Override
-  public void unregisterMOs(MOServer arg0, OctetString arg1) {
+  public void unregisterMOs(MOServer moServer, OctetString octetString) {
     agentUnregisterMibs();
   }
 
@@ -408,7 +406,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     }
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Notify: " + NotificationElements.InfoTask + ":" + message + ":" +
+          "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
           runner);
     }
     long delay =
@@ -489,8 +487,10 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
                                                              rootOIDWaarpNotif,
                                                              NotificationTasks.specialIdInfo
                                                                  .getOID()),
-                                                     new OctetString("" + runner
-                                                         .getSpecialId())),
+                                                     new OctetString(String
+                                                                         .valueOf(
+                                                                             runner
+                                                                                 .getSpecialId()))),
                                                  // End of Task
                                                  new VariableBinding(
                                                      SnmpConstants.sysDescr,
@@ -520,7 +520,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   private void notify(NotificationElements element, String message,
                       String message2) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Notify: " + element + ":" + message + ":" + message2);
+      logger.debug("Notify: " + element + ':' + message + ':' + message2);
     }
     agent.getNotificationOriginator()
          .notify(new OctetString("public"), element.getOID(rootOIDWaarpNotif),
@@ -546,8 +546,6 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * MIB entry levels
-   *
-   *
    */
   public enum MibLevel {
     staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo
@@ -557,14 +555,12 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Notification Elements
-   *
-   *
    */
   public enum NotificationElements {
     TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),
     InfoTask(5);
 
-    public int[] oid;
+    public final int[] oid;
 
     NotificationElements(int oid) {
       this.oid = new int[] { oid };
@@ -582,8 +578,6 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Notification for a task trap
-   *
-   *
    */
   public enum NotificationTasks {
     filenameInfo, modeTransInfo, startTransInfo, infoStatusInfo, userIdInfo,
@@ -596,8 +590,6 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Definition part
-   *
-   *
    */
   public enum WaarpDefinitionIndex {
     applName, applServerName, applVersion, applDescription, applURL,
@@ -611,7 +603,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Definition part
    */
-  public static WaarpEntry[] WaarpDefinition = {
+  public static final WaarpEntry[] WaarpDefinition = {
       // applName
       new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -634,8 +626,6 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Global part
-   *
-   *
    */
   public enum WaarpGlobalValuesIndex {
     applUptime, applOperStatus, applLastChange, applInboundAssociations,
@@ -656,7 +646,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Global part
    */
-  public static WaarpEntry[] WaarpGlobalValues = {
+  public static final WaarpEntry[] WaarpGlobalValues = {
       // applUptime
       new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -741,8 +731,6 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Detailed part
-   *
-   *
    */
   public enum WaarpDetailedValuesIndex {
     reply_000(ReplyCode.REPLY_000_SPECIAL_NOSTATUS),
@@ -772,7 +760,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     reply_332(ReplyCode.REPLY_332_NEED_ACCOUNT_FOR_LOGIN), reply_350(
         ReplyCode.REPLY_350_REQUESTED_FILE_ACTION_PENDING_FURTHER_INFORMATION);
 
-    public ReplyCode code;
+    public final ReplyCode code;
 
     WaarpDetailedValuesIndex(ReplyCode code) {
       this.code = code;
@@ -786,7 +774,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Detailed part
    */
-  public static WaarpEntry[] WaarpDetailedValues = {
+  public static final WaarpEntry[] WaarpDetailedValues = {
       // reply_000,
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -862,14 +850,12 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
       // reply_332,
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
-      // reply_350;
+      // reply_350
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32, MOAccessImpl.ACCESS_READ_ONLY)
   };
 
   /**
    * Error part
-   *
-   *
    */
   public enum WaarpErrorValuesIndex {
     reply_421(
@@ -901,7 +887,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     reply_553(
         ReplyCode.REPLY_553_REQUESTED_ACTION_NOT_TAKEN_FILE_NAME_NOT_ALLOWED);
 
-    public ReplyCode code;
+    public final ReplyCode code;
 
     WaarpErrorValuesIndex(ReplyCode code) {
       this.code = code;
@@ -915,7 +901,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Error part
    */
-  public static WaarpEntry[] WaarpErrorValues = {
+  public static final WaarpEntry[] WaarpErrorValues = {
       // reply_421,
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -982,19 +968,17 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
       // reply_552,
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
-      // reply_553;
+      // reply_553
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32, MOAccessImpl.ACCESS_READ_ONLY)
   };
 
   /**
    * Oper Status (as defined in Net Application SNMP)
-   *
-   *
    */
   public enum OperStatus {
     up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);
 
-    public int status;
+    public final int status;
 
     OperStatus(int status) {
       this.status = status;

@@ -22,6 +22,7 @@ package org.waarp.gateway.kernel.exec;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpThreadFactory;
@@ -50,7 +51,7 @@ public class JavaExecutor extends AbstractExecutor {
    */
   public JavaExecutor(String command, long delay,
                       WaarpFuture futureCompletion) {
-    args = command.split(" ");
+    args = BLANK.split(command);
     this.futureCompletion = futureCompletion;
     this.delay = delay;
   }
@@ -58,7 +59,7 @@ public class JavaExecutor extends AbstractExecutor {
   @Override
   public void run() throws CommandAbstractException {
     final String className = args[0];
-    GatewayRunnable runnable = null;
+    GatewayRunnable runnable;
     try {
       runnable = (GatewayRunnable) Class.forName(className).newInstance();
     } catch (final Exception e) {
@@ -66,7 +67,7 @@ public class JavaExecutor extends AbstractExecutor {
       throw new Reply421Exception("Pre Exec command is not executable");
     }
     runnable.setArgs(true, useLocalExec, (int) delay, args);
-    logger.debug(className + " " + runnable.getClass().getName());
+    logger.debug(className + ' ' + runnable.getClass().getName());
     int status = -1;
     if (delay <= 0) {
       runnable.run();
@@ -88,11 +89,12 @@ public class JavaExecutor extends AbstractExecutor {
           }
         } else {
           while (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-            ;
+            // nothing
           }
           status = runnable.getFinalStatus();
         }
       } catch (final InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.error("Status: " + e.getMessage() + "\n\t Exec in error with " +
                      runnable);
         throw new Reply421Exception(

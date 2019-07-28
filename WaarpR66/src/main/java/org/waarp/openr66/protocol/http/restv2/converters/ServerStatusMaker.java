@@ -44,7 +44,7 @@ public final class ServerStatusMaker {
    */
   private ServerStatusMaker() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ########################## PUBLIC METHODS ################################
@@ -67,7 +67,7 @@ public final class ServerStatusMaker {
 
     server.put("serverName", SERVER_NAME);
     server.put("date", DateTime.now().toString());
-    server.put("lastRun", (lastRun == null)? null : lastRun.toString());
+    server.put("lastRun", lastRun == null? null : lastRun.toString());
     server.put("fromDate", DateTime.now().minus(period).toString());
     server.put("secondsRunning", mon.secondsRunning);
     server.put("networkConnections", mon.nbNetworkConnection);

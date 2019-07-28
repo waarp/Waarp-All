@@ -20,11 +20,12 @@
 package org.waarp.openr66.server;
 
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
@@ -33,10 +34,10 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Server local configuration export to files
- *
- *
  */
 public class ServerExportConfiguration {
   /**
@@ -54,32 +55,35 @@ public class ServerExportConfiguration {
       logger = WaarpLoggerFactory.getLogger(ServerExportConfiguration.class);
     }
     if (args.length < 2) {
-      System.err
-          .println("Need configuration file and the directory where to export");
-      System.exit(1);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Need configuration file and the directory " + "where to " +
+          "export");
+      System.exit(1);//NOSONAR
     }
     try {
       if (!FileBasedConfiguration
           .setConfigurationServerMinimalFromXml(Configuration.configuration,
                                                 args[0])) {
         logger.error("Needs a correct configuration file as first argument");
-        if (DbConstant.admin != null) {
-          DbConstant.admin.close();
+        if (admin != null) {
+          admin.close();
+        }
+        if (DetectionUtils.isJunit()) {
+          return;
         }
         ChannelUtils.stopLogger();
-        System.exit(1);
+        System.exit(1);//NOSONAR
         return;
       }
       final String directory = args[1];
-      final String hostname = Configuration.configuration.getHOST_ID();
+      final String hostname = Configuration.configuration.getHostId();
       logger.info("Start of Export");
       final File dir = new File(directory);
       if (!dir.isDirectory()) {
         dir.mkdirs();
       }
       final String[] filenames = ServerActions
-          .staticConfigExport(DbConstant.admin.getSession(),
-                              dir.getAbsolutePath(), true, true, true, true,
+          .staticConfigExport(dir.getAbsolutePath(), true, true, true, true,
                               true);
       for (final String string : filenames) {
         if (string != null) {
@@ -93,21 +97,27 @@ public class ServerExportConfiguration {
         DbTaskRunner.writeXMLWriter(filename);
       } catch (final WaarpDatabaseException e1) {
         logger.error("Error", e1);
-        DbConstant.admin.close();
+        admin.close();
+        if (DetectionUtils.isJunit()) {
+          return;
+        }
         ChannelUtils.stopLogger();
-        System.exit(2);
+        System.exit(2);//NOSONAR
       } catch (final OpenR66ProtocolBusinessException e1) {
         logger.error("Error", e1);
-        DbConstant.admin.close();
+        admin.close();
+        if (DetectionUtils.isJunit()) {
+          return;
+        }
         ChannelUtils.stopLogger();
-        System.exit(2);
+        System.exit(2);//NOSONAR
       }
       logger.info("End of Export");
     } finally {
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
   }
 

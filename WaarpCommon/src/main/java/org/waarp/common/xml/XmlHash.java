@@ -26,8 +26,6 @@ import java.util.Set;
 /**
  * XmlHash Hashtable for XmlValue utility. Hash all values (including subXml)
  * but only root for Multiple
- *
- *
  */
 public class XmlHash {
   private final Hashtable<String, XmlValue> hashtable;

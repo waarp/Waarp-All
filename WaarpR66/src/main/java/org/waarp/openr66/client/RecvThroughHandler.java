@@ -24,8 +24,6 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 
 /**
  * Class to be implemented for {@link RecvThroughClient}
- *
- *
  */
 public abstract class RecvThroughHandler {
   /**
@@ -38,7 +36,7 @@ public abstract class RecvThroughHandler {
    *     if any error occurs during write
    *     in business process.
    */
-  abstract public void writeByteBuf(ByteBuf buffer)
+  public abstract void writeByteBuf(ByteBuf buffer)
       throws OpenR66ProtocolBusinessException;
 
   /**

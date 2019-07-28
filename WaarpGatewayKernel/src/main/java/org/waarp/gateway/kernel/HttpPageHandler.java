@@ -25,7 +25,7 @@ import org.waarp.gateway.kernel.database.WaarpActionLogger;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.session.HttpSession;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -35,14 +35,16 @@ public class HttpPageHandler {
    * Need as default error pages: 400, 401, 403, 404, 406, 500
    */
 
+  private static final String INCORRECT_PAGE = "Incorrect Page: ";
+
   public static String hostid;
 
-  private HashMap<String, HttpPage> hashmap;
+  private Map<String, HttpPage> hashmap;
 
   /**
    * @param hashmap
    */
-  public HttpPageHandler(HashMap<String, HttpPage> hashmap) {
+  public HttpPageHandler(Map<String, HttpPage> hashmap) {
     setHashmap(hashmap);
   }
 
@@ -73,11 +75,11 @@ public class HttpPageHandler {
     }
     switch (page.getPagerole()) {
       case DELETE:
-        if (!method.equalsIgnoreCase("DELETE")) {
+        if (!"DELETE".equalsIgnoreCase(method)) {
           // error
           WaarpActionLogger
               .logErrorAction(DbConstant.admin.getSession(), session,
-                              "Incorrect Page: " + page.getPagerole(),
+                              INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
           if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
@@ -91,11 +93,11 @@ public class HttpPageHandler {
         // no check
         break;
       case GETDOWNLOAD:
-        if (!method.equalsIgnoreCase("GET")) {
+        if (!"GET".equalsIgnoreCase(method)) {
           // error
           WaarpActionLogger
               .logErrorAction(DbConstant.admin.getSession(), session,
-                              "Incorrect Page: " + page.getPagerole(),
+                              INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
           if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
@@ -106,11 +108,11 @@ public class HttpPageHandler {
         break;
       case POST:
       case POSTUPLOAD:
-        if (!method.equalsIgnoreCase("POST")) {
+        if (!"POST".equalsIgnoreCase(method)) {
           // error
           WaarpActionLogger
               .logErrorAction(DbConstant.admin.getSession(), session,
-                              "Incorrect Page: " + page.getPagerole(),
+                              INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
           if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
@@ -120,11 +122,11 @@ public class HttpPageHandler {
         }
         break;
       case PUT:
-        if (!method.equalsIgnoreCase("PUT")) {
+        if (!"PUT".equalsIgnoreCase(method)) {
           // error
           WaarpActionLogger
               .logErrorAction(DbConstant.admin.getSession(), session,
-                              "Incorrect Page: " + page.getPagerole(),
+                              INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
           if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
@@ -138,8 +140,7 @@ public class HttpPageHandler {
       default:
         // error
         WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,
-                                         "Incorrect Page: " +
-                                         page.getPagerole(),
+                                         INCORRECT_PAGE + page.getPagerole(),
                                          HttpResponseStatus.BAD_REQUEST);
         if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
           page = getHashmap().get(page.getErrorpage());
@@ -156,14 +157,14 @@ public class HttpPageHandler {
   /**
    * @return the hashmap
    */
-  public HashMap<String, HttpPage> getHashmap() {
+  public Map<String, HttpPage> getHashmap() {
     return hashmap;
   }
 
   /**
    * @param hashmap the hashmap to set
    */
-  private void setHashmap(HashMap<String, HttpPage> hashmap) {
+  private void setHashmap(Map<String, HttpPage> hashmap) {
     this.hashmap = hashmap;
   }
 }

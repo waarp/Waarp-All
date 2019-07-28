@@ -25,6 +25,7 @@ package org.waarp.xample;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A helper class for the XAmple application which holds pathes of accessed XSD
@@ -38,9 +39,9 @@ public class History {
   public static final int MAX_ITEM_COUNT = 20;
   public static final int MAX_LABEL_LENGTH = 70;
 
-  ArrayList<History> items = null;
-  String path;
-  String label;
+  ArrayList<History> items;
+  final String path;
+  final String label;
 
   public History(String path) {
     this.path = path.replace('\\', '/');
@@ -51,19 +52,21 @@ public class History {
     if (path.length() <= limitLength) {
       return path;
     }
-    int k = path.indexOf("/", 1);
+    int k = path.indexOf('/', 1);
+    final String substring =
+        "..." + path.substring(path.length() - limitLength + 3);
     if (k < 0) {
-      return "..." + path.substring(path.length() - limitLength + 3);
+      return substring;
     }
-    k = path.indexOf("/", k + 1);
+    k = path.indexOf('/', k + 1);
     if (k < 0) {
-      return "..." + path.substring(path.length() - limitLength + 3);
+      return substring;
     }
     final String prefix = path.substring(0, k + 1);
     String suffix = path.substring(k + 1);
     k = suffix.indexOf('/', 1);
     if (k < 0) {
-      return "..." + path.substring(path.length() - limitLength + 3);
+      return substring;
     }
     final int limit = MAX_LABEL_LENGTH - prefix.length() - 3;
     while (k >= 0 && suffix.length() > limit) {
@@ -73,18 +76,18 @@ public class History {
     if (suffix.length() <= limit) {
       return prefix + "..." + suffix;
     } else {
-      return "..." + path.substring(path.length() - limitLength + 3);
+      return substring;
     }
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof History)) {
+    if (!(obj instanceof History)) {
       return false;
     }
     final History history = (History) obj;
     if (path == null) {
-      return (history.path == null);
+      return history.path == null;
     }
     return path.equals(history.path);
   }
@@ -111,7 +114,7 @@ public class History {
   }
 
   public History getFirstChild() {
-    if (items == null && items.size() == 0) {
+    if (items == null && items.isEmpty()) {
       return null;
     }
     return items.get(0);
@@ -128,4 +131,8 @@ public class History {
     }
   }
 
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(new Object[] { items, path, label });
+  }
 }

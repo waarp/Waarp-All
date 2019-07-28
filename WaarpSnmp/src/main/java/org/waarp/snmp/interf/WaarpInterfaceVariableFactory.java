@@ -24,8 +24,6 @@ import org.snmp4j.smi.Variable;
 
 /**
  * Constructor of Variable
- *
- *
  */
 public interface WaarpInterfaceVariableFactory {
   /**
@@ -38,5 +36,5 @@ public interface WaarpInterfaceVariableFactory {
    *
    * @return the Variable
    */
-  public Variable getVariable(OID oid, int type, int mibLevel, int entry);
+  Variable getVariable(OID oid, int type, int mibLevel, int entry);
 }

@@ -25,29 +25,26 @@ import java.util.TimeZone;
 
 /**
  * Static Shared values
- *
- *
  */
-class XmlStaticShared {
+final class XmlStaticShared {
 
-  protected static final TimeZone z = TimeZone.getTimeZone("GMT");
+  private static final TimeZone z = TimeZone.getTimeZone("GMT");
 
   /**
    * parser for Date
    */
-  protected static final DateFormat timeFormat =
+  static final DateFormat timeFormat =
       new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
 
   /**
    * parser for SQL Date
    */
-  protected static final DateFormat dateFormat =
-      new SimpleDateFormat("yyyy-MM-dd z");
+  static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd z");
 
   /**
    * parser for Timestamp
    */
-  protected static final DateFormat timestampFormat =
+  static final DateFormat timestampFormat =
       new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   static {
@@ -56,4 +53,6 @@ class XmlStaticShared {
     timestampFormat.setTimeZone(z);
   }
 
+  private XmlStaticShared() {
+  }
 }

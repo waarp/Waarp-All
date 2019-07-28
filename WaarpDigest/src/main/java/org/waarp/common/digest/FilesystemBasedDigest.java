@@ -36,6 +36,8 @@ import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+import static org.waarp.common.digest.WaarpBC.*;
+
 /**
  * Class implementing digest like MD5, SHA1. MD5 is based on the Fast MD5
  * implementation, without C library
@@ -61,15 +63,21 @@ import java.util.zip.Checksum;
  * SHA512=31</li>
  * </ul>
  * </ul>
- *
- *
  */
 public class FilesystemBasedDigest {
+
+  private static final String ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM =
+      " Algorithm not supported by this JVM";
 
   /**
    * Format used for Files
    */
   public static final Charset UTF8 = Charset.forName("UTF-8");
+  private static final byte[] EMPTY = {};
+
+  static {
+    initializedTlsContext();
+  }
 
   MD5 md5;
   Checksum checksum;
@@ -111,17 +119,17 @@ public class FilesystemBasedDigest {
       case SHA256:
       case SHA384:
       case SHA512:
-        final String algoname = algo.name;
+        final String algoname = algo.algoName;
         try {
           digest = MessageDigest.getInstance(algoname);
         } catch (final NoSuchAlgorithmException e) {
           throw new NoSuchAlgorithmException(
-              algo + " Algorithm not supported by this JVM", e);
+              algo + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);
         }
         return;
       default:
         throw new NoSuchAlgorithmException(
-            algo.name + " Algorithm not supported by this JVM");
+            algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
     }
   }
 
@@ -161,7 +169,6 @@ public class FilesystemBasedDigest {
       case SHA384:
       case SHA512:
         digest.update(bytes, offset, length);
-        return;
     }
   }
 
@@ -171,7 +178,7 @@ public class FilesystemBasedDigest {
    * Update the digest with new buffer
    */
   public void Update(ByteBuf buffer) {
-    byte[] bytes = null;
+    byte[] bytes;
     int start = 0;
     final int length = buffer.readableBytes();
     if (buffer.hasArray()) {
@@ -206,7 +213,7 @@ public class FilesystemBasedDigest {
       case SHA512:
         return digest.digest();
     }
-    return null;
+    return EMPTY;
   }
 
   /**
@@ -239,16 +246,14 @@ public class FilesystemBasedDigest {
 
   /**
    * All Algo that Digest Class could handle
-   *
-   *
    */
   public enum DigestAlgo {
     CRC32("CRC32", 11), ADLER32("ADLER32", 9), MD5("MD5", 16), MD2("MD2", 16),
     SHA1("SHA-1", 20), SHA256("SHA-256", 32), SHA384("SHA-384", 48),
     SHA512("SHA-512", 64);
 
-    public String name;
-    public int byteSize;
+    public final String algoName;
+    public final int byteSize;
 
     /**
      * @return the length in bytes of one Digest
@@ -264,8 +269,8 @@ public class FilesystemBasedDigest {
       return byteSize * 2;
     }
 
-    DigestAlgo(String name, int byteSize) {
-      this.name = name;
+    DigestAlgo(String algoName, int byteSize) {
+      this.algoName = algoName;
       this.byteSize = byteSize;
     }
   }
@@ -374,21 +379,15 @@ public class FilesystemBasedDigest {
                                      byte[] buf) throws IOException {
     // Not NIO
     Checksum checksum = null;
-    int size = 0;
+    int size;
     try {
       switch (algo) {
         case ADLER32:
           checksum = new Adler32();
+          buf = getBytesCrc(in, buf, checksum);
+          break;
         case CRC32:
-          if (checksum == null) { // not ADLER32
-            checksum = new CRC32();
-          }
-          while ((size = in.read(buf)) >= 0) {
-            checksum.update(buf, 0, size);
-          }
-          buf = null;
-          buf = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
-          checksum = null;
+          buf = getBytesCrc(in, buf, checksum);
           break;
         case MD5:
         case MD2:
@@ -396,28 +395,39 @@ public class FilesystemBasedDigest {
         case SHA256:
         case SHA384:
         case SHA512:
-          final String algoname = algo.name;
-          MessageDigest digest = null;
+          final String algoname = algo.algoName;
+          MessageDigest digest;
           try {
             digest = MessageDigest.getInstance(algoname);
           } catch (final NoSuchAlgorithmException e) {
-            throw new IOException(algo + " Algorithm not supported by this JVM",
+            throw new IOException(algo + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM,
                                   e);
           }
           while ((size = in.read(buf)) >= 0) {
             digest.update(buf, 0, size);
           }
-          buf = null;
           buf = digest.digest();
-          digest = null;
           break;
         default:
           throw new IOException(
-              algo.name + " Algorithm not supported by this JVM");
+              algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
       }
     } finally {
       in.close();
     }
+    return buf;
+  }
+
+  private static byte[] getBytesCrc(final InputStream in, byte[] buf,
+                                    Checksum checksum) throws IOException {
+    int size;
+    if (checksum == null) { // not ADLER32
+      checksum = new CRC32();
+    }
+    while ((size = in.read(buf)) >= 0) {
+      checksum.update(buf, 0, size);
+    }
+    buf = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
     return buf;
   }
 
@@ -446,38 +456,30 @@ public class FilesystemBasedDigest {
         return MD5.getHash(f);
       }
     }
-    InputStream close_me = null;
+    FileInputStream in = null;
     try {
-      long buf_size = f.length();
-      if (buf_size < 512) {
-        buf_size = 512;
+      long bufSize = f.length();
+      if (bufSize < 512) {
+        bufSize = 512;
       }
-      if (buf_size > 65536) {
-        buf_size = 65536;
+      if (bufSize > 65536) {
+        bufSize = 65536;
       }
-      byte[] buf = new byte[(int) buf_size];
-      FileInputStream in = new FileInputStream(f);
-      close_me = in;
+      byte[] buf = new byte[(int) bufSize];
+      in = new FileInputStream(f);
       if (nio) { // NIO
         final FileChannel fileChannel = in.getChannel();
         try {
           ByteBuffer bb = ByteBuffer.wrap(buf);
           Checksum checksum = null;
-          int size = 0;
+          int size;
           switch (algo) {
             case ADLER32:
               checksum = new Adler32();
+              buf = getBytesCrcFileChannel(buf, fileChannel, bb, checksum);
+              break;
             case CRC32:
-              if (checksum == null) { // Not ADLER32
-                checksum = new CRC32();
-              }
-              while ((size = fileChannel.read(bb)) >= 0) {
-                checksum.update(buf, 0, size);
-                bb.clear();
-              }
-              bb = null;
-              buf = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
-              checksum = null;
+              buf = getBytesCrcFileChannel(buf, fileChannel, bb, checksum);
               break;
             case MD5:
             case MD2:
@@ -485,48 +487,58 @@ public class FilesystemBasedDigest {
             case SHA256:
             case SHA384:
             case SHA512:
-              final String algoname = algo.name;
-              MessageDigest digest = null;
+              final String algoname = algo.algoName;
+              MessageDigest digest;
               try {
                 digest = MessageDigest.getInstance(algoname);
               } catch (final NoSuchAlgorithmException e) {
                 throw new IOException(
-                    algo + " Algorithm not supported by this JVM", e);
+                    algo + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);
               }
               while ((size = fileChannel.read(bb)) >= 0) {
                 digest.update(buf, 0, size);
                 bb.clear();
               }
-              bb = null;
               buf = digest.digest();
-              digest = null;
               break;
             default:
               throw new IOException(
-                  algo.name + " Algorithm not supported by this JVM");
+                  algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
           }
         } finally {
           fileChannel.close();
         }
       } else { // Not NIO
         buf = getHashNoNio(in, algo, buf);
-        in = null;
-        close_me = null;
         return buf;
       }
-      in = null;
-      close_me = null;
       return buf;
-    } catch (final IOException e) {
-      throw e;
     } finally {
-      if (close_me != null) {
+      if (in != null) {
         try {
-          close_me.close();
-        } catch (final Exception e2) {
+          in.close();
+        } catch (final Exception ignored) {
+          // nothing
         }
       }
     }
+  }
+
+  private static byte[] getBytesCrcFileChannel(byte[] buf,
+                                               final FileChannel fileChannel,
+                                               final ByteBuffer bb,
+                                               Checksum checksum)
+      throws IOException {
+    int size;
+    if (checksum == null) { // Not ADLER32
+      checksum = new CRC32();
+    }
+    while ((size = fileChannel.read(bb)) >= 0) {
+      checksum.update(buf, 0, size);
+      bb.clear();
+    }
+    buf = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
+    return buf;
   }
 
   /**
@@ -555,11 +567,10 @@ public class FilesystemBasedDigest {
       buf = getHashNoNio(stream, algo, buf);
       return buf;
     } catch (final IOException e) {
-      if (stream != null) {
-        try {
-          stream.close();
-        } catch (final Exception e2) {
-        }
+      try {
+        stream.close();
+      } catch (final Exception ignored) {
+        // nothing
       }
       throw e;
     }
@@ -578,7 +589,7 @@ public class FilesystemBasedDigest {
   public static byte[] getHash(ByteBuf buffer, DigestAlgo algo)
       throws IOException {
     Checksum checksum = null;
-    byte[] bytes = null;
+    byte[] bytes;
     int start = 0;
     final int length = buffer.readableBytes();
     if (buffer.hasArray()) {
@@ -591,44 +602,52 @@ public class FilesystemBasedDigest {
     switch (algo) {
       case ADLER32:
         checksum = new Adler32();
+        return getBytesCrcByteBuf(checksum, bytes, start, length);
       case CRC32:
-        if (checksum == null) { // not ADLER32
-          checksum = new CRC32();
-        }
-        checksum.update(bytes, start, length);
-        bytes = null;
-        bytes = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
-        checksum = null;
-        return bytes;
+        return getBytesCrcByteBuf(checksum, bytes, start, length);
       case MD5:
         if (isUseFastMd5()) {
           MD5 md5 = new MD5();
           md5.Update(bytes, start, length);
           bytes = md5.Final();
-          md5 = null;
           return bytes;
         }
+        return getBytesVarious(algo, bytes, start, length);
       case MD2:
       case SHA1:
       case SHA256:
       case SHA384:
       case SHA512:
-        final String algoname = algo.name;
-        MessageDigest digest = null;
-        try {
-          digest = MessageDigest.getInstance(algoname);
-        } catch (final NoSuchAlgorithmException e) {
-          throw new IOException(
-              algoname + " Algorithm not supported by this JVM", e);
-        }
-        digest.update(bytes, start, length);
-        bytes = digest.digest();
-        digest = null;
-        return bytes;
+        return getBytesVarious(algo, bytes, start, length);
       default:
         throw new IOException(
-            algo.name + " Algorithm not supported by this JVM");
+            algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
     }
+  }
+
+  private static byte[] getBytesVarious(final DigestAlgo algo, byte[] bytes,
+                                        final int start, final int length)
+      throws IOException {
+    final String algoname = algo.algoName;
+    MessageDigest digest;
+    try {
+      digest = MessageDigest.getInstance(algoname);
+    } catch (final NoSuchAlgorithmException e) {
+      throw new IOException(algoname + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);
+    }
+    digest.update(bytes, start, length);
+    bytes = digest.digest();
+    return bytes;
+  }
+
+  private static byte[] getBytesCrcByteBuf(Checksum checksum, byte[] bytes,
+                                           final int start, final int length) {
+    if (checksum == null) { // not ADLER32
+      checksum = new CRC32();
+    }
+    checksum.update(bytes, start, length);
+    bytes = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
+    return bytes;
   }
 
   /**
@@ -647,7 +666,6 @@ public class FilesystemBasedDigest {
       MD5 md5 = new MD5();
       md5.Update(buffer);
       final byte[] bytes = md5.Final();
-      md5 = null;
       return bytes;
     }
   }
@@ -699,7 +717,7 @@ public class FilesystemBasedDigest {
       } else {
         code2 -= HEX_CHARS[0];
       }
-      hash[i] = (byte) ((code1 << 4) + code2);
+      hash[i] = (byte) ((code1 << 4) + (code2 & 0xFF));
     }
     return hash;
   }
@@ -720,9 +738,9 @@ public class FilesystemBasedDigest {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
-    MessageDigest digest = null;
+    MessageDigest digest;
     try {
-      digest = MessageDigest.getInstance(DigestAlgo.MD5.name);
+      digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);
     } catch (final NoSuchAlgorithmException e) {
       return MD5.passwdCrypt(pwd);
     }
@@ -732,7 +750,6 @@ public class FilesystemBasedDigest {
       digest.update(salt, 0, salt.length);
     }
     final byte[] buf = digest.digest();
-    digest = null;
     return getHex(buf);
   }
 
@@ -749,9 +766,9 @@ public class FilesystemBasedDigest {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
-    MessageDigest digest = null;
+    MessageDigest digest;
     try {
-      digest = MessageDigest.getInstance(DigestAlgo.MD5.name);
+      digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);
     } catch (final NoSuchAlgorithmException e) {
       return MD5.passwdCrypt(pwd);
     }
@@ -760,7 +777,6 @@ public class FilesystemBasedDigest {
       digest.update(salt, 0, salt.length);
     }
     final byte[] buf = digest.digest();
-    digest = null;
     return buf;
   }
 

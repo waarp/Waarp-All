@@ -20,6 +20,8 @@
 
 package org.waarp.ftp.client;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -31,6 +33,7 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -60,8 +63,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FtpClient2Test {
@@ -78,6 +80,7 @@ public class FtpClient2Test {
   public static void startServer() throws IOException {
     WaarpLoggerFactory
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     DetectionUtils.setJunit(true);
     final File file = new File("/tmp/GGFTP/fred/a");
     file.mkdirs();
@@ -96,8 +99,8 @@ public class FtpClient2Test {
   public static void stopServer() {
     logger.warn("Will shutdown from client");
     try {
-      Thread.sleep(500);
-    } catch (final InterruptedException e) {
+      Thread.sleep(200);
+    } catch (final InterruptedException ignored) {
     }
     final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest("127.0.0.1", port, "fredo", "fred1", "a",
@@ -124,7 +127,7 @@ public class FtpClient2Test {
 
     try {
       Thread.sleep(1000);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
   }
 
@@ -158,6 +161,7 @@ public class FtpClient2Test {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
+      Assert.assertTrue("No KO", numberKO.get() == 0);
       return;
     }
     try {
@@ -178,7 +182,7 @@ public class FtpClient2Test {
     if (isSSL > 0) {
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignored) {
       }
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -197,7 +201,7 @@ public class FtpClient2Test {
           } else {
             Thread.sleep(newdel);
           }
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       } else {
         Thread.yield();
@@ -230,7 +234,7 @@ public class FtpClient2Test {
     }
 
     logger.warn(
-        localFilename + " " + numberThread + " " + numberIteration + " " +
+        localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +
         type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
         " KO: " + numberKO.get() + " Trf/s: " +
         numberOK.get() * 1000 / (date2 - date1));
@@ -251,6 +255,7 @@ public class FtpClient2Test {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
+      assertTrue("No KO", numberKO.get() == 0);
       return;
     }
     try {
@@ -265,7 +270,7 @@ public class FtpClient2Test {
       client.changeDir("T0");
       try {
         Thread.sleep(delay);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignored) {
       }
       client.changeFileType(true);
       client.changeMode(true);
@@ -277,7 +282,7 @@ public class FtpClient2Test {
       client.logout();
       client.disconnect();
     }
-    assertTrue("No KO", numberKO.get() == 0);
+    assertEquals("No KO", 0, numberKO.get());
   }
 
   private void internalApacheClient(FtpApacheClientTransactionTest client,
@@ -296,7 +301,7 @@ public class FtpClient2Test {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       }
     }
@@ -309,7 +314,7 @@ public class FtpClient2Test {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       }
     }
@@ -324,7 +329,7 @@ public class FtpClient2Test {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       }
     }
@@ -333,13 +338,12 @@ public class FtpClient2Test {
     if (!client.transferFile(null, localFilename.getName(), false)) {
       logger.warn("Cant retrieve file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
-      return;
     } else {
       FtpClientTest.numberOK.incrementAndGet();
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       }
     }
@@ -422,7 +426,7 @@ public class FtpClient2Test {
       if (!FTPReply.isPositiveCompletion(reply)) {
         ftp.disconnect();
         System.err.println("FTP server refused connection.");
-        assertFalse("Can't connect", true);
+        fail("Can't connect");
         return;
       }
     } catch (final IOException e) {
@@ -436,7 +440,7 @@ public class FtpClient2Test {
       }
       System.err.println("Could not connect to server.");
       e.printStackTrace();
-      assertFalse("Can't connect", true);
+      fail("Can't connect");
       return;
     }
 

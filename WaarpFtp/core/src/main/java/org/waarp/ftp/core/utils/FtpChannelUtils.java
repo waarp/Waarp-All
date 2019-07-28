@@ -23,22 +23,21 @@ import ch.qos.logback.classic.LoggerContext;
 import io.netty.channel.Channel;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.ftp.core.config.FtpConfiguration;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Iterator;
 import java.util.Timer;
 
 /**
  * Some useful functions related to Channel of Netty
- *
- *
  */
 public class FtpChannelUtils implements Runnable {
   /**
@@ -177,7 +176,7 @@ public class FtpChannelUtils implements Runnable {
       return null;
     }
     final String delim = arg.substring(0, 1);
-    final String[] infos = arg.split("\\" + delim);
+    final String[] infos = arg.split('\\' + delim);
     if (infos.length != 3 && infos.length != 4) {
       // bad format
       logger.error("Bad address format: " + infos.length);
@@ -188,9 +187,9 @@ public class FtpChannelUtils implements Runnable {
       start = 1;
     }
     boolean isIPV4 = true;
-    if (infos[start].equals("1")) {
+    if ("1".equals(infos[start])) {
       isIPV4 = true;
-    } else if (infos[start].equals("2")) {
+    } else if ("2".equals(infos[start])) {
       isIPV4 = false;
     } else {
       // not supported
@@ -217,7 +216,7 @@ public class FtpChannelUtils implements Runnable {
       }
     }
     start++;
-    int port = 0;
+    int port;
     try {
       port = Integer.parseInt(infos[start]);
     } catch (final NumberFormatException e) {
@@ -315,12 +314,10 @@ public class FtpChannelUtils implements Runnable {
    */
   public static int validCommandChannels(FtpConfiguration configuration) {
     int result = 0;
-    Channel channel = null;
-    final Iterator<Channel> iterator =
-        configuration.getFtpInternalConfiguration().getCommandChannelGroup()
-                     .iterator();
-    while (iterator.hasNext()) {
-      channel = iterator.next();
+    Channel channel;
+    for (final Channel value : configuration.getFtpInternalConfiguration()
+                                            .getCommandChannelGroup()) {
+      channel = value;
       if (channel.parent() != null) {
         // Child Channel
         if (channel.isActive()) {
@@ -344,12 +341,13 @@ public class FtpChannelUtils implements Runnable {
    */
   protected static void exit(FtpConfiguration configuration) {
     configuration.setShutdown(true);
-    final long delay = configuration.getTIMEOUTCON() / 2;
+    final long delay = configuration.getTimeoutCon() / 2;
     logger.warn("Exit: Give a delay of " + delay + " ms");
     configuration.inShutdownProcess();
     try {
       Thread.sleep(delay);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     final Timer timer = new Timer(true);
     final FtpTimerTask timerTask = new FtpTimerTask(FtpTimerTask.TIMER_CONTROL);
@@ -382,7 +380,7 @@ public class FtpChannelUtils implements Runnable {
    */
   public static void addCommandChannel(Channel channel,
                                        FtpConfiguration configuration) {
-    // logger.debug("Add Command Channel {}", channel);
+    // logger.debug("Add Command Channel {}", channel)
     configuration.getFtpInternalConfiguration().getCommandChannelGroup()
                  .add(channel);
   }
@@ -395,7 +393,7 @@ public class FtpChannelUtils implements Runnable {
    */
   public static void addDataChannel(Channel channel,
                                     FtpConfiguration configuration) {
-    // logger.debug("Add Data Channel {}", channel);
+    // logger.debug("Add Data Channel {}", channel)
     configuration.getFtpInternalConfiguration().getDataChannelGroup()
                  .add(channel);
   }
@@ -415,8 +413,12 @@ public class FtpChannelUtils implements Runnable {
   }
 
   public static void stopLogger() {
+    if (DetectionUtils.isJunit()) {
+      return;
+    }
     if (WaarpLoggerFactory
-        .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory) {
+            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &&
+        !DetectionUtils.isJunit()) {
       final LoggerContext lc =
           (LoggerContext) LoggerFactory.getILoggerFactory();
       lc.stop();

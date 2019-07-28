@@ -63,6 +63,8 @@ import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
  */
 public final class RestServiceInitializer {
 
+  private static final String ROUTER = "router";
+
   /**
    * The logger for all unexpected errors during the service initialization.
    */
@@ -81,7 +83,7 @@ public final class RestServiceInitializer {
    */
   private RestServiceInitializer() {
     throw new UnsupportedOperationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   /**
@@ -97,18 +99,19 @@ public final class RestServiceInitializer {
    * @param config The REST API configuration object.
    */
   private static void initHandlers(RestConfiguration config) {
-    final byte hostsCRUD = config.RESTHANDLERS_CRUD[DbHostAuth.ordinal()];
-    final byte rulesCRUD = config.RESTHANDLERS_CRUD[DbRule.ordinal()];
-    final byte transferCRUD = config.RESTHANDLERS_CRUD[DbTaskRunner.ordinal()];
+    final byte hostsCRUD = config.getResthandlersCrud()[DbHostAuth.ordinal()];
+    final byte rulesCRUD = config.getResthandlersCrud()[DbRule.ordinal()];
+    final byte transferCRUD =
+        config.getResthandlersCrud()[DbTaskRunner.ordinal()];
     final byte configCRUD =
-        config.RESTHANDLERS_CRUD[DbHostConfiguration.ordinal()];
-    final byte limitCRUD = config.RESTHANDLERS_CRUD[Bandwidth.ordinal()];
-    final int serverCRUD = config.RESTHANDLERS_CRUD[Business.ordinal()] +
-                           config.RESTHANDLERS_CRUD[Config.ordinal()] +
-                           config.RESTHANDLERS_CRUD[Information.ordinal()] +
-                           config.RESTHANDLERS_CRUD[Log.ordinal()] +
-                           config.RESTHANDLERS_CRUD[Server.ordinal()] +
-                           config.RESTHANDLERS_CRUD[Control.ordinal()];
+        config.getResthandlersCrud()[DbHostConfiguration.ordinal()];
+    final byte limitCRUD = config.getResthandlersCrud()[Bandwidth.ordinal()];
+    final int serverCRUD = config.getResthandlersCrud()[Business.ordinal()] +
+                           config.getResthandlersCrud()[Config.ordinal()] +
+                           config.getResthandlersCrud()[Information.ordinal()] +
+                           config.getResthandlersCrud()[Log.ordinal()] +
+                           config.getResthandlersCrud()[Server.ordinal()] +
+                           config.getResthandlersCrud()[Control.ordinal()];
 
     if (hostsCRUD != 0) {
       handlers.add(new HostsHandler(hostsCRUD));
@@ -129,7 +132,7 @@ public final class RestServiceInitializer {
       handlers.add(new LimitsHandler(limitCRUD));
     }
     if (serverCRUD != 0) {
-      handlers.add(new ServerHandler(config.RESTHANDLERS_CRUD));
+      handlers.add(new ServerHandler(config.getResthandlersCrud()));
     }
   }
 
@@ -160,12 +163,17 @@ public final class RestServiceInitializer {
     initHandlers(config);
 
     final NettyHttpService.Builder restServiceBuilder =
-        NettyHttpService.builder("R66_RESTv2").setPort(config.REST_PORT)
-                        .setHost(config.REST_ADDRESS).setHttpHandlers(handlers)
-                        .setHandlerHooks(Collections.singleton(
-                            new RestHandlerHook(config.REST_AUTHENTICATED,
-                                                config.hmacSha256,
-                                                config.REST_TIME_LIMIT)))
+        NettyHttpService.builder("R66_RESTv2").setPort(config.getRestPort())
+                        .setHost(config.getRestAddress())
+                        .setHttpHandlers(handlers).setHandlerHooks(Collections
+                                                                       .singleton(
+                                                                           new RestHandlerHook(
+                                                                               config
+                                                                                   .isRestAuthenticated(),
+                                                                               config
+                                                                                   .getHmacSha256(),
+                                                                               config
+                                                                                   .getRestTimeLimit())))
                         .setExceptionHandler(new RestExceptionHandler())
                         .setExecThreadKeepAliveSeconds(-1L)
                         .setChannelPipelineModifier(
@@ -173,11 +181,10 @@ public final class RestServiceInitializer {
                               @Override
                               public void modify(
                                   ChannelPipeline channelPipeline) {
-                                channelPipeline
-                                    .addBefore("router", "aggregator",
-                                               new HttpObjectAggregator(
-                                                   Integer.MAX_VALUE));
-                                channelPipeline.addBefore("router",
+                                channelPipeline.addBefore(ROUTER, "aggregator",
+                                                          new HttpObjectAggregator(
+                                                              Integer.MAX_VALUE));
+                                channelPipeline.addBefore(ROUTER,
                                                           RestVersionHandler.HANDLER_NAME,
                                                           new RestVersionHandler(
                                                               config));
@@ -185,12 +192,12 @@ public final class RestServiceInitializer {
                                     .addBefore(RestVersionHandler.HANDLER_NAME,
                                                "cors",
                                                new CorsHandler(corsConfig()));
-                                if (config.REST_AUTHENTICATED &&
-                                    config.REST_SIGNATURE) {
-                                  channelPipeline
-                                      .addAfter("router", "signature",
-                                                new RestSignatureHandler(
-                                                    config.hmacSha256));
+                                if (config.isRestAuthenticated() &&
+                                    config.isRestSignature()) {
+                                  channelPipeline.addAfter(ROUTER, "signature",
+                                                           new RestSignatureHandler(
+                                                               config
+                                                                   .getHmacSha256()));
                                 }
 
                                 // Removes the HTTP compressor which causes problems
@@ -207,11 +214,10 @@ public final class RestServiceInitializer {
                               }
                             });
 
-    if (config.REST_SSL) {
+    if (config.isRestSsl()) {
       final WaarpSecureKeyStore keyStore =
           NetworkSslServerInitializer.getWaarpSecureKeyStore();
-      final String keyStoreFilename =
-          new String(keyStore.getKeyStoreFilename());
+      final String keyStoreFilename = keyStore.getKeyStoreFilename();
       final String keyStorePass = new String(keyStore.getKeyStorePassword());
       final String certificatePassword =
           new String(keyStore.getCertificatePassword());

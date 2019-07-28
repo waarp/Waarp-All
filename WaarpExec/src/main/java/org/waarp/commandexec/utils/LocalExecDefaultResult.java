@@ -21,10 +21,8 @@ package org.waarp.commandexec.utils;
 
 /**
  * Default message for LocalExec
- *
- *
  */
-public class LocalExecDefaultResult {
+public final class LocalExecDefaultResult {
   public static final LocalExecResult NoCommand =
       new LocalExecResult(false, -1, null, "No Command");
   public static final LocalExecResult BadTransmition =
@@ -48,7 +46,10 @@ public class LocalExecDefaultResult {
       new LocalExecResult(false, -10, null, "Exec Server shutdown on going");
   public static final LocalExecResult CorrectExec =
       new LocalExecResult(false, 1, null, "Correctly Executed");
-  public static long RETRYINMS = 500;
-  public static long MAXWAITPROCESS = 60000;
+  public static final long RETRYINMS = 500;
+  public static final long MAXWAITPROCESS = 60000;
   public static final String ENDOFCOMMAND = "$#GGEXEC END OF COMMAND#$";
+
+  private LocalExecDefaultResult() {
+  }
 }

@@ -28,8 +28,6 @@ import org.apache.thrift.transport.TTransportException;
 
 /**
  * Example of Java class to interact with the Thrift R66 service
- *
- *
  */
 public class ClientExample implements Runnable {
   private static final int PORT = 7911;

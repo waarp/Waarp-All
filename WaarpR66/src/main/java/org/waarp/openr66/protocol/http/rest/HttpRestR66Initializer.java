@@ -31,8 +31,6 @@ import org.waarp.gateway.kernel.rest.RestConfiguration;
 
 /**
  * Pipeline Factory for Rest HTTP support for R66
- *
- *
  */
 public class HttpRestR66Initializer extends ChannelInitializer<SocketChannel> {
   private final boolean useHttpCompression;
@@ -60,14 +58,6 @@ public class HttpRestR66Initializer extends ChannelInitializer<SocketChannel> {
     }
 
     pipeline.addLast("codec", new HttpServerCodec());
-    /*
-     * GlobalTrafficShapingHandler handler = Configuration.configuration.getGlobalTrafficShapingHandler(); if
-     * (handler != null) { pipeline.addLast(NetworkServerInitializer.LIMIT, handler); }
-     * ChannelTrafficShapingHandler trafficChannel = null; try { trafficChannel =
-     * Configuration.configuration.newChannelTrafficShapingHandler(); if (trafficChannel != null) {
-     * pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel); } } catch
-     * (OpenR66ProtocolNoDataException e) { }
-     */
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());
     }

@@ -34,7 +34,6 @@ import org.waarp.openr66.pojo.UpdatedInfo;
 import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.ModeTrans;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
-import org.waarp.openr66.protocol.http.restv2.errors.RestErrors;
 
 import javax.ws.rs.InternalServerErrorException;
 import java.sql.Timestamp;
@@ -60,7 +59,7 @@ public final class TransferConverter {
    */
   private TransferConverter() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ########################### INNER CLASSES ################################
@@ -326,7 +325,7 @@ public final class TransferConverter {
           if (ruleExists(value.asText())) {
             transfer.setRule(value.asText());
           } else {
-            errors.add(RestErrors.UNKNOWN_RULE(value.asText()));
+            errors.add(UNKNOWN_RULE(value.asText()));
           }
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
@@ -343,7 +342,7 @@ public final class TransferConverter {
           if (hostExists(value.asText())) {
             transfer.setRequested(value.asText());
           } else {
-            errors.add(RestErrors.UNKNOWN_HOST(value.asText()));
+            errors.add(UNKNOWN_HOST(value.asText()));
           }
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));

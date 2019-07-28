@@ -26,8 +26,6 @@ import java.util.HashMap;
 
 /**
  * Proxy Entry
- *
- *
  */
 public class ProxyEntry {
   public static final HashMap<String, ProxyEntry> proxyEntries =
@@ -54,8 +52,7 @@ public class ProxyEntry {
   public static ProxyEntry get(String name) {
     synchronized (proxyEntries) {
       if (proxyEntries.containsKey(name)) {
-        final ProxyEntry proxyEntry = proxyEntries.get(name);
-        return proxyEntry;
+        return proxyEntries.get(name);
       } else {
         // error
         return null;
@@ -117,7 +114,7 @@ public class ProxyEntry {
 
   @Override
   public String toString() {
-    return "from: " + localSocketAddress.toString() + ":" + localIsSsl +
-           " to: " + remoteSocketAddress.toString() + ":" + remoteIsSsl;
+    return "from: " + localSocketAddress + ':' + localIsSsl + " to: " +
+           remoteSocketAddress + ':' + remoteIsSsl;
   }
 }

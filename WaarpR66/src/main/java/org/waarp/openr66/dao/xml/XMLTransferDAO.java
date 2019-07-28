@@ -51,6 +51,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.waarp.openr66.dao.DAOFactory.*;
+
 public class XMLTransferDAO implements TransferDAO {
 
   private static final WaarpLogger logger =
@@ -59,26 +61,26 @@ public class XMLTransferDAO implements TransferDAO {
   public static final String ROOT_LIST = "taskrunners";
   public static final String ROOT_ELEMENT = "runner";
 
-  public static String GLOBAL_STEP_FIELD = "globalstep";
-  public static String LAST_GLOBAL_STEP_FIELD = "globallaststep";
-  public static String STEP_FIELD = "step";
-  public static String RANK_FIELD = "rank";
-  public static String STEP_STATUS_FIELD = "stepstatus";
-  public static String RETRIEVE_MODE_FIELD = "retrievemode";
-  public static String FILENAME_FIELD = "filename";
-  public static String IS_MOVED_FIELD = "ismoved";
-  public static String RULE_FIELD = "idrule";
-  public static String BLOCK_SIZE_FIELD = "blocksz";
-  public static String ORIGINAL_NAME_FIELD = "originalname";
-  public static String FILE_INFO_FIELD = "fileinfo";
-  public static String TRANSFER_MODE_FIELD = "modetrans";
-  public static String START_FIELD = "starttrans";
-  public static String STOP_FIELD = "stoptrans";
-  public static String INFO_STATUS_FIELD = "infostatus";
-  public static String OWNER_FIELD = "ownerreq";
-  public static String REQUESTER_FIELD = "requester";
-  public static String REQUESTED_FIELD = "requested";
-  public static String ID_FIELD = "specialid";
+  public static final String GLOBAL_STEP_FIELD = "globalstep";
+  public static final String LAST_GLOBAL_STEP_FIELD = "globallaststep";
+  public static final String STEP_FIELD = "step";
+  public static final String RANK_FIELD = "rank";
+  public static final String STEP_STATUS_FIELD = "stepstatus";
+  public static final String RETRIEVE_MODE_FIELD = "retrievemode";
+  public static final String FILENAME_FIELD = "filename";
+  public static final String IS_MOVED_FIELD = "ismoved";
+  public static final String RULE_FIELD = "idrule";
+  public static final String BLOCK_SIZE_FIELD = "blocksz";
+  public static final String ORIGINAL_NAME_FIELD = "originalname";
+  public static final String FILE_INFO_FIELD = "fileinfo";
+  public static final String TRANSFER_MODE_FIELD = "modetrans";
+  public static final String START_FIELD = "starttrans";
+  public static final String STOP_FIELD = "stoptrans";
+  public static final String INFO_STATUS_FIELD = "infostatus";
+  public static final String OWNER_FIELD = "ownerreq";
+  public static final String REQUESTER_FIELD = "requester";
+  public static final String REQUESTED_FIELD = "requested";
+  public static final String ID_FIELD = "specialid";
 
   private static final String XML_SELECT =
       "//runner[" + "specialid=$specialid and requester='$requester' and " +
@@ -149,14 +151,15 @@ public class XMLTransferDAO implements TransferDAO {
 
   @Override
   public void close() {
+    // ignore
   }
 
   public static final String XMLEXTENSION = "_singlerunner.xml";
 
   private File getFile(String requester, String requested, long id) {
     return new File(Configuration.configuration.getBaseDirectory() +
-                    Configuration.configuration.getArchivePath() + "/" +
-                    requester + "_" + requested + "_" + id + XMLEXTENSION);
+                    Configuration.configuration.getArchivePath() + '/' +
+                    requester + '_' + requested + '_' + id + XMLEXTENSION);
   }
 
   @Override
@@ -175,10 +178,10 @@ public class XMLTransferDAO implements TransferDAO {
     final File arch = new File(Configuration.configuration.getArchivePath());
     final File[] runnerFiles = arch.listFiles();
     final List<Transfer> res = new ArrayList<Transfer>();
-    for (final File file : runnerFiles) {
+    for (final File fileNew : runnerFiles) {
       try {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        final Document document = dbf.newDocumentBuilder().parse(file);
+        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
+        final Document document = dbf.newDocumentBuilder().parse(fileNew);
         // Setup XPath query
         final XPath xPath = XPathFactory.newInstance().newXPath();
         final XPathExpression xpe = xPath.compile(XML_GET_ALL);
@@ -263,7 +266,7 @@ public class XMLTransferDAO implements TransferDAO {
       throw new DAOConnectionException("File already exist");
     }
     try {
-      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().newDocument();
       final Element root = document.createElement(ROOT_LIST);
       document.appendChild(root);
@@ -287,13 +290,13 @@ public class XMLTransferDAO implements TransferDAO {
       throw new DAONoDataException("Transfer cannot be found");
     }
     try {
-      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().parse(file);
       // Setup XPath variable
       final SimpleVariableResolver resolver = new SimpleVariableResolver();
-      resolver.addVariable(new QName(null, "specialid"), id);
-      resolver.addVariable(new QName(null, "requester"), requester);
-      resolver.addVariable(new QName(null, "requested"), requested);
+      resolver.addVariable(new QName(null, ID_FIELD), id);
+      resolver.addVariable(new QName(null, REQUESTER_FIELD), requester);
+      resolver.addVariable(new QName(null, REQUESTED_FIELD), requested);
       resolver.addVariable(new QName(null, "owner"), owner);
       // Setup XPath query
       final XPath xPath = XPathFactory.newInstance().newXPath();
@@ -324,17 +327,17 @@ public class XMLTransferDAO implements TransferDAO {
       throw new DAOConnectionException("File doesn't exist");
     }
     try {
-      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().parse(file);
       // Setup XPath variable
       final SimpleVariableResolver resolver = new SimpleVariableResolver();
-      resolver.addVariable(new QName(null, "specialid"), transfer.getId());
-      resolver
-          .addVariable(new QName(null, "requester"), transfer.getRequester());
-      resolver
-          .addVariable(new QName(null, "requested"), transfer.getRequested());
-      resolver
-          .addVariable(new QName(null, "ownerreq"), transfer.getOwnerRequest());
+      resolver.addVariable(new QName(null, ID_FIELD), transfer.getId());
+      resolver.addVariable(new QName(null, REQUESTER_FIELD),
+                           transfer.getRequester());
+      resolver.addVariable(new QName(null, REQUESTED_FIELD),
+                           transfer.getRequested());
+      resolver.addVariable(new QName(null, OWNER_FIELD),
+                           transfer.getOwnerRequest());
       // Setup XPath query
       final XPath xPath = XPathFactory.newInstance().newXPath();
       xPath.setXPathVariableResolver(resolver);

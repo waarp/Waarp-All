@@ -24,8 +24,6 @@ import org.waarp.common.command.ReplyCode;
 /**
  * 552 Requested file action aborted. Exceeded storage allocation (for current
  * directory or dataset).
- *
- *
  */
 public class Reply552Exception extends CommandAbstractException {
 

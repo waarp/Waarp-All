@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database.h2;
 
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.openr66.dao.database.DBAllDAOTest;
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -50,6 +51,16 @@ public class DbH2DAOTest extends DBAllDAOTest {
   @Override
   public void cleanDB() {
     runScript(cleanScript);
+  }
+
+  @Override
+  public JdbcDatabaseContainer getJDC() {
+    return null;
+  }
+
+  @Override
+  public String getServerConfigFile() {
+    return "Linux/config/config-H2.xml";
   }
 
   @Override

@@ -33,8 +33,6 @@ import org.waarp.ftp.core.session.FtpSession;
 
 /**
  * Pipeline factory for Control command connection
- *
- *
  */
 public class FtpInitializer extends ChannelInitializer<SocketChannel> {
   /**
@@ -88,7 +86,8 @@ public class FtpInitializer extends ChannelInitializer<SocketChannel> {
     final EventExecutorGroup executorGroup =
         configuration.getFtpInternalConfiguration().getExecutor();
     // and then business logic. New one on every connection
-    final BusinessHandler newbusiness = businessHandler.newInstance();
+    final BusinessHandler newbusiness =
+        businessHandler.getDeclaredConstructor().newInstance();
     final NetworkHandler newNetworkHandler =
         new NetworkHandler(new FtpSession(configuration, newbusiness));
     pipeline.addLast(executorGroup, "handler", newNetworkHandler);

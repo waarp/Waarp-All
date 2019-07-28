@@ -21,8 +21,6 @@ package org.waarp.common.file.passthrough;
 
 /**
  * This interface is a factory for PassthroughFile.
- *
- *
  */
 public interface PassthroughFileFactory {
 

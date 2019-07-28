@@ -25,8 +25,6 @@ import org.waarp.common.command.exception.Reply530Exception;
 
 /**
  * Interface for Authentication
- *
- *
  */
 public interface AuthInterface {
   /**

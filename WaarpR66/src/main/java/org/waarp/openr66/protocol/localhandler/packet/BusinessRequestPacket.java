@@ -31,8 +31,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * - sheader = full text with class at first place, following (space separated)
  * by extra arguments - smiddle =
  * integer - send = byte
- *
- *
  */
 public class BusinessRequestPacket extends AbstractLocalPacket {
   private static final byte ASKVALIDATE = 0;
@@ -42,7 +40,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
 
   private final String sheader;
 
-  private int delay = 0;
+  private int delay;
 
   private byte way;
 
@@ -83,12 +81,14 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
       throws OpenR66ProtocolPacketException {
     end = Unpooled.buffer(1);
     end.writeByte(way);
+    end.retain();
   }
 
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     header = Unpooled.wrappedBuffer(sheader.getBytes());
+    header.retain();
   }
 
   @Override
@@ -96,6 +96,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
       throws OpenR66ProtocolPacketException {
     middle = Unpooled.buffer(4);
     middle.writeInt(delay);
+    middle.retain();
   }
 
   @Override
@@ -105,7 +106,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "BusinessRequestPacket: " + sheader + ":" + delay + ":" + way;
+    return "BusinessRequestPacket: " + sheader + ':' + delay + ':' + way;
   }
 
   /**

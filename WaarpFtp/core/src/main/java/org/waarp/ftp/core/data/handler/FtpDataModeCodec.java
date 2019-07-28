@@ -29,7 +29,6 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
-import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.data.handler.FtpSeekAheadData.SeekAheadNoBackArrayException;
 
 import java.util.List;
@@ -39,8 +38,6 @@ import java.util.List;
  * - encode : takes a {@link DataBlock} and transforms it to a ByteBuf<br>
  * - decode : takes a ByteBuf and transforms it to a {@link DataBlock}<br>
  * STREAM and BLOCK mode are implemented. COMPRESSED mode is not implemented.
- *
- *
  */
 public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   /*
@@ -130,38 +127,15 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   protected DataBlock decodeRecordStandard(ByteBuf buf, int length) {
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length);
     if (lastbyte == 0xFF) {
-      final int nextbyte = buf.readByte();
-      if (nextbyte == 0xFF) {
-        newbuf.writeByte((byte) (lastbyte & 0xFF));
-      } else {
-        if (nextbyte == 1) {
-          dataBlock.setEOR(true);
-        } else if (nextbyte == 2) {
-          dataBlock.setEOF(true);
-        } else if (nextbyte == 3) {
-          dataBlock.setEOR(true);
-          dataBlock.setEOF(true);
-        }
+      if (readByteForDataBlock(buf, newbuf)) {
         lastbyte = 0;
       }
     }
     try {
-      while (true) {
+      while (true) { //NOSONAR
         lastbyte = buf.readByte();
         if (lastbyte == 0xFF) {
-          final int nextbyte = buf.readByte();
-          if (nextbyte == 0xFF) {
-            newbuf.writeByte((byte) (lastbyte & 0xFF));
-          } else {
-            if (nextbyte == 1) {
-              dataBlock.setEOR(true);
-            } else if (nextbyte == 2) {
-              dataBlock.setEOF(true);
-            } else if (nextbyte == 3) {
-              dataBlock.setEOR(true);
-              dataBlock.setEOF(true);
-            }
-          }
+          readByteForDataBlock(buf, newbuf);
         } else {
           newbuf.writeByte((byte) (lastbyte & 0xFF));
         }
@@ -174,8 +148,27 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     return dataBlock;
   }
 
+  private boolean readByteForDataBlock(final ByteBuf buf,
+                                       final ByteBuf newbuf) {
+    final int nextbyte = buf.readByte();
+    if (nextbyte == 0xFF) {
+      newbuf.writeByte((byte) (lastbyte & 0xFF));
+      return false;
+    } else {
+      if (nextbyte == 1) {
+        dataBlock.setEOR(true);
+      } else if (nextbyte == 2) {
+        dataBlock.setEOF(true);
+      } else if (nextbyte == 3) {
+        dataBlock.setEOR(true);
+        dataBlock.setEOF(true);
+      }
+      return true;
+    }
+  }
+
   protected DataBlock decodeRecord(ByteBuf buf, int length) {
-    FtpSeekAheadData sad = null;
+    FtpSeekAheadData sad;
     try {
       sad = new FtpSeekAheadData(buf);
     } catch (final SeekAheadNoBackArrayException e1) {
@@ -183,18 +176,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     }
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length);
     if (lastbyte == 0xFF) {
-      final int nextbyte = sad.bytes[sad.pos++];
-      if (nextbyte == 0xFF) {
-        newbuf.writeByte((byte) (lastbyte & 0xFF));
-      } else {
-        if (nextbyte == 1) {
-          dataBlock.setEOR(true);
-        } else if (nextbyte == 2) {
-          dataBlock.setEOF(true);
-        } else if (nextbyte == 3) {
-          dataBlock.setEOR(true);
-          dataBlock.setEOF(true);
-        }
+      if (readBytesFromSad(sad, newbuf)) {
         lastbyte = 0;
       }
     }
@@ -202,19 +184,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       while (sad.pos < sad.limit) {
         lastbyte = sad.bytes[sad.pos++];
         if (lastbyte == 0xFF) {
-          final int nextbyte = sad.bytes[sad.pos++];
-          if (nextbyte == 0xFF) {
-            newbuf.writeByte((byte) (lastbyte & 0xFF));
-          } else {
-            if (nextbyte == 1) {
-              dataBlock.setEOR(true);
-            } else if (nextbyte == 2) {
-              dataBlock.setEOF(true);
-            } else if (nextbyte == 3) {
-              dataBlock.setEOR(true);
-              dataBlock.setEOF(true);
-            }
-          }
+          readBytesFromSad(sad, newbuf);
         } else {
           newbuf.writeByte((byte) (lastbyte & 0xFF));
         }
@@ -226,6 +196,25 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     sad.setReadPosition(0);
     dataBlock.setBlock(newbuf);
     return dataBlock;
+  }
+
+  private boolean readBytesFromSad(final FtpSeekAheadData sad,
+                                   final ByteBuf newbuf) {
+    final int nextbyte = sad.bytes[sad.pos++];
+    if (nextbyte == 0xFF) {
+      newbuf.writeByte((byte) (lastbyte & 0xFF));
+      return false;
+    } else {
+      if (nextbyte == 1) {
+        dataBlock.setEOR(true);
+      } else if (nextbyte == 2) {
+        dataBlock.setEOF(true);
+      } else if (nextbyte == 3) {
+        dataBlock.setEOR(true);
+        dataBlock.setEOF(true);
+      }
+      return true;
+    }
   }
 
   @Override
@@ -317,12 +306,12 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
 
   protected ByteBuf encodeRecordStandard(DataBlock msg, ByteBuf buffer) {
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(msg.getByteCount());
-    int newbyte = 0;
+    int newbyte;
     try {
-      while (true) {
+      while (true) { //NOSONAR
         newbyte = buffer.readByte();
         if (newbyte == 0xFF) {
-          newbuf.writeByte((byte) (0xFF & 0xFF));
+          newbuf.writeByte((byte) 0xFF);
         }
         newbuf.writeByte((byte) (newbyte & 0xFF));
       }
@@ -345,19 +334,19 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   }
 
   protected ByteBuf encodeRecord(DataBlock msg, ByteBuf buffer) {
-    FtpSeekAheadData sad = null;
+    FtpSeekAheadData sad;
     try {
       sad = new FtpSeekAheadData(buffer);
     } catch (final SeekAheadNoBackArrayException e1) {
       return encodeRecordStandard(msg, buffer);
     }
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(msg.getByteCount());
-    int newbyte = 0;
+    int newbyte;
     try {
       while (sad.pos < sad.limit) {
         newbyte = sad.bytes[sad.pos++];
         if (newbyte == 0xFF) {
-          newbuf.writeByte((byte) (0xFF & 0xFF));
+          newbuf.writeByte((byte) 0xFF);
         }
         newbuf.writeByte((byte) (newbyte & 0xFF));
       }

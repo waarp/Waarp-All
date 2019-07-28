@@ -30,8 +30,6 @@ import org.waarp.snmp.interf.WaarpInterfaceMib;
 
 /**
  * MORow implementation for GoldenGate
- *
- *
  */
 public class WaarpMORow implements MOGroup {
   /**
@@ -41,19 +39,19 @@ public class WaarpMORow implements MOGroup {
   /**
    * Type access
    */
-  int[] type;
+  final int[] type;
   /**
    * Base OID
    */
-  OID reference;
+  final OID reference;
   /**
    * MIB from which this Row is issued
    */
-  WaarpInterfaceMib mib;
+  final WaarpInterfaceMib mib;
   /**
    * Mib Level entry identification
    */
-  int mibLevel;
+  final int mibLevel;
 
   /**
    * @param mib

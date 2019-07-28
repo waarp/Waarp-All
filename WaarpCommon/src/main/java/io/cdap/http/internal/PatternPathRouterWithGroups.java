@@ -111,7 +111,7 @@ public final class PatternPathRouterWithGroups<T> {
       } else {
         sb.append(part);
       }
-      sb.append("/");
+      sb.append('/');
     }
 
     // Ignore the last "/"
@@ -166,7 +166,7 @@ public final class PatternPathRouterWithGroups<T> {
     private final T destination;
     private final List<String> groupNames;
 
-    public RouteDestinationWithGroups(T destination, List<String> groupNames) {
+    private RouteDestinationWithGroups(T destination, List<String> groupNames) {
       this.destination = destination;
       this.groupNames = groupNames;
     }

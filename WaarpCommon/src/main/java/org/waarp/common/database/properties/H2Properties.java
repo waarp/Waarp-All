@@ -25,13 +25,14 @@ import java.sql.Connection;
 /**
  * H2 Database Model
  */
-public class H2Properties extends DbProperties {
+public class H2Properties implements DbProperties {
   private static final String PROTOCOL = "h2";
 
-  private final String DRIVER_NAME = "org.h2.Driver";
-  private final String VALIDATION_QUERY = "select 1";
+  private static final String DRIVER_NAME = "org.h2.Driver";
+  private static final String VALIDATION_QUERY = "select 1";
 
   public H2Properties() {
+    // nothing
   }
 
   public static String getProtocolID() {

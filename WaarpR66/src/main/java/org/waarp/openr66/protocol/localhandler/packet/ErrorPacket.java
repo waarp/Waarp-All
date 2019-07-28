@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Error Message class for packet
  * <p>
  * 2 strings+1 error code: sheader,smiddle,code
- *
- *
  */
 public class ErrorPacket extends AbstractLocalPacket {
   public static final int IGNORECODE = 0;
@@ -110,7 +108,7 @@ public class ErrorPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "ErrorPacket:(" + code + ":" + smiddle + ") " + sheader;
+    return "ErrorPacket:(" + code + ':' + smiddle + ") " + sheader;
   }
 
   @Override

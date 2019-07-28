@@ -64,7 +64,8 @@ public abstract class AbstractFile implements FileInterface {
         throw new Reply502Exception("Cannot set the marker position");
       }
       return true;
-    } catch (final NoRestartException e) {
+    } catch (final NoRestartException ignored) {
+      // nothing
     }
     return false;
   }

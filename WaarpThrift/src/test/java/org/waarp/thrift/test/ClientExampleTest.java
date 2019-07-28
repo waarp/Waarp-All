@@ -27,6 +27,7 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.waarp.thrift.r66.Action;
@@ -215,10 +216,10 @@ public class ClientExampleTest implements Runnable {
         System.out.println("RESULT4D: " + list);
       } catch (final TTransportException e) {
         e.printStackTrace();
-        assertFalse("Should not", true);
+        fail("Should not");
       } catch (final TException e) {
         e.printStackTrace();
-        assertFalse("Should not", true);
+        fail("Should not");
       } finally {
         if (transport != null) {
           transport.close();
@@ -234,7 +235,7 @@ public class ClientExampleTest implements Runnable {
       executorService.shutdown();
       try {
         executorService.awaitTermination(1000000, TimeUnit.SECONDS);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignored) {
       }
       final long end = System.currentTimeMillis();
       executorService.shutdownNow();
@@ -261,13 +262,15 @@ public class ClientExampleTest implements Runnable {
     PORT++;
   }
 
-  // @Test Does not complete
+  @Test
+  @Ignore("Does not complete")
   public void test1_Client_Mixed1() throws InterruptedException {
     test_Client(false, true);
     PORT++;
   }
 
-  // @Test Does not complete
+  @Test
+  @Ignore("Does not complete")
   public void test0_Client_Mixed2() throws InterruptedException {
     test_Client(true, false);
     PORT++;
@@ -313,7 +316,7 @@ public class ClientExampleTest implements Runnable {
       e.printStackTrace();
     } finally {
       try {
-        Thread.sleep(1000);
+        Thread.sleep(500);
       } catch (final InterruptedException e) {
         e.printStackTrace();
       }

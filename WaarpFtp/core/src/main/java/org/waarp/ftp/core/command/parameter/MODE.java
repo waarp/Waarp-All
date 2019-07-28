@@ -28,8 +28,6 @@ import org.waarp.ftp.core.command.FtpArgumentCode;
 
 /**
  * MODE command
- *
- *
  */
 public class MODE extends AbstractCommand {
   @Override

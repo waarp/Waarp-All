@@ -25,15 +25,19 @@ import java.util.Date;
 
 /**
  * Export Log JSON packet
- *
- *
  */
 public class LogJsonPacket extends JsonPacket {
-  protected boolean purge, clean, statuspending, statustransfer, statusdone,
-      statuserror;
+  protected boolean purge;
+  protected boolean clean;
+  protected boolean statuspending;
+  protected boolean statustransfer;
+  protected boolean statusdone;
+  protected boolean statuserror;
   protected String rule, request;
-  protected Date start, stop;
-  protected String startid, stopid;
+  protected Date start;
+  protected Date stop;
+  protected String startid;
+  protected String stopid;
 
   /**
    * @return the purge
@@ -225,6 +229,6 @@ public class LogJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.LOGPACKET);
+    setRequestUserPacket(LocalPacketFactory.LOGPACKET);
   }
 }

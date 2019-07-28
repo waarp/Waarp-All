@@ -21,8 +21,6 @@ package org.waarp.common.exception;
 
 /**
  * Crypto exception
- *
- *
  */
 public class CryptoException extends Exception {
 

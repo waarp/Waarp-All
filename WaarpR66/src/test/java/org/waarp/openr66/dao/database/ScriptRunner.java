@@ -42,6 +42,8 @@ package org.waarp.openr66.dao.database;
  *  limitations under the License.
  */
 
+import org.waarp.common.logging.SysErrLogger;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -54,6 +56,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,12 +79,12 @@ public class ScriptRunner {
   private final boolean autoCommit;
 
   @SuppressWarnings("UseOfSystemOutOrSystemErr")
-  private PrintWriter logWriter = null;
+  private PrintWriter logWriter;
   @SuppressWarnings("UseOfSystemOutOrSystemErr")
-  private PrintWriter errorLogWriter = null;
+  private PrintWriter errorLogWriter;
 
   private String delimiter = DEFAULT_DELIMITER;
-  private boolean fullLineDelimiter = false;
+  private boolean fullLineDelimiter;
 
   /**
    * Default constructor
@@ -100,7 +103,8 @@ public class ScriptRunner {
         logWriter = new PrintWriter(new FileWriter(logFile, false));
       }
     } catch (final IOException e) {
-      System.err.println("Unable to access or create the db_create log");
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Unable to access or create the db_create log");
     }
     try {
       if (errorLogFile.exists()) {
@@ -109,10 +113,11 @@ public class ScriptRunner {
         errorLogWriter = new PrintWriter(new FileWriter(errorLogFile, false));
       }
     } catch (final IOException e) {
-      System.err.println("Unable to access or create the db_create error log");
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Unable to access or create the db_create error log");
     }
-    final String timeStamp = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss")
-        .format(new java.util.Date());
+    final String timeStamp =
+        new SimpleDateFormat("dd/mm/yyyy HH:mm:ss").format(new Date());
     println("\n-------\n" + timeStamp + "\n-------\n");
     printlnError("\n-------\n" + timeStamp + "\n-------\n");
   }
@@ -206,12 +211,12 @@ public class ScriptRunner {
         } else if (!fullLineDelimiter && trimmedLine.endsWith(getDelimiter()) ||
                    fullLineDelimiter && trimmedLine.equals(getDelimiter())) {
           command.append(line.substring(0, line.lastIndexOf(getDelimiter())));
-          command.append(" ");
+          command.append(' ');
           execCommand(conn, command, lineReader);
           command = null;
         } else {
           command.append(line);
-          command.append("\n");
+          command.append('\n');
         }
       }
       if (command != null) {
@@ -253,7 +258,7 @@ public class ScriptRunner {
           .format("Error executing '%s' (line %d): %s", command,
                   lineReader.getLineNumber(), e.getMessage());
       printlnError(errText);
-      System.err.println(errText);
+      SysErrLogger.FAKE_LOGGER.syserr(errText);
       if (stopOnError) {
         throw new SQLException(errText, e);
       }
@@ -269,13 +274,13 @@ public class ScriptRunner {
       final int cols = md.getColumnCount();
       for (int i = 1; i <= cols; i++) {
         final String name = md.getColumnLabel(i);
-        print(name + "\t");
+        print(name + '\t');
       }
       println("");
       while (rs.next()) {
         for (int i = 1; i <= cols; i++) {
           final String value = rs.getString(i);
-          print(value + "\t");
+          print(value + '\t');
         }
         println("");
       }

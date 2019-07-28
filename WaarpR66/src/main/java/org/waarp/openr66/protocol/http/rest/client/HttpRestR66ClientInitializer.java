@@ -62,6 +62,6 @@ public class HttpRestR66ClientInitializer
     pipeline.addLast("streamer", new ChunkedWriteHandler());
 
     // Replace by your handler
-    // pipeline.addLast("handler", new HttpRestR66ClientResponseHandler());
+    // pipeline.addLast("handler", new HttpRestR66ClientResponseHandler())
   }
 }

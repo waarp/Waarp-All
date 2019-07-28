@@ -21,8 +21,6 @@ package org.waarp.common.database.model;
 
 /**
  * Type of Database supported
- *
- *
  */
 public enum DbType {
   Oracle, MySQL, PostGreSQL, H2, MariaDB, none;

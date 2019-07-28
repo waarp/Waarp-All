@@ -43,6 +43,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
@@ -110,10 +111,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Configuration class
- *
- *
  */
 public class Configuration {
+  private static final String ISSUE_WHILE_DEBUGGING = "Issue while debugging";
+
   /**
    * Internal Logger
    */
@@ -146,7 +147,7 @@ public class Configuration {
   /**
    * Hack to say Windows or Unix (USR1 not OK on Windows)
    */
-  private static boolean ISUNIX;
+  private static boolean isUnix;
 
   /**
    * Default size for buffers (NIO)
@@ -166,11 +167,11 @@ public class Configuration {
   /**
    * Rank to redo when a restart occurs
    */
-  private static int RANKRESTART = 30;
+  private static int rankRestart = 30;
   /**
    * Number of DbSession for internal needs
    */
-  private static int NBDBSESSION = 0;
+  private static int nbDbSession;
   /**
    * FileParameter
    */
@@ -214,41 +215,41 @@ public class Configuration {
   /**
    * Actual Host ID
    */
-  private String HOST_ID;
+  private String hostId;
   /**
    * Actual SSL Host ID
    */
-  private String HOST_SSLID;
+  private String hostSslId;
 
   /**
    * Server Administration user name
    */
-  private String ADMINNAME = null;
+  private String adminName;
   /**
    * Server Administration Key
    */
-  private byte[] SERVERADMINKEY = null;
+  private byte[] serverAdminKey;
   /**
    * Server Administration Key file
    */
-  private String serverKeyFile = null;
+  private String serverKeyFile;
   /**
    * Server Actual Authentication
    */
-  private DbHostAuth HOST_AUTH;
+  private DbHostAuth hostAuth;
   /**
    * Server Actual SSL Authentication
    */
-  private DbHostAuth HOST_SSLAUTH;
+  private DbHostAuth hostSslAuth;
 
-  private String AUTH_FILE;
+  private String authFile;
 
   /**
    * Default number of threads in pool for Server (true network listeners).
    * Server will change this value on
    * startup if not set. The value should be closed to the number of CPU.
    */
-  private int SERVER_THREAD = 0;
+  private int serverThread;
 
   /**
    * Default number of threads in pool for Client. The value is for true
@@ -259,49 +260,49 @@ public class Configuration {
    * but a limit on truly packet
    * concurrent actions.
    */
-  private int CLIENT_THREAD = 10;
+  private int clientThread = 10;
 
   /**
    * Default session limit 64Mbit, so up to 16 full simultaneous clients
    */
-  private final long DEFAULT_SESSION_LIMIT = 0x800000L;
+  private static final long DEFAULT_SESSION_LIMIT = 0x800000L;
 
   /**
    * Default global limit 1024Mbit
    */
-  private final long DEFAULT_GLOBAL_LIMIT = 0x8000000L;
+  private static final long DEFAULT_GLOBAL_LIMIT = 0x8000000L;
 
   /**
    * Default server port
    */
-  private int SERVER_PORT = 6666;
+  private int serverPort = 6666;
 
   /**
    * Default SSL server port
    */
-  private int SERVER_SSLPORT = 6667;
+  private int serverSslPort = 6667;
 
   /**
    * Default HTTP server port
    */
-  private int SERVER_HTTPPORT = 8066;
+  private int serverHttpport = 8066;
 
   /**
    * Default HTTP server port
    */
-  private int SERVER_HTTPSPORT = 8067;
+  private int serverHttpsPort = 8067;
 
   /**
    * Nb of milliseconds after connection is in timeout
    */
-  private long TIMEOUTCON = 30000;
+  private long timeoutCon = 30000;
 
   /**
    * Size by default of block size for receive/sending files. Should be a
    * multiple of 8192 (maximum = 2^30K due
    * to block limitation to 4 bytes)
    */
-  private int BLOCKSIZE = 0x10000; // 64K
+  private int blockSize = 0x10000; // 64K
 
   /**
    * Max global memory limit: default is 4GB
@@ -322,27 +323,27 @@ public class Configuration {
   /**
    * In path (receive)
    */
-  private String inPath = null;
+  private String inPath;
 
   /**
    * Out path (send, copy, pending)
    */
-  private String outPath = null;
+  private String outPath;
 
   /**
    * Archive path
    */
-  private String archivePath = null;
+  private String archivePath;
 
   /**
    * Working path
    */
-  private String workingPath = null;
+  private String workingPath;
 
   /**
    * Config path
    */
-  private String configPath = null;
+  private String configPath;
 
   /**
    * Http Admin base
@@ -358,7 +359,7 @@ public class Configuration {
   /**
    * True if the service is going to shutdown
    */
-  private volatile boolean isShutdown = false;
+  private volatile boolean isShutdown;
 
   /**
    * Limit in Write byte/s to apply globally to the FTP Server
@@ -383,7 +384,7 @@ public class Configuration {
   /**
    * Any limitation on bandwidth active?
    */
-  private boolean anyBandwidthLimitation = false;
+  private boolean anyBandwidthLimitation;
   /**
    * Delay in ms between two checks
    */
@@ -393,7 +394,7 @@ public class Configuration {
   /**
    * Does this OpenR66 server will use and accept SSL connections
    */
-  private boolean useSSL = false;
+  private boolean useSSL;
   /**
    * Does this OpenR66 server will use and accept non SSL connections
    */
@@ -406,41 +407,41 @@ public class Configuration {
   /**
    * Does this OpenR66 server will try to compress HTTP connections
    */
-  private boolean useHttpCompression = false;
+  private boolean useHttpCompression;
 
   /**
    * Does this OpenR66 server will use Waarp LocalExec Daemon for ExecTask and
    * ExecMoveTask
    */
-  private boolean useLocalExec = false;
+  private boolean useLocalExec;
 
   /**
    * Crypto Key
    */
-  private Des cryptoKey = null;
+  private Des cryptoKey;
   /**
    * Associated file for CryptoKey
    */
-  private String cryptoFile = null;
+  private String cryptoFile;
 
   /**
    * List of all Server Channels to enable the close call on them using Netty
    * ChannelGroup
    */
-  protected ChannelGroup serverChannelGroup = null;
+  protected ChannelGroup serverChannelGroup;
   /**
    * Main bind address in no ssl mode
    */
-  protected Channel bindNoSSL = null;
+  protected Channel bindNoSSL;
   /**
    * Main bind address in ssl mode
    */
-  protected Channel bindSSL = null;
+  protected Channel bindSSL;
 
   /**
    * Does the current program running as Server
    */
-  private boolean isServer = false;
+  private boolean isServer;
 
   /**
    * ExecutorService Other Worker
@@ -451,7 +452,6 @@ public class Configuration {
   protected EventLoopGroup workerGroup;
   protected EventLoopGroup handlerGroup;
   protected EventLoopGroup subTaskGroup;
-  protected EventLoopGroup localWorkerGroup;
   protected EventLoopGroup httpWorkerGroup;
   protected ExecutorService retrieveRunnerGroup;
 
@@ -463,12 +463,12 @@ public class Configuration {
   /**
    * Bootstrap for server
    */
-  protected ServerBootstrap serverBootstrap = null;
+  protected ServerBootstrap serverBootstrap;
 
   /**
    * Bootstrap for SSL server
    */
-  protected ServerBootstrap serverSslBootstrap = null;
+  protected ServerBootstrap serverSslBootstrap;
   /**
    * Factory for NON SSL Server
    */
@@ -481,16 +481,16 @@ public class Configuration {
   /**
    * Bootstrap for Http server
    */
-  protected ServerBootstrap httpBootstrap = null;
+  protected ServerBootstrap httpBootstrap;
   /**
    * Bootstrap for Https server
    */
-  protected ServerBootstrap httpsBootstrap = null;
+  protected ServerBootstrap httpsBootstrap;
   /**
    * List of all Http Channels to enable the close call on them using Netty
    * ChannelGroup
    */
-  protected ChannelGroup httpChannelGroup = null;
+  protected ChannelGroup httpChannelGroup;
 
   /**
    * Timer for CloseOpertations
@@ -498,11 +498,11 @@ public class Configuration {
   private final Timer timerCloseOperations =
       new HashedWheelTimer(new WaarpThreadFactory("TimerClose"), 50,
                            TimeUnit.MILLISECONDS, 1024);
-  private AtomicBoolean timerCloseClosed = new AtomicBoolean(false);
+  private final AtomicBoolean timerCloseClosed = new AtomicBoolean(false);
   /**
    * Global TrafficCounter (set from global configuration)
    */
-  protected GlobalTrafficShapingHandler globalTrafficShapingHandler = null;
+  protected GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
   /**
    * LocalTransaction
@@ -515,7 +515,7 @@ public class Configuration {
   /**
    * Maximum number of concurrent active transfer by submission.
    */
-  private int RUNNER_THREAD = 1000;
+  private int runnerThread = 1000;
   /**
    * Delay in ms between two steps of Commander
    */
@@ -532,15 +532,15 @@ public class Configuration {
   /**
    * Do we check Remote Address from DbHost
    */
-  private boolean checkRemoteAddress = false;
+  private boolean checkRemoteAddress;
   /**
    * Do we check address even for Client
    */
-  private boolean checkClientAddress = false;
+  private boolean checkClientAddress;
   /**
    * For No Db client, do we saved TaskRunner in a XML
    */
-  private boolean saveTaskRunnerWithNoDb = false;
+  private boolean saveTaskRunnerWithNoDb;
   /**
    * In case of Multiple OpenR66 monitor servers behing a load balancer (HA
    * solution)
@@ -549,7 +549,7 @@ public class Configuration {
   /**
    * Monitoring object
    */
-  private Monitoring monitoring = null;
+  private Monitoring monitoring;
   /**
    * Monitoring: how long in ms to get back in monitoring
    */
@@ -561,17 +561,17 @@ public class Configuration {
   /**
    * Monitoring: snmp configuration file (empty means no snmp support)
    */
-  private String snmpConfig = null;
+  private String snmpConfig;
   /**
    * SNMP Agent (if any)
    */
-  private WaarpSnmpAgent agentSnmp = null;
+  private WaarpSnmpAgent agentSnmp;
   /**
    * Associated MIB
    */
-  private R66PrivateMib r66Mib = null;
+  private R66PrivateMib r66Mib;
 
-  protected volatile boolean configured = false;
+  protected volatile boolean configured;
 
   private static WaarpSecureKeyStore waarpSecureKeyStore;
 
@@ -587,38 +587,38 @@ public class Configuration {
   private final ShutdownConfiguration shutdownConfiguration =
       new ShutdownConfiguration();
 
-  private boolean isHostProxyfied = false;
+  private boolean isHostProxyfied;
 
   private boolean warnOnStartup = true;
 
   private boolean chrootChecked = true;
 
-  private boolean blacklistBadAuthent = false;
+  private boolean blacklistBadAuthent;
 
   private int maxfilenamelength = 255;
 
-  private int timeStat = 0;
+  private int timeStat;
 
   private int limitCache = 20000;
 
   private long timeLimitCache = 180000;
 
-  private java.util.Timer timerCleanLruCache =
+  private final java.util.Timer timerCleanLruCache =
       new java.util.Timer("CleanLruCache", true);
 
-  private java.util.Timer timerStatistic =
+  private final java.util.Timer timerStatistic =
       new java.util.Timer("R66Statistic", true);
 
   public Configuration() {
     // Init signal handler
-    getShutdownConfiguration().timeout = getTIMEOUTCON();
+    getShutdownConfiguration().timeout = getTimeoutCon();
     if (WaarpShutdownHook.shutdownHook == null) {
       new R66ShutdownHook(getShutdownConfiguration());
     }
     computeNbThreads();
-    scheduledExecutorService = Executors
-        .newScheduledThreadPool(2,
-                                new WaarpThreadFactory("ScheduledRestartTask"));
+    scheduledExecutorService = Executors.newScheduledThreadPool(2,
+                                                                new WaarpThreadFactory(
+                                                                    "ScheduledRestartTask"));
     // Init FiniteStates
     R66FiniteDualStates.initR66FiniteStates();
     if (!SystemPropertyUtil.isFileEncodingCorrect()) {
@@ -642,7 +642,7 @@ public class Configuration {
 
     if (!SystemPropertyUtil
         .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
-        .equals("")) {
+        .isEmpty()) {
       logger.warn("{} is deprecated in system properties use {} instead",
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
@@ -686,49 +686,49 @@ public class Configuration {
 
   @Override
   public String toString() {
-    String rest = null;
+    StringBuilder rest = null;
     for (final RestConfiguration config : getRestConfigurations()) {
       if (rest == null) {
-        rest = (config.REST_ADDRESS != null? "'" + config.REST_ADDRESS + ":" :
-            "'All:") + config.REST_PORT + "'";
+        rest = new StringBuilder((config.getRestAddress() != null?
+            '\'' + config.getRestAddress() + ':' : "'All:") +
+                                 config.getRestPort() + '\'');
       } else {
-        rest += ", " +
-                (config.REST_ADDRESS != null? "'" + config.REST_ADDRESS + ":" :
-                    "'All:") + config.REST_PORT + "'";
+        rest.append(", ").append(config.getRestAddress() != null?
+                                     '\'' + config.getRestAddress() + ':' :
+                                     "'All:").append(config.getRestPort())
+            .append('\'');
       }
     }
-    return "Config: { ServerPort: " + getSERVER_PORT() + ", ServerSslPort: " +
-           getSERVER_SSLPORT() + ", ServerView: " + getSERVER_HTTPPORT() +
-           ", ServerAdmin: " + getSERVER_HTTPSPORT() + ", ThriftPort: " +
+    return "Config: { ServerPort: " + getServerPort() + ", ServerSslPort: " +
+           getServerSslPort() + ", ServerView: " + getServerHttpport() +
+           ", ServerAdmin: " + getServerHttpsPort() + ", ThriftPort: " +
            (getThriftport() > 0? getThriftport() : "'NoThriftSupport'") +
-           ", RestAddress: [" + (rest != null? rest : "'NoRestSupport'") + "]" +
-           ", TimeOut: " + getTIMEOUTCON() + ", BaseDir: '" +
-           getBaseDirectory() + "', DigestAlgo: '" + getDigest().name +
+           ", RestAddress: [" +
+           (rest != null? rest.toString() : "'NoRestSupport'") + ']' +
+           ", TimeOut: " + getTimeoutCon() + ", BaseDir: '" +
+           getBaseDirectory() + "', DigestAlgo: '" + getDigest().algoName +
            "', checkRemote: " + isCheckRemoteAddress() + ", checkClient: " +
            isCheckClientAddress() + ", snmpActive: " +
            (getAgentSnmp() != null) + ", chrootChecked: " + isChrootChecked() +
            ", blacklist: " + isBlacklistBadAuthent() + ", isHostProxified: " +
-           isHostProxyfied() + "}";
+           isHostProxyfied() + '}';
   }
 
   /**
    * Configure the pipeline for client (to be called only once)
    */
   public void pipelineInit() {
-    if (configured) {
+    if (isConfigured()) {
       return;
     }
-    workerGroup = new NioEventLoopGroup(getCLIENT_THREAD(),
+    workerGroup = new NioEventLoopGroup(getClientThread(),
                                         new WaarpThreadFactory("Worker"));
-    handlerGroup = new NioEventLoopGroup(getCLIENT_THREAD(),
+    handlerGroup = new NioEventLoopGroup(getClientThread(),
                                          new WaarpThreadFactory("Handler"));
-    subTaskGroup = new NioEventLoopGroup(getSERVER_THREAD(),
+    subTaskGroup = new NioEventLoopGroup(getServerThread(),
                                          new WaarpThreadFactory("SubTask"));
-    localWorkerGroup = new NioEventLoopGroup(3 * getCLIENT_THREAD(),
-                                             new WaarpThreadFactory(
-                                                 "LocalWorker"));
     retrieveRunnerGroup =
-        new ThreadPoolRunnerExecutor(10, getRUNNER_THREAD() * 2, 10,
+        new ThreadPoolRunnerExecutor(10, getRunnerThread() * 2, 10,
                                      TimeUnit.SECONDS,
                                      new SynchronousQueue<Runnable>(),
                                      new WaarpThreadFactory("RetrieveRunner"),
@@ -746,6 +746,8 @@ public class Configuration {
                                            try {
                                              Thread.sleep(WAITFORNETOP * 2);
                                            } catch (InterruptedException e) {
+                                             SysErrLogger.FAKE_LOGGER
+                                                 .ignoreLog(e);
                                              retrieveRunner.notStartRunner();
                                              return;
                                            }
@@ -761,22 +763,30 @@ public class Configuration {
     WaarpLoggerFactory
         .setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
     if (isWarnOnStartup()) {
-      logger.warn("Server Thread: " + getSERVER_THREAD() + " Client Thread: " +
-                  getCLIENT_THREAD() + " Runner Thread: " + getRUNNER_THREAD());
+      logger.warn("Server Thread: " + getServerThread() + " Client Thread: " +
+                  getClientThread() + " Runner Thread: " + getRunnerThread());
     } else {
-      logger.info("Server Thread: " + getSERVER_THREAD() + " Client Thread: " +
-                  getCLIENT_THREAD() + " Runner Thread: " + getRUNNER_THREAD());
+      logger.info("Server Thread: " + getServerThread() + " Client Thread: " +
+                  getClientThread() + " Runner Thread: " + getRunnerThread());
     }
     logger.info("Current launched threads: " +
                 ManagementFactory.getThreadMXBean().getThreadCount());
     if (isUseLocalExec()) {
       LocalExecClient.initialize();
     }
-    configured = true;
+    setConfigured(true);
+  }
+
+  public void setConfigured(boolean configured) {
+    this.configured = configured;
+  }
+
+  public boolean isConfigured() {
+    return configured;
   }
 
   public void serverPipelineInit() {
-    httpWorkerGroup = new NioEventLoopGroup(getSERVER_THREAD() * 10,
+    httpWorkerGroup = new NioEventLoopGroup(getClientThread(),
                                             new WaarpThreadFactory(
                                                 "HttpWorker"));
   }
@@ -794,19 +804,19 @@ public class Configuration {
     if (isBlacklistBadAuthent()) {
       setBlacklistBadAuthent(!DbHostAuth.hasProxifiedHosts());
     }
-    getShutdownConfiguration().timeout = getTIMEOUTCON();
-    if (getTimeLimitCache() < getTIMEOUTCON() * 10) {
-      setTimeLimitCache(getTIMEOUTCON() * 10);
+    getShutdownConfiguration().timeout = getTimeoutCon();
+    if (getTimeLimitCache() < getTimeoutCon() * 10) {
+      setTimeLimitCache(getTimeoutCon() * 10);
       DbTaskRunner.updateLruCacheTimeout(getTimeLimitCache());
     }
     WaarpShutdownHook.addShutdownHook();
     logger.debug("Use NoSSL: " + isUseNOSSL() + " Use SSL: " + isUseSSL());
-    if ((!isUseNOSSL()) && (!isUseSSL())) {
+    if (!isUseNOSSL() && !isUseSSL()) {
       logger.error(Messages.getString("Configuration.NoSSL")); //$NON-NLS-1$
       if (DetectionUtils.isJunit()) {
         return;
       }
-      System.exit(-1);
+      System.exit(-1);//NOSONAR
     }
     pipelineInit();
     serverPipelineInit();
@@ -826,7 +836,7 @@ public class Configuration {
   public void launchStatistics() {
     if (getTimeStat() > 0) {
       timerStatistic.scheduleAtFixedRate(new UsageStatistic(), 1000,
-                                         (long) (getTimeStat()) * 1000L);
+                                         getTimeStat() * 1000L);
     }
   }
 
@@ -834,9 +844,9 @@ public class Configuration {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              ServerException {
     logger.info(
-        Messages.getString("Configuration.Start") + getSERVER_PORT() + ":" +
-        isUseNOSSL() + ":" + getHOST_ID() + //$NON-NLS-1$
-        " " + getSERVER_SSLPORT() + ":" + isUseSSL() + ":" + getHOST_SSLID());
+        Messages.getString("Configuration.Start") + getServerPort() + ':' +
+        isUseNOSSL() + ':' + getHostId() + //$NON-NLS-1$
+        ' ' + getServerSslPort() + ':' + isUseSSL() + ':' + getHostSslId());
     // add into configuration
     getConstraintLimitHandler().setServer(true);
     // Global Server
@@ -845,11 +855,11 @@ public class Configuration {
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
-                                        (int) getTIMEOUTCON());
+                                        (int) getTimeoutCon());
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
       final ChannelFuture future =
-          serverBootstrap.bind(new InetSocketAddress(getSERVER_PORT()))
+          serverBootstrap.bind(new InetSocketAddress(getServerPort()))
                          .awaitUninterruptibly();
       if (future.isSuccess()) {
         bindNoSSL = future.channel();
@@ -864,15 +874,14 @@ public class Configuration {
           Messages.getString("Configuration.NOSSLDeactivated")); //$NON-NLS-1$
     }
 
-    if (isUseSSL() && getHOST_SSLID() != null) {
+    if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(serverSslBootstrap, workerGroup,
-                              (int) getTIMEOUTCON());
+      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
+                                        (int) getTimeoutCon());
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       final ChannelFuture future =
-          serverSslBootstrap.bind(new InetSocketAddress(getSERVER_SSLPORT()))
+          serverSslBootstrap.bind(new InetSocketAddress(getServerSslPort()))
                             .awaitUninterruptibly();
       if (future.isSuccess()) {
         bindSSL = future.channel();
@@ -904,6 +913,9 @@ public class Configuration {
   }
 
   public void setupLimitHandler() {
+    if (globalTrafficShapingHandler != null) {
+      return;
+    }
     globalTrafficShapingHandler = new GlobalTrafficShapingHandler(subTaskGroup,
                                                                   getServerGlobalWriteLimit(),
                                                                   getServerGlobalReadLimit(),
@@ -914,22 +926,21 @@ public class Configuration {
   public void startHttpSupport() throws ServerException {
     // Now start the HTTP support
     logger.info(
-        Messages.getString("Configuration.HTTPStart") + getSERVER_HTTPPORT() +
+        Messages.getString("Configuration.HTTPStart") + getServerHttpport() +
         //$NON-NLS-1$
-        " HTTPS: " + getSERVER_HTTPSPORT());
+        " HTTPS: " + getServerHttpsPort());
     httpChannelGroup =
         new DefaultChannelGroup("HttpOpenR66", subTaskGroup.next());
     // Configure the server.
     httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, httpWorkerGroup,
-                            (int) getTIMEOUTCON());
+    WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,
+                                      (int) getTimeoutCon());
     // Set up the event pipeline factory.
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
     // Bind and start to accept incoming connections.
-    if (getSERVER_HTTPPORT() > 0) {
+    if (getServerHttpport() > 0) {
       final ChannelFuture future =
-          httpBootstrap.bind(new InetSocketAddress(getSERVER_HTTPPORT()))
+          httpBootstrap.bind(new InetSocketAddress(getServerHttpport()))
                        .awaitUninterruptibly();
       if (future.isSuccess()) {
         httpChannelGroup.add(future.channel());
@@ -941,9 +952,8 @@ public class Configuration {
     // Configure the server.
     httpsBootstrap = new ServerBootstrap();
     // Set up the event pipeline factory.
-    WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, httpWorkerGroup,
-                            (int) getTIMEOUTCON());
+    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,
+                                      (int) getTimeoutCon());
     if (getHttpModel() == 0) {
       httpsBootstrap
           .childHandler(new HttpSslInitializer(isUseHttpCompression()));
@@ -953,9 +963,9 @@ public class Configuration {
           new HttpReponsiveSslInitializer(isUseHttpCompression()));
     }
     // Bind and start to accept incoming connections.
-    if (getSERVER_HTTPSPORT() > 0) {
+    if (getServerHttpsPort() > 0) {
       final ChannelFuture future =
-          httpsBootstrap.bind(new InetSocketAddress(getSERVER_HTTPSPORT()))
+          httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))
                         .awaitUninterruptibly();
       if (future.isSuccess()) {
         httpChannelGroup.add(future.channel());
@@ -967,23 +977,23 @@ public class Configuration {
 
   public void startRestSupport() {
     HttpRestHandler
-        .initialize(getBaseDirectory() + "/" + getWorkingPath() + "/httptemp");
+        .initialize(getBaseDirectory() + '/' + getWorkingPath() + "/httptemp");
     for (final RestConfiguration config : getRestConfigurations()) {
       RestServiceInitializer.initRestService(config);
       // FIXME REST V1 not started!!!
       // HttpRestR66Handler.initializeService(config);
       logger.info(
           Messages.getString("Configuration.HTTPStart") + " (REST Support) " +
-          config.toString());
+          config);
     }
   }
 
   public void startMonitoring() throws WaarpDatabaseSqlException {
     setMonitoring(new Monitoring(getPastLimit(), getMinimalDelay(), null));
-    setNBDBSESSION(getNBDBSESSION() + 1);
+    setNbDbSession(getNbDbSession() + 1);
     if (getSnmpConfig() != null) {
       final int snmpPortShow =
-          (isUseNOSSL()? getSERVER_PORT() : getSERVER_SSLPORT());
+          isUseNOSSL()? getServerPort() : getServerSslPort();
       final R66PrivateMib r66Mib =
           new R66PrivateMib(SnmpName, snmpPortShow, SnmpPrivateId, SnmpR66Id,
                             SnmpDefaultAuthor, SnmpVersion,
@@ -1051,18 +1061,16 @@ public class Configuration {
     if (subTaskGroup != null && !subTaskGroup.isShuttingDown()) {
       subTaskGroup.shutdownGracefully();
     }
-    if (localWorkerGroup != null && !localWorkerGroup.isShuttingDown()) {
-      localWorkerGroup.shutdownGracefully();
-    }
     if (retrieveRunnerGroup != null && !retrieveRunnerGroup.isShutdown()) {
 
       retrieveRunnerGroup.shutdown();
       try {
         if (!retrieveRunnerGroup
-            .awaitTermination(getTIMEOUTCON() / 2, TimeUnit.MILLISECONDS)) {
+            .awaitTermination(getTimeoutCon() / 2, TimeUnit.MILLISECONDS)) {
           retrieveRunnerGroup.shutdownNow();
         }
       } catch (InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         retrieveRunnerGroup.shutdownNow();
         Thread.currentThread().interrupt();
       }
@@ -1081,9 +1089,6 @@ public class Configuration {
     }
     if (subTaskGroup != null && !subTaskGroup.isShuttingDown()) {
       subTaskGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
-    }
-    if (localWorkerGroup != null && !localWorkerGroup.isShuttingDown()) {
-      localWorkerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
     }
     if (retrieveRunnerGroup != null && !retrieveRunnerGroup.isShutdown()) {
       retrieveRunnerGroup.shutdownNow();
@@ -1107,6 +1112,7 @@ public class Configuration {
     timerStatistic.cancel();
     if (getAgentSnmp() != null) {
       getAgentSnmp().stop();
+      setAgentSnmp(null);
     } else if (getMonitoring() != null) {
       getMonitoring().releaseResources();
       setMonitoring(null);
@@ -1139,7 +1145,7 @@ public class Configuration {
    */
   public void clientStop(boolean shutdownQuickly) {
     WaarpSslUtility.forceCloseAllSslChannels();
-    if (!Configuration.configuration.isServer()) {
+    if (!configuration.isServer()) {
       ChannelUtils.stopLogger();
     }
     if (scheduledExecutorService != null) {
@@ -1159,11 +1165,11 @@ public class Configuration {
     if (isUseLocalExec()) {
       LocalExecClient.releaseResources();
     }
+    getR66BusinessFactory().releaseResources();
     if (timerCloseOperations != null && !timerCloseClosed.get()) {
       timerCloseClosed.set(true);
       timerCloseOperations.stop();
     }
-    getR66BusinessFactory().releaseResources();
   }
 
   /**
@@ -1176,8 +1182,10 @@ public class Configuration {
       try {
         internalRunner.reloadInternalRunner();
         return true;
-      } catch (final WaarpDatabaseNoConnectionException e) {
-      } catch (final WaarpDatabaseSqlException e) {
+      } catch (final WaarpDatabaseNoConnectionException ignored) {
+        // nothing
+      } catch (final WaarpDatabaseSqlException ignored) {
+        // nothing
       }
     }
     return false;
@@ -1256,15 +1264,15 @@ public class Configuration {
     if (nb > 32) {
       nb = Runtime.getRuntime().availableProcessors() + 1;
     }
-    if (getSERVER_THREAD() <= 0 || getSERVER_THREAD() > nb) {
+    if (getServerThread() <= 0 || getServerThread() > nb) {
       logger.info(Messages.getString("Configuration.ThreadNumberChange") +
                   nb); //$NON-NLS-1$
-      setSERVER_THREAD(nb);
-      if (getCLIENT_THREAD() < getSERVER_THREAD() * 10) {
-        setCLIENT_THREAD(getSERVER_THREAD() * 10);
+      setServerThread(nb);
+      if (getClientThread() < getServerThread() * 10) {
+        setClientThread(getServerThread() * 10);
       }
-    } else if (getCLIENT_THREAD() < nb) {
-      setCLIENT_THREAD(nb);
+    } else if (getClientThread() < nb) {
+      setClientThread(nb);
     }
   }
 
@@ -1332,13 +1340,6 @@ public class Configuration {
   }
 
   /**
-   * @return the localWorkerGroup
-   */
-  public EventLoopGroup getLocalWorkerGroup() {
-    return localWorkerGroup;
-  }
-
-  /**
    * @return the serverPipelineExecutor
    */
   public EventLoopGroup getHandlerGroup() {
@@ -1376,8 +1377,8 @@ public class Configuration {
   /**
    * @return the SERVERADMINKEY
    */
-  public byte[] getSERVERADMINKEY() {
-    return SERVERADMINKEY;
+  public byte[] getServerAdminKey() {
+    return serverAdminKey;
   }
 
   /**
@@ -1391,14 +1392,14 @@ public class Configuration {
     if (newkey == null) {
       return false;
     }
-    return FilesystemBasedDigest.equalPasswd(SERVERADMINKEY, newkey);
+    return FilesystemBasedDigest.equalPasswd(serverAdminKey, newkey);
   }
 
   /**
    * @param serverkey the SERVERADMINKEY to set
    */
   public void setSERVERKEY(byte[] serverkey) {
-    SERVERADMINKEY = serverkey;
+    serverAdminKey = serverkey;
   }
 
   /**
@@ -1410,13 +1411,13 @@ public class Configuration {
    */
   public String getHostId(boolean isSSL) throws OpenR66ProtocolNoSslException {
     if (isSSL) {
-      if (getHOST_SSLID() == null) {
+      if (getHostSslId() == null) {
         throw new OpenR66ProtocolNoSslException(
             Messages.getString("Configuration.ExcNoSSL")); //$NON-NLS-1$
       }
-      return getHOST_SSLID();
+      return getHostSslId();
     } else {
-      return getHOST_ID();
+      return getHostId();
     }
   }
 
@@ -1430,9 +1431,9 @@ public class Configuration {
    */
   public String getHostId(DbSession dbSession, String remoteHost)
       throws WaarpDatabaseException {
-    final DbHostAuth hostAuth = new DbHostAuth(remoteHost);
+    final DbHostAuth dbHostAuth = new DbHostAuth(remoteHost);
     try {
-      return Configuration.configuration.getHostId(hostAuth.isSsl());
+      return configuration.getHostId(dbHostAuth.isSsl());
     } catch (final OpenR66ProtocolNoSslException e) {
       throw new WaarpDatabaseException(e);
     }
@@ -1450,29 +1451,29 @@ public class Configuration {
   public static String hashStatus() {
     String result = "\n";
     try {
-      result += configuration.localTransaction.hashStatus() + "\n";
+      result += configuration.localTransaction.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn("Issue while debugging", e);
+      logger.warn(ISSUE_WHILE_DEBUGGING, e);
     }
     try {
-      result += ClientRunner.hashStatus() + "\n";
+      result += ClientRunner.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn("Issue while debugging", e);
+      logger.warn(ISSUE_WHILE_DEBUGGING, e);
     }
     try {
-      result += DbTaskRunner.hashStatus() + "\n";
+      result += DbTaskRunner.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn("Issue while debugging", e);
+      logger.warn(ISSUE_WHILE_DEBUGGING, e);
     }
     try {
-      result += HttpSslHandler.hashStatus() + "\n";
+      result += HttpSslHandler.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn("Issue while debugging", e);
+      logger.warn(ISSUE_WHILE_DEBUGGING, e);
     }
     try {
       result += NetworkTransaction.hashStatus();
     } catch (final Exception e) {
-      logger.warn("Issue while debugging", e);
+      logger.warn(ISSUE_WHILE_DEBUGGING, e);
     }
     return result;
   }
@@ -1480,43 +1481,43 @@ public class Configuration {
   /**
    * @return the nBDBSESSION
    */
-  public static int getNBDBSESSION() {
-    return NBDBSESSION;
+  public static int getNbDbSession() {
+    return nbDbSession;
   }
 
   /**
    * @param nBDBSESSION the nBDBSESSION to set
    */
-  public static void setNBDBSESSION(int nBDBSESSION) {
-    NBDBSESSION = nBDBSESSION;
+  public static void setNbDbSession(int nBDBSESSION) {
+    nbDbSession = nBDBSESSION;
   }
 
   /**
    * @return the rANKRESTART
    */
-  public static int getRANKRESTART() {
-    return RANKRESTART;
+  public static int getRankRestart() {
+    return rankRestart;
   }
 
   /**
    * @param rANKRESTART the rANKRESTART to set
    */
-  public static void setRANKRESTART(int rANKRESTART) {
-    RANKRESTART = rANKRESTART;
+  public static void setRankRestart(int rANKRESTART) {
+    rankRestart = rANKRESTART;
   }
 
   /**
    * @return the iSUNIX
    */
-  public static boolean isISUNIX() {
-    return ISUNIX;
+  public static boolean isIsUnix() {
+    return isUnix;
   }
 
   /**
    * @param iSUNIX the iSUNIX to set
    */
-  public static void setISUNIX(boolean iSUNIX) {
-    ISUNIX = iSUNIX;
+  public static void setIsUnix(boolean iSUNIX) {
+    isUnix = iSUNIX;
   }
 
   /**
@@ -1592,43 +1593,43 @@ public class Configuration {
   /**
    * @return the hOST_ID
    */
-  public String getHOST_ID() {
-    return HOST_ID;
+  public String getHostId() {
+    return hostId;
   }
 
   /**
-   * @param hOST_ID the hOST_ID to set
+   * @param hostID the hOST_ID to set
    */
-  public void setHOST_ID(String hOST_ID) {
-    HOST_ID = hOST_ID;
+  public void setHostId(String hostID) {
+    hostId = hostID;
   }
 
   /**
    * @return the hOST_SSLID
    */
-  public String getHOST_SSLID() {
-    return HOST_SSLID;
+  public String getHostSslId() {
+    return hostSslId;
   }
 
   /**
-   * @param hOST_SSLID the hOST_SSLID to set
+   * @param hostSSLID the hOST_SSLID to set
    */
-  public void setHOST_SSLID(String hOST_SSLID) {
-    HOST_SSLID = hOST_SSLID;
+  public void setHostSslId(String hostSSLID) {
+    hostSslId = hostSSLID;
   }
 
   /**
    * @return the aDMINNAME
    */
-  public String getADMINNAME() {
-    return ADMINNAME;
+  public String getAdminName() {
+    return adminName;
   }
 
   /**
    * @param aDMINNAME the aDMINNAME to set
    */
-  public void setADMINNAME(String aDMINNAME) {
-    ADMINNAME = aDMINNAME;
+  public void setAdminName(String aDMINNAME) {
+    adminName = aDMINNAME;
   }
 
   /**
@@ -1648,65 +1649,65 @@ public class Configuration {
   /**
    * @return the hOST_AUTH
    */
-  public DbHostAuth getHOST_AUTH() {
-    return HOST_AUTH;
+  public DbHostAuth getHostAuth() {
+    return hostAuth;
   }
 
   /**
-   * @param hOST_AUTH the hOST_AUTH to set
+   * @param hostAUTH the hOST_AUTH to set
    */
-  public void setHOST_AUTH(DbHostAuth hOST_AUTH) {
-    HOST_AUTH = hOST_AUTH;
+  public void setHostAuth(DbHostAuth hostAUTH) {
+    hostAuth = hostAUTH;
   }
 
   /**
    * @return the hOST_SSLAUTH
    */
-  public DbHostAuth getHOST_SSLAUTH() {
-    return HOST_SSLAUTH;
+  public DbHostAuth getHostSslAuth() {
+    return hostSslAuth;
   }
 
   /**
-   * @param hOST_SSLAUTH the hOST_SSLAUTH to set
+   * @param hostSSLAUTH the hOST_SSLAUTH to set
    */
-  public void setHOST_SSLAUTH(DbHostAuth hOST_SSLAUTH) {
-    HOST_SSLAUTH = hOST_SSLAUTH;
+  public void setHostSslAuth(DbHostAuth hostSSLAUTH) {
+    hostSslAuth = hostSSLAUTH;
   }
 
-  public String getAUTH_FILE() {
-    return AUTH_FILE;
+  public String getAuthFile() {
+    return authFile;
   }
 
-  public void setAUTH_FILE(String file) {
-    AUTH_FILE = file;
+  public void setAuthFile(String file) {
+    authFile = file;
   }
 
   /**
    * @return the sERVER_THREAD
    */
-  public int getSERVER_THREAD() {
-    return SERVER_THREAD;
+  public int getServerThread() {
+    return serverThread;
   }
 
   /**
-   * @param sERVER_THREAD the sERVER_THREAD to set
+   * @param serverTHREAD the sERVER_THREAD to set
    */
-  public void setSERVER_THREAD(int sERVER_THREAD) {
-    SERVER_THREAD = sERVER_THREAD;
+  public void setServerThread(int serverTHREAD) {
+    serverThread = serverTHREAD;
   }
 
   /**
    * @return the cLIENT_THREAD
    */
-  public int getCLIENT_THREAD() {
-    return CLIENT_THREAD;
+  public int getClientThread() {
+    return clientThread;
   }
 
   /**
-   * @param cLIENT_THREAD the cLIENT_THREAD to set
+   * @param clientTHREAD the cLIENT_THREAD to set
    */
-  public void setCLIENT_THREAD(int cLIENT_THREAD) {
-    CLIENT_THREAD = cLIENT_THREAD;
+  public void setClientThread(int clientTHREAD) {
+    clientThread = clientTHREAD;
   }
 
   /**
@@ -1726,85 +1727,85 @@ public class Configuration {
   /**
    * @return the sERVER_PORT
    */
-  public int getSERVER_PORT() {
-    return SERVER_PORT;
+  public int getServerPort() {
+    return serverPort;
   }
 
   /**
-   * @param sERVER_PORT the sERVER_PORT to set
+   * @param serverPORT the sERVER_PORT to set
    */
-  public void setSERVER_PORT(int sERVER_PORT) {
-    SERVER_PORT = sERVER_PORT;
+  public void setServerPort(int serverPORT) {
+    serverPort = serverPORT;
   }
 
   /**
    * @return the sERVER_SSLPORT
    */
-  public int getSERVER_SSLPORT() {
-    return SERVER_SSLPORT;
+  public int getServerSslPort() {
+    return serverSslPort;
   }
 
   /**
-   * @param sERVER_SSLPORT the sERVER_SSLPORT to set
+   * @param serverSSLPORT the sERVER_SSLPORT to set
    */
-  public void setSERVER_SSLPORT(int sERVER_SSLPORT) {
-    SERVER_SSLPORT = sERVER_SSLPORT;
+  public void setServerSslPort(int serverSSLPORT) {
+    serverSslPort = serverSSLPORT;
   }
 
   /**
    * @return the sERVER_HTTPPORT
    */
-  public int getSERVER_HTTPPORT() {
-    return SERVER_HTTPPORT;
+  public int getServerHttpport() {
+    return serverHttpport;
   }
 
   /**
-   * @param sERVER_HTTPPORT the sERVER_HTTPPORT to set
+   * @param serverHTTPPORT the sERVER_HTTPPORT to set
    */
-  public void setSERVER_HTTPPORT(int sERVER_HTTPPORT) {
-    SERVER_HTTPPORT = sERVER_HTTPPORT;
+  public void setServerHttpport(int serverHTTPPORT) {
+    serverHttpport = serverHTTPPORT;
   }
 
   /**
    * @return the sERVER_HTTPSPORT
    */
-  public int getSERVER_HTTPSPORT() {
-    return SERVER_HTTPSPORT;
+  public int getServerHttpsPort() {
+    return serverHttpsPort;
   }
 
   /**
-   * @param sERVER_HTTPSPORT the sERVER_HTTPSPORT to set
+   * @param serverHTTPSPORT the sERVER_HTTPSPORT to set
    */
-  public void setSERVER_HTTPSPORT(int sERVER_HTTPSPORT) {
-    SERVER_HTTPSPORT = sERVER_HTTPSPORT;
+  public void setServerHttpsPort(int serverHTTPSPORT) {
+    serverHttpsPort = serverHTTPSPORT;
   }
 
   /**
    * @return the tIMEOUTCON
    */
-  public long getTIMEOUTCON() {
-    return TIMEOUTCON;
+  public long getTimeoutCon() {
+    return timeoutCon;
   }
 
   /**
-   * @param tIMEOUTCON the tIMEOUTCON to set
+   * @param timeoutCON the timeoutCON to set
    */
-  public void setTIMEOUTCON(long tIMEOUTCON) {
-    TIMEOUTCON = tIMEOUTCON;
+  public void setTimeoutCon(long timeoutCON) {
+    timeoutCon = timeoutCON;
   }
 
   /**
    * @return the bLOCKSIZE
    */
-  public int getBLOCKSIZE() {
-    return BLOCKSIZE;
+  public int getBlockSize() {
+    return blockSize;
   }
 
   /**
-   * @param bLOCKSIZE the bLOCKSIZE to set
+   * @param blockSIZE the bLOCKSIZE to set
    */
-  public void setBLOCKSIZE(int bLOCKSIZE) {
-    BLOCKSIZE = bLOCKSIZE;
+  public void setBlockSize(int blockSIZE) {
+    blockSize = blockSIZE;
   }
 
   /**
@@ -2153,15 +2154,15 @@ public class Configuration {
   /**
    * @return the rUNNER_THREAD
    */
-  public int getRUNNER_THREAD() {
-    return RUNNER_THREAD;
+  public int getRunnerThread() {
+    return runnerThread;
   }
 
   /**
-   * @param rUNNER_THREAD the rUNNER_THREAD to set
+   * @param runnerTHREAD the rUNNER_THREAD to set
    */
-  public void setRUNNER_THREAD(int rUNNER_THREAD) {
-    RUNNER_THREAD = rUNNER_THREAD;
+  public void setRunnerThread(int runnerTHREAD) {
+    runnerThread = runnerTHREAD;
   }
 
   /**

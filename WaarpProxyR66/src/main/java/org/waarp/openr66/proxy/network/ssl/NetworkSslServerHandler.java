@@ -28,8 +28,9 @@ import io.netty.util.concurrent.GenericFutureListener;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.network.NetworkServerHandler;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
 /**
  *
@@ -73,11 +74,9 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
             @Override
             public void operationComplete(Future<? super Channel> future)
                 throws Exception {
-              if (!future.isSuccess()) {
-                if (Configuration.configuration.getR66Mib() != null) {
-                  Configuration.configuration.getR66Mib().notifyError(
-                      "SSL Connection Error", "During Handshake");
-                }
+              if (!future.isSuccess() && configuration.getR66Mib() != null) {
+                configuration.getR66Mib().notifyError("SSL Connection Error",
+                                                      "During Handshake");
               }
             }
           });

@@ -24,25 +24,23 @@ import org.waarp.snmp.interf.WaarpCounter32;
 
 /**
  * R66 Counter32 SNMP implementation
- *
- *
  */
 class R66Counter32 extends WaarpCounter32 {
 
   private int type = 1;
-  private int entry = 0;
+  private final int entry;
   /**
    *
    */
   private static final long serialVersionUID = -5850987508703222927L;
 
-  public R66Counter32(int type, int entry) {
+  R66Counter32(int type, int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  public R66Counter32(int type, int entry, long value) {
+  R66Counter32(int type, int entry, long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);

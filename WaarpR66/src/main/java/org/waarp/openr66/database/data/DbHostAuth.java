@@ -53,13 +53,17 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Host Authentication Table object
- *
- *
  */
 public class DbHostAuth extends AbstractDbData {
+  private static final String CHECKED = "checked";
+
+  private static final String CANNOT_FIND_HOST = "Cannot find host";
+
   public static final String DEFAULT_CLIENT_ADDRESS = "0.0.0.0";
 
   /**
@@ -67,8 +71,13 @@ public class DbHostAuth extends AbstractDbData {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbHostAuth.class);
+  private static final byte[] VALUE_0_BYTE = new byte[0];
+  private static final DbHostAuth[] DBHOSTAUTH_0_SIZE = new DbHostAuth[0];
+  private static final Pattern BACKSLASH =
+      Pattern.compile("\"", Pattern.LITERAL);
+  private static final Pattern COMMA = Pattern.compile(",", Pattern.LITERAL);
 
-  public static enum Columns {
+  public enum Columns {
     ADDRESS, PORT, ISSSL, HOSTKEY, ADMINROLE, ISCLIENT, ISACTIVE, ISPROXIFIED,
     UPDATEDINFO, HOSTID
   }
@@ -86,11 +95,11 @@ public class DbHostAuth extends AbstractDbData {
   public static final int NBPRKEY = 1;
 
   protected static final String selectAllFields =
-      Columns.ADDRESS.name() + "," + Columns.PORT.name() + "," +
-      Columns.ISSSL.name() + "," + Columns.HOSTKEY.name() + "," +
-      Columns.ADMINROLE.name() + "," + Columns.ISCLIENT.name() + "," +
-      Columns.ISACTIVE.name() + "," + Columns.ISPROXIFIED.name() + "," +
-      Columns.UPDATEDINFO.name() + "," + Columns.HOSTID.name();
+      Columns.ADDRESS.name() + ',' + Columns.PORT.name() + ',' +
+      Columns.ISSSL.name() + ',' + Columns.HOSTKEY.name() + ',' +
+      Columns.ADMINROLE.name() + ',' + Columns.ISCLIENT.name() + ',' +
+      Columns.ISACTIVE.name() + ',' + Columns.ISPROXIFIED.name() + ',' +
+      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
 
   protected static final String updateAllFields =
       Columns.ADDRESS.name() + "=?," + Columns.PORT.name() + "=?," +
@@ -108,7 +117,7 @@ public class DbHostAuth extends AbstractDbData {
         new DbValue("", Columns.ADDRESS.name()),
         new DbValue(0, Columns.PORT.name()),
         new DbValue(false, Columns.ISSSL.name()),
-        new DbValue(new byte[0], Columns.HOSTKEY.name()),
+        new DbValue(VALUE_0_BYTE, Columns.HOSTKEY.name()),
         new DbValue(false, Columns.ADMINROLE.name()),
         new DbValue(false, Columns.ISCLIENT.name()),
         new DbValue(false, Columns.ISACTIVE.name()),
@@ -194,7 +203,6 @@ public class DbHostAuth extends AbstractDbData {
    */
   public DbHostAuth(String hostid, String address, int port, boolean isSSL,
                     byte[] hostkey, boolean adminrole, boolean isClient) {
-    super();
     host = new Host(hostid, address, port, hostkey, isSSL, isClient, false,
                     adminrole);
     if (hostkey != null) {
@@ -205,7 +213,7 @@ public class DbHostAuth extends AbstractDbData {
                                        .getBytes(WaarpStringUtils.UTF8));
       } catch (final Exception e) {
         logger.warn("Error while cyphering hostkey", e);
-        host.setHostkey(new byte[0]);
+        host.setHostkey(VALUE_0_BYTE);
       }
     }
     if (port < 0) {
@@ -217,7 +225,6 @@ public class DbHostAuth extends AbstractDbData {
   }
 
   private DbHostAuth(Host host) {
-    super();
     if (host == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -227,7 +234,6 @@ public class DbHostAuth extends AbstractDbData {
   }
 
   public DbHostAuth(ObjectNode source) throws WaarpDatabaseSqlException {
-    super();
     host = new Host();
     setFromJson(source, false);
     setToArray();
@@ -249,7 +255,7 @@ public class DbHostAuth extends AbstractDbData {
         host.setHostkey(Configuration.configuration.getCryptoKey().cryptToHex(
             host.getHostkey()).getBytes(WaarpStringUtils.UTF8));
       } catch (final Exception e) {
-        host.setHostkey(new byte[0]);
+        host.setHostkey(VALUE_0_BYTE);
       }
     }
     if (host.getPort() < 0) {
@@ -264,7 +270,6 @@ public class DbHostAuth extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public DbHostAuth(String hostid) throws WaarpDatabaseException {
-    super();
     if (hostid == null) {
       throw new WaarpDatabaseException("No host id passed");
     }
@@ -276,7 +281,7 @@ public class DbHostAuth extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find host", e);
+      throw new WaarpDatabaseNoDataException(CANNOT_FIND_HOST, e);
     } finally {
       if (hostAccess != null) {
         hostAccess.close();
@@ -294,7 +299,7 @@ public class DbHostAuth extends AbstractDbData {
   public static DbHostAuth[] deleteAll() throws WaarpDatabaseException {
     HostDAO hostAccess = null;
     final List<DbHostAuth> res = new ArrayList<DbHostAuth>();
-    List<Host> hosts = null;
+    List<Host> hosts;
     try {
       hostAccess = DAOFactory.getInstance().getHostDAO();
       hosts = hostAccess.getAll();
@@ -309,7 +314,7 @@ public class DbHostAuth extends AbstractDbData {
     for (final Host host : hosts) {
       res.add(new DbHostAuth(host));
     }
-    return (DbHostAuth[]) res.toArray();
+    return res.toArray(new DbHostAuth[0]);
   }
 
   @Override
@@ -321,7 +326,7 @@ public class DbHostAuth extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find host", e);
+      throw new WaarpDatabaseNoDataException(CANNOT_FIND_HOST, e);
     } finally {
       if (hostAccess != null) {
         hostAccess.close();
@@ -368,7 +373,7 @@ public class DbHostAuth extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find host", e);
+      throw new WaarpDatabaseNoDataException(CANNOT_FIND_HOST, e);
     } finally {
       if (hostAccess != null) {
         hostAccess.close();
@@ -385,7 +390,7 @@ public class DbHostAuth extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find host", e);
+      throw new WaarpDatabaseNoDataException(CANNOT_FIND_HOST, e);
     } finally {
       if (hostAccess != null) {
         hostAccess.close();
@@ -397,7 +402,6 @@ public class DbHostAuth extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbHostAuth() {
-    super();
     host = new Host();
   }
 
@@ -414,7 +418,7 @@ public class DbHostAuth extends AbstractDbData {
       throws WaarpDatabaseNoConnectionException {
     HostDAO hostAccess = null;
     final List<DbHostAuth> res = new ArrayList<DbHostAuth>();
-    List<Host> hosts = null;
+    List<Host> hosts;
     try {
       hostAccess = DAOFactory.getInstance().getHostDAO();
       hosts = hostAccess.getAll();
@@ -428,7 +432,7 @@ public class DbHostAuth extends AbstractDbData {
     for (final Host host : hosts) {
       res.add(new DbHostAuth(host));
     }
-    return res.toArray(new DbHostAuth[0]);
+    return res.toArray(DBHOSTAUTH_0_SIZE);
   }
 
   /**
@@ -643,7 +647,7 @@ public class DbHostAuth extends AbstractDbData {
                                         .decryptHexInBytes(host.getHostkey());
     } catch (final Exception e) {
       logger.debug("Error while checking key", e);
-      return new byte[0];
+      return VALUE_0_BYTE;
     }
   }
 
@@ -670,8 +674,8 @@ public class DbHostAuth extends AbstractDbData {
    *     is < 0
    */
   public boolean isNoAddress() {
-    return (host.getAddress().equals(DEFAULT_CLIENT_ADDRESS) ||
-            host.getPort() < 0);
+    return host.getAddress().equals(DEFAULT_CLIENT_ADDRESS) ||
+           host.getPort() < 0;
   }
 
   /**
@@ -725,7 +729,7 @@ public class DbHostAuth extends AbstractDbData {
     }
     if (Configuration.configuration.getReverseAliases()
                                    .containsKey(remoteHost)) {
-      String alias2 = "(ReverseAlias: ";
+      StringBuilder alias2 = new StringBuilder("(ReverseAlias: ");
       final String[] list =
           Configuration.configuration.getReverseAliases().get(remoteHost);
       boolean found = false;
@@ -734,7 +738,7 @@ public class DbHostAuth extends AbstractDbData {
           continue;
         }
         found = true;
-        alias2 += string + " ";
+        alias2.append(string).append(' ');
       }
       if (found) {
         alias += alias2 + ") ";
@@ -747,7 +751,7 @@ public class DbHostAuth extends AbstractDbData {
     if (Configuration.configuration.getRoles().containsKey(remoteHost)) {
       final RoleDefault item =
           Configuration.configuration.getRoles().get(remoteHost);
-      alias += "(Role: " + item.toString() + ") ";
+      alias += "(Role: " + item + ") ";
     }
     return alias +
            (Configuration.configuration.getVersions().containsKey(remoteHost)?
@@ -757,9 +761,7 @@ public class DbHostAuth extends AbstractDbData {
 
   @Override
   public String toString() {
-    // System.err.println(hostid+" Version:
-    // "+Configuration.configuration.versions.get(hostid)+":"+Configuration.configuration.versions.containsKey(hostid));
-    return "HostAuth: " + getHostid() + " address: " + getAddress() + ":" +
+    return "HostAuth: " + getHostid() + " address: " + getAddress() + ':' +
            getPort() + " isSSL: " + isSsl() + " admin: " + isAdminrole() +
            " isClient: " + isClient() + " isActive: " + isActive() +
            " isProxified: " + isProxified() + " (" +
@@ -786,7 +788,7 @@ public class DbHostAuth extends AbstractDbData {
       preparedStatement.executeQuery();
       int nb = 0;
       while (preparedStatement.getNext()) {
-        final DbHostAuth host = DbHostAuth.getFromStatement(preparedStatement);
+        final DbHostAuth host = getFromStatement(preparedStatement);
         final ObjectNode node = host.getInternalJson();
         arrayNode.add(node);
         nb++;
@@ -804,12 +806,11 @@ public class DbHostAuth extends AbstractDbData {
     final ObjectNode node = getJson();
     try {
       node.put(Columns.HOSTKEY.name(),
-               Configuration.configuration.getCryptoKey().decryptHexInString(
-                   new String(getHostkey(), WaarpStringUtils.UTF8)));
+               new String(getHostkey(), WaarpStringUtils.UTF8));
     } catch (final Exception e1) {
       node.put(Columns.HOSTKEY.name(), "");
     }
-    int nb = 0;
+    int nb;
     try {
       nb = NetworkTransaction
           .nbAttachedConnection(getSocketAddress(), getHostid());
@@ -817,8 +818,11 @@ public class DbHostAuth extends AbstractDbData {
       nb = -1;
     }
     node.put("Connection", nb);
-    node.put("Version",
-             getVersion(getHostid()).replace("\"", "").replace(",", ", "));
+    node.put("Version", COMMA.matcher(BACKSLASH.matcher(getVersion(getHostid()))
+                                               .replaceAll(Matcher
+                                                               .quoteReplacement(
+                                                                   "")))
+                             .replaceAll(Matcher.quoteReplacement(", ")));
     return node;
   }
 
@@ -862,24 +866,23 @@ public class DbHostAuth extends AbstractDbData {
         WaarpStringUtils.replace(builder, "XXXKEYXXX", "BAD DECRYPT");
       }
     }
-    WaarpStringUtils.replace(builder, "XXXSSLXXX", isSsl()? "checked" : "");
-    WaarpStringUtils
-        .replace(builder, "XXXADMXXX", isAdminrole()? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXISCXXX", isClient()? "checked" : "");
-    WaarpStringUtils.replace(builder, "XXXISAXXX", isActive()? "checked" : "");
-    WaarpStringUtils
-        .replace(builder, "XXXISPXXX", isProxified()? "checked" : "");
+    WaarpStringUtils.replace(builder, "XXXSSLXXX", isSsl()? CHECKED : "");
+    WaarpStringUtils.replace(builder, "XXXADMXXX", isAdminrole()? CHECKED : "");
+    WaarpStringUtils.replace(builder, "XXXISCXXX", isClient()? CHECKED : "");
+    WaarpStringUtils.replace(builder, "XXXISAXXX", isActive()? CHECKED : "");
+    WaarpStringUtils.replace(builder, "XXXISPXXX", isProxified()? CHECKED : "");
     WaarpStringUtils.replace(builder, "XXXVERSIONXXX",
-                             getVersion(getHostid()).replace(",", ", "));
-    int nb = 0;
+                             COMMA.matcher(getVersion(getHostid()))
+                                  .replaceAll(Matcher.quoteReplacement(", ")));
+    int nb;
     try {
       nb = NetworkTransaction
           .nbAttachedConnection(getSocketAddress(), getHostid());
     } catch (final Exception e) {
       nb = -1;
     }
-    WaarpStringUtils.replace(builder, "XXXCONNXXX",
-                             (nb > 0)? "(" + nb + " Connected) " : "");
+    WaarpStringUtils
+        .replace(builder, "XXXCONNXXX", nb > 0? "(" + nb + " Connected) " : "");
     return builder.toString();
   }
 
@@ -893,7 +896,7 @@ public class DbHostAuth extends AbstractDbData {
     HostDAO hostAccess = null;
     try {
       hostAccess = DAOFactory.getInstance().getHostDAO();
-      return hostAccess.find(filters).size() > 0;
+      return !hostAccess.find(filters).isEmpty();
     } catch (final DAOConnectionException e) {
       logger.error("DAO Access error", e);
       return false;

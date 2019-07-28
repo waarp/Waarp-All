@@ -24,24 +24,22 @@ package org.waarp.common.command;
  * accepted after the current command.
  * If null is specified, any command is valid. Specify also the reply code and
  * the associated message.
- *
- *
  */
 public class NextCommandReply {
   /**
    * Command to be accepted next time
    */
-  public Enum<?> command;
+  public final Enum<?> command;
 
   /**
    * Reply to do to the Ftp client
    */
-  public ReplyCode reply;
+  public final ReplyCode reply;
 
   /**
    * Message
    */
-  public String message;
+  public final String message;
 
   /**
    * @param command

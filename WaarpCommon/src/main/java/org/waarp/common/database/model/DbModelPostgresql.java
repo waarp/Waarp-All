@@ -28,6 +28,7 @@ import org.waarp.common.database.data.DbDataModel;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -37,8 +38,6 @@ import java.sql.Types;
 
 /**
  * PostGreSQL Database Model implementation
- *
- *
  */
 public abstract class DbModelPostgresql extends DbModelAbstract {
   /**
@@ -61,7 +60,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelPostgresql() throws WaarpDatabaseNoConnectionException {
+  protected DbModelPostgresql() throws WaarpDatabaseNoConnectionException {
     if (DbModelFactory.classLoaded.contains(type.name())) {
       return;
     }
@@ -71,7 +70,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
     } catch (final SQLException e) {
       // SQLException
       logger.error(
-          "Cannot register Driver " + type.name() + " " + e.getMessage());
+          "Cannot register Driver " + type.name() + ' ' + e.getMessage());
       DbSession.error(e);
       throw new WaarpDatabaseNoConnectionException(
           "Cannot load database drive:" + type.name(), e);
@@ -99,9 +98,9 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
     VARBINARY(Types.VARBINARY, " BYTEA "), DATE(Types.DATE, " DATE "),
     TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP ");
 
-    public int type;
+    public final int type;
 
-    public String constructor;
+    public final String constructor;
 
     DBType(int type, String constructor) {
       this.type = type;
@@ -145,76 +144,6 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  public void createTables(DbSession session)
-      throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
-    final String createTableH2 = "CREATE TABLE ";
-    final String primaryKey = " PRIMARY KEY ";
-    final String notNull = " NOT NULL ";
-
-    // Example
-    /*
-
-    String action = createTableH2 + DbDataModel.table + "(";
-    final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
-    for (int i = 0; i < ccolumns.length - 1; i++) {
-      action += ccolumns[i].name() + DBType.getType(DbDataModel.dbTypes[i]) +
-                notNull + ", ";
-    }
-    action += ccolumns[ccolumns.length - 1].name() +
-              DBType.getType(DbDataModel.dbTypes[ccolumns.length - 1]) +
-              primaryKey + ")";
-    logger.warn(action);
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } finally {
-      request.close();
-    }
-    // Index example
-    action = "CREATE INDEX IDX_RUNNER ON " + DbDataModel.table + "(";
-    final DbDataModel.Columns[] icolumns = DbDataModel.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action += icolumns[i].name() + ", ";
-    }
-    action += icolumns[icolumns.length - 1].name() + ")";
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      return;
-    } finally {
-      request.close();
-    }
-
-    // example of sequence
-    action = "CREATE SEQUENCE " + DbDataModel.fieldseq + " MINVALUE " +
-             (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " +
-             (DbConstant.ILLEGALVALUE + 1);
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } finally {
-      request.close();
-    }
-  }
-
-  @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
     final String action =
@@ -224,38 +153,13 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
     try {
       request.query(action);
     } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("ResetSequence Error", e);
-      return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("ResetSequence Error", e);
-      return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     } finally {
       request.close();
     }
     logger.warn(action);
-
-     */
-  }
-
-  @Override
-  public void resetSequence(DbSession session, long newvalue)
-      throws WaarpDatabaseNoConnectionException {
-    final String action =
-        "ALTER SEQUENCE " + DbDataModel.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      return;
-    } finally {
-      request.close();
-    }
-    System.out.println(action);
   }
 
   @Override

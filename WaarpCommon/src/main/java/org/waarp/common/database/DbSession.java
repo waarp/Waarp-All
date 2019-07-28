@@ -25,7 +25,8 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModel;
 import org.waarp.common.database.model.DbModelFactory;
-import org.waarp.common.guid.UUID;
+import org.waarp.common.guid.GUID;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
@@ -43,8 +44,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class to handle session with the SGBD
- *
- *
  */
 public class DbSession {
   /**
@@ -52,6 +51,9 @@ public class DbSession {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbSession.class);
+  private static final String CANNOT_CREATE_CONNECTION =
+      "Cannot create Connection";
+  private static final String THREAD_USING = "ThreadUsing: ";
 
   /**
    * DbAdmin referent object
@@ -76,7 +78,7 @@ public class DbSession {
   /**
    * Internal Id
    */
-  private UUID internalId;
+  private GUID internalId;
 
   /**
    * Number of threads using this connection
@@ -112,7 +114,7 @@ public class DbSession {
       getConn().setAutoCommit(isAutoCommit());
       setReadOnly(isReadOnly);
       getConn().setReadOnly(isReadOnly());
-      setInternalId(new UUID());
+      setInternalId(new GUID());
       logger.debug("Open Db Conn: " + getInternalId());
       DbAdmin.addConnection(getInternalId(), this);
       setDisActive(false);
@@ -120,16 +122,17 @@ public class DbSession {
     } catch (final SQLException ex) {
       setDisActive(true);
       // handle any errors
-      logger.error("Cannot create Connection");
+      logger.error(CANNOT_CREATE_CONNECTION);
       error(ex);
       if (getConn() != null) {
         try {
           getConn().close();
-        } catch (final SQLException e) {
+        } catch (final SQLException ignored) {
+          // nothing
         }
       }
       setConn(null);
-      throw new WaarpDatabaseNoConnectionException("Cannot create Connection",
+      throw new WaarpDatabaseNoConnectionException(CANNOT_CREATE_CONNECTION,
                                                    ex);
     }
   }
@@ -155,15 +158,16 @@ public class DbSession {
     } catch (final NullPointerException ex) {
       // handle any errors
       setDisActive(true);
-      logger.error("Cannot create Connection:" + (admin == null), ex);
+      logger.error(CANNOT_CREATE_CONNECTION + (admin == null), ex);
       if (getConn() != null) {
         try {
           getConn().close();
-        } catch (final SQLException e) {
+        } catch (final SQLException ignored) {
+          // nothing
         }
       }
       setConn(null);
-      throw new WaarpDatabaseNoConnectionException("Cannot create Connection",
+      throw new WaarpDatabaseNoConnectionException(CANNOT_CREATE_CONNECTION,
                                                    ex);
     }
   }
@@ -188,16 +192,17 @@ public class DbSession {
                  admin.getPasswd(), isReadOnly, autoCommit);
     } catch (final NullPointerException ex) {
       // handle any errors
-      logger.error("Cannot create Connection:" + (admin == null), ex);
+      logger.error(CANNOT_CREATE_CONNECTION + (admin == null), ex);
       setDisActive(true);
       if (getConn() != null) {
         try {
           getConn().close();
-        } catch (final SQLException e) {
+        } catch (final SQLException ignored) {
+          // nothing
         }
       }
       setConn(null);
-      throw new WaarpDatabaseNoConnectionException("Cannot create Connection",
+      throw new WaarpDatabaseNoConnectionException(CANNOT_CREATE_CONNECTION,
                                                    ex);
     }
   }
@@ -217,17 +222,18 @@ public class DbSession {
         getConn().setAutoCommit(autoCommit);
       } catch (final SQLException e) {
         // handle any errors
-        logger.error("Cannot create Connection");
+        logger.error(CANNOT_CREATE_CONNECTION);
         error(e);
         if (getConn() != null) {
           try {
             getConn().close();
-          } catch (final SQLException e1) {
+          } catch (final SQLException ignored) {
+            // nothing
           }
         }
         setConn(null);
         setDisActive(true);
-        throw new WaarpDatabaseNoConnectionException("Cannot create Connection",
+        throw new WaarpDatabaseNoConnectionException(CANNOT_CREATE_CONNECTION,
                                                      e);
       }
     }
@@ -272,12 +278,12 @@ public class DbSession {
                      getAdmin().getUser(), getAdmin().getPasswd(), isReadOnly(),
                      isAutoCommit());
         } catch (final WaarpDatabaseNoConnectionException e) {
-          logger.error("ThreadUsing: " + nbThread + " but not connected");
+          logger.error(THREAD_USING + nbThread + " but not connected");
           return;
         }
       }
     }
-    logger.debug("ThreadUsing: " + val);
+    logger.debug(THREAD_USING + val);
   }
 
   /**
@@ -286,7 +292,7 @@ public class DbSession {
    */
   public void endUseConnection() {
     final int val = nbThread.decrementAndGet();
-    logger.debug("ThreadUsing: " + val);
+    logger.debug(THREAD_USING + val);
     if (val <= 0) {
       disconnect();
     }
@@ -298,7 +304,7 @@ public class DbSession {
    */
   public void enUseConnectionNoDisconnect() {
     final int val = nbThread.decrementAndGet();
-    logger.debug("ThreadUsing: " + val);
+    logger.debug(THREAD_USING + val);
     if (val <= 0) {
       DbAdmin.dbSessionTimer.newTimeout(new TryDisconnectDbSession(this),
                                         DbAdmin.WAITFORNETOP * 10,
@@ -308,8 +314,6 @@ public class DbSession {
 
   /**
    * To disconnect in asynchronous way the DbSession
-   *
-   *
    */
   private static class TryDisconnectDbSession implements TimerTask {
     private final DbSession dbSession;
@@ -324,7 +328,7 @@ public class DbSession {
       if (val <= 0) {
         dbSession.disconnect();
       }
-      logger.debug("ThreadUsing: " + val);
+      logger.debug(THREAD_USING + val);
     }
   }
 
@@ -336,7 +340,7 @@ public class DbSession {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof DbSession)) {
+    if (!(o instanceof DbSession)) {
       return false;
     }
     return this == o || getInternalId().equals(((DbSession) o).getInternalId());
@@ -357,6 +361,7 @@ public class DbSession {
     try {
       Thread.sleep(DbAdmin.WAITFORNETOP);
     } catch (final InterruptedException e1) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       Thread.currentThread().interrupt();
     }
     logger.debug("DbConnection still in use: " + nbThread);
@@ -393,6 +398,7 @@ public class DbSession {
     try {
       Thread.sleep(DbAdmin.WAITFORNETOP);
     } catch (final InterruptedException e1) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       Thread.currentThread().interrupt();
     }
     logger.debug("DbConnection still in use: " + nbThread);
@@ -668,14 +674,14 @@ public class DbSession {
   /**
    * @return the internalId
    */
-  public UUID getInternalId() {
+  public GUID getInternalId() {
     return internalId;
   }
 
   /**
    * @param internalId the internalId to set
    */
-  private void setInternalId(UUID internalId) {
+  private void setInternalId(GUID internalId) {
     this.internalId = internalId;
   }
 

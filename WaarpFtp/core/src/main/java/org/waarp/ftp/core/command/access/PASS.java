@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * PASS command
- *
- *
  */
 public class PASS extends AbstractCommand {
   @Override
@@ -43,7 +41,7 @@ public class PASS extends AbstractCommand {
       getSession().reinitFtpAuth();
       throw new Reply530Exception("No user specified");
     }
-    NextCommandReply nextCommandReply = null;
+    NextCommandReply nextCommandReply;
     try {
       nextCommandReply = getSession().getAuth().setPassword(password);
     } catch (final Reply530Exception e) {

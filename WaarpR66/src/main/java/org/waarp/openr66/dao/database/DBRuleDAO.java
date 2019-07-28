@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.waarp.openr66.dao.DAOFactory.*;
+
 /**
  * Implementation of RuleDAO for standard SQL databases
  */
@@ -97,7 +99,7 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
       S_ERROR_TASKS_FIELD + " = ? ," + UPDATED_INFO_FIELD + " = ? WHERE " +
       ID_FIELD + " = ?";
 
-  protected Connection connection;
+  protected final Connection connection;
 
   public DBRuleDAO(Connection con) {
     connection = con;
@@ -179,7 +181,7 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + " " + filter.operand + " ?");
+      query.append(filter.key + ' ' + filter.operand + " ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -232,7 +234,7 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
       if (res.next()) {
         return getFromResultSet(res);
       } else {
-        throw new DAONoDataException(("No " + getClass().getName() + " found"));
+        throw new DAONoDataException("No " + getClass().getName() + " found");
       }
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
@@ -313,15 +315,15 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
   private List<String> retrieveHostids(String xml)
       throws DAOConnectionException {
     final ArrayList<String> res = new ArrayList<String>();
-    if ((xml == null) || xml.equals("")) {
+    if (xml == null || xml.isEmpty()) {
       return res;
     }
-    Document document = null;
+    Document document;
     try {
       final InputStream stream =
           new ByteArrayInputStream(xml.getBytes("UTF-8"));
-      document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                                       .parse(stream);
+      DocumentBuilderFactory factory = getDocumentBuilderFactory();
+      document = factory.newDocumentBuilder().parse(stream);
     } catch (final Exception e) {
       throw new DAOConnectionException(e);
     }
@@ -337,15 +339,15 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
   private List<RuleTask> retrieveTasks(String xml)
       throws DAOConnectionException {
     final ArrayList<RuleTask> res = new ArrayList<RuleTask>();
-    if ((xml == null) || xml.equals("")) {
+    if (xml == null || xml.isEmpty()) {
       return res;
     }
-    Document document = null;
+    Document document;
     try {
       final InputStream stream =
           new ByteArrayInputStream(xml.getBytes("UTF-8"));
-      document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                                       .parse(stream);
+      DocumentBuilderFactory factory = getDocumentBuilderFactory();
+      document = factory.newDocumentBuilder().parse(stream);
     } catch (final Exception e) {
       throw new DAOConnectionException(e);
     }

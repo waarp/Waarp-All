@@ -25,7 +25,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.R66Future;
@@ -49,8 +49,6 @@ import java.util.Date;
  * [-copyinfo] [-info information]" <br>
  * <br>
  * INFO is the only one field that can contains blank character.<br>
- *
- *
  */
 public class TransferTask extends AbstractExecTask {
   /**
@@ -72,7 +70,7 @@ public class TransferTask extends AbstractExecTask {
 
   @Override
   public void run() {
-    logger.info("Transfer with " + argRule + ":" + argTransfer + " and {}",
+    logger.info("Transfer with " + argRule + ':' + argTransfer + " and {}",
                 session);
     String finalname = applyTransferSubstitutions(argRule);
 
@@ -90,44 +88,44 @@ public class TransferTask extends AbstractExecTask {
     String filepath = null;
     String requested = null;
     String rule = null;
-    String information = null;
+    StringBuilder information = null;
     String finalInformation = null;
     boolean isMD5 = false;
-    int blocksize = Configuration.configuration.getBLOCKSIZE();
+    int blocksize = Configuration.configuration.getBlockSize();
     Timestamp timestart = null;
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-to")) {
+      if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         requested = args[i];
         if (Configuration.configuration.getAliases().containsKey(requested)) {
           requested = Configuration.configuration.getAliases().get(requested);
         }
-      } else if (args[i].equalsIgnoreCase("-file")) {
+      } else if ("-file".equalsIgnoreCase(args[i])) {
         i++;
         filepath = args[i];
-      } else if (args[i].equalsIgnoreCase("-rule")) {
+      } else if ("-rule".equalsIgnoreCase(args[i])) {
         i++;
         rule = args[i];
-      } else if (args[i].equalsIgnoreCase("-copyinfo")) {
+      } else if ("-copyinfo".equalsIgnoreCase(args[i])) {
         finalInformation = argTransfer;
-      } else if (args[i].equalsIgnoreCase("-info")) {
+      } else if ("-info".equalsIgnoreCase(args[i])) {
         i++;
-        information = args[i];
+        information = new StringBuilder(args[i]);
         i++;
         while (i < args.length) {
-          information += " " + args[i];
+          information.append(' ').append(args[i]);
           i++;
         }
-      } else if (args[i].equalsIgnoreCase("-md5")) {
+      } else if ("-md5".equalsIgnoreCase(args[i])) {
         isMD5 = true;
-      } else if (args[i].equalsIgnoreCase("-block")) {
+      } else if ("-block".equalsIgnoreCase(args[i])) {
         i++;
         blocksize = Integer.parseInt(args[i]);
         if (blocksize < 100) {
           logger.warn("Block size is too small: " + blocksize);
-          blocksize = Configuration.configuration.getBLOCKSIZE();
+          blocksize = Configuration.configuration.getBlockSize();
         }
-      } else if (args[i].equalsIgnoreCase("-start")) {
+      } else if ("-start".equalsIgnoreCase(args[i])) {
         i++;
         final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyyMMddHHmmss");
@@ -135,9 +133,10 @@ public class TransferTask extends AbstractExecTask {
         try {
           date = dateFormat.parse(args[i]);
           timestart = new Timestamp(date.getTime());
-        } catch (final ParseException e) {
+        } catch (final ParseException ignored) {
+          // nothing
         }
-      } else if (args[i].equalsIgnoreCase("-delay")) {
+      } else if ("-delay".equalsIgnoreCase(args[i])) {
         i++;
         try {
           if (args[i].charAt(0) == '+') {
@@ -146,13 +145,14 @@ public class TransferTask extends AbstractExecTask {
           } else {
             timestart = new Timestamp(Long.parseLong(args[i]));
           }
-        } catch (final NumberFormatException e) {
+        } catch (final NumberFormatException ignored) {
+          // nothing
         }
       }
     }
     if (information != null) {
       if (finalInformation == null) {
-        finalInformation = information;
+        finalInformation = information.toString();
       } else {
         finalInformation += " " + information;
       }
@@ -162,7 +162,7 @@ public class TransferTask extends AbstractExecTask {
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
         new SubmitTransfer(future, requested, filepath, rule, finalInformation,
-                           isMD5, blocksize, DbConstant.ILLEGALVALUE,
+                           isMD5, blocksize, DbConstantR66.ILLEGALVALUE,
                            timestart);
     transaction.run();
     future.awaitOrInterruptible();

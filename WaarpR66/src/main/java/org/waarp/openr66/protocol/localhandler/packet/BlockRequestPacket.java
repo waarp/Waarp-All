@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Block Request Message class
  * <p>
  * 1 code (byte as 0: unblock, 1:block): block, 1 string: spassword(or key)
- *
- *
  */
 public class BlockRequestPacket extends AbstractLocalPacket {
   private final boolean block;
@@ -57,7 +55,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
     if (headerLength - 2 > 0) {
       buf.readBytes(bpassword);
     }
-    final boolean block = (isblock == 1);
+    final boolean block = isblock == 1;
     return new BlockRequestPacket(block, bpassword);
   }
 

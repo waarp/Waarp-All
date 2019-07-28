@@ -23,8 +23,6 @@ import org.waarp.common.exception.InvalidArgumentException;
 
 /**
  * Reply code references by different RFC.
- *
- *
  */
 public enum ReplyCode {
   /**

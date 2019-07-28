@@ -21,7 +21,6 @@ package org.waarp.openr66.context.task;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.waarp.commandexec.utils.LocalExecResult;
@@ -35,7 +34,6 @@ import org.waarp.openr66.context.task.localexec.LocalExecClient;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
@@ -50,8 +48,6 @@ import java.io.PipedOutputStream;
  * waitForValidation (#NOWAIT#) must not be set since it will prevent to have
  * the MOVE TASK to occur normally.
  * So even if set, the #NOWAIT# will be ignored.
- *
- *
  */
 public class ExecMoveTask extends AbstractExecTask {
   /**
@@ -80,7 +76,7 @@ public class ExecMoveTask extends AbstractExecTask {
      * case of status 0. The previous file should be deleted by the script or will be deleted in case of status 0.
      * If the status is 1, no change is made to the file.
      */
-    logger.info("ExecMove with " + argRule + ":" + argTransfer + " and {}",
+    logger.info("ExecMove with " + argRule + ':' + argTransfer + " and {}",
                 session);
     final String finalname = applyTransferSubstitutions(argRule);
 
@@ -123,7 +119,7 @@ public class ExecMoveTask extends AbstractExecTask {
       return;
     }
     int status = executeCommand.getStatus();
-    String newname = null;
+    String newname;
     if (defaultExecutor.isFailure(status) && watchdog != null &&
         watchdog.killedProcess()) {
       // kill by the watchdoc (time out)
@@ -143,8 +139,8 @@ public class ExecMoveTask extends AbstractExecTask {
     if (status == 0) {
       if (newname.indexOf(' ') > 0) {
         logger.warn("Exec returns a multiple string in final line: " + newname);
-        // XXX FIXME: should not split String[] args = newname.split(" ");
-        // newname = args[args.length - 1];
+        // XXX FIXME: should not split String[] args = newname.split(" ")
+        // newname = args[args.length - 1]
       }
       // now test if the previous file was deleted (should be)
       final File file = new File(newname);

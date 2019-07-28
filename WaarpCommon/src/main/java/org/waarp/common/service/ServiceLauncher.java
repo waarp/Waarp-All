@@ -22,6 +22,7 @@ package org.waarp.common.service;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonController;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -35,7 +36,7 @@ import java.util.concurrent.Executors;
  * Launch the Engine from a variety of sources, either through a main() or
  * invoked through Apache Daemon.
  *
- *  Inspired from Apache Daemon Wiki
+ * Inspired from Apache Daemon Wiki
  */
 public abstract class ServiceLauncher implements Daemon {
   /**
@@ -58,7 +59,7 @@ public abstract class ServiceLauncher implements Daemon {
    */
   protected abstract EngineAbstract getNewEngineAbstract();
 
-  public ServiceLauncher() {
+  protected ServiceLauncher() {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);
     }
@@ -89,11 +90,11 @@ public abstract class ServiceLauncher implements Daemon {
           (ServiceLauncher) Class.forName(className).newInstance();
     } catch (final Throwable e) {
       logger.error("Engine not correctly initialized", e);
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     if (engineLauncherInstance == null || engine == null) {
       logger.error("Engine not correctly initialized");
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
   }
 
@@ -109,8 +110,9 @@ public abstract class ServiceLauncher implements Daemon {
 
     final Scanner sc = new Scanner(System.in);
     // wait until receive stop command from keyboard
-    System.out.printf("Enter 'stop' to halt: ");
-    while (!sc.nextLine().toLowerCase().equals("stop")) {
+    SysErrLogger.FAKE_LOGGER.sysout("Enter 'stop' to halt: ");
+    while (!"stop".equalsIgnoreCase(sc.nextLine())) {
+      // nothing
     }
 
     if (!engine.isShutdown()) {
@@ -137,7 +139,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @throws Exception
    **/
-  public static void _windowsService(String args[]) throws Exception {
+  public static void _windowsService(String[] args) throws Exception {
     initStatic();
     String cmd = "start";
     if (args.length > 0) {
@@ -165,7 +167,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @throws Exception
    **/
-  public static void _windowsStart(String args[]) throws Exception {
+  public static void _windowsStart(String[] args) throws Exception {
     initStatic();
     engineLauncherInstance.windowsStart();
   }
@@ -183,7 +185,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @param args Arguments are ignored
    **/
-  public static void _windowsStop(String args[]) {
+  public static void _windowsStop(String[] args) {
     initStatic();
     stopCalledCorrectly = true;
     engineLauncherInstance.windowsStop();
@@ -202,6 +204,7 @@ public abstract class ServiceLauncher implements Daemon {
     try {
       status = engine.waitShutdown();
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (!status || !stopCalledCorrectly) {
       // Was stopped outside service management

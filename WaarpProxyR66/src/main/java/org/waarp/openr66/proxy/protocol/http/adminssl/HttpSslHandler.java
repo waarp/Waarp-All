@@ -40,7 +40,6 @@ import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.configuration.Messages;
-import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.utils.Version;
 
 import java.util.Arrays;
@@ -48,18 +47,25 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+
 /**
  *
  */
 public class HttpSslHandler
     extends org.waarp.openr66.protocol.http.adminssl.HttpSslHandler {
+  private static final String XXXLEVEL4XXX2 = "XXXLEVEL4XXX";
+  private static final String XXXLEVEL3XXX2 = "XXXLEVEL3XXX";
+  private static final String XXXLEVEL2XXX2 = "XXXLEVEL2XXX";
+  private static final String XXXLEVEL1XXX2 = "XXXLEVEL1XXX";
+  private static final String CHECKED2 = "checked";
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpSslHandler.class);
 
-  private static enum REQUEST {
+  private enum REQUEST {
     Logon("Logon.html"), index("index.html"), error("error.html"),
     System("System.html");
 
@@ -70,7 +76,7 @@ public class HttpSslHandler
      *
      * @param uniquefile
      */
-    private REQUEST(String uniquefile) {
+    REQUEST(String uniquefile) {
       header = uniquefile;
     }
 
@@ -80,8 +86,7 @@ public class HttpSslHandler
      * @return the content of the unique file
      */
     public String readFileUnique(HttpSslHandler handler) {
-      return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + header);
+      return handler.readFileHeader(configuration.getHttpBasePath() + header);
     }
   }
 
@@ -98,16 +103,15 @@ public class HttpSslHandler
     }
     final StringBuilder builder = new StringBuilder(value);
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCALXXX.toString(),
-                             Integer.toString(Configuration.configuration
-                                                  .getLocalTransaction()
-                                                  .getNumberLocalChannel()) +
-                             " " + Thread.activeCount());
+                             configuration.getLocalTransaction()
+                                          .getNumberLocalChannel() + " " +
+                             Thread.activeCount());
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETWORKXXX.toString(),
-                             Integer.toString(Configuration.configuration
-                                                  .getLocalTransaction()
-                                                  .getNumberLocalChannel()));
+                             Integer.toString(
+                                 configuration.getLocalTransaction()
+                                              .getNumberLocalChannel()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-                             Configuration.configuration.getHOST_ID());
+                             configuration.getHostId());
     if (authentHttp.isAuthenticated()) {
       WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
                                Messages.getString(
@@ -118,8 +122,7 @@ public class HttpSslHandler
                                    "HttpSslHandler.0")); //$NON-NLS-1$
     }
     final TrafficCounter trafficCounter =
-        Configuration.configuration.getGlobalTrafficShapingHandler()
-                                   .trafficCounter();
+        configuration.getGlobalTrafficShapingHandler().trafficCounter();
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
                              Messages.getString("HttpSslHandler.IN") +
                              (trafficCounter.lastReadThroughput() >> 20) +
@@ -139,7 +142,7 @@ public class HttpSslHandler
     final String index = REQUEST.index.readFileUnique(this);
     final StringBuilder builder = new StringBuilder(index);
     WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-                                Configuration.configuration.getHOST_ID());
+                                configuration.getHostId());
     WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXADMINXXX.toString(),
                                 "Administrator Connected");
     WaarpStringUtils
@@ -153,59 +156,52 @@ public class HttpSslHandler
   private void replaceStringSystem(StringBuilder builder) {
     WaarpStringUtils
         .replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerChannelWriteLimit()));
+                 Long.toString(configuration.getServerChannelWriteLimit()));
     WaarpStringUtils
         .replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerChannelReadLimit()));
+                 Long.toString(configuration.getServerChannelReadLimit()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
-                             Long.toString(Configuration.configuration
-                                               .getDelayCommander()));
+                             Long.toString(configuration.getDelayCommander()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
-                             Long.toString(
-                                 Configuration.configuration.getDelayRetry()));
+                             Long.toString(configuration.getDelayRetry()));
     WaarpStringUtils
         .replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerGlobalWriteLimit()));
+                 Long.toString(configuration.getServerGlobalWriteLimit()));
     WaarpStringUtils
         .replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
-                 Long.toString(
-                     Configuration.configuration.getServerGlobalReadLimit()));
+                 Long.toString(configuration.getServerGlobalReadLimit()));
     WaarpStringUtils.replace(builder, "XXXBLOCKXXX",
-                             Configuration.configuration.isShutdown()?
-                                 "checked" : "");
+                             configuration.isShutdown()? CHECKED2 : "");
     switch (WaarpLoggerFactory.getLogLevel()) {
       case DEBUG:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "checked");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+        WaarpStringUtils.replace(builder, XXXLEVEL1XXX2, CHECKED2);
+        WaarpStringUtils.replace(builder, XXXLEVEL2XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL3XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL4XXX2, "");
         break;
       case INFO:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "checked");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+        WaarpStringUtils.replace(builder, XXXLEVEL1XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL2XXX2, CHECKED2);
+        WaarpStringUtils.replace(builder, XXXLEVEL3XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL4XXX2, "");
         break;
       case WARN:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "checked");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+        WaarpStringUtils.replace(builder, XXXLEVEL1XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL2XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL3XXX2, CHECKED2);
+        WaarpStringUtils.replace(builder, XXXLEVEL4XXX2, "");
         break;
       case ERROR:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "checked");
+        WaarpStringUtils.replace(builder, XXXLEVEL1XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL2XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL3XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL4XXX2, CHECKED2);
         break;
       default:
-        WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
-        WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+        WaarpStringUtils.replace(builder, XXXLEVEL1XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL2XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL3XXX2, "");
+        WaarpStringUtils.replace(builder, XXXLEVEL4XXX2, "");
         break;
 
     }
@@ -224,7 +220,7 @@ public class HttpSslHandler
     if (params.containsKey("ACTION")) {
       final List<String> action = params.get("ACTION");
       for (final String act : action) {
-        if (act.equalsIgnoreCase("Language")) {
+        if ("Language".equalsIgnoreCase(act)) {
           lang = getTrimValue("change");
           final String sys = getTrimValue("changesys");
           Messages.init(new Locale(sys));
@@ -232,23 +228,23 @@ public class HttpSslHandler
               Messages.getString("HttpSslHandler.LangIs") + "Web: " + lang +
               " OpenR66: " //$NON-NLS-1$
               + Messages.getSlocale();
-        } else if (act.equalsIgnoreCase("Level")) {
+        } else if ("Level".equalsIgnoreCase(act)) {
           final String loglevel = getTrimValue("loglevel");
           WaarpLogLevel level = WaarpLogLevel.WARN;
-          if (loglevel.equalsIgnoreCase("debug")) {
+          if ("debug".equalsIgnoreCase(loglevel)) {
             level = WaarpLogLevel.DEBUG;
-          } else if (loglevel.equalsIgnoreCase("info")) {
+          } else if ("info".equalsIgnoreCase(loglevel)) {
             level = WaarpLogLevel.INFO;
-          } else if (loglevel.equalsIgnoreCase("warn")) {
+          } else if ("warn".equalsIgnoreCase(loglevel)) {
             level = WaarpLogLevel.WARN;
-          } else if (loglevel.equalsIgnoreCase("error")) {
+          } else if ("error".equalsIgnoreCase(loglevel)) {
             level = WaarpLogLevel.ERROR;
           }
           WaarpLoggerFactory.setLogLevel(level);
           extraInformation = Messages.getString("HttpSslHandler.LangIs") +
                              level.name(); //$NON-NLS-1$
-        } else if (act.equalsIgnoreCase("Disconnect")) {
-          String logon = Logon();
+        } else if ("Disconnect".equalsIgnoreCase(act)) {
+          String logon = logon();
           logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
                                    Messages
                                        .getString("HttpSslHandler.DisActive"));
@@ -256,10 +252,9 @@ public class HttpSslHandler
           clearSession();
           forceClose = true;
           return logon;
-        } else if (act.equalsIgnoreCase("Shutdown")) {
+        } else if ("Shutdown".equalsIgnoreCase(act)) {
           String error;
-          if (Configuration.configuration
-                  .getShutdownConfiguration().serviceFuture != null) {
+          if (configuration.getShutdownConfiguration().serviceFuture != null) {
             error =
                 error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
           } else {
@@ -272,33 +267,29 @@ public class HttpSslHandler
           forceClose = true;
           shutdown = true;
           return error;
-        } else if (act.equalsIgnoreCase("Restart")) {
+        } else if ("Restart".equalsIgnoreCase(act)) {
           String error;
-          if (Configuration.configuration
-                  .getShutdownConfiguration().serviceFuture != null) {
+          if (configuration.getShutdownConfiguration().serviceFuture != null) {
             error =
                 error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
           } else {
             error = error(Messages.getString("HttpSslHandler.39")
                           //$NON-NLS-1$
-                          + (Configuration.configuration.getTIMEOUTCON() * 2 /
-                             1000) + Messages
+                          + configuration.getTimeoutCon() * 2 / 1000 + Messages
                               .getString("HttpSslHandler.40")); //$NON-NLS-1$
           }
           error = error.replace("XXXRELOADHTTPXXX",
                                 "HTTP-EQUIV=\"refresh\" CONTENT=\"" +
-                                (Configuration.configuration.getTIMEOUTCON() *
-                                 2 / 1000) + "\"");
+                                configuration.getTimeoutCon() * 2 / 1000 + '"');
           WaarpShutdownHook.setRestart(true);
           newSession = true;
           clearSession();
           forceClose = true;
           shutdown = true;
           return error;
-        } else if (act.equalsIgnoreCase("Validate")) {
+        } else if ("Validate".equalsIgnoreCase(act)) {
           final String bsessionr = getTrimValue("BSESSR");
-          long lsessionr =
-              Configuration.configuration.getServerChannelReadLimit();
+          long lsessionr = configuration.getServerChannelReadLimit();
           long lglobalr;
           long lsessionw;
           long lglobalw;
@@ -307,39 +298,36 @@ public class HttpSslHandler
               lsessionr = (Long.parseLong(bsessionr) / 10) * 10;
             }
             final String bglobalr = getTrimValue("BGLOBR");
-            lglobalr = Configuration.configuration.getServerGlobalReadLimit();
+            lglobalr = configuration.getServerGlobalReadLimit();
             if (bglobalr != null) {
               lglobalr = (Long.parseLong(bglobalr) / 10) * 10;
             }
             final String bsessionw = getTrimValue("BSESSW");
-            lsessionw =
-                Configuration.configuration.getServerChannelWriteLimit();
+            lsessionw = configuration.getServerChannelWriteLimit();
             if (bsessionw != null) {
               lsessionw = (Long.parseLong(bsessionw) / 10) * 10;
             }
             final String bglobalw = getTrimValue("BGLOBW");
-            lglobalw = Configuration.configuration.getServerGlobalWriteLimit();
+            lglobalw = configuration.getServerGlobalWriteLimit();
             if (bglobalw != null) {
               lglobalw = (Long.parseLong(bglobalw) / 10) * 10;
             }
-            Configuration.configuration
+            configuration
                 .changeNetworkLimit(lglobalw, lglobalr, lsessionw, lsessionr,
-                                    Configuration.configuration
-                                        .getDelayLimit());
+                                    configuration.getDelayLimit());
             final String dcomm = getTrimValue("DCOM");
             if (dcomm != null) {
-              Configuration.configuration
-                  .setDelayCommander(Long.parseLong(dcomm));
-              if (Configuration.configuration.getDelayCommander() <= 100) {
-                Configuration.configuration.setDelayCommander(100);
+              configuration.setDelayCommander(Long.parseLong(dcomm));
+              if (configuration.getDelayCommander() <= 100) {
+                configuration.setDelayCommander(100);
               }
-              Configuration.configuration.reloadCommanderDelay();
+              configuration.reloadCommanderDelay();
             }
             final String dret = getTrimValue("DRET");
             if (dret != null) {
-              Configuration.configuration.setDelayRetry(Long.parseLong(dret));
-              if (Configuration.configuration.getDelayRetry() <= 1000) {
-                Configuration.configuration.setDelayRetry(1000);
+              configuration.setDelayRetry(Long.parseLong(dret));
+              if (configuration.getDelayRetry() <= 1000) {
+                configuration.setDelayRetry(1000);
               }
             }
             extraInformation =
@@ -391,7 +379,7 @@ public class HttpSslHandler
   private void checkAuthent(ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
-      String logon = Logon();
+      String logon = logon();
       logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), "");
       responseContent.append(logon);
       clearSession();
@@ -400,7 +388,7 @@ public class HttpSslHandler
     } else if (request.method() == HttpMethod.POST) {
       getParams();
       if (params == null) {
-        String logon = Logon();
+        String logon = logon();
         logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
                                  Messages
                                      .getString("HttpSslHandler.EmptyLogin"));
@@ -412,8 +400,9 @@ public class HttpSslHandler
     }
     boolean getMenu = false;
     if (params.containsKey("Logon")) {
-      String name = null, password = null;
-      List<String> values = null;
+      String name = null;
+      String password = null;
+      List<String> values;
       if (!params.isEmpty()) {
         // get values
         if (params.containsKey("name")) {
@@ -428,15 +417,11 @@ public class HttpSslHandler
           getMenu = true;
         }
         // search the nb param
-        if ((!getMenu) && params.containsKey("passwd")) {
+        if (!getMenu && params.containsKey("passwd")) {
           values = params.get("passwd");
           if (values != null) {
             password = values.get(0);
-            if (password == null || password.isEmpty()) {
-              getMenu = true;
-            } else {
-              getMenu = false;
-            }
+            getMenu = password == null || password.isEmpty();
           } else {
             getMenu = true;
           }
@@ -448,17 +433,14 @@ public class HttpSslHandler
       }
       if (!getMenu) {
         logger.debug("Name=" + name + " vs " +
-                     name.equals(Configuration.configuration.getADMINNAME()) +
-                     " Passwd vs " + Arrays
-                         .equals(password.getBytes(WaarpStringUtils.UTF8),
-                                 Configuration.configuration
-                                     .getSERVERADMINKEY()));
-        if (name.equals(Configuration.configuration.getADMINNAME()) && Arrays
+                     name.equals(configuration.getAdminName()) + " Passwd vs " +
+                     Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                                   configuration.getServerAdminKey()));
+        if (name.equals(configuration.getAdminName()) && Arrays
             .equals(password.getBytes(WaarpStringUtils.UTF8),
-                    Configuration.configuration.getSERVERADMINKEY())) {
-          authentHttp.getAuth().specialNoSessionAuth(true,
-                                                     Configuration.configuration
-                                                         .getHOST_ID());
+                    configuration.getServerAdminKey())) {
+          authentHttp.getAuth()
+                     .specialNoSessionAuth(true, configuration.getHostId());
           authentHttp.setStatus(70);
         } else {
           getMenu = true;
@@ -473,25 +455,23 @@ public class HttpSslHandler
       getMenu = true;
     }
     if (getMenu) {
-      String logon = Logon();
+      String logon = logon();
       logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
                                Messages.getString("HttpSslHandler.BadLogin"));
       responseContent.append(logon);
       clearSession();
-      writeResponse(ctx);
     } else {
       final String index = index();
       responseContent.append(index);
       clearSession();
-      admin = new DefaultCookie(
-          R66SESSION + Configuration.configuration.getHOST_ID(),
-          Configuration.configuration.getHOST_ID() +
-          Long.toHexString(random.nextLong()));
+      admin = new DefaultCookie(R66SESSION + configuration.getHostId(),
+                                configuration.getHostId() +
+                                Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       authentHttp.setStatus(72);
       logger.debug("CreateSession: " + uriRequest + ":{}", admin);
-      writeResponse(ctx);
     }
+    writeResponse(ctx);
   }
 
   @Override
@@ -504,11 +484,9 @@ public class HttpSslHandler
     logger.debug("Msg: " + uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-      HttpWriteCacheEnable.writeFile(request, ctx, Configuration.configuration
-                                                       .getHttpBasePath() +
-                                                   uriRequest, R66SESSION +
-                                                               Configuration.configuration
-                                                                   .getHOST_ID());
+      HttpWriteCacheEnable
+          .writeFile(request, ctx, configuration.getHttpBasePath() + uriRequest,
+                     R66SESSION + configuration.getHostId());
       ctx.flush();
       return;
     }
@@ -524,21 +502,15 @@ public class HttpSslHandler
     }
     REQUEST req = REQUEST.index;
     if (find.length() != 0) {
-      find = find.substring(0, find.indexOf("."));
+      find = find.substring(0, find.indexOf('.'));
       try {
         req = REQUEST.valueOf(find);
       } catch (final IllegalArgumentException e1) {
         req = REQUEST.index;
-        logger.debug("NotFound: " + find + ":" + uriRequest);
+        logger.debug("NotFound: " + find + ':' + uriRequest);
       }
     }
     switch (req) {
-      case index:
-        responseContent.append(index());
-        break;
-      case Logon:
-        responseContent.append(index());
-        break;
       case System:
         responseContent.append(System());
         break;
@@ -555,8 +527,8 @@ public class HttpSslHandler
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
       if (!cookies.isEmpty()) {
         for (final Cookie elt : cookies) {
-          if (elt.name().equalsIgnoreCase(
-              R66SESSION + Configuration.configuration.getHOST_ID())) {
+          if (elt.name()
+                 .equalsIgnoreCase(R66SESSION + configuration.getHostId())) {
             logger.debug("Found session: " + elt);
             admin = elt;
             final R66Session session = sessions.get(admin.value());
@@ -565,7 +537,6 @@ public class HttpSslHandler
               authentHttp.setStatus(73);
             } else {
               admin = null;
-              continue;
             }
           } else if (elt.name().equalsIgnoreCase(I18NEXT)) {
             logger.debug("Found i18next: " + elt);

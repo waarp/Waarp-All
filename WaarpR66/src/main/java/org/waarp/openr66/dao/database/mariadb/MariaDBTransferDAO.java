@@ -30,9 +30,9 @@ import java.sql.SQLException;
 
 public class MariaDBTransferDAO extends DBTransferDAO {
 
-  protected static String SQL_GET_ID =
+  protected static final String SQL_GET_ID =
       "SELECT seq FROM Sequences " + "WHERE name='RUNSEQ' FOR UPDATE";
-  private static String SQL_UPDATE_ID =
+  private static final String SQL_UPDATE_ID =
       "UPDATE Sequences SET seq = ? " + "WHERE name='RUNSEQ'";
 
   public MariaDBTransferDAO(Connection con) throws DAOConnectionException {
@@ -43,9 +43,10 @@ public class MariaDBTransferDAO extends DBTransferDAO {
   protected long getNextId() throws DAOConnectionException {
     PreparedStatement ps = null;
     PreparedStatement ps2 = null;
+    ResultSet rs = null;
     try {
       ps = connection.prepareStatement(SQL_GET_ID);
-      final ResultSet rs = ps.executeQuery();
+      rs = ps.executeQuery();
       long res;
       if (rs.next()) {
         res = rs.getLong(1);
@@ -60,6 +61,13 @@ public class MariaDBTransferDAO extends DBTransferDAO {
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+      } catch (SQLException e) {
+        // ignore
+      }
       closeStatement(ps);
       closeStatement(ps2);
     }

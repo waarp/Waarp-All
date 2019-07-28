@@ -70,7 +70,8 @@ public class FtpsInitializer extends FtpInitializer {
     final EventExecutorGroup executorGroup =
         configuration.getFtpInternalConfiguration().getExecutor();
     // and then business logic. New one on every connection
-    final BusinessHandler newbusiness = businessHandler.newInstance();
+    final BusinessHandler newbusiness =
+        businessHandler.getDeclaredConstructor().newInstance();
     final SslNetworkHandler newNetworkHandler =
         new SslNetworkHandler(new FtpSession(configuration, newbusiness));
     pipeline.addLast(executorGroup, "handler", newNetworkHandler);

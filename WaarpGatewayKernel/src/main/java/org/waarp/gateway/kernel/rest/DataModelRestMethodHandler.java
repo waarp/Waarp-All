@@ -36,6 +36,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -49,8 +50,6 @@ import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * Generic Rest Model handler for Data model (CRUD access to a database table)
- *
- *
  */
 public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
     extends RestMethodHandler {
@@ -65,8 +64,8 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DataModelRestMethodHandler.class);
 
-  public DataModelRestMethodHandler(String name, RestConfiguration config,
-                                    METHOD... method) {
+  protected DataModelRestMethodHandler(String name, RestConfiguration config,
+                                       METHOD... method) {
     super(name, name, true, config, METHOD.OPTIONS);
     setMethods(method);
   }
@@ -87,7 +86,7 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
       throws HttpForbiddenRequestException {
     final METHOD method = arguments.getMethod();
     if (!isMethodIncluded(method)) {
-      logger.warn("NotAllowed: " + method + ":" + arguments.getUri() + ":" +
+      logger.warn("NotAllowed: " + method + ':' + arguments.getUri() + ':' +
                   arguments.getUriArgs());
       throw new HttpForbiddenRequestException("Unallowed Method: " + method);
     }
@@ -99,12 +98,12 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
     }
     switch (method) {
       case DELETE:
+      case PUT:
         if (hasOneExtraPathAsId) {
           return;
         }
         break;
       case GET:
-        return;
       case OPTIONS:
         return;
       case POST:
@@ -112,16 +111,11 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
           return;
         }
         break;
-      case PUT:
-        if (hasOneExtraPathAsId) {
-          return;
-        }
-        break;
       default:
         break;
     }
-    logger.warn("NotAllowed: " + method + ":" + hasNoExtraPath + ":" +
-                hasOneExtraPathAsId + ":" + arguments.getUri() + ":" +
+    logger.warn("NotAllowed: " + method + ':' + hasNoExtraPath + ':' +
+                hasOneExtraPathAsId + ':' + arguments.getUri() + ':' +
                 arguments.getUriArgs());
     throw new HttpForbiddenRequestException(
         "Unallowed Method and arguments combinaison");
@@ -442,15 +436,15 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
     final HttpResponse response = handler.getResponse(buffer);
     if (status == HttpResponseStatus.UNAUTHORIZED) {
-      final ChannelFuture future = ctx.writeAndFlush(response);
-      return future;
+      return ctx.writeAndFlush(response);
     }
     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json");
     response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());
     logger.debug("Will write: {}", body);
     final ChannelFuture future = ctx.writeAndFlush(response);
     if (handler.isWillClose()) {
-      System.err.println("Will close session in DataModelRestMethodHandler");
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Will close session in DataModelRestMethodHandler");
       return future;
     }
     return null;

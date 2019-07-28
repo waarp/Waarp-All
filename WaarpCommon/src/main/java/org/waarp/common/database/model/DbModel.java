@@ -33,8 +33,6 @@ import java.sql.SQLException;
  * This class is an interface for special functions that needs special
  * implementations according to the
  * database model used.
- *
- *
  */
 public interface DbModel {
   /**

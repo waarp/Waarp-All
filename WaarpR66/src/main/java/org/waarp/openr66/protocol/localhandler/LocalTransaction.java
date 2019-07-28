@@ -19,20 +19,10 @@
  */
 package org.waarp.openr66.protocol.localhandler;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.local.LocalAddress;
-import io.netty.channel.local.LocalChannel;
-import io.netty.channel.local.LocalServerChannel;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -81,43 +71,11 @@ public class LocalTransaction {
       localChannelHashMapIdBased =
       new ConcurrentHashMap<String, LocalChannelReference>();
 
-  private final ServerBootstrap serverBootstrap = new ServerBootstrap();
-
-  private final Channel serverChannel;
-
-  private final LocalAddress socketLocalServerAddress = new LocalAddress("0");
-
-  private final Bootstrap clientBootstrap = new Bootstrap();
-
-  private final ChannelGroup localChannelGroup =
-      new DefaultChannelGroup("LocalChannels",
-                              Configuration.configuration.getSubTaskGroup()
-                                                         .next());
-
   /**
    * Constructor
    */
   public LocalTransaction() {
-    serverBootstrap.channel(LocalServerChannel.class);
-    serverBootstrap.group(Configuration.configuration.getLocalWorkerGroup());
-    serverBootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS,
-                                (int) Configuration.configuration
-                                    .getTIMEOUTCON());
-    serverBootstrap.childHandler(new LocalServerInitializer());
-    try {
-      serverChannel =
-          serverBootstrap.bind(socketLocalServerAddress).sync().channel();
-    } catch (final InterruptedException e) {
-      throw new IllegalArgumentException(e.getMessage(), e);
-    }
-    localChannelGroup.add(serverChannel);
-
-    clientBootstrap.channel(LocalChannel.class);
-    // Same Group than Network final handler
-    clientBootstrap.group(Configuration.configuration.getLocalWorkerGroup());
-    clientBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS,
-                           (int) Configuration.configuration.getTIMEOUTCON());
-    clientBootstrap.handler(new LocalClientInitializer());
+    // EMpty
   }
 
   public String hashStatus() {
@@ -170,70 +128,28 @@ public class LocalTransaction {
       throws OpenR66ProtocolSystemException,
              OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
-    ChannelFuture channelFuture = null;
-    logger.debug("Status LocalChannelServer: {} {}",
-                 serverChannel.getClass().getName(),
-                 serverChannel.config().getConnectTimeoutMillis() + " " +
-                 serverChannel.isOpen());
-    for (int i = 0; i < Configuration.RETRYNB; i++) {
-      if (WaarpShutdownHook.isShutdownStarting()) {
-        // Do not try since already locally in shutdown
-        throw new OpenR66ProtocolNoConnectionException(
-            "Cannot connect to local handler: " + socketLocalServerAddress +
-            " " + serverChannel.isOpen() + " " + serverChannel +
-            " since the local server is in shutdown.");
-      }
-      channelFuture = clientBootstrap.connect(socketLocalServerAddress);
-      try {
-        channelFuture.await();
-        // channelFuture.await(Configuration.configuration.TIMEOUTCON/3);
-      } catch (final InterruptedException e1) {
-        logger.error("LocalChannelServer Interrupted: " +
-                     serverChannel.getClass().getName() + " " +
-                     serverChannel.config().getConnectTimeoutMillis() + " " +
-                     serverChannel.isOpen());
-        throw new OpenR66ProtocolSystemException(
-            "Interruption - Cannot connect to local handler: " +
-            socketLocalServerAddress + " " + serverChannel.isOpen() + " " +
-            serverChannel, e1);
-      }
-      if (channelFuture.isSuccess()) {
-        final LocalChannel channel = (LocalChannel) channelFuture.channel();
-        localChannelGroup.add(channel);
-        logger.debug(
-            "Will start localChannelReference and eventually generate a new Db Connection if not-thread-safe");
-        final LocalChannelReference localChannelReference =
-            new LocalChannelReference(channel, networkChannelReference,
-                                      remoteId, futureRequest);
-        localChannelHashMap.put(channel.id().hashCode(), localChannelReference);
-        logger.debug(
-            "Db connection done and Create LocalChannel entry: " + i + " {}",
-            localChannelReference);
-        logger
-            .info("Add one localChannel to a Network Channel: " + channel.id());
-        // Now send first a Startup message
-        final StartupPacket startup =
-            new StartupPacket(localChannelReference.getLocalId(), fromSsl);
-        channel.writeAndFlush(startup);
-        return localChannelReference;
-      } else {
-        logger.error("Can't connect to local server " + i + " (Done: " +
-                     channelFuture.isDone() + ")");
-      }
-      try {
-        Thread.sleep(Configuration.RETRYINMS * 10);
-      } catch (final InterruptedException e) {
-        throw new OpenR66ProtocolSystemException(
-            "Cannot connect to local handler", e);
-      }
+    if (WaarpShutdownHook.isShutdownStarting()) {
+      // Do not try since already locally in shutdown
+      throw new OpenR66ProtocolNoConnectionException(
+          "Cannot create client since the server is in shutdown.");
     }
-    logger.error(
-        "LocalChannelServer: " + serverChannel.getClass().getName() + " " +
-        serverChannel.config().getConnectTimeoutMillis() + " " +
-        serverChannel.isOpen());
-    throw new OpenR66ProtocolSystemException(
-        "Cannot connect to local handler: " + socketLocalServerAddress + " " +
-        serverChannel.isOpen() + " " + serverChannel, channelFuture.cause());
+    final LocalChannelReference localChannelReference =
+        new LocalChannelReference(networkChannelReference, remoteId,
+                                  futureRequest);
+    localChannelHashMap
+        .put(localChannelReference.getLocalId(), localChannelReference);
+    logger.debug("Db connection done and Create LocalChannel entry: {}",
+                 localChannelReference);
+    // Now simulate sending first a Startup message
+    StartupPacket startup =
+        new StartupPacket(localChannelReference.getLocalId(), fromSsl);
+    localChannelReference.getServerHandler().newSession();
+    try {
+      localChannelReference.getServerHandler().startup(startup);
+    } catch (OpenR66ProtocolPacketException e) {
+      throw new OpenR66ProtocolNoConnectionException(e);
+    }
+    return localChannelReference;
   }
 
   /**
@@ -308,13 +224,11 @@ public class LocalTransaction {
   public void debugPrintActiveLocalChannels() {
     final Collection<LocalChannelReference> collection =
         localChannelHashMap.values();
-    final Iterator<LocalChannelReference> iterator = collection.iterator();
-    while (iterator.hasNext()) {
-      final LocalChannelReference localChannelReference = iterator.next();
+    for (final LocalChannelReference localChannelReference : collection) {
       logger.debug("Will close local channel: {}", localChannelReference);
       logger.debug(" Containing: {}",
-                   (localChannelReference.getSession() != null?
-                       localChannelReference.getSession() : "no session"));
+                   localChannelReference.getSession() != null?
+                       localChannelReference.getSession() : "no session");
     }
   }
 
@@ -348,7 +262,8 @@ public class LocalTransaction {
           // Save File status
           try {
             runner.saveStatus();
-          } catch (final OpenR66RunnerErrorException e) {
+          } catch (final OpenR66RunnerErrorException ignored) {
+            // nothing
           }
         }
         if (runner != null && !runner.isFinished()) {
@@ -358,7 +273,8 @@ public class LocalTransaction {
           result.setOther(packet);
           try {
             buffer = packet.getLocalPacket(localChannelReference);
-          } catch (final OpenR66ProtocolPacketException e1) {
+          } catch (final OpenR66ProtocolPacketException ignored) {
+            // ignore
           }
           localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);
           final NetworkPacket message =
@@ -369,25 +285,30 @@ public class LocalTransaction {
             localChannelReference.getNetworkChannel().writeAndFlush(message)
                                  .await(Configuration.WAITFORNETOP);
           } catch (final InterruptedException e1) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
           try {
             session.setFinalizeTransfer(false, result);
-          } catch (final OpenR66RunnerErrorException e) {
-          } catch (final OpenR66ProtocolSystemException e) {
+          } catch (final OpenR66RunnerErrorException ignored) {
+            // ignore
+          } catch (final OpenR66ProtocolSystemException ignored) {
+            // ignore
           }
         }
-        localChannelReference.getLocalChannel().close();
+        localChannelReference.close();
         continue;
       }
       try {
         buffer = packet.getLocalPacket(localChannelReference);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
       final NetworkPacket message =
           new NetworkPacket(localChannelReference.getLocalId(),
                             localChannelReference.getRemoteId(),
                             packet.getType(), buffer);
       localChannelReference.getNetworkChannel().writeAndFlush(message);
+      localChannelReference.close();
     }
   }
 
@@ -396,7 +317,11 @@ public class LocalTransaction {
    */
   public void closeAll() {
     logger.debug("close All Local Channels");
-    WaarpNettyUtil.awaitOrInterrupted(localChannelGroup.close());
+    Collection<LocalChannelReference> collection = localChannelHashMap.values();
+    for (final LocalChannelReference localChannelReference : collection) {
+      logger.info("Inform Shutdown {}", localChannelReference);
+      localChannelReference.close();
+    }
   }
 
 }

@@ -46,11 +46,11 @@ public class LocalExecClientHandler
   protected StringBuilder back;
   protected boolean firstMessage = true;
   protected WaarpFuture future;
-  protected LocalExecClientInitializer factory;
+  protected final LocalExecClientInitializer factory;
   protected long delay;
   protected String command;
   protected Channel channel;
-  protected WaarpFuture ready = new WaarpFuture(true);
+  protected final WaarpFuture ready = new WaarpFuture(true);
 
   /**
    * Constructor
@@ -73,18 +73,16 @@ public class LocalExecClientHandler
     this.delay = delay;
     this.command = command;
     // Sends the received line to the server.
-    if (channel == null) {
-      if (!ready.awaitOrInterruptible()) {
-        throw new RuntimeException("Cannot get client connected");
-      }
+    if (!ready.awaitOrInterruptible() && channel == null) {
+      throw new RuntimeException("Cannot get client connected");
     }
     logger.debug("write command: " + this.command);
     if (this.delay != 0) {
       WaarpNettyUtil.awaitOrInterrupted(
-          channel.writeAndFlush(this.delay + " " + this.command + "\n"));
+          channel.writeAndFlush(this.delay + " " + this.command + '\n'));
     } else {
       WaarpNettyUtil
-          .awaitOrInterrupted(channel.writeAndFlush(this.command + "\n"));
+          .awaitOrInterrupted(channel.writeAndFlush(this.command + '\n'));
     }
   }
 
@@ -173,7 +171,7 @@ public class LocalExecClientHandler
       } catch (final NumberFormatException e1) {
         // Error
         logger
-            .debug(command + ":" + "Bad Transmission: " + mesg + "\n\t" + back);
+            .debug(command + ':' + "Bad Transmission: " + mesg + "\n\t" + back);
         result.set(LocalExecDefaultResult.BadTransmition);
         back.append(mesg);
         actionBeforeClose(ctx.channel());
@@ -182,7 +180,7 @@ public class LocalExecClientHandler
       }
       mesg = mesg.substring(pos + 1);
       if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
-        logger.debug(command + ":" + "Receive End of Command");
+        logger.debug(command + ':' + "Receive End of Command");
         result.setResult(LocalExecDefaultResult.NoMessage.getResult());
         back.append(result.getResult());
         finalizeMessage();
@@ -191,7 +189,7 @@ public class LocalExecClientHandler
         back.append(mesg);
       }
     } else if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
-      logger.debug(command + ":" + "Receive End of Command");
+      logger.debug(command + ':' + "Receive End of Command");
       finalizeMessage();
     } else {
       back.append('\n').append(mesg);
@@ -201,7 +199,7 @@ public class LocalExecClientHandler
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
       throws Exception {
-    logger.warn(command + ":" +
+    logger.warn(command + ':' +
                 "Unexpected exception from Outband while get information: " +
                 firstMessage, cause);
     if (firstMessage) {

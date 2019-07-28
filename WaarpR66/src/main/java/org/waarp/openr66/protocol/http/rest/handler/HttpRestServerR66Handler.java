@@ -51,8 +51,6 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
  * Server Http REST interface: http://host/server?... +
  * ShutdownOrBlockJsonPacket as PUT or no Json body but
  * GET to get Current Status in Json
- *
- *
  */
 public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
 
@@ -108,7 +106,6 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
           // Shutdown
           serverHandler.shutdown(key, node.isRestartOrBlock());
           result.setDetail("Shutdown on going");
-          setOk(handler, result, json, HttpResponseStatus.OK);
         } else {
           // Block
           serverHandler.blockRequest(key, node.isRestartOrBlock());
@@ -116,8 +113,8 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
               (node.isRestartOrBlock()? "Block" : "Unblock") + " new request");
           result.setDetail(
               (node.isRestartOrBlock()? "Block" : "Unblock") + " new request");
-          setOk(handler, result, json, HttpResponseStatus.OK);
         }
+        setOk(handler, result, json, HttpResponseStatus.OK);
       } else {
         logger.info("Validation is ignored: " + json);
         result.setDetail("Unknown command");
@@ -128,6 +125,8 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
     } catch (final OpenR66ProtocolBusinessException e) {
       throw new HttpIncorrectRequestException(e);
     } catch (final OpenR66ProtocolShutdownException e) {
+      result.setDetail("Shutdown on going");
+      setOk(handler, result, json, HttpResponseStatus.OK);
       WaarpShutdownHook.shutdownWillStart();
       logger.warn(Messages.getString("LocalServerHandler.0") + //$NON-NLS-1$
                   serverHandler.getSession().getAuth().getUser());
@@ -153,7 +152,8 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
                                                    .name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
     if (methods.contains(METHOD.GET)) {

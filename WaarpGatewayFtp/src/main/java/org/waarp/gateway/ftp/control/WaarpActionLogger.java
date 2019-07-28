@@ -18,30 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright 2009, Frederic Bregier, and individual contributors by the @author
- * tags. See the
- * COPYRIGHT.txt in the distribution for a full listing of individual
- * contributors.
- * <p>
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation; either
- * version 3.0 of the
- * License, or (at your option) any later version.
- * <p>
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this
- * software; if not, write to the Free Software Foundation, Inc., 51 Franklin
- * St, Fifth Floor,
- * Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.waarp.gateway.ftp.control;
 
 import org.waarp.common.command.ReplyCode;
@@ -62,15 +38,16 @@ import org.waarp.gateway.ftp.database.data.DbTransferLog;
 
 /**
  * Class to help to log any actions through the interface of Waarp
- *
- *
  */
-public class WaarpActionLogger {
+public final class WaarpActionLogger {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpActionLogger.class);
+
+  private WaarpActionLogger() {
+  }
 
   /**
    * Log the action
@@ -84,7 +61,7 @@ public class WaarpActionLogger {
                                String file, BusinessHandler handler) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
-    logger.info(message + " " + sessionContexte);
+    logger.info(message + ' ' + sessionContexte);
     if (ftpSession != null) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();
       if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {
@@ -99,14 +76,14 @@ public class WaarpActionLogger {
                                 ReplyCode.REPLY_000_SPECIAL_NOSTATUS, message,
                                 UpdatedInfo.TOSUBMIT);
           logger.debug("Create FS: " + log);
-          if (FileBasedConfiguration.fileBasedConfiguration.monitoring !=
+          if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=
               null) {
             if (isSender) {
-              FileBasedConfiguration.fileBasedConfiguration.monitoring
-                  .updateLastOutBand();
+              FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                           .updateLastOutBand();
             } else {
-              FileBasedConfiguration.fileBasedConfiguration.monitoring
-                  .updateLastInBound();
+              FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                           .updateLastInBound();
             }
           }
           return log.getSpecialId();
@@ -133,7 +110,7 @@ public class WaarpActionLogger {
                                ReplyCode rcode, UpdatedInfo info) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
-    logger.info(message + " " + sessionContexte);
+    logger.info(message + ' ' + sessionContexte);
     if (ftpSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();
       if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {
@@ -152,15 +129,19 @@ public class WaarpActionLogger {
           // Do nothing
         }
       } else {
-        if (FileBasedConfiguration.fileBasedConfiguration.monitoring != null) {
-          FileBasedConfiguration.fileBasedConfiguration.monitoring
-              .updateCodeNoTransfer(rcode);
+        if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=
+            null) {
+          FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                       .updateCodeNoTransfer(
+                                                           rcode);
         }
       }
     } else {
-      if (FileBasedConfiguration.fileBasedConfiguration.monitoring != null) {
-        FileBasedConfiguration.fileBasedConfiguration.monitoring
-            .updateCodeNoTransfer(rcode);
+      if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=
+          null) {
+        FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                     .updateCodeNoTransfer(
+                                                         rcode);
       }
     }
     return specialId;
@@ -181,7 +162,7 @@ public class WaarpActionLogger {
                                     ReplyCode rcode, BusinessHandler handler) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
-    logger.error(rcode.getCode() + ":" + message + " " + sessionContexte);
+    logger.error(rcode.getCode() + ":" + message + ' ' + sessionContexte);
     logger.debug("Log", new Exception("Log"));
     if (ftpSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();
@@ -190,8 +171,10 @@ public class WaarpActionLogger {
         if (transfer != null) {
           try {
             file = transfer.getFtpFile().getFile();
-          } catch (final CommandAbstractException e1) {
-          } catch (final FtpNoFileException e1) {
+          } catch (final CommandAbstractException ignored) {
+            // nothing
+          } catch (final FtpNoFileException ignored) {
+            // nothing
           }
         } else {
           file = null;
@@ -214,37 +197,48 @@ public class WaarpActionLogger {
             log.setFilename(file);
           }
           log.update();
-          if (FileBasedConfiguration.fileBasedConfiguration.ftpMib != null) {
-            FileBasedConfiguration.fileBasedConfiguration.ftpMib
-                .notifyInfoTask(message, log);
+          if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=
+              null) {
+            FileBasedConfiguration.fileBasedConfiguration.getFtpMib()
+                                                         .notifyInfoTask(
+                                                             message, log);
           }
           logger.debug("Update FS: " + log);
         } catch (final WaarpDatabaseException e) {
           // Do nothing
         }
       } else {
-        if (FileBasedConfiguration.fileBasedConfiguration.monitoring != null) {
-          FileBasedConfiguration.fileBasedConfiguration.monitoring
-              .updateCodeNoTransfer(rcode);
+        if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=
+            null) {
+          FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                       .updateCodeNoTransfer(
+                                                           rcode);
         }
         if (rcode != ReplyCode.REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN &&
             rcode != ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN) {
-          if (FileBasedConfiguration.fileBasedConfiguration.ftpMib != null) {
-            FileBasedConfiguration.fileBasedConfiguration.ftpMib
-                .notifyWarning(rcode.getMesg(), message);
+          if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=
+              null) {
+            FileBasedConfiguration.fileBasedConfiguration.getFtpMib()
+                                                         .notifyWarning(
+                                                             rcode.getMesg(),
+                                                             message);
           }
         }
       }
     } else {
-      if (FileBasedConfiguration.fileBasedConfiguration.monitoring != null) {
-        FileBasedConfiguration.fileBasedConfiguration.monitoring
-            .updateCodeNoTransfer(rcode);
+      if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=
+          null) {
+        FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                     .updateCodeNoTransfer(
+                                                         rcode);
       }
       if (rcode != ReplyCode.REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN &&
           rcode != ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN) {
-        if (FileBasedConfiguration.fileBasedConfiguration.ftpMib != null) {
-          FileBasedConfiguration.fileBasedConfiguration.ftpMib
-              .notifyWarning(rcode.getMesg(), message);
+        if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() != null) {
+          FileBasedConfiguration.fileBasedConfiguration.getFtpMib()
+                                                       .notifyWarning(
+                                                           rcode.getMesg(),
+                                                           message);
         }
       }
     }

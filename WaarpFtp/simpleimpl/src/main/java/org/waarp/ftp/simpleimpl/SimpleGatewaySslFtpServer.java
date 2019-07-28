@@ -20,6 +20,7 @@
 package org.waarp.ftp.simpleimpl;
 
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -33,8 +34,6 @@ import org.waarp.ftp.simpleimpl.data.FileSystemBasedDataBusinessHandler;
  * Example of FTP Server using simple authentication (XML FileInterface based),
  * and standard Directory and
  * FileInterface implementation (Filesystem based).
- *
- *
  */
 public class SimpleGatewaySslFtpServer {
   /**
@@ -49,8 +48,9 @@ public class SimpleGatewaySslFtpServer {
    */
   public static void main(String[] args) {
     if (args.length != 3) {
-      System.err.println("Usage: " + SimpleGatewaySslFtpServer.class.getName() +
-                         " <config-file> <ssl-config-file> SSL|AUTH");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Usage: " + SimpleGatewaySslFtpServer.class.getName() +
+          " <config-file> <ssl-config-file> SSL|AUTH");
       return;
     }
     WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
@@ -62,26 +62,26 @@ public class SimpleGatewaySslFtpServer {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     if (!configuration.setConfigurationFromXml(config)) {
-      System.err.println("Bad configuration");
+      SysErrLogger.FAKE_LOGGER.syserr("Bad configuration");
       return;
     }
     if (!FileBasedSslConfiguration
         .setConfigurationServerFromXml(configuration, args[1])) {
-      System.err.println("Bad Ssl configuration");
+      SysErrLogger.FAKE_LOGGER.syserr("Bad Ssl configuration");
       return;
     }
-    if (args[2].equalsIgnoreCase("SSL")) {
+    if ("SSL".equalsIgnoreCase(args[2])) {
       // native SSL support
       configuration.getFtpInternalConfiguration().setUsingNativeSsl(true);
       configuration.getFtpInternalConfiguration().setAcceptAuthProt(false);
-    } else if (args[2].equalsIgnoreCase("AUTH")) {
+    } else if ("AUTH".equalsIgnoreCase(args[2])) {
       // AUTH, PROT, ... support
       configuration.getFtpInternalConfiguration().setUsingNativeSsl(false);
       configuration.getFtpInternalConfiguration().setAcceptAuthProt(true);
     } else {
       // unknown option
-      System.err
-          .println("Bad Ssl Option configuration: SSL ot AUTH but " + args[2]);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Bad Ssl Option configuration: SSL ot AUTH " + "but " + args[2]);
       return;
     }
     // Start server.

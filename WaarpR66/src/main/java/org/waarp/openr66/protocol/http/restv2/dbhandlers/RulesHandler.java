@@ -33,7 +33,6 @@ import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Rule;
-import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.*;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
 
@@ -55,8 +54,8 @@ import static javax.ws.rs.core.MediaType.*;
 import static org.waarp.openr66.dao.database.DBRuleDAO.*;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetRulesParams.*;
-import static org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.Order.*;
 import static org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.*;
+import static org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.Order.*;
 import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
 import static org.waarp.openr66.protocol.http.restv2.utils.JsonUtils.*;
 
@@ -93,55 +92,56 @@ public class RulesHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
    *     request
-   * @param limit_str the maximum number of entries allowed in the
+   * @param limitStr the maximum number of entries allowed in the
    *     response
-   * @param offset_str the index of the first accepted entry in the
+   * @param offsetStr the index of the first accepted entry in the
    *     list of all valid answers
-   * @param order_str the criteria used to sort the entries and the
+   * @param orderStr the criteria used to sort the entries and the
    *     way of ordering them
-   * @param modeTrans_str only keep rules that use this transfer mode
+   * @param modeTransStr only keep rules that use this transfer mode
    */
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
   public void filterRules(HttpRequest request, HttpResponder responder,
                           @QueryParam(LIMIT) @DefaultValue("20")
-                              String limit_str,
+                              String limitStr,
                           @QueryParam(OFFSET) @DefaultValue("0")
-                              String offset_str,
+                              String offsetStr,
                           @QueryParam(ORDER) @DefaultValue("ascName")
-                              String order_str,
+                              String orderStr,
                           @QueryParam(MODE_TRANS) @DefaultValue("")
-                              String modeTrans_str) {
+                              String modeTransStr) {
 
     final List<RestError> errors = new ArrayList<RestError>();
 
-    int limit = 20, offset = 0;
+    int limit = 20;
+    int offset = 0;
     Order order = ascName;
     ModeTrans modeTrans = null;
     try {
-      limit = Integer.parseInt(limit_str);
-      order = Order.valueOf(order_str);
+      limit = Integer.parseInt(limitStr);
+      order = Order.valueOf(orderStr);
     } catch (final NumberFormatException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, order_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, orderStr));
     }
     try {
-      offset = Integer.parseInt(offset_str);
-      if (!modeTrans_str.isEmpty()) {
-        modeTrans = ModeTrans.valueOf(modeTrans_str);
+      offset = Integer.parseInt(offsetStr);
+      if (!modeTransStr.isEmpty()) {
+        modeTrans = ModeTrans.valueOf(modeTransStr);
       }
     } catch (final NumberFormatException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));
     } catch (final IllegalArgumentException e) {
       errors.add(ILLEGAL_PARAMETER_VALUE(MODE_TRANS, e.getMessage()));
     }
 
     if (limit <= 0) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));
     } else if (offset < 0) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));
     }
 
     if (!errors.isEmpty()) {

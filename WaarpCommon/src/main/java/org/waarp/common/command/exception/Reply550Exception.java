@@ -24,8 +24,6 @@ import org.waarp.common.command.ReplyCode;
 /**
  * 550 Requested action not taken. File unavailable (e.g., file not found, no
  * access).
- *
- *
  */
 public class Reply550Exception extends CommandAbstractException {
 

@@ -25,8 +25,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 /**
  * Simple Authentication based on a previously load XML file. Not to be used in
  * production!
- *
- *
  */
 public class SimpleAuth {
   /**

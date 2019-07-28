@@ -39,8 +39,6 @@ package org.waarp.common.crypto;
  * myStringDecrypt =
  * key.decryptStringInString(myStringCrypte);</li>
  * </ul>
- *
- *
  */
 public class Aes extends KeyObject {
   /**

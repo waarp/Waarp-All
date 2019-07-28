@@ -33,8 +33,6 @@ import java.util.Set;
  * one Id can be shared or one can use direct send, so having a connection by
  * request, this class is useful
  * when one wants to know who is connected and how many times.
- *
- *
  */
 public class ClientNetworkChannels {
 

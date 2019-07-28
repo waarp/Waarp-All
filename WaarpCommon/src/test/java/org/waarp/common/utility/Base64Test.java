@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -54,29 +53,28 @@ public class Base64Test {
   }
 
   @Test
-  public void testEncodeBytesByteArray()
-      throws IOException, ClassNotFoundException {
+  public void testEncodeBytesByteArray() throws Exception {
     final String s = WaarpStringUtils.fillString('a', 100);
     String sencoded = Base64.encodeBytes(s.getBytes());
     byte[] src = Base64.decode(sencoded);
-    assertTrue("Should be equals", Arrays.equals(s.getBytes(), src));
+    assertArrayEquals("Should be equals", s.getBytes(), src);
     sencoded = Base64.encodeBytes(s.getBytes(), 0, s.getBytes().length);
     src = Base64.decode(sencoded);
-    assertTrue("Should be equals", Arrays.equals(s.getBytes(), src));
+    assertArrayEquals("Should be equals", s.getBytes(), src);
 
     ByteBuffer raw = ByteBuffer.wrap(src);
     final ByteBuffer encoded =
         ByteBuffer.allocate(sencoded.getBytes().length + 10);
     Base64.encode(raw, encoded);
     byte[] src2 = Base64.decode(encoded.array());
-    assertTrue("Should be equals", Arrays.equals(src, src2));
+    assertArrayEquals("Should be equals", src, src2);
 
     src2 = Base64.encodeBytesToBytes(s.getBytes());
-    assertTrue("Should be equals", Arrays.equals(sencoded.getBytes(), src2));
+    assertArrayEquals("Should be equals", sencoded.getBytes(), src2);
     src2 = Base64
         .encodeBytesToBytes(s.getBytes(), 0, s.getBytes().length, Base64.GZIP);
     final String sencoded2 = new String(src2);
-    assertTrue("Should be equals", Arrays.equals(sencoded2.getBytes(), src2));
+    assertArrayEquals("Should be equals", sencoded2.getBytes(), src2);
 
     raw = ByteBuffer.wrap(src);
     final CharBuffer encode =
@@ -88,7 +86,7 @@ public class Base64Test {
       src3[i] = (byte) chars[i];
     }
     src2 = Base64.decode(src3);
-    assertTrue("Should be equals", Arrays.equals(src, src2));
+    assertArrayEquals("Should be equals", src, src2);
 
     final SerializableObject serializableObject = new SerializableObject();
     serializableObject.value = 2;
@@ -111,23 +109,23 @@ public class Base64Test {
     final String s = WaarpStringUtils.fillString('a', 100);
     Base64.encodeToFile(s.getBytes(), "/tmp/base64.txt");
     final byte[] src = Base64.decodeFromFile("/tmp/base64.txt");
-    assertTrue("Should be equals", Arrays.equals(s.getBytes(), src));
+    assertArrayEquals("Should be equals", s.getBytes(), src);
 
     final String s1 = WaarpStringUtils.readFile("/tmp/base64.txt");
     final File file = new File("/tmp/source.txt");
     Base64.decodeToFile(s1, "/tmp/source.txt");
     final String s0 = WaarpStringUtils.readFile("/tmp/source.txt");
-    assertTrue("Should be equals", s.equals(s0));
+    assertEquals("Should be equals", s, s0);
 
     Base64.encodeFileToFile(file.getAbsolutePath(), "/tmp/base64.txt");
     String s2 = WaarpStringUtils.readFile("/tmp/base64.txt");
     String s3 = Base64.encodeFromFile("/tmp/source.txt");
-    assertTrue("Should be equals", s2.equals(s3));
+    assertEquals("Should be equals", s2, s3);
 
     Base64.decodeFileToFile("/tmp/base64.txt", "/tmp/source2.txt");
     s2 = WaarpStringUtils.readFile("/tmp/source.txt");
     s3 = WaarpStringUtils.readFile("/tmp/source2.txt");
-    assertTrue("Should be equals", s2.equals(s3));
+    assertEquals("Should be equals", s2, s3);
   }
 
   private static class SerializableObject implements Serializable {

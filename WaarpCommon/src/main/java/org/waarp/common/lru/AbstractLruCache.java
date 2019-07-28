@@ -24,7 +24,6 @@ import java.util.concurrent.Callable;
 /**
  * Base class for concrete implementations
  *
- *
  * @author Damian Momot
  */
 public abstract class AbstractLruCache<K, V>

@@ -26,14 +26,12 @@ import java.util.List;
 
 /**
  * NLST command
- *
- *
  */
 public class NLST extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
-    String path = null;
-    List<String> files = null;
+    String path;
+    List<String> files;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
       files = getSession().getDir().list(path);

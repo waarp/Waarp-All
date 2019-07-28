@@ -35,8 +35,6 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 
 /**
  * RestMethod handler to implement Root Options handler
- *
- *
  */
 public class RootOptionsRestMethodHandler extends RestMethodHandler {
 
@@ -51,12 +49,14 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
                                              RestArgument arguments,
                                              RestArgument result)
       throws HttpForbiddenRequestException {
+    // nothing
   }
 
   @Override
   public void getFileUpload(HttpRestHandler handler, FileUpload data,
                             RestArgument arguments, RestArgument result)
       throws HttpIncorrectRequestException {
+    // nothing
   }
 
   @Override
@@ -70,6 +70,7 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
   public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
                                 RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+    // nothing
   }
 
   @Override
@@ -91,22 +92,22 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
         allMethods[methoditem.ordinal()] = true;
       }
     }
-    String allow = null;
+    StringBuilder allow = null;
     for (int i = 0; i < allMethods.length; i++) {
       if (allMethods[i]) {
         if (allow == null) {
-          allow = realmethods[i].name();
+          allow = new StringBuilder(realmethods[i].name());
         } else {
-          allow += "," + realmethods[i].name();
+          allow.append(',').append(realmethods[i].name());
         }
       }
     }
-    String allowUri = null;
+    StringBuilder allowUri = null;
     for (final RestMethodHandler method : handler.restHashMap.values()) {
       if (allowUri == null) {
-        allowUri = method.path;
+        allowUri = new StringBuilder(method.path);
       } else {
-        allowUri += "," + method.path;
+        allowUri.append(',').append(method.path);
       }
     }
     final ArrayNode array = JsonHandler.createArrayNode();
@@ -118,7 +119,9 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
         array.addObject().putArray(ROOT).addAll(array2);
       }
     }
-    result.addOptions(allow, allowUri, array);
+    if (allow != null && allowUri != null) {
+      result.addOptions(allow.toString(), allowUri.toString(), array);
+    }
   }
 
   @Override

@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * MKD command
- *
- *
  */
 public class MKD extends AbstractCommand {
   @Override
@@ -39,7 +37,7 @@ public class MKD extends AbstractCommand {
     final String path = getArg();
     final String newpath = getSession().getDir().mkdir(path);
     getSession().setReplyCode(ReplyCode.REPLY_257_PATHNAME_CREATED,
-                              "\"" + newpath + "\" is created");
+                              '"' + newpath + "\" is created");
   }
 
 }

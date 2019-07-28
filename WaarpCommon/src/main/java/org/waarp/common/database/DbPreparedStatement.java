@@ -30,8 +30,6 @@ import java.sql.SQLException;
 
 /**
  * Class to handle PrepareStatement
- *
- *
  */
 public class DbPreparedStatement {
   /**
@@ -39,6 +37,12 @@ public class DbPreparedStatement {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbPreparedStatement.class);
+  private static final String SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION =
+      "SQL Exception PreparedStatement no session";
+  private static final String PREPARED_STATEMENT_NO_SESSION =
+      "PreparedStatement no session";
+  private static final String PREPARED_STATEMENT_NO_REQUEST =
+      "PreparedStatement no request";
 
   /**
    * Internal PreparedStatement
@@ -75,9 +79,9 @@ public class DbPreparedStatement {
   public DbPreparedStatement(DbSession ls)
       throws WaarpDatabaseNoConnectionException {
     if (ls == null) {
-      logger.error("SQL Exception PreparedStatement no session");
+      logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);
       throw new WaarpDatabaseNoConnectionException(
-          "PreparedStatement no session");
+          PREPARED_STATEMENT_NO_SESSION);
     }
     if (ls.isDisActive()) {
       logger.debug("DisActive: " + ls.getAdmin().getServer());
@@ -101,9 +105,9 @@ public class DbPreparedStatement {
   public DbPreparedStatement(DbSession ls, String request)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (ls == null) {
-      logger.error("SQL Exception PreparedStatement no session");
+      logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);
       throw new WaarpDatabaseNoConnectionException(
-          "PreparedStatement no session");
+          PREPARED_STATEMENT_NO_SESSION);
     }
     if (ls.isDisActive()) {
       ls.checkConnection();
@@ -113,9 +117,9 @@ public class DbPreparedStatement {
     setReady(false);
     preparedStatement = null;
     if (request == null) {
-      logger.error("SQL Exception PreparedStatement no request");
+      logger.error(PREPARED_STATEMENT_NO_REQUEST);
       throw new WaarpDatabaseNoConnectionException(
-          "PreparedStatement no request");
+          PREPARED_STATEMENT_NO_REQUEST);
     }
     try {
       preparedStatement = this.ls.getConn().prepareStatement(request);
@@ -128,7 +132,7 @@ public class DbPreparedStatement {
         this.request = request;
         setReady(true);
       } catch (final SQLException e1) {
-        logger.error("SQL Exception PreparedStatement: " + request + " " +
+        logger.error("SQL Exception PreparedStatement: " + request + ' ' +
                      e.getMessage());
         DbSession.error(e);
         preparedStatement = null;
@@ -152,9 +156,9 @@ public class DbPreparedStatement {
   public DbPreparedStatement(DbSession ls, String request, int nbFetch)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (ls == null) {
-      logger.error("SQL Exception PreparedStatement no session");
+      logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);
       throw new WaarpDatabaseNoConnectionException(
-          "PreparedStatement no session");
+          PREPARED_STATEMENT_NO_SESSION);
     }
     if (ls.isDisActive()) {
       ls.checkConnection();
@@ -164,9 +168,9 @@ public class DbPreparedStatement {
     setReady(false);
     preparedStatement = null;
     if (request == null) {
-      logger.error("SQL Exception PreparedStatement no request");
+      logger.error(PREPARED_STATEMENT_NO_REQUEST);
       throw new WaarpDatabaseNoConnectionException(
-          "PreparedStatement no request");
+          PREPARED_STATEMENT_NO_SESSION);
     }
     try {
       preparedStatement = this.ls.getConn().prepareStatement(request);
@@ -181,7 +185,7 @@ public class DbPreparedStatement {
         preparedStatement.setFetchSize(nbFetch);
         setReady(true);
       } catch (final SQLException e1) {
-        logger.error("SQL Exception PreparedStatement: " + request + " " +
+        logger.error("SQL Exception PreparedStatement: " + request + ' ' +
                      e.getMessage());
         DbSession.error(e);
         preparedStatement = null;
@@ -203,9 +207,9 @@ public class DbPreparedStatement {
   public void createPrepareStatement(String requestarg)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (requestarg == null) {
-      logger.error("createPreparedStatement no request");
+      logger.error(PREPARED_STATEMENT_NO_REQUEST);
       throw new WaarpDatabaseNoConnectionException(
-          "PreparedStatement no request");
+          PREPARED_STATEMENT_NO_REQUEST);
     }
     if (preparedStatement != null) {
       realClose();
@@ -230,7 +234,7 @@ public class DbPreparedStatement {
       } catch (final SQLException e1) {
         logger.error(
             "SQL Exception createPreparedStatement from {}:" + requestarg +
-            " " + e.getMessage(), ls.getAdmin().getServer());
+            ' ' + e.getMessage(), ls.getAdmin().getServer());
         DbSession.error(e);
         realClose();
         preparedStatement = null;
@@ -279,7 +283,7 @@ public class DbPreparedStatement {
       rs = preparedStatement.executeQuery();
     } catch (final SQLException e) {
       logger.error(
-          "SQL Exception executeQuery:" + request + " " + e.getMessage());
+          "SQL Exception executeQuery:" + request + ' ' + e.getMessage());
       DbSession.error(e);
       close();
       rs = null;
@@ -312,12 +316,12 @@ public class DbPreparedStatement {
           "Request cannot be executed since connection was recreated between:" +
           request);
     }
-    int retour = -1;
+    int retour;
     try {
       retour = preparedStatement.executeUpdate();
     } catch (final SQLException e) {
       logger.error(
-          "SQL Exception executeUpdate:" + request + " " + e.getMessage());
+          "SQL Exception executeUpdate:" + request + ' ' + e.getMessage());
       logger.debug("SQL Exception full stack trace", e);
       DbSession.error(e);
       ls.checkConnectionNoException();
@@ -334,7 +338,8 @@ public class DbPreparedStatement {
     if (rs != null) {
       try {
         rs.close();
-      } catch (final SQLException e) {
+      } catch (final SQLException ignored) {
+        // nothing
       }
       rs = null;
     }
@@ -383,7 +388,7 @@ public class DbPreparedStatement {
       return rs.next();
     } catch (final SQLException e) {
       logger.error("SQL Exception to getNextRow" +
-                   (request != null? " [" + request + "]" : "") + " " +
+                   (request != null? " [" + request + ']' : "") + ' ' +
                    e.getMessage());
       DbSession.error(e);
       ls.checkConnectionNoException();

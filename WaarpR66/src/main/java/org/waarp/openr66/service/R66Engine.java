@@ -31,8 +31,6 @@ import org.waarp.openr66.server.R66Server;
 
 /**
  * Engine used to start and stop the real R66 service
- *
- *
  */
 public class R66Engine extends EngineAbstract {
   /**
@@ -41,7 +39,7 @@ public class R66Engine extends EngineAbstract {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(R66Engine.class);
 
-  static WaarpFuture closeFuture = new WaarpFuture(true);
+  static final WaarpFuture closeFuture = new WaarpFuture(true);
 
   @Override
   public void run() {

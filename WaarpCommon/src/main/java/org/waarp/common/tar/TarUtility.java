@@ -23,6 +23,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,10 +38,13 @@ import java.util.List;
 
 /**
  * TAR support
- *
- *
  */
-public class TarUtility {
+public final class TarUtility {
+  private static final File[] FILE_0_LENGTH = {};
+
+  private TarUtility() {
+  }
+
   /**
    * Create a new Tar from a root directory
    *
@@ -66,11 +71,7 @@ public class TarUtility {
     try {
       recurseFiles(rootDir, rootDir, taos, absolute);
     } catch (final IOException e2) {
-      try {
-        taos.close();
-      } catch (final IOException e) {
-        // ignore
-      }
+      FileUtils.close(taos);
       return false;
     }
     try {
@@ -78,16 +79,7 @@ public class TarUtility {
     } catch (final IOException e1) {
       // ignore
     }
-    try {
-      taos.flush();
-    } catch (final IOException e) {
-      // ignore
-    }
-    try {
-      taos.close();
-    } catch (final IOException e) {
-      // ignore
-    }
+    FileUtils.close(taos);
     return true;
   }
 
@@ -112,7 +104,7 @@ public class TarUtility {
       }
     } else if (!file.getName().endsWith(".tar") &&
                !file.getName().endsWith(".TAR")) {
-      String filename = null;
+      String filename;
       if (absolute) {
         filename =
             file.getAbsolutePath().substring(root.getAbsolutePath().length());
@@ -137,7 +129,7 @@ public class TarUtility {
    * @return True if OK
    */
   public static boolean createTarFromFiles(List<File> files, String filename) {
-    return createTarFromFiles(files.toArray(new File[] {}), filename);
+    return createTarFromFiles(files.toArray(FILE_0_LENGTH), filename);
   }
 
   /**
@@ -162,11 +154,7 @@ public class TarUtility {
       try {
         addFile(file, taos);
       } catch (final IOException e) {
-        try {
-          taos.close();
-        } catch (final IOException e1) {
-          // ignore
-        }
+        FileUtils.close(taos);
         return false;
       }
     }
@@ -175,16 +163,7 @@ public class TarUtility {
     } catch (final IOException e1) {
       // ignore
     }
-    try {
-      taos.flush();
-    } catch (final IOException e) {
-      // ignore
-    }
-    try {
-      taos.close();
-    } catch (final IOException e) {
-      // ignore
-    }
+    FileUtils.close(taos);
     return true;
   }
 
@@ -198,7 +177,7 @@ public class TarUtility {
    */
   private static void addFile(File file, TarArchiveOutputStream taos)
       throws IOException {
-    String filename = null;
+    String filename;
     filename = file.getName();
     final TarArchiveEntry tae = new TarArchiveEntry(filename);
     tae.setSize(file.length());
@@ -239,30 +218,30 @@ public class TarUtility {
         try {
           IOUtils.copy(in, out);
         } finally {
-          out.close();
+          FileUtils.close(out);
         }
         result.add(entry.getName());
         entry = in.getNextTarEntry();
       }
     } finally {
-      in.close();
+      FileUtils.close(in);
     }
     return result;
   }
 
   public static void main(String[] args) {
     if (args.length < 3) {
-      System.err.println("You need to provide 3 arguments:\n" +
-                         "   option filedest.tar \"source\"\n" +
-                         "   where option=1 means untar and source is a directory\n" +
-                         "   option=2 means tar and source is a directory\n" +
-                         "   option=3 means tar and source is a list of files comma separated");
-      System.exit(1);
+      SysErrLogger.FAKE_LOGGER.syserr("You need to provide 3 arguments:\n" +
+                                      "   option filedest.tar \"source\"\n" +
+                                      "   where option=1 means untar and source is a directory\n" +
+                                      "   option=2 means tar and source is a directory\n" +
+                                      "   option=3 means tar and source is a list of files comma separated");
+      System.exit(1);//NOSONAR
     }
     final int option = Integer.parseInt(args[0]);
     final String tarfile = args[1];
     final String tarsource = args[2];
-    String[] tarfiles = null;
+    String[] tarfiles;
     if (option == 3) {
       tarfiles = args[2].split(",");
       final File[] files = new File[tarfiles.length];
@@ -270,15 +249,15 @@ public class TarUtility {
         files[i] = new File(tarfiles[i]);
       }
       if (createTarFromFiles(files, tarfile)) {
-        System.out.println("TAR OK from multiple files");
+        SysErrLogger.FAKE_LOGGER.sysout("TAR OK from multiple files");
       } else {
-        System.err.println("TAR KO from multiple files");
+        SysErrLogger.FAKE_LOGGER.syserr("TAR KO from multiple files");
       }
     } else if (option == 2) {
       if (createTarFromDirectory(tarsource, tarfile, false)) {
-        System.out.println("TAR OK from directory");
+        SysErrLogger.FAKE_LOGGER.sysout("TAR OK from directory");
       } else {
-        System.err.println("TAR KO from directory");
+        SysErrLogger.FAKE_LOGGER.syserr("TAR KO from directory");
       }
     } else if (option == 1) {
       final File tarFile = new File(tarfile);
@@ -287,14 +266,13 @@ public class TarUtility {
       try {
         result = unTar(tarFile, directory);
       } catch (final IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
       }
       if (result == null || result.isEmpty()) {
-        System.err.println("UNTAR KO from directory");
+        SysErrLogger.FAKE_LOGGER.syserr("UNTAR KO from directory");
       } else {
         for (final String string : result) {
-          System.out.println("File: " + string);
+          SysErrLogger.FAKE_LOGGER.sysout("File: " + string);
         }
       }
     }

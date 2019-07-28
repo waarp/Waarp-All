@@ -24,14 +24,15 @@ import ch.qos.logback.classic.Logger;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -45,6 +46,8 @@ import org.waarp.openr66.protocol.utils.R66Future;
 import javax.swing.JEditorPane;
 import javax.swing.JProgressBar;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  *
  */
@@ -52,17 +55,17 @@ public class R66Environment {
   /**
    * Internal Logger
    */
-  static protected volatile WaarpLogger logger;
+  protected static volatile WaarpLogger logger;
 
-  public String ruleId = null;
-  public String hostId = null;
-  public String information = null;
-  public String filePath = null;
-  public boolean isMD5 = false;
-  public boolean isInRequest = false;
-  public boolean isClientSending = false;
-  public NetworkTransaction networkTransaction = null;
-  public String GuiResultat;
+  public String ruleId;
+  public String hostId;
+  public String information;
+  public String filePath;
+  public boolean isMD5;
+  public boolean isInRequest;
+  public boolean isClientSending;
+  public NetworkTransaction networkTransaction;
+  public String guiResultat;
 
   public void initLog() {
     if (logger == null) {
@@ -74,18 +77,22 @@ public class R66Environment {
     WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     initLog();
     if (args.length < 1) {
-      System.err
-          .println(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      System.exit(2);
+      SysErrLogger.FAKE_LOGGER
+          .syserr(Messages.getString("Configuration.WrongInit")); //$NON
+      // -NLS-1$
+      System.exit(2);//NOSONAR
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     Configuration.configuration.pipelineInit();
     networkTransaction = new NetworkTransaction();
@@ -96,16 +103,16 @@ public class R66Environment {
       networkTransaction.closeAll();
       networkTransaction = null;
     }
-    // System.exit(0);
+    // System.exit(0)
   }
 
   public void debug(boolean isDebug) {
     final Logger logger =
         (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
     if (isDebug) {
-      logger.setLevel(Level.DEBUG);
+      logger.setLevel(Level.DEBUG); //NOSONAR
     } else {
-      logger.setLevel(Level.WARN);
+      logger.setLevel(Level.WARN); //NOSONAR
     }
   }
 
@@ -119,11 +126,11 @@ public class R66Environment {
     if (result.isSuccess()) {
       final R66Result r66result = result.getResult();
       final ValidPacket info = (ValidPacket) r66result.getOther();
-      GuiResultat = Messages.getString("R66Environment.2") + //$NON-NLS-1$
+      guiResultat = Messages.getString("R66Environment.2") + //$NON-NLS-1$
                     info.getSheader();
     } else {
-      GuiResultat = Messages.getString("R66Environment.3") + //$NON-NLS-1$
-                    result.getResult().toString();
+      guiResultat = Messages.getString("R66Environment.3") + //$NON-NLS-1$
+                    result.getResult();
     }
     return result.isSuccess();
   }
@@ -136,10 +143,10 @@ public class R66Environment {
     final ProgressDirectTransfer transaction =
         new ProgressDirectTransfer(future, hostId, filePath, ruleId,
                                    information, isMD5,
-                                   Configuration.configuration.getBLOCKSIZE(),
-                                   DbConstant.ILLEGALVALUE, networkTransaction,
-                                   500, progressBar, textFieldStatus);
-    logger.info("Launch transfer: " + hostId + ":" + ruleId + ":" + filePath);
+                                   Configuration.configuration.getBlockSize(),
+                                   ILLEGALVALUE, networkTransaction, 500,
+                                   progressBar, textFieldStatus);
+    logger.info("Launch transfer: " + hostId + ':' + ruleId + ':' + filePath);
     transaction.run();
     future.awaitOrInterruptible();
     progressBar.setIndeterminate(true);
@@ -150,22 +157,22 @@ public class R66Environment {
     final R66Result result = future.getResult();
     if (future.isSuccess()) {
       if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-        GuiResultat = Messages.getString("R66Environment.8") + //$NON-NLS-1$
+        guiResultat = Messages.getString("R66Environment.8") + //$NON-NLS-1$
                       result.getRunner().toShortNoHtmlString("<br>") +
                       Messages.getString("R66Environment.10") + //$NON-NLS-2$
                       hostId + (result.getFile() != null?
-            result.getFile().toString() + "" :
+            String.valueOf(result.getFile()) :
             Messages.getString("R66ClientGui.30"))
                       //$NON-NLS-2$
                       + Messages.getString("R66Environment.13") +
                       //$NON-NLS-1$
                       delay;
       } else {
-        GuiResultat = Messages.getString("R66Environment.14") + //$NON-NLS-1$
+        guiResultat = Messages.getString("R66Environment.14") + //$NON-NLS-1$
                       result.getRunner().toShortNoHtmlString("<br>") +
                       Messages.getString("R66Environment.10") + //$NON-NLS-2$
                       hostId + (result.getFile() != null?
-            result.getFile().toString() + "" :
+            String.valueOf(result.getFile()) :
             Messages.getString("R66ClientGui.30"))
                       //$NON-NLS-2$
                       + Messages.getString("R66Environment.13") +
@@ -174,16 +181,16 @@ public class R66Environment {
       }
     } else {
       if (result == null || result.getRunner() == null) {
-        GuiResultat = Messages.getString("R66Environment.20") + //$NON-NLS-1$
+        guiResultat = Messages.getString("R66Environment.20") + //$NON-NLS-1$
                       Messages.getString("R66Environment.10") + //$NON-NLS-1$
                       hostId + "     " + future.getCause().getMessage();
       } else if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-        GuiResultat = Messages.getString("R66Environment.23") + //$NON-NLS-1$
+        guiResultat = Messages.getString("R66Environment.23") + //$NON-NLS-1$
                       result.getRunner().toShortNoHtmlString("<br>") +
                       Messages.getString("R66Environment.10") + //$NON-NLS-2$
                       hostId + "    " + future.getCause().getMessage();
       } else {
-        GuiResultat = Messages.getString("R66Environment.27") + //$NON-NLS-1$
+        guiResultat = Messages.getString("R66Environment.27") + //$NON-NLS-1$
                       result.getRunner().toShortNoHtmlString("<br>") +
                       Messages.getString("R66Environment.10") + //$NON-NLS-2$
                       hostId + "    " + future.getCause().getMessage();
@@ -193,7 +200,7 @@ public class R66Environment {
   }
 
   public static String[] getHostIds() {
-    String[] results = null;
+    String[] results;
     DbHostAuth[] dbHostAuths;
     try {
       dbHostAuths = DbHostAuth.getAllHosts();
@@ -215,7 +222,7 @@ public class R66Environment {
   }
 
   public static String[] getRules() {
-    String[] results = null;
+    String[] results;
     DbRule[] dbRules;
     try {
       dbRules = DbRule.getAllRules();
@@ -237,7 +244,7 @@ public class R66Environment {
   }
 
   public static String[] getRules(boolean sendMode) {
-    String[] results = null;
+    String[] results;
     DbRule[] dbRules;
     try {
       dbRules = DbRule.getAllRules();
@@ -285,7 +292,8 @@ public class R66Environment {
     DbHostAuth host = null;
     try {
       host = new DbHostAuth(id);
-    } catch (final WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException ignored) {
+      // nothing
     }
     if (host != null) {
       final String hosthtml =
@@ -310,7 +318,8 @@ public class R66Environment {
     DbRule rule = null;
     try {
       rule = new DbRule(id);
-    } catch (final WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException ignored) {
+      // nothing
     }
     if (rule != null) {
       final String rulehtml =
@@ -349,7 +358,7 @@ public class R66Environment {
   }
 
   public void about() {
-    GuiResultat =
+    guiResultat =
         "<HTML><P ALIGN=CENTER><FONT SIZE=5 STYLE=\"font-size: 22pt\"><SPAN>R66 Client GUI Version: " +
         Version.ID + "</SPAN></FONT></P>" +
         "<P ALIGN=CENTER><FONT SIZE=4 STYLE=\"font-size: 16pt\"><SPAN>This graphical user interface is intend to provide an easy way to use R66 for:</SPAN></FONT></P>" +
@@ -361,8 +370,8 @@ public class R66Environment {
 
   @Override
   public String toString() {
-    return "Env: " + ruleId + ":" + hostId + ":" + filePath + ":" + isMD5 +
-           ":" + isInRequest + ":" + isClientSending + ":" + information + ":" +
-           GuiResultat;
+    return "Env: " + ruleId + ':' + hostId + ':' + filePath + ':' + isMD5 +
+           ':' + isInRequest + ':' + isClientSending + ':' + information + ':' +
+           guiResultat;
   }
 }

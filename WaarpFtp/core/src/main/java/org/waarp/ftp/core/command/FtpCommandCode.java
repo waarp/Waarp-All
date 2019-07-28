@@ -35,8 +35,6 @@ import org.waarp.ftp.core.session.FtpSession;
  * Main class<br>
  * Previous Valid Command (null means all are valid)<br>
  * Next Valid Commands (none means all are valid)<br>
- *
- *
  */
 public enum FtpCommandCode {
   // XXX CONNECTION
@@ -279,7 +277,7 @@ public enum FtpCommandCode {
    * character, as is the second Format parameter for ASCII and EBCDIC; the
    * second parameter for local byte is a
    * decimal integer to indicate Bytesize. The parameters are separated by a
-   * <code>&lt;SP&gt;</code> (Space,
+   * {@code <SP>} (Space,
    * ASCII code 32).<br>
    * <br>
    * <p>
@@ -434,7 +432,7 @@ public enum FtpCommandCode {
    * but
    * when present should be
    * separated from the first by the three Telnet characters
-   * <code>&lt;SP&gt;</code> R <code>&lt;SP&gt;</code>.
+   * {@code <SP>} R {@code <SP>}.
    * This command shall be followed by a STORe or APPEnd command. The ALLO
    * command should be treated as a NOOP
    * (no operation) by those servers which do not require that the maximum
@@ -641,7 +639,7 @@ public enum FtpCommandCode {
    * The data will be transferred in
    * ASCII or EBCDIC type over the data connection as valid pathname strings
    * separated by
-   * <code>&lt;CRLF&gt;</code> or <code>&lt;NL&gt;</code>. (Again the user
+   * {@code <CRLF>} or {@code <NL>}. (Again the user
    * must
    * ensure that the TYPE is
    * correct.) This command is intended to return information that can be
@@ -1040,13 +1038,13 @@ public enum FtpCommandCode {
    * <br>
    * The EPRT command keyword MUST be followed by a single space (ASCII 32).
    * Following the space, a delimiter
-   * character (<code>&lt;d&gt;</code>) MUST be specified. The delimiter
+   * character ({@code <d>}) MUST be specified. The delimiter
    * character MUST be one of the ASCII
    * characters in range 33-126 inclusive. The character "|" (ASCII 124) is
    * recommended unless it coincides with
    * a character needed to encode the network address.<br>
    * <p>
-   * The <code>&lt;net-prt&gt;</code> argument MUST be an address family
+   * The {@code <net-prt>} argument MUST be an address family
    * number
    * defined by IANA in the latest
    * Assigned Numbers RFC (RFC 1700 [RP94] as of the writing of this
@@ -1065,7 +1063,7 @@ public enum FtpCommandCode {
    * </pre>
    *
    * <br>
-   * The <code>&lt;net-addr&gt;</code> is a protocol specific string
+   * The {@code <net-addr>} is a protocol specific string
    * representation of the network address. For
    * the two address families specified above (AF Number 1 and 2), addresses
    * MUST be in the following
@@ -1082,7 +1080,7 @@ public enum FtpCommandCode {
    * </pre>
    *
    * <br>
-   * The <code>&lt;tcp-port&gt;</code> argument must be the string
+   * The {@code <tcp-port>} argument must be the string
    * representation of the number of the TCP port
    * on which the host is listening for the data connection.<br>
    * <p>
@@ -1347,17 +1345,17 @@ public enum FtpCommandCode {
   /**
    * The Class that implements this command
    */
-  public Class<? extends AbstractCommand> command;
+  public final Class<? extends AbstractCommand> command;
 
   /**
    * Previous positive class that must precede this command (null means any)
    */
-  public Class<? extends AbstractCommand> previousValid;
+  public final Class<? extends AbstractCommand> previousValid;
 
   /**
    * Next valids class that could follow this command (null means any)
    */
-  public Class<?>[] nextValids;
+  public final Class<?>[] nextValids;
 
   FtpCommandCode(Class<? extends AbstractCommand> command,
                  Class<? extends AbstractCommand> previousValid,
@@ -1378,14 +1376,14 @@ public enum FtpCommandCode {
    * @return the AbstractCommand from the line received from the client
    */
   public static AbstractCommand getFromLine(FtpSession session, String line) {
-    FtpCommandCode ftpCommandCode = null;
+    FtpCommandCode ftpCommandCode;
     String newline = line;
     if (newline == null) {
       ftpCommandCode = Unknown;
       newline = "";
     }
-    String command = null;
-    String arg = null;
+    String command;
+    String arg;
     if (newline.indexOf(' ') == -1) {
       command = newline;
       arg = null;
@@ -1502,7 +1500,7 @@ public enum FtpCommandCode {
    */
   public static boolean isSslOrAuthCommand(FtpCommandCode command) {
     return command == AUTH || command == PBSZ || command == PROT ||
-           command == AUTH || command == PASS || command == ACCT;
+           command == PASS || command == ACCT;
   }
 
   /**

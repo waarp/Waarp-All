@@ -24,7 +24,6 @@ import java.lang.ref.SoftReference;
 /**
  * Cache entry which uses SoftReference to store value
  *
- *
  * @author Damian Momot
  */
 class SoftReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {
@@ -64,9 +63,6 @@ class SoftReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {
     // check expiration time
     if (System.currentTimeMillis() <= expirationTime) {
       value = valueReference.get();
-
-      // if (value == null)
-      // logger.warn("SoftReferency.get() returned null - probably JVM runs out of memory");
     }
 
     return value;

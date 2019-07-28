@@ -25,8 +25,6 @@ import org.waarp.common.file.SessionInterface;
 
 /**
  * Interface for Command
- *
- *
  */
 public interface CommandInterface {
   /**
@@ -131,5 +129,5 @@ public interface CommandInterface {
   /**
    * @return The GgCommandCode associated with this command
    */
-  Enum<?> getCode();
+  Enum getCode();
 }

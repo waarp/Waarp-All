@@ -51,7 +51,7 @@ public final class RuleConverter {
    */
   private RuleConverter() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ########################### INNER CLASSES ################################

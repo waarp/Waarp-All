@@ -24,8 +24,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * QUIT command
- *
- *
  */
 public class QUIT extends AbstractCommand {
   @Override

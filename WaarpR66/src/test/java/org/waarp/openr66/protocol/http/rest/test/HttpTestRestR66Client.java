@@ -30,6 +30,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -44,7 +45,7 @@ import org.waarp.gateway.kernel.rest.client.HttpRestClientSimpleResponseHandler;
 import org.waarp.gateway.kernel.rest.client.RestFuture;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.task.test.TestExecJavaTask;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
@@ -61,6 +62,7 @@ import org.waarp.openr66.protocol.http.rest.handler.DbHostAuthR66RestMethodHandl
 import org.waarp.openr66.protocol.http.rest.handler.DbHostConfigurationR66RestMethodHandler;
 import org.waarp.openr66.protocol.http.rest.handler.DbRuleR66RestMethodHandler;
 import org.waarp.openr66.protocol.http.rest.handler.DbTaskRunnerR66RestMethodHandler;
+import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.json.BandwidthJsonPacket;
@@ -111,13 +113,13 @@ public class HttpTestRestR66Client implements Runnable {
       "<tasks><task><type>LOG</type><path>log</path><delay>0</delay><comment></comment></task></tasks>";
   public static int NB = 2;
   public static int NBPERTHREAD = 10;
-  public static boolean DEBUG = false;
+  public static boolean DEBUG;
   public static AtomicLong count = new AtomicLong();
   public static int rank = 1;
   private static WaarpLogger logger;
   private static HttpRestR66Client clientHelper;
   private static String host = "127.0.0.1";
-  private static boolean isStatus = false;
+  private static boolean isStatus;
 
   /**
    * @param args
@@ -131,11 +133,13 @@ public class HttpTestRestR66Client implements Runnable {
       WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     }
     logger = WaarpLoggerFactory.getLogger(HttpTestRestR66Client.class);
-    Configuration.configuration.setHOST_ID(hostid);
+    Configuration.configuration.setHostId(hostid);
+    // If RestV2 started
+    RestServiceInitializer.stopRestService();
     if (args.length > 0) {
       NB = Integer.parseInt(args[0]);
-      if (Configuration.configuration.getCLIENT_THREAD() < NB) {
-        Configuration.configuration.setCLIENT_THREAD(NB + 1);
+      if (Configuration.configuration.getClientThread() < NB) {
+        Configuration.configuration.setClientThread(NB + 1);
       }
       if (args.length > 1) {
         NBPERTHREAD = Integer.parseInt(args[1]);
@@ -150,15 +154,15 @@ public class HttpTestRestR66Client implements Runnable {
           HttpTestR66PseudoMain.getTestConfiguration();
     } catch (final CryptoException e2) {
       e2.printStackTrace();
-      assertFalse("Cant connect", true);
+      fail("Cant connect");
       return;
     } catch (final IOException e2) {
       e2.printStackTrace();
-      assertFalse("Cant connect", true);
+      fail("Cant connect");
       return;
     }
-    if (HttpTestR66PseudoMain.config.REST_ADDRESS != null) {
-      host = HttpTestR66PseudoMain.config.REST_ADDRESS;
+    if (HttpTestR66PseudoMain.config.getRestAddress() != null) {
+      host = HttpTestR66PseudoMain.config.getRestAddress();
     }
     final String filename = keydesfilename;
     Configuration.configuration.setCryptoFile(filename);
@@ -168,11 +172,11 @@ public class HttpTestRestR66Client implements Runnable {
       des.setSecretKey(keyfile);
     } catch (final CryptoException e) {
       logger.error("Unable to load CryptoKey from Config file");
-      assertFalse("Cant Load", true);
+      fail("Cant Load");
       return;
     } catch (final IOException e) {
       logger.error("Unable to load CryptoKey from Config file");
-      assertFalse("Cant Load", true);
+      fail("Cant Load");
       return;
     }
     Configuration.configuration.setCryptoKey(des);
@@ -181,8 +185,8 @@ public class HttpTestRestR66Client implements Runnable {
     // Configure the client.
     clientHelper =
         new HttpRestR66Client(baseURI, new HttpTestRestClientInitializer(null),
-                              Configuration.configuration.getCLIENT_THREAD(),
-                              Configuration.configuration.getTIMEOUTCON());
+                              Configuration.configuration.getClientThread(),
+                              Configuration.configuration.getTimeoutCon());
     logger.warn("ClientHelper created");
     try {
       try {
@@ -194,11 +198,11 @@ public class HttpTestRestR66Client implements Runnable {
         final long diff = stop - start == 0? 1 : stop - start;
         logger.warn(
             "Options: " + count.get() * 1000 / diff + " req/s NbPerThread: " +
-            NBPERTHREAD + "=" + count.get());
+            NBPERTHREAD + '=' + count.get());
         assertTrue("Options", count.get() > 0);
       } catch (final HttpInvalidAuthenticationException e) {
         e.printStackTrace();
-        assertFalse("Cant connect", true);
+        fail("Cant connect");
       }
       count.set(0);
       long start = System.currentTimeMillis();
@@ -208,35 +212,35 @@ public class HttpTestRestR66Client implements Runnable {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
         e.printStackTrace();
-        assertFalse("Cant connect", true);
+        fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbHostAuth;
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
         e.printStackTrace();
-        assertFalse("Cant connect", true);
+        fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbHostConfiguration;
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
         e.printStackTrace();
-        assertFalse("Cant connect", true);
+        fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbRule;
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
         e.printStackTrace();
-        assertFalse("Cant connect", true);
+        fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbTaskRunner;
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
         e.printStackTrace();
-        assertFalse("Cant connect", true);
+        fail("Cant connect");
       }
       long stop = System.currentTimeMillis();
       long diff = stop - start == 0? 1 : stop - start;
@@ -255,7 +259,7 @@ public class HttpTestRestR66Client implements Runnable {
             realAllData(handler);
           } catch (final HttpInvalidAuthenticationException e) {
             e.printStackTrace();
-            assertFalse("Cant connect", true);
+            fail("Cant connect");
           }
         }
       }
@@ -273,7 +277,7 @@ public class HttpTestRestR66Client implements Runnable {
           multiDataRequests(RESTHANDLERS.DbTaskRunner);
         } catch (final HttpInvalidAuthenticationException e) {
           e.printStackTrace();
-          assertFalse("Cant connect", true);
+          fail("Cant connect");
         }
       }
       stop = System.currentTimeMillis();
@@ -293,17 +297,17 @@ public class HttpTestRestR66Client implements Runnable {
       assertTrue("CreateMultipleThread", count.get() > 0);
 
       // Set usefull item first
-      if (RestConfiguration.CRUD.UPDATE.isValid(
-          HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[RESTHANDLERS.DbHostConfiguration
-              .ordinal()])) {
+      if (RestConfiguration.CRUD.UPDATE.isValid(HttpTestR66PseudoMain.config
+                                                    .getResthandlersCrud()[RESTHANDLERS.DbHostConfiguration
+          .ordinal()])) {
         rank = 2;
 
         String key = null, value = null;
         Channel channel = clientHelper
-            .getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+            .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
         if (channel != null) {
           String buz = null;
-          if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+          if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
             key = userAuthent;
             value = keyAuthent;
             // Need business
@@ -331,12 +335,12 @@ public class HttpTestRestR66Client implements Runnable {
         }
         // Need Hostzz
         channel = clientHelper
-            .getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+            .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
         if (channel != null) {
           AbstractDbData dbData;
           dbData = new DbHostAuth(hostid + rank, address,
-                                  HttpTestR66PseudoMain.config.REST_PORT, false,
-                                  hostkey.getBytes(), true, false);
+                                  HttpTestR66PseudoMain.config.getRestPort(),
+                                  false, hostkey.getBytes(), true, false);
           logger.warn("Send query: " + RESTHANDLERS.DbHostAuth.uri);
           final RestFuture future = clientHelper
               .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.POST,
@@ -362,7 +366,7 @@ public class HttpTestRestR66Client implements Runnable {
             action(handler);
           } catch (final HttpInvalidAuthenticationException e) {
             e.printStackTrace();
-            assertFalse("Cant connect", true);
+            fail("Cant connect");
           }
         }
       }
@@ -406,7 +410,7 @@ public class HttpTestRestR66Client implements Runnable {
             deleteData(handler);
           } catch (final HttpInvalidAuthenticationException e) {
             e.printStackTrace();
-            assertFalse("Cant connect", true);
+            fail("Cant connect");
           }
         }
       }
@@ -420,14 +424,14 @@ public class HttpTestRestR66Client implements Runnable {
       }
 
       // Clean
-      if (RestConfiguration.CRUD.UPDATE.isValid(
-          HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[RESTHANDLERS.DbHostConfiguration
-              .ordinal()])) {
+      if (RestConfiguration.CRUD.UPDATE.isValid(HttpTestR66PseudoMain.config
+                                                    .getResthandlersCrud()[RESTHANDLERS.DbHostConfiguration
+          .ordinal()])) {
         String key = null, value = null;
         Channel channel = clientHelper
-            .getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+            .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
         if (channel != null) {
-          if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+          if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
             key = userAuthent;
             value = keyAuthent;
           }
@@ -448,20 +452,20 @@ public class HttpTestRestR66Client implements Runnable {
         }
         // Remove Hostzz
         channel = clientHelper
-            .getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+            .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
         if (channel != null) {
           RestFuture future = null;
           try {
             future = deleteData(channel, RESTHANDLERS.DbHostAuth);
             future.awaitOrInterruptible();
-          } catch (final HttpInvalidAuthenticationException e1) {
+          } catch (final HttpInvalidAuthenticationException ignored) {
           }
           WaarpSslUtility.closingSslChannel(channel);
           // assertTrue("Action should be ok", future.isSuccess());
         }
         // Shutdown
         channel = clientHelper
-            .getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+            .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
         if (channel != null) {
           final ShutdownOrBlockJsonPacket shutd =
               new ShutdownOrBlockJsonPacket();
@@ -483,6 +487,7 @@ public class HttpTestRestR66Client implements Runnable {
       try {
         Thread.sleep(100);
       } catch (final InterruptedException e1) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
     } finally {
       logger.debug("ClientHelper closing");
@@ -506,18 +511,18 @@ public class HttpTestRestR66Client implements Runnable {
       while (!pool.awaitTermination(100000, TimeUnit.SECONDS)) {
 
       }
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
   }
 
   public static void options(String uri)
       throws HttpInvalidAuthenticationException {
-    final Channel channel =
-        clientHelper.getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+    final Channel channel = clientHelper
+        .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
     if (channel == null) {
-      logger.warn("Cannot connect to: " + host + ":" +
-                  HttpTestR66PseudoMain.config.REST_PORT);
-      assertFalse("Cant connect", true);
+      logger.warn("Cannot connect to: " + host + ':' +
+                  HttpTestR66PseudoMain.config.getRestPort());
+      fail("Cant connect");
       return;
     }
     final RestFuture future = options(channel, uri);
@@ -532,7 +537,7 @@ public class HttpTestRestR66Client implements Runnable {
       throws HttpInvalidAuthenticationException {
     logger.debug("Send query");
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -546,16 +551,16 @@ public class HttpTestRestR66Client implements Runnable {
   protected static void realAllData(RESTHANDLERS data)
       throws HttpInvalidAuthenticationException {
     if (!RestConfiguration.CRUD.READ.isValid(
-        HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[data.ordinal()])) {
+        HttpTestR66PseudoMain.config.getResthandlersCrud()[data.ordinal()])) {
       logger.warn("Not allow to READ");
       return;
     }
-    final Channel channel =
-        clientHelper.getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+    final Channel channel = clientHelper
+        .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
     if (channel == null) {
-      logger.warn("Cannot connect to: " + host + ":" +
-                  HttpTestR66PseudoMain.config.REST_PORT);
-      assertFalse("Cant connect", true);
+      logger.warn("Cannot connect to: " + host + ':' +
+                  HttpTestR66PseudoMain.config.getRestPort());
+      fail("Cant connect");
       return;
     }
     final RestFuture future = realAllData(channel, data);
@@ -569,7 +574,7 @@ public class HttpTestRestR66Client implements Runnable {
       throws HttpInvalidAuthenticationException {
     logger.debug("Send query");
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -599,7 +604,7 @@ public class HttpTestRestR66Client implements Runnable {
             .put(DbTaskRunnerR66RestMethodHandler.FILTER_ARGS.STOPTRANS.name(),
                  new DateTime().toString());
         answer.put(Columns.OWNERREQ.name(),
-                   Configuration.configuration.getHOST_ID());
+                   Configuration.configuration.getHostId());
         break;
       default:
         final RestFuture restFuture =
@@ -620,16 +625,16 @@ public class HttpTestRestR66Client implements Runnable {
   protected static void deleteData(RESTHANDLERS data)
       throws HttpInvalidAuthenticationException {
     if (!RestConfiguration.CRUD.DELETE.isValid(
-        HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[data.ordinal()])) {
+        HttpTestR66PseudoMain.config.getResthandlersCrud()[data.ordinal()])) {
       logger.warn("Not allow to DELETE");
       return;
     }
-    final Channel channel =
-        clientHelper.getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+    final Channel channel = clientHelper
+        .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
     if (channel == null) {
-      logger.warn("Cannot connect to: " + host + ":" +
-                  HttpTestR66PseudoMain.config.REST_PORT);
-      assertFalse("Cant connect", true);
+      logger.warn("Cannot connect to: " + host + ':' +
+                  HttpTestR66PseudoMain.config.getRestPort());
+      fail("Cant connect");
       return;
     }
     final RestFuture future = deleteData(channel, data);
@@ -657,7 +662,7 @@ public class HttpTestRestR66Client implements Runnable {
         clientHelper.getPrimaryPropertyName(dbData.getClass().getSimpleName()))
                               .asText();
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -667,11 +672,11 @@ public class HttpTestRestR66Client implements Runnable {
       args.put(DbTaskRunner.Columns.REQUESTER.name(), hostid + rank);
       args.put(DbTaskRunner.Columns.REQUESTED.name(), hostid + rank);
       args.put(Columns.OWNERREQ.name(),
-               Configuration.configuration.getHOST_ID());
+               Configuration.configuration.getHostId());
     }
     final RestFuture future = clientHelper
         .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.DELETE,
-                   host, data.uri + "/" + item, key, value, args, null);
+                   host, data.uri + '/' + item, key, value, args, null);
     logger.debug("Query sent");
     return future;
   }
@@ -682,7 +687,7 @@ public class HttpTestRestR66Client implements Runnable {
     final String base = arg.getBaseUri();
     final String item = clientHelper.getPrimaryProperty(arg);
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -692,11 +697,11 @@ public class HttpTestRestR66Client implements Runnable {
       args.put(DbTaskRunner.Columns.REQUESTER.name(), hostid + rank);
       args.put(DbTaskRunner.Columns.REQUESTED.name(), hostid + rank);
       args.put(Columns.OWNERREQ.name(),
-               Configuration.configuration.getHOST_ID());
+               Configuration.configuration.getHostId());
     }
     final RestFuture future = clientHelper
         .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.GET, host,
-                   base + "/" + item, key, value, args, null);
+                   base + '/' + item, key, value, args, null);
     logger.debug("Query sent");
     return future;
   }
@@ -709,7 +714,7 @@ public class HttpTestRestR66Client implements Runnable {
     final String item = clientHelper.getPrimaryProperty(arg);
     final RESTHANDLERS dbdata = clientHelper.getRestHandler(arg);
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -719,7 +724,7 @@ public class HttpTestRestR66Client implements Runnable {
       args.put(DbTaskRunner.Columns.REQUESTER.name(), hostid + rank);
       args.put(DbTaskRunner.Columns.REQUESTED.name(), hostid + rank);
       args.put(Columns.OWNERREQ.name(),
-               Configuration.configuration.getHOST_ID());
+               Configuration.configuration.getHostId());
     }
     // update
     answer.removeAll();
@@ -749,7 +754,7 @@ public class HttpTestRestR66Client implements Runnable {
     }
     final RestFuture future = clientHelper
         .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.PUT, host,
-                   base + "/" + item, key, value, args,
+                   base + '/' + item, key, value, args,
                    JsonHandler.writeAsString(answer));
     logger.debug("Query sent");
     return future;
@@ -761,7 +766,7 @@ public class HttpTestRestR66Client implements Runnable {
     final String base = arg.getBaseUri();
     final String item = clientHelper.getPrimaryProperty(arg);
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -771,11 +776,11 @@ public class HttpTestRestR66Client implements Runnable {
       args.put(DbTaskRunner.Columns.REQUESTER.name(), hostid + rank);
       args.put(DbTaskRunner.Columns.REQUESTED.name(), hostid + rank);
       args.put(Columns.OWNERREQ.name(),
-               Configuration.configuration.getHOST_ID());
+               Configuration.configuration.getHostId());
     }
     final RestFuture future = clientHelper
         .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.DELETE,
-                   host, base + "/" + item, key, value, args, null);
+                   host, base + '/' + item, key, value, args, null);
     logger.debug("Query sent");
     return future;
   }
@@ -785,7 +790,7 @@ public class HttpTestRestR66Client implements Runnable {
       throws HttpInvalidAuthenticationException {
     logger.debug("Send query");
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -794,7 +799,7 @@ public class HttpTestRestR66Client implements Runnable {
     args.put(DbTaskRunner.Columns.REQUESTED.name(), reqd);
     final RestFuture future = clientHelper
         .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.DELETE,
-                   host, RESTHANDLERS.DbTaskRunner.uri + "/" + specid, key,
+                   host, RESTHANDLERS.DbTaskRunner.uri + '/' + specid, key,
                    value, args, null);
     logger.debug("Query sent");
     return future;
@@ -803,16 +808,16 @@ public class HttpTestRestR66Client implements Runnable {
   protected static void action(RESTHANDLERS data)
       throws HttpInvalidAuthenticationException {
     if (!RestConfiguration.CRUD.READ.isValid(
-        HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[data.ordinal()])) {
+        HttpTestR66PseudoMain.config.getResthandlersCrud()[data.ordinal()])) {
       logger.warn("Not allow to READ");
       return;
     }
-    final Channel channel =
-        clientHelper.getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+    final Channel channel = clientHelper
+        .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
     if (channel == null) {
-      logger.warn("Cannot connect to: " + host + ":" +
-                  HttpTestR66PseudoMain.config.REST_PORT);
-      assertFalse("Cant connect", true);
+      logger.warn("Cannot connect to: " + host + ':' +
+                  HttpTestR66PseudoMain.config.getRestPort());
+      fail("Cant connect");
       return;
     }
     final RestFuture future = action(channel, data);
@@ -861,10 +866,9 @@ public class HttpTestRestR66Client implements Runnable {
         break;
       }
       case Information: {
-        final InformationJsonPacket node = new InformationJsonPacket(
+        packet = new InformationJsonPacket(
             (byte) InformationPacket.ASKENUM.ASKLIST.ordinal(), "rule4",
             "test*");
-        packet = node;
         method = HttpMethod.GET;
         break;
       }
@@ -898,7 +902,7 @@ public class HttpTestRestR66Client implements Runnable {
         node.setFileInformation("file info");
         node.setFilename("filename");
         node.setMode(2);
-        node.setSpecialId(DbConstant.ILLEGALVALUE);
+        node.setSpecialId(DbConstantR66.ILLEGALVALUE);
         node.setRequested(hostid);
         node.setStart(new Date());
         node.setOriginalSize(123L);
@@ -923,7 +927,7 @@ public class HttpTestRestR66Client implements Runnable {
       return future;
     }
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -953,21 +957,21 @@ public class HttpTestRestR66Client implements Runnable {
 
   protected static void getStatus() {
     if (!RestConfiguration.CRUD.READ.isValid(
-        HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[RESTHANDLERS.Server
+        HttpTestR66PseudoMain.config.getResthandlersCrud()[RESTHANDLERS.Server
             .ordinal()])) {
       logger.warn("Not allow to READ");
       return;
     }
-    final Channel channel =
-        clientHelper.getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+    final Channel channel = clientHelper
+        .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
     if (channel == null) {
-      logger.warn("Cannot connect to: " + host + ":" +
-                  HttpTestR66PseudoMain.config.REST_PORT);
-      assertFalse("Cant connect", true);
+      logger.warn("Cannot connect to: " + host + ':' +
+                  HttpTestR66PseudoMain.config.getRestPort());
+      fail("Cant connect");
       return;
     }
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -984,16 +988,16 @@ public class HttpTestRestR66Client implements Runnable {
   protected static void multiDataRequests(RESTHANDLERS data)
       throws HttpInvalidAuthenticationException {
     if (!RestConfiguration.CRUD.CREATE.isValid(
-        HttpTestR66PseudoMain.config.RESTHANDLERS_CRUD[data.ordinal()])) {
+        HttpTestR66PseudoMain.config.getResthandlersCrud()[data.ordinal()])) {
       logger.warn("Not allow to CREATE");
       return;
     }
-    final Channel channel =
-        clientHelper.getChannel(host, HttpTestR66PseudoMain.config.REST_PORT);
+    final Channel channel = clientHelper
+        .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
     if (channel == null) {
-      logger.warn("Cannot connect to: " + host + ":" +
-                  HttpTestR66PseudoMain.config.REST_PORT);
-      assertFalse("Cant connect", true);
+      logger.warn("Cannot connect to: " + host + ':' +
+                  HttpTestR66PseudoMain.config.getRestPort());
+      fail("Cant connect");
       return;
     }
     final RestFuture future = createData(channel, data);
@@ -1015,7 +1019,7 @@ public class HttpTestRestR66Client implements Runnable {
       return future;
     }
     String key = null, value = null;
-    if (HttpTestR66PseudoMain.config.REST_AUTHENTICATED) {
+    if (HttpTestR66PseudoMain.config.isRestAuthenticated()) {
       key = userAuthent;
       value = keyAuthent;
     }
@@ -1035,7 +1039,7 @@ public class HttpTestRestR66Client implements Runnable {
                                    delaylimit);
       case DbHostAuth:
         return new DbHostAuth(hostid + rank, address,
-                              HttpTestR66PseudoMain.config.REST_PORT, false,
+                              HttpTestR66PseudoMain.config.getRestPort(), false,
                               hostkey.getBytes(), false, false);
       case DbHostConfiguration:
         return new DbHostConfiguration(hostid + rank, business, roles, aliases,
@@ -1057,8 +1061,8 @@ public class HttpTestRestR66Client implements Runnable {
         source.put(Columns.MODETRANS.name(), 2);
         source.put(Columns.ORIGINALNAME.name(), "original filename");
         source.put(Columns.OWNERREQ.name(),
-                   Configuration.configuration.getHOST_ID());
-        source.put(Columns.SPECIALID.name(), DbConstant.ILLEGALVALUE);
+                   Configuration.configuration.getHostId());
+        source.put(Columns.SPECIALID.name(), DbConstantR66.ILLEGALVALUE);
         source.put(Columns.REQUESTED.name(), hostid + rank);
         source.put(Columns.REQUESTER.name(), hostid + rank);
         source.put(Columns.RETRIEVEMODE.name(), true);

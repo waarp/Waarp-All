@@ -35,8 +35,6 @@ import java.util.List;
 
 /**
  * Example of Java class to interact with the Thrift R66 service
- *
- *
  */
 public class TestThriftClientExample {
   private static final int PORT = 4266;
@@ -55,7 +53,7 @@ public class TestThriftClientExample {
       request.setRule("rule3");
       request.setAction(Action.List);
 
-      System.out.println("REQUEST1: " + request.toString());
+      System.out.println("REQUEST1: " + request);
       List<String> list = client.infoListQuery(request);
       System.out.println("RESULT1: " + list.size());
       for (final String slist : list) {
@@ -68,7 +66,7 @@ public class TestThriftClientExample {
       }
       final long end = System.currentTimeMillis();
       System.out.println(
-          "Delay: " + (end - start) + " : " + ((tries * 1000) / (end - start)));
+          "Delay: " + (end - start) + " : " + (tries * 1000) / (end - start));
 
       final long startEx = System.currentTimeMillis();
       boolean dontknow = false;
@@ -78,20 +76,20 @@ public class TestThriftClientExample {
       final long endEx = System.currentTimeMillis();
       System.out.println("StillRunning: " + dontknow);
       System.out.println("Delay: " + (endEx - startEx) + " : " +
-                         ((tries * 1000) / (endEx - startEx)));
+                         (tries * 1000) / (endEx - startEx));
 
       request.setMode(RequestMode.INFOREQUEST);
       request.setTid(1346080633424L);
       request.setAction(Action.Detail);
       R66Result result = client.infoTransferQuery(request);
-      System.out.println("RESULT2: " + result.toString());
+      System.out.println("RESULT2: " + result);
       final long startQu = System.currentTimeMillis();
       for (int i = 0; i < tries; i++) {
         result = client.infoTransferQuery(request);
       }
       final long endQu = System.currentTimeMillis();
       System.out.println("Delay: " + (endQu - startQu) + " : " +
-                         ((tries * 1000) / (endQu - startQu)));
+                         (tries * 1000) / (endQu - startQu));
 
       System.out.println("Exist: " + client
           .isStillRunning(request.getFromuid(), request.getDestuid(),
@@ -124,7 +122,7 @@ public class TestThriftClientExample {
       // Wrong request
       request = new R66Request(RequestMode.INFOFILE);
 
-      System.out.println("WRONG REQUEST: " + request.toString());
+      System.out.println("WRONG REQUEST: " + request);
       list = client.infoListQuery(request);
       System.out.println("RESULT of Wrong Request: " + list.size());
       for (final String slist : list) {

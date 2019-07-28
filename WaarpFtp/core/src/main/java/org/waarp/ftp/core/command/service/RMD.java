@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * RMD command
- *
- *
  */
 public class RMD extends AbstractCommand {
   @Override
@@ -39,7 +37,7 @@ public class RMD extends AbstractCommand {
     final String path = getArg();
     final String pastdir = getSession().getDir().rmdir(path);
     getSession().setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                              "\"" + pastdir + "\" is deleted");
+                              '"' + pastdir + "\" is deleted");
   }
 
 }

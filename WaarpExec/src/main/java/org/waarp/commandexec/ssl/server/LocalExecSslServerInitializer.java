@@ -33,8 +33,6 @@ import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
 
 /**
  * Version with SSL support
- *
- *
  */
 public class LocalExecSslServerInitializer extends LocalExecServerInitializer {
 
@@ -90,14 +88,6 @@ public class LocalExecSslServerInitializer extends LocalExecServerInitializer {
     // Could change it with a new fixed delay if necessary at construction
     pipeline.addLast(eventExecutorGroup, "handler",
                      new LocalExecSslServerHandler(this, delay));
-  }
-
-  /**
-   * Release internal resources
-   */
-  @Override
-  public void releaseResources() {
-    super.releaseResources();
   }
 
 }

@@ -19,11 +19,12 @@
  */
 package org.waarp.openr66.server;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
@@ -31,12 +32,12 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * To import logs that were exported (one should not try to import on the same
  * server to prevent strange
  * behavior).
- *
- *
  */
 public class LogImport {
   /**
@@ -53,19 +54,23 @@ public class LogImport {
       logger = WaarpLoggerFactory.getLogger(LogImport.class);
     }
     if (args.length < 2) {
-      System.err.println("Need configuration file and the logfile to import");
-      System.exit(1);
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Need configuration file and the logfile to import");
+      System.exit(1);//NOSONAR
     }
     try {
       if (!FileBasedConfiguration
           .setConfigurationServerMinimalFromXml(Configuration.configuration,
                                                 args[0])) {
         logger.error("Needs a correct configuration file as first argument");
-        if (DbConstant.admin != null) {
-          DbConstant.admin.close();
+        if (admin != null) {
+          admin.close();
+        }
+        if (DetectionUtils.isJunit()) {
+          return;
         }
         ChannelUtils.stopLogger();
-        System.exit(1);
+        System.exit(1);//NOSONAR
         return;
       }
       final long time1 = System.currentTimeMillis();
@@ -75,21 +80,24 @@ public class LogImport {
       } catch (final OpenR66ProtocolBusinessException e) {
         logger.error("Cannot load the logs from " + logsFile.getAbsolutePath() +
                      " since: " + e.getMessage(), e);
-        if (DbConstant.admin != null) {
-          DbConstant.admin.close();
+        if (admin != null) {
+          admin.close();
+        }
+        if (DetectionUtils.isJunit()) {
+          return;
         }
         ChannelUtils.stopLogger();
-        System.exit(1);
+        System.exit(1);//NOSONAR
         return;
       }
       final long time2 = System.currentTimeMillis();
       final long delay = time2 - time1;
       logger.warn("LogFile imported in " + delay + " ms");
     } finally {
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
   }
 }

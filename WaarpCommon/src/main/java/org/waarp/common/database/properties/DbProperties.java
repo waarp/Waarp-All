@@ -23,23 +23,22 @@ package org.waarp.common.database.properties;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public abstract class DbProperties {
+public interface DbProperties {
 
   /**
    * @return the driver class name associated with the DbModel
    */
-  public abstract String getDriverName();
+  String getDriverName();
 
   /**
    * @return the validation query associated with the DbModel
    */
-  public abstract String getValidationQuery();
+  String getValidationQuery();
 
   /**
    * @param connection a database connection
    *
    * @return the number of connections allowed by the database
    */
-  public abstract int getMaximumConnections(Connection connection)
-      throws SQLException;
+  int getMaximumConnections(Connection connection) throws SQLException;
 }

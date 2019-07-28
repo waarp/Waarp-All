@@ -39,6 +39,8 @@ public class Business {
 
   /**
    * Empty constructor for compatibility issues
+   *
+   * @deprecated
    */
   @Deprecated
   public Business() {

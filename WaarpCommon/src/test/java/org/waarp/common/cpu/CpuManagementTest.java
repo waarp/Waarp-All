@@ -21,6 +21,7 @@
 package org.waarp.common.cpu;
 
 import org.junit.Test;
+import org.waarp.common.logging.SysErrLogger;
 
 import static org.junit.Assert.*;
 
@@ -33,11 +34,11 @@ public class CpuManagementTest {
     try {
       cpuManagement = new CpuManagement();
     } catch (final UnsupportedOperationException e) {
-      System.err.println(e);
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     }
     double max = 0.0;
-    System.err.println("LA: " + cpuManagement.getLoadAverage());
+    SysErrLogger.FAKE_LOGGER.syserr("LA: " + cpuManagement.getLoadAverage());
     for (int i = 0; i < 1000 * 1000 * 1000; i++) {
       // keep ourselves busy for a while ...
       // note: we had to add some "work" into the loop or Java 6
@@ -49,7 +50,7 @@ public class CpuManagementTest {
     if (total <= 0) {
       System.out.println(total);
     }
-    System.err.println("LA: " + cpuManagement.getLoadAverage());
+    SysErrLogger.FAKE_LOGGER.syserr("LA: " + cpuManagement.getLoadAverage());
     total = 0;
     for (int i = 0; i < 1000 * 1000 * 1000; i++) {
       // keep ourselves busy for a while ...
@@ -63,17 +64,17 @@ public class CpuManagementTest {
       System.out.println(total);
     }
     max = cpuManagement.getLoadAverage();
-    System.err.println("LA: " + max);
+    SysErrLogger.FAKE_LOGGER.syserr("LA: " + max);
     try {
       Thread.sleep(5000);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
     final double min = cpuManagement.getLoadAverage();
     System.err.println("LA: " + min);
     // Not checking since not as precise: assertTrue("Max > current: " + max + " >? " + min, max > min);
 
     total = 0;
-    for (int i = 0; i < 1000 * 1000 * 1000 * 1000; i++) {
+    for (long i = 0; i < 1000 * 1000 * 1000 * 1000; i++) {
       // keep ourselves busy for a while ...
       // note: we had to add some "work" into the loop or Java 6
       // optimizes it away. Thanks to Daniel Einspanjer for
@@ -87,6 +88,7 @@ public class CpuManagementTest {
     max = cpuManagement.getLoadAverage();
     System.err.println("LA: " + max);
     // Not checking since not as precise: assertTrue("Min < current: " + min + " <? " + max, max >= min);
+    assertTrue(true);
   }
 
   @Test
@@ -123,7 +125,7 @@ public class CpuManagementTest {
     System.err.println("LAs: " + max);
     try {
       Thread.sleep(2000);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
     final double min = cpuManagement.getLoadAverage();
     System.err.println("LAs: " + min);

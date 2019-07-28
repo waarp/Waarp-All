@@ -21,8 +21,6 @@ package org.waarp.common.role;
 
 /**
  * Role to be used in Waarp projects
- *
- *
  */
 public class RoleDefault {
   public enum ROLE {
@@ -75,27 +73,27 @@ public class RoleDefault {
      */
     FULLADMIN(CONFIGADMIN, LIMIT, SYSTEM, LOGCONTROL);
 
-    private byte role;
+    private byte brole;
 
     ROLE(int val) {
-      role = (byte) val;
+      brole = (byte) val;
     }
 
     ROLE(ROLE... name) {
       for (final ROLE role : name) {
-        this.role |= role.role;
+        this.brole |= role.brole;
       }
     }
 
     public boolean isContained(byte value) {
       if (this == NOACCESS) {
-        return value == NOACCESS.role;
+        return value == NOACCESS.brole;
       }
-      return (value & role) == role;
+      return (value & brole) == brole;
     }
 
     public byte getAsByte() {
-      return role;
+      return brole;
     }
 
     public static final String toString(byte fromRole) {
@@ -112,8 +110,6 @@ public class RoleDefault {
 
     public static final ROLE fromByte(byte role) {
       switch (role) {
-        case 0:
-          return NOACCESS;
         case 1:
           return READONLY;
         case 2:
@@ -130,6 +126,7 @@ public class RoleDefault {
           return LOGCONTROL;
         case -128:
           return UNUSED;
+        case 0:
         default:
           return NOACCESS;
       }
@@ -139,11 +136,11 @@ public class RoleDefault {
   private byte role;
 
   public RoleDefault() {
-    role = ROLE.NOACCESS.role;
+    role = ROLE.NOACCESS.brole;
   }
 
   public RoleDefault(ROLE role) {
-    this.role = role.role;
+    this.role = role.brole;
   }
 
   public byte getRoleAsByte() {
@@ -156,12 +153,12 @@ public class RoleDefault {
   }
 
   public RoleDefault addRole(ROLE newrole) {
-    role |= newrole.role;
+    role |= newrole.brole;
     return this;
   }
 
   public RoleDefault setRole(ROLE newrole) {
-    role = newrole.role;
+    role = newrole.brole;
     return this;
   }
 
@@ -171,7 +168,7 @@ public class RoleDefault {
   }
 
   public void clear() {
-    role = ROLE.NOACCESS.role;
+    role = ROLE.NOACCESS.brole;
   }
 
   public boolean isContaining(ROLE otherrole) {
@@ -179,7 +176,7 @@ public class RoleDefault {
   }
 
   public boolean hasNoAccess() {
-    return role == ROLE.NOACCESS.role;
+    return role == ROLE.NOACCESS.brole;
   }
 
   public boolean hasReadOnly() {
@@ -215,7 +212,7 @@ public class RoleDefault {
   }
 
   public static final boolean hasNoAccess(byte role) {
-    return role == ROLE.NOACCESS.role;
+    return role == ROLE.NOACCESS.brole;
   }
 
   public static final boolean hasReadOnly(byte role) {

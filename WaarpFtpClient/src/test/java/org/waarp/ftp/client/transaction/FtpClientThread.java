@@ -18,9 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *
- */
 package org.waarp.ftp.client.transaction;
 
 import org.waarp.common.logging.WaarpLogger;
@@ -31,9 +28,6 @@ import java.io.File;
 
 /**
  * FTP Thread used to check multiple FTP clients in parallel with the test scenario
- *
- *
- *
  */
 public class FtpClientThread implements Runnable {
   /**
@@ -94,7 +88,7 @@ public class FtpClientThread implements Runnable {
     this.type = type;
     this.delay = (delay / 10) * 10;
     this.isSsl = isSsl;
-    final File dir = new File("/tmp/GGFTP/T" + id + "/" + account);
+    final File dir = new File("/tmp/GGFTP/T" + id + '/' + account);
     dir.mkdirs();
   }
 
@@ -121,7 +115,7 @@ public class FtpClientThread implements Runnable {
       if (delay >= 10) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       } else {
         Thread.yield();
@@ -144,13 +138,12 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
             // System.err.println(id+" end transfer store "+i);
           }
-          Thread.yield();
         } else {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive store " + i);
@@ -163,7 +156,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
@@ -176,7 +169,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
@@ -191,7 +184,7 @@ public class FtpClientThread implements Runnable {
             if (delay > 0) {
               try {
                 Thread.sleep(delay);
-              } catch (final InterruptedException e) {
+              } catch (final InterruptedException ignored) {
               }
             }
           }
@@ -207,14 +200,14 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
             // System.err.println(id+" end transfer retr "+i);
           }
-          Thread.yield();
         }
+        Thread.yield();
       }
       if (type >= 0) {
         logger.warn(id + " change mode active");
@@ -231,7 +224,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
@@ -250,7 +243,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
@@ -263,7 +256,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }
@@ -278,7 +271,7 @@ public class FtpClientThread implements Runnable {
             if (delay > 0) {
               try {
                 Thread.sleep(delay);
-              } catch (final InterruptedException e) {
+              } catch (final InterruptedException ignored) {
               }
             }
           }
@@ -294,7 +287,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException ignored) {
                 }
               }
             }

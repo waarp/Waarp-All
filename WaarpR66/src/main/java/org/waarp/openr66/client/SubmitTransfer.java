@@ -21,13 +21,14 @@ package org.waarp.openr66.client;
 
 import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
@@ -36,10 +37,10 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.sql.Timestamp;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Client to submit a transfer
- *
- *
  */
 public class SubmitTransfer extends AbstractTransfer {
 
@@ -56,7 +57,7 @@ public class SubmitTransfer extends AbstractTransfer {
       logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);
     }
     // FIXME never true since change for DbAdmin
-    if (!DbConstant.admin.isActive()) {
+    if (!admin.isActive()) {
       logger.debug("Client not connected");
       final R66Result result = new R66Result(
           new OpenR66DatabaseGlobalException("No database connexion"), null,
@@ -65,7 +66,6 @@ public class SubmitTransfer extends AbstractTransfer {
       future.setFailure(result.getException());
       return;
     }
-    final long srcId = id;
     final DbTaskRunner taskRunner = initRequest();
     if (taskRunner == null) {
       logger.debug("Cannot prepare task");
@@ -79,7 +79,7 @@ public class SubmitTransfer extends AbstractTransfer {
       future.setFailure(result.getException());
       return;
     }
-    if (srcId != DbConstant.ILLEGALVALUE) {
+    if (id != ILLEGALVALUE) {
       // Resubmit call, some checks are needed
       if (!taskRunner.restart(true)) {
         // cannot be done from there => must be done through IHM
@@ -137,14 +137,17 @@ public class SubmitTransfer extends AbstractTransfer {
     if (!getParams(args, true)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (!OutputFormat.isQuiet()) {
-        System.out.println(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
@@ -196,12 +199,18 @@ public class SubmitTransfer extends AbstractTransfer {
       if (!OutputFormat.isQuiet()) {
         outputFormat.sysout();
       }
-      DbConstant.admin.close();
+      if (DetectionUtils.isJunit()) {
+        return;
+      }
+      admin.close();
       ChannelUtils.stopLogger();
       System.exit(future.getResult().getCode().ordinal());
     }
-    DbConstant.admin.close();
-    System.exit(0);
+    admin.close();
+    if (DetectionUtils.isJunit()) {
+      return;
+    }
+    System.exit(0);//NOSONAR
   }
 
 }

@@ -46,8 +46,7 @@ public class RestSignatureHandler
   /**
    * The logger for all events during the execution.
    */
-  private final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(this.getClass());
+  private final WaarpLogger logger = WaarpLoggerFactory.getLogger(getClass());
 
   /**
    * The HMAC key used to create the request's signature.

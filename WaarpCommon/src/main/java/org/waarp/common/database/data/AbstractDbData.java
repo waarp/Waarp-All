@@ -47,16 +47,13 @@ import java.sql.Types;
  * extend.<br>
  * If the connection is not in autocommit, one could use this implementation to
  * explicitly commit when needed.
- *
- *
  */
 public abstract class AbstractDbData {
+  private static final String NO_ROW_FOUND = "No row found";
   public static final String JSON_MODEL = "@model";
 
   /**
    * UpdatedInfo status
-   *
-   *
    */
   public enum UpdatedInfo {
     /**
@@ -92,11 +89,11 @@ public abstract class AbstractDbData {
   /**
    * To be implemented
    */
-  // public static String table;
-  // public static final int NBPRKEY;
-  // protected static String selectAllFields;
-  // protected static String updateAllFields;
-  // protected static String insertAllValues;
+  // public static String table
+  // public static final int NBPRKEY
+  // protected static String selectAllFields
+  // protected static String updateAllFields
+  // protected static String insertAllValues
   protected DbValue[] primaryKey;
   protected DbValue[] otherFields;
   protected DbValue[] allFields;
@@ -111,9 +108,11 @@ public abstract class AbstractDbData {
    * Abstract constructor to set the DbSession to use
    *
    * @param dbSession
+   *
+   * @deprecated
    */
   @Deprecated
-  public AbstractDbData(DbSession dbSession) {
+  protected AbstractDbData(DbSession dbSession) {
     this.dbSession = dbSession;
     initObject();
   }
@@ -121,7 +120,7 @@ public abstract class AbstractDbData {
   /**
    * Abstract constructor to set the DbSession to use
    */
-  public AbstractDbData() {
+  protected AbstractDbData() {
     dbSession = null;
     initObject();
   }
@@ -186,7 +185,7 @@ public abstract class AbstractDbData {
    */
   public void select() throws WaarpDatabaseException {
     if (dbSession == null) {
-      throw new WaarpDatabaseNoDataException("No row found");
+      throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
     }
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(dbSession);
@@ -201,7 +200,7 @@ public abstract class AbstractDbData {
         getValues(preparedStatement, allFields);
         isSaved = true;
       } else {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
     } finally {
       preparedStatement.realClose();
@@ -231,7 +230,7 @@ public abstract class AbstractDbData {
       setValues(preparedStatement, allFields);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       isSaved = true;
     } finally {
@@ -262,7 +261,7 @@ public abstract class AbstractDbData {
       setValues(preparedStatement, allFields);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       isSaved = true;
     } finally {
@@ -292,7 +291,7 @@ public abstract class AbstractDbData {
       setValues(preparedStatement, primaryKey);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       isSaved = false;
     } finally {
@@ -491,8 +490,6 @@ public abstract class AbstractDbData {
     try {
       switch (value.type) {
         case Types.VARCHAR:
-          value.setValue(rs.getString(value.getColumn()));
-          break;
         case Types.LONGVARCHAR:
           value.setValue(rs.getString(value.getColumn()));
           break;
@@ -675,7 +672,7 @@ public abstract class AbstractDbData {
       list = otherFields;
     }
     for (final DbValue value : list) {
-      if (value.getColumn().equalsIgnoreCase("UPDATEDINFO")) {
+      if ("UPDATEDINFO".equalsIgnoreCase(value.getColumn())) {
         continue;
       }
       final JsonNode item = node.get(value.getColumn());

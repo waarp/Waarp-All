@@ -25,26 +25,24 @@ import org.waarp.openr66.protocol.exception.OpenR66Exception;
 
 /**
  * This class is the result for every operations in OpenR66.
- *
- *
  */
 public class R66Result {
   /**
    * The exception associated in case of error (if any exception)
    */
-  private OpenR66Exception exception = null;
+  private OpenR66Exception exception;
   /**
    * The file if any
    */
-  private R66File file = null;
+  private R66File file;
   /**
    * The runner if any
    */
-  private DbTaskRunner runner = null;
+  private DbTaskRunner runner;
   /**
    * Does this result already have been transfered to the remote server
    */
-  private boolean isAnswered = false;
+  private boolean isAnswered;
   /**
    * The code (error or not)
    */
@@ -52,7 +50,7 @@ public class R66Result {
   /**
    * Any other object for special operations (test or shutdown for instance)
    */
-  private Object other = null;
+  private Object other;
 
   /**
    * @param exception
@@ -92,8 +90,8 @@ public class R66Result {
 
   @Override
   public String toString() {
-    return (getException() != null? "Exception: " + getException().toString() :
-        "") + (getFile() != null? getFile().toString() : " no file") + "     " +
+    return (getException() != null? "Exception: " + getException() : "") +
+           (getFile() != null? getFile().toString() : " no file") + "     " +
            (getRunner() != null? getRunner().toShortString() : " no runner") +
            " isAnswered: " + isAnswered() + " Code: " + getCode().getMesg();
   }

@@ -27,11 +27,12 @@ import org.waarp.common.database.model.DbModel;
 import org.waarp.common.database.model.DbModelFactory;
 import org.waarp.common.database.model.DbType;
 import org.waarp.common.database.model.EmptyDbModel;
-import org.waarp.common.guid.UUID;
+import org.waarp.common.guid.GUID;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpThreadFactory;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Class for access to Database
  *
- *
+ * @deprecated
  */
 @Deprecated
 public class DbAdmin {
@@ -50,9 +51,9 @@ public class DbAdmin {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbAdmin.class);
 
-  public static int RETRYNB = 3;
+  public static final int RETRYNB = 3;
 
-  public static long WAITFORNETOP = 100;
+  public static final long WAITFORNETOP = 100;
 
   /**
    * Database type
@@ -131,6 +132,7 @@ public class DbAdmin {
    */
   @Deprecated
   public void setActive(boolean isActive) {
+    // nothing
   }
 
   /**
@@ -346,15 +348,15 @@ public class DbAdmin {
 
   @Override
   public String toString() {
-    return "Admin: " + typeDriver.name() + ":" + server + ":" + user + ":" +
+    return "Admin: " + typeDriver.name() + ':' + server + ':' + user + ':' +
            passwd.length();
   }
 
   /**
    * List all Connection to enable the close call on them
    */
-  private static final ConcurrentHashMap<UUID, DbSession> listConnection =
-      new ConcurrentHashMap<UUID, DbSession>();
+  private static final ConcurrentHashMap<GUID, DbSession> listConnection =
+      new ConcurrentHashMap<org.waarp.common.guid.GUID, DbSession>();
 
   /**
    * Increment nb of Http Connection
@@ -383,7 +385,7 @@ public class DbAdmin {
    * @param id
    * @param session
    */
-  public static void addConnection(UUID id, DbSession session) {
+  public static void addConnection(GUID id, DbSession session) {
     listConnection.put(id, session);
   }
 
@@ -392,7 +394,7 @@ public class DbAdmin {
    *
    * @param id Id of the connection
    */
-  public static void removeConnection(UUID id) {
+  public static void removeConnection(GUID id) {
     listConnection.remove(id);
   }
 
@@ -410,9 +412,14 @@ public class DbAdmin {
     for (final DbSession session : listConnection.values()) {
       logger.debug("Close (all) Db Conn: " + session.getInternalId());
       try {
-        session.getConn().close();
-      } catch (final SQLException e) {
-      } catch (final ConcurrentModificationException e) {
+        Connection connection = session.getConn();
+        if (connection != null) {
+          connection.close();
+        }
+      } catch (final SQLException ignored) {
+        // nothing
+      } catch (final ConcurrentModificationException ignored) {
+        // nothing
       }
     }
     listConnection.clear();

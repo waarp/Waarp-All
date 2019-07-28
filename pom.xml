@@ -148,6 +148,11 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <name>PhantomJS</name>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
   <modules>
@@ -171,10 +176,12 @@
   <properties>
     <root.directory>${maven.multiModuleProjectDirectory}</root.directory>
     <module.project>false</module.project>
+    <reuseThreadTest>false</reuseThreadTest>
     <java.version>1.6</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <attach-distribution>false</attach-distribution>
+    <jvm.option>-Djava.security.egd=file:/dev/./urandom</jvm.option>
 
     <!-- Sonar -->
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
@@ -196,10 +203,14 @@
     <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}
     </sonar.jacoco.itReportPath>
     <sonar.exclusions>
-      file:**/target/generated-sources/**,
-      file:**/target/generated-test-sources/**,
-      file:**/target/test-classes/**,
+      file:**/test/java/**/*,
+      file:**/generated-sources/**/*,
+      file:**/generated-test-sources/**/*,
+      file:**/test-classes/**/*,
     </sonar.exclusions>
+    <sonar.test.exclusions>
+      **/src/test/**/*
+    </sonar.test.exclusions>
     <sonar.surefire.reportsPath>target/surefire-reports
     </sonar.surefire.reportsPath>
 
@@ -216,11 +227,11 @@
 
     <!-- Dependencies versions -->
     <netty.version>4.1.36.Final</netty.version>
+    <netty-tcnative.version>2.0.25.Final</netty-tcnative.version>
     <netty.http.version>1.2.0</netty.http.version>
     <slf4j.version>1.7.26</slf4j.version>
     <logback.version>1.2.3</logback.version>
-    <guava.version>28.0-jre</guava.version>
-    <bouncycastle.version>1.46</bouncycastle.version><!-- 1.62 ? -->
+    <guava.version>20.0</guava.version><!-- Maximal 20.0 for jre 1.6 -->
     <commons.compress.version>1.18</commons.compress.version>
     <commons.daemon.version>1.2.0</commons.daemon.version>
     <commons.io.version>2.6</commons.io.version>
@@ -251,6 +262,7 @@
     <joda-time.version>2.10.3</joda-time.version>
     <jersey-common.version>2.29</jersey-common.version>
     <jna.version>5.3.1</jna.version>
+    <jnr-posix-version>3.0.50</jnr-posix-version>
     <junit.version>4.12</junit.version>
     <javaassist.version>3.25.0-GA</javaassist.version>
     <assertj.version>3.12.2</assertj.version>
@@ -260,6 +272,10 @@
     <findbugs.version>2.0.1</findbugs.version>
     <test-containers.version>1.11.4</test-containers.version>
     <apache.ant.version>1.10.6</apache.ant.version>
+    <zjsonpatch.version>0.4.9</zjsonpatch.version>
+    <log4j2.version>2.12.1</log4j2.version>
+    <selenium.version>3.141.59</selenium.version><!-- 3.3.1 4.0.0-alpha-2 3.141
+    .59-->
 
     <!-- Maven plugins -->
     <maven.rpm-maven-plugin.version>2.1.5</maven.rpm-maven-plugin.version>
@@ -288,8 +304,7 @@
     <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version><!-- 2.5 -->
     <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
     <ant-contrib.version>1.0b3</ant-contrib.version>
-    <build-helper-maven-plugin.version>3.0.0
-    </build-helper-maven-plugin.version><!-- 1.9 -->
+    <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version><!-- 1.9 -->
     <license-maven-plugin.version>1.16</license-maven-plugin.version>
     <maven-enforcer-plugin.version>3.0.0-M2
     </maven-enforcer-plugin.version><!-- 1.3.1 -->
@@ -422,8 +437,7 @@
           <version>${maven.surefire.version}</version>
           <configuration>
             <!--
-            <argLine>${argLine} -Xmx2048m</argLine>
-            <reuseForks>true</reuseForks>
+            <argLine>${jvm.option}</argLine>
             -->
             <runOrder>alphabetical</runOrder>
             <!-- Non Parallel mode -->
@@ -431,6 +445,7 @@
             <threadCount>1</threadCount>
             <perCoreThreadCount>false</perCoreThreadCount>
             <forkCount>1</forkCount>
+            <reuseForks>${reuseThreadTest}</reuseForks>
             <trimStackTrace>false</trimStackTrace>
             <systemPropertyVariables>
               <io.netty.leakDetection.level>paranoid
@@ -567,6 +582,9 @@
           <version>${jacoco-maven-plugin.version}</version>
           <configuration>
             <append>true</append>
+            <excludes>
+              <exclude>com.gargoylesoftware.*</exclude>
+            </excludes>
           </configuration>
           <executions>
             <execution>
@@ -772,15 +790,13 @@
                 <goal>shade</goal>
               </goals>
               <configuration>
-                <minimizeJar>true</minimizeJar>
-                <promoteTransitiveDependencies>true
-                </promoteTransitiveDependencies>
+                <minimizeJar>false</minimizeJar>
+                <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                 <createDependencyReducedPom>true</createDependencyReducedPom>
-                <keepDependenciesWithProvidedScope>true
-                </keepDependenciesWithProvidedScope>
+                <createSourcesJar>false</createSourcesJar>
+                <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
                 <shadedArtifactAttached>true</shadedArtifactAttached>
-                <shadedClassifierName>jar-with-dependencies
-                </shadedClassifierName>
+                <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                 <useBaseVersion>true</useBaseVersion>
                 <transformers>
                   <transformer
@@ -796,20 +812,33 @@
                   <transformer
                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                     <manifestEntries>
-                      <X-Compile-Source-JDK>${java.version}
-                      </X-Compile-Source-JDK>
-                      <X-Compile-Target-JDK>${java.version}
-                      </X-Compile-Target-JDK>
+                      <X-Compile-Source-JDK>${java.version}</X-Compile-Source-JDK>
+                      <X-Compile-Target-JDK>${java.version}</X-Compile-Target-JDK>
                     </manifestEntries>
                   </transformer>
                 </transformers>
                 <artifactSet>
+                  <includes>
+                    <include>Waarp</include>
+                    <include>com.google.guava:guava:compile:20.0</include>
+                    <include>*</include>
+                  </includes>
                   <excludes>
-                    <include>Waarp:*</include>
                     <exclude>classworlds:classworlds</exclude>
-                    <exclude>junit:junit</exclude>
-                    <exclude>jmock:*</exclude>
+                    <exclude>junit</exclude>
+                    <exclude>jmock</exclude>
                     <exclude>org.apache.maven:lib:tests</exclude>
+                    <exclude>com.github.jnr</exclude>
+                    <exclude>org.assertj</exclude>
+                    <exclude>com.google.code.gson:*</exclude>
+                    <exclude>io.rest-assured</exclude>
+                    <exclude>org.easymock</exclude>
+                    <exclude>org.mockito</exclude>
+                    <exclude>org.testcontainers</exclude>
+                    <exclude>net.java.dev.jna</exclude>
+                    <exclude>org.apache.ant</exclude>
+                    <exclude>Oracle</exclude>
+                    <exclude>com.oracle.jdbc</exclude>
                   </excludes>
                 </artifactSet>
               </configuration>
@@ -894,6 +923,8 @@
           <fork>true</fork>
           <source>${java.version}</source>
           <target>${java.version}</target>
+          <testSource>1.8</testSource>
+          <testTarget>1.8</testTarget>
           <debug>true</debug>
           <optimize>true</optimize>
           <showDeprecation>true</showDeprecation>
@@ -1984,6 +2015,11 @@
         <artifactId>netty-all</artifactId>
         <version>${netty.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-tcnative-boringssl-static</artifactId>
+        <version>${netty-tcnative.version}</version>
+      </dependency>
       <!-- Unusefull -->
       <!--<dependency>
         <groupId>io.netty</groupId>
@@ -2293,20 +2329,6 @@
         <version>${jackson.version}</version>
       </dependency>
 
-      <!-- ########################## Security ########################## -->
-
-      <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk15on</artifactId>
-        <version>${bouncycastle.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcpkix-jdk15on</artifactId>
-        <version>${bouncycastle.version}</version>
-      </dependency>
-
       <!-- ###################### Protocols ############################ -->
       <dependency>
         <groupId>org.snmp4j</groupId>
@@ -2510,6 +2532,13 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <!-- ensure good version between mockito and selenium -->
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>1.9.10</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>mariadb</artifactId>
         <version>${test-containers.version}</version>
@@ -2551,7 +2580,19 @@
           </exclusion>
         </exclusions>
       </dependency>
-
+      <dependency>
+        <groupId>com.github.jnr</groupId>
+        <artifactId>jnr-posix</artifactId>
+        <version>${jnr-posix-version}</version>
+        <scope>test</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>Waarp</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>${selenium.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

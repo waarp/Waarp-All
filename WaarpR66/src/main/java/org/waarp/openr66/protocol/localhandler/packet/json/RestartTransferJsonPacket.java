@@ -19,21 +19,20 @@
  */
 package org.waarp.openr66.protocol.localhandler.packet.json;
 
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 import java.util.Date;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Restarting a request query JSON packet
- *
- *
  */
 public class RestartTransferJsonPacket extends JsonPacket {
 
   protected String requester;
   protected String requested;
-  protected long specialid = DbConstant.ILLEGALVALUE;
+  protected long specialid = ILLEGALVALUE;
   public Date restarttime;
 
   /**
@@ -94,6 +93,6 @@ public class RestartTransferJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.VALIDPACKET);
+    setRequestUserPacket(LocalPacketFactory.VALIDPACKET);
   }
 }

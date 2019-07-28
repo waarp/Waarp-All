@@ -23,8 +23,6 @@ import org.waarp.ftp.core.command.directory.CWD;
 
 /**
  * XCWD command
- *
- *
  */
 public class XCWD extends CWD {
 

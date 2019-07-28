@@ -33,22 +33,17 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * NetworkServer pipeline (Requester side)
- *
- *
  */
 public class NetworkServerInitializer
     extends ChannelInitializer<SocketChannel> {
 
   public static final String TIMEOUT = "timeout";
-  public static final String READTIMEOUT = "readTimeout";
   public static final String LIMITGLOBAL = "GLOBALLIMIT";
   public static final String LIMITCHANNEL = "CHANNELLIMIT";
   public static final String NETWORK_CODEC = "codec";
   public static final String NETWORK_HANDLER = "handler";
-  public static final String LOCAL_CODEC = "localcodec";
-  public static final String LOCAL_HANDLER = "localhandler";
 
-  protected boolean server = false;
+  protected final boolean server;
 
   public NetworkServerInitializer(boolean server) {
     this.server = server;
@@ -59,7 +54,7 @@ public class NetworkServerInitializer
     final ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0,
                                                    Configuration.configuration
-                                                       .getTIMEOUTCON(),
+                                                       .getTimeoutCon(),
                                                    TimeUnit.MILLISECONDS));
     // Global limitation
     final GlobalTrafficShapingHandler handler =
@@ -75,9 +70,10 @@ public class NetworkServerInitializer
         Configuration.configuration.getServerChannelWriteLimit(),
         Configuration.configuration.getServerChannelReadLimit(),
         Configuration.configuration.getDelayLimit(),
-        Configuration.configuration.getTIMEOUTCON()));
+        Configuration.configuration.getTimeoutCon()));
     pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());
-    pipeline.addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,
-                     new NetworkServerHandler(server));
+    pipeline
+        .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,
+                 new NetworkServerHandler(server));
   }
 }

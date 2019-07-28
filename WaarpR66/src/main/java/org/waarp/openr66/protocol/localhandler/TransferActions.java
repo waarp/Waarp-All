@@ -19,8 +19,6 @@
  */
 package org.waarp.openr66.protocol.localhandler;
 
-import io.netty.channel.Channel;
-import io.netty.channel.local.LocalChannel;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
@@ -35,7 +33,6 @@ import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.task.AbstractTask;
 import org.waarp.openr66.context.task.TaskType;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -68,14 +65,13 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.security.NoSuchAlgorithmException;
 
+import static org.waarp.common.database.DbConstant.*;
 import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
 /**
  * Class to implement actions related to real transfer: request initialization,
  * data transfer, end of transfer
  * and of request, changing filename or filesize.
- *
- *
  */
 public class TransferActions extends ServerActions {
   /**
@@ -85,12 +81,12 @@ public class TransferActions extends ServerActions {
       WaarpLoggerFactory.getLogger(TransferActions.class);
 
   public TransferActions() {
+    // nothing
   }
 
   /**
    * Finalize a request initialization in error
    *
-   * @param channel
    * @param code
    * @param runner
    * @param e1
@@ -98,15 +94,13 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private final void endInitRequestInError(Channel channel, ErrorCode code,
-                                           DbTaskRunner runner,
-                                           OpenR66Exception e1,
-                                           RequestPacket packet)
+  private void endInitRequestInError(ErrorCode code, DbTaskRunner runner,
+                                     OpenR66Exception e1, RequestPacket packet)
       throws OpenR66ProtocolPacketException {
-    logger.error("TaskRunner initialisation in error: " + code.getMesg() + " " +
+    logger.error("TaskRunner initialisation in error: " + code.getMesg() + ' ' +
                  session + " {} runner {}",
                  e1 != null? e1.getMessage() : "no exception",
-                 (runner != null? runner.toShortString() : "no runner"));
+                 runner != null? runner.toShortString() : "no runner");
     logger.debug("DEBUG Full stack", e1);
     localChannelReference
         .invalidateRequest(new R66Result(e1, session, true, code, null));
@@ -134,18 +128,17 @@ public class TransferActions extends ServerActions {
       session.newState(ERROR);
       final ErrorPacket error = new ErrorPacket(
           "TaskRunner initialisation in error: " + e1.getMessage() + " for " +
-          packet.toString() + " since " + code.getMesg(), code.getCode(),
+          packet + " since " + code.getMesg(), code.getCode(),
           ErrorPacket.FORWARDCLOSECODE);
       ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
     }
     session.setStatus(47);
-    ChannelCloseTimer.closeFutureChannel(channel);
+    ChannelCloseTimer.closeFutureTransaction(this);
   }
 
   /**
    * Receive a request of Transfer
    *
-   * @param channel
    * @param packet
    *
    * @throws OpenR66ProtocolNoDataException
@@ -154,7 +147,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66RunnerErrorException
    */
-  public void request(LocalChannel channel, RequestPacket packet)
+  public void request(RequestPacket packet)
       throws OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException,
              OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException {
@@ -168,49 +161,7 @@ public class TransferActions extends ServerActions {
       session.newState(REQUESTR);
     }
     // XXX validLimit only on requested side
-    if (packet.isToValidate()) {
-      if (Configuration.configuration.isShutdown()) {
-        logger.warn(Messages.getString("LocalServerHandler.7") //$NON-NLS-1$
-                    + packet.getRulename() + " from " +
-                    session.getAuth().toString());
-        session.setStatus(100);
-        endInitRequestInError(channel, ErrorCode.ServerOverloaded, null,
-                              new OpenR66ProtocolNotYetConnectionException(
-                                  "All new Request blocked"), packet);
-        session.setStatus(100);
-        return;
-      }
-      if (Configuration.configuration.getConstraintLimitHandler()
-                                     .checkConstraints()) {
-        if (Configuration.configuration.getR66Mib() != null) {
-          Configuration.configuration.getR66Mib().notifyOverloaded(
-              "Rule: " + packet.getRulename() + " from " +
-              session.getAuth().toString(), Configuration.configuration
-                  .getConstraintLimitHandler().lastAlert);
-        }
-        logger.warn(Messages.getString("LocalServerHandler.8") //$NON-NLS-1$
-                    + packet.getRulename() + " while " +
-                    Configuration.configuration
-                        .getConstraintLimitHandler().lastAlert + " from " +
-                    session.getAuth().toString());
-        session.setStatus(100);
-        endInitRequestInError(channel, ErrorCode.ServerOverloaded, null,
-                              new OpenR66ProtocolNotYetConnectionException(
-                                  "Limit exceeded " +
-                                  Configuration.configuration
-                                      .getConstraintLimitHandler().lastAlert),
-                              packet);
-        session.setStatus(100);
-        return;
-      }
-    } else if (packet.getCode() == ErrorCode.ServerOverloaded.code) {
-      // XXX unvalid limit on requested host received
-      logger.info("TaskRunner initialisation in error: " +
-                  ErrorCode.ServerOverloaded.getMesg());
-      localChannelReference.invalidateRequest(
-          new R66Result(null, session, true, ErrorCode.ServerOverloaded, null));
-      session.setStatus(101);
-      ChannelCloseTimer.closeFutureChannel(channel);
+    if (checkRequest(packet)) {
       return;
     }
     DbRule rule;
@@ -220,173 +171,21 @@ public class TransferActions extends ServerActions {
       logger.info("Rule is unknown: " + packet.getRulename() + " {}",
                   e.getMessage());
       session.setStatus(49);
-      endInitRequestInError(channel, ErrorCode.QueryRemotelyUnknown, null,
+      endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
                             new OpenR66ProtocolBusinessException(
                                 Messages.getString("LocalServerHandler.9") +
                                 //$NON-NLS-1$
                                 packet.getRulename()), packet);
       return;
     }
-    int blocksize = packet.getBlocksize();
-    if (packet.isToValidate()) {
-      if (!rule.checkHostAllow(session.getAuth().getUser())) {
-        session.setStatus(30);
-        throw new OpenR66ProtocolNotAuthenticatedException(
-            Messages.getString("LocalServerHandler.10")); //$NON-NLS-1$
-      }
-      // Check if the blocksize is greater than local value
-      if (Configuration.configuration.getBLOCKSIZE() < blocksize) {
-        blocksize = Configuration.configuration.getBLOCKSIZE();
-        final String sep = localChannelReference.getPartner().getSeperator();
-        packet = new RequestPacket(packet.getRulename(), packet.getMode(),
-                                   packet.getFilename(), blocksize,
-                                   packet.getRank(), packet.getSpecialId(),
-                                   packet.getFileInformation(),
-                                   packet.getOriginalSize(), sep);
-      }
-    }
-    if (!RequestPacket.isCompatibleMode(rule.getMode(), packet.getMode())) {
-      // not compatible Rule and mode in request
-      throw new OpenR66ProtocolNotAuthenticatedException(
-          Messages.getString("LocalServerHandler.12") + rule.getMode() + " vs "
-          //$NON-NLS-1$
-          + packet.getMode());
-    }
-    session.setBlockSize(blocksize);
+    packet = computeBlockSizeFromRequest(packet, rule);
     DbTaskRunner runner;
     // requested
     final boolean isRetrieve = DbTaskRunner.getSenderByRequestPacket(packet);
-    if (packet.getSpecialId() != DbConstant.ILLEGALVALUE) {
-      // Reload or create
-      final String requested = DbTaskRunner.getRequested(session, packet);
-      final String requester = DbTaskRunner.getRequester(session, packet);
-      logger.debug("DEBUG: " + packet.getSpecialId() + ":" + isRetrieve);
-      if (packet.isToValidate()) {
-        // Id could be a creation or a reload
-        // Try reload
-        try {
-          runner =
-              new DbTaskRunner(session, rule, packet.getSpecialId(), requester,
-                               requested);
-          // Patch to prevent self request to be stored by sender
-          final boolean ignoreSave = runner.shallIgnoreSave();
-          runner.setSender(isRetrieve);
-          logger.debug(
-              "DEBUG: " + runner.getSpecialId() + ":" + ignoreSave + ":" +
-              runner.shallIgnoreSave() + ":" + isRetrieve);
-          if (ignoreSave && !runner.shallIgnoreSave() &&
-              !runner.checkFromDbForSubmit()) {
-            // Since status changed, it means that object should be created and not reloaded
-            // But in case of submit, item already exist so shall be loaded from database
-            throw new WaarpDatabaseNoDataException(
-                "False load, must reopen and create DbTaskRunner");
-          }
-        } catch (final WaarpDatabaseNoDataException e) {
-          // Reception of request from requester host
-          try {
-            runner = new DbTaskRunner(session, rule, isRetrieve, packet);
-            logger.debug("Runner before any action: {} {}",
-                         runner.shallIgnoreSave(), runner);
-          } catch (final WaarpDatabaseException e1) {
-            session.setStatus(33);
-            endInitRequestInError(channel, ErrorCode.QueryRemotelyUnknown, null,
-                                  new OpenR66DatabaseGlobalException(e),
-                                  packet);
-            return;
-          }
-        } catch (final WaarpDatabaseException e) {
-          session.setStatus(34);
-          endInitRequestInError(channel, ErrorCode.QueryRemotelyUnknown, null,
-                                new OpenR66DatabaseGlobalException(e), packet);
-          return;
-        }
-        if (runner.isAllDone()) {
-          // truly an error since done
-          session.setStatus(31);
-          endInitRequestInError(channel, ErrorCode.QueryAlreadyFinished, runner,
-                                new OpenR66ProtocolBusinessQueryAlreadyFinishedException(
-                                    Messages.getString("LocalServerHandler.13")
-                                    //$NON-NLS-1$
-                                    + packet.getSpecialId()), packet);
-          return;
-        }
-        final LocalChannelReference lcr =
-            Configuration.configuration.getLocalTransaction().getFromRequest(
-                requested + " " + requester + " " + packet.getSpecialId());
-        if (lcr != null) {
-          // truly an error since still running
-          session.setStatus(32);
-          endInitRequestInError(channel, ErrorCode.QueryStillRunning, runner,
-                                new OpenR66ProtocolBusinessQueryStillRunningException(
-                                    Messages.getString("LocalServerHandler.14")
-                                    //$NON-NLS-1$
-                                    + packet.getSpecialId()), packet);
-          return;
-        }
-        logger
-            .debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
-                   runner);
-        // ok to restart
-        try {
-          if (runner.restart(false)) {
-            runner.saveStatus();
-          }
-        } catch (final OpenR66RunnerErrorException e) {
-        }
-        // Change the SpecialID! => could generate an error ?
-        packet.setSpecialId(runner.getSpecialId());
-      } else {
-        // Id should be a reload
-        try {
-          runner =
-              new DbTaskRunner(session, rule, packet.getSpecialId(), requester,
-                               requested);
-        } catch (final WaarpDatabaseException e) {
-          if (localChannelReference.getDbSession() == null) {
-            // Special case of no database client
-            try {
-              runner = new DbTaskRunner(session, rule, isRetrieve, packet);
-              logger.debug("Runner before any action: {} {}",
-                           runner.shallIgnoreSave(), runner);
-            } catch (final WaarpDatabaseException e1) {
-              session.setStatus(35);
-              endInitRequestInError(channel, ErrorCode.QueryRemotelyUnknown,
-                                    null,
-                                    new OpenR66DatabaseGlobalException(e1),
-                                    packet);
-              return;
-            }
-          } else {
-            endInitRequestInError(channel, ErrorCode.QueryRemotelyUnknown, null,
-                                  new OpenR66DatabaseGlobalException(e),
-                                  packet);
-            session.setStatus(36);
-            return;
-          }
-        }
-        runner.setSender(isRetrieve);
-        // FIX check for SelfRequest
-        if (runner.isSelfRequest()) {
-          runner.setFilename(runner.getOriginalFilename());
-        }
-        if (!runner.isSender()) {
-          logger.debug("New filename ? :" + packet.getFilename());
-          runner.setOriginalFilename(packet.getFilename());
-          if (runner.getRank() == 0) {
-            runner.setFilename(packet.getFilename());
-          }
-        }
-        logger
-            .debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
-                   runner);
-        try {
-          if (runner.restart(false)) {
-            if (!runner.isSelfRequest()) {
-              runner.saveStatus();
-            }
-          }
-        } catch (final OpenR66RunnerErrorException e) {
-        }
+    if (packet.getSpecialId() != ILLEGALVALUE) {
+      runner = getPreviousDbTaskRunnerFromRequest(packet, rule, isRetrieve);
+      if (runner == null) {
+        return;
       }
     } else {
       // Very new request
@@ -396,7 +195,7 @@ public class TransferActions extends ServerActions {
         runner = new DbTaskRunner(session, rule, isRetrieve, packet);
       } catch (final WaarpDatabaseException e) {
         session.setStatus(37);
-        endInitRequestInError(channel, ErrorCode.QueryRemotelyUnknown, null,
+        endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
                               new OpenR66DatabaseGlobalException(e), packet);
         return;
       }
@@ -406,37 +205,13 @@ public class TransferActions extends ServerActions {
                  runner);
     // Check now if request is a valid one
     if (packet.getCode() != ErrorCode.InitOk.code) {
-      // not valid so create an error from there
-      final ErrorCode code = ErrorCode.getFromCode("" + packet.getCode());
-      session.setBadRunner(runner, code);
-      if (!runner.shallIgnoreSave()) {
-        runner.saveStatus();
-      }
-      session.newState(ERROR);
-      logger.error("Bad runner at startup {} {}", packet, session);
-      final ErrorPacket errorPacket =
-          new ErrorPacket(code.getMesg(), code.getCode(),
-                          ErrorPacket.FORWARDCLOSECODE);
-      errorMesg(channel, errorPacket);
+      createErrorFromRequestInitKo(packet, runner);
       return;
     }
     // Receiver can specify a rank different from database
-    if (runner.isSender()) {
-      logger.debug("Rank was: " + runner.getRank() + " -> " + packet.getRank());
-      runner.setRankAtStartup(packet.getRank());
-    } else {
-      if (runner.getRank() > packet.getRank()) {
-        logger.debug(
-            "Recv Rank was: " + runner.getRank() + " -> " + packet.getRank());
-        // if receiver, change only if current rank is upper proposed rank
-        runner.setRankAtStartup(packet.getRank());
-      }
-      if (packet.getOriginalSize() > 0) {
-        runner.setOriginalSize(packet.getOriginalSize());
-      }
-    }
+    setRankAtStartupFromRequest(packet, runner);
     logger.debug(
-        "Filesize: " + packet.getOriginalSize() + ":" + runner.isSender());
+        "Filesize: " + packet.getOriginalSize() + ':' + runner.isSender());
     boolean shouldInformBack = false;
     try {
       session.setRunner(runner);
@@ -451,7 +226,7 @@ public class TransferActions extends ServerActions {
         if (packet.getOriginalSize() != runner.getOriginalSize()) {
           packet.setOriginalSize(runner.getOriginalSize());
           shouldInformBack = true;
-          logger.debug("Filesize2: " + packet.getOriginalSize() + ":" +
+          logger.debug("Filesize2: " + packet.getOriginalSize() + ':' +
                        runner.isSender());
         }
       }
@@ -468,49 +243,10 @@ public class TransferActions extends ServerActions {
       }
       logger.error("PreTask in error {}", e.getMessage(), e);
       errorToSend("PreTask in error: " + e.getMessage(), runner.getErrorInfo(),
-                  channel, 38);
+                  38);
       return;
     }
-    logger.debug(
-        "Filesize: " + packet.getOriginalSize() + ":" + runner.isSender());
-    if (!shouldInformBack) {
-      shouldInformBack =
-          !packet.getFileInformation().equals(runner.getFileInformation());
-    }
-    if (runner.isFileMoved() && runner.isSender() && runner.isInTransfer() &&
-        runner.getRank() == 0 && (!packet.isToValidate())) {
-      // File was moved during PreTask and very beginning of the transfer
-      // and the remote host has already received the request packet
-      // => Informs the receiver of the new name
-      sendFilenameFilesizeChanging(packet, runner,
-                                   "Will send a modification of filename due to pretask: ",
-                                   "Change Filename by Pre action on sender");
-    } else if ((!packet.getFilename().equals(runner.getOriginalFilename())) &&
-               runner.isSender() && runner.isInTransfer() &&
-               runner.getRank() == 0 && (!packet.isToValidate())) {
-      // File was modify at the very beginning (using wildcards)
-      // and the remote host has already received the request packet
-      // => Informs the receiver of the new name
-      sendFilenameFilesizeChanging(packet, runner,
-                                   "Will send a modification of filename due to wildcard: ",
-                                   "Change Filename by Wildcard on sender");
-    } else if (runner.isSelfRequest() && runner.isSender() &&
-               runner.isInTransfer() && runner.getRank() == 0 &&
-               (!packet.isToValidate())) {
-      // FIX SelfRequest
-      // File could be modified at the very beginning (using wildcards)
-      // and the remote host has already received the request packet
-      // => Informs the receiver of the new name
-      sendFilenameFilesizeChanging(packet, runner,
-                                   "Will send a modification of filename due to wildcard in SelfMode: ",
-                                   "Change Filename by Wildcard on sender in SelfMode");
-    } else if (shouldInformBack && (!packet.isToValidate())) {
-      // Was only for (shouldInformBack)
-      // File length is now known, so inform back
-      sendFilenameFilesizeChanging(packet, runner,
-                                   "Will send a modification of filesize or fileInfo: ",
-                                   "Change Filesize / FileInfo on sender");
-    }
+    setFileSizeFromRequest(packet, runner, shouldInformBack);
     session.setReady(true);
     Configuration.configuration.getLocalTransaction()
                                .setFromId(runner, localChannelReference);
@@ -531,6 +267,142 @@ public class TransferActions extends ServerActions {
     packet.setLimit(localLimit);
 
     // inform back
+    informBackFromRequest(packet, runner);
+    // if retrieve => START the retrieve operation except if in Send Through mode
+    sendDataFromRequest(runner);
+    session.setStatus(39);
+  }
+
+  private RequestPacket computeBlockSizeFromRequest(RequestPacket packet,
+                                                    final DbRule rule)
+      throws OpenR66ProtocolNotAuthenticatedException {
+    int blocksize = packet.getBlocksize();
+    if (packet.isToValidate()) {
+      if (!rule.checkHostAllow(session.getAuth().getUser())) {
+        session.setStatus(30);
+        throw new OpenR66ProtocolNotAuthenticatedException(
+            Messages.getString("LocalServerHandler.10")); //$NON-NLS-1$
+      }
+      // Check if the blocksize is greater than local value
+      if (Configuration.configuration.getBlockSize() < blocksize) {
+        blocksize = Configuration.configuration.getBlockSize();
+        final String sep = localChannelReference.getPartner().getSeperator();
+        packet = new RequestPacket(packet.getRulename(), packet.getMode(),
+                                   packet.getFilename(), blocksize,
+                                   packet.getRank(), packet.getSpecialId(),
+                                   packet.getFileInformation(),
+                                   packet.getOriginalSize(), sep);
+      }
+    }
+    if (!RequestPacket.isCompatibleMode(rule.getMode(), packet.getMode())) {
+      // not compatible Rule and mode in request
+      throw new OpenR66ProtocolNotAuthenticatedException(
+          Messages.getString("LocalServerHandler.12") + rule.getMode() + " vs "
+          //$NON-NLS-1$
+          + packet.getMode());
+    }
+    session.setBlockSize(blocksize);
+    return packet;
+  }
+
+  private boolean checkRequest(final RequestPacket packet)
+      throws OpenR66ProtocolPacketException {
+    if (packet.isToValidate()) {
+      if (Configuration.configuration.isShutdown()) {
+        logger.warn(Messages.getString("LocalServerHandler.7") //$NON-NLS-1$
+                    + packet.getRulename() + " from " + session.getAuth());
+        session.setStatus(100);
+        endInitRequestInError(ErrorCode.ServerOverloaded, null,
+                              new OpenR66ProtocolNotYetConnectionException(
+                                  "All new Request blocked"), packet);
+        session.setStatus(100);
+        return true;
+      }
+      if (Configuration.configuration.getConstraintLimitHandler()
+                                     .checkConstraints()) {
+        requestCheckConstraintsTrue(packet);
+        return true;
+      }
+    } else if (packet.getCode() == ErrorCode.ServerOverloaded.code) {
+      // XXX unvalid limit on requested host received
+      logger.info("TaskRunner initialisation in error: " +
+                  ErrorCode.ServerOverloaded.getMesg());
+      localChannelReference.invalidateRequest(
+          new R66Result(null, session, true, ErrorCode.ServerOverloaded, null));
+      session.setStatus(101);
+      ChannelCloseTimer.closeFutureTransaction(this);
+      return true;
+    }
+    return false;
+  }
+
+  private static void setRankAtStartupFromRequest(final RequestPacket packet,
+                                                  final DbTaskRunner runner) {
+    if (runner.isSender()) {
+      logger.debug("Rank was: " + runner.getRank() + " -> " + packet.getRank());
+      runner.setRankAtStartup(packet.getRank());
+    } else {
+      if (runner.getRank() > packet.getRank()) {
+        logger.debug(
+            "Recv Rank was: " + runner.getRank() + " -> " + packet.getRank());
+        // if receiver, change only if current rank is upper proposed rank
+        runner.setRankAtStartup(packet.getRank());
+      }
+      if (packet.getOriginalSize() > 0) {
+        runner.setOriginalSize(packet.getOriginalSize());
+      }
+    }
+  }
+
+  private void setFileSizeFromRequest(final RequestPacket packet,
+                                      final DbTaskRunner runner,
+                                      boolean shouldInformBack)
+      throws OpenR66ProtocolPacketException {
+    logger.debug(
+        "Filesize: " + packet.getOriginalSize() + ':' + runner.isSender());
+    if (!shouldInformBack) {
+      shouldInformBack =
+          !packet.getFileInformation().equals(runner.getFileInformation());
+    }
+    if (runner.isFileMoved() && runner.isSender() && runner.isInTransfer() &&
+        runner.getRank() == 0 && !packet.isToValidate()) {
+      // File was moved during PreTask and very beginning of the transfer
+      // and the remote host has already received the request packet
+      // => Informs the receiver of the new name
+      sendFilenameFilesizeChanging(packet, runner,
+                                   "Will send a modification of filename due to pretask: ",
+                                   "Change Filename by Pre action on sender");
+    } else if (!packet.getFilename().equals(runner.getOriginalFilename()) &&
+               runner.isSender() && runner.isInTransfer() &&
+               runner.getRank() == 0 && !packet.isToValidate()) {
+      // File was modify at the very beginning (using wildcards)
+      // and the remote host has already received the request packet
+      // => Informs the receiver of the new name
+      sendFilenameFilesizeChanging(packet, runner,
+                                   "Will send a modification of filename due to wildcard: ",
+                                   "Change Filename by Wildcard on sender");
+    } else if (runner.isSelfRequest() && runner.isSender() &&
+               runner.isInTransfer() && runner.getRank() == 0 &&
+               !packet.isToValidate()) {
+      // FIX SelfRequest
+      // File could be modified at the very beginning (using wildcards)
+      // and the remote host has already received the request packet
+      // => Informs the receiver of the new name
+      sendFilenameFilesizeChanging(packet, runner,
+                                   "Will send a modification of filename due to wildcard in SelfMode: ",
+                                   "Change Filename by Wildcard on sender in SelfMode");
+    } else if (shouldInformBack && !packet.isToValidate()) {
+      // Was only (shouldInformBack)
+      // File length is now known, so inform back
+      sendFilenameFilesizeChanging(packet, runner,
+                                   "Will send a modification of filesize or fileInfo: ",
+                                   "Change Filesize / FileInfo on sender");
+    }
+  }
+
+  private void informBackFromRequest(final RequestPacket packet,
+                                     final DbTaskRunner runner)
+      throws OpenR66ProtocolPacketException {
     if (packet.isToValidate()) {
       if (Configuration.configuration.getMonitoring() != null) {
         Configuration.configuration.getMonitoring().lastInActiveTransfer =
@@ -561,7 +433,9 @@ public class TransferActions extends ServerActions {
             System.currentTimeMillis();
       }
     }
-    // if retrieve => START the retrieve operation except if in Send Through mode
+  }
+
+  private void sendDataFromRequest(final DbTaskRunner runner) {
     if (runner.isSender()) {
       if (runner.isSendThrough()) {
         // it is legal to send data from now
@@ -571,10 +445,207 @@ public class TransferActions extends ServerActions {
       } else {
         // Automatically send data now
         logger.debug("Now ready to continue with runRetrieve");
-        NetworkTransaction.runRetrieve(session, channel);
+        NetworkTransaction.runRetrieve(session);
       }
     }
-    session.setStatus(39);
+  }
+
+  private void createErrorFromRequestInitKo(final RequestPacket packet,
+                                            final DbTaskRunner runner)
+      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
+             OpenR66ProtocolBusinessException {
+    // not valid so create an error from there
+    final ErrorCode code =
+        ErrorCode.getFromCode(String.valueOf(packet.getCode()));
+    session.setBadRunner(runner, code);
+    if (!runner.shallIgnoreSave()) {
+      runner.saveStatus();
+    }
+    session.newState(ERROR);
+    logger.error("Bad runner at startup {} {}", packet, session);
+    final ErrorPacket errorPacket =
+        new ErrorPacket(code.getMesg(), code.getCode(),
+                        ErrorPacket.FORWARDCLOSECODE);
+    errorMesg(errorPacket);
+  }
+
+  private DbTaskRunner getPreviousDbTaskRunnerFromRequest(
+      final RequestPacket packet, final DbRule rule, final boolean isRetrieve)
+      throws OpenR66ProtocolPacketException {
+    final DbTaskRunner runner;// Reload or create
+    final String requested = DbTaskRunner.getRequested(session, packet);
+    final String requester = DbTaskRunner.getRequester(session, packet);
+    logger.debug("DEBUG: " + packet.getSpecialId() + ':' + isRetrieve);
+    if (packet.isToValidate()) {
+      // Id could be a creation or a reload
+      // Try reload
+      runner =
+          reloadDbTaskRunner(packet, rule, isRetrieve, requested, requester);
+      if (runner == null) {
+        return null;
+      }
+      if (runner.isAllDone()) {
+        // truly an error since done
+        session.setStatus(31);
+        endInitRequestInError(ErrorCode.QueryAlreadyFinished, runner,
+                              new OpenR66ProtocolBusinessQueryAlreadyFinishedException(
+                                  Messages.getString("LocalServerHandler.13")
+                                  //$NON-NLS-1$
+                                  + packet.getSpecialId()), packet);
+        return null;
+      }
+      final LocalChannelReference lcr =
+          Configuration.configuration.getLocalTransaction().getFromRequest(
+              requested + ' ' + requester + ' ' + packet.getSpecialId());
+      if (lcr != null) {
+        // truly an error since still running
+        session.setStatus(32);
+        endInitRequestInError(ErrorCode.QueryStillRunning, runner,
+                              new OpenR66ProtocolBusinessQueryStillRunningException(
+                                  Messages.getString("LocalServerHandler.14")
+                                  //$NON-NLS-1$
+                                  + packet.getSpecialId()), packet);
+        return null;
+      }
+      logger.debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
+                   runner);
+      // ok to restart
+      try {
+        if (runner.restart(false)) {
+          runner.saveStatus();
+        }
+      } catch (final OpenR66RunnerErrorException ignored) {
+        // nothing
+      }
+      // Change the SpecialID! => could generate an error ?
+      packet.setSpecialId(runner.getSpecialId());
+    } else {
+      // Id should be a reload
+      runner = reloadDbTaskRunnerFromId(packet, rule, isRetrieve, requested,
+                                        requester);
+      if (runner == null) {
+        return null;
+      }
+    }
+    return runner;
+  }
+
+  private DbTaskRunner reloadDbTaskRunnerFromId(final RequestPacket packet,
+                                                final DbRule rule,
+                                                final boolean isRetrieve,
+                                                final String requested,
+                                                final String requester)
+      throws OpenR66ProtocolPacketException {
+    DbTaskRunner runner;
+    try {
+      runner = new DbTaskRunner(session, rule, packet.getSpecialId(), requester,
+                                requested);
+    } catch (final WaarpDatabaseException e) {
+      if (localChannelReference.getDbSession() == null) {
+        // Special case of no database client
+        try {
+          runner = new DbTaskRunner(session, rule, isRetrieve, packet);
+          logger.debug("Runner before any action: {} {}",
+                       runner.shallIgnoreSave(), runner);
+        } catch (final WaarpDatabaseException e1) {
+          session.setStatus(35);
+          endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
+                                new OpenR66DatabaseGlobalException(e1), packet);
+          return null;
+        }
+      } else {
+        endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
+                              new OpenR66DatabaseGlobalException(e), packet);
+        session.setStatus(36);
+        return null;
+      }
+    }
+    runner.setSender(isRetrieve);
+    // FIX check for SelfRequest
+    if (runner.isSelfRequest()) {
+      runner.setFilename(runner.getOriginalFilename());
+    }
+    if (!runner.isSender()) {
+      logger.debug("New filename ? :" + packet.getFilename());
+      runner.setOriginalFilename(packet.getFilename());
+      if (runner.getRank() == 0) {
+        runner.setFilename(packet.getFilename());
+      }
+    }
+    logger.debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
+                 runner);
+    try {
+      if (runner.restart(false) && !runner.isSelfRequest()) {
+        runner.saveStatus();
+      }
+    } catch (final OpenR66RunnerErrorException ignored) {
+      // nothing
+    }
+    return runner;
+  }
+
+  private DbTaskRunner reloadDbTaskRunner(final RequestPacket packet,
+                                          final DbRule rule,
+                                          final boolean isRetrieve,
+                                          final String requested,
+                                          final String requester)
+      throws OpenR66ProtocolPacketException {
+    DbTaskRunner runner;
+    try {
+      runner = new DbTaskRunner(session, rule, packet.getSpecialId(), requester,
+                                requested);
+      // Patch to prevent self request to be stored by sender
+      final boolean ignoreSave = runner.shallIgnoreSave();
+      runner.setSender(isRetrieve);
+      logger.debug("DEBUG: " + runner.getSpecialId() + ':' + ignoreSave + ':' +
+                   runner.shallIgnoreSave() + ':' + isRetrieve);
+      if (ignoreSave && !runner.shallIgnoreSave() &&
+          !runner.checkFromDbForSubmit()) {
+        // Since status changed, it means that object should be created and not reloaded
+        // But in case of submit, item already exist so shall be loaded from database
+        throw new WaarpDatabaseNoDataException(
+            "False load, must reopen and create DbTaskRunner");
+      }
+    } catch (final WaarpDatabaseNoDataException e) {
+      // Reception of request from requester host
+      try {
+        runner = new DbTaskRunner(session, rule, isRetrieve, packet);
+        logger
+            .debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
+                   runner);
+      } catch (final WaarpDatabaseException e1) {
+        session.setStatus(33);
+        endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
+                              new OpenR66DatabaseGlobalException(e), packet);
+        return null;
+      }
+    } catch (final WaarpDatabaseException e) {
+      session.setStatus(34);
+      endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
+                            new OpenR66DatabaseGlobalException(e), packet);
+      return null;
+    }
+    return runner;
+  }
+
+  private void requestCheckConstraintsTrue(final RequestPacket packet)
+      throws OpenR66ProtocolPacketException {
+    if (Configuration.configuration.getR66Mib() != null) {
+      Configuration.configuration.getR66Mib().notifyOverloaded(
+          "Rule: " + packet.getRulename() + " from " + session.getAuth(),
+          Configuration.configuration.getConstraintLimitHandler().lastAlert);
+    }
+    logger.warn(Messages.getString("LocalServerHandler.8") //$NON-NLS-1$
+                + packet.getRulename() + " while " + Configuration.configuration
+                    .getConstraintLimitHandler().lastAlert + " from " +
+                session.getAuth());
+    session.setStatus(100);
+    endInitRequestInError(ErrorCode.ServerOverloaded, null,
+                          new OpenR66ProtocolNotYetConnectionException(
+                              "Limit exceeded " + Configuration.configuration
+                                  .getConstraintLimitHandler().lastAlert),
+                          packet);
+    session.setStatus(100);
   }
 
   /**
@@ -585,9 +656,9 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private final void sendFilenameFilesizeChanging(RequestPacket packet,
-                                                  DbTaskRunner runner,
-                                                  String debug, String info)
+  private void sendFilenameFilesizeChanging(RequestPacket packet,
+                                            DbTaskRunner runner, String debug,
+                                            String info)
       throws OpenR66ProtocolPacketException {
     logger.debug(debug + runner.getFilename());
     session.newState(VALID);
@@ -633,12 +704,10 @@ public class TransferActions extends ServerActions {
    *
    * @param message
    * @param code
-   * @param channel
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private final void errorToSend(String message, ErrorCode code,
-                                 Channel channel, int status)
+  private void errorToSend(String message, ErrorCode code, int status)
       throws OpenR66ProtocolPacketException {
     session.newState(ERROR);
     try {
@@ -656,20 +725,19 @@ public class TransferActions extends ServerActions {
         new ErrorPacket(message, code.getCode(), ErrorPacket.FORWARDCLOSECODE);
     ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
     session.setStatus(status);
-    ChannelCloseTimer.closeFutureChannel(channel);
+    ChannelCloseTimer.closeFutureTransaction(this);
   }
 
   /**
    * Receive a data block
    *
-   * @param channel
    * @param packet
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolBusinessException
    * @throws OpenR66ProtocolPacketException
    */
-  public void data(Channel channel, DataPacket packet)
+  public void data(DataPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolBusinessException, OpenR66ProtocolPacketException {
     logger.trace("receiving data block {}", packet.getPacketRank());
@@ -700,12 +768,12 @@ public class TransferActions extends ServerActions {
         return;
       }
       errorToSend("Transfer in error due previously aborted transmission",
-                  ErrorCode.TransferError, channel, 95);
+                  ErrorCode.TransferError, 95);
       packet.clear();
       return;
     }
     if (packet.getPacketRank() != session.getRunner().getRank()) {
-      logger.debug("Issue on rank: " + packet.getPacketRank() + ":" +
+      logger.debug("Issue on rank: " + packet.getPacketRank() + ':' +
                    session.getRunner().getRank());
       if (!session.addError()) {
         // cannot continue
@@ -715,7 +783,7 @@ public class TransferActions extends ServerActions {
                      session.getRunner());
         errorToSend(
             "Too much Bad Rank in transmission: " + packet.getPacketRank(),
-            ErrorCode.TransferError, channel, 96);
+            ErrorCode.TransferError, 96);
         packet.clear();
         return;
       }
@@ -732,8 +800,7 @@ public class TransferActions extends ServerActions {
           logger.error("Bad RANK: " + packet.getPacketRank() + " : " +
                        session.getRunner().getRank());
           errorToSend("Bad Rank in transmission even after retry: " +
-                      packet.getPacketRank(), ErrorCode.TransferError, channel,
-                      96);
+                      packet.getPacketRank(), ErrorCode.TransferError, 96);
           packet.clear();
           return;
         }
@@ -743,8 +810,7 @@ public class TransferActions extends ServerActions {
                      session.getRunner().getRank());
         errorToSend(
             "Bad Rank in transmission: " + packet.getPacketRank() + " > " +
-            session.getRunner().getRank(), ErrorCode.TransferError, channel,
-            20);
+            session.getRunner().getRank(), ErrorCode.TransferError, 20);
         packet.clear();
         return;
       }
@@ -760,7 +826,7 @@ public class TransferActions extends ServerActions {
                      (originalSize / session.getRunner().getBlocksize() + 1) +
                      " from {}", session.getRunner());
         errorToSend("Too much data transferred: " + packet.getPacketRank(),
-                    ErrorCode.TransferError, channel, 96);
+                    ErrorCode.TransferError, 96);
         packet.clear();
         return;
       }
@@ -774,10 +840,12 @@ public class TransferActions extends ServerActions {
         // Wrong packet
         logger.error(Messages.getString("LocalServerHandler.17"), packet,
                      //$NON-NLS-1$
-                     localChannelReference.getPartner().getDigestAlgo().name);
+                     localChannelReference.getPartner()
+                                          .getDigestAlgo().algoName);
         errorToSend("Transfer in error due to bad Hash on data packet (" +
-                    localChannelReference.getPartner().getDigestAlgo().name +
-                    ")", ErrorCode.MD5Error, channel, 21);
+                    localChannelReference.getPartner()
+                                         .getDigestAlgo().algoName + ')',
+                    ErrorCode.MD5Error, 21);
         packet.clear();
         return;
       }
@@ -789,15 +857,14 @@ public class TransferActions extends ServerActions {
           if (session.getRunner().getRank() > 0) {
             localChannelReference.setPartialHash();
           }
-          if (localChannelReference.getPartner() != null) {
-            if (localChannelReference.getPartner().useFinalHash()) {
-              final DigestAlgo algo =
-                  localChannelReference.getPartner().getDigestAlgo();
-              if (algo != Configuration.configuration.getDigest()) {
-                globalDigest = new FilesystemBasedDigest(algo);
-                localDigest = new FilesystemBasedDigest(
-                    Configuration.configuration.getDigest());
-              }
+          if (localChannelReference.getPartner() != null &&
+              localChannelReference.getPartner().useFinalHash()) {
+            final DigestAlgo algo =
+                localChannelReference.getPartner().getDigestAlgo();
+            if (algo != Configuration.configuration.getDigest()) {
+              globalDigest = new FilesystemBasedDigest(algo);
+              localDigest = new FilesystemBasedDigest(
+                  Configuration.configuration.getDigest());
             }
           }
           if (globalDigest == null) {
@@ -805,7 +872,8 @@ public class TransferActions extends ServerActions {
                 Configuration.configuration.getDigest());
             localDigest = null;
           }
-        } catch (final NoSuchAlgorithmException e) {
+        } catch (final NoSuchAlgorithmException ignored) {
+          // nothing
         }
         logger.debug("GlobalDigest: " +
                      localChannelReference.getPartner().getDigestAlgo() +
@@ -840,8 +908,7 @@ public class TransferActions extends ServerActions {
                        session.getRunner().getRank());
         }
       } catch (final FileTransferException e) {
-        errorToSend("Transfer in error", ErrorCode.TransferError, channel, 22);
-        return;
+        errorToSend("Transfer in error", ErrorCode.TransferError, 22);
       } finally {
         dataBlock.clear();
         packet.clear();
@@ -852,14 +919,13 @@ public class TransferActions extends ServerActions {
   /**
    * Receive an End of Transfer
    *
-   * @param channel
    * @param packet
    *
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public void endTransfer(Channel channel, EndTransferPacket packet)
+  public void endTransfer(EndTransferPacket packet)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolNotAuthenticatedException {
     if (!session.isAuthenticated()) {
@@ -873,123 +939,146 @@ public class TransferActions extends ServerActions {
     if (packet.isToValidate()) {
       // check if possible originalSize
       if (originalSize > 0) {
-        try {
-          if (!session.getRunner().isRecvThrough() &&
-              session.getFile().length() != originalSize ||
-              session.getFile().length() == 0) {
-            final R66Result result = new R66Result(
-                new OpenR66RunnerErrorException(
-                    Messages.getString("LocalServerHandler.18")),
-                //$NON-NLS-1$
-                session, true, ErrorCode.TransferError, session.getRunner());
-            try {
-              session.setFinalizeTransfer(false, result);
-            } catch (final OpenR66RunnerErrorException e) {
-            } catch (final OpenR66ProtocolSystemException e) {
-            }
-            final ErrorPacket error = new ErrorPacket(
-                "Final size in error, transfer in error and rank should be reset to 0",
-                ErrorCode.TransferError.getCode(),
-                ErrorPacket.FORWARDCLOSECODE);
-            try {
-              ChannelUtils
-                  .writeAbstractLocalPacket(localChannelReference, error, true);
-            } catch (final OpenR66ProtocolPacketException e) {
-            }
-            session.setStatus(23);
-            ChannelCloseTimer.closeFutureChannel(channel);
-            return;
-          }
-        } catch (final CommandAbstractException e) {
-          // ignore
+        if (checkOriginalSize(originalSize)) {
+          return;
         }
       }
       // check if possible Global Digest
-      final String hash = packet.getOptional();
-      logger.debug("GlobalDigest: " +
-                   localChannelReference.getPartner().getDigestAlgo() +
-                   " different? " + (localDigest != null) + " remoteHash? " +
-                   (hash != null));
-      if (hash != null && globalDigest != null) {
-        String localhash = FilesystemBasedDigest.getHex(globalDigest.Final());
-        globalDigest = null;
-        if (!localhash.equalsIgnoreCase(hash)) {
-          // bad global Hash
-          // session.getRunner().setRankAtStartup(0);
-          final R66Result result = new R66Result(
-              new OpenR66RunnerErrorException(
-                  Messages.getString("LocalServerHandler.19") + //$NON-NLS-1$
-                  localChannelReference.getPartner().getDigestAlgo().name +
-                  ")"), session, true, ErrorCode.MD5Error, session.getRunner());
-          try {
-            session.setFinalizeTransfer(false, result);
-          } catch (final OpenR66RunnerErrorException e) {
-          } catch (final OpenR66ProtocolSystemException e) {
-          }
-          final ErrorPacket error = new ErrorPacket(
-              "Global Hash in error, transfer in error and rank should be reset to 0 (using " +
-              localChannelReference.getPartner().getDigestAlgo().name + ")",
-              ErrorCode.MD5Error.getCode(), ErrorPacket.FORWARDCLOSECODE);
-          try {
-            ChannelUtils
-                .writeAbstractLocalPacket(localChannelReference, error, true);
-          } catch (final OpenR66ProtocolPacketException e) {
-          }
-          session.setStatus(23);
-          ChannelCloseTimer.closeFutureChannel(channel);
-          return;
-        } else {
-          if (localDigest != null) {
-            localhash = FilesystemBasedDigest.getHex(localDigest.Final());
-          }
-          localChannelReference.setHashComputeDuringTransfer(localhash);
-          logger.debug("Global digest ok");
-        }
-      } else if (globalDigest != null) {
-        String localhash = null;
-        if (localDigest != null) {
-          localhash = FilesystemBasedDigest.getHex(localDigest.Final());
-        } else {
-          localhash = FilesystemBasedDigest.getHex(globalDigest.Final());
-        }
-        globalDigest = null;
-        localChannelReference.setHashComputeDuringTransfer(localhash);
-      }
-      localDigest = null;
-      globalDigest = null;
-      session.newState(ENDTRANSFERS);
-      if (!localChannelReference.getFutureRequest().isDone()) {
-        session.newState(ENDTRANSFERR);
-        if (endTransferR(channel)) {
-          return;
-        }
-        // Now can send validation
-        packet.validate();
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, packet, false);
-        } catch (final OpenR66ProtocolPacketException e) {
-          // ignore
-        }
-      } else {
-        // in error due to a previous status (like bad MD5)
-        logger.error(Messages.getString("LocalServerHandler.20")); //$NON-NLS-1$
-        session.setStatus(23);
-        channel.close();
+      if (checkGlobalDigest(packet)) {
         return;
       }
+      session.newState(ENDTRANSFERS);
+      fromEndTransferSToTransferR(packet);
     } else {
       session.newState(ENDTRANSFERR);
       if (!localChannelReference.getFutureRequest().isDone()) {
         // Validation of end of transfer
-        if (endTransferR(channel)) {
-          return;
+        if (endTransferR()) {
+          // nothing
         }
       }
     }
   }
 
-  private boolean endTransferR(final Channel channel) {
+  private void fromEndTransferSToTransferR(final EndTransferPacket packet) {
+    if (!localChannelReference.getFutureRequest().isDone()) {
+      session.newState(ENDTRANSFERR);
+      if (endTransferR()) {
+        return;
+      }
+      // Now can send validation
+      packet.validate();
+      try {
+        ChannelUtils
+            .writeAbstractLocalPacket(localChannelReference, packet, false);
+      } catch (final OpenR66ProtocolPacketException e) {
+        // ignore
+      }
+    } else {
+      // in error due to a previous status (like bad MD5)
+      logger.error(Messages.getString("LocalServerHandler.20")); //$NON-NLS-1$
+      session.setStatus(23);
+      localChannelReference.close();
+    }
+  }
+
+  private boolean checkGlobalDigest(final EndTransferPacket packet) {
+    final String hash = packet.getOptional();
+    logger.debug(
+        "GlobalDigest: " + localChannelReference.getPartner().getDigestAlgo() +
+        " different? " + (localDigest != null) + " remoteHash? " +
+        (hash != null));
+    if (hash != null && globalDigest != null) {
+      String localhash = FilesystemBasedDigest.getHex(globalDigest.Final());
+      globalDigest = null;
+      if (!localhash.equalsIgnoreCase(hash)) {
+        // bad global Hash
+        final R66Result result = new R66Result(new OpenR66RunnerErrorException(
+            Messages.getString("LocalServerHandler.19") + //$NON-NLS-1$
+            localChannelReference.getPartner().getDigestAlgo().algoName + ')'),
+                                               session, true,
+                                               ErrorCode.MD5Error,
+                                               session.getRunner());
+        try {
+          session.setFinalizeTransfer(false, result);
+        } catch (final OpenR66RunnerErrorException ignored) {
+          // nothing
+        } catch (final OpenR66ProtocolSystemException ignored) {
+          // nothing
+        }
+        final ErrorPacket error = new ErrorPacket(
+            "Global Hash in error, transfer in error and rank should be reset to 0 (using " +
+            localChannelReference.getPartner().getDigestAlgo().algoName + ')',
+            ErrorCode.MD5Error.getCode(), ErrorPacket.FORWARDCLOSECODE);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, error, true);
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
+        }
+        session.setStatus(23);
+        ChannelCloseTimer.closeFutureTransaction(this);
+        return true;
+      } else {
+        if (localDigest != null) {
+          localhash = FilesystemBasedDigest.getHex(localDigest.Final());
+        }
+        localChannelReference.setHashComputeDuringTransfer(localhash);
+        logger.debug("Global digest ok");
+      }
+    } else if (globalDigest != null) {
+      String localhash;
+      if (localDigest != null) {
+        localhash = FilesystemBasedDigest.getHex(localDigest.Final());
+      } else {
+        localhash = FilesystemBasedDigest.getHex(globalDigest.Final());
+      }
+      globalDigest = null;
+      localChannelReference.setHashComputeDuringTransfer(localhash);
+    }
+    localDigest = null;
+    globalDigest = null;
+    return false;
+  }
+
+  private boolean checkOriginalSize(final long originalSize) {
+    try {
+      if (!session.getRunner().isRecvThrough() &&
+          session.getFile().length() != originalSize ||
+          session.getFile().length() == 0) {
+        final R66Result result = new R66Result(new OpenR66RunnerErrorException(
+            Messages.getString("LocalServerHandler.18")),
+                                               //$NON-NLS-1$
+                                               session, true,
+                                               ErrorCode.TransferError,
+                                               session.getRunner());
+        try {
+          session.setFinalizeTransfer(false, result);
+        } catch (final OpenR66RunnerErrorException ignored) {
+          // nothing
+        } catch (final OpenR66ProtocolSystemException ignored) {
+          // nothing
+        }
+        final ErrorPacket error = new ErrorPacket(
+            "Final size in error, transfer in error and rank should be reset to 0",
+            ErrorCode.TransferError.getCode(), ErrorPacket.FORWARDCLOSECODE);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, error, true);
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
+        }
+        session.setStatus(23);
+        ChannelCloseTimer.closeFutureTransaction(this);
+        return true;
+      }
+    } catch (final CommandAbstractException e) {
+      // ignore
+    }
+    return false;
+  }
+
+  private boolean endTransferR() {
     // Finish with post Operation
     R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
                                      session.getRunner());
@@ -997,7 +1086,7 @@ public class TransferActions extends ServerActions {
       session.setFinalizeTransfer(true, result);
     } catch (final OpenR66RunnerErrorException e) {
       session.newState(ERROR);
-      ErrorPacket error = null;
+      ErrorPacket error;
       if (localChannelReference.getFutureRequest().getResult() != null) {
         result = localChannelReference.getFutureRequest().getResult();
         error = new ErrorPacket(
@@ -1011,14 +1100,15 @@ public class TransferActions extends ServerActions {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
       session.setStatus(23);
-      ChannelCloseTimer.closeFutureChannel(channel);
+      ChannelCloseTimer.closeFutureTransaction(this);
       return true;
     } catch (final OpenR66ProtocolSystemException e) {
       session.newState(ERROR);
-      ErrorPacket error = null;
+      ErrorPacket error;
       if (localChannelReference.getFutureRequest().getResult() != null) {
         result = localChannelReference.getFutureRequest().getResult();
         error = new ErrorPacket(
@@ -1032,10 +1122,11 @@ public class TransferActions extends ServerActions {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
       session.setStatus(23);
-      ChannelCloseTimer.closeFutureChannel(channel);
+      ChannelCloseTimer.closeFutureTransaction(this);
       return true;
     }
     return false;
@@ -1044,14 +1135,13 @@ public class TransferActions extends ServerActions {
   /**
    * Receive an End of Request
    *
-   * @param channel
    * @param packet
    *
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public void endRequest(Channel channel, EndRequestPacket packet) {
+  public void endRequest(EndRequestPacket packet) {
     // Validate the last post action on a transfer from receiver remote host
     logger.info("Valid Request {} Packet {}", localChannelReference, packet);
     final DbTaskRunner runner = session.getRunner();
@@ -1102,26 +1192,26 @@ public class TransferActions extends ServerActions {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, packet, true);
-      } catch (final OpenR66ProtocolPacketException e) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
     } else {
       session.newState(ENDREQUESTR);
     }
     if (runner != null &&
         (runner.isSelfRequested() || runner.isSelfRequest())) {
-      ChannelCloseTimer.closeFutureChannel(channel);
+      ChannelCloseTimer.closeFutureTransaction(this);
     }
   }
 
   /**
    * If newFileInfo is provided and different than current value
    *
-   * @param channel
    * @param newFileInfo
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void requestChangeFileInfo(Channel channel, String newFileInfo)
+  public void requestChangeFileInfo(String newFileInfo)
       throws OpenR66RunnerErrorException {
     final DbTaskRunner runner = session.getRunner();
     logger.debug("NewFileInfo " + newFileInfo);
@@ -1139,7 +1229,8 @@ public class TransferActions extends ServerActions {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException e2) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
       try {
         session.setFinalizeTransfer(false, new R66Result(
@@ -1155,22 +1246,19 @@ public class TransferActions extends ServerActions {
                           runner.getErrorInfo(), runner));
       }
       session.setStatus(97);
-      ChannelCloseTimer.closeFutureChannel(channel);
-      return;
+      ChannelCloseTimer.closeFutureTransaction(this);
     }
   }
 
   /**
    * Change the filename and the filesize
    *
-   * @param channel
    * @param newfilename
    * @param newSize
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void requestChangeNameSize(Channel channel, String newfilename,
-                                    long newSize)
+  public void requestChangeNameSize(String newfilename, long newSize)
       throws OpenR66RunnerErrorException {
     session.newState(VALID);
     final DbTaskRunner runner = session.getRunner();
@@ -1182,51 +1270,8 @@ public class TransferActions extends ServerActions {
       if (newSize > 0) {
         runner.setOriginalSize(newSize);
         // Check if a CHKFILE task was supposely needed to run
-        final String[][] rpretasks = runner.getRule().getRpreTasksArray();
-        if (rpretasks != null) {
-          for (final String[] strings : rpretasks) {
-            final AbstractTask task = runner.getTask(strings, session);
-            if (task.getType() == TaskType.CHKFILE) {
-              // re run this in case
-              task.run();
-              task.getFutureCompletion().awaitOrInterruptible();
-              if (!task.getFutureCompletion().isSuccess()) {
-                // not valid so create an error from there
-                final ErrorCode code = ErrorCode.SizeNotAllowed;
-                runner.setErrorExecutionStatus(code);
-                runner.saveStatus();
-                session.setBadRunner(runner, code);
-                session.newState(ERROR);
-                logger.error(
-                    "File length is not compatible with Rule or capacity {} {}",
-                    newfilename + " : " + newSize, session);
-                final ErrorPacket errorPacket = new ErrorPacket(
-                    "File length is not compatible with Rule or capacity",
-                    code.getCode(), ErrorPacket.FORWARDCLOSECODE);
-                try {
-                  ChannelUtils.writeAbstractLocalPacket(localChannelReference,
-                                                        errorPacket, true);
-                } catch (final OpenR66ProtocolPacketException e2) {
-                }
-                try {
-                  session.setFinalizeTransfer(false, new R66Result(
-                      new OpenR66RunnerErrorException(errorPacket.getSheader()),
-                      session, true, runner.getErrorInfo(), runner));
-                } catch (final OpenR66RunnerErrorException e1) {
-                  localChannelReference.invalidateRequest(new R66Result(
-                      new OpenR66RunnerErrorException(errorPacket.getSheader()),
-                      session, true, runner.getErrorInfo(), runner));
-                } catch (final OpenR66ProtocolSystemException e1) {
-                  localChannelReference.invalidateRequest(new R66Result(
-                      new OpenR66RunnerErrorException(errorPacket.getSheader()),
-                      session, true, runner.getErrorInfo(), runner));
-                }
-                session.setStatus(97);
-                ChannelCloseTimer.closeFutureChannel(channel);
-                return;
-              }
-            }
-          }
+        if (checkIfAnyTaskCheckFile(newfilename, newSize, runner)) {
+          return;
         }
       }
     }
@@ -1252,7 +1297,8 @@ public class TransferActions extends ServerActions {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException e2) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
       try {
         session.setFinalizeTransfer(false, new R66Result(e, session, true,
@@ -1266,9 +1312,63 @@ public class TransferActions extends ServerActions {
             new R66Result(e, session, true, runner.getErrorInfo(), runner));
       }
       session.setStatus(97);
-      ChannelCloseTimer.closeFutureChannel(channel);
-      return;
+      ChannelCloseTimer.closeFutureTransaction(this);
     }
     // Success: No write back at all
+  }
+
+  private boolean checkIfAnyTaskCheckFile(final String newfilename,
+                                          final long newSize,
+                                          final DbTaskRunner runner)
+      throws OpenR66RunnerErrorException {
+    final String[][] rpretasks = runner.getRule().getRpreTasksArray();
+    if (rpretasks != null) {
+      for (final String[] strings : rpretasks) {
+        final AbstractTask task = runner.getTask(strings, session);
+        if (task.getType() == TaskType.CHKFILE) {
+          // re run this in case
+          task.run();
+          task.getFutureCompletion().awaitOrInterruptible();
+          if (!task.getFutureCompletion().isSuccess()) {
+            // not valid so create an error from there
+            final ErrorCode code = ErrorCode.SizeNotAllowed;
+            runner.setErrorExecutionStatus(code);
+            runner.saveStatus();
+            session.setBadRunner(runner, code);
+            session.newState(ERROR);
+            logger.error(
+                "File length is not compatible with Rule or capacity {} {}",
+                newfilename + " : " + newSize, session);
+            final ErrorPacket errorPacket = new ErrorPacket(
+                "File length is not compatible with Rule or capacity",
+                code.getCode(), ErrorPacket.FORWARDCLOSECODE);
+            try {
+              ChannelUtils
+                  .writeAbstractLocalPacket(localChannelReference, errorPacket,
+                                            true);
+            } catch (final OpenR66ProtocolPacketException ignored) {
+              // nothing
+            }
+            try {
+              session.setFinalizeTransfer(false, new R66Result(
+                  new OpenR66RunnerErrorException(errorPacket.getSheader()),
+                  session, true, runner.getErrorInfo(), runner));
+            } catch (final OpenR66RunnerErrorException e1) {
+              localChannelReference.invalidateRequest(new R66Result(
+                  new OpenR66RunnerErrorException(errorPacket.getSheader()),
+                  session, true, runner.getErrorInfo(), runner));
+            } catch (final OpenR66ProtocolSystemException e1) {
+              localChannelReference.invalidateRequest(new R66Result(
+                  new OpenR66RunnerErrorException(errorPacket.getSheader()),
+                  session, true, runner.getErrorInfo(), runner));
+            }
+            session.setStatus(97);
+            ChannelCloseTimer.closeFutureTransaction(this);
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 }

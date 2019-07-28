@@ -28,8 +28,6 @@ import org.waarp.ftp.core.command.FtpCommandCode;
 
 /**
  * PBSZ command accepting only 0 as parameter
- *
- *
  */
 public class PBSZ extends AbstractCommand {
 
@@ -45,7 +43,7 @@ public class PBSZ extends AbstractCommand {
       throw new Reply501Exception("Missing Parameter: 0");
     }
     final String[] types = getArgs();
-    if (!types[0].equalsIgnoreCase("0")) {
+    if (!"0".equalsIgnoreCase(types[0])) {
       // Only 0 allowed
       throw new Reply501Exception("Unknown Parameter: " + types[0]);
     }

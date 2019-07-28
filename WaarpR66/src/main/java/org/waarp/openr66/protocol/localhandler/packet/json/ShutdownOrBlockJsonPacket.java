@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.localhandler.packet.json;
 
 /**
  * Shutdown or Block JSON packet
- *
- *
  */
 public class ShutdownOrBlockJsonPacket extends JsonPacket {
 

@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * REST command
- *
- *
  */
 public class REST extends AbstractCommand {
   @Override

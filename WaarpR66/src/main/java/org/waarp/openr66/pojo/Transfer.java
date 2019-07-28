@@ -21,7 +21,7 @@
 package org.waarp.openr66.pojo;
 
 import org.waarp.openr66.context.ErrorCode;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
@@ -48,9 +48,9 @@ public class Transfer {
     NOTASK(0), PRETASK(1), TRANSFERTASK(2), POSTTASK(3), ALLDONETASK(4),
     ERRORTASK(5);
 
-    private int taskNo;
+    private final int taskNo;
 
-    private static Map<Integer, TASKSTEP> map =
+    private static final Map<Integer, TASKSTEP> map =
         new HashMap<Integer, TASKSTEP>();
 
     static {
@@ -73,7 +73,7 @@ public class Transfer {
   }
 
   @XmlElement(name = ID_FIELD)
-  private long id = DbConstant.ILLEGALVALUE;
+  private long id = DbConstantR66.ILLEGALVALUE;
 
   /**
    * True if requester is the sender of the file (SEND MODE) False if
@@ -81,7 +81,7 @@ public class Transfer {
    * (RETRIEVE MODE)
    */
   @XmlElement(name = RETRIEVE_MODE_FIELD)
-  private boolean retrieveMode = false;
+  private boolean retrieveMode;
 
   @XmlElement(name = ID_RULE_FIELD)
   private String rule = "";
@@ -99,13 +99,13 @@ public class Transfer {
   private String fileInfo = "";
 
   @XmlElement(name = IS_MOVED_FIELD)
-  private boolean isFileMoved = false;
+  private boolean isFileMoved;
 
   @XmlElement(name = BLOCK_SIZE_FIELD)
   private int blockSize;
 
   @XmlElement(name = OWNER_REQUEST_FIELD)
-  private String ownerRequest = Configuration.configuration.getHOST_ID();
+  private String ownerRequest = Configuration.configuration.getHostId();
 
   @XmlElement(name = REQUESTER_FIELD)
   private String requester = "";
@@ -132,7 +132,7 @@ public class Transfer {
   private ErrorCode infoStatus = ErrorCode.Unknown;
 
   @XmlElement(name = RANK_FIELD)
-  private int rank = 0;
+  private int rank;
 
   @XmlTransient
   private Timestamp start = new Timestamp(0);
@@ -268,8 +268,8 @@ public class Transfer {
   public Transfer(String remote, String rule, int ruleMode,
                   boolean retrieveMode, String file, String fileInfo,
                   int blockSize, Timestamp start) {
-    ownerRequest = Configuration.configuration.getHOST_ID();
-    requester = Configuration.configuration.getHOST_ID();
+    ownerRequest = Configuration.configuration.getHostId();
+    requester = Configuration.configuration.getHostId();
     requested = remote;
     this.rule = rule;
     transferMode = ruleMode;

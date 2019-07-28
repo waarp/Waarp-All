@@ -32,8 +32,6 @@ import org.waarp.snmp.interf.WaarpInterfaceVariableFactory;
 
 /**
  * FTP Variable Factory for SNMP
- *
- *
  */
 public class FtpVariableFactory implements WaarpInterfaceVariableFactory {
 

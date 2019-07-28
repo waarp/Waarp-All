@@ -30,26 +30,21 @@ import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
-import java.net.SocketAddress;
 import java.sql.Timestamp;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Log Export from a local client without database connection
- *
- *
  */
 public class LogExport implements Runnable {
   /**
@@ -57,7 +52,7 @@ public class LogExport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       "Need at least the configuration file as first argument then optionally\n" +
       "    -purge\n" + "    -clean\n" +
       "    -start timestamp in format yyyyMMddHHmmssSSS possibly truncated and where one of ':-. ' can be separators\n" +
@@ -83,7 +78,7 @@ public class LogExport implements Runnable {
     this.start = start;
     this.stop = stop;
     this.networkTransaction = networkTransaction;
-    host = Configuration.configuration.getHOST_SSLAUTH();
+    host = Configuration.configuration.getHostSslAuth();
   }
 
   public void setHost(DbHostAuth host) {
@@ -100,23 +95,21 @@ public class LogExport implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(LogExport.class);
     }
-    final String lstart = (start != null)? start.toString() : null;
-    final String lstop = (stop != null)? stop.toString() : null;
-    final byte type = (purgeLog)? LocalPacketFactory.LOGPURGEPACKET :
+    final String lstart = start != null? start.toString() : null;
+    final String lstop = stop != null? stop.toString() : null;
+    final byte type = purgeLog? LocalPacketFactory.LOGPURGEPACKET :
         LocalPacketFactory.LOGPACKET;
     ValidPacket valid = new ValidPacket(lstart, lstop, type);
-    LocalChannelReference localChannelReference = AbstractTransfer
-        .tryConnect(host, future,
-                    networkTransaction);
+    LocalChannelReference localChannelReference =
+        AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return;
     }
 
     // first clean if ask
     if (clean &&
-        (host.getHostid().equals(Configuration.configuration.getHOST_ID()) ||
-         host.getHostid()
-             .equals(Configuration.configuration.getHOST_SSLID()))) {
+        (host.getHostid().equals(Configuration.configuration.getHostId()) ||
+         host.getHostid().equals(Configuration.configuration.getHostSslId()))) {
       // Update all UpdatedInfo to DONE
       // where GlobalLastStep = ALLDONETASK and status = CompleteOk
       try {
@@ -132,11 +125,11 @@ public class LogExport implements Runnable {
         .info("Request done with " + (future.isSuccess()? "success" : "error"));
   }
 
-  protected static boolean spurgeLog = false;
-  protected static Timestamp sstart = null;
-  protected static Timestamp sstop = null;
-  protected static boolean sclean = false;
-  protected static String stohost = null;
+  protected static boolean spurgeLog;
+  protected static Timestamp sstart;
+  protected static Timestamp sstop;
+  protected static boolean sclean;
+  protected static String stohost;
 
   protected static boolean getParams(String[] args) {
     if (args.length < 1) {
@@ -151,17 +144,17 @@ public class LogExport implements Runnable {
     String ssstart = null;
     String ssstop = null;
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-purge")) {
+      if ("-purge".equalsIgnoreCase(args[i])) {
         spurgeLog = true;
-      } else if (args[i].equalsIgnoreCase("-clean")) {
+      } else if ("-clean".equalsIgnoreCase(args[i])) {
         sclean = true;
-      } else if (args[i].equalsIgnoreCase("-start")) {
+      } else if ("-start".equalsIgnoreCase(args[i])) {
         i++;
         ssstart = args[i];
-      } else if (args[i].equalsIgnoreCase("-stop")) {
+      } else if ("-stop".equalsIgnoreCase(args[i])) {
         i++;
         ssstop = args[i];
-      } else if (args[i].equalsIgnoreCase("-host")) {
+      } else if ("-host".equalsIgnoreCase(args[i])) {
         i++;
         stohost = args[i];
       }
@@ -191,10 +184,10 @@ public class LogExport implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final long time1 = System.currentTimeMillis();
     final R66Future future = new R66Future(true);
@@ -213,10 +206,10 @@ public class LogExport implements Runnable {
               "LogExport in     FAILURE since Host is not found: " + stohost,
               e);
           networkTransaction.closeAll();
-          System.exit(10);
+          System.exit(10);//NOSONAR
         }
       } else {
-        stohost = Configuration.configuration.getHOST_SSLID();
+        stohost = Configuration.configuration.getHostSslId();
       }
       transaction.run();
       future.awaitOrInterruptible();
@@ -237,17 +230,15 @@ public class LogExport implements Runnable {
       } else {
         if (result.getCode() == ErrorCode.Warning) {
           logger.warn("LogExport is     WARNED", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         } else {
           logger.error("LogExport in     FAILURE", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         }
+        networkTransaction.closeAll();
+        System.exit(result.getCode().ordinal());//NOSONAR
       }
     } finally {
       networkTransaction.closeAll();
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
   }
 

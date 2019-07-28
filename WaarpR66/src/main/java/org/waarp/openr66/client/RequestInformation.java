@@ -19,9 +19,11 @@
  */
 package org.waarp.openr66.client;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
@@ -29,7 +31,6 @@ import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.authentication.R66Auth;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -45,10 +46,10 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.net.SocketAddress;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Class to request information on remote files
- *
- *
  */
 public class RequestInformation implements Runnable {
   /**
@@ -56,27 +57,27 @@ public class RequestInformation implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static String _infoArgs =
       Messages.getString("RequestInformation.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
   protected final NetworkTransaction networkTransaction;
   final R66Future future;
-  String requested = null;
-  String filename = null;
-  String rulename = null;
-  byte code;
-  long id = DbConstant.ILLEGALVALUE;
+  final String requested;
+  final String filename;
+  final String rulename;
+  final byte code;
+  long id = ILLEGALVALUE;
   boolean isTo = true;
   boolean normalInfoAsWarn = true;
 
-  static String srequested = null;
-  static String sfilename = null;
-  static String srulename = null;
+  static String srequested;
+  static String sfilename;
+  static String srulename;
   static byte scode = -1;
-  static long sid = DbConstant.ILLEGALVALUE;
+  static long sid = ILLEGALVALUE;
   static boolean sisTo = true;
-  static protected boolean snormalInfoAsWarn = true;
+  protected static boolean snormalInfoAsWarn = true;
 
   /**
    * Parse the parameter and set current values
@@ -86,10 +87,10 @@ public class RequestInformation implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
-    _INFO_ARGS = Messages.getString("RequestInformation.0") +
-                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
+    _infoArgs = Messages.getString("RequestInformation.0") +
+                Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
-      logger.error(_INFO_ARGS);
+      logger.error(_infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -99,37 +100,37 @@ public class RequestInformation implements Runnable {
       return false;
     }
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-to")) {
+      if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         srequested = args[i];
         if (Configuration.configuration.getAliases().containsKey(srequested)) {
           srequested = Configuration.configuration.getAliases().get(srequested);
         }
-      } else if (args[i].equalsIgnoreCase("-file")) {
+      } else if ("-file".equalsIgnoreCase(args[i])) {
         i++;
         sfilename = args[i];
         sfilename = sfilename.replace('§', '*');
-      } else if (args[i].equalsIgnoreCase("-rule")) {
+      } else if ("-rule".equalsIgnoreCase(args[i])) {
         i++;
         srulename = args[i];
-      } else if (args[i].equalsIgnoreCase("-logWarn")) {
+      } else if ("-logWarn".equalsIgnoreCase(args[i])) {
         snormalInfoAsWarn = true;
-      } else if (args[i].equalsIgnoreCase("-notlogWarn")) {
+      } else if ("-notlogWarn".equalsIgnoreCase(args[i])) {
         snormalInfoAsWarn = false;
-      } else if (args[i].equalsIgnoreCase("-exist")) {
+      } else if ("-exist".equalsIgnoreCase(args[i])) {
         scode = (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal();
-      } else if (args[i].equalsIgnoreCase("-detail")) {
+      } else if ("-detail".equalsIgnoreCase(args[i])) {
         scode = (byte) InformationPacket.ASKENUM.ASKMLSDETAIL.ordinal();
-      } else if (args[i].equalsIgnoreCase("-list")) {
+      } else if ("-list".equalsIgnoreCase(args[i])) {
         scode = (byte) InformationPacket.ASKENUM.ASKLIST.ordinal();
-      } else if (args[i].equalsIgnoreCase("-mlsx")) {
+      } else if ("-mlsx".equalsIgnoreCase(args[i])) {
         scode = (byte) InformationPacket.ASKENUM.ASKMLSLIST.ordinal();
-      } else if (args[i].equalsIgnoreCase("-id")) {
+      } else if ("-id".equalsIgnoreCase(args[i])) {
         i++;
         sid = Long.parseLong(args[i]);
-      } else if (args[i].equalsIgnoreCase("-reqfrom")) {
+      } else if ("-reqfrom".equalsIgnoreCase(args[i])) {
         sisTo = true;
-      } else if (args[i].equalsIgnoreCase("-reqto")) {
+      } else if ("-reqto".equalsIgnoreCase(args[i])) {
         sisTo = false;
       }
     }
@@ -137,14 +138,14 @@ public class RequestInformation implements Runnable {
     if (sfilename != null && scode == -1) {
       scode = (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal();
     }
-    if ((srulename == null && scode != -1) || srequested == null) {
+    if (srulename == null && scode != -1 || srequested == null) {
       logger.error(Messages.getString("RequestInformation.12") +
-                   _INFO_ARGS); //$NON-NLS-1$
+                   _infoArgs); //$NON-NLS-1$
       return false;
     }
-    if (scode != -1 && sid != DbConstant.ILLEGALVALUE) {
+    if (scode != -1 && sid != ILLEGALVALUE) {
       logger.error(Messages.getString("RequestInformation.13") +
-                   _INFO_ARGS); //$NON-NLS-1$
+                   _infoArgs); //$NON-NLS-1$
       return false;
     }
     return true;
@@ -180,16 +181,16 @@ public class RequestInformation implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(RequestInformation.class);
     }
-    InformationPacket request = null;
+    InformationPacket request;
     if (code != -1) {
       request = new InformationPacket(rulename, code, filename);
     } else {
-      request = new InformationPacket("" + id, code, (isTo? "1" : "0"));
+      request =
+          new InformationPacket(String.valueOf(id), code, isTo? "1" : "0");
     }
 
     // Connection
-    final DbHostAuth host =
-        R66Auth.getServerAuth(requested);
+    final DbHostAuth host = R66Auth.getServerAuth(requested);
     if (host == null) {
       logger.error(
           Messages.getString("Message.HostNotFound") + requested); //$NON-NLS-1$
@@ -213,7 +214,6 @@ public class RequestInformation implements Runnable {
 
     final LocalChannelReference localChannelReference = networkTransaction
         .createConnectionWithRetry(socketAddress, isSSL, future);
-    socketAddress = null;
     if (localChannelReference == null) {
       logger.error(Messages.getString("AdminR66OperationsGui.188") +
                    requested); //$NON-NLS-1$
@@ -249,14 +249,17 @@ public class RequestInformation implements Runnable {
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (!OutputFormat.isQuiet()) {
-        System.out.println(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     NetworkTransaction networkTransaction = null;
     int value = 3;
@@ -328,10 +331,10 @@ public class RequestInformation implements Runnable {
       if (networkTransaction != null) {
         networkTransaction.closeAll();
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(value);
+      System.exit(value);//NOSONAR
     }
   }
 

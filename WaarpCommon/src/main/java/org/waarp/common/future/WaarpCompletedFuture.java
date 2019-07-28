@@ -23,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Future completed
- *
- *
  */
 public abstract class WaarpCompletedFuture extends WaarpFuture {
   /**

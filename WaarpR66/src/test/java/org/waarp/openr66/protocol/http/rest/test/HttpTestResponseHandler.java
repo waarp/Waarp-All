@@ -70,8 +70,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * all items are passed in a chain. In normal condition, each step should
  * produce: setting the RestArgument to
  * the RestFuture and validating (error or ok) to RestFuture.
- *
- *
  */
 public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
   /**
@@ -113,8 +111,9 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
   protected boolean afterDbPut(Channel channel, RestArgument ra)
       throws HttpInvalidAuthenticationException {
     HttpTestRestR66Client.count.incrementAndGet();
-    if (ra.getAnswer().path(DbHostConfiguration.Columns.HOSTID.name()).asText()
-          .equals("hosta")) {
+    if ("hosta".equals(
+        ra.getAnswer().path(DbHostConfiguration.Columns.HOSTID.name())
+          .asText())) {
       WaarpSslUtility.closingSslChannel(channel);
       return false;
     }

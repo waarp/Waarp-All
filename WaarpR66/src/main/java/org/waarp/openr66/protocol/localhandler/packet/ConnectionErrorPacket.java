@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Connection Error Message class for packet
  * <p>
  * 2 strings: sheader,smiddle
- *
- *
  */
 public class ConnectionErrorPacket extends AbstractLocalPacket {
 
@@ -96,7 +94,7 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "ConnectionErrorPacket: " + sheader + ":" + smiddle;
+    return "ConnectionErrorPacket: " + sheader + ':' + smiddle;
   }
 
   @Override

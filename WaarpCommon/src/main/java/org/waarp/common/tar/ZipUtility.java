@@ -23,6 +23,8 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +39,12 @@ import java.util.List;
 /**
  *
  */
-public class ZipUtility {
+public final class ZipUtility {
+
+  private static final File[] FILE_0_LENGTH = {};
+
+  private ZipUtility() {
+  }
 
   /**
    * Create a new Zip from a root directory
@@ -64,11 +71,7 @@ public class ZipUtility {
     try {
       recurseFiles(rootDir, rootDir, zaos, absolute);
     } catch (final IOException e2) {
-      try {
-        zaos.close();
-      } catch (final IOException e) {
-        // ignore
-      }
+      FileUtils.close(zaos);
       return false;
     }
     try {
@@ -76,16 +79,7 @@ public class ZipUtility {
     } catch (final IOException e1) {
       // ignore
     }
-    try {
-      zaos.flush();
-    } catch (final IOException e) {
-      // ignore
-    }
-    try {
-      zaos.close();
-    } catch (final IOException e) {
-      // ignore
-    }
+    FileUtils.close(zaos);
     return true;
   }
 
@@ -110,7 +104,7 @@ public class ZipUtility {
       }
     } else if (!file.getName().endsWith(".zip") &&
                !file.getName().endsWith(".ZIP")) {
-      String filename = null;
+      String filename;
       if (absolute) {
         filename =
             file.getAbsolutePath().substring(root.getAbsolutePath().length());
@@ -135,7 +129,7 @@ public class ZipUtility {
    * @return True if OK
    */
   public static boolean createZipFromFiles(List<File> files, String filename) {
-    return createZipFromFiles(files.toArray(new File[] {}), filename);
+    return createZipFromFiles(files.toArray(FILE_0_LENGTH), filename);
   }
 
   /**
@@ -158,11 +152,7 @@ public class ZipUtility {
       try {
         addFile(file, zaos);
       } catch (final IOException e) {
-        try {
-          zaos.close();
-        } catch (final IOException e1) {
-          // ignore
-        }
+        FileUtils.close(zaos);
         return false;
       }
     }
@@ -171,16 +161,7 @@ public class ZipUtility {
     } catch (final IOException e1) {
       // ignore
     }
-    try {
-      zaos.flush();
-    } catch (final IOException e) {
-      // ignore
-    }
-    try {
-      zaos.close();
-    } catch (final IOException e) {
-      // ignore
-    }
+    FileUtils.close(zaos);
     return true;
   }
 
@@ -194,7 +175,7 @@ public class ZipUtility {
    */
   private static void addFile(File file, ZipArchiveOutputStream zaos)
       throws IOException {
-    String filename = null;
+    String filename;
     filename = file.getName();
     final ZipArchiveEntry zae = new ZipArchiveEntry(filename);
     zae.setSize(file.length());
@@ -235,30 +216,30 @@ public class ZipUtility {
         try {
           IOUtils.copy(in, out);
         } finally {
-          out.close();
+          FileUtils.close(out);
         }
         result.add(entry.getName());
         entry = in.getNextZipEntry();
       }
     } finally {
-      in.close();
+      FileUtils.close(in);
     }
     return result;
   }
 
   public static void main(String[] args) {
     if (args.length < 3) {
-      System.err.println("You need to provide 3 arguments:\n" +
-                         "   option filedest.tar \"source\"\n" +
-                         "   where option=1 means unzip and source is a directory\n" +
-                         "   option=2 means zip and source is a directory\n" +
-                         "   option=3 means zip and source is a list of files comma separated");
-      System.exit(1);
+      SysErrLogger.FAKE_LOGGER.syserr("You need to provide 3 arguments:\n" +
+                                      "   option filedest.tar \"source\"\n" +
+                                      "   where option=1 means unzip and source is a directory\n" +
+                                      "   option=2 means zip and source is a directory\n" +
+                                      "   option=3 means zip and source is a list of files comma separated");
+      System.exit(1);//NOSONAR
     }
     final int option = Integer.parseInt(args[0]);
     final String tarfile = args[1];
     final String tarsource = args[2];
-    String[] tarfiles = null;
+    String[] tarfiles;
     if (option == 3) {
       tarfiles = args[2].split(",");
       final File[] files = new File[tarfiles.length];
@@ -266,15 +247,15 @@ public class ZipUtility {
         files[i] = new File(tarfiles[i]);
       }
       if (createZipFromFiles(files, tarfile)) {
-        System.out.println("ZIP OK from multiple files");
+        SysErrLogger.FAKE_LOGGER.sysout("ZIP OK from multiple files");
       } else {
-        System.err.println("ZIP KO from multiple files");
+        SysErrLogger.FAKE_LOGGER.syserr("ZIP KO from multiple files");
       }
     } else if (option == 2) {
       if (createZipFromDirectory(tarsource, tarfile, false)) {
-        System.out.println("ZIP OK from directory");
+        SysErrLogger.FAKE_LOGGER.sysout("ZIP OK from directory");
       } else {
-        System.err.println("ZIP KO from directory");
+        SysErrLogger.FAKE_LOGGER.syserr("ZIP KO from directory");
       }
     } else if (option == 1) {
       final File tarFile = new File(tarfile);
@@ -283,14 +264,13 @@ public class ZipUtility {
       try {
         result = unZip(tarFile, directory);
       } catch (final IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
       }
       if (result == null || result.isEmpty()) {
-        System.err.println("UNZIP KO from directory");
+        SysErrLogger.FAKE_LOGGER.syserr("UNZIP KO from directory");
       } else {
         for (final String string : result) {
-          System.out.println("File: " + string);
+          SysErrLogger.FAKE_LOGGER.sysout("File: " + string);
         }
       }
     }

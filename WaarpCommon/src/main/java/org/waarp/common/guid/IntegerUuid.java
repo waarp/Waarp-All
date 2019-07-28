@@ -37,8 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * issues.<br>
  * <br>
  * Limit is about 4000000/s UUID
- *
- *
  */
 public final class IntegerUuid {
   /**
@@ -138,7 +136,7 @@ public final class IntegerUuid {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof IntegerUuid)) {
+    if (!(o instanceof IntegerUuid)) {
       return false;
     }
     return this == o || Arrays.equals(uuid, ((IntegerUuid) o).uuid);

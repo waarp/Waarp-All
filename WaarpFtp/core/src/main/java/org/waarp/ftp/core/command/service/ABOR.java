@@ -26,8 +26,6 @@ import org.waarp.ftp.core.exception.FtpNoTransferException;
 
 /**
  * ABOR command
- *
- *
  */
 public class ABOR extends AbstractCommand {
   @Override

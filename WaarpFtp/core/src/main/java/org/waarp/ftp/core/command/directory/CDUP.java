@@ -27,8 +27,6 @@ import org.waarp.ftp.core.file.FtpDir;
 
 /**
  * CDUP command
- *
- *
  */
 public class CDUP extends AbstractCommand {
   @Override
@@ -39,7 +37,7 @@ public class CDUP extends AbstractCommand {
     }
     if (current.changeParentDirectory()) {
       getSession().setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                                "\"" + current.getPwd() +
+                                '"' + current.getPwd() +
                                 "\" is the new current directory");
     } else {
       getSession()

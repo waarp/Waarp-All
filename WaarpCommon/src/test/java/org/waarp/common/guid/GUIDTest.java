@@ -144,7 +144,7 @@ public class GUIDTest {
     bytes[1] = 0;
     bytes[2] = 0;
 
-    assertTrue(Arrays.equals(id.getBytes(), original));
+    assertArrayEquals(id.getBytes(), original);
   }
 
   @Test
@@ -165,25 +165,24 @@ public class GUIDTest {
       final GUID parsed2 = new GUID(BASE64);
       final GUID parsed0 = new GUID(BASE16);
       final GUID parsed8 = new GUID(BASEARK);
-      final byte[] bytes = BYTES;
-      final GUID parsed9 = new GUID(bytes);
-      assertTrue(parsed1.equals(parsed2));
-      assertTrue(parsed1.equals(parsed8));
-      assertTrue(parsed1.equals(parsed9));
-      assertTrue(parsed1.equals(parsed0));
+      final GUID parsed9 = new GUID(BYTES);
+      assertEquals(parsed1, parsed2);
+      assertEquals(parsed1, parsed8);
+      assertEquals(parsed1, parsed9);
+      assertEquals(parsed1, parsed0);
       final GUID parsed3 = new GUID(parsed9.getBytes());
       final GUID parsed4 = new GUID(parsed9.toBase32());
       final GUID parsed5 = new GUID(parsed9.toHex());
       final GUID parsed6 = new GUID(parsed9.toString());
       final GUID parsed7 = new GUID(parsed9.toBase64());
-      assertTrue(parsed9.equals(parsed3));
-      assertTrue(parsed9.equals(parsed4));
-      assertTrue(parsed9.equals(parsed5));
-      assertTrue(parsed9.equals(parsed6));
-      assertTrue(parsed9.equals(parsed7));
+      assertEquals(parsed9, parsed3);
+      assertEquals(parsed9, parsed4);
+      assertEquals(parsed9, parsed5);
+      assertEquals(parsed9, parsed6);
+      assertEquals(parsed9, parsed7);
       final GUID generated = new GUID();
       LOGGER.warn("{}", generated.getVersion());
-      assertTrue(generated.getVersion() == 1);
+      assertEquals(1, generated.getVersion());
     } catch (final InvalidArgumentException e) {
       LOGGER.debug(e);
       fail(e.getMessage());
@@ -220,32 +219,31 @@ public class GUIDTest {
       new GUID(WRONG_ARK1);
       fail("SHOULD_HAVE_AN_EXCEPTION");
     } catch (final InvalidArgumentException e) {
-      LOGGER.debug("SHOULD_HAVE_AN_EXCEPTION", e);
+      LOGGER.trace("SHOULD_HAVE_AN_EXCEPTION", e);
     }
     try {
       new GUID(WRONG_ARK2);
       fail("SHOULD_HAVE_AN_EXCEPTION");
     } catch (final InvalidArgumentException e) {
-      LOGGER.debug("SHOULD_HAVE_AN_EXCEPTION", e);
+      LOGGER.trace("SHOULD_HAVE_AN_EXCEPTION", e);
     }
     try {
       new GUID(WRONG_ARK3);
       fail("SHOULD_HAVE_AN_EXCEPTION");
     } catch (final InvalidArgumentException e) {
-      LOGGER.debug("SHOULD_HAVE_AN_EXCEPTION", e);
+      LOGGER.trace("SHOULD_HAVE_AN_EXCEPTION", e);
     }
-    final byte[] bytes = WRONG_BYTES;
     try {
-      new GUID(bytes);
+      new GUID(WRONG_BYTES);
       fail("SHOULD_HAVE_AN_EXCEPTION");
     } catch (final InvalidArgumentException e) {
-      LOGGER.debug("SHOULD_HAVE_AN_EXCEPTION", e);
+      LOGGER.trace("SHOULD_HAVE_AN_EXCEPTION", e);
     }
     try {
       new GUID(WRONG_STRING_ID);
       fail("SHOULD_HAVE_AN_EXCEPTION");
     } catch (final InvalidArgumentException e) {
-      LOGGER.debug("SHOULD_HAVE_AN_EXCEPTION", e);
+      LOGGER.trace("SHOULD_HAVE_AN_EXCEPTION", e);
     }
     GUID guid = null;
     GUID guid2 = null;
@@ -257,10 +255,10 @@ public class GUIDTest {
       fail("SHOULD_NOT_HAVE_AN_EXCEPTION");
       return;
     }
-    assertFalse(guid.equals(null));
-    assertFalse(guid.equals(new Object()));
-    assertTrue(guid.equals(guid));
-    assertTrue(guid.equals(guid2));
+    assertNotEquals(null, guid);
+    assertNotEquals(guid, new Object());
+    assertEquals(guid, guid);
+    assertEquals(guid, guid2);
   }
 
 }

@@ -33,7 +33,7 @@ import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -42,8 +42,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 /**
  * Test class for Send Through client
- *
- *
  */
 public class TestSendThroughClient extends SendThroughClient {
 
@@ -62,7 +60,7 @@ public class TestSendThroughClient extends SendThroughClient {
                                String fileinfo, boolean isMD5, int blocksize,
                                NetworkTransaction networkTransaction) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
-          DbConstant.ILLEGALVALUE, networkTransaction);
+          DbConstantR66.ILLEGALVALUE, networkTransaction);
   }
 
   /**
@@ -75,10 +73,10 @@ public class TestSendThroughClient extends SendThroughClient {
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (DbConstantR66.admin != null) {
+        DbConstantR66.admin.close();
       }
-      DetectionUtils.SystemExit(1);
+      DetectionUtils.systemExit(1);
       return;
     }
     Configuration.configuration.pipelineInit();
@@ -121,29 +119,27 @@ public class TestSendThroughClient extends SendThroughClient {
           try {
             result.getRunner().delete();
           } catch (final WaarpDatabaseException e) {
-            logger
-                .warn("Cannot apply nolog to " + result.getRunner().toString(),
-                      e);
+            logger.warn("Cannot apply nolog to " + result.getRunner(), e);
           }
         }
       } else {
         if (result == null || result.getRunner() == null) {
           logger.warn("Transfer in Error with no Id", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(1);
+          DetectionUtils.systemExit(1);
           return;
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
           logger.warn("Transfer in Warning with Id: " +
                       result.getRunner().getSpecialId(), future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(result.getCode().ordinal());
+          DetectionUtils.systemExit(result.getCode().ordinal());
         } else {
           logger.error(
               "Transfer in Error with Id: " + result.getRunner().getSpecialId(),
               future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(result.getCode().ordinal());
+          DetectionUtils.systemExit(result.getCode().ordinal());
         }
       }
     } finally {

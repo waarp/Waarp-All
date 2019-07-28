@@ -26,8 +26,6 @@ import io.netty.channel.MessageSizeEstimator;
 
 /**
  * DataBlock size estimator
- *
- *
  */
 public class DataBlockSizeEstimator implements MessageSizeEstimator {
 

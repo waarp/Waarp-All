@@ -36,8 +36,6 @@ import java.util.List;
  * PAGE is not implemented.<br>
  * Note that real actions are taken in the DataNetworkHandler according to the
  * implementation of FtpFile.
- *
- *
  */
 @Sharable
 class FtpDataStructureCodec
@@ -99,7 +97,7 @@ class FtpDataStructureCodec
   /**
    * @param structure
    */
-  public FtpDataStructureCodec(TransferStructure structure) {
+  FtpDataStructureCodec(TransferStructure structure) {
     this.structure = structure;
   }
 
@@ -120,10 +118,8 @@ class FtpDataStructureCodec
   @Override
   protected void encode(ChannelHandlerContext ctx, DataBlock msg,
                         List<Object> out) throws Exception {
-    if (structure == TransferStructure.FILE) {
-      out.add(msg);
-      return;
-    } else if (structure == TransferStructure.RECORD) {
+    if (structure == TransferStructure.FILE ||
+        structure == TransferStructure.RECORD) {
       out.add(msg);
       return;
     }
@@ -136,10 +132,8 @@ class FtpDataStructureCodec
   @Override
   protected void decode(ChannelHandlerContext ctx, DataBlock msg,
                         List<Object> out) throws Exception {
-    if (structure == TransferStructure.FILE) {
-      out.add(msg);
-      return;
-    } else if (structure == TransferStructure.RECORD) {
+    if (structure == TransferStructure.FILE ||
+        structure == TransferStructure.RECORD) {
       out.add(msg);
       return;
     }

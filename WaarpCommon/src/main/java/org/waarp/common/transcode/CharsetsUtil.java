@@ -19,6 +19,8 @@
  */
 package org.waarp.common.transcode;
 
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -45,15 +47,16 @@ import java.util.SortedMap;
  * Allow also to transcode one file to another: all arguments mandatory<br>
  * -from filename charset<br>
  * -to filename charset<br>
- *
- *
  */
-public class CharsetsUtil {
+public final class CharsetsUtil {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(CharsetsUtil.class);
+
+  private CharsetsUtil() {
+  }
 
   /**
    * @param args
@@ -67,18 +70,18 @@ public class CharsetsUtil {
     String toCharset = null;
     if (args.length > 0) {
       for (int i = 0; i < args.length; i++) {
-        if (args[i].equalsIgnoreCase("-html")) {
+        if ("-html".equalsIgnoreCase(args[i])) {
           format = 0;
-        } else if (args[i].equalsIgnoreCase("-text")) {
+        } else if ("-text".equalsIgnoreCase(args[i])) {
           format = 1;
-        } else if (args[i].equalsIgnoreCase("-csv")) {
+        } else if ("-csv".equalsIgnoreCase(args[i])) {
           format = 2;
-        } else if (args[i].equalsIgnoreCase("-to")) {
+        } else if ("-to".equalsIgnoreCase(args[i])) {
           i++;
           toFilename = args[i];
           i++;
           toCharset = args[i];
-        } else if (args[i].equalsIgnoreCase("-from")) {
+        } else if ("-from".equalsIgnoreCase(args[i])) {
           i++;
           fromFilename = args[i];
           i++;
@@ -92,7 +95,7 @@ public class CharsetsUtil {
     if (transcode) {
       final boolean status =
           transcode(fromFilename, fromCharset, toFilename, toCharset, 16384);
-      System.out.println("Transcode: " + status);
+      SysErrLogger.FAKE_LOGGER.sysout("Transcode: " + status);
     } else {
       printOutCharsetsAvailable(format);
     }
@@ -106,80 +109,82 @@ public class CharsetsUtil {
     final Set<Entry<String, Charset>> set = map.entrySet();
     switch (format) {
       case 0:
-        System.out.println(
+        SysErrLogger.FAKE_LOGGER.sysout(
             "<html><body><table border=1><tr><th>Name</th><th>CanEncode</th><th>IANA Registered</th><th>Aliases</th></tr>");
         break;
       case 1:
-        System.out.println("Name\tCanEncode\tIANA Registered\tAliases");
+        SysErrLogger.FAKE_LOGGER
+            .sysout("Name\tCanEncode\tIANA Registered\tAliases");
         break;
       case 2:
-        System.out.println("Name,CanEncode,IANA Registered,Aliases");
+      default:
+        SysErrLogger.FAKE_LOGGER
+            .sysout("Name,CanEncode,IANA Registered,Aliases");
         break;
     }
     for (final Entry<String, Charset> entry : set) {
       final Charset charset = entry.getValue();
-      String aliases = null;
+      StringBuilder aliases = null;
       switch (format) {
         case 0:
-          aliases = "<ul>";
+          aliases = new StringBuilder("<ul>");
           break;
         case 1:
-          aliases = "[ ";
-          break;
         case 2:
-          aliases = "[ ";
+        default:
+          aliases = new StringBuilder("[ ");
           break;
       }
       final Set<String> aliasCharset = charset.aliases();
       for (final String string : aliasCharset) {
         switch (format) {
           case 0:
-            aliases += "<li>" + string + "</li>";
+            aliases.append("<li>").append(string).append("</li>");
             break;
           case 1:
-            aliases += string + " ";
-            break;
           case 2:
-            aliases += string + " ";
+          default:
+            aliases.append(string).append(' ');
             break;
         }
       }
       switch (format) {
         case 0:
-          aliases += "</ul>";
+          aliases.append("</ul>");
           break;
         case 1:
-          aliases += "]";
-          break;
         case 2:
-          aliases += "]";
+        default:
+          aliases.append(']');
           break;
       }
       switch (format) {
         case 0:
-          System.out.println(
+          SysErrLogger.FAKE_LOGGER.sysout(
               "<tr><td>" + entry.getKey() + "</td><td>" + charset.canEncode() +
               "</td><td>" + charset.isRegistered() + "</td><td>" + aliases +
               "</td>");
           break;
         case 1:
-          System.out.println(
-              entry.getKey() + "\t" + charset.canEncode() + "\t" +
-              charset.isRegistered() + "\t" + aliases);
+          SysErrLogger.FAKE_LOGGER.sysout(
+              entry.getKey() + '\t' + charset.canEncode() + '\t' +
+              charset.isRegistered() + '\t' + aliases);
           break;
         case 2:
-          System.out.println(entry.getKey() + "," + charset.canEncode() + "," +
-                             charset.isRegistered() + "," + aliases);
+        default:
+          SysErrLogger.FAKE_LOGGER.sysout(
+              entry.getKey() + ',' + charset.canEncode() + ',' +
+              charset.isRegistered() + ',' + aliases);
           break;
       }
     }
     switch (format) {
       case 0:
-        System.out.println("</table></body></html>");
+        SysErrLogger.FAKE_LOGGER.sysout("</table></body></html>");
         break;
       case 1:
-        break;
       case 2:
+      default:
         break;
     }
   }
@@ -223,23 +228,11 @@ public class CharsetsUtil {
       logger.warn("Unsupported Encoding", e);
     } catch (final IOException e) {
       logger.warn("File IOException", e);
-    }
-    try {
-      if (reader != null) {
-        reader.close();
-      } else if (fileInputStream != null) {
-        fileInputStream.close();
-      }
-    } catch (final IOException e) {
-    }
-    try {
-      if (writer != null) {
-        writer.flush();
-        writer.close();
-      } else if (fileOutputStream != null) {
-        fileOutputStream.close();
-      }
-    } catch (final IOException e) {
+    } finally {
+      FileUtils.close(reader);
+      FileUtils.close(fileInputStream);
+      FileUtils.close(writer);
+      FileUtils.close(fileOutputStream);
     }
     return success;
   }

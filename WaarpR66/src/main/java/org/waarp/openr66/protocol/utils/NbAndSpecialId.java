@@ -19,15 +19,13 @@
  */
 package org.waarp.openr66.protocol.utils;
 
-import org.waarp.openr66.database.DbConstant;
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Class to retrieve the number of runner and the higher rank.
- *
- *
  */
 public class NbAndSpecialId {
-  public int nb = 0;
-  public long higherSpecialId = DbConstant.ILLEGALVALUE;
+  public int nb;
+  public long higherSpecialId = ILLEGALVALUE;
 
 }

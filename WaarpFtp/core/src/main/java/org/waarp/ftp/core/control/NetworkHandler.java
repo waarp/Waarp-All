@@ -55,10 +55,11 @@ import java.util.concurrent.RejectedExecutionException;
  * Main Network Handler (Control part) implementing RFC 959, 775, 2389, 2428,
  * 3659 and supports XCRC and XMD5
  * commands.
- *
- *
  */
 public class NetworkHandler extends SimpleChannelInboundHandler<String> {
+  private static final String INTERNAL_ERROR_DISCONNECT =
+      "Internal error: disconnect";
+
   /**
    * Internal Logger
    */
@@ -192,32 +193,31 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
       throws Exception {
     this.ctx = ctx;
-    final Throwable e1 = cause;
     final Channel channel = ctx.channel();
     if (session == null) {
       // should not be
-      logger.warn("NO SESSION", e1);
+      logger.warn("NO SESSION", cause);
       return;
     }
-    if (e1 instanceof ConnectException) {
-      final ConnectException e2 = (ConnectException) e1;
+    if (cause instanceof ConnectException) {
+      final ConnectException e2 = (ConnectException) cause;
       logger.warn("Connection impossible since {} with Channel {}",
                   e2.getMessage(), channel);
-    } else if (e1 instanceof ChannelException) {
-      final ChannelException e2 = (ChannelException) e1;
+    } else if (cause instanceof ChannelException) {
+      final ChannelException e2 = (ChannelException) cause;
       logger.warn(
           "Connection (example: timeout) impossible since {} with Channel {}",
           e2.getMessage(), channel);
-    } else if (e1 instanceof ClosedChannelException) {
+    } else if (cause instanceof ClosedChannelException) {
       logger.debug("Connection closed before end");
-      session.setExitErrorCode("Internal error: disconnect");
+      session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);
       if (channel.isActive()) {
         writeFinalAnswer(ctx);
       }
       return;
-    } else if (e1 instanceof CommandAbstractException) {
+    } else if (cause instanceof CommandAbstractException) {
       // FTP Exception: not close if not necessary
-      final CommandAbstractException e2 = (CommandAbstractException) e1;
+      final CommandAbstractException e2 = (CommandAbstractException) cause;
       logger.warn("Command Error Reply {}", e2.getMessage());
       session.setReplyCode(e2);
       businessHandler.afterRunCommandKo(e2);
@@ -225,37 +225,38 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         writeFinalAnswer(ctx);
       }
       return;
-    } else if (e1 instanceof NullPointerException) {
-      final NullPointerException e2 = (NullPointerException) e1;
+    } else if (cause instanceof NullPointerException) {
+      final NullPointerException e2 = (NullPointerException) cause;
       logger.warn("Null pointer Exception: " + ctx.channel(), e2);
       try {
         if (session != null) {
-          session.setExitErrorCode("Internal error: disconnect");
+          session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);
           if (businessHandler != null && session.getDataConn() != null) {
-            businessHandler.exceptionLocalCaught(e1);
+            businessHandler.exceptionLocalCaught(cause);
             if (channel.isActive()) {
               writeFinalAnswer(ctx);
             }
           }
         }
-      } catch (final NullPointerException e3) {
+      } catch (final NullPointerException ignored) {
+        // nothing
       }
       return;
-    } else if (e1 instanceof IOException) {
-      final IOException e2 = (IOException) e1;
+    } else if (cause instanceof IOException) {
+      final IOException e2 = (IOException) cause;
       logger
           .warn("Connection aborted since {} with Channel {}", e2.getMessage(),
                 channel);
-      logger.warn(e1);
-    } else if (e1 instanceof RejectedExecutionException) {
+      logger.warn(cause);
+    } else if (cause instanceof RejectedExecutionException) {
       logger.debug("Rejected execution (shutdown) from {}", channel);
       return;
     } else {
       logger.warn("Unexpected exception from Outband Ref Channel: " + channel +
-                  " Exception: " + e1.getMessage(), e1);
+                  " Exception: " + cause.getMessage(), cause);
     }
-    session.setExitErrorCode("Internal error: disconnect");
-    businessHandler.exceptionLocalCaught(e1);
+    session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);
+    businessHandler.exceptionLocalCaught(cause);
     if (channel.isActive()) {
       writeFinalAnswer(ctx);
     }
@@ -278,10 +279,8 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         writeIntermediateAnswer(ctx);
         return;
       }
-      final String message = e;
-      AbstractCommand command =
-          FtpCommandCode.getFromLine(getFtpSession(), message);
-      logger.debug("RECVMSG: {} CMD: {} " + command.getCode(), message,
+      AbstractCommand command = FtpCommandCode.getFromLine(getFtpSession(), e);
+      logger.debug("RECVMSG: {} CMD: {} " + command.getCode(), e,
                    command.getCommand());
       // First check if the command is an ABORT, QUIT or STAT
       if (!FtpCommandCode.isSpecialCommand(command.getCode())) {
@@ -322,7 +321,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
           return;
         }
         command = new IncorrectCommand();
-        command.setArgs(getFtpSession(), message, null,
+        command.setArgs(getFtpSession(), e, null,
                         FtpCommandCode.IncorrectSequence);
         session.setNextCommand(command);
         messageRunAnswer(ctx);
@@ -401,7 +400,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
       businessHandler.afterRunCommandKo(e);
     }
     logger.debug("Code: " + session.getCurrentCommand().getCode() + " [" +
-                 session.getReplyCode() + "]");
+                 session.getReplyCode() + ']');
     if (error) {
       if (session.getCurrentCommand().getCode() !=
           FtpCommandCode.INTERNALSHUTDOWN) {

@@ -44,8 +44,6 @@ import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
 /**
  * Bandwidth Http REST interface: http://host/bandwidth?... +
  * BandwidthJsonPacket as GET or PUT
- *
- *
  */
 public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
 
@@ -140,7 +138,8 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
                                                node3.createObjectNode(), node1);
         node.add(node2);
       }
-    } catch (final OpenR66ProtocolPacketException e1) {
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // ignore
     }
 
     if (methods.contains(METHOD.PUT)) {
@@ -150,7 +149,8 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
                                                ACTIONS_TYPE.SetBandwidth.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
     node2 = RestArgument

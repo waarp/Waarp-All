@@ -22,7 +22,6 @@ package org.waarp.common.lru;
 /**
  * Modification of SynchronizedLruCache which uses SoftReference to store values
  *
- *
  * @author Damian Momot
  */
 public class SoftReferenceSynchronizedLruCache<K, V>

@@ -67,7 +67,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * <br>
  * <br>
  *
- *
  * @see TestRecvThroughClient Class as example of usage in test part
  */
 public class RecvThroughClient extends AbstractTransfer {
@@ -146,7 +145,6 @@ public class RecvThroughClient extends AbstractTransfer {
         } catch (final OpenR66ProtocolNotYetConnectionException e) {
           logger.debug("Not Yet Connected", e);
           exc = e;
-          continue;
         }
       }
       if (exc != null) {
@@ -156,14 +154,14 @@ public class RecvThroughClient extends AbstractTransfer {
             new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
                           taskRunner));
         future.setFailure(exc);
-        return;
       }
     } finally {
       if (taskRunner != null) {
         if (future.isFailed() || nolog || taskRunner.shallIgnoreSave()) {
           try {
             taskRunner.delete();
-          } catch (final WaarpDatabaseException e) {
+          } catch (final WaarpDatabaseException ignored) {
+            // nothing
           }
         }
       }

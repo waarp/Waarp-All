@@ -49,12 +49,12 @@ public class RestVersionHandler
   /**
    * Name of this handler in the Netty pipeline.
    */
-  public final static String HANDLER_NAME = "version_handler";
+  public static final String HANDLER_NAME = "version_handler";
 
   /**
    * Name of the RESTv1 handler in the Netty pipeline.
    */
-  private final static String V1_HANDLER = "v1_handler";
+  private static final String V1_HANDLER = "v1_handler";
 
   /**
    * The RESTv1 handler.

@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.server;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -30,11 +31,12 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
 /**
  * R66Server startup main class
- *
- *
  */
 public class R66Server {
   private static WaarpLogger logger;
+
+  private R66Server() {
+  }
 
   /**
    * @param args as first argument the configuration file
@@ -53,19 +55,19 @@ public class R66Server {
       WaarpShutdownHook.registerMain(R66Server.class, args);
       if (initialize(args[0])) {
         logger.warn(Messages.getString("R66Server.ServerStart") +
-                    Configuration.configuration.getHOST_ID() + " : "
+                    Configuration.configuration.getHostId() + " : "
                     //$NON-NLS-1$
-                    + Configuration.configuration.toString());
-        System.err.println(Messages.getString("R66Server.ServerStart") +
-                           Configuration.configuration
-                               .getHOST_ID()); //$NON-NLS-1$
+                    + Configuration.configuration);
+        SysErrLogger.FAKE_LOGGER.syserr(
+            Messages.getString("R66Server.ServerStart") +
+            Configuration.configuration.getHostId()); //$NON-NLS-1$
       } else {
         logger.error(Messages.getString("R66Server.CannotStart") +
-                     Configuration.configuration.getHOST_ID()); //$NON-NLS-1$
-        System.err.println(Messages.getString("R66Server.CannotStart") +
-                           Configuration.configuration
-                               .getHOST_ID()); //$NON-NLS-1$
-        System.exit(1);
+                     Configuration.configuration.getHostId()); //$NON-NLS-1$
+        SysErrLogger.FAKE_LOGGER.syserr(
+            Messages.getString("R66Server.CannotStart") +
+            Configuration.configuration.getHostId()); //$NON-NLS-1$
+        System.exit(1);//NOSONAR
       }
     } catch (final Throwable e) {
       logger.error(Messages.getString("R66Server.StartError"), e); //$NON-NLS-1$

@@ -19,21 +19,30 @@
  */
 package org.waarp.openr66.protocol.localhandler.packet.json;
 
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Import Configuration JSON packet
- *
- *
  */
 public class ConfigImportJsonPacket extends JsonPacket {
 
-  protected boolean purgehost, purgerule, purgebusiness, purgealias, purgeroles;
-  protected String host, rule, business, alias, roles;
-  protected long hostid = DbConstant.ILLEGALVALUE, ruleid =
-      DbConstant.ILLEGALVALUE, businessid = DbConstant.ILLEGALVALUE, aliasid =
-      DbConstant.ILLEGALVALUE, rolesid = DbConstant.ILLEGALVALUE;
+  protected boolean purgehost;
+  protected boolean purgerule;
+  protected boolean purgebusiness;
+  protected boolean purgealias;
+  protected boolean purgeroles;
+  protected String host;
+  protected String rule;
+  protected String business;
+  protected String alias;
+  protected String roles;
+  protected long hostid = ILLEGALVALUE;
+  protected long ruleid = ILLEGALVALUE;
+  protected long businessid = ILLEGALVALUE;
+  protected long aliasid = ILLEGALVALUE;
+  protected long rolesid = ILLEGALVALUE;
 
   /**
    * @return the purgehost
@@ -270,6 +279,6 @@ public class ConfigImportJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.CONFIMPORTPACKET);
+    setRequestUserPacket(LocalPacketFactory.CONFIMPORTPACKET);
   }
 }

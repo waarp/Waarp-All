@@ -29,8 +29,6 @@ import org.waarp.ftp.core.session.FtpSession;
 
 /**
  * STOR command
- *
- *
  */
 public class STOR extends AbstractCommand {
   @Override

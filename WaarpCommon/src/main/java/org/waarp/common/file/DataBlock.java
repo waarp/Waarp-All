@@ -23,8 +23,6 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * Main object implementing Data Block whaveter the mode, type, structure used.
- *
- *
  */
 public class DataBlock {
   private static final int EOR = 128;
@@ -79,6 +77,7 @@ public class DataBlock {
    * Create a simple and empty DataBlock
    */
   public DataBlock() {
+    // Empty
   }
 
   /**
@@ -130,7 +129,7 @@ public class DataBlock {
    * @param lower lower byte of the 2 bytes length
    */
   public void setByteCount(byte upper, byte lower) {
-    byteCount = upper << 8 | lower;
+    byteCount = upper << 8 | (lower & 0xFF);
   }
 
   /**
@@ -177,7 +176,7 @@ public class DataBlock {
    */
   public void setEOF(boolean isEOF) {
     this.isEOF = isEOF;
-    descriptor = descriptor | EOF;
+    descriptor |= EOF;
   }
 
   /**
@@ -192,7 +191,7 @@ public class DataBlock {
    */
   public void setEOR(boolean isEOR) {
     this.isEOR = isEOR;
-    descriptor = descriptor | EOR;
+    descriptor |= EOR;
   }
 
   /**
@@ -207,7 +206,7 @@ public class DataBlock {
    */
   public void setERROR(boolean isERROR) {
     this.isERROR = isERROR;
-    descriptor = descriptor | ERROR;
+    descriptor |= ERROR;
   }
 
   /**
@@ -222,7 +221,7 @@ public class DataBlock {
    */
   public void setRESTART(boolean isRESTART) {
     this.isRESTART = isRESTART;
-    descriptor = descriptor | RESTART;
+    descriptor |= RESTART;
   }
 
   /**

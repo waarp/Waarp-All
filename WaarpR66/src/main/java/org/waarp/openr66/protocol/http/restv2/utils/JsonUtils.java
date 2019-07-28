@@ -30,8 +30,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
-import org.waarp.openr66.protocol.http.restv2.errors.RestErrors;
 
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotSupportedException;
@@ -52,7 +53,7 @@ public final class JsonUtils {
    */
   private JsonUtils() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ######################### PUBLIC METHODS #################################
@@ -97,7 +98,12 @@ public final class JsonUtils {
     try {
       final String body =
           ((FullHttpRequest) request).content().toString(UTF8_CHARSET);
-
+      try {
+        ParametersChecker.checkSanityString(body);
+      } catch (InvalidArgumentException e) {
+        throw new RestErrorException(MALFORMED_JSON(0, 0,
+                                                    "The root JSON element contains invalid data"));
+      }
       final ObjectMapper mapper = new ObjectMapper();
       mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
       final JsonNode node = mapper.readTree(body);
@@ -123,9 +129,9 @@ public final class JsonUtils {
       try {
         final String field = parser.getCurrentName();
         if (field == null) {
-          throw new RestErrorException(RestErrors.MISSING_BODY());
+          throw new RestErrorException(MISSING_BODY());
         } else {
-          throw new RestErrorException(RestErrors.DUPLICATE_KEY(field));
+          throw new RestErrorException(DUPLICATE_KEY(field));
         }
       } catch (final IOException ex) {
         throw new InternalServerErrorException(e);

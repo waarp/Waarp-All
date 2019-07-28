@@ -25,8 +25,6 @@ import org.waarp.ftp.core.session.FtpSession;
 /**
  * This class is to be implemented in order to allow Business actions according
  * to FTP service
- *
- *
  */
 public abstract class DataBusinessHandler {
   /**
@@ -42,7 +40,7 @@ public abstract class DataBusinessHandler {
   /**
    * Constructor with no argument (mandatory)
    */
-  public DataBusinessHandler() {
+  protected DataBusinessHandler() {
     // nothing to do
   }
 

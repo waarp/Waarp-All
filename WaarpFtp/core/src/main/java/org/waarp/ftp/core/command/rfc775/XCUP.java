@@ -23,8 +23,6 @@ import org.waarp.ftp.core.command.directory.CDUP;
 
 /**
  * XCUP command
- *
- *
  */
 public class XCUP extends CDUP {
 

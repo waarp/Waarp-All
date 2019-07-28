@@ -23,6 +23,8 @@ package org.waarp.common.utility;
  * Description: Converts Unix files to Dos and vice versa
  */
 
+import com.google.common.io.Files;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -32,7 +34,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -41,7 +42,7 @@ public class FileConvert extends Thread {
   /**
    * Internal Logger
    */
-  static volatile WaarpLogger logger;
+  private static volatile WaarpLogger logger;
 
   private final boolean unix2dos;
   private final boolean recursive;
@@ -80,7 +81,9 @@ public class FileConvert extends Thread {
     }
 
     final ArrayList<File> files = new ArrayList<File>();
-    boolean unix2dos = false, dos2unix = false, recursive = false;
+    boolean unix2dos = false;
+    boolean dos2unix = false;
+    boolean recursive = false;
     File tmpDir = null;
     for (int i = 0; i < args.length; i++) {
       if (Pattern
@@ -101,13 +104,13 @@ public class FileConvert extends Thread {
         files.add(new File(args[i]));
       }
     }
-    if (unix2dos == true && dos2unix == true) {
+    if (unix2dos && dos2unix) {
       syntax();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
-    if (unix2dos == false && dos2unix == false) {
+    if (!unix2dos && !dos2unix) {
       syntax();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final FileConvert fileConvert =
         new FileConvert(files, unix2dos, recursive, tmpDir);
@@ -134,8 +137,8 @@ public class FileConvert extends Thread {
   }
 
   private void recursive(File directory) {
-    final File[] files = directory.listFiles();
-    for (final File file : files) {
+    final File[] listFiles = directory.listFiles();
+    for (final File file : listFiles) {
       if (file.isDirectory()) {
         recursive(file);
       } else {
@@ -145,52 +148,12 @@ public class FileConvert extends Thread {
   }
 
   private boolean copyFile(File source, File destination) {
-    FileInputStream in = null;
-    FileChannel srcChannel = null;
-    FileOutputStream out = null;
-    FileChannel dstChannel = null;
     try {
-      in = new FileInputStream(source);
-      srcChannel = in.getChannel();
-      out = new FileOutputStream(destination);
-      dstChannel = out.getChannel();
-      long src = srcChannel.size();
-      if (src < 0) {
-        src = source.length();
-      }
-      long dst = 0;
-      while (dst < src) {
-        dst += dstChannel.transferFrom(srcChannel, dst, src);
-      }
-      return src == dst;
-    } catch (final IOException e) {
+      Files.copy(source, destination);
+      return true;
+    } catch (IOException e) {
       logger.error("FileConvert copy back in error", e);
       return false;
-    } finally {
-      if (in != null) {
-        try {
-          in.close();
-        } catch (final IOException e) {
-        }
-      }
-      if (srcChannel != null) {
-        try {
-          srcChannel.close();
-        } catch (final IOException e) {
-        }
-      }
-      if (out != null) {
-        try {
-          out.close();
-        } catch (final IOException e) {
-        }
-      }
-      if (dstChannel != null) {
-        try {
-          dstChannel.close();
-        } catch (final IOException e) {
-        }
-      }
     }
   }
 
@@ -218,7 +181,7 @@ public class FileConvert extends Thread {
       fos = new FileOutputStream(tmpFile);
       if (unix2dos) {
         byte pb = -1;
-        byte b = -1;
+        byte b;
         while ((b = (byte) fis.read()) != -1) {
           if (b == 10 && pb != 13) {
             fos.write((byte) 13);
@@ -227,68 +190,44 @@ public class FileConvert extends Thread {
           pb = b;
         }
       } else {
-        byte b = -1;
-        byte nb = -1;
+        byte b;
+        byte nb;
         while ((b = (byte) fis.read()) != -1) {
           if (b == 13) {
             nb = (byte) fis.read();
             if (nb == -1) {
               fos.write(b);
             } else {
-              if (nb == 10) {
-                fos.write(nb);
-              } else {
+              if (nb != 10) {
                 fos.write(b);
-                fos.write(nb);
               }
+              fos.write(nb);
             }
           } else {
             fos.write(b);
           }
         }
       }
-      try {
-        fis.close();
-      } catch (final IOException e) {
-      }
-      fis = null;
-      try {
-        fos.close();
-      } catch (final IOException e) {
-      }
-      fos = null;
       final boolean result = copyFile(tmpFile, input);
-      tmpFile.delete();
-      tmpFile = null;
       if (result) {
         logger.info("done.");
       } else {
-        logger.error("FileConvert in error during final copy: " + input + ":" +
+        logger.error("FileConvert in error during final copy: " + input + ':' +
                      unix2dos);
       }
       return result;
     } catch (final FileNotFoundException e) {
-      logger.error("FileConvert in error: " + input + ":" + unix2dos, e);
+      logger.error("FileConvert in error: " + input + ':' + unix2dos, e);
       return false;
     } catch (final IOException e) {
-      logger.error("FileConvert in error: " + input + ":" + unix2dos, e);
+      logger.error("FileConvert in error: " + input + ':' + unix2dos, e);
       return false;
     } finally {
       if (tmpFile != null) {
         tmpFile.delete();
       }
-      if (fis != null) {
-        try {
-          fis.close();
-        } catch (final IOException e) {
-        }
-      }
-      if (fos != null) {
-        try {
-          fos.close();
-        } catch (final IOException e) {
-        }
-      }
+      FileUtils.close(fis);
+      FileUtils.close(fos);
     }
   }
 

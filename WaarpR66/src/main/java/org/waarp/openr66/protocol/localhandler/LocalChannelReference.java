@@ -20,10 +20,11 @@
 package org.waarp.openr66.protocol.localhandler;
 
 import io.netty.channel.Channel;
-import io.netty.channel.local.LocalChannel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.guid.IntegerUuid;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.client.RecvThroughHandler;
@@ -33,7 +34,6 @@ import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
@@ -48,6 +48,8 @@ import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.protocol.utils.R66Versions;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Reference of one object using Local Channel localId and containing local
  * channel and network channel.
@@ -58,11 +60,6 @@ public class LocalChannelReference {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(LocalChannelReference.class);
-
-  /**
-   * Local Channel
-   */
-  private final LocalChannel localChannel;
 
   /**
    * Network Channel Ref
@@ -78,6 +75,10 @@ public class LocalChannelReference {
    */
   private final NetworkServerHandler networkServerHandler;
 
+  /**
+   * Server Actions handler
+   */
+  private final TransferActions serverHandler = new TransferActions();
 
   /**
    * Local Id
@@ -94,7 +95,7 @@ public class LocalChannelReference {
    */
   private String requestId;
   /**
-   * Future on Request
+   * Future on Global Request
    */
   private final R66Future futureRequest;
 
@@ -104,7 +105,7 @@ public class LocalChannelReference {
   private final R66Future futureValidRequest = new R66Future(true);
 
   /**
-   * Future on Transfer
+   * Future on Transfer if any
    */
   private R66Future futureEndTransfer = new R66Future(true);
 
@@ -138,20 +139,20 @@ public class LocalChannelReference {
    */
   private RecvThroughHandler recvThroughHandler;
 
-  private boolean isSendThroughMode = false;
+  private boolean isSendThroughMode;
   /**
    * Thread for ClientRunner if any
    */
-  private ClientRunner clientRunner = null;
+  private ClientRunner clientRunner;
 
   /**
    * To be able to check hash once all transfer is over once again
    */
-  private String hashComputeDuringTransfer = null;
+  private String hashComputeDuringTransfer;
   /**
    * If partial hash, no global hash validation can be done
    */
-  private boolean partialHash = false;
+  private boolean partialHash;
 
   /**
    * PartnerConfiguration
@@ -160,27 +161,23 @@ public class LocalChannelReference {
   /**
    * DbSession for Database that do not support concurrency in access
    */
-  private volatile DbSession noconcurrencyDbSession = null;
+  private volatile DbSession noconcurrencyDbSession;
 
   /**
-   * @param localChannel
    * @param networkChannelRef
    * @param remoteId
    * @param futureRequest
    *
    * @throws OpenR66ProtocolRemoteShutdownException
    */
-  public LocalChannelReference(LocalChannel localChannel,
-                               NetworkChannelReference networkChannelRef,
+  public LocalChannelReference(NetworkChannelReference networkChannelRef,
                                Integer remoteId, R66Future futureRequest)
       throws OpenR66ProtocolRemoteShutdownException {
-    this.localChannel = localChannel;
     this.networkChannelRef = networkChannelRef;
     networkServerHandler =
-        (NetworkServerHandler) this.networkChannelRef.channel().pipeline()
-                                                     .get(
-                                                         NetworkServerInitializer.NETWORK_HANDLER);
-    localId = this.localChannel.id().hashCode();
+        (NetworkServerHandler) this.networkChannelRef.channel().pipeline().get(
+            NetworkServerInitializer.NETWORK_HANDLER);
+    localId = new IntegerUuid().getInt();
     this.remoteId = remoteId;
     if (futureRequest == null) {
       this.futureRequest = new R66Future(true);
@@ -194,9 +191,9 @@ public class LocalChannelReference {
                                                           .get(
                                                               NetworkServerInitializer.LIMITCHANNEL);
     // FIXME always true since change for DbAdmin
-    if (DbConstant.admin.isActive()) {
+    if (admin.isActive()) {
       try {
-        noconcurrencyDbSession = new DbSession(DbConstant.admin, false);
+        noconcurrencyDbSession = new DbSession(admin, false);
         logger.info("LocalChannel {}, will use DB session {}", localId,
                     noconcurrencyDbSession.getInternalId());
       } catch (final WaarpDatabaseNoConnectionException e) {
@@ -215,7 +212,6 @@ public class LocalChannelReference {
    * Special empty LCR constructor
    */
   public LocalChannelReference() {
-    localChannel = null;
     networkChannelRef = null;
     networkServerHandler = null;
     localId = 0;
@@ -227,24 +223,13 @@ public class LocalChannelReference {
    * Close the localChannelReference
    */
   public void close() {
+    // Now force the close of the database after a wait
+    ChannelCloseTimer
+        .closeFutureTransaction(serverHandler, noconcurrencyDbSession);
     LocalTransaction lt = Configuration.configuration.getLocalTransaction();
     if (lt != null) {
       lt.remove(this);
     }
-    // Now force the close of the database after a wait
-    if (noconcurrencyDbSession != null && DbConstant.admin != null &&
-        DbConstant.admin.getSession() != null &&
-        !noconcurrencyDbSession.equals(DbConstant.admin.getSession())) {
-      noconcurrencyDbSession.forceDisconnect();
-      noconcurrencyDbSession = null;
-    }
-  }
-
-  /**
-   * @return the localChannel
-   */
-  public LocalChannel getLocalChannel() {
-    return localChannel;
   }
 
   /**
@@ -290,6 +275,21 @@ public class LocalChannelReference {
   }
 
   /**
+   * @return the serverHandler
+   */
+  public TransferActions getServerHandler() {
+    return serverHandler;
+  }
+
+  /**
+   * @return the channelHandlerContextNetwork
+   */
+  public ChannelHandlerContext getChannelHandlerContextNetwork() {
+    return networkChannelRef.channel().pipeline()
+                            .context(NetworkServerInitializer.NETWORK_HANDLER);
+  }
+
+  /**
    * @return the actual dbSession
    */
   public DbSession getDbSession() {
@@ -300,7 +300,7 @@ public class LocalChannelReference {
       return networkServerHandler.getDbSession();
     }
     logger.info("SHOULD NOT BE");
-    return DbConstant.admin.getSession();
+    return admin.getSession();
   }
 
   /**
@@ -391,6 +391,7 @@ public class LocalChannelReference {
                    futureConnection.isSuccess());
       return;
     }
+    logger.debug("Validation of connection {}", validate);
     if (validate) {
       futureConnection.setResult(result);
       futureConnection.setSuccess();
@@ -412,6 +413,7 @@ public class LocalChannelReference {
         if (futureConnection.isDone()) {
           return futureConnection;
         } else {
+          logger.warn("Cannot get Connection due to out of Time: {}", this);
           result = new R66Result(
               new OpenR66ProtocolNoConnectionException("Out of time"), session,
               false, ErrorCode.ConnectionImpossible, null);
@@ -445,7 +447,7 @@ public class LocalChannelReference {
       futureEndTransfer.setSuccess();
     } else {
       logger.debug("Could not validate since Already validated: " +
-                   futureEndTransfer.isSuccess() + " " + finalValue);
+                   futureEndTransfer.isSuccess() + ' ' + finalValue);
       if (!futureEndTransfer.getResult().isAnswered()) {
         futureEndTransfer.getResult().setAnswered(finalValue.isAnswered());
       }
@@ -471,7 +473,8 @@ public class LocalChannelReference {
       // reset since transfer will start now
       futureEndTransfer = new R66Future(true);
     } else {
-      if (futureEndTransfer.getResult() != null) {
+      if (futureEndTransfer.getResult() != null &&
+          futureEndTransfer.getResult().getException() != null) {
         throw futureEndTransfer.getResult().getException();
       } else if (futureEndTransfer.getCause() != null) {
         throw new OpenR66RunnerErrorException(futureEndTransfer.getCause());
@@ -506,12 +509,12 @@ public class LocalChannelReference {
       finalValue =
           new R66Result(session, false, ErrorCode.Unknown, session.getRunner());
     }
-    logger.debug("FET: " + futureEndTransfer.isDone() + ":" +
+    logger.debug("FET: " + futureEndTransfer.isDone() + ':' +
                  futureEndTransfer.isSuccess() + " FVR: " +
-                 futureValidRequest.isDone() + ":" +
+                 futureValidRequest.isDone() + ':' +
                  futureValidRequest.isSuccess() + " FR: " +
-                 futureRequest.isDone() + ":" + futureRequest.isSuccess() +
-                 " " + finalValue.getMessage());
+                 futureRequest.isDone() + ':' + futureRequest.isSuccess() +
+                 ' ' + finalValue.getMessage());
     if (!futureEndTransfer.isDone()) {
       futureEndTransfer.setResult(finalValue);
       if (finalValue.getException() != null) {
@@ -528,7 +531,8 @@ public class LocalChannelReference {
         futureValidRequest.cancel();
       }
     }
-    logger.debug("Invalidate Request", new Exception("Trace for Invalidation"));
+    logger.trace("Invalidate Request",
+                 new Exception("DEBUG Trace for " + "Invalidation"));
     if (finalValue.getCode() != ErrorCode.ServerOverloaded) {
       if (!futureRequest.isDone()) {
         setErrorMessage(finalValue.getMessage(), finalValue.getCode());
@@ -548,10 +552,8 @@ public class LocalChannelReference {
     }
     if (session != null) {
       final DbTaskRunner runner = session.getRunner();
-      if (runner != null) {
-        if (runner.isSender()) {
-          NetworkTransaction.stopRetrieve(this);
-        }
+      if (runner != null && runner.isSender()) {
+        NetworkTransaction.stopRetrieve(this);
       }
     }
   }
@@ -582,7 +584,7 @@ public class LocalChannelReference {
       futureRequest.setSuccess();
     } else {
       logger.info(
-          "Already validated: " + futureRequest.isSuccess() + " " + finalValue);
+          "Already validated: " + futureRequest.isSuccess() + ' ' + finalValue);
       if (!futureRequest.getResult().isAnswered()) {
         futureRequest.getResult().setAnswered(finalValue.isAnswered());
       }
@@ -601,8 +603,9 @@ public class LocalChannelReference {
 
   public void setChannelLimit(boolean isSender, long limit) {
     final ChannelTrafficShapingHandler limitHandler =
-        (ChannelTrafficShapingHandler) networkChannelRef
-            .channel().pipeline().get(NetworkServerInitializer.LIMITCHANNEL);
+        (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()
+                                                        .get(
+                                                            NetworkServerInitializer.LIMITCHANNEL);
     if (isSender) {
       limitHandler.setWriteLimit(limit);
       logger.info("Will write at {} Bytes/sec", limit);
@@ -613,8 +616,8 @@ public class LocalChannelReference {
   }
 
   public long getChannelLimit(boolean isSender) {
-    long global = 0;
-    long channel = 0;
+    long global;
+    long channel;
     if (isSender) {
       global = Configuration.configuration.getServerGlobalWriteLimit();
       channel = Configuration.configuration.getServerChannelWriteLimit();
@@ -628,14 +631,11 @@ public class LocalChannelReference {
   @Override
   public String toString() {
     return "LCR: L: " + localId + " R: " + remoteId + " Startup[" +
-           (futureStartup != null? futureStartup : "noStartup") + "] Conn[" +
-           (futureConnection != null? futureConnection : "noConn") +
-           "] ValidRequestRequest[" +
-           (futureValidRequest != null? futureValidRequest : "noValidRequest") +
-           "] EndTransfer[" +
+           futureStartup + "] Conn[" + futureConnection +
+           "] ValidRequestRequest[" + futureValidRequest + "] EndTransfer[" +
            (futureEndTransfer != null? futureEndTransfer : "noEndTransfer") +
            "] Request[" + (futureRequest != null? futureRequest : "noRequest") +
-           "]";
+           ']';
   }
 
   /**

@@ -26,13 +26,14 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.junit.Test;
 import org.waarp.common.exception.InvalidArgumentException;
-import org.waarp.common.logging.SysErrLogger;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -115,21 +116,21 @@ public class XmlTest {
     Document document = null;
     final long time = System.currentTimeMillis();
     final String source =
-        "<" + ROOT + ">" + "<" + XIDRULE + ">id" + "</" + XIDRULE + ">" + "<" +
-        XTASKS + ">" + "<" + XTASK + ">" + "<string>one string</string>" +
+        '<' + ROOT + '>' + '<' + XIDRULE + ">id" + "</" + XIDRULE + '>' + '<' +
+        XTASKS + '>' + '<' + XTASK + '>' + "<string>one string</string>" +
         "<boolean>true</boolean>" + "<long>123456</long>" +
         "<double>12.35</double>" + "<float>42.1</float>" + "<byte>120</byte>" +
         "<character>a</character>" + "<short>12</short>" + "<sqldate>" +
         new Date(time) + "</sqldate>" + "<timestamp>" + new Timestamp(time) +
         "</timestamp>" + "<empty/>" + "<integer>42</integer>" + "</" + XTASK +
-        ">" + "<" + XTASK + ">" + "<boolean>true</boolean>" +
+        '>' + '<' + XTASK + '>' + "<boolean>true</boolean>" +
         "<string>one string</string>" + "<long>123456</long>" +
         "<float>42.1</float>" + "<byte>120</byte>" + "<sqldate>" +
         new Date(time) + "</sqldate>" + "<double>12.35</double>" +
         "<character>a</character>" + "<short>12</short>" + "<timestamp>" +
         new Timestamp(time) + "</timestamp>" + "<empty/>" +
-        "<integer>42</integer>" + "</" + XTASK + ">" + "</" + XTASKS + ">" +
-        "</" + ROOT + ">";
+        "<integer>42</integer>" + "</" + XTASK + '>' + "</" + XTASKS + '>' +
+        "</" + ROOT + '>';
     try {
       document = XmlUtil.readDocument(source);
     } catch (final DocumentException e) {
@@ -138,7 +139,7 @@ public class XmlTest {
     }
     final XmlValue[] root = XmlUtil.read(document, ruleDecls);
     final XmlHash hash = new XmlHash(root);
-    assertEquals(hash.size(), 4);
+    assertEquals(4, hash.size());
     assertFalse(hash.isEmpty());
 
     XmlValue value = hash.get(XIDRULE);
@@ -167,7 +168,7 @@ public class XmlTest {
           valueItem = hashSub.get("boolean");
           if (valueItem == null || valueItem.isEmpty() ||
               valueItem.getType() != XmlType.BOOLEAN ||
-              valueItem.getBoolean() != true) {
+              !valueItem.getBoolean()) {
             fail("should not");
           }
           valueItem = hashSub.get("long");
@@ -214,7 +215,7 @@ public class XmlTest {
           }
           valueItem = hashSub.get("empty");
           if (valueItem == null || !valueItem.isEmpty() ||
-              valueItem.getType() != XmlType.EMPTY || !valueItem.isEmpty()) {
+              valueItem.getType() != XmlType.EMPTY) {
             fail("should not");
           }
           valueItem = hashSub.get("integer");
@@ -267,10 +268,10 @@ public class XmlTest {
     final String badchars = " \n\t\n ";
     String testSimple = badchars + "todo done" + badchars;
     String second = XmlUtil.getExtraTrimed(testSimple);
-    assertTrue(second.equals("todo done"));
+    assertEquals("todo done", second);
     final String source =
-        "<" + ROOT + ">" + "<" + XIDRULE + ">id" + "</" + XIDRULE + ">" + "<" +
-        XTASKS + ">" + "<" + XTASK + ">" + "<string>" + badchars + "one " +
+        '<' + ROOT + '>' + '<' + XIDRULE + ">id" + "</" + XIDRULE + '>' + '<' +
+        XTASKS + '>' + '<' + XTASK + '>' + "<string>" + badchars + "one " +
         "string" + badchars + "</string>" + "<boolean>" + badchars + "true" +
         badchars + "</boolean>" + "<long>" + badchars + "123456" + badchars +
         "</long>" + "<double>" + badchars + "12.35" + badchars + "</double>" +
@@ -280,14 +281,14 @@ public class XmlTest {
         badchars + new Date(time) + badchars + "</sqldate>" + "<timestamp>" +
         badchars + new Timestamp(time) + badchars + "</timestamp>" +
         "<empty/>" + "<integer>" + badchars + "42" + badchars + "</integer>" +
-        "</" + XTASK + ">" + "<" + XTASK + ">" + "<boolean>true</boolean>" +
+        "</" + XTASK + '>' + '<' + XTASK + '>' + "<boolean>true</boolean>" +
         "<string>one string</string>" + "<long>123456</long>" +
         "<float>42.1</float>" + "<byte>120</byte>" + "<sqldate>" +
         new Date(time) + "</sqldate>" + "<double>12.35</double>" +
         "<character>a</character>" + "<short>12</short>" + "<timestamp>" +
         new Timestamp(time) + "</timestamp>" + "<empty/>" +
-        "<integer>42</integer>" + "</" + XTASK + ">" + "</" + XTASKS + ">" +
-        "</" + ROOT + ">";
+        "<integer>42</integer>" + "</" + XTASK + '>' + "</" + XTASKS + '>' +
+        "</" + ROOT + '>';
     try {
       document = XmlUtil.readDocument(source);
     } catch (final DocumentException e) {
@@ -296,7 +297,7 @@ public class XmlTest {
     }
     final XmlValue[] root = XmlUtil.read(document, ruleDecls);
     final XmlHash hash = new XmlHash(root);
-    assertEquals(hash.size(), 4);
+    assertEquals(4, hash.size());
     assertFalse(hash.isEmpty());
 
     XmlValue value = hash.get(XIDRULE);
@@ -320,14 +321,14 @@ public class XmlTest {
           if (valueItem == null || valueItem.isEmpty() ||
               valueItem.getType() != XmlType.STRING ||
               valueItem.getString().isEmpty() ||
-              !valueItem.getString().equals("one string")) {
+              !"one string".equals(valueItem.getString())) {
             System.err.println("VALUE: " + valueItem.getString());
             fail("should not");
           }
           valueItem = hashSub.get("boolean");
           if (valueItem == null || valueItem.isEmpty() ||
               valueItem.getType() != XmlType.BOOLEAN ||
-              valueItem.getBoolean() != true) {
+              !valueItem.getBoolean()) {
             fail("should not");
           }
           valueItem = hashSub.get("long");
@@ -374,7 +375,7 @@ public class XmlTest {
           }
           valueItem = hashSub.get("empty");
           if (valueItem == null || !valueItem.isEmpty() ||
-              valueItem.getType() != XmlType.EMPTY || !valueItem.isEmpty()) {
+              valueItem.getType() != XmlType.EMPTY) {
             fail("should not");
           }
           valueItem = hashSub.get("integer");
@@ -439,6 +440,16 @@ public class XmlTest {
     final XmlRootHash hash = new XmlRootHash(values);
     final XmlValue value = hash.get("n1");
     assertNotNull(value);
+    assertTrue(hash.size() > 0);
+    assertFalse(hash.isEmpty());
+    assertTrue(hash.contains(value));
+    assertTrue(hash.containsValue(value));
+    assertTrue(hash.containsKey("n1"));
+    Enumeration<String> enumeration = hash.keys();
+    Set<String> strings = hash.keySet();
+    while (enumeration.hasMoreElements()) {
+      assertTrue(strings.contains(enumeration.nextElement()));
+    }
   }
 
   @Test

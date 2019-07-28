@@ -23,8 +23,6 @@ import org.waarp.ftp.core.command.internal.UnimplementedCommand;
 
 /**
  * SMNT command (unimplemented)
- *
- *
  */
 public class SMNT extends UnimplementedCommand {
 }

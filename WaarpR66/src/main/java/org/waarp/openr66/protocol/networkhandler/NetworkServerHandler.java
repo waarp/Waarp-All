@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.protocol.networkhandler;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -28,10 +27,10 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
@@ -41,6 +40,7 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.LocalServerHandler;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ConnectionErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
@@ -55,12 +55,13 @@ import java.net.SocketAddress;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Network Server Handler (Requester side)
  */
 public class NetworkServerHandler
     extends SimpleChannelInboundHandler<NetworkPacket> {
-  // extends SimpleChannelHandler {
   /**
    * Internal Logger
    */
@@ -83,19 +84,19 @@ public class NetworkServerHandler
   /**
    * Does this Handler is for SSL
    */
-  protected boolean isSSL = false;
+  protected boolean isSSL;
   /**
    * Is this Handler a server side
    */
-  protected boolean isServer = false;
+  protected final boolean isServer;
   /**
    * To handle the keep alive
    */
-  private AtomicInteger keepAlivedSent = new AtomicInteger(0);
+  private final AtomicInteger keepAlivedSent = new AtomicInteger(0);
   /**
    * Is this network connection being refused (black listed)
    */
-  protected volatile boolean isBlackListed = false;
+  protected volatile boolean isBlackListed;
 
   /**
    * @param isServer
@@ -116,6 +117,7 @@ public class NetworkServerHandler
           try {
             Thread.sleep(Configuration.RETRYINMS * 2);
           } catch (final InterruptedException e1) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
         }
         try {
@@ -134,9 +136,8 @@ public class NetworkServerHandler
         }
       }
       // Now force the close of the database after a wait
-      if (dbSession != null && DbConstant.admin != null &&
-          DbConstant.admin.getSession() != null &&
-          !dbSession.equals(DbConstant.admin.getSession())) {
+      if (dbSession != null && admin != null && admin.getSession() != null &&
+          !dbSession.equals(admin.getSession())) {
         dbSession.forceDisconnect();
         dbSession = null;
       }
@@ -151,10 +152,10 @@ public class NetworkServerHandler
     remoteAddress = netChannel.remoteAddress();
     logger.debug(
         "Will the Connection be refused if Partner is BlackListed from " +
-        remoteAddress.toString());
+        remoteAddress);
     if (NetworkTransaction.isBlacklisted(netChannel)) {
       logger.warn("Connection refused since Partner is BlackListed from " +
-                  remoteAddress.toString());
+                  remoteAddress);
       isBlackListed = true;
       if (Configuration.configuration.getR66Mib() != null) {
         Configuration.configuration.getR66Mib().notifyError(
@@ -166,10 +167,10 @@ public class NetworkServerHandler
     }
     try {
       networkChannelReference =
-          NetworkTransaction.addNetworkChannel(netChannel);
+          NetworkTransaction.addNetworkChannel(netChannel, isSSL);
     } catch (final OpenR66ProtocolRemoteShutdownException e2) {
       logger.warn("Connection refused since Partner is in Shutdown from " +
-                  remoteAddress.toString() + " : {}", e2.getMessage());
+                  remoteAddress + " : {}", e2.getMessage());
       isBlackListed = true;
       // close immediately the connection
       WaarpSslUtility.closingSslChannel(netChannel);
@@ -177,19 +178,19 @@ public class NetworkServerHandler
     }
     try {
       // FIXME always true since change for DbAdmin
-      if (DbConstant.admin.isActive()) {
-        if (DbConstant.admin.isCompatibleWithThreadSharedConnexion()) {
-          dbSession = new DbSession(DbConstant.admin, false);
+      if (admin.isActive()) {
+        if (admin.isCompatibleWithThreadSharedConnexion()) {
+          dbSession = new DbSession(admin, false);
           dbSession.useConnection();
         } else {
           logger.debug("DbSession will be adjusted on LocalChannelReference");
-          dbSession = DbConstant.admin.getSession();
+          dbSession = admin.getSession();
         }
       }
     } catch (final WaarpDatabaseNoConnectionException e1) {
       // Cannot connect so use default connection
       logger.warn("Use default database connection");
-      dbSession = DbConstant.admin.getSession();
+      dbSession = admin.getSession();
     }
     logger.debug("Network Channel Connected: {} ", ctx.channel().id());
   }
@@ -204,19 +205,18 @@ public class NetworkServerHandler
       if (networkChannelReference != null && networkChannelReference
                                                  .checkLastTime(
                                                      Configuration.configuration
-                                                         .getTIMEOUTCON() *
+                                                         .getTimeoutCon() *
                                                      2) <= 0) {
         keepAlivedSent.set(0);
         return;
       }
       if (keepAlivedSent.get() > 0) {
-        if (networkChannelReference != null) {
-          if (networkChannelReference.nbLocalChannels() > 0 &&
-              keepAlivedSent.get() < 5) {
-            // ignore this time
-            keepAlivedSent.getAndIncrement();
-            return;
-          }
+        if (networkChannelReference != null &&
+            networkChannelReference.nbLocalChannels() > 0 &&
+            keepAlivedSent.get() < 5) {
+          // ignore this time
+          keepAlivedSent.getAndIncrement();
+          return;
         }
         logger.error("Not getting KAlive: closing channel");
         if (Configuration.configuration.getR66Mib() != null) {
@@ -249,19 +249,18 @@ public class NetworkServerHandler
       msg.clear();
       return;
     }
-    final NetworkPacket packet = msg;
     final Channel channel = ctx.channel();
-    if (packet.getCode() == LocalPacketFactory.NOOPPACKET) {
+    if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {
       if (networkChannelReference != null) {
         networkChannelReference.useIfUsed();
       }
-      packet.clear();
+      msg.clear();
       // Do nothing
       return;
-    } else if (packet.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
-      logger.debug("NetworkRecv: {}", packet);
+    } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
+      logger.debug("NetworkRecv: {}", msg);
       // Special code to STOP here
-      if (packet.getLocalId() == ChannelUtils.NOCHANNEL) {
+      if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
         final int nb = networkChannelReference.nbLocalChannels();
         if (nb > 0) {
           logger.warn(
@@ -275,12 +274,12 @@ public class NetworkServerHandler
         // remote host
         logger.error(
             "Will close NETWORK channel, Cannot continue connection with remote Host: " +
-            packet.toString() + " : " + channel.remoteAddress() + " : " + nb);
+            msg + " : " + channel.remoteAddress() + " : " + nb);
         WaarpSslUtility.closingSslChannel(channel);
-        packet.clear();
+        msg.clear();
         return;
       }
-    } else if (packet.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
+    } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
       if (networkChannelReference != null) {
         networkChannelReference.useIfUsed();
       }
@@ -288,73 +287,72 @@ public class NetworkServerHandler
       try {
         final KeepAlivePacket keepAlivePacket =
             (KeepAlivePacket) LocalPacketCodec
-                .decodeNetworkPacket(packet.getBuffer());
+                .decodeNetworkPacket(msg.getBuffer());
         if (keepAlivePacket.isToValidate()) {
           keepAlivePacket.validate();
           final NetworkPacket response =
               new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,
                                 keepAlivePacket, null);
           logger.info("Answer KAlive");
-          ctx.channel().writeAndFlush(response);
+          ctx.writeAndFlush(response);
         } else {
           logger.info("Get KAlive");
         }
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
-      packet.clear();
+      msg.clear();
       return;
     }
-    logger.trace("GET MSG: {}", packet);
+    logger.trace("GET MSG: {}", msg);
     networkChannelReference.use();
-    LocalChannelReference localChannelReference = null;
-    if (packet.getLocalId() == ChannelUtils.NOCHANNEL) {
-      logger.debug("NetworkRecv Create: {} {}", packet, channel.id());
-      NetworkTransaction
+    LocalChannelReference localChannelReference;
+    if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
+      localChannelReference = NetworkTransaction
           .createConnectionFromNetworkChannelStartup(networkChannelReference,
-                                                     packet, isSSL);
-      return;
+                                                     msg, isSSL);
     } else {
-      if (packet.getCode() == LocalPacketFactory.ENDREQUESTPACKET) {
+      if (msg.getCode() == LocalPacketFactory.ENDREQUESTPACKET) {
         // Not a local error but a remote one
         try {
           localChannelReference =
               Configuration.configuration.getLocalTransaction()
-                                         .getClient(packet.getRemoteId(),
-                                                    packet.getLocalId());
+                                         .getClient(msg.getRemoteId(),
+                                                    msg.getLocalId());
         } catch (final OpenR66ProtocolSystemException e1) {
           // do not send anything since the packet is external
           try {
             logger.debug(
                 "Cannot get LocalChannel while an end of request comes: {}",
-                LocalPacketCodec.decodeNetworkPacket(packet.getBuffer()));
+                LocalPacketCodec.decodeNetworkPacket(msg.getBuffer()));
           } catch (final OpenR66ProtocolPacketException e2) {
             logger.debug(
                 "Cannot get LocalChannel while an end of request comes: {}",
-                packet.toString());
+                msg.toString());
           }
-          packet.clear();
+          msg.clear();
           return;
         }
         // OK continue and send to the local channel
-      } else if (packet.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
+      } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
         // Not a local error but a remote one
         try {
           localChannelReference =
               Configuration.configuration.getLocalTransaction()
-                                         .getClient(packet.getRemoteId(),
-                                                    packet.getLocalId());
+                                         .getClient(msg.getRemoteId(),
+                                                    msg.getLocalId());
         } catch (final OpenR66ProtocolSystemException e1) {
           // do not send anything since the packet is external
           try {
             logger.debug(
                 "Cannot get LocalChannel while an external error comes: {}",
-                LocalPacketCodec.decodeNetworkPacket(packet.getBuffer()));
+                LocalPacketCodec.decodeNetworkPacket(msg.getBuffer()));
           } catch (final OpenR66ProtocolPacketException e2) {
             logger.debug(
                 "Cannot get LocalChannel while an external error comes: {}",
-                packet.toString());
+                msg.toString());
           }
-          packet.clear();
+          msg.clear();
           return;
         }
         // OK continue and send to the local channel
@@ -362,8 +360,8 @@ public class NetworkServerHandler
         try {
           localChannelReference =
               Configuration.configuration.getLocalTransaction()
-                                         .getClient(packet.getRemoteId(),
-                                                    packet.getLocalId());
+                                         .getClient(msg.getRemoteId(),
+                                                    msg.getLocalId());
         } catch (final OpenR66ProtocolSystemException e1) {
           if (remoteAddress == null) {
             remoteAddress = channel.remoteAddress();
@@ -371,33 +369,30 @@ public class NetworkServerHandler
           if (NetworkTransaction.isShuttingdownNetworkChannel(remoteAddress) ||
               WaarpShutdownHook.isShutdownStarting()) {
             // ignore
-            packet.clear();
+            msg.clear();
             return;
           }
           // try to send later
-          logger.error("Cannot get LocalChannel: " + packet + " due to " +
-                       e1.getMessage());
+          logger.debug(
+              "Cannot get LocalChannel: " + msg + " due to " + e1.getMessage());
           final ConnectionErrorPacket error = new ConnectionErrorPacket(
               "Cannot get localChannel since localId is not found anymore",
-              "" + packet.getLocalId());
-          writeError(channel, packet.getRemoteId(), packet.getLocalId(), error);
-          packet.clear();
+              String.valueOf(msg.getLocalId()));
+          writeError(channel, msg.getRemoteId(), msg.getLocalId(), error);
+          msg.clear();
           return;
         }
       }
     }
     // check if not already in shutdown or closed
     if (NetworkTransaction.isShuttingdownNetworkChannel(remoteAddress) ||
-        WaarpShutdownHook.isShutdownStarting() ||
-        !localChannelReference.getLocalChannel().isActive()) {
-      logger.debug(
-          "Cannot use LocalChannel since already in shutdown: " + packet);
+        WaarpShutdownHook.isShutdownStarting()) {
+      logger.debug("Cannot use LocalChannel since already in shutdown: " + msg);
       // ignore
-      packet.clear();
+      msg.clear();
       return;
     }
-    final ByteBuf buf = packet.getBuffer();
-    localChannelReference.getLocalChannel().writeAndFlush(buf);
+    LocalServerHandler.channelRead0(localChannelReference, msg);
   }
 
   @Override
@@ -460,7 +455,6 @@ public class NetworkServerHandler
       ChannelCloseTimer.closeFutureChannel(channel);
     } else {
       // Nothing to do
-      return;
     }
   }
 
@@ -477,13 +471,15 @@ public class NetworkServerHandler
     NetworkPacket networkPacket = null;
     try {
       networkPacket = new NetworkPacket(localId, remoteId, error, null);
-    } catch (final OpenR66ProtocolPacketException e) {
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // nothing
     }
     try {
       if (channel.isActive()) {
         channel.writeAndFlush(networkPacket).await(Configuration.WAITFORNETOP);
       }
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }
 

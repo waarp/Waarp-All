@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * USER command
- *
- *
  */
 public class USER extends AbstractCommand {
   @Override

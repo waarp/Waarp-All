@@ -32,8 +32,6 @@ import org.waarp.snmp.utils.WaarpMOScalar;
 
 /**
  * Example of Implementation of WaarpPrivateMib
- *
- *
  */
 public class WaarpImplPrivateMib extends WaarpPrivateMib {
   /**
@@ -87,8 +85,8 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
     boolean okError = true;
     if (low != null) {
       logger.debug(
-          "low: {}:{} " + rootOIDWaarpGlobal + ":" + rootOIDWaarpDetailed +
-          ":" + rootOIDWaarpError, low, range.isLowerIncluded());
+          "low: {}:{} " + rootOIDWaarpGlobal + ':' + rootOIDWaarpDetailed +
+          ':' + rootOIDWaarpError, low, range.isLowerIncluded());
       if (low.size() <= rootOIDWaarp.size() && low.startsWith(rootOIDWaarp)) {
         // test for global requests
         okGeneral = okDetailed = okError = true;
@@ -130,7 +128,7 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
       return;
     }
     logger.warn(
-        "Notify: " + NotificationElements.InfoTask + ":" + message + ":" +
+        "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
         number);
     agent.getNotificationOriginator().notify(new OctetString("public"),
                                              NotificationElements.InfoTask
@@ -181,7 +179,7 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
       return;
     }
     logger.warn(
-        "Notify: " + NotificationElements.TrapError + ":" + message + ":" +
+        "Notify: " + NotificationElements.TrapError + ':' + message + ':' +
         number);
     agent.getNotificationOriginator().notify(new OctetString("public"),
                                              NotificationElements.TrapError

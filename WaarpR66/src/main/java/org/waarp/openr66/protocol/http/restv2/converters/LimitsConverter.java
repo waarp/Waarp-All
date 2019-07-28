@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.openr66.pojo.Limit;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
-import org.waarp.openr66.protocol.http.restv2.errors.RestErrors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,7 @@ public final class LimitsConverter {
    */
   private LimitsConverter() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ########################### PUBLIC METHODS ###############################
@@ -139,7 +138,7 @@ public final class LimitsConverter {
           errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));
         }
       } else {
-        errors.add(RestErrors.UNKNOWN_FIELD(name));
+        errors.add(UNKNOWN_FIELD(name));
       }
     }
 

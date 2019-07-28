@@ -35,7 +35,7 @@ public class XMLDAOFactory extends DAOFactory {
   private final String confDir = Configuration.configuration.getConfigPath();
 
   private final String businessFile = confDir + "/business.xml";
-  private final String hostFile = Configuration.configuration.getAUTH_FILE();
+  private final String hostFile = Configuration.configuration.getAuthFile();
   private final String limitFile = confDir + "/limit.xml";
   private final String ruleFile = confDir;
   private final String transferFile =

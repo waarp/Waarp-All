@@ -23,8 +23,6 @@ import io.netty.channel.Channel;
 
 /**
  * Future that hold a channel as result
- *
- *
  */
 public class WaarpChannelFuture extends WaarpFuture {
   /**

@@ -28,7 +28,6 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
-import org.waarp.openr66.protocol.localhandler.packet.NoOpPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
@@ -38,8 +37,6 @@ import java.util.List;
 
 /**
  * Packet Decoder
- *
- *
  */
 public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   /**
@@ -108,9 +105,8 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   @Override
   protected void encode(ChannelHandlerContext ctx, NetworkPacket msg,
                         ByteBuf out) throws Exception {
-    final NetworkPacket packet = msg;
-    logger.trace("sending network packet {}", packet);
-    final ByteBuf finalBuf = packet.getNetworkPacket();
+    logger.trace("sending network packet {}", msg);
+    final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
     finalBuf.release();
   }

@@ -26,8 +26,6 @@ import org.waarp.ftp.core.data.handler.DataBusinessHandler;
 
 /**
  * DataBusinessHandler implementation based on Simple Filesystem
- *
- *
  */
 public class FileSystemBasedDataBusinessHandler extends DataBusinessHandler {
   /**
@@ -38,7 +36,7 @@ public class FileSystemBasedDataBusinessHandler extends DataBusinessHandler {
 
   @Override
   protected void cleanSession() {
-    // logger.debug("FSDBH Clean session");
+    // logger.debug("FSDBH Clean session")
   }
 
   @Override
@@ -48,11 +46,11 @@ public class FileSystemBasedDataBusinessHandler extends DataBusinessHandler {
 
   @Override
   public void executeChannelClosed() {
-    // logger.debug("FSDBH Channel closed");
+    // logger.debug("FSDBH Channel closed")
   }
 
   @Override
   public void executeChannelConnected(Channel channel) {
-    // logger.debug("FSDBH Channel connected {}", channel);
+    // logger.debug("FSDBH Channel connected {}", channel)
   }
 }

@@ -47,6 +47,7 @@ public class HttpSession implements SessionInterface {
    *
    */
   public HttpSession() {
+    // nothing
   }
 
   /**
@@ -72,7 +73,8 @@ public class HttpSession implements SessionInterface {
     try {
       dir.changeDirectoryNotChecked(httpAuth.getUser());
       dir.changeDirectoryNotChecked(httpAuth.getAccount());
-    } catch (final CommandAbstractException e) {
+    } catch (final CommandAbstractException ignored) {
+      // nothing
     }
   }
 

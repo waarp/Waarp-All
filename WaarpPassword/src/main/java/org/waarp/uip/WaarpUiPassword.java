@@ -22,6 +22,7 @@ package org.waarp.uip;
 import org.waarp.common.crypto.Blowfish;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.logging.SysErrLogger;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -123,7 +124,7 @@ public class WaarpUiPassword extends JFrame {
   public static void main(String[] args) {
     if (!WaarpPassword.loadOptions(args)) {
       // Bad options
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     SwingUtilities.invokeLater(new Runnable() {
       @Override
@@ -140,13 +141,13 @@ public class WaarpUiPassword extends JFrame {
     chooserKeyFile = new JFileChooser();
     filterKey = new FileNameExtensionFilter(
         "DES or Blowfish Key (" + Des.EXTENSION + ", " + Blowfish.EXTENSION +
-        ")", Des.EXTENSION, Blowfish.EXTENSION);
+        ')', Des.EXTENSION, Blowfish.EXTENSION);
     chooserKeyFile.setFileFilter(filterKey);
     chooserKeyFile.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
     chooserPwdFile = new JFileChooser();
     filterPwdKey = new FileNameExtensionFilter(
-        "GoldenGate Password Files (" + WaarpPassword.GGPEXTENSION + ")",
+        "GoldenGate Password Files (" + WaarpPassword.GGPEXTENSION + ')',
         WaarpPassword.GGPEXTENSION);
     chooserPwdFile.setFileFilter(filterPwdKey);
     chooserPwdFile.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -162,13 +163,13 @@ public class WaarpUiPassword extends JFrame {
     chooserKeyFile = new JFileChooser();
     filterKey = new FileNameExtensionFilter(
         "DES or Blowfish Key (" + Des.EXTENSION + ", " + Blowfish.EXTENSION +
-        ")", Des.EXTENSION, Blowfish.EXTENSION);
+        ')', Des.EXTENSION, Blowfish.EXTENSION);
     chooserKeyFile.setFileFilter(filterKey);
     chooserKeyFile.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
     chooserPwdFile = new JFileChooser();
     filterPwdKey = new FileNameExtensionFilter(
-        "GoldenGate Password Files (" + WaarpPassword.GGPEXTENSION + ")",
+        "GoldenGate Password Files (" + WaarpPassword.GGPEXTENSION + ')',
         WaarpPassword.GGPEXTENSION);
     chooserPwdFile.setFileFilter(filterPwdKey);
     chooserPwdFile.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -176,8 +177,8 @@ public class WaarpUiPassword extends JFrame {
     try {
       waarpPassword = new WaarpPassword();
     } catch (final Exception e) {
-      e.printStackTrace();
-      System.exit(3);
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      System.exit(3);//NOSONAR
     }
 
     initGUI();
@@ -209,7 +210,7 @@ public class WaarpUiPassword extends JFrame {
     if (extended) {
       myself.dispose();
     } else {
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
   }
 
@@ -263,8 +264,7 @@ public class WaarpUiPassword extends JFrame {
                   try {
                     waarpPassword.setClearPassword(paswd);
                   } catch (final Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    SysErrLogger.FAKE_LOGGER.syserr(e);
                   }
                   jTextFieldCryptedPassword
                       .setText(waarpPassword.getCryptedPassword());
@@ -282,8 +282,7 @@ public class WaarpUiPassword extends JFrame {
                   try {
                     waarpPassword.setClearPassword(paswd);
                   } catch (final Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    SysErrLogger.FAKE_LOGGER.syserr(e);
                   }
                   jTextFieldCryptedPassword
                       .setText(waarpPassword.getCryptedPassword());
@@ -303,8 +302,7 @@ public class WaarpUiPassword extends JFrame {
                 try {
                   waarpPassword.setCryptedPassword(paswd);
                 } catch (final Exception e1) {
-                  // TODO Auto-generated catch block
-                  e1.printStackTrace();
+                  SysErrLogger.FAKE_LOGGER.syserr(e1);
                 }
                 setUncryptedPassword(waarpPassword.getClearPassword());
                 jTextFieldCryptedPassword
@@ -473,7 +471,7 @@ public class WaarpUiPassword extends JFrame {
         }
       }
     } catch (final Exception e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
   }
 
@@ -514,8 +512,7 @@ public class WaarpUiPassword extends JFrame {
     try {
       waarpPassword.setClearPassword(getUncryptedPassword());
     } catch (final Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
     jTextFieldCryptedPassword.setText(waarpPassword.getCryptedPassword());
     passwordModified = true;
@@ -549,8 +546,7 @@ public class WaarpUiPassword extends JFrame {
               updateCryptedPassword();
               enableMenuWithKey();
             } catch (final CryptoException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             }
           }
         }
@@ -572,8 +568,7 @@ public class WaarpUiPassword extends JFrame {
           try {
             waarpPassword.createNewKey();
           } catch (final Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            SysErrLogger.FAKE_LOGGER.syserr(e);
           }
           updateCryptedPassword();
           enableMenuWithKey();
@@ -596,8 +591,7 @@ public class WaarpUiPassword extends JFrame {
           try {
             waarpPassword.saveKey(null);
           } catch (final CryptoException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            SysErrLogger.FAKE_LOGGER.syserr(e);
           }
           passwordModified = false;
         }
@@ -632,8 +626,7 @@ public class WaarpUiPassword extends JFrame {
             try {
               waarpPassword.saveKey(file);
             } catch (final CryptoException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             }
             passwordModified = false;
           }
@@ -662,11 +655,9 @@ public class WaarpUiPassword extends JFrame {
             try {
               waarpPassword.loadPasswordFile();
             } catch (final CryptoException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             } catch (final Exception e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             }
             setUncryptedPassword(waarpPassword.getClearPassword());
             jTextFieldCryptedPassword
@@ -702,8 +693,7 @@ public class WaarpUiPassword extends JFrame {
             try {
               waarpPassword.savePasswordFile();
             } catch (final IOException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             }
             passwordModified = false;
           }

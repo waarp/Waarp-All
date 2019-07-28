@@ -38,8 +38,6 @@ import java.io.File;
  * FtpAuth implementation based on a list of (user/password/account) stored in a
  * xml file load at startup from
  * configuration. Not to be used in production!
- *
- *
  */
 public class FileBasedAuth extends FilesystemBasedFtpAuth {
   /**
@@ -89,7 +87,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
       throw new Reply530Exception("User name not allowed");
     }
     currentAuth = auth;
-    // logger.debug("User: {}", user);
+    // logger.debug("User: {}", user)
     return new NextCommandReply(FtpCommandCode.PASS,
                                 ReplyCode.REPLY_331_USER_NAME_OKAY_NEED_PASSWORD,
                                 null);
@@ -119,11 +117,12 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
       throw new Reply530Exception("PASS needs a USER first");
     }
     if (currentAuth.isPasswordValid(password)) {
-      if (user.equals("test")) {
-        // logger.debug("User test");
+      if ("test".equals(user)) {
+        // logger.debug("User test")
         try {
           return setAccount("test");
-        } catch (final Reply502Exception e) {
+        } catch (final Reply502Exception ignored) {
+          // nothing
         }
       }
       return new NextCommandReply(FtpCommandCode.ACCT,
@@ -157,7 +156,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
       throw new Reply530Exception("ACCT needs a USER first");
     }
     if (currentAuth.isAccountValid(account)) {
-      // logger.debug("Account: {}", account);
+      // logger.debug("Account: {}", account)
       setIsIdentified(true);
       logger.info("User {} is authentified with account {}", user, account);
       return new NextCommandReply(FtpCommandCode.NOOP,
@@ -176,7 +175,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
 
   @Override
   protected String setBusinessRootFromAuth() throws Reply421Exception {
-    String path = null;
+    String path;
     if (account == null) {
       path = DirInterface.SEPARATOR + user;
     } else {

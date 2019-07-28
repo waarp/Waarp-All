@@ -48,8 +48,6 @@ import java.util.Date;
 
 /**
  * Log Http REST interface: http://host/log?... + LogJsonPacket as GET
- *
- *
  */
 public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
 
@@ -90,9 +88,9 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
         final LogJsonPacket node = (LogJsonPacket) json;
         final boolean purge = node.isPurge();
         final boolean clean = node.isClean();
-        final Timestamp start = (node.getStart() == null)? null :
+        final Timestamp start = node.getStart() == null? null :
             new Timestamp(node.getStart().getTime());
-        final Timestamp stop = (node.getStop() == null)? null :
+        final Timestamp stop = node.getStop() == null? null :
             new Timestamp(node.getStop().getTime());
         final String startid = node.getStartid();
         final String stopid = node.getStopid();
@@ -102,10 +100,9 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
         final boolean transfer = node.isStatustransfer();
         final boolean done = node.isStatusdone();
         final boolean error = node.isStatuserror();
-        final boolean isPurge = purge;
-        final String sresult[] = serverHandler
+        final String[] sresult = serverHandler
             .logPurge(purge, clean, start, stop, startid, stopid, rule, request,
-                      pending, transfer, done, error, isPurge);
+                      pending, transfer, done, error, purge);
         final LogResponseJsonPacket newjson = new LogResponseJsonPacket();
         newjson.fromJson(node);
         // Now answer
@@ -151,7 +148,8 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
             .fillDetailedAllow(METHOD.GET, path, ACTIONS_TYPE.GetLog.name(),
                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
 

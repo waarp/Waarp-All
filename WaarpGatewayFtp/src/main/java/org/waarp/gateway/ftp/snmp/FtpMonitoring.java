@@ -30,7 +30,7 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
-import org.waarp.gateway.ftp.database.DbConstant;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
 import org.waarp.gateway.ftp.database.data.DbTransferLog;
 import org.waarp.gateway.ftp.snmp.FtpPrivateMib.MibLevel;
 import org.waarp.gateway.ftp.snmp.FtpPrivateMib.WaarpDetailedValuesIndex;
@@ -41,8 +41,6 @@ import org.waarp.snmp.interf.WaarpInterfaceMonitor;
 
 /**
  * SNMP Monitoring class for FTP Exec
- *
- *
  */
 public class FtpMonitoring implements WaarpInterfaceMonitor {
   /**
@@ -87,18 +85,18 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   public long nbCountAllTransfer;
 
   // Info for other reasons than transfers
-  private final long[] reply_info_notransfers =
+  private final long[] replyInfoNotransfers =
       new long[WaarpDetailedValuesIndex.reply_350.ordinal() + 1];
   // Error for other reasons than transfers
-  private final long[] reply_error_notransfers =
+  private final long[] replyErrorNotransfers =
       new long[WaarpErrorValuesIndex.reply_553.ordinal() + 1];
 
   {
     for (int i = 0; i <= WaarpDetailedValuesIndex.reply_350.ordinal(); i++) {
-      reply_info_notransfers[i] = 0;
+      replyInfoNotransfers[i] = 0;
     }
     for (int i = 0; i <= WaarpErrorValuesIndex.reply_553.ordinal(); i++) {
-      reply_error_notransfers[i] = 0;
+      replyErrorNotransfers[i] = 0;
     }
   }
 
@@ -123,7 +121,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
     if (session != null) {
       dbSession = session;
     } else {
-      dbSession = DbConstant.gatewayAdmin.getSession();
+      dbSession = DbConstantFtp.gatewayAdmin.getSession();
     }
     initialize();
   }
@@ -159,7 +157,8 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
       countAllTransfer = DbTransferLog.getCountAllPrepareStatement(dbSession);
       // Error Status on all transfers
       countStatus = DbTransferLog.getCountStatusPrepareStatement(dbSession);
-    } catch (final WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException ignored) {
+      // nothing
     }
   }
 
@@ -180,11 +179,12 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
       countAllTransfer.realClose();
       // Error Status on all transfers
       countStatus.realClose();
-    } catch (final NullPointerException e) {
+    } catch (final NullPointerException ignored) {
+      // nothing
     }
   }
 
-  private static final int ref421 =
+  private static final int REF421 =
       ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION
           .ordinal();
 
@@ -195,11 +195,11 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    */
   public void updateCodeNoTransfer(ReplyCode code) {
     int i = code.ordinal();
-    if (i >= ref421) {
-      i -= ref421;
-      reply_error_notransfers[i]++;
+    if (i >= REF421) {
+      i -= REF421;
+      replyErrorNotransfers[i]++;
     } else {
-      reply_info_notransfers[i]++;
+      replyInfoNotransfers[i]++;
     }
   }
 
@@ -225,8 +225,8 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    */
   public void run(int type, int entry) {
     final long nbMs =
-        FileBasedConfiguration.fileBasedConfiguration.agentSnmp.getUptime() +
-        100;
+        FileBasedConfiguration.fileBasedConfiguration.getAgentSnmp()
+                                                     .getUptime() + 100;
     final MibLevel level = MibLevel.values()[type];
     switch (level) {
       case globalInfo:// Global
@@ -244,10 +244,6 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
           run(nbMs, WaarpErrorValuesIndex.values()[entry]);
         }
         return;
-      case staticInfo:
-        break;
-      case trapInfo:
-        break;
       default:
         break;
     }
@@ -291,16 +287,17 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    */
   protected void run(long nbMs, WaarpGlobalValuesIndex entry) {
     synchronized (trafficCounter) {
-      long val = 0;
+      long val;
       final long limitDate = System.currentTimeMillis() - nbMs;
       // Global
       try {
         switch (entry) {
           case applUptime:
-            return;
           case applOperStatus:
-            return;
           case applLastChange:
+          case memoryTotal:
+          case memoryFree:
+          case memoryUsed:
             return;
           case applInboundAssociations:
             DbTransferLog
@@ -423,12 +420,6 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
                 DbTransferLog.getResultCountPrepareStatement(countAllTransfer);
             updateGlobalValue(entry.ordinal(), nbCountAllTransfer);
             return;
-          case memoryTotal:
-            return;
-          case memoryFree:
-            return;
-          case memoryUsed:
-            return;
           case nbThreads:
             nbThread = Thread.activeCount();
             updateGlobalValue(entry.ordinal(), nbThread);
@@ -437,10 +428,11 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
             nbNetworkConnection = FileBasedConfiguration.fileBasedConfiguration
                 .getFtpInternalConfiguration().getNumberSessions();
             updateGlobalValue(entry.ordinal(), nbNetworkConnection);
-            return;
         }
-      } catch (final WaarpDatabaseNoConnectionException e) {
-      } catch (final WaarpDatabaseSqlException e) {
+      } catch (final WaarpDatabaseNoConnectionException ignored) {
+        // nothing
+      } catch (final WaarpDatabaseSqlException ignored) {
+        // nothing
       }
     }
   }
@@ -458,7 +450,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
       final long value = DbTransferLog
           .getResultCountPrepareStatement(countStatus, entry.code, limitDate);
       updateDetailedValue(entry.ordinal(),
-                          value + reply_info_notransfers[entry.ordinal()]);
+                          value + replyInfoNotransfers[entry.ordinal()]);
     }
   }
 
@@ -475,7 +467,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
       final long value = DbTransferLog
           .getResultCountPrepareStatement(countStatus, entry.code, limitDate);
       updateErrorValue(entry.ordinal(),
-                       value + reply_error_notransfers[entry.ordinal()]);
+                       value + replyErrorNotransfers[entry.ordinal()]);
     }
   }
 

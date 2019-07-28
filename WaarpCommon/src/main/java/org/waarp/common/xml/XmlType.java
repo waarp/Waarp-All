@@ -24,8 +24,6 @@ import java.sql.Timestamp;
 
 /**
  * Type of Classes supported in Enum type
- *
- *
  */
 public enum XmlType {
   BOOLEAN(Boolean.TYPE), INTEGER(Integer.TYPE), FLOAT(Float.TYPE),
@@ -34,7 +32,7 @@ public enum XmlType {
   TIMESTAMP(Timestamp.class), STRING(String.class), XVAL(XmlValue.class),
   EMPTY(XmlType.class);
 
-  Class<?> classType;
+  final Class<?> classType;
 
   /**
    * @param classType
@@ -87,7 +85,6 @@ public enum XmlType {
         return type.isArray() &&
                type.getName().contains(XmlValue.class.getName());
       case EMPTY:
-        return false;
       default:
         return false;
     }

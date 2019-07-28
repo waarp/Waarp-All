@@ -21,6 +21,7 @@ package org.waarp.common.crypto;
 
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -56,8 +57,6 @@ import java.security.Key;
  * myStringDecrypt =
  * key.decryptHexInString(myStringCrypte);</li>
  * </ul>
- *
- *
  */
 public abstract class KeyObject {
   /**
@@ -74,7 +73,7 @@ public abstract class KeyObject {
   /**
    * Empty constructor
    */
-  public KeyObject() {
+  protected KeyObject() {
   }
 
   /**
@@ -154,13 +153,13 @@ public abstract class KeyObject {
     if (file.canRead()) {
       final int len = (int) file.length();
       final byte[] key = new byte[len];
-      FileInputStream inputStream = null;
+      FileInputStream inputStream;
       inputStream = new FileInputStream(file);
       final DataInputStream dis = new DataInputStream(inputStream);
       try {
         dis.readFully(key);
       } finally {
-        dis.close();
+        FileUtils.close(dis);
       }
       setSecretKey(key);
     } else {
@@ -184,7 +183,7 @@ public abstract class KeyObject {
         outputStream.write(key);
         outputStream.flush();
       } finally {
-        outputStream.close();
+        FileUtils.close(outputStream);
       }
     } else {
       throw new CryptoException("Cannot read crypto file");
@@ -410,21 +409,14 @@ public abstract class KeyObject {
       inputStream = new FileInputStream(file);
       dis = new DataInputStream(inputStream);
       dis.readFully(byteKeys);
-      dis.close();
+      FileUtils.close(dis);
       final String skey = new String(byteKeys, WaarpStringUtils.UTF8);
       // decrypt it
       byteKeys = decryptHexInBytes(skey);
       return byteKeys;
-    } catch (final IOException e) {
-      try {
-        if (dis != null) {
-          dis.close();
-        } else if (inputStream != null) {
-          inputStream.close();
-        }
-      } catch (final IOException e1) {
-      }
-      throw e;
+    } finally {
+      FileUtils.close(dis);
+      FileUtils.close(inputStream);
     }
   }
 

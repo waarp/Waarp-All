@@ -21,11 +21,11 @@ package org.waarp.openr66.context.task;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
@@ -36,7 +36,6 @@ import org.waarp.openr66.context.task.localexec.LocalExecClient;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
@@ -54,8 +53,6 @@ import java.io.PipedOutputStream;
  * waitForValidation (#NOWAIT#) must not be set since it will prevent to have
  * the feedback in case of error.
  * So it is ignored.
- *
- *
  */
 public class ExecOutputTask extends AbstractExecTask {
   /**
@@ -88,7 +85,7 @@ public class ExecOutputTask extends AbstractExecTask {
      * else 1 for a warning else as an error. In case of an error (> 0), all the line from output will be send
      * back to the partner with the Error code. No change is made to the file.
      */
-    logger.info("ExecOutput with " + argRule + ":" + argTransfer + " and {}",
+    logger.info("ExecOutput with " + argRule + ':' + argTransfer + " and {}",
                 session);
     final String finalname = applyTransferSubstitutions(argRule);
     //
@@ -132,7 +129,7 @@ public class ExecOutputTask extends AbstractExecTask {
       return;
     }
     int status = executeCommand.getStatus();
-    String newname = null;
+    String newname;
     if (defaultExecutor.isFailure(status) && watchdog != null &&
         watchdog.killedProcess()) {
       // kill by the watchdoc (time out)
@@ -171,8 +168,8 @@ public class ExecOutputTask extends AbstractExecTask {
         if (newfilename.indexOf(' ') > 0) {
           logger.warn(
               "Exec returns a multiple string in final line: " + newfilename);
-          // XXX FIXME: should not split String[] args = newfilename.split(" ");
-          // newfilename = args[args.length - 1];
+          // XXX FIXME: should not split String[] args = newfilename.split(" ")
+          // newfilename = args[args.length - 1]
         }
         // now test if the previous file was deleted (should be)
         final File file = new File(newfilename);
@@ -198,10 +195,11 @@ public class ExecOutputTask extends AbstractExecTask {
 
   @Override
   void finalizeFromError(Runnable threadReader, int status,
-                                 CommandLine commandLine, Exception e) {
+                         CommandLine commandLine, Exception e) {
     try {
       Thread.sleep(Configuration.RETRYINMS);
     } catch (final InterruptedException e2) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
     }
     final String result =
         ((AllLineReader) threadReader).getLastLine().toString();

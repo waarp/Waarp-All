@@ -21,8 +21,6 @@ package org.waarp.common.database;
 
 /**
  * Constants value for database
- *
- *
  */
 public class DbConstant {
   /**
@@ -40,14 +38,14 @@ public class DbConstant {
   /**
    * How long to wait in second for a validation of connection (isValid(time))
    */
-  public static int VALIDTESTDURATION = 2;
+  public static final int VALIDTESTDURATION = 2;
   /**
    * Number of Database max connection (if pooled)
    */
-  public static int MAXCONNECTION = 5000;
+  public static final int MAXCONNECTION = 5000;
   /**
    * Delay in second to try to connect
    */
-  public static int DELAYMAXCONNECTION = 30;
+  public static final int DELAYMAXCONNECTION = 30;
 
 }

@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,8 +38,6 @@ import java.util.Map;
 
 /**
  * JSON handler using Smile default format
- *
- *
  */
 public class SmileJsonHandler extends JsonHandler {
   /**
@@ -107,9 +106,12 @@ public class SmileJsonHandler extends JsonHandler {
         info =
             mapper.readValue(value, new TypeReference<Map<String, Object>>() {
             });
-      } catch (final JsonParseException e1) {
-      } catch (final JsonMappingException e1) {
-      } catch (final IOException e1) {
+      } catch (final JsonParseException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final JsonMappingException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final IOException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
       if (info == null) {
         info = new HashMap<String, Object>();

@@ -21,7 +21,6 @@
 package org.waarp.openr66.protocol.http.restv2.utils;
 
 import org.waarp.common.role.RoleDefault;
-import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.pojo.Rule;
@@ -38,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration.*;
+import static org.waarp.openr66.configuration.FileBasedElements.*;
 import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
 import static org.waarp.openr66.database.data.DbHostConfiguration.*;
 
@@ -176,7 +175,7 @@ public interface XmlSerializable {
     /**
      * The list of rules.
      */
-    @XmlElement(name = RuleFileBasedConfiguration.ROOT)
+    @XmlElement(name = ROOT)
     public List<Rule> rules = new ArrayList<Rule>();
 
     public Rules() {

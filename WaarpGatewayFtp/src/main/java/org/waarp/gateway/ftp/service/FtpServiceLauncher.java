@@ -31,15 +31,15 @@ public class FtpServiceLauncher extends ServiceLauncher {
     _main(args);
   }
 
-  public static void windowsService(String args[]) throws Exception {
+  public static void windowsService(String[] args) throws Exception {
     _windowsService(args);
   }
 
-  public static void windowsStart(String args[]) throws Exception {
+  public static void windowsStart(String[] args) throws Exception {
     _windowsStart(args);
   }
 
-  public static void windowsStop(String args[]) {
+  public static void windowsStop(String[] args) {
     _windowsStop(args);
   }
 
@@ -47,6 +47,7 @@ public class FtpServiceLauncher extends ServiceLauncher {
    *
    */
   public FtpServiceLauncher() {
+    // nothing
   }
 
   @Override

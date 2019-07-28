@@ -31,21 +31,21 @@ import java.util.List;
 
 /**
  * STAT command
- *
- *
  */
 public class STAT extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
-    String path = null;
-    String message = null;
+    String path;
+    String message;
     message = "STATUS information\nNo FtpFile currently in transfer\n";
     FtpFile file = null;
     try {
       file = getSession().getDataConn().getFtpTransferControl()
                          .getExecutingFtpTransfer().getFtpFile();
-    } catch (final FtpNoFileException e) {
-    } catch (final FtpNoTransferException e) {
+    } catch (final FtpNoFileException ignored) {
+      // nothing
+    } catch (final FtpNoTransferException ignored) {
+      // nothing
     }
     if (file != null) {
       if (file.isInReading()) {

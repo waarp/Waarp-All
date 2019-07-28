@@ -50,8 +50,6 @@ import java.net.InetSocketAddress;
  * Main class that stores any information that must be accessible from anywhere
  * during the connection of one
  * user.
- *
- *
  */
 public class FtpSession implements SessionInterface {
   /**
@@ -375,18 +373,18 @@ public class FtpSession implements SessionInterface {
   public String toString() {
     String mesg = "FtpSession: ";
     if (ftpAuth != null) {
-      mesg += "User: " + ftpAuth.getUser() + "/" + ftpAuth.getAccount() + " ";
+      mesg += "User: " + ftpAuth.getUser() + '/' + ftpAuth.getAccount() + ' ';
     }
     if (previousCommand != null) {
-      mesg += "PRVCMD: " + previousCommand.getCommand() + " " +
-              previousCommand.getArg() + " ";
+      mesg += "PRVCMD: " + previousCommand.getCommand() + ' ' +
+              previousCommand.getArg() + ' ';
     }
     if (currentCommand != null) {
-      mesg += "CMD: " + currentCommand.getCommand() + " " +
-              currentCommand.getArg() + " ";
+      mesg += "CMD: " + currentCommand.getCommand() + ' ' +
+              currentCommand.getArg() + ' ';
     }
     if (replyCode != null) {
-      mesg += "Reply: " + (answer != null? answer : replyCode.getMesg()) + " ";
+      mesg += "Reply: " + (answer != null? answer : replyCode.getMesg()) + ' ';
     }
     if (dataConn != null) {
       mesg += dataConn.toString();
@@ -394,7 +392,8 @@ public class FtpSession implements SessionInterface {
     if (ftpDir != null) {
       try {
         mesg += " PWD: " + ftpDir.getPwd();
-      } catch (final CommandAbstractException e) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
     }
     if (getControlChannel() != null) {
@@ -404,14 +403,15 @@ public class FtpSession implements SessionInterface {
       if (getDataConn().getCurrentDataChannel() != null) {
         mesg += " Data: " + getDataConn().getCurrentDataChannel();
       }
-    } catch (final FtpNoConnectionException e) {
+    } catch (final FtpNoConnectionException ignored) {
+      // nothing
     }
-    return mesg + "\n";
+    return mesg + '\n';
   }
 
   @Override
   public int getBlockSize() {
-    return restart.getMaxSize(configuration.getBLOCKSIZE());
+    return restart.getMaxSize(configuration.getBlocksize());
   }
 
   @Override
@@ -503,7 +503,7 @@ public class FtpSession implements SessionInterface {
       }
       logger.debug("DEBUG : " +
                    (waitForSsl != null? waitForSsl.isDone() : "not Finished") +
-                   ":" + isSsl + ":" + getControlChannel());
+                   ':' + isSsl + ':' + getControlChannel());
     }
     return isSsl;
   }

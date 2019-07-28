@@ -24,16 +24,13 @@ import org.snmp4j.smi.TimeTicks;
 
 /**
  * Specific Value for TimeTicks for Uptime
- *
- *
  */
-@SuppressWarnings("serial")
 public class WaarpUptime extends TimeTicks {
   /**
    *
    */
   private static final long serialVersionUID = -6737574100905398690L;
-  protected SysUpTime type = null;
+  protected final SysUpTime type;
 
   protected void setInternalValue() {
     setValue(type.get().getValue());

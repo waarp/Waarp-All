@@ -28,8 +28,6 @@ import org.waarp.common.exception.NoRestartException;
  * DirInterface} and {@link FileInterface},
  * one could want to implement a way to store or retrieve Marker from/to the
  * client specification.
- *
- *
  */
 public abstract class Restart {
   /**

@@ -28,11 +28,9 @@ import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -45,12 +43,10 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
-import java.net.SocketAddress;
+import static org.waarp.openr66.database.DbConstantR66.*;
 
 /**
  * Config Export from a local client without database connection
- *
- *
  */
 public class ConfigExport implements Runnable {
   /**
@@ -58,7 +54,7 @@ public class ConfigExport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       "Need at least the configuration file as first argument then at least one from\n" +
       "    -hosts\n" + "    -rules\n" + "    -business (if compatible)\n" +
       "    -alias (if compatible)\n" + "    -role (if compatible)\n" +
@@ -82,7 +78,7 @@ public class ConfigExport implements Runnable {
     alias = false;
     role = false;
     this.networkTransaction = networkTransaction;
-    dbhost = Configuration.configuration.getHOST_SSLAUTH();
+    dbhost = Configuration.configuration.getHostSslAuth();
   }
 
   public ConfigExport(R66Future future, boolean host, boolean rule,
@@ -95,7 +91,7 @@ public class ConfigExport implements Runnable {
     this.alias = alias;
     this.role = role;
     this.networkTransaction = networkTransaction;
-    dbhost = Configuration.configuration.getHOST_SSLAUTH();
+    dbhost = Configuration.configuration.getHostSslAuth();
   }
 
   public void setHost(DbHostAuth host) {
@@ -120,14 +116,13 @@ public class ConfigExport implements Runnable {
       future.setFailure(future.getResult().getException());
       return;
     }
-    LocalChannelReference localChannelReference = AbstractTransfer
-        .tryConnect(dbhost, future,
-                    networkTransaction);
+    LocalChannelReference localChannelReference =
+        AbstractTransfer.tryConnect(dbhost, future, networkTransaction);
     if (localChannelReference == null) {
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    AbstractLocalPacket valid = null;
+    AbstractLocalPacket valid;
     final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());
     logger.debug("UseJson: " + useJson);
     if (useJson) {
@@ -147,10 +142,8 @@ public class ConfigExport implements Runnable {
           .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException e) {
       logger.error("Bad Protocol", e);
-      localChannelReference.getLocalChannel().close();
-      localChannelReference = null;
+      localChannelReference.close();
       dbhost = null;
-      valid = null;
       future.setResult(
           new R66Result(e, null, true, ErrorCode.TransferError, null));
       future.setFailure(e);
@@ -161,23 +154,22 @@ public class ConfigExport implements Runnable {
     String sresult = "no information";
     if (future.isSuccess() && future.getResult() != null &&
         future.getResult().getOther() != null) {
-      sresult = (useJson?
+      sresult = useJson?
           ((JsonCommandPacket) future.getResult().getOther()).getRequest() :
-          ((ValidPacket) future.getResult().getOther()).toString());
+          future.getResult().getOther().toString();
     }
     logger.info(
         "Config Export done with " + (future.isSuccess()? "success" : "error") +
-        " (" + sresult + ")");
-    localChannelReference.getLocalChannel().close();
-    localChannelReference = null;
+        " (" + sresult + ')');
+    localChannelReference.close();
   }
 
-  protected static boolean shost = false;
-  protected static boolean srule = false;
-  protected static boolean sbusiness = false;
-  protected static boolean salias = false;
-  protected static boolean srole = false;
-  protected static String stohost = null;
+  protected static boolean shost;
+  protected static boolean srule;
+  protected static boolean sbusiness;
+  protected static boolean salias;
+  protected static boolean srole;
+  protected static String stohost;
 
   protected static boolean getParams(String[] args) {
     if (args.length < 2) {
@@ -190,22 +182,22 @@ public class ConfigExport implements Runnable {
       return false;
     }
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-hosts")) {
+      if ("-hosts".equalsIgnoreCase(args[i])) {
         shost = true;
-      } else if (args[i].equalsIgnoreCase("-rules")) {
+      } else if ("-rules".equalsIgnoreCase(args[i])) {
         srule = true;
-      } else if (args[i].equalsIgnoreCase("-business")) {
+      } else if ("-business".equalsIgnoreCase(args[i])) {
         sbusiness = true;
-      } else if (args[i].equalsIgnoreCase("-alias")) {
+      } else if ("-alias".equalsIgnoreCase(args[i])) {
         salias = true;
-      } else if (args[i].equalsIgnoreCase("-roles")) {
+      } else if ("-roles".equalsIgnoreCase(args[i])) {
         srole = true;
-      } else if (args[i].equalsIgnoreCase("-host")) {
+      } else if ("-host".equalsIgnoreCase(args[i])) {
         i++;
         stohost = args[i];
       }
     }
-    if ((!shost) && (!srule)) {
+    if (!shost && !srule) {
       logger.error("Need at least one of -hosts - rules");
       return false;
     }
@@ -219,10 +211,10 @@ public class ConfigExport implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final long time1 = System.currentTimeMillis();
     final R66Future future = new R66Future(true);
@@ -241,10 +233,10 @@ public class ConfigExport implements Runnable {
               "COnfigExport in     FAILURE since Host is not found: " + stohost,
               e);
           networkTransaction.closeAll();
-          System.exit(10);
+          System.exit(10);//NOSONAR
         }
       } else {
-        stohost = Configuration.configuration.getHOST_SSLID();
+        stohost = Configuration.configuration.getHostSslId();
       }
       transaction.run();
       future.awaitOrInterruptible();
@@ -254,13 +246,13 @@ public class ConfigExport implements Runnable {
       if (future.isSuccess()) {
         final boolean useJson = PartnerConfiguration.useJson(stohost);
         logger.debug("UseJson: " + useJson);
-        String message = null;
+        String message;
         if (useJson) {
-          message = (result.getOther() != null?
-              ((JsonCommandPacket) result.getOther()).getRequest() : "no file");
+          message = result.getOther() != null?
+              ((JsonCommandPacket) result.getOther()).getRequest() : "no file";
         } else {
-          message = (result.getOther() != null?
-              ((ValidPacket) result.getOther()).getSheader() : "no file");
+          message = result.getOther() != null?
+              ((ValidPacket) result.getOther()).getSheader() : "no file";
         }
         if (result.getCode() == ErrorCode.Warning) {
           logger
@@ -273,17 +265,15 @@ public class ConfigExport implements Runnable {
       } else {
         if (result.getCode() == ErrorCode.Warning) {
           logger.warn("ConfigExport is     WARNED", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         } else {
           logger.error("ConfigExport in     FAILURE", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         }
+        networkTransaction.closeAll();
+        System.exit(result.getCode().ordinal());//NOSONAR
       }
     } finally {
       networkTransaction.closeAll();
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
   }
 

@@ -25,6 +25,11 @@ import org.waarp.openr66.dao.database.DBDAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.xml.XMLDAOFactory;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+
 /**
  * Abstract class to create DAOFactory
  */
@@ -46,6 +51,34 @@ public abstract class DAOFactory {
 
   public static DAOFactory getInstance() {
     return instance;
+  }
+
+  /**
+   * OWASP security
+   *
+   * @return the {@link DocumentBuilderFactory} ready
+   */
+  public static DocumentBuilderFactory getDocumentBuilderFactory() {
+    DocumentBuilderFactory factory = // NOSONAR
+        DocumentBuilderFactory.newInstance(); // NOSONAR
+    // disable external entities
+    try {
+      factory.setFeature(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,
+                         Boolean.FALSE);
+    } catch (ParserConfigurationException ignored) {
+      // nothing
+    }
+    try {
+      factory.setFeature(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+    } catch (ParserConfigurationException ignored) {
+      // nothing
+    }
+    try {
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+    } catch (ParserConfigurationException ignored) {
+      // nothing
+    }
+    return factory;
   }
 
   /**

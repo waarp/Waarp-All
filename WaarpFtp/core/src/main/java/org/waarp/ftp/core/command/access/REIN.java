@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.FtpCommandCode;
 
 /**
  * REIN command
- *
- *
  */
 public class REIN extends AbstractCommand {
 

@@ -31,8 +31,6 @@ import org.waarp.ftp.core.session.FtpSession;
 
 /**
  * Filesystem implementation of a AuthInterface
- *
- *
  */
 public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
     implements FtpAuth {
@@ -45,7 +43,7 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
   /**
    * @param session
    */
-  public FilesystemBasedFtpAuth(FtpSession session) {
+  protected FilesystemBasedFtpAuth(FtpSession session) {
     super(session);
   }
 
@@ -114,7 +112,8 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
    *
    * @throws Reply421Exception if the business root is not available
    */
-  private void setRootFromAuth() throws Reply421Exception {
+  @Override
+  protected void setRootFromAuth() throws Reply421Exception {
     rootFromAuth = setBusinessRootFromAuth();
     if (rootFromAuth == null) {
       if (account == null) {

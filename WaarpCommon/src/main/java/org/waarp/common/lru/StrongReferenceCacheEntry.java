@@ -20,7 +20,6 @@
 package org.waarp.common.lru;
 
 /**
- *
  * @author Damian Momot
  */
 class StrongReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {

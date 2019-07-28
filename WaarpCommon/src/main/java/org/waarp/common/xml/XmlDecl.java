@@ -21,8 +21,6 @@ package org.waarp.common.xml;
 
 /**
  * XmlDecl to declare types, path and name for values from/to XML file/document
- *
- *
  */
 public class XmlDecl {
   private final String name;

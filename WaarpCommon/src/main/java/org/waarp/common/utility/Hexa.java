@@ -22,7 +22,7 @@ package org.waarp.common.utility;
 /**
  *
  */
-public class Hexa {
+public final class Hexa {
   /**
    * HEX_CHARS
    */
@@ -31,7 +31,10 @@ public class Hexa {
       'f',
   };
 
-  public static final byte asByte(char a, char b) {
+  private Hexa() {
+  }
+
+  public static byte asByte(char a, char b) {
     if (a >= HEX_CHARS[10]) {
       a -= HEX_CHARS[10] - 10;
     } else {
@@ -45,7 +48,7 @@ public class Hexa {
     return (byte) ((a << 4) + b);
   }
 
-  public static final byte[] fromHex(final char[] hex) {
+  public static byte[] fromHex(final char[] hex) {
     final int size = hex.length / 2;
     final byte[] bytes = new byte[size];
     for (int i = 0, j = 0; i < size; ) {
@@ -54,7 +57,7 @@ public class Hexa {
     return bytes;
   }
 
-  public static final byte[] fromHex(final String hex) {
+  public static byte[] fromHex(final String hex) {
     final char[] chars = hex.toCharArray();
     final int size = chars.length / 2;
     final byte[] bytes = new byte[size];
@@ -64,15 +67,15 @@ public class Hexa {
     return bytes;
   }
 
-  public static final char getHighHex(final byte value) {
+  public static char getHighHex(final byte value) {
     return HEX_CHARS[(value & 0xF0) >> 4];
   }
 
-  public static final char getLowHex(final byte value) {
+  public static char getLowHex(final byte value) {
     return HEX_CHARS[value & 0x0F];
   }
 
-  public static final String toHex(final byte[] bytes) {
+  public static String toHex(final byte[] bytes) {
     final int size = bytes.length;
     final int b16size = size * 2;
     final char[] id = new char[b16size];

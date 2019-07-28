@@ -27,6 +27,8 @@ import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,16 +49,19 @@ import java.util.ArrayList;
  * @version 2.0
  */
 
-public class HistoryIO {
+public final class HistoryIO {
   public static final String HISTORY_FILE_NAME = "history.xml";
   public static final String HISTORY = "history";
   public static final String XSD_DOC = "xsd-doc";
   public static final String XML_DOC = "xml-doc";
   public static final String FILE = "file";
 
+  private HistoryIO() {
+  }
+
   static void populateHistory(History history, Element element) {
     final NodeList lst = element.getChildNodes();
-    history.items = new ArrayList();
+    history.items = new ArrayList<History>();
     for (int i = lst.getLength() - 1; i >= 0; i--) {
       if (!(lst.item(i) instanceof Element)) {
         continue;
@@ -75,7 +80,7 @@ public class HistoryIO {
     if (!file.exists()) {
       return;
     }
-    Element root = null;
+    Element root;
     try {
       final DOMParser parser = new DOMParser();
       parser.parse(file.toURI().toURL().toString());
@@ -83,7 +88,7 @@ public class HistoryIO {
       root = doc.getDocumentElement();
       populateHistory(history, root);
     } catch (final Exception ex) {
-      ex.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(ex);
     }
   }
 
@@ -93,7 +98,7 @@ public class HistoryIO {
     doc.appendChild(root);
     if (history.items != null) {
       for (int i = 0; i < history.items.size(); i++) {
-        final History hXSD = (History) history.items.get(i);
+        final History hXSD = history.items.get(i);
         final Element eXSD = doc.createElement(XSD_DOC);
         eXSD.setAttribute(FILE, hXSD.path);
         root.appendChild(eXSD);
@@ -101,7 +106,7 @@ public class HistoryIO {
           continue;
         }
         for (int j = 0; j < hXSD.items.size(); j++) {
-          final History hXML = (History) hXSD.items.get(j);
+          final History hXML = hXSD.items.get(j);
           final Element eXML = doc.createElement(XML_DOC);
           eXML.setAttribute(FILE, hXML.path);
           eXSD.appendChild(eXML);
@@ -118,12 +123,10 @@ public class HistoryIO {
       final XMLSerializer serial = new XMLSerializer(writer, format);
       serial.asDOMSerializer();
       serial.serialize(doc);
-    } catch (final Exception ex) {
+    } catch (final Exception ignored) {
+      // nothing
     } finally {
-      try {
-        out.close();
-      } catch (final Exception ignore) {
-      }
+      FileUtils.close(out);
     }
   }
 

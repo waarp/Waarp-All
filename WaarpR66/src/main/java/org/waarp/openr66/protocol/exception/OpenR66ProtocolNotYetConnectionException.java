@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.exception;
 /**
  * Protocol Exception when a connection is not yet possible but could be later
  * on
- *
- *
  */
 public class OpenR66ProtocolNotYetConnectionException extends OpenR66Exception {
 
@@ -36,7 +34,6 @@ public class OpenR66ProtocolNotYetConnectionException extends OpenR66Exception {
    *
    */
   public OpenR66ProtocolNotYetConnectionException() {
-    super();
   }
 
   /**

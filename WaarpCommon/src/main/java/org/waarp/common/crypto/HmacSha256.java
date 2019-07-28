@@ -20,6 +20,7 @@
 package org.waarp.common.crypto;
 
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.logging.SysErrLogger;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -44,10 +45,11 @@ import java.io.IOException;
  * <li>To crypt a String in a Base64 format: String myStringCrypt =
  * key.cryptToString(myString);</li>
  * </ul>
- *
- *
  */
 public class HmacSha256 extends KeyObject {
+  private static final String ERROR = "Error: ";
+  private static final String CANNOT_BE_USED_FOR_HMAC_SHA256 =
+      "Cannot be used for HmacSha256";
   private static final int KEY_SIZE = 128;
   private static final String ALGO = "HmacSHA256";
   private static final String INSTANCE = ALGO;
@@ -75,7 +77,7 @@ public class HmacSha256 extends KeyObject {
 
   @Override
   public Cipher toCrypt() {
-    throw new IllegalArgumentException("Cannot be used for HmacSha256");
+    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
   @Override
@@ -87,12 +89,12 @@ public class HmacSha256 extends KeyObject {
 
   @Override
   public Cipher toDecrypt() {
-    throw new IllegalArgumentException("Cannot be used for HmacSha256");
+    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
   @Override
   public byte[] decrypt(byte[] ciphertext) throws Exception {
-    throw new IllegalArgumentException("Cannot be used for HmacSha256");
+    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
   /**
@@ -102,24 +104,25 @@ public class HmacSha256 extends KeyObject {
    */
   public static void main(String[] args) {
     if (args.length == 0) {
-      System.err.println("Filename is needed as argument");
+      SysErrLogger.FAKE_LOGGER.syserr("Filename is needed as argument");
     }
     final HmacSha256 key = new HmacSha256();
     try {
       key.generateKey();
     } catch (final Exception e) {
-      System.err.println("Error: " + e.getMessage());
+      SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());
       return;
     }
     try {
       key.saveSecretKey(new File(args[0]));
     } catch (final CryptoException e) {
-      System.err.println("Error: " + e.getMessage());
+      SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());
       return;
     } catch (final IOException e) {
-      System.err.println("Error: " + e.getMessage());
+      SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());
       return;
     }
-    System.out.println("New HmacSha256 key file is generated: " + args[0]);
+    SysErrLogger.FAKE_LOGGER
+        .sysout("New HmacSha256 key file is generated: " + args[0]);
   }
 }

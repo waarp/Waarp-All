@@ -29,13 +29,12 @@ import java.util.Iterator;
  * <p>
  * This cache implementation should be used with low number of threads.
  *
- *
  * @author Damian Momot
  */
 public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
-  public static final int DEFAULT_INITIAL_CAPACITY = 16;
+  private static final int DEFAULT_INITIAL_CAPACITY = 16;
 
-  public static final float DEFAULT_LOAD_FACTOR = 0.75f;
+  private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
   private final CapacityLruLinkedHashMap<K, InterfaceLruCacheEntry<V>> cacheMap;
 

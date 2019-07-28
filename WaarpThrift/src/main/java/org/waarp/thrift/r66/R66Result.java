@@ -60,6 +60,30 @@ import java.util.Map;
 
 public class R66Result
     implements TBase<R66Result, R66Result._Fields>, Cloneable {
+  private static final String START2 = "start";
+
+  private static final String MODETRANSFER2 = "modetransfer";
+
+  private static final String BLOCKSIZE2 = "blocksize";
+
+  private static final String ORIGINALFILENAME2 = "originalfilename";
+
+  private static final String ISMOVED2 = "ismoved";
+
+  private static final String RETRIEVEMODE2 = "retrievemode";
+
+  private static final String GLOBALLASTSTEP2 = "globallaststep";
+
+  private static final String GLOBALSTEP2 = "globalstep";
+
+  private static final String RESULTINFO2 = "resultinfo";
+
+  private static final String ACTION2 = "action";
+
+  private static final String DESTUID2 = "destuid";
+
+  private static final String FROMUID2 = "fromuid";
+
   /**
    *
    */
@@ -70,9 +94,9 @@ public class R66Result
   private static final TField MODE_FIELD_DESC =
       new TField("mode", TType.I32, (short) 1);
   private static final TField FROMUID_FIELD_DESC =
-      new TField("fromuid", TType.STRING, (short) 2);
+      new TField(FROMUID2, TType.STRING, (short) 2);
   private static final TField DESTUID_FIELD_DESC =
-      new TField("destuid", TType.STRING, (short) 3);
+      new TField(DESTUID2, TType.STRING, (short) 3);
   private static final TField FILE_FIELD_DESC =
       new TField("file", TType.STRING, (short) 4);
   private static final TField RULE_FIELD_DESC =
@@ -80,31 +104,31 @@ public class R66Result
   private static final TField TID_FIELD_DESC =
       new TField("tid", TType.I64, (short) 20);
   private static final TField ACTION_FIELD_DESC =
-      new TField("action", TType.I32, (short) 21);
+      new TField(ACTION2, TType.I32, (short) 21);
   private static final TField CODE_FIELD_DESC =
       new TField("code", TType.I32, (short) 30);
   private static final TField RESULTINFO_FIELD_DESC =
-      new TField("resultinfo", TType.STRING, (short) 31);
+      new TField(RESULTINFO2, TType.STRING, (short) 31);
   private static final TField GLOBALSTEP_FIELD_DESC =
-      new TField("globalstep", TType.I32, (short) 32);
+      new TField(GLOBALSTEP2, TType.I32, (short) 32);
   private static final TField GLOBALLASTSTEP_FIELD_DESC =
-      new TField("globallaststep", TType.I32, (short) 33);
+      new TField(GLOBALLASTSTEP2, TType.I32, (short) 33);
   private static final TField STEP_FIELD_DESC =
       new TField("step", TType.I32, (short) 34);
   private static final TField RANK_FIELD_DESC =
       new TField("rank", TType.I32, (short) 35);
   private static final TField RETRIEVEMODE_FIELD_DESC =
-      new TField("retrievemode", TType.BOOL, (short) 36);
+      new TField(RETRIEVEMODE2, TType.BOOL, (short) 36);
   private static final TField ISMOVED_FIELD_DESC =
-      new TField("ismoved", TType.BOOL, (short) 37);
+      new TField(ISMOVED2, TType.BOOL, (short) 37);
   private static final TField ORIGINALFILENAME_FIELD_DESC =
-      new TField("originalfilename", TType.STRING, (short) 38);
+      new TField(ORIGINALFILENAME2, TType.STRING, (short) 38);
   private static final TField BLOCKSIZE_FIELD_DESC =
-      new TField("blocksize", TType.I32, (short) 39);
+      new TField(BLOCKSIZE2, TType.I32, (short) 39);
   private static final TField MODETRANSFER_FIELD_DESC =
-      new TField("modetransfer", TType.I32, (short) 40);
+      new TField(MODETRANSFER2, TType.I32, (short) 40);
   private static final TField START_FIELD_DESC =
-      new TField("start", TType.STRING, (short) 41);
+      new TField(START2, TType.STRING, (short) 41);
   private static final TField STOP_FIELD_DESC =
       new TField("stop", TType.STRING, (short) 42);
 
@@ -137,6 +161,11 @@ public class R66Result
   private String start; // optional
   private String stop; // optional
 
+  @Override
+  public R66Result clone() throws CloneNotSupportedException {
+    return (R66Result) super.clone();
+  }
+
   /**
    * The set of fields this struct contains, along with convenience methods
    * for
@@ -146,25 +175,24 @@ public class R66Result
     /**
      * @see RequestMode
      */
-    MODE((short) 1, "mode"), FROMUID((short) 2, "fromuid"),
-    DESTUID((short) 3, "destuid"), FILE((short) 4, "file"),
+    MODE((short) 1, "mode"), FROMUID((short) 2, FROMUID2),
+    DESTUID((short) 3, DESTUID2), FILE((short) 4, "file"),
     RULE((short) 5, "rule"), TID((short) 20, "tid"),
     /**
      * @see Action
      */
-    ACTION((short) 21, "action"),
+    ACTION((short) 21, ACTION2),
     /**
      * @see ErrorCode
      */
-    CODE((short) 30, "code"), RESULTINFO((short) 31, "resultinfo"),
-    GLOBALSTEP((short) 32, "globalstep"),
-    GLOBALLASTSTEP((short) 33, "globallaststep"), STEP((short) 34, "step"),
-    RANK((short) 35, "rank"), RETRIEVEMODE((short) 36, "retrievemode"),
-    ISMOVED((short) 37, "ismoved"),
-    ORIGINALFILENAME((short) 38, "originalfilename"),
-    BLOCKSIZE((short) 39, "blocksize"),
-    MODETRANSFER((short) 40, "modetransfer"), START((short) 41, "start"),
-    STOP((short) 42, "stop");
+    CODE((short) 30, "code"), RESULTINFO((short) 31, RESULTINFO2),
+    GLOBALSTEP((short) 32, GLOBALSTEP2),
+    GLOBALLASTSTEP((short) 33, GLOBALLASTSTEP2), STEP((short) 34, "step"),
+    RANK((short) 35, "rank"), RETRIEVEMODE((short) 36, RETRIEVEMODE2),
+    ISMOVED((short) 37, ISMOVED2),
+    ORIGINALFILENAME((short) 38, ORIGINALFILENAME2),
+    BLOCKSIZE((short) 39, BLOCKSIZE2), MODETRANSFER((short) 40, MODETRANSFER2),
+    START((short) 41, START2), STOP((short) 42, "stop");
 
     private static final Map<String, _Fields> byName =
         new HashMap<String, _Fields>();
@@ -248,36 +276,36 @@ public class R66Result
       return byName.get(name);
     }
 
-    private final short _thriftId;
-    private final String _fieldName;
+    private final short thriftId;
+    private final String fieldName;
 
     _Fields(short thriftId, String fieldName) {
-      _thriftId = thriftId;
-      _fieldName = fieldName;
+      this.thriftId = thriftId;
+      this.fieldName = fieldName;
     }
 
     @Override
     public short getThriftFieldId() {
-      return _thriftId;
+      return thriftId;
     }
 
     @Override
     public String getFieldName() {
-      return _fieldName;
+      return fieldName;
     }
   }
 
   // isset id assignments
-  private static final int __TID_ISSET_ID = 0;
-  private static final int __GLOBALSTEP_ISSET_ID = 1;
-  private static final int __GLOBALLASTSTEP_ISSET_ID = 2;
-  private static final int __STEP_ISSET_ID = 3;
-  private static final int __RANK_ISSET_ID = 4;
-  private static final int __RETRIEVEMODE_ISSET_ID = 5;
-  private static final int __ISMOVED_ISSET_ID = 6;
-  private static final int __BLOCKSIZE_ISSET_ID = 7;
-  private static final int __MODETRANSFER_ISSET_ID = 8;
-  private short __isset_bitfield;
+  private static final int TID_ISSET_ID = 0;
+  private static final int GLOBALSTEP_ISSET_ID = 1;
+  private static final int GLOBALLASTSTEP_ISSET_ID = 2;
+  private static final int STEP_ISSET_ID = 3;
+  private static final int RANK_ISSET_ID = 4;
+  private static final int RETRIEVEMODE_ISSET_ID = 5;
+  private static final int ISMOVED_ISSET_ID = 6;
+  private static final int BLOCKSIZE_ISSET_ID = 7;
+  private static final int MODETRANSFER_ISSET_ID = 8;
+  private short issetBitfield;
   public static final Map<_Fields, FieldMetaData> metaDataMap;
 
   static {
@@ -288,10 +316,10 @@ public class R66Result
                                  new EnumMetaData(TType.ENUM,
                                                   RequestMode.class)));
     tmpMap.put(_Fields.FROMUID,
-               new FieldMetaData("fromuid", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(FROMUID2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.DESTUID,
-               new FieldMetaData("destuid", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(DESTUID2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.FILE,
                new FieldMetaData("file", TFieldRequirementType.OPTIONAL,
@@ -303,19 +331,19 @@ public class R66Result
                new FieldMetaData("tid", TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.ACTION,
-               new FieldMetaData("action", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(ACTION2, TFieldRequirementType.OPTIONAL,
                                  new EnumMetaData(TType.ENUM, Action.class)));
     tmpMap.put(_Fields.CODE,
                new FieldMetaData("code", TFieldRequirementType.REQUIRED,
                                  new EnumMetaData(TType.ENUM,
                                                   ErrorCode.class)));
     tmpMap.put(_Fields.RESULTINFO,
-               new FieldMetaData("resultinfo", TFieldRequirementType.REQUIRED,
+               new FieldMetaData(RESULTINFO2, TFieldRequirementType.REQUIRED,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.GLOBALSTEP,
-               new FieldMetaData("globalstep", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(GLOBALSTEP2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I32)));
-    tmpMap.put(_Fields.GLOBALLASTSTEP, new FieldMetaData("globallaststep",
+    tmpMap.put(_Fields.GLOBALLASTSTEP, new FieldMetaData(GLOBALLASTSTEP2,
                                                          TFieldRequirementType.OPTIONAL,
                                                          new FieldValueMetaData(
                                                              TType.I32)));
@@ -326,23 +354,23 @@ public class R66Result
                new FieldMetaData("rank", TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I32)));
     tmpMap.put(_Fields.RETRIEVEMODE,
-               new FieldMetaData("retrievemode", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(RETRIEVEMODE2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.ISMOVED,
-               new FieldMetaData("ismoved", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(ISMOVED2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.ORIGINALFILENAME, new FieldMetaData("originalfilename",
+    tmpMap.put(_Fields.ORIGINALFILENAME, new FieldMetaData(ORIGINALFILENAME2,
                                                            TFieldRequirementType.OPTIONAL,
                                                            new FieldValueMetaData(
                                                                TType.STRING)));
     tmpMap.put(_Fields.BLOCKSIZE,
-               new FieldMetaData("blocksize", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(BLOCKSIZE2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I32)));
     tmpMap.put(_Fields.MODETRANSFER,
-               new FieldMetaData("modetransfer", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(MODETRANSFER2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I32)));
     tmpMap.put(_Fields.START,
-               new FieldMetaData("start", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(START2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.STOP,
                new FieldMetaData("stop", TFieldRequirementType.OPTIONAL,
@@ -365,7 +393,7 @@ public class R66Result
    * Performs a deep copy on <i>other</i>.
    */
   public R66Result(R66Result other) {
-    __isset_bitfield = other.__isset_bitfield;
+    issetBitfield = other.issetBitfield;
     if (other.isSetMode()) {
       mode = other.mode;
     }
@@ -602,7 +630,7 @@ public class R66Result
   }
 
   public void unsetTid() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TID_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, TID_ISSET_ID);
   }
 
   /**
@@ -610,12 +638,11 @@ public class R66Result
    * otherwise
    */
   public boolean isSetTid() {
-    return EncodingUtils.testBit(__isset_bitfield, __TID_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
   }
 
   public void setTidIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __TID_ISSET_ID, value);
+    issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
   }
 
   /**
@@ -722,8 +749,7 @@ public class R66Result
   }
 
   public void unsetGlobalstep() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __GLOBALSTEP_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, GLOBALSTEP_ISSET_ID);
   }
 
   /**
@@ -731,12 +757,12 @@ public class R66Result
    * false otherwise
    */
   public boolean isSetGlobalstep() {
-    return EncodingUtils.testBit(__isset_bitfield, __GLOBALSTEP_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, GLOBALSTEP_ISSET_ID);
   }
 
   public void setGlobalstepIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __GLOBALSTEP_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, GLOBALSTEP_ISSET_ID, value);
   }
 
   public int getGloballaststep() {
@@ -750,8 +776,8 @@ public class R66Result
   }
 
   public void unsetGloballaststep() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __GLOBALLASTSTEP_ISSET_ID);
+    issetBitfield =
+        EncodingUtils.clearBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID);
   }
 
   /**
@@ -760,12 +786,12 @@ public class R66Result
    * false otherwise
    */
   public boolean isSetGloballaststep() {
-    return EncodingUtils.testBit(__isset_bitfield, __GLOBALLASTSTEP_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID);
   }
 
   public void setGloballaststepIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils
-        .setBit(__isset_bitfield, __GLOBALLASTSTEP_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID, value);
   }
 
   public int getStep() {
@@ -779,8 +805,7 @@ public class R66Result
   }
 
   public void unsetStep() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __STEP_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, STEP_ISSET_ID);
   }
 
   /**
@@ -788,12 +813,11 @@ public class R66Result
    * otherwise
    */
   public boolean isSetStep() {
-    return EncodingUtils.testBit(__isset_bitfield, __STEP_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, STEP_ISSET_ID);
   }
 
   public void setStepIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __STEP_ISSET_ID, value);
+    issetBitfield = EncodingUtils.setBit(issetBitfield, STEP_ISSET_ID, value);
   }
 
   public int getRank() {
@@ -807,8 +831,7 @@ public class R66Result
   }
 
   public void unsetRank() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __RANK_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, RANK_ISSET_ID);
   }
 
   /**
@@ -816,12 +839,11 @@ public class R66Result
    * otherwise
    */
   public boolean isSetRank() {
-    return EncodingUtils.testBit(__isset_bitfield, __RANK_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, RANK_ISSET_ID);
   }
 
   public void setRankIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __RANK_ISSET_ID, value);
+    issetBitfield = EncodingUtils.setBit(issetBitfield, RANK_ISSET_ID, value);
   }
 
   public boolean isRetrievemode() {
@@ -835,8 +857,8 @@ public class R66Result
   }
 
   public void unsetRetrievemode() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __RETRIEVEMODE_ISSET_ID);
+    issetBitfield =
+        EncodingUtils.clearBit(issetBitfield, RETRIEVEMODE_ISSET_ID);
   }
 
   /**
@@ -844,12 +866,12 @@ public class R66Result
    * false otherwise
    */
   public boolean isSetRetrievemode() {
-    return EncodingUtils.testBit(__isset_bitfield, __RETRIEVEMODE_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, RETRIEVEMODE_ISSET_ID);
   }
 
   public void setRetrievemodeIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __RETRIEVEMODE_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, RETRIEVEMODE_ISSET_ID, value);
   }
 
   public boolean isIsmoved() {
@@ -863,8 +885,7 @@ public class R66Result
   }
 
   public void unsetIsmoved() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __ISMOVED_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, ISMOVED_ISSET_ID);
   }
 
   /**
@@ -873,12 +894,12 @@ public class R66Result
    * otherwise
    */
   public boolean isSetIsmoved() {
-    return EncodingUtils.testBit(__isset_bitfield, __ISMOVED_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, ISMOVED_ISSET_ID);
   }
 
   public void setIsmovedIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __ISMOVED_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, ISMOVED_ISSET_ID, value);
   }
 
   public String getOriginalfilename() {
@@ -919,8 +940,7 @@ public class R66Result
   }
 
   public void unsetBlocksize() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __BLOCKSIZE_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
   /**
@@ -928,12 +948,12 @@ public class R66Result
    * false otherwise
    */
   public boolean isSetBlocksize() {
-    return EncodingUtils.testBit(__isset_bitfield, __BLOCKSIZE_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
   public void setBlocksizeIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __BLOCKSIZE_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, BLOCKSIZE_ISSET_ID, value);
   }
 
   public int getModetransfer() {
@@ -947,8 +967,8 @@ public class R66Result
   }
 
   public void unsetModetransfer() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __MODETRANSFER_ISSET_ID);
+    issetBitfield =
+        EncodingUtils.clearBit(issetBitfield, MODETRANSFER_ISSET_ID);
   }
 
   /**
@@ -956,12 +976,12 @@ public class R66Result
    * false otherwise
    */
   public boolean isSetModetransfer() {
-    return EncodingUtils.testBit(__isset_bitfield, __MODETRANSFER_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, MODETRANSFER_ISSET_ID);
   }
 
   public void setModetransferIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __MODETRANSFER_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, MODETRANSFER_ISSET_ID, value);
   }
 
   public String getStart() {
@@ -1323,19 +1343,19 @@ public class R66Result
       return false;
     }
 
-    final boolean this_present_mode = true && isSetMode();
-    final boolean that_present_mode = true && that.isSetMode();
+    final boolean this_present_mode = isSetMode();
+    final boolean that_present_mode = that.isSetMode();
     if (this_present_mode || that_present_mode) {
       if (!(this_present_mode && that_present_mode)) {
         return false;
       }
-      if (!mode.equals(that.mode)) {
+      if (mode != that.mode) {
         return false;
       }
     }
 
-    final boolean this_present_fromuid = true && isSetFromuid();
-    final boolean that_present_fromuid = true && that.isSetFromuid();
+    final boolean this_present_fromuid = isSetFromuid();
+    final boolean that_present_fromuid = that.isSetFromuid();
     if (this_present_fromuid || that_present_fromuid) {
       if (!(this_present_fromuid && that_present_fromuid)) {
         return false;
@@ -1345,8 +1365,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_destuid = true && isSetDestuid();
-    final boolean that_present_destuid = true && that.isSetDestuid();
+    final boolean this_present_destuid = isSetDestuid();
+    final boolean that_present_destuid = that.isSetDestuid();
     if (this_present_destuid || that_present_destuid) {
       if (!(this_present_destuid && that_present_destuid)) {
         return false;
@@ -1356,8 +1376,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_file = true && isSetFile();
-    final boolean that_present_file = true && that.isSetFile();
+    final boolean this_present_file = isSetFile();
+    final boolean that_present_file = that.isSetFile();
     if (this_present_file || that_present_file) {
       if (!(this_present_file && that_present_file)) {
         return false;
@@ -1367,8 +1387,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_rule = true && isSetRule();
-    final boolean that_present_rule = true && that.isSetRule();
+    final boolean this_present_rule = isSetRule();
+    final boolean that_present_rule = that.isSetRule();
     if (this_present_rule || that_present_rule) {
       if (!(this_present_rule && that_present_rule)) {
         return false;
@@ -1378,8 +1398,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_tid = true && isSetTid();
-    final boolean that_present_tid = true && that.isSetTid();
+    final boolean this_present_tid = isSetTid();
+    final boolean that_present_tid = that.isSetTid();
     if (this_present_tid || that_present_tid) {
       if (!(this_present_tid && that_present_tid)) {
         return false;
@@ -1389,30 +1409,30 @@ public class R66Result
       }
     }
 
-    final boolean this_present_action = true && isSetAction();
-    final boolean that_present_action = true && that.isSetAction();
+    final boolean this_present_action = isSetAction();
+    final boolean that_present_action = that.isSetAction();
     if (this_present_action || that_present_action) {
       if (!(this_present_action && that_present_action)) {
         return false;
       }
-      if (!action.equals(that.action)) {
+      if (action != that.action) {
         return false;
       }
     }
 
-    final boolean this_present_code = true && isSetCode();
-    final boolean that_present_code = true && that.isSetCode();
+    final boolean this_present_code = isSetCode();
+    final boolean that_present_code = that.isSetCode();
     if (this_present_code || that_present_code) {
       if (!(this_present_code && that_present_code)) {
         return false;
       }
-      if (!code.equals(that.code)) {
+      if (code != that.code) {
         return false;
       }
     }
 
-    final boolean this_present_resultinfo = true && isSetResultinfo();
-    final boolean that_present_resultinfo = true && that.isSetResultinfo();
+    final boolean this_present_resultinfo = isSetResultinfo();
+    final boolean that_present_resultinfo = that.isSetResultinfo();
     if (this_present_resultinfo || that_present_resultinfo) {
       if (!(this_present_resultinfo && that_present_resultinfo)) {
         return false;
@@ -1422,8 +1442,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_globalstep = true && isSetGlobalstep();
-    final boolean that_present_globalstep = true && that.isSetGlobalstep();
+    final boolean this_present_globalstep = isSetGlobalstep();
+    final boolean that_present_globalstep = that.isSetGlobalstep();
     if (this_present_globalstep || that_present_globalstep) {
       if (!(this_present_globalstep && that_present_globalstep)) {
         return false;
@@ -1433,9 +1453,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_globallaststep = true && isSetGloballaststep();
-    final boolean that_present_globallaststep =
-        true && that.isSetGloballaststep();
+    final boolean this_present_globallaststep = isSetGloballaststep();
+    final boolean that_present_globallaststep = that.isSetGloballaststep();
     if (this_present_globallaststep || that_present_globallaststep) {
       if (!(this_present_globallaststep && that_present_globallaststep)) {
         return false;
@@ -1445,8 +1464,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_step = true && isSetStep();
-    final boolean that_present_step = true && that.isSetStep();
+    final boolean this_present_step = isSetStep();
+    final boolean that_present_step = that.isSetStep();
     if (this_present_step || that_present_step) {
       if (!(this_present_step && that_present_step)) {
         return false;
@@ -1456,8 +1475,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_rank = true && isSetRank();
-    final boolean that_present_rank = true && that.isSetRank();
+    final boolean this_present_rank = isSetRank();
+    final boolean that_present_rank = that.isSetRank();
     if (this_present_rank || that_present_rank) {
       if (!(this_present_rank && that_present_rank)) {
         return false;
@@ -1467,8 +1486,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_retrievemode = true && isSetRetrievemode();
-    final boolean that_present_retrievemode = true && that.isSetRetrievemode();
+    final boolean this_present_retrievemode = isSetRetrievemode();
+    final boolean that_present_retrievemode = that.isSetRetrievemode();
     if (this_present_retrievemode || that_present_retrievemode) {
       if (!(this_present_retrievemode && that_present_retrievemode)) {
         return false;
@@ -1478,8 +1497,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_ismoved = true && isSetIsmoved();
-    final boolean that_present_ismoved = true && that.isSetIsmoved();
+    final boolean this_present_ismoved = isSetIsmoved();
+    final boolean that_present_ismoved = that.isSetIsmoved();
     if (this_present_ismoved || that_present_ismoved) {
       if (!(this_present_ismoved && that_present_ismoved)) {
         return false;
@@ -1489,10 +1508,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_originalfilename =
-        true && isSetOriginalfilename();
-    final boolean that_present_originalfilename =
-        true && that.isSetOriginalfilename();
+    final boolean this_present_originalfilename = isSetOriginalfilename();
+    final boolean that_present_originalfilename = that.isSetOriginalfilename();
     if (this_present_originalfilename || that_present_originalfilename) {
       if (!(this_present_originalfilename && that_present_originalfilename)) {
         return false;
@@ -1502,8 +1519,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_blocksize = true && isSetBlocksize();
-    final boolean that_present_blocksize = true && that.isSetBlocksize();
+    final boolean this_present_blocksize = isSetBlocksize();
+    final boolean that_present_blocksize = that.isSetBlocksize();
     if (this_present_blocksize || that_present_blocksize) {
       if (!(this_present_blocksize && that_present_blocksize)) {
         return false;
@@ -1513,8 +1530,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_modetransfer = true && isSetModetransfer();
-    final boolean that_present_modetransfer = true && that.isSetModetransfer();
+    final boolean this_present_modetransfer = isSetModetransfer();
+    final boolean that_present_modetransfer = that.isSetModetransfer();
     if (this_present_modetransfer || that_present_modetransfer) {
       if (!(this_present_modetransfer && that_present_modetransfer)) {
         return false;
@@ -1524,8 +1541,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_start = true && isSetStart();
-    final boolean that_present_start = true && that.isSetStart();
+    final boolean this_present_start = isSetStart();
+    final boolean that_present_start = that.isSetStart();
     if (this_present_start || that_present_start) {
       if (!(this_present_start && that_present_start)) {
         return false;
@@ -1535,8 +1552,8 @@ public class R66Result
       }
     }
 
-    final boolean this_present_stop = true && isSetStop();
-    final boolean that_present_stop = true && that.isSetStop();
+    final boolean this_present_stop = isSetStop();
+    final boolean that_present_stop = that.isSetStop();
     if (this_present_stop || that_present_stop) {
       if (!(this_present_stop && that_present_stop)) {
         return false;
@@ -1558,229 +1575,218 @@ public class R66Result
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
-    int lastComparison = 0;
-    final R66Result typedOther = other;
+    int lastComparison;
 
-    lastComparison =
-        Boolean.valueOf(isSetMode()).compareTo(typedOther.isSetMode());
+    lastComparison = Boolean.valueOf(isSetMode()).compareTo(other.isSetMode());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetMode()) {
-      lastComparison = TBaseHelper.compareTo(mode, typedOther.mode);
+      lastComparison = TBaseHelper.compareTo(mode, other.mode);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetFromuid()).compareTo(typedOther.isSetFromuid());
+        Boolean.valueOf(isSetFromuid()).compareTo(other.isSetFromuid());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetFromuid()) {
-      lastComparison = TBaseHelper.compareTo(fromuid, typedOther.fromuid);
+      lastComparison = TBaseHelper.compareTo(fromuid, other.fromuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetDestuid()).compareTo(typedOther.isSetDestuid());
+        Boolean.valueOf(isSetDestuid()).compareTo(other.isSetDestuid());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetDestuid()) {
-      lastComparison = TBaseHelper.compareTo(destuid, typedOther.destuid);
+      lastComparison = TBaseHelper.compareTo(destuid, other.destuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetFile()).compareTo(typedOther.isSetFile());
+    lastComparison = Boolean.valueOf(isSetFile()).compareTo(other.isSetFile());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetFile()) {
-      lastComparison = TBaseHelper.compareTo(file, typedOther.file);
+      lastComparison = TBaseHelper.compareTo(file, other.file);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetRule()).compareTo(typedOther.isSetRule());
+    lastComparison = Boolean.valueOf(isSetRule()).compareTo(other.isSetRule());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetRule()) {
-      lastComparison = TBaseHelper.compareTo(rule, typedOther.rule);
+      lastComparison = TBaseHelper.compareTo(rule, other.rule);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetTid()).compareTo(typedOther.isSetTid());
+    lastComparison = Boolean.valueOf(isSetTid()).compareTo(other.isSetTid());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetTid()) {
-      lastComparison = TBaseHelper.compareTo(tid, typedOther.tid);
+      lastComparison = TBaseHelper.compareTo(tid, other.tid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetAction()).compareTo(typedOther.isSetAction());
+        Boolean.valueOf(isSetAction()).compareTo(other.isSetAction());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetAction()) {
-      lastComparison = TBaseHelper.compareTo(action, typedOther.action);
+      lastComparison = TBaseHelper.compareTo(action, other.action);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCode()).compareTo(other.isSetCode());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCode()) {
+      lastComparison = TBaseHelper.compareTo(code, other.code);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetCode()).compareTo(typedOther.isSetCode());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCode()) {
-      lastComparison = TBaseHelper.compareTo(code, typedOther.code);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetResultinfo())
-                            .compareTo(typedOther.isSetResultinfo());
+        Boolean.valueOf(isSetResultinfo()).compareTo(other.isSetResultinfo());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetResultinfo()) {
-      lastComparison = TBaseHelper.compareTo(resultinfo, typedOther.resultinfo);
+      lastComparison = TBaseHelper.compareTo(resultinfo, other.resultinfo);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetGlobalstep())
-                            .compareTo(typedOther.isSetGlobalstep());
+    lastComparison =
+        Boolean.valueOf(isSetGlobalstep()).compareTo(other.isSetGlobalstep());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetGlobalstep()) {
-      lastComparison = TBaseHelper.compareTo(globalstep, typedOther.globalstep);
+      lastComparison = TBaseHelper.compareTo(globalstep, other.globalstep);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison = Boolean.valueOf(isSetGloballaststep())
-                            .compareTo(typedOther.isSetGloballaststep());
+                            .compareTo(other.isSetGloballaststep());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetGloballaststep()) {
       lastComparison =
-          TBaseHelper.compareTo(globallaststep, typedOther.globallaststep);
+          TBaseHelper.compareTo(globallaststep, other.globallaststep);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetStep()).compareTo(typedOther.isSetStep());
+    lastComparison = Boolean.valueOf(isSetStep()).compareTo(other.isSetStep());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetStep()) {
-      lastComparison = TBaseHelper.compareTo(step, typedOther.step);
+      lastComparison = TBaseHelper.compareTo(step, other.step);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetRank()).compareTo(typedOther.isSetRank());
+    lastComparison = Boolean.valueOf(isSetRank()).compareTo(other.isSetRank());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetRank()) {
-      lastComparison = TBaseHelper.compareTo(rank, typedOther.rank);
+      lastComparison = TBaseHelper.compareTo(rank, other.rank);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison = Boolean.valueOf(isSetRetrievemode())
-                            .compareTo(typedOther.isSetRetrievemode());
+                            .compareTo(other.isSetRetrievemode());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetRetrievemode()) {
-      lastComparison =
-          TBaseHelper.compareTo(retrievemode, typedOther.retrievemode);
+      lastComparison = TBaseHelper.compareTo(retrievemode, other.retrievemode);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetIsmoved()).compareTo(typedOther.isSetIsmoved());
+        Boolean.valueOf(isSetIsmoved()).compareTo(other.isSetIsmoved());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetIsmoved()) {
-      lastComparison = TBaseHelper.compareTo(ismoved, typedOther.ismoved);
+      lastComparison = TBaseHelper.compareTo(ismoved, other.ismoved);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison = Boolean.valueOf(isSetOriginalfilename())
-                            .compareTo(typedOther.isSetOriginalfilename());
+                            .compareTo(other.isSetOriginalfilename());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetOriginalfilename()) {
       lastComparison =
-          TBaseHelper.compareTo(originalfilename, typedOther.originalfilename);
+          TBaseHelper.compareTo(originalfilename, other.originalfilename);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetBlocksize())
-                            .compareTo(typedOther.isSetBlocksize());
+    lastComparison =
+        Boolean.valueOf(isSetBlocksize()).compareTo(other.isSetBlocksize());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetBlocksize()) {
-      lastComparison = TBaseHelper.compareTo(blocksize, typedOther.blocksize);
+      lastComparison = TBaseHelper.compareTo(blocksize, other.blocksize);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison = Boolean.valueOf(isSetModetransfer())
-                            .compareTo(typedOther.isSetModetransfer());
+                            .compareTo(other.isSetModetransfer());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetModetransfer()) {
-      lastComparison =
-          TBaseHelper.compareTo(modetransfer, typedOther.modetransfer);
+      lastComparison = TBaseHelper.compareTo(modetransfer, other.modetransfer);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetStart()).compareTo(typedOther.isSetStart());
+        Boolean.valueOf(isSetStart()).compareTo(other.isSetStart());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetStart()) {
-      lastComparison = TBaseHelper.compareTo(start, typedOther.start);
+      lastComparison = TBaseHelper.compareTo(start, other.start);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetStop()).compareTo(typedOther.isSetStop());
+    lastComparison = Boolean.valueOf(isSetStop()).compareTo(other.isSetStop());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetStop()) {
-      lastComparison = TBaseHelper.compareTo(stop, typedOther.stop);
+      lastComparison = TBaseHelper.compareTo(stop, other.stop);
       return lastComparison;
     }
     return 0;
@@ -1990,9 +1996,8 @@ public class R66Result
       } else {
         sb.append(stop);
       }
-      first = false;
     }
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 
@@ -2026,7 +2031,7 @@ public class R66Result
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and
       // doesn't call the default constructor.
-      __isset_bitfield = 0;
+      issetBitfield = 0;
       read(new TCompactProtocol(new TIOStreamTransport(in)));
     } catch (final TException te) {
       throw new IOException(te);
@@ -2235,45 +2240,35 @@ public class R66Result
         oprot.writeI32(struct.mode.getValue());
         oprot.writeFieldEnd();
       }
-      if (struct.fromuid != null) {
-        if (struct.isSetFromuid()) {
-          oprot.writeFieldBegin(FROMUID_FIELD_DESC);
-          oprot.writeString(struct.fromuid);
-          oprot.writeFieldEnd();
-        }
+      if (struct.fromuid != null && struct.isSetFromuid()) {
+        oprot.writeFieldBegin(FROMUID_FIELD_DESC);
+        oprot.writeString(struct.fromuid);
+        oprot.writeFieldEnd();
       }
-      if (struct.destuid != null) {
-        if (struct.isSetDestuid()) {
-          oprot.writeFieldBegin(DESTUID_FIELD_DESC);
-          oprot.writeString(struct.destuid);
-          oprot.writeFieldEnd();
-        }
+      if (struct.destuid != null && struct.isSetDestuid()) {
+        oprot.writeFieldBegin(DESTUID_FIELD_DESC);
+        oprot.writeString(struct.destuid);
+        oprot.writeFieldEnd();
       }
-      if (struct.file != null) {
-        if (struct.isSetFile()) {
-          oprot.writeFieldBegin(FILE_FIELD_DESC);
-          oprot.writeString(struct.file);
-          oprot.writeFieldEnd();
-        }
+      if (struct.file != null && struct.isSetFile()) {
+        oprot.writeFieldBegin(FILE_FIELD_DESC);
+        oprot.writeString(struct.file);
+        oprot.writeFieldEnd();
       }
-      if (struct.rule != null) {
-        if (struct.isSetRule()) {
-          oprot.writeFieldBegin(RULE_FIELD_DESC);
-          oprot.writeString(struct.rule);
-          oprot.writeFieldEnd();
-        }
+      if (struct.rule != null && struct.isSetRule()) {
+        oprot.writeFieldBegin(RULE_FIELD_DESC);
+        oprot.writeString(struct.rule);
+        oprot.writeFieldEnd();
       }
       if (struct.isSetTid()) {
         oprot.writeFieldBegin(TID_FIELD_DESC);
         oprot.writeI64(struct.tid);
         oprot.writeFieldEnd();
       }
-      if (struct.action != null) {
-        if (struct.isSetAction()) {
-          oprot.writeFieldBegin(ACTION_FIELD_DESC);
-          oprot.writeI32(struct.action.getValue());
-          oprot.writeFieldEnd();
-        }
+      if (struct.action != null && struct.isSetAction()) {
+        oprot.writeFieldBegin(ACTION_FIELD_DESC);
+        oprot.writeI32(struct.action.getValue());
+        oprot.writeFieldEnd();
       }
       if (struct.code != null) {
         oprot.writeFieldBegin(CODE_FIELD_DESC);
@@ -2315,12 +2310,10 @@ public class R66Result
         oprot.writeBool(struct.ismoved);
         oprot.writeFieldEnd();
       }
-      if (struct.originalfilename != null) {
-        if (struct.isSetOriginalfilename()) {
-          oprot.writeFieldBegin(ORIGINALFILENAME_FIELD_DESC);
-          oprot.writeString(struct.originalfilename);
-          oprot.writeFieldEnd();
-        }
+      if (struct.originalfilename != null && struct.isSetOriginalfilename()) {
+        oprot.writeFieldBegin(ORIGINALFILENAME_FIELD_DESC);
+        oprot.writeString(struct.originalfilename);
+        oprot.writeFieldEnd();
       }
       if (struct.isSetBlocksize()) {
         oprot.writeFieldBegin(BLOCKSIZE_FIELD_DESC);
@@ -2332,19 +2325,15 @@ public class R66Result
         oprot.writeI32(struct.modetransfer);
         oprot.writeFieldEnd();
       }
-      if (struct.start != null) {
-        if (struct.isSetStart()) {
-          oprot.writeFieldBegin(START_FIELD_DESC);
-          oprot.writeString(struct.start);
-          oprot.writeFieldEnd();
-        }
+      if (struct.start != null && struct.isSetStart()) {
+        oprot.writeFieldBegin(START_FIELD_DESC);
+        oprot.writeString(struct.start);
+        oprot.writeFieldEnd();
       }
-      if (struct.stop != null) {
-        if (struct.isSetStop()) {
-          oprot.writeFieldBegin(STOP_FIELD_DESC);
-          oprot.writeString(struct.stop);
-          oprot.writeFieldEnd();
-        }
+      if (struct.stop != null && struct.isSetStop()) {
+        oprot.writeFieldBegin(STOP_FIELD_DESC);
+        oprot.writeString(struct.stop);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();

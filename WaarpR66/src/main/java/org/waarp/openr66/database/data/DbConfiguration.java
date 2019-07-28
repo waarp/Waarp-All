@@ -44,11 +44,9 @@ import java.util.List;
 
 /**
  * Configuration Table object
- *
- *
  */
 public class DbConfiguration extends AbstractDbData {
-  public static enum Columns {
+  public enum Columns {
     READGLOBALLIMIT, WRITEGLOBALLIMIT, READSESSIONLIMIT, WRITESESSIONLIMIT,
     DELAYLIMIT, UPDATEDINFO, HOSTID
   }
@@ -60,16 +58,16 @@ public class DbConfiguration extends AbstractDbData {
 
   public static final String table = " CONFIGURATION ";
 
-  private Limit limit = null;
+  private Limit limit;
 
   // ALL TABLE SHOULD IMPLEMENT THIS
   public static final int NBPRKEY = 1;
 
   protected static final String selectAllFields =
-      Columns.READGLOBALLIMIT.name() + "," + Columns.WRITEGLOBALLIMIT.name() +
-      "," + Columns.READSESSIONLIMIT.name() + "," +
-      Columns.WRITESESSIONLIMIT.name() + "," + Columns.DELAYLIMIT.name() + "," +
-      Columns.UPDATEDINFO.name() + "," + Columns.HOSTID.name();
+      Columns.READGLOBALLIMIT.name() + ',' + Columns.WRITEGLOBALLIMIT.name() +
+      ',' + Columns.READSESSIONLIMIT.name() + ',' +
+      Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +
+      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
 
   protected static final String updateAllFields =
       Columns.READGLOBALLIMIT.name() + "=?," + Columns.WRITEGLOBALLIMIT.name() +
@@ -83,11 +81,11 @@ public class DbConfiguration extends AbstractDbData {
   protected void initObject() {
     primaryKey = new DbValue[] { new DbValue("", Columns.HOSTID.name()) };
     otherFields = new DbValue[] {
-        new DbValue(0l, Columns.READGLOBALLIMIT.name()),
-        new DbValue(0l, Columns.WRITEGLOBALLIMIT.name()),
-        new DbValue(0l, Columns.READSESSIONLIMIT.name()),
-        new DbValue(0l, Columns.WRITESESSIONLIMIT.name()),
-        new DbValue(0l, Columns.DELAYLIMIT.name()),
+        new DbValue(0L, Columns.READGLOBALLIMIT.name()),
+        new DbValue(0L, Columns.WRITEGLOBALLIMIT.name()),
+        new DbValue(0L, Columns.READSESSIONLIMIT.name()),
+        new DbValue(0L, Columns.WRITESESSIONLIMIT.name()),
+        new DbValue(0L, Columns.DELAYLIMIT.name()),
         new DbValue(0, Columns.UPDATEDINFO.name())
     };
     allFields = new DbValue[] {
@@ -170,13 +168,11 @@ public class DbConfiguration extends AbstractDbData {
    */
   public DbConfiguration(String hostid, long rg, long wg, long rs, long ws,
                          long del) {
-    super();
     limit = new Limit(hostid, rg, wg, rs, ws, del);
     setToArray();
   }
 
   public DbConfiguration(Limit limit) {
-    super();
     if (limit == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -193,7 +189,6 @@ public class DbConfiguration extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public DbConfiguration(ObjectNode source) throws WaarpDatabaseSqlException {
-    super();
     limit = new Limit();
     setFromJson(source, false);
     if (limit.getHostid() == null || limit.getHostid().isEmpty()) {
@@ -227,7 +222,6 @@ public class DbConfiguration extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public DbConfiguration(String hostid) throws WaarpDatabaseException {
-    super();
     LimitDAO limitAccess = null;
     try {
       limitAccess = DAOFactory.getInstance().getLimitDAO();
@@ -235,7 +229,7 @@ public class DbConfiguration extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      limit = new Limit(hostid, 0l);
+      limit = new Limit(hostid, 0L);
     } finally {
       if (limitAccess != null) {
         limitAccess.close();
@@ -338,7 +332,6 @@ public class DbConfiguration extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbConfiguration() {
-    super();
     limit = new Limit();
   }
 
@@ -362,7 +355,7 @@ public class DbConfiguration extends AbstractDbData {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final List<Filter> filters = new ArrayList<Filter>();
     filters.add(new Filter(DBLimitDAO.HOSTID_FIELD, "=",
-                           Configuration.configuration.getHOST_ID()));
+                           Configuration.configuration.getHostId()));
     filters.add(new Filter(DBLimitDAO.UPDATED_INFO_FIELD, "=",
                            UpdatedInfo.TOSUBMIT.ordinal()));
 
@@ -427,7 +420,7 @@ public class DbConfiguration extends AbstractDbData {
             "(" + Columns.READGLOBALLIMIT + " > " + limitBandwith + " OR " +
             Columns.READSESSIONLIMIT + " > " + limitBandwith + " OR " +
             Columns.WRITEGLOBALLIMIT + " > " + limitBandwith + " OR " +
-            Columns.WRITESESSIONLIMIT + " > " + limitBandwith + ")";
+            Columns.WRITESESSIONLIMIT + " > " + limitBandwith + ')';
       }
     }
     if (condition != null) {
@@ -460,7 +453,7 @@ public class DbConfiguration extends AbstractDbData {
    * @return True if this Configuration refers to the current host
    */
   public boolean isOwnConfiguration() {
-    return limit.getHostid().equals(Configuration.configuration.getHOST_ID());
+    return limit.getHostid().equals(Configuration.configuration.getHostId());
   }
 
   /**

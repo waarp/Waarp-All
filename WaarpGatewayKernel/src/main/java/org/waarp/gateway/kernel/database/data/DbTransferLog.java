@@ -53,10 +53,12 @@ import java.util.Set;
 
 /**
  * Transfer Log for Gateway for Http
- *
- *
  */
 public class DbTransferLog extends AbstractDbData {
+  private static final String ERROR_DURING_PURGE = "Error during purge";
+
+  private static final String NO_ROW_FOUND2 = "No row found";
+
   /**
    * Internal Logger
    */
@@ -122,11 +124,11 @@ public class DbTransferLog extends AbstractDbData {
   // ALL TABLE SHOULD IMPLEMENT THIS
 
   protected static final String selectAllFields =
-      Columns.FILENAME.name() + "," + Columns.MODETRANS.name() + "," +
-      Columns.STARTTRANS.name() + "," + Columns.STOPTRANS.name() + "," +
-      Columns.TRANSINFO.name() + "," + Columns.INFOSTATUS.name() + "," +
-      Columns.UPDATEDINFO.name() + "," + Columns.USERID.name() + "," +
-      Columns.ACCOUNTID.name() + "," + Columns.HOSTID.name() + "," +
+      Columns.FILENAME.name() + ',' + Columns.MODETRANS.name() + ',' +
+      Columns.STARTTRANS.name() + ',' + Columns.STOPTRANS.name() + ',' +
+      Columns.TRANSINFO.name() + ',' + Columns.INFOSTATUS.name() + ',' +
+      Columns.UPDATEDINFO.name() + ',' + Columns.USERID.name() + ',' +
+      Columns.ACCOUNTID.name() + ',' + Columns.HOSTID.name() + ',' +
       Columns.SPECIALID.name();
 
   protected static final String updateAllFields =
@@ -398,7 +400,7 @@ public class DbTransferLog extends AbstractDbData {
       try {
         final int count = preparedStatement.executeUpdate();
         if (count <= 0) {
-          throw new WaarpDatabaseNoDataException("No row found");
+          throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);
         }
       } catch (final WaarpDatabaseSqlException e) {
         logger.error("Problem while inserting", e);
@@ -428,10 +430,10 @@ public class DbTransferLog extends AbstractDbData {
             setValues(preparedStatement, allFields);
             final int count = preparedStatement.executeUpdate();
             if (count <= 0) {
-              throw new WaarpDatabaseNoDataException("No row found");
+              throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);
             }
           } else {
-            throw new WaarpDatabaseNoDataException("No row found");
+            throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);
           }
         } finally {
           find.realClose();
@@ -547,7 +549,7 @@ public class DbTransferLog extends AbstractDbData {
     if (where == null) {
       request += " WHERE " + getLimitWhereCondition();
     } else {
-      request += where + " " + getLimitWhereCondition();
+      request += where + ' ' + getLimitWhereCondition();
     }
     request += " ORDER BY " + Columns.STARTTRANS.name() + " DESC ";
     return new DbPreparedStatement(session, request);
@@ -572,7 +574,7 @@ public class DbTransferLog extends AbstractDbData {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
     String request = "SELECT " + selectAllFields + " FROM " + table;
-    if (start != null & stop != null) {
+    if (start != null && stop != null) {
       request += " WHERE " + Columns.STARTTRANS.name() + " >= ? AND " +
                  Columns.STARTTRANS.name() + " <= ? AND " +
                  getLimitWhereCondition() + " ORDER BY " +
@@ -654,9 +656,12 @@ public class DbTransferLog extends AbstractDbData {
       if (pstt.getNext()) {
         result = pstt.getResultSet().getLong(1);
       }
-    } catch (final WaarpDatabaseNoConnectionException e) {
-    } catch (final WaarpDatabaseSqlException e) {
-    } catch (final SQLException e) {
+    } catch (final WaarpDatabaseNoConnectionException ignored) {
+      // nothing
+    } catch (final WaarpDatabaseSqlException ignored) {
+      // nothing
+    } catch (final SQLException ignored) {
+      // nothing
     } finally {
       pstt.close();
     }
@@ -725,9 +730,12 @@ public class DbTransferLog extends AbstractDbData {
       if (pstt.getNext()) {
         result = pstt.getResultSet().getLong(1);
       }
-    } catch (final WaarpDatabaseNoConnectionException e) {
-    } catch (final WaarpDatabaseSqlException e) {
-    } catch (final SQLException e) {
+    } catch (final WaarpDatabaseNoConnectionException ignored) {
+      // nothing
+    } catch (final WaarpDatabaseSqlException ignored) {
+      // nothing
+    } catch (final SQLException ignored) {
+      // nothing
     } finally {
       pstt.close();
     }
@@ -746,9 +754,12 @@ public class DbTransferLog extends AbstractDbData {
       if (pstt.getNext()) {
         result = pstt.getResultSet().getLong(1);
       }
-    } catch (final WaarpDatabaseNoConnectionException e) {
-    } catch (final WaarpDatabaseSqlException e) {
-    } catch (final SQLException e) {
+    } catch (final WaarpDatabaseNoConnectionException ignored) {
+      // nothing
+    } catch (final WaarpDatabaseSqlException ignored) {
+      // nothing
+    } catch (final SQLException ignored) {
+      // nothing
     } finally {
       pstt.close();
     }
@@ -806,7 +817,7 @@ public class DbTransferLog extends AbstractDbData {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    String inCond = null;
+    String inCond;
     if (in) {
       inCond =
           " (" + Columns.MODETRANS.name() + " = '" + PageRole.DELETE.name() +
@@ -819,7 +830,7 @@ public class DbTransferLog extends AbstractDbData {
                PageRole.GETDOWNLOAD.name() + "') ";
     }
     request += " WHERE " + inCond;
-    request += " AND " + getLimitWhereCondition() + " ";
+    request += " AND " + getLimitWhereCondition() + ' ';
     request += " AND " + Columns.STARTTRANS.name() + " >= ? ";
     request += " AND " + Columns.UPDATEDINFO.name() + " = " +
                UpdatedInfo.INERROR.ordinal();
@@ -846,7 +857,7 @@ public class DbTransferLog extends AbstractDbData {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    String inCond = null;
+    String inCond;
     if (in) {
       inCond =
           " (" + Columns.MODETRANS.name() + " = '" + PageRole.DELETE.name() +
@@ -859,7 +870,7 @@ public class DbTransferLog extends AbstractDbData {
                PageRole.GETDOWNLOAD.name() + "') ";
     }
     request += " WHERE " + inCond;
-    request += " AND " + getLimitWhereCondition() + " ";
+    request += " AND " + getLimitWhereCondition() + ' ';
     request += " AND " + Columns.STARTTRANS.name() + " >= ? ";
     if (running) {
       request += " AND " + Columns.UPDATEDINFO.name() + " = " +
@@ -991,7 +1002,7 @@ public class DbTransferLog extends AbstractDbData {
    * Clear the runner
    */
   public void clear() {
-
+    // nothing
   }
 
   @Override
@@ -1053,7 +1064,7 @@ public class DbTransferLog extends AbstractDbData {
    * Global Structure for Server Configuration
    */
   private static final XmlDecl[] logsElements = {
-      new XmlDecl(XML_ENTRY, XmlType.XVAL, XML_ROOT + "/" + XML_ENTRY, logDecls,
+      new XmlDecl(XML_ENTRY, XmlType.XVAL, XML_ROOT + '/' + XML_ENTRY, logDecls,
                   true)
   };
 
@@ -1094,7 +1105,7 @@ public class DbTransferLog extends AbstractDbData {
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(logsElements[0]);
     roots[0] = root;
-    String message = null;
+    String message;
     final XmlValue[] values = saveIntoXmlValue();
     if (values == null) {
       return "Error during export";
@@ -1103,14 +1114,14 @@ public class DbTransferLog extends AbstractDbData {
       root.addValue(values);
     } catch (final InvalidObjectException e) {
       logger.error("Error during Write DbTransferLog file", e);
-      return "Error during purge";
+      return ERROR_DURING_PURGE;
     }
     try {
       delete();
+      message = "Purge Correct Logs successful";
     } catch (final WaarpDatabaseException e) {
-      message = "Error during purge";
+      message = ERROR_DURING_PURGE;
     }
-    message = "Purge Correct Logs successful";
     XmlUtil.write(document, roots);
     try {
       XmlUtil.saveDocument(filename, document);
@@ -1139,7 +1150,7 @@ public class DbTransferLog extends AbstractDbData {
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(logsElements[0]);
     roots[0] = root;
-    String message = null;
+    String message;
     try {
       try {
         preparedStatement.executeQuery();
@@ -1153,17 +1164,17 @@ public class DbTransferLog extends AbstractDbData {
             root.addValue(values);
           } catch (final InvalidObjectException e) {
             logger.error("Error during Write DbTransferLog file", e);
-            return "Error during purge";
+            return ERROR_DURING_PURGE;
           }
           log.delete();
         }
         message = "Purge Correct Logs successful";
       } catch (final WaarpDatabaseNoConnectionException e) {
-        message = "Error during purge";
+        message = ERROR_DURING_PURGE;
       } catch (final WaarpDatabaseSqlException e) {
-        message = "Error during purge";
+        message = ERROR_DURING_PURGE;
       } catch (final WaarpDatabaseException e) {
-        message = "Error during purge";
+        message = ERROR_DURING_PURGE;
       }
     } finally {
       preparedStatement.realClose();

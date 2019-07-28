@@ -24,8 +24,6 @@ import java.io.File;
 /**
  * Abstract class to allow specific function depending on the underlying JDK to
  * used.
- *
- *
  */
 public abstract class FilesystemBasedDirJdkAbstract {
   /**

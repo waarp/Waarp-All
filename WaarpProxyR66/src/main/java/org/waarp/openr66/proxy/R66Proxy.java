@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.proxy;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -26,11 +27,16 @@ import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.configuration.FileBasedConfiguration;
 
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+
 /**
  *
  */
 public class R66Proxy {
   private static WaarpLogger logger;
+
+  private R66Proxy() {
+  }
 
   /**
    * @param args
@@ -42,18 +48,17 @@ public class R66Proxy {
       logger.error("Needs the configuration file as first argument");
       return;
     }
-    Configuration.configuration = new Configuration();
+    configuration = new Configuration();
     if (initialize(args[0])) {
-      logger.warn("Proxy OpenR66 starts for " +
-                  Configuration.configuration.getHOST_ID());
-      System.err.println("Proxy OpenR66 starts for " +
-                         Configuration.configuration.getHOST_ID());
+      logger.warn("Proxy OpenR66 starts for " + configuration.getHostId());
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Proxy OpenR66 starts for " + configuration.getHostId());
     } else {
-      logger.error("Cannot start Proxy OpenR66 for " +
-                   Configuration.configuration.getHOST_ID());
-      System.err.println("Cannot start Proxy OpenR66 for " +
-                         Configuration.configuration.getHOST_ID());
-      System.exit(1);
+      logger
+          .error("Cannot start Proxy OpenR66 for " + configuration.getHostId());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot start Proxy OpenR66 for " + configuration.getHostId());
+      System.exit(1);//NOSONAR
     }
   }
 
@@ -62,12 +67,12 @@ public class R66Proxy {
       logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
     }
     if (!FileBasedConfiguration
-        .setConfigurationProxyFromXml(Configuration.configuration, config)) {
+        .setConfigurationProxyFromXml(configuration, config)) {
       logger.error("Needs a correct configuration file as first argument");
       return false;
     }
     try {
-      Configuration.configuration.serverStartup();
+      configuration.serverStartup();
     } catch (final Throwable e) {
       logger.error("Startup of Proxy is in error", e);
       WaarpShutdownHook.terminate(false);

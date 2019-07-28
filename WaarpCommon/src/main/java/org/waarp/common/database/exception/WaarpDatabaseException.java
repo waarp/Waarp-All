@@ -21,8 +21,6 @@ package org.waarp.common.database.exception;
 
 /**
  * Database exception
- *
- *
  */
 public class WaarpDatabaseException extends Exception {
 

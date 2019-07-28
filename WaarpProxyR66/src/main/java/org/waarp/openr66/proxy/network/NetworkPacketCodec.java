@@ -33,8 +33,6 @@ import java.util.List;
 
 /**
  * Packet Decoder
- *
- *
  */
 public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   @Override
@@ -76,6 +74,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
                               keepAlivePacket, null);
         ctx.writeAndFlush(response.getNetworkPacket());
       }
+      buffer.release();
       // Replaced by a NoOp packet
       networkPacket =
           new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
@@ -89,8 +88,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   @Override
   protected void encode(ChannelHandlerContext ctx, NetworkPacket msg,
                         ByteBuf out) throws Exception {
-    final NetworkPacket packet = msg;
-    final ByteBuf finalBuf = packet.getNetworkPacket();
+    final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
     finalBuf.release();
   }

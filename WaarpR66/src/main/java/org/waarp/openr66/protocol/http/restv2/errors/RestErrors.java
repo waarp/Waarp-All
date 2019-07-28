@@ -27,12 +27,14 @@ package org.waarp.openr66.protocol.http.restv2.errors;
  */
 public final class RestErrors {
 
+  private static final String[] STRING_0_LENGTH = new String[0];
+
   /**
    * Prevent the default constructor from being called.
    */
   private RestErrors() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   /**
@@ -42,7 +44,7 @@ public final class RestErrors {
    * @return the corresponding new RestError object
    */
   public static RestError MISSING_BODY() {
-    return new RestError("BadRequest.MissingBody", new String[0], 1);
+    return new RestError("BadRequest.MissingBody", STRING_0_LENGTH, 1);
   }
 
   /**

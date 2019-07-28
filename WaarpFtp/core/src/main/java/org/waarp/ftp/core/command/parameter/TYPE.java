@@ -29,8 +29,6 @@ import org.waarp.ftp.core.command.FtpArgumentCode.TransferSubType;
 
 /**
  * TYPE command
- *
- *
  */
 public class TYPE extends AbstractCommand {
   @Override
@@ -42,7 +40,7 @@ public class TYPE extends AbstractCommand {
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                                 "Type set to " +
                                 FtpArgumentCode.TransferType.ASCII.name() +
-                                " " + TransferSubType.NONPRINT);
+                                ' ' + TransferSubType.NONPRINT);
       return;
     }
     FtpArgumentCode.TransferType transferType;
@@ -62,7 +60,7 @@ public class TYPE extends AbstractCommand {
     }
     // Look at the subtype or format control
     if (types.length > 2) {
-      TransferSubType transferSubType = null;
+      TransferSubType transferSubType;
       for (int i = 1; i < types.length; i++) {
         if (types[i].length() != 0) {
           try {
@@ -78,12 +76,10 @@ public class TYPE extends AbstractCommand {
           }
         }
       }
-      getSession().getDataConn().setSubType(TransferSubType.NONPRINT);
-    } else {
-      getSession().getDataConn().setSubType(TransferSubType.NONPRINT);
     }
+    getSession().getDataConn().setSubType(TransferSubType.NONPRINT);
     getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
-                              "Type set to " + transferType.name() + " " +
+                              "Type set to " + transferType.name() + ' ' +
                               TransferSubType.NONPRINT);
   }
 

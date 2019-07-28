@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * No Op class
  * <p>
  * header = empty middle = empty end = empty
- *
- *
  */
 public class NoOpPacket extends AbstractLocalPacket {
 

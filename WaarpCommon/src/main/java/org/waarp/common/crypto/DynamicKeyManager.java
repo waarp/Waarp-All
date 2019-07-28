@@ -20,6 +20,7 @@
 package org.waarp.common.crypto;
 
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
@@ -36,8 +37,6 @@ import java.util.List;
  * <br>
  * The time ratio are: RC4,ARCFOUR=1; AES,RC2=1,5; DES=2; Blowfish,DESede=4<br>
  * <b>AES is the best compromise in term of security and efficiency.</b>
- *
- *
  */
 public class DynamicKeyManager extends KeyManager {
   /**
@@ -78,7 +77,7 @@ public class DynamicKeyManager extends KeyManager {
         final String extension = basename.substring(lastpos + 1);
         int len = (int) file.length();
         final byte[] key = new byte[len];
-        FileInputStream inputStream = null;
+        FileInputStream inputStream;
         try {
           inputStream = new FileInputStream(file);
         } catch (final FileNotFoundException e) {
@@ -103,10 +102,7 @@ public class DynamicKeyManager extends KeyManager {
             break;
           }
         }
-        try {
-          inputStream.close();
-        } catch (final IOException e) {
-        }
+        FileUtils.close(inputStream);
         if (read < -1) {
           // wrong
           continue;
@@ -139,10 +135,7 @@ public class DynamicKeyManager extends KeyManager {
           wrong.add(filename);
           continue;
         } finally {
-          try {
-            inputStream.close();
-          } catch (final IOException e) {
-          }
+          FileUtils.close(inputStream);
         }
         keyObject.setSecretKey(key);
         setKey(firstname, keyObject);
@@ -185,9 +178,9 @@ public class DynamicKeyManager extends KeyManager {
     while (names.hasMoreElements()) {
       final String name = names.nextElement();
       final KeyObject key = keysConcurrentHashMap.get(name);
-      key.saveSecretKey(new File(name + "." + key.getFileExtension()));
+      key.saveSecretKey(new File(name + '.' + key.getFileExtension()));
       final FileOutputStream outputStream = new FileOutputStream(
-          new File(name + "." + key.getFileExtension() + INFEXTENSION));
+          new File(name + '.' + key.getFileExtension() + INFEXTENSION));
       try {
         outputStream.write(key.getKeySize());
         final String algo = key.getAlgorithm();
@@ -196,9 +189,8 @@ public class DynamicKeyManager extends KeyManager {
         outputStream.write(algo.getBytes(WaarpStringUtils.UTF8));
         outputStream.write(instance.length());
         outputStream.write(instance.getBytes(WaarpStringUtils.UTF8));
-        outputStream.close();
       } finally {
-        outputStream.close();
+        FileUtils.close(outputStream);
       }
     }
   }

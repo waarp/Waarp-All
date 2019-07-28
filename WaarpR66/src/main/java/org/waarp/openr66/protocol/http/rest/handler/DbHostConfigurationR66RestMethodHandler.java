@@ -47,19 +47,19 @@ import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
 
 /**
  * DbHostConfiguration Rest handler
- *
- *
  */
 public class DbHostConfigurationR66RestMethodHandler
     extends DataModelRestMethodHandler<DbHostConfiguration> {
+  private static final String HOST_ID_AS_VARCHAR_IN_URI_AS =
+      "HostId as VARCHAR in URI as ";
   public static final String BASEURI = "hostconfigs";
 
-  public static enum FILTER_ARGS {
+  public enum FILTER_ARGS {
     HOSTID("host name subtext"), BUSINESS("BUSINESS information subtext"),
     ROLES("ROLES information subtext"), ALIASES("ALIASES information subtext"),
     OTHERS("OTHERS information subtext");
 
-    public String type;
+    public final String type;
 
     FILTER_ARGS(String type) {
       this.type = type;
@@ -182,13 +182,14 @@ public class DbHostConfigurationR66RestMethodHandler
       node1.put(dbValue.getColumn(), dbValue.getType());
     }
 
-    ObjectNode node2, node3;
+    ObjectNode node2;
+    ObjectNode node3;
     if (methods.contains(METHOD.GET)) {
       node2 = RestArgument
           .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
                              JsonHandler.createObjectNode().put(
                                  DbHostConfiguration.Columns.HOSTID.name(),
-                                 "HostId as VARCHAR in URI as " + path + "/id"),
+                                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id"),
                              node1);
       node.add(node2);
 
@@ -204,7 +205,7 @@ public class DbHostConfigurationR66RestMethodHandler
     if (methods.contains(METHOD.PUT)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostConfiguration.Columns.HOSTID.name(),
-                "HostId as VARCHAR in URI as " + path + "/id");
+                HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
       for (final DbValue dbValue : values) {
         if (dbValue.getColumn().equalsIgnoreCase(
             DbHostConfiguration.Columns.HOSTID.name())) {
@@ -220,7 +221,7 @@ public class DbHostConfigurationR66RestMethodHandler
     if (methods.contains(METHOD.DELETE)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostConfiguration.Columns.HOSTID.name(),
-                "HostId as VARCHAR in URI as " + path + "/id");
+                HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
       node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + "/id",
                                              COMMAND_TYPE.DELETE.name(), node3,
                                              node1);
@@ -257,7 +258,7 @@ public class DbHostConfigurationR66RestMethodHandler
     super.put(handler, arguments, result, body);
     // according to what is updated and if concerned
     final DbHostConfiguration item = getItem(handler, arguments, result, body);
-    if (item.getHostid().equals(Configuration.configuration.getHOST_ID())) {
+    if (item.getHostid().equals(Configuration.configuration.getHostId())) {
       DbHostConfiguration
           .updateHostConfiguration(Configuration.configuration, item);
     }

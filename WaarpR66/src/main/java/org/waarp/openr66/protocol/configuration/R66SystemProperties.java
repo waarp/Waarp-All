@@ -21,10 +21,8 @@ package org.waarp.openr66.protocol.configuration;
 
 /**
  * This class is only intend to concentrate all SystemProperty definitions
- *
- *
  */
-public class R66SystemProperties {
+public final class R66SystemProperties {
 
   /**
    * Used to set en/fr or other locale defined (default en)
@@ -121,4 +119,6 @@ public class R66SystemProperties {
   public static final String OPENR66_CACHE_TIMELIMIT =
       "openr66.cache.timelimit";
 
+  private R66SystemProperties() {
+  }
 }

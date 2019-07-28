@@ -24,7 +24,6 @@ import java.util.concurrent.Callable;
 /**
  * LRU cache interface.
  *
- *
  * @author Damian Momot
  */
 public interface InterfaceLruCache<K, V> {

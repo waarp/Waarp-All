@@ -29,7 +29,6 @@ import org.waarp.common.filemonitor.FileMonitor.FileItem;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -77,7 +76,7 @@ public class FileMonitorTest {
   }
 
   @Test
-  public void testFileMonitor() throws InterruptedException, IOException {
+  public void testFileMonitor() throws Exception {
     final File statusFile = new File("/tmp/status.txt");
     statusFile.delete();
     final File stopFile = new File("/tmp/stop.txt");
@@ -101,7 +100,7 @@ public class FileMonitorTest {
             System.out.println("File New: " + file.file.getAbsolutePath());
             countNew.incrementAndGet();
             setFileItem(file);
-            finalize(true, 0);
+            finalizeValidFile(true, 0);
           }
         };
     final FileMonitorCommandRunnableFuture commandRemovedFile =

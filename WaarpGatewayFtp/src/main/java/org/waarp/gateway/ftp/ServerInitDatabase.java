@@ -21,6 +21,7 @@ package org.waarp.gateway.ftp;
 
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -29,12 +30,10 @@ import org.waarp.ftp.core.utils.FtpChannelUtils;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
-import org.waarp.gateway.ftp.database.DbConstant;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
 
 /**
  * Program to initialize the database for Waarp Ftp Exec
- *
- *
  */
 public class ServerInitDatabase {
   /**
@@ -45,6 +44,9 @@ public class ServerInitDatabase {
   static String sxml;
   static boolean database;
 
+  private ServerInitDatabase() {
+  }
+
   protected static boolean getParams(String[] args) {
     if (args.length < 1) {
       logger.error(
@@ -54,8 +56,9 @@ public class ServerInitDatabase {
     }
     sxml = args[0];
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-initdb")) {
+      if ("-initdb".equalsIgnoreCase(args[i])) {
         database = true;
+        break;
       }
     }
     return true;
@@ -74,14 +77,14 @@ public class ServerInitDatabase {
       logger.error(
           "Need at least the configuration file as first argument then optionally\n" +
           "    -initdb");
-      if (DbConstant.gatewayAdmin != null) {
-        DbConstant.gatewayAdmin.close();
+      if (DbConstantFtp.gatewayAdmin != null) {
+        DbConstantFtp.gatewayAdmin.close();
       }
       if (DetectionUtils.isJunit()) {
         return;
       }
       FtpChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final FileBasedConfiguration configuration =
         new FileBasedConfiguration(ExecGatewayFtpServer.class,
@@ -90,15 +93,15 @@ public class ServerInitDatabase {
                                    new FilesystemBasedFileParameterImpl());
     try {
       if (!configuration.setConfigurationServerFromXml(args[0])) {
-        System.err.println("Bad main configuration");
-        if (DbConstant.gatewayAdmin != null) {
-          DbConstant.gatewayAdmin.close();
+        SysErrLogger.FAKE_LOGGER.syserr("Bad main configuration");
+        if (DbConstantFtp.gatewayAdmin != null) {
+          DbConstantFtp.gatewayAdmin.close();
         }
         if (DetectionUtils.isJunit()) {
           return;
         }
         FtpChannelUtils.stopLogger();
-        System.exit(1);
+        System.exit(1);//NOSONAR
         return;
       }
       if (database) {
@@ -109,20 +112,20 @@ public class ServerInitDatabase {
           logger.error("Cannot connect to database");
           return;
         }
-        System.out.println("End creation");
+        SysErrLogger.FAKE_LOGGER.sysout("End creation");
       }
-      System.out.println("Load done");
+      SysErrLogger.FAKE_LOGGER.sysout("Load done");
     } finally {
-      if (DbConstant.gatewayAdmin != null) {
-        DbConstant.gatewayAdmin.close();
+      if (DbConstantFtp.gatewayAdmin != null) {
+        DbConstantFtp.gatewayAdmin.close();
       }
     }
   }
 
   public static void initdb() throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
-    DbConstant.gatewayAdmin.getDbModel()
-                           .createTables(DbConstant.gatewayAdmin.getSession());
+    DbConstantFtp.gatewayAdmin.getDbModel().createTables(
+        DbConstantFtp.gatewayAdmin.getSession());
   }
 
 }

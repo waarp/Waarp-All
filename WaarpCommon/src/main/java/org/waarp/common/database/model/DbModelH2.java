@@ -40,8 +40,6 @@ import java.sql.Types;
 
 /**
  * H2 Database Model implementation
- *
- *
  */
 public abstract class DbModelH2 extends DbModelAbstract {
   /**
@@ -68,7 +66,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelH2(String dbserver, String dbuser, String dbpasswd)
+  protected DbModelH2(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     this();
     pool = JdbcConnectionPool.create(dbserver, dbuser, dbpasswd);
@@ -94,7 +92,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
     } catch (final SQLException e) {
       // SQLException
       logger.error(
-          "Cannot register Driver " + type.name() + " " + e.getMessage());
+          "Cannot register Driver " + type.name() + ' ' + e.getMessage());
       DbSession.error(e);
       throw new WaarpDatabaseNoConnectionException(
           "Cannot load database drive:" + type.name(), e);
@@ -150,9 +148,9 @@ public abstract class DbModelH2 extends DbModelAbstract {
     DATE(Types.DATE, " DATE "), TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP "),
     CLOB(Types.CLOB, " CLOB "), BLOB(Types.BLOB, " BLOB ");
 
-    public int type;
+    public final int type;
 
-    public String constructor;
+    public final String constructor;
 
     DBType(int type, String constructor) {
       this.type = type;
@@ -200,92 +198,6 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public void createTables(DbSession session)
-      throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
-    final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
-    final String primaryKey = " PRIMARY KEY ";
-    final String notNull = " NOT NULL ";
-
-    // Example
-    /*
-
-    String action = createTableH2 + DbDataModel.table + "(";
-    final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
-    for (int i = 0; i < ccolumns.length - 1; i++) {
-      action += ccolumns[i].name() + DBType.getType(DbDataModel.dbTypes[i]) +
-                notNull + ", ";
-    }
-    action += ccolumns[ccolumns.length - 1].name() +
-              DBType.getType(DbDataModel.dbTypes[ccolumns.length - 1]) +
-              primaryKey + ")";
-    logger.warn(action);
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } finally {
-      request.close();
-    }
-
-    // Index example
-    action =
-        "CREATE INDEX IF NOT EXISTS IDX_RUNNER ON " + DbDataModel.table + "(";
-    final DbDataModel.Columns[] icolumns = DbDataModel.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action += icolumns[i].name() + ", ";
-    }
-    action += icolumns[icolumns.length - 1].name() + ")";
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      return;
-    } finally {
-      request.close();
-    }
-
-    // example sequence
-    action =
-        "CREATE SEQUENCE IF NOT EXISTS " + DbDataModel.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " START WITH " +
-        (DbConstant.ILLEGALVALUE + 1);
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      // version 1.3.173
-      action = "CREATE SEQUENCE IF NOT EXISTS " + DbDataModel.fieldseq +
-               " START WITH " + (DbConstant.ILLEGALVALUE + 1);
-      logger.warn(action);
-      try {
-        request.query(action);
-      } catch (final WaarpDatabaseNoConnectionException e2) {
-        logger.warn("CreateTables Error", e2);
-        return;
-      } catch (final WaarpDatabaseSqlException e2) {
-        logger.warn("CreateTables Error", e2);
-        return;
-      }
-    } finally {
-      request.close();
-    }
-
-     */
-  }
-
-  @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
     final String action =
@@ -295,10 +207,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
       request.query(action);
     } catch (final WaarpDatabaseNoConnectionException e) {
       logger.warn("ResetSequences Error", e);
-      return;
     } catch (final WaarpDatabaseSqlException e) {
       logger.warn("ResetSequences Error", e);
-      return;
     } finally {
       request.close();
     }

@@ -185,11 +185,11 @@ public class Rule {
 
   @Deprecated
   public String getXMLHostids() {
-    String res = "<hostids>";
+    StringBuilder res = new StringBuilder("<hostids>");
     for (final String hostid : hostids) {
-      res = res + "<hostid>" + hostid + "</hostid>";
+      res.append("<hostid>").append(hostid).append("</hostid>");
     }
-    return res + "</hostids>";
+    return res.append("</hostids>").toString();
   }
 
   @Deprecated
@@ -224,11 +224,11 @@ public class Rule {
 
   @Deprecated
   private String getXMLTasks(List<RuleTask> tasks) {
-    String res = "<tasks>";
+    StringBuilder res = new StringBuilder("<tasks>");
     for (final RuleTask task : tasks) {
-      res = res + task.getXML();
+      res.append(task.getXML());
     }
-    return res + "</tasks>";
+    return res.append("</tasks>").toString();
   }
 
   public String getName() {

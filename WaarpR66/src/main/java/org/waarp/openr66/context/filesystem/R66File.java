@@ -55,8 +55,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * File representation
- *
- *
  */
 public class R66File extends FilesystemBasedFileImpl {
   /**
@@ -68,7 +66,7 @@ public class R66File extends FilesystemBasedFileImpl {
   /**
    * Does the current file is external (i.e. out of R66 base directory)
    */
-  private boolean isExternal = false;
+  private boolean isExternal;
 
   /**
    * @param session
@@ -109,12 +107,12 @@ public class R66File extends FilesystemBasedFileImpl {
     final LocalChannelReference localChannelReference =
         getSession().getLocalChannelReference();
     FilesystemBasedDigest digest = null;
-    logger.debug("File to retrieve: " + toString());
+    logger.debug("File to retrieve: " + this);
     try {
       if (!isReady) {
         return;
       }
-      DataBlock block = null;
+      DataBlock block;
       try {
         block = readDataBlock();
       } catch (final FileEndOfTransferException e) {
@@ -135,7 +133,8 @@ public class R66File extends FilesystemBasedFileImpl {
           // ignore
         }
       }
-      ChannelFuture future1 = null, future2 = null;
+      ChannelFuture future1 = null;
+      ChannelFuture future2;
       if (block != null && running.get() && !Thread.interrupted()) {
         block.getBlock().retain();
         future1 =
@@ -145,7 +144,7 @@ public class R66File extends FilesystemBasedFileImpl {
         }
       }
       // While not last block
-      while (block != null && (!block.isEOF()) && running.get() &&
+      while (block != null && !block.isEOF() && running.get() &&
              !Thread.interrupted()) {
         WaarpNettyUtil.awaitOrInterrupted(future1);
         if (!future1.isSuccess()) {
@@ -188,7 +187,6 @@ public class R66File extends FilesystemBasedFileImpl {
         block.clear();
       }
       retrieveDone = true;
-      return;
     } catch (final FileTransferException e) {
       // An error occurs!
       getSession().setFinalizeTransfer(false, new R66Result(
@@ -336,7 +334,8 @@ public class R66File extends FilesystemBasedFileImpl {
     FileChannel fileChannel;
     try {
       @SuppressWarnings("resource")
-      final FileInputStream fileInputStream = new FileInputStream(trueFile);
+      final FileInputStream fileInputStream =//NOSONAR
+          new FileInputStream(trueFile);//NOSONAR
       fileChannel = fileInputStream.getChannel();
       if (getPosition() > 0) {
         fileChannel = fileChannel.position(getPosition());
@@ -360,9 +359,9 @@ public class R66File extends FilesystemBasedFileImpl {
       return null;
     }
     final File trueFile = getTrueFile();
-    RandomAccessFile raf = null;
+    RandomAccessFile raf;
     try {
-      raf = new RandomAccessFile(trueFile, "rw");
+      raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
       raf.seek(getPosition());
     } catch (final FileNotFoundException e) {
       logger.error("File not found in getRandomFile:", e);
@@ -401,13 +400,13 @@ public class R66File extends FilesystemBasedFileImpl {
       final RandomAccessFile raf = getRandomFile();
       try {
         raf.setLength(getPosition());
-        raf.close();
+        org.waarp.common.file.FileUtils.close(raf);
       } catch (final IOException e) {
         logger.error("Change position in getFileOutputStream:", e);
         return null;
       }
     }
-    FileOutputStream fos = null;
+    FileOutputStream fos;
     try {
       fos = new FileOutputStream(trueFile, append);
     } catch (final FileNotFoundException e) {
@@ -455,7 +454,8 @@ public class R66File extends FilesystemBasedFileImpl {
       try {
         dir.changeDirectory(runner.getRule().getRecvPath());
         return dir.getFullPath();
-      } catch (final CommandAbstractException e) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
     }
     return null;
@@ -522,20 +522,12 @@ public class R66File extends FilesystemBasedFileImpl {
         if (get(fileChannelOut)) {
           delete();
         } else {
-          try {
-            fileChannelOut.close();
-          } catch (final IOException e) {
-          }
+          org.waarp.common.file.FileUtils.close(fileChannelOut);
           logger.error("Cannot write file: {}", newFile);
           return true;
         }
       } finally {
-        if (fileOutputStream != null) {
-          try {
-            fileOutputStream.close();
-          } catch (final IOException e) {
-          }
-        }
+        org.waarp.common.file.FileUtils.close(fileOutputStream);
       }
     }
     return false;
@@ -631,6 +623,6 @@ public class R66File extends FilesystemBasedFileImpl {
   @Override
   public String toString() {
     return "File: " + currentFile + " Ready " + isReady + " isExternal " +
-           isExternal + " " + getPosition();
+           isExternal + ' ' + getPosition();
   }
 }

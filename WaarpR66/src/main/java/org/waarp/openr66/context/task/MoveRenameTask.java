@@ -29,8 +29,6 @@ import java.io.File;
 
 /**
  * Move and Rename the current file
- *
- *
  */
 public class MoveRenameTask extends AbstractTask {
   /**
@@ -53,11 +51,11 @@ public class MoveRenameTask extends AbstractTask {
   @Override
   public void run() {
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" ")).trim()
-                                                                   .replace(
-                                                                       '\\',
-                                                                       '/');
-    logger.debug("Move and Rename to " + finalname + " with " + argRule + ":" +
+    finalname = getReplacedValue(finalname, BLANK.split(argTransfer)).trim()
+                                                                     .replace(
+                                                                         '\\',
+                                                                         '/');
+    logger.debug("Move and Rename to " + finalname + " with " + argRule + ':' +
                  argTransfer + " and {}", session);
     final File from = session.getFile().getTrueFile();
     final File to = new File(finalname);
@@ -65,7 +63,7 @@ public class MoveRenameTask extends AbstractTask {
       FileUtils.copy(from, to, true, false);
     } catch (final Reply550Exception e) {
       logger.error(
-          "Move and Rename to " + finalname + " with " + argRule + ":" +
+          "Move and Rename to " + finalname + " with " + argRule + ':' +
           argTransfer + " and " + session, e);
       futureCompletion.setFailure(e);
       return;

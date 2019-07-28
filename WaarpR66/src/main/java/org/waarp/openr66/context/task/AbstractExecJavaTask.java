@@ -32,10 +32,10 @@ import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * Dummy Runnable Task that only logs
- *
- *
  */
 public abstract class AbstractExecJavaTask implements R66Runnable {
   /**
@@ -43,6 +43,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractExecJavaTask.class);
+  protected static final Pattern BLANK = Pattern.compile(" ");
 
   protected int delay;
   protected int status = -1;
@@ -75,7 +76,8 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
         try {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, packet, true);
-        } catch (final OpenR66ProtocolPacketException e) {
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
         }
       } else {
         finalInformation = packet.toString();
@@ -98,7 +100,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
             new R66Result(session, true, ErrorCode.CompleteOk, null);
         result.setOther(object);
         localChannelReference.validateRequest(result);
-        ChannelUtils.close(localChannelReference.getLocalChannel());
+        localChannelReference.close();
       } else {
         finalInformation = JsonHandler.writeAsString(object);
       }
@@ -126,10 +128,11 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
       localChannelReference.invalidateRequest(result);
-      ChannelUtils.close(localChannelReference.getLocalChannel());
+      localChannelReference.close();
     }
   }
 
@@ -139,15 +142,15 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
       // Business Request to validate?
       if (isToValidate) {
         final BusinessRequestPacket packet =
-            new BusinessRequestPacket(classname + " " + fullarg, 0);
+            new BusinessRequestPacket(classname + ' ' + fullarg, 0);
         validate(packet);
       }
     }
     final StringBuilder builder =
-        new StringBuilder(this.getClass().getSimpleName()).append(":")
-                                                          .append("args(")
-                                                          .append(fullarg)
-                                                          .append(")");
+        new StringBuilder(getClass().getSimpleName()).append(':')
+                                                     .append("args(")
+                                                     .append(fullarg)
+                                                     .append(')');
     logger.warn(builder.toString());
     status = 0;
   }
@@ -176,9 +179,9 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
   public String toString() {
     if (status == -1 || finalInformation == null) {
       final StringBuilder builder =
-          new StringBuilder(this.getClass().getSimpleName()).append(": [")
-                                                            .append(fullarg)
-                                                            .append(']');
+          new StringBuilder(getClass().getSimpleName()).append(": [")
+                                                       .append(fullarg)
+                                                       .append(']');
       return builder.toString();
     } else {
       return finalInformation;

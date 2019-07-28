@@ -25,19 +25,17 @@ import java.io.FilenameFilter;
 
 /**
  * Extension Filter based on extension
- *
- *
  */
 public class ExtensionFilter implements FilenameFilter {
-  String filter;
+  final String filter;
 
   public ExtensionFilter(String filter) {
     this.filter = filter;
   }
 
   @Override
-  public boolean accept(File arg0, String arg1) {
-    return arg1.endsWith(filter);
+  public boolean accept(File file, String s) {
+    return s.endsWith(filter);
   }
 
 }

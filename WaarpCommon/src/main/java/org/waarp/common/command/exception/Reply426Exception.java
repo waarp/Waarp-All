@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 426 Connection closed, transfer aborted.
- *
- *
  */
 public class Reply426Exception extends CommandAbstractException {
 

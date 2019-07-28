@@ -63,8 +63,6 @@ import org.apache.thrift.scheme.TupleScheme;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TMemoryInputTransport;
 import org.apache.thrift.transport.TNonblockingTransport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -115,8 +113,14 @@ public class R66Service {
   }
 
   public static class Client extends TServiceClient implements Iface {
+    private static final String TRANSFER_REQUEST_QUERY = "transferRequestQuery";
+    private static final String IS_STILL_RUNNING = "isStillRunning";
+    private static final String INFO_TRANSFER_QUERY = "infoTransferQuery";
+    private static final String INFO_LIST_QUERY = "infoListQuery";
+
     public static class Factory implements TServiceClientFactory<Client> {
       public Factory() {
+        // nothing
       }
 
       @Override
@@ -149,13 +153,13 @@ public class R66Service {
         throws TException {
       final transferRequestQuery_args args = new transferRequestQuery_args();
       args.setRequest(request);
-      sendBase("transferRequestQuery", args);
+      sendBase(TRANSFER_REQUEST_QUERY, args);
     }
 
     public R66Result recv_transferRequestQuery() throws TException {
       final transferRequestQuery_result result =
           new transferRequestQuery_result();
-      receiveBase(result, "transferRequestQuery");
+      receiveBase(result, TRANSFER_REQUEST_QUERY);
       if (result.isSetSuccess()) {
         return result.success;
       }
@@ -172,12 +176,12 @@ public class R66Service {
     public void send_infoTransferQuery(R66Request request) throws TException {
       final infoTransferQuery_args args = new infoTransferQuery_args();
       args.setRequest(request);
-      sendBase("infoTransferQuery", args);
+      sendBase(INFO_TRANSFER_QUERY, args);
     }
 
     public R66Result recv_infoTransferQuery() throws TException {
       final infoTransferQuery_result result = new infoTransferQuery_result();
-      receiveBase(result, "infoTransferQuery");
+      receiveBase(result, INFO_TRANSFER_QUERY);
       if (result.isSetSuccess()) {
         return result.success;
       }
@@ -198,12 +202,12 @@ public class R66Service {
       args.setFromuid(fromuid);
       args.setTouid(touid);
       args.setTid(tid);
-      sendBase("isStillRunning", args);
+      sendBase(IS_STILL_RUNNING, args);
     }
 
     public boolean recv_isStillRunning() throws TException {
       final isStillRunning_result result = new isStillRunning_result();
-      receiveBase(result, "isStillRunning");
+      receiveBase(result, IS_STILL_RUNNING);
       if (result.isSetSuccess()) {
         return result.success;
       }
@@ -220,14 +224,14 @@ public class R66Service {
     public void send_infoListQuery(R66Request request) throws TException {
       final infoListQuery_args args = new infoListQuery_args();
       args.setRequest(request);
-      sendBase("infoListQuery", args);
+      sendBase(INFO_LIST_QUERY, args);
     }
 
     public List<String> recv_infoListQuery() throws TException {
       final infoListQuery_result result = new infoListQuery_result();
-      receiveBase(result, "infoListQuery");
+      receiveBase(result, INFO_LIST_QUERY);
       if (result.isSetSuccess()) {
-        return result.success;
+        return Collections.unmodifiableList(result.success);
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT,
                                       "infoListQuery failed: unknown result");
@@ -263,14 +267,17 @@ public class R66Service {
                                      AsyncMethodCallback<transferRequestQuery_call> resultHandler)
         throws TException {
       checkReady();
-      final transferRequestQuery_call method_call =
+      final transferRequestQuery_call transferRequestQueryCall =
           new transferRequestQuery_call(request, resultHandler, this,
                                         ___protocolFactory, ___transport);
-      ___currentMethod = method_call;
-      ___manager.call(method_call);
+      ___currentMethod = transferRequestQueryCall;
+      ___manager.call(transferRequestQueryCall);
     }
 
-    public static class transferRequestQuery_call extends TAsyncMethodCall {
+    public static class transferRequestQuery_call
+        extends TAsyncMethodCall<transferRequestQuery_call> {
+      private static final String METHOD_CALL_NOT_FINISHED =
+          "Method call not finished!";
       private final R66Request request;
 
       public transferRequestQuery_call(R66Request request,
@@ -295,7 +302,7 @@ public class R66Service {
 
       public R66Result getResult() throws TException {
         if (getState() != State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
+          throw new IllegalStateException(METHOD_CALL_NOT_FINISHED);
         }
         final TMemoryInputTransport memoryTransport =
             new TMemoryInputTransport(getFrameBuffer().array());
@@ -310,14 +317,16 @@ public class R66Service {
                                   AsyncMethodCallback<infoTransferQuery_call> resultHandler)
         throws TException {
       checkReady();
-      final infoTransferQuery_call method_call =
+      final infoTransferQuery_call infoTransferQueryCall =
           new infoTransferQuery_call(request, resultHandler, this,
                                      ___protocolFactory, ___transport);
-      ___currentMethod = method_call;
-      ___manager.call(method_call);
+      ___currentMethod = infoTransferQueryCall;
+      ___manager.call(infoTransferQueryCall);
     }
 
-    public static class infoTransferQuery_call extends TAsyncMethodCall {
+    public static class infoTransferQuery_call
+        extends TAsyncMethodCall<infoTransferQuery_call> {
+      private static final String INFO_TRANSFER_QUERY = "infoTransferQuery";
       private final R66Request request;
 
       public infoTransferQuery_call(R66Request request,
@@ -333,7 +342,7 @@ public class R66Service {
       @Override
       public void write_args(TProtocol prot) throws TException {
         prot.writeMessageBegin(
-            new TMessage("infoTransferQuery", TMessageType.CALL, 0));
+            new TMessage(INFO_TRANSFER_QUERY, TMessageType.CALL, 0));
         final infoTransferQuery_args args = new infoTransferQuery_args();
         args.setRequest(request);
         args.write(prot);
@@ -357,14 +366,15 @@ public class R66Service {
                                AsyncMethodCallback<isStillRunning_call> resultHandler)
         throws TException {
       checkReady();
-      final isStillRunning_call method_call =
+      final isStillRunning_call isStillRunningCall =
           new isStillRunning_call(fromuid, touid, tid, resultHandler, this,
                                   ___protocolFactory, ___transport);
-      ___currentMethod = method_call;
-      ___manager.call(method_call);
+      ___currentMethod = isStillRunningCall;
+      ___manager.call(isStillRunningCall);
     }
 
-    public static class isStillRunning_call extends TAsyncMethodCall {
+    public static class isStillRunning_call
+        extends TAsyncMethodCall<isStillRunning_call> {
       private final String fromuid;
       private final String touid;
       private final long tid;
@@ -410,14 +420,15 @@ public class R66Service {
                               AsyncMethodCallback<infoListQuery_call> resultHandler)
         throws TException {
       checkReady();
-      final infoListQuery_call method_call =
+      final infoListQuery_call infoListQueryCall =
           new infoListQuery_call(request, resultHandler, this,
                                  ___protocolFactory, ___transport);
-      ___currentMethod = method_call;
-      ___manager.call(method_call);
+      ___currentMethod = infoListQueryCall;
+      ___manager.call(infoListQueryCall);
     }
 
-    public static class infoListQuery_call extends TAsyncMethodCall {
+    public static class infoListQuery_call
+        extends TAsyncMethodCall<infoListQuery_call> {
       private final R66Request request;
 
       public infoListQuery_call(R66Request request,
@@ -455,8 +466,6 @@ public class R66Service {
   }
 
   public static class Processor<I extends Iface> extends TBaseProcessor<I> {
-    private static final Logger LOGGER =
-        LoggerFactory.getLogger(Processor.class.getName());
 
     public Processor(I iface) {
       super(iface, getProcessMap(
@@ -470,10 +479,14 @@ public class R66Service {
 
     private static <I extends Iface> Map<String, ProcessFunction<I, ? extends TBase>> getProcessMap(
         Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
-      processMap.put("transferRequestQuery", new transferRequestQuery());
-      processMap.put("infoTransferQuery", new infoTransferQuery());
-      processMap.put("isStillRunning", new isStillRunning());
-      processMap.put("infoListQuery", new infoListQuery());
+      processMap.put("transferRequestQuery",
+                     (ProcessFunction<I, ? extends TBase>) new transferRequestQuery<Iface>());
+      processMap.put("infoTransferQuery",
+                     (ProcessFunction<I, ? extends TBase>) new infoTransferQuery<Iface>());
+      processMap.put("isStillRunning",
+                     (ProcessFunction<I, ? extends TBase>) new isStillRunning<Iface>());
+      processMap.put("infoListQuery",
+                     (ProcessFunction<I, ? extends TBase>) new infoListQuery<Iface>());
       return processMap;
     }
 
@@ -587,6 +600,10 @@ public class R66Service {
   public static class transferRequestQuery_args implements
                                                 TBase<transferRequestQuery_args, transferRequestQuery_args._Fields>,
                                                 Cloneable {
+    private static final String REQUEST3 = "request";
+
+    private static final String REQUEST2 = "request:";
+
     /**
      *
      */
@@ -596,7 +613,7 @@ public class R66Service {
         new TStruct("transferRequestQuery_args");
 
     private static final TField REQUEST_FIELD_DESC =
-        new TField("request", TType.STRUCT, (short) 1);
+        new TField(REQUEST3, TType.STRUCT, (short) 1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes =
         new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -610,14 +627,21 @@ public class R66Service {
 
     private R66Request request; // required
 
+    @Override
+    public transferRequestQuery_args clone() throws CloneNotSupportedException {
+      return (transferRequestQuery_args) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      REQUEST((short) 1, "request");
+      REQUEST((short) 1, REQUEST3);
 
+      private static final String FIELD = "Field ";
+      private static final String DOESN_T_EXIST = " doesn't exist!";
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();
 
@@ -633,12 +657,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 1: // REQUEST
-            return REQUEST;
-          default:
-            return null;
+        if (fieldId == 1) { // REQUEST
+          return REQUEST;
         }
+        return null;
       }
 
       /**
@@ -649,8 +671,7 @@ public class R66Service {
       public static _Fields findByThriftIdOrThrow(int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
-          throw new IllegalArgumentException(
-              "Field " + fieldId + " doesn't exist!");
+          throw new IllegalArgumentException(FIELD + fieldId + DOESN_T_EXIST);
         }
         return fields;
       }
@@ -663,22 +684,22 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
@@ -689,7 +710,7 @@ public class R66Service {
       final Map<_Fields, FieldMetaData> tmpMap =
           new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.REQUEST,
-                 new FieldMetaData("request", TFieldRequirementType.DEFAULT,
+                 new FieldMetaData(REQUEST3, TFieldRequirementType.DEFAULT,
                                    new StructMetaData(TType.STRUCT,
                                                       R66Request.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -753,24 +774,19 @@ public class R66Service {
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case REQUEST:
-          if (value == null) {
-            unsetRequest();
-          } else {
-            setRequest((R66Request) value);
-          }
-          break;
-
+      if (field == _Fields.REQUEST) {
+        if (value == null) {
+          unsetRequest();
+        } else {
+          setRequest((R66Request) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case REQUEST:
-          return getRequest();
-
+      if (field == _Fields.REQUEST) {
+        return getRequest();
       }
       throw new IllegalStateException();
     }
@@ -786,9 +802,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case REQUEST:
-          return isSetRequest();
+      if (field == _Fields.REQUEST) {
+        return isSetRequest();
       }
       throw new IllegalStateException();
     }
@@ -809,8 +824,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_request = true && isSetRequest();
-      final boolean that_present_request = true && that.isSetRequest();
+      final boolean this_present_request = isSetRequest();
+      final boolean that_present_request = that.isSetRequest();
       if (this_present_request || that_present_request) {
         if (!(this_present_request && that_present_request)) {
           return false;
@@ -827,21 +842,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(transferRequestQuery_args other) {
+    public int compareTo(final transferRequestQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final transferRequestQuery_args typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetRequest()).compareTo(typedOther.isSetRequest());
+          Boolean.valueOf(isSetRequest()).compareTo(other.isSetRequest());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetRequest()) {
-        lastComparison = TBaseHelper.compareTo(request, typedOther.request);
+        lastComparison = TBaseHelper.compareTo(request, other.request);
         return lastComparison;
       }
       return 0;
@@ -865,13 +879,13 @@ public class R66Service {
     @Override
     public String toString() {
       final StringBuilder sb = new StringBuilder("transferRequestQuery_args(");
-      sb.append("request:");
+      sb.append(REQUEST2);
       if (request == null) {
         sb.append("null");
       } else {
         sb.append(request);
       }
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -921,18 +935,16 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 1: // REQUEST
-              if (schemeField.type == TType.STRUCT) {
-                struct.request = new R66Request();
-                struct.request.read(iprot);
-                struct.setRequestIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
+          if (schemeField.id == 1) { // REQUEST
+            if (schemeField.type == TType.STRUCT) {
+              struct.request = new R66Request();
+              struct.request.read(iprot);
+              struct.setRequestIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -1003,6 +1015,10 @@ public class R66Service {
   public static class transferRequestQuery_result implements
                                                   TBase<transferRequestQuery_result, transferRequestQuery_result._Fields>,
                                                   Cloneable {
+    private static final String SUCCESS3 = "success";
+
+    private static final String SUCCESS2 = "success:";
+
     /**
      *
      */
@@ -1012,7 +1028,7 @@ public class R66Service {
         new TStruct("transferRequestQuery_result");
 
     private static final TField SUCCESS_FIELD_DESC =
-        new TField("success", TType.STRUCT, (short) 0);
+        new TField(SUCCESS3, TType.STRUCT, (short) 0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes =
         new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -1026,13 +1042,19 @@ public class R66Service {
 
     private R66Result success; // required
 
+    @Override
+    public transferRequestQuery_result clone()
+        throws CloneNotSupportedException {
+      return (transferRequestQuery_result) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short) 0, "success");
+      SUCCESS((short) 0, SUCCESS3);
 
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();
@@ -1049,12 +1071,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          default:
-            return null;
+        if (fieldId == 0) { // SUCCESS
+          return SUCCESS;
         }
+        return null;
       }
 
       /**
@@ -1079,22 +1099,22 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
@@ -1105,7 +1125,7 @@ public class R66Service {
       final Map<_Fields, FieldMetaData> tmpMap =
           new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS,
-                 new FieldMetaData("success", TFieldRequirementType.DEFAULT,
+                 new FieldMetaData(SUCCESS3, TFieldRequirementType.DEFAULT,
                                    new StructMetaData(TType.STRUCT,
                                                       R66Result.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -1169,24 +1189,19 @@ public class R66Service {
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case SUCCESS:
-          if (value == null) {
-            unsetSuccess();
-          } else {
-            setSuccess((R66Result) value);
-          }
-          break;
-
+      if (field == _Fields.SUCCESS) {
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((R66Result) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case SUCCESS:
-          return getSuccess();
-
+      if (field == _Fields.SUCCESS) {
+        return getSuccess();
       }
       throw new IllegalStateException();
     }
@@ -1202,9 +1217,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case SUCCESS:
-          return isSetSuccess();
+      if (field == _Fields.SUCCESS) {
+        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -1225,8 +1239,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_success = true && isSetSuccess();
-      final boolean that_present_success = true && that.isSetSuccess();
+      final boolean this_present_success = isSetSuccess();
+      final boolean that_present_success = that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success)) {
           return false;
@@ -1243,21 +1257,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(transferRequestQuery_result other) {
+    public int compareTo(final transferRequestQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final transferRequestQuery_result typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+          Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetSuccess()) {
-        lastComparison = TBaseHelper.compareTo(success, typedOther.success);
+        lastComparison = TBaseHelper.compareTo(success, other.success);
         return lastComparison;
       }
       return 0;
@@ -1282,13 +1295,13 @@ public class R66Service {
     public String toString() {
       final StringBuilder sb =
           new StringBuilder("transferRequestQuery_result(");
-      sb.append("success:");
+      sb.append(SUCCESS2);
       if (success == null) {
         sb.append("null");
       } else {
         sb.append(success);
       }
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -1338,18 +1351,16 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == TType.STRUCT) {
-                struct.success = new R66Result();
-                struct.success.read(iprot);
-                struct.setSuccessIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
+          if (schemeField.id == 0) { // SUCCESS
+            if (schemeField.type == TType.STRUCT) {
+              struct.success = new R66Result();
+              struct.success.read(iprot);
+              struct.setSuccessIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -1443,6 +1454,11 @@ public class R66Service {
 
     private R66Request request; // required
 
+    @Override
+    public infoTransferQuery_args clone() throws CloneNotSupportedException {
+      return (infoTransferQuery_args) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
@@ -1466,12 +1482,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 1: // REQUEST
-            return REQUEST;
-          default:
-            return null;
+        if (fieldId == 1) { // REQUEST
+          return REQUEST;
         }
+        return null;
       }
 
       /**
@@ -1496,22 +1510,22 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
@@ -1586,24 +1600,19 @@ public class R66Service {
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case REQUEST:
-          if (value == null) {
-            unsetRequest();
-          } else {
-            setRequest((R66Request) value);
-          }
-          break;
-
+      if (field == _Fields.REQUEST) {
+        if (value == null) {
+          unsetRequest();
+        } else {
+          setRequest((R66Request) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case REQUEST:
-          return getRequest();
-
+      if (field == _Fields.REQUEST) {
+        return getRequest();
       }
       throw new IllegalStateException();
     }
@@ -1619,9 +1628,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case REQUEST:
-          return isSetRequest();
+      if (field == _Fields.REQUEST) {
+        return isSetRequest();
       }
       throw new IllegalStateException();
     }
@@ -1642,8 +1650,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_request = true && isSetRequest();
-      final boolean that_present_request = true && that.isSetRequest();
+      final boolean this_present_request = isSetRequest();
+      final boolean that_present_request = that.isSetRequest();
       if (this_present_request || that_present_request) {
         if (!(this_present_request && that_present_request)) {
           return false;
@@ -1660,21 +1668,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(infoTransferQuery_args other) {
+    public int compareTo(final infoTransferQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final infoTransferQuery_args typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetRequest()).compareTo(typedOther.isSetRequest());
+          Boolean.valueOf(isSetRequest()).compareTo(other.isSetRequest());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetRequest()) {
-        lastComparison = TBaseHelper.compareTo(request, typedOther.request);
+        lastComparison = TBaseHelper.compareTo(request, other.request);
         return lastComparison;
       }
       return 0;
@@ -1704,7 +1711,7 @@ public class R66Service {
       } else {
         sb.append(request);
       }
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -1754,18 +1761,16 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 1: // REQUEST
-              if (schemeField.type == TType.STRUCT) {
-                struct.request = new R66Request();
-                struct.request.read(iprot);
-                struct.setRequestIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
+          if (schemeField.id == 1) { // REQUEST
+            if (schemeField.type == TType.STRUCT) {
+              struct.request = new R66Request();
+              struct.request.read(iprot);
+              struct.setRequestIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -1882,12 +1887,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          default:
-            return null;
+        if (fieldId == 0) { // SUCCESS
+          return SUCCESS;
         }
+        return null;
       }
 
       /**
@@ -1912,22 +1915,22 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
@@ -2002,24 +2005,19 @@ public class R66Service {
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case SUCCESS:
-          if (value == null) {
-            unsetSuccess();
-          } else {
-            setSuccess((R66Result) value);
-          }
-          break;
-
+      if (field == _Fields.SUCCESS) {
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((R66Result) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case SUCCESS:
-          return getSuccess();
-
+      if (field == _Fields.SUCCESS) {
+        return getSuccess();
       }
       throw new IllegalStateException();
     }
@@ -2035,9 +2033,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case SUCCESS:
-          return isSetSuccess();
+      if (field == _Fields.SUCCESS) {
+        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -2058,8 +2055,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_success = true && isSetSuccess();
-      final boolean that_present_success = true && that.isSetSuccess();
+      final boolean this_present_success = isSetSuccess();
+      final boolean that_present_success = that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success)) {
           return false;
@@ -2076,21 +2073,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(infoTransferQuery_result other) {
+    public int compareTo(final infoTransferQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final infoTransferQuery_result typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+          Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetSuccess()) {
-        lastComparison = TBaseHelper.compareTo(success, typedOther.success);
+        lastComparison = TBaseHelper.compareTo(success, other.success);
         return lastComparison;
       }
       return 0;
@@ -2120,7 +2116,7 @@ public class R66Service {
       } else {
         sb.append(success);
       }
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -2170,18 +2166,16 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == TType.STRUCT) {
-                struct.success = new R66Result();
-                struct.success.read(iprot);
-                struct.setSuccessIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
+          if (schemeField.id == 0) { // SUCCESS
+            if (schemeField.type == TType.STRUCT) {
+              struct.success = new R66Result();
+              struct.success.read(iprot);
+              struct.setSuccessIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -2252,6 +2246,10 @@ public class R66Service {
   public static class isStillRunning_args
       implements TBase<isStillRunning_args, isStillRunning_args._Fields>,
                  Cloneable {
+    private static final String TOUID2 = "touid";
+
+    private static final String FROMUID2 = "fromuid";
+
     /**
      *
      */
@@ -2261,9 +2259,9 @@ public class R66Service {
         new TStruct("isStillRunning_args");
 
     private static final TField FROMUID_FIELD_DESC =
-        new TField("fromuid", TType.STRING, (short) 1);
+        new TField(FROMUID2, TType.STRING, (short) 1);
     private static final TField TOUID_FIELD_DESC =
-        new TField("touid", TType.STRING, (short) 2);
+        new TField(TOUID2, TType.STRING, (short) 2);
     private static final TField TID_FIELD_DESC =
         new TField("tid", TType.I64, (short) 3);
 
@@ -2281,13 +2279,18 @@ public class R66Service {
     private String touid; // required
     private long tid; // required
 
+    @Override
+    public isStillRunning_args clone() throws CloneNotSupportedException {
+      return (isStillRunning_args) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      FROMUID((short) 1, "fromuid"), TOUID((short) 2, "touid"),
+      FROMUID((short) 1, FROMUID2), TOUID((short) 2, TOUID2),
       TID((short) 3, "tid");
 
       private static final Map<String, _Fields> byName =
@@ -2339,38 +2342,38 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
     // isset id assignments
-    private static final int __TID_ISSET_ID = 0;
-    private byte __isset_bitfield;
+    private static final int TID_ISSET_ID = 0;
+    private byte issetBitfield;
     public static final Map<_Fields, FieldMetaData> metaDataMap;
 
     static {
       final Map<_Fields, FieldMetaData> tmpMap =
           new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.FROMUID,
-                 new FieldMetaData("fromuid", TFieldRequirementType.DEFAULT,
+                 new FieldMetaData(FROMUID2, TFieldRequirementType.DEFAULT,
                                    new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.TOUID,
-                 new FieldMetaData("touid", TFieldRequirementType.DEFAULT,
+                 new FieldMetaData(TOUID2, TFieldRequirementType.DEFAULT,
                                    new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.TID,
                  new FieldMetaData("tid", TFieldRequirementType.DEFAULT,
@@ -2395,7 +2398,7 @@ public class R66Service {
      * Performs a deep copy on <i>other</i>.
      */
     public isStillRunning_args(isStillRunning_args other) {
-      __isset_bitfield = other.__isset_bitfield;
+      issetBitfield = other.issetBitfield;
       if (other.isSetFromuid()) {
         fromuid = other.fromuid;
       }
@@ -2484,8 +2487,7 @@ public class R66Service {
     }
 
     public void unsetTid() {
-      __isset_bitfield =
-          EncodingUtils.clearBit(__isset_bitfield, __TID_ISSET_ID);
+      issetBitfield = EncodingUtils.clearBit(issetBitfield, TID_ISSET_ID);
     }
 
     /**
@@ -2494,12 +2496,11 @@ public class R66Service {
      * otherwise
      */
     public boolean isSetTid() {
-      return EncodingUtils.testBit(__isset_bitfield, __TID_ISSET_ID);
+      return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
     }
 
     public void setTidIsSet(boolean value) {
-      __isset_bitfield =
-          EncodingUtils.setBit(__isset_bitfield, __TID_ISSET_ID, value);
+      issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
     }
 
     @Override
@@ -2586,8 +2587,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_fromuid = true && isSetFromuid();
-      final boolean that_present_fromuid = true && that.isSetFromuid();
+      final boolean this_present_fromuid = isSetFromuid();
+      final boolean that_present_fromuid = that.isSetFromuid();
       if (this_present_fromuid || that_present_fromuid) {
         if (!(this_present_fromuid && that_present_fromuid)) {
           return false;
@@ -2597,8 +2598,8 @@ public class R66Service {
         }
       }
 
-      final boolean this_present_touid = true && isSetTouid();
-      final boolean that_present_touid = true && that.isSetTouid();
+      final boolean this_present_touid = isSetTouid();
+      final boolean that_present_touid = that.isSetTouid();
       if (this_present_touid || that_present_touid) {
         if (!(this_present_touid && that_present_touid)) {
           return false;
@@ -2608,16 +2609,7 @@ public class R66Service {
         }
       }
 
-      final boolean this_present_tid = true;
-      final boolean that_present_tid = true;
-      if (this_present_tid || that_present_tid) {
-        if (!(this_present_tid && that_present_tid)) {
-          return false;
-        }
-        return tid == that.tid;
-      }
-
-      return true;
+      return tid == that.tid;
     }
 
     @Override
@@ -2626,43 +2618,41 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(isStillRunning_args other) {
+    public int compareTo(final isStillRunning_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final isStillRunning_args typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetFromuid()).compareTo(typedOther.isSetFromuid());
+          Boolean.valueOf(isSetFromuid()).compareTo(other.isSetFromuid());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetFromuid()) {
-        lastComparison = TBaseHelper.compareTo(fromuid, typedOther.fromuid);
+        lastComparison = TBaseHelper.compareTo(fromuid, other.fromuid);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       lastComparison =
-          Boolean.valueOf(isSetTouid()).compareTo(typedOther.isSetTouid());
+          Boolean.valueOf(isSetTouid()).compareTo(other.isSetTouid());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetTouid()) {
-        lastComparison = TBaseHelper.compareTo(touid, typedOther.touid);
+        lastComparison = TBaseHelper.compareTo(touid, other.touid);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison =
-          Boolean.valueOf(isSetTid()).compareTo(typedOther.isSetTid());
+      lastComparison = Boolean.valueOf(isSetTid()).compareTo(other.isSetTid());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetTid()) {
-        lastComparison = TBaseHelper.compareTo(tid, typedOther.tid);
+        lastComparison = TBaseHelper.compareTo(tid, other.tid);
         return lastComparison;
       }
       return 0;
@@ -2686,7 +2676,6 @@ public class R66Service {
     @Override
     public String toString() {
       final StringBuilder sb = new StringBuilder("isStillRunning_args(");
-      boolean first = true;
 
       sb.append("fromuid:");
       if (fromuid == null) {
@@ -2694,23 +2683,16 @@ public class R66Service {
       } else {
         sb.append(fromuid);
       }
-      first = false;
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("touid:");
       if (touid == null) {
         sb.append("null");
       } else {
         sb.append(touid);
       }
-      first = false;
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("tid:").append(tid);
-      first = false;
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -2732,7 +2714,7 @@ public class R66Service {
       try {
         // it doesn't seem like you should have to do this, but java serialization is wacky,
         // and doesn't call the default constructor.
-        __isset_bitfield = 0;
+        issetBitfield = 0;
         read(new TCompactProtocol(new TIOStreamTransport(in)));
       } catch (final TException te) {
         throw new IOException(te);
@@ -2907,6 +2889,11 @@ public class R66Service {
 
     private boolean success; // required
 
+    @Override
+    public isStillRunning_result clone() throws CloneNotSupportedException {
+      return (isStillRunning_result) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
@@ -2930,12 +2917,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          default:
-            return null;
+        if (fieldId == 0) { // SUCCESS
+          return SUCCESS;
         }
+        return null;
       }
 
       /**
@@ -2960,28 +2945,28 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private byte __isset_bitfield;
+    private static final int SUCCESS_ISSET_ID = 0;
+    private byte issetBitfield;
     public static final Map<_Fields, FieldMetaData> metaDataMap;
 
     static {
@@ -3008,7 +2993,7 @@ public class R66Service {
      * Performs a deep copy on <i>other</i>.
      */
     public isStillRunning_result(isStillRunning_result other) {
-      __isset_bitfield = other.__isset_bitfield;
+      issetBitfield = other.issetBitfield;
       success = other.success;
     }
 
@@ -3034,8 +3019,7 @@ public class R66Service {
     }
 
     public void unsetSuccess() {
-      __isset_bitfield =
-          EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
+      issetBitfield = EncodingUtils.clearBit(issetBitfield, SUCCESS_ISSET_ID);
     }
 
     /**
@@ -3043,34 +3027,29 @@ public class R66Service {
      * false otherwise
      */
     public boolean isSetSuccess() {
-      return EncodingUtils.testBit(__isset_bitfield, __SUCCESS_ISSET_ID);
+      return EncodingUtils.testBit(issetBitfield, SUCCESS_ISSET_ID);
     }
 
     public void setSuccessIsSet(boolean value) {
-      __isset_bitfield =
-          EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
+      issetBitfield =
+          EncodingUtils.setBit(issetBitfield, SUCCESS_ISSET_ID, value);
     }
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case SUCCESS:
-          if (value == null) {
-            unsetSuccess();
-          } else {
-            setSuccess((Boolean) value);
-          }
-          break;
-
+      if (field == _Fields.SUCCESS) {
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case SUCCESS:
-          return Boolean.valueOf(isSuccess());
-
+      if (field == _Fields.SUCCESS) {
+        return Boolean.valueOf(isSuccess());
       }
       throw new IllegalStateException();
     }
@@ -3086,9 +3065,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case SUCCESS:
-          return isSetSuccess();
+      if (field == _Fields.SUCCESS) {
+        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -3108,17 +3086,7 @@ public class R66Service {
       if (that == null) {
         return false;
       }
-
-      final boolean this_present_success = true;
-      final boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success)) {
-          return false;
-        }
-        return success == that.success;
-      }
-
-      return true;
+      return success == that.success;
     }
 
     @Override
@@ -3127,21 +3095,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(isStillRunning_result other) {
+    public int compareTo(final isStillRunning_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final isStillRunning_result typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+          Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetSuccess()) {
-        lastComparison = TBaseHelper.compareTo(success, typedOther.success);
+        lastComparison = TBaseHelper.compareTo(success, other.success);
         return lastComparison;
       }
       return 0;
@@ -3166,7 +3133,7 @@ public class R66Service {
     public String toString() {
       final StringBuilder sb = new StringBuilder("isStillRunning_result(");
       sb.append("success:").append(success);
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -3188,7 +3155,7 @@ public class R66Service {
       try {
         // it doesn't seem like you should have to do this, but java serialization is wacky,
         // and doesn't call the default constructor.
-        __isset_bitfield = 0;
+        issetBitfield = 0;
         read(new TCompactProtocol(new TIOStreamTransport(in)));
       } catch (final TException te) {
         throw new IOException(te);
@@ -3216,17 +3183,15 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == TType.BOOL) {
-                struct.success = iprot.readBool();
-                struct.setSuccessIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
+          if (schemeField.id == 0) { // SUCCESS
+            if (schemeField.type == TType.BOOL) {
+              struct.success = iprot.readBool();
+              struct.setSuccessIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -3319,6 +3284,11 @@ public class R66Service {
 
     private R66Request request; // required
 
+    @Override
+    public infoListQuery_args clone() throws CloneNotSupportedException {
+      return (infoListQuery_args) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
@@ -3342,12 +3312,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 1: // REQUEST
-            return REQUEST;
-          default:
-            return null;
+        if (fieldId == 1) { // REQUEST
+          return REQUEST;
         }
+        return null;
       }
 
       /**
@@ -3372,22 +3340,22 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
@@ -3461,24 +3429,19 @@ public class R66Service {
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case REQUEST:
-          if (value == null) {
-            unsetRequest();
-          } else {
-            setRequest((R66Request) value);
-          }
-          break;
-
+      if (field == _Fields.REQUEST) {
+        if (value == null) {
+          unsetRequest();
+        } else {
+          setRequest((R66Request) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case REQUEST:
-          return getRequest();
-
+      if (field == _Fields.REQUEST) {
+        return getRequest();
       }
       throw new IllegalStateException();
     }
@@ -3494,9 +3457,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case REQUEST:
-          return isSetRequest();
+      if (field == _Fields.REQUEST) {
+        return isSetRequest();
       }
       throw new IllegalStateException();
     }
@@ -3517,8 +3479,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_request = true && isSetRequest();
-      final boolean that_present_request = true && that.isSetRequest();
+      final boolean this_present_request = isSetRequest();
+      final boolean that_present_request = that.isSetRequest();
       if (this_present_request || that_present_request) {
         if (!(this_present_request && that_present_request)) {
           return false;
@@ -3535,21 +3497,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(infoListQuery_args other) {
+    public int compareTo(final infoListQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final infoListQuery_args typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetRequest()).compareTo(typedOther.isSetRequest());
+          Boolean.valueOf(isSetRequest()).compareTo(other.isSetRequest());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetRequest()) {
-        lastComparison = TBaseHelper.compareTo(request, typedOther.request);
+        lastComparison = TBaseHelper.compareTo(request, other.request);
         return lastComparison;
       }
       return 0;
@@ -3579,7 +3540,7 @@ public class R66Service {
       } else {
         sb.append(request);
       }
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -3629,18 +3590,16 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 1: // REQUEST
-              if (schemeField.type == TType.STRUCT) {
-                struct.request = new R66Request();
-                struct.request.read(iprot);
-                struct.setRequestIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
+          if (schemeField.id == 1) { // REQUEST
+            if (schemeField.type == TType.STRUCT) {
+              struct.request = new R66Request();
+              struct.request.read(iprot);
+              struct.setRequestIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -3734,6 +3693,11 @@ public class R66Service {
 
     private List<String> success; // required
 
+    @Override
+    public infoListQuery_result clone() throws CloneNotSupportedException {
+      return (infoListQuery_result) super.clone();
+    }
+
     /**
      * The set of fields this struct contains, along with convenience
      * methods
@@ -3757,12 +3721,10 @@ public class R66Service {
        * found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        switch (fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          default:
-            return null;
+        if (fieldId == 0) { // SUCCESS
+          return SUCCESS;
         }
+        return null;
       }
 
       /**
@@ -3787,22 +3749,22 @@ public class R66Service {
         return byName.get(name);
       }
 
-      private final short _thriftId;
-      private final String _fieldName;
+      private final short thriftId;
+      private final String fieldName;
 
       _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
+        this.thriftId = thriftId;
+        this.fieldName = fieldName;
       }
 
       @Override
       public short getThriftFieldId() {
-        return _thriftId;
+        return thriftId;
       }
 
       @Override
       public String getFieldName() {
-        return _fieldName;
+        return fieldName;
       }
     }
 
@@ -3835,11 +3797,7 @@ public class R66Service {
      */
     public infoListQuery_result(infoListQuery_result other) {
       if (other.isSetSuccess()) {
-        final List<String> __this__success = new ArrayList<String>();
-        for (final String other_element : other.success) {
-          __this__success.add(other_element);
-        }
-        success = __this__success;
+        success = new ArrayList<String>(other.success);
       }
     }
 
@@ -3897,24 +3855,19 @@ public class R66Service {
 
     @Override
     public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-        case SUCCESS:
-          if (value == null) {
-            unsetSuccess();
-          } else {
-            setSuccess((List<String>) value);
-          }
-          break;
-
+      if (field == _Fields.SUCCESS) {
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>) value);
+        }
       }
     }
 
     @Override
     public Object getFieldValue(_Fields field) {
-      switch (field) {
-        case SUCCESS:
-          return getSuccess();
-
+      if (field == _Fields.SUCCESS) {
+        return getSuccess();
       }
       throw new IllegalStateException();
     }
@@ -3930,9 +3883,8 @@ public class R66Service {
         throw new IllegalArgumentException();
       }
 
-      switch (field) {
-        case SUCCESS:
-          return isSetSuccess();
+      if (field == _Fields.SUCCESS) {
+        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -3953,8 +3905,8 @@ public class R66Service {
         return false;
       }
 
-      final boolean this_present_success = true && isSetSuccess();
-      final boolean that_present_success = true && that.isSetSuccess();
+      final boolean this_present_success = isSetSuccess();
+      final boolean that_present_success = that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success)) {
           return false;
@@ -3971,21 +3923,20 @@ public class R66Service {
     }
 
     @Override
-    public int compareTo(infoListQuery_result other) {
+    public int compareTo(final infoListQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
-      int lastComparison = 0;
-      final infoListQuery_result typedOther = other;
+      int lastComparison;
 
       lastComparison =
-          Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+          Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
       if (isSetSuccess()) {
-        lastComparison = TBaseHelper.compareTo(success, typedOther.success);
+        lastComparison = TBaseHelper.compareTo(success, other.success);
         return lastComparison;
       }
       return 0;
@@ -4015,7 +3966,7 @@ public class R66Service {
       } else {
         sb.append(success);
       }
-      sb.append(")");
+      sb.append(')');
       return sb.toString();
     }
 
@@ -4062,26 +4013,24 @@ public class R66Service {
           if (schemeField.type == TType.STOP) {
             break;
           }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == TType.LIST) {
-                {
-                  final TList _list0 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list0.size);
-                  for (int _i1 = 0; _i1 < _list0.size; ++_i1) {
-                    String _elem2; // required
-                    _elem2 = iprot.readString();
-                    struct.success.add(_elem2);
-                  }
-                  iprot.readListEnd();
+          if (schemeField.id == 0) { // SUCCESS
+            if (schemeField.type == TType.LIST) {
+              {
+                final TList list0 = iprot.readListBegin();
+                struct.success = new ArrayList<String>(list0.size);
+                for (int _i1 = 0; _i1 < list0.size; ++_i1) {
+                  String elem2; // required
+                  elem2 = iprot.readString();
+                  struct.success.add(elem2);
                 }
-                struct.setSuccessIsSet(true);
-              } else {
-                TProtocolUtil.skip(iprot, schemeField.type);
+                iprot.readListEnd();
               }
-              break;
-            default:
+              struct.setSuccessIsSet(true);
+            } else {
               TProtocolUtil.skip(iprot, schemeField.type);
+            }
+          } else {
+            TProtocolUtil.skip(iprot, schemeField.type);
           }
           iprot.readFieldEnd();
         }
@@ -4153,12 +4102,12 @@ public class R66Service {
         final BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            final TList _list5 = new TList(TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list5.size);
-            for (int _i6 = 0; _i6 < _list5.size; ++_i6) {
-              String _elem7; // required
-              _elem7 = iprot.readString();
-              struct.success.add(_elem7);
+            final TList list = new TList(TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(list.size);
+            for (int _i6 = 0; _i6 < list.size; ++_i6) {
+              String elem7; // required
+              elem7 = iprot.readString();
+              struct.success.add(elem7);
             }
           }
           struct.setSuccessIsSet(true);

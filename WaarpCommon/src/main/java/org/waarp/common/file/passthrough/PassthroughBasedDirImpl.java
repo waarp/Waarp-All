@@ -41,10 +41,16 @@ import java.util.List;
  * If one wants to implement special actions, he/she just has to extend this
  * class and override the default
  * empty implementation.
- *
- *
  */
 public abstract class PassthroughBasedDirImpl extends AbstractDir {
+  private static final String CANNOT_GET_FILE = "Cannot get File ";
+
+  private static final String CANNOT_DELETE_DIRECTORY =
+      "Cannot delete directory ";
+
+  private static final String CANNOT_CREATE_DIRECTORY =
+      "Cannot create directory ";
+
   /**
    * Factory for PassthroughFile
    */
@@ -64,8 +70,8 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
    * @param session
    * @param optsMLSx
    */
-  public PassthroughBasedDirImpl(SessionInterface session,
-                                 OptsMLSxInterface optsMLSx) {
+  protected PassthroughBasedDirImpl(SessionInterface session,
+                                    OptsMLSxInterface optsMLSx) {
     this.session = session;
     this.optsMLSx = optsMLSx;
     this.optsMLSx.setOptsModify((byte) -1);
@@ -74,7 +80,8 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     this.optsMLSx.setOptsType((byte) 1);
     try {
       pdir = factory.create(null, "/");
-    } catch (final PassthroughException e) {
+    } catch (final PassthroughException ignored) {
+      // nothing
     }
   }
 
@@ -164,8 +171,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     }
     String extDir = paths.get(0);
     extDir = validatePath(extDir);
-    final File file = getFileFromPath(extDir);
-    return file;
+    return getFileFromPath(extDir);
   }
 
   /**
@@ -221,16 +227,16 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       newdir = factory.create(null, newDir);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot create directory " + newDir);
+      throw new Reply550Exception(CANNOT_CREATE_DIRECTORY + newDir);
     }
     try {
       if (newdir.mkdir()) {
         return newDir;
       }
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot create directory " + newDir);
+      throw new Reply550Exception(CANNOT_CREATE_DIRECTORY + newDir);
     }
-    throw new Reply550Exception("Cannot create directory " + newDir);
+    throw new Reply550Exception(CANNOT_CREATE_DIRECTORY + newDir);
   }
 
   @Override
@@ -248,16 +254,16 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       dir = factory.create(null, extDir);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot delete directory " + extDir);
+      throw new Reply550Exception(CANNOT_DELETE_DIRECTORY + extDir);
     }
     try {
       if (dir.delete()) {
         return extDir;
       }
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot delete directory " + extDir);
+      throw new Reply550Exception(CANNOT_DELETE_DIRECTORY + extDir);
     }
-    throw new Reply550Exception("Cannot delete directory " + extDir);
+    throw new Reply550Exception(CANNOT_DELETE_DIRECTORY + extDir);
   }
 
   @Override
@@ -279,7 +285,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     return file.isFile();
   }
@@ -292,7 +298,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.getModificationTime();
@@ -308,7 +314,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.list();
@@ -325,7 +331,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.listFull(lsFormat);
@@ -342,7 +348,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.fileFull(lsFormat);
@@ -408,7 +414,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.getCRC();
@@ -423,7 +429,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.getMD5();
@@ -438,7 +444,7 @@ public abstract class PassthroughBasedDirImpl extends AbstractDir {
     try {
       file = factory.create(pdir, path);
     } catch (final PassthroughException e) {
-      throw new Reply550Exception("Cannot get File " + path);
+      throw new Reply550Exception(CANNOT_GET_FILE + path);
     }
     try {
       return file.getSHA1();

@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 452 Requested action not taken. Insufficient storage space in system.
- *
- *
  */
 public class Reply452Exception extends CommandAbstractException {
 

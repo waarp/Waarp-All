@@ -26,14 +26,13 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 import java.sql.SQLException;
 
 /**
  * H2 Database Model implementation
- *
- *
  */
 public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   /**
@@ -59,80 +58,81 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     final String notNull = " NOT NULL ";
 
     // log
-    String action = createTableH2 + DbTransferLog.table + "(";
+    StringBuilder action =
+        new StringBuilder(createTableH2 + DbTransferLog.table + '(');
     final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();
     for (int i = 0; i < acolumns.length; i++) {
-      action += acolumns[i].name() + DBType.getType(DbTransferLog.dbTypes[i]) +
-                notNull + ", ";
+      action.append(acolumns[i].name())
+            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)
+            .append(", ");
     }
     // Several columns for primary key
-    action += " CONSTRAINT TRANSLOG_PK " + primaryKey + "(";
+    action.append(" CONSTRAINT TRANSLOG_PK " + primaryKey + '(');
     for (int i = DbTransferLog.NBPRKEY; i > 1; i--) {
-      action += acolumns[acolumns.length - i].name() + ",";
+      action.append(acolumns[acolumns.length - i].name()).append(',');
     }
-    action += acolumns[acolumns.length - 1].name() + "))";
-    System.out.println(action);
+    action.append(acolumns[acolumns.length - 1].name()).append("))");
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     final DbRequest request = new DbRequest(session);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX No return
     } finally {
       request.close();
     }
     // Index Runner
-    action =
+    action = new StringBuilder(
         "CREATE INDEX IF NOT EXISTS IDX_TRANSLOG ON " + DbTransferLog.table +
-        "(";
+        '(');
     final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;
     for (int i = 0; i < icolumns.length - 1; i++) {
-      action += icolumns[i].name() + ", ";
+      action.append(icolumns[i].name()).append(", ");
     }
-    action += icolumns[icolumns.length - 1].name() + ")";
-    System.out.println(action);
+    action.append(icolumns[icolumns.length - 1].name()).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX No return
     } finally {
       request.close();
     }
 
     // cptrunner
     // cptrunner
-    action = "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
-             " START WITH " + (DbConstant.ILLEGALVALUE + 1) + " MINVALUE " +
-             (DbConstant.ILLEGALVALUE + 1);
-    System.out.println(action);
+    action = new StringBuilder(
+        "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
+        " START WITH " + (DbConstant.ILLEGALVALUE + 1) + " MINVALUE " +
+        (DbConstant.ILLEGALVALUE + 1));
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
-      return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     } catch (final WaarpDatabaseSqlException e) {
       // version <= 1.2.173
-      action = "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
-               " START WITH " + (DbConstant.ILLEGALVALUE + 1);
-      System.out.println(action);
+      action = new StringBuilder(
+          "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
+          " START WITH " + (DbConstant.ILLEGALVALUE + 1));
+      SysErrLogger.FAKE_LOGGER.sysout(action);
       try {
-        request.query(action);
+        request.query(action.toString());
       } catch (final WaarpDatabaseNoConnectionException e2) {
-        e2.printStackTrace();
-        return;
+        SysErrLogger.FAKE_LOGGER.syserr(e2);
       } catch (final WaarpDatabaseSqlException e2) {
-        e2.printStackTrace();
-        return;
+        SysErrLogger.FAKE_LOGGER.syserr(e2);
       } finally {
         request.close();
       }
-      return;
     } finally {
       request.close();
     }
@@ -148,15 +148,15 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     try {
       request.query(action);
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } finally {
       request.close();
     }
-    System.out.println(action);
+    SysErrLogger.FAKE_LOGGER.sysout(action);
   }
 
   @Override
@@ -190,7 +190,6 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    // TO DO Auto-generated method stub
     return false;
   }
 
@@ -198,7 +197,6 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    // TOD O Auto-generated method stub
     return false;
   }
 

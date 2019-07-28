@@ -24,8 +24,6 @@ import org.waarp.openr66.context.R66Session;
 /**
  * Runnable interface for internal R66 tasks (through Rule EXECJAVA, or through
  * message BusinessRequestPacket)
- *
- *
  */
 public interface R66Runnable extends Runnable {
 
@@ -46,19 +44,18 @@ public interface R66Runnable extends Runnable {
    *     task
    * @param isToValidate True if the call from Business is to Validate
    */
-  public void setArgs(R66Session session, boolean waitForValidation,
-                      boolean useLocalExec, int delay, String classname,
-                      String arg, boolean callFromBusiness,
-                      boolean isToValidate);
+  void setArgs(R66Session session, boolean waitForValidation,
+               boolean useLocalExec, int delay, String classname, String arg,
+               boolean callFromBusiness, boolean isToValidate);
 
   /**
    * @return the final status where 0 is OK, 1 is Warning, 2 is Error
    */
-  public int getFinalStatus();
+  int getFinalStatus();
 
   /**
    * @return Information on task
    */
   @Override
-  public String toString();
+  String toString();
 }

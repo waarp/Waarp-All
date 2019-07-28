@@ -27,6 +27,8 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.task.AbstractExecJavaTask;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Add a digest in the TransferInformation to the current Task.</br>
@@ -45,8 +47,6 @@ import java.io.IOException;
  * To be called as: <task><type>EXECJAVA</type><path>org.waarp.openr66.context.task.javatask.AddDigestJavaTask
  * -digest ADLER32|CRC32|MD2|MD5|SHA1|SHA256|SHA384|SHA512 [-format
  * (-/+)##DIGEST##]</path></task>
- *
- *
  */
 public class AddDigestJavaTask extends AbstractExecJavaTask {
   /**
@@ -56,17 +56,19 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
       WaarpLoggerFactory.getLogger(AddDigestJavaTask.class);
 
   private static final String sDIGEST = "#DIGEST#";
+  private static final Pattern DIGEST_PATTERN =
+      Pattern.compile(sDIGEST, Pattern.LITERAL);
 
   @Override
   public void run() {
     logger.debug(toString());
-    final String[] args = fullarg.split(" ");
-    String fileInfo = null;
+    final String[] args = BLANK.split(fullarg);
+    String fileInfo;
     String format = "-##DIGEST##";
     String algo = "MD5";
     int way = -1;
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-format")) {
+      if ("-format".equalsIgnoreCase(args[i])) {
         format = args[i + 1];
         if (format.charAt(0) == '-') {
           way = -1;
@@ -76,12 +78,12 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
           format = format.substring(1);
         }
         i++;
-      } else if (args[i].equals("-digest")) {
+      } else if ("-digest".equals(args[i])) {
         algo = args[i + 1].toUpperCase();
         i++;
       }
     }
-    DigestAlgo digest = null;
+    DigestAlgo digest;
     try {
       digest = DigestAlgo.valueOf(algo);
     } catch (final Exception e) {
@@ -101,11 +103,13 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
     logger.debug("Replace Digest in {} way: {} digest: {} key: {}", format, way,
                  algo, key);
     if (way < 0) {
-      fileInfo = format.replace(sDIGEST, key) + " " +
-                 session.getRunner().getFileInformation();
+      fileInfo = DIGEST_PATTERN.matcher(format)
+                               .replaceAll(Matcher.quoteReplacement(key)) +
+                 ' ' + session.getRunner().getFileInformation();
     } else {
-      fileInfo = session.getRunner().getFileInformation() + " " +
-                 format.replace(sDIGEST, key);
+      fileInfo = session.getRunner().getFileInformation() + ' ' +
+                 DIGEST_PATTERN.matcher(format)
+                               .replaceAll(Matcher.quoteReplacement(key));
     }
     session.getRunner().setFileInformation(fileInfo);
     try {

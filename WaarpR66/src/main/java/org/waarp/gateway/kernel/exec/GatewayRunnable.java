@@ -21,8 +21,6 @@ package org.waarp.gateway.kernel.exec;
 
 /**
  * Runnable interface for tasks
- *
- *
  */
 public interface GatewayRunnable extends Runnable {
 
@@ -38,17 +36,17 @@ public interface GatewayRunnable extends Runnable {
    * @param delay Delay in ms used only if waitForValidation is True
    * @param args First arg is the Class name used
    */
-  public void setArgs(boolean waitForValidation, boolean useLocalExec,
-                      int delay, String[] args);
+  void setArgs(boolean waitForValidation, boolean useLocalExec, int delay,
+               String[] args);
 
   /**
    * @return the final status where 0 is OK, 1 is Warning, 2 is Error
    */
-  public int getFinalStatus();
+  int getFinalStatus();
 
   /**
    * @return Information on task
    */
   @Override
-  public String toString();
+  String toString();
 }

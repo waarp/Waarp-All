@@ -38,6 +38,7 @@ public class MultipleMonitor {
    */
   @Deprecated
   public MultipleMonitor() {
+    // nothing
   }
 
   public MultipleMonitor(String hostid, int countConfig, int countHost,

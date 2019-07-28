@@ -32,8 +32,6 @@ import org.waarp.openr66.protocol.configuration.Configuration;
  * - if delay is 1, a notification with the current task and the current message
  * will be send<br>
  * <br>
- *
- *
  */
 public class SnmpTask extends AbstractTask {
   /**

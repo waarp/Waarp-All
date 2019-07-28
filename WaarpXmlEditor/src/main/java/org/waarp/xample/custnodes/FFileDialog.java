@@ -26,6 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileFilter;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -49,7 +50,6 @@ import java.util.StringTokenizer;
  * editor and a global editor.
  *
  * @author Felix Golubov
- *
  * @version 2.0
  *     <p>
  *     Add support for Directory and different options on File Dialog
@@ -70,10 +70,10 @@ public class FFileDialog extends JDialog
    */
   private static final long serialVersionUID = -8775488630211100329L;
   JPanel panel = new JPanel();
-  FFileChooser fileChooser = new FFileChooser();
+  final FFileChooser fileChooser = new FFileChooser();
   int mode = JFileChooser.FILES_ONLY;
   Object data;
-  List masks = null;
+  List masks;
 
   public FFileDialog() {
     getContentPane().setLayout(new BorderLayout());
@@ -103,8 +103,7 @@ public class FFileDialog extends JDialog
     final JButton btn = (JButton) e.getSource();
     if ("OK".equals(btn.getText())) {
       final File file = fileChooser.getSelectedFile();
-      // data = (file == null || file.isDirectory()) ? "" : file.getAbsolutePath();
-      data = (file == null)? "" : file.getAbsolutePath();
+      data = file == null? "" : file.getAbsolutePath();
       cancel();
     } else if ("Cancel".equals(btn.getText())) {
       cancel();
@@ -146,6 +145,7 @@ public class FFileDialog extends JDialog
       for (int i = 0; i < list.size() && sameMasks; i++) {
         if (!list.get(i).equals(masks.get(i))) {
           sameMasks = false;
+          break;
         }
       }
     }
@@ -165,11 +165,11 @@ public class FFileDialog extends JDialog
     return data;
   }
 
-  class FileExtFilter extends javax.swing.filechooser.FileFilter {
-    HashSet<String> extensions = new HashSet<String>();
+  class FileExtFilter extends FileFilter {
+    final HashSet<String> extensions = new HashSet<String>();
     String description = "";
 
-    public FileExtFilter(String mask) {
+    FileExtFilter(String mask) {
       final StringTokenizer st = new StringTokenizer(mask, "|");
       while (st.hasMoreElements()) {
         String token = st.nextToken().trim();
@@ -212,10 +212,10 @@ public class FFileDialog extends JDialog
       if (f.isFile() && mode == JFileChooser.DIRECTORIES_ONLY) {
         return false;
       }
-      if (extensions.size() == 0) {
+      if (extensions.isEmpty()) {
         return true;
       }
-      String ext = null;
+      String ext;
       final String name = f.getName();
       final int i = name.lastIndexOf('.');
       if (i > 0 && i < name.length() - 1) {

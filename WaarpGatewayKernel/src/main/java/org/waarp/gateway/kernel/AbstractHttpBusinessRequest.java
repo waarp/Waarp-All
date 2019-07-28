@@ -20,13 +20,14 @@
 package org.waarp.gateway.kernel;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
  */
 public abstract class AbstractHttpBusinessRequest {
-  protected LinkedHashMap<String, AbstractHttpField> fields;
-  protected HttpPage page;
+  protected final LinkedHashMap<String, AbstractHttpField> fields;
+  protected final HttpPage page;
 
   /**
    * Default constructor
@@ -34,17 +35,17 @@ public abstract class AbstractHttpBusinessRequest {
    * @param fields
    * @param page
    */
-  public AbstractHttpBusinessRequest(
+  protected AbstractHttpBusinessRequest(
       LinkedHashMap<String, AbstractHttpField> fields, HttpPage page) {
     this.fields = fields;
     this.page = page;
   }
 
   /**
-   * @return the LinkedHashMap<String, AbstractHttpField> associated with the
+   * @return the Map<String, AbstractHttpField> associated with the
    *     current request
    */
-  public LinkedHashMap<String, AbstractHttpField> getLinkedHashMapHttpFields() {
+  public Map<String, AbstractHttpField> getMapHttpFields() {
     return fields;
   }
 

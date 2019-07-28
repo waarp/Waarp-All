@@ -21,8 +21,6 @@ package org.waarp.common.file;
 
 /**
  * Interface for SessionInterface
- *
- *
  */
 public interface SessionInterface {
   /**

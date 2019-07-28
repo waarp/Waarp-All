@@ -140,8 +140,9 @@ final class BasicHttpResponder extends AbstractHttpResponder {
     HttpUtil.setContentLength(response, file.length());
 
     // Open the file first to make sure it is readable before sending out the response
-    final RandomAccessFile raf = new RandomAccessFile(file, "r");
+    RandomAccessFile raf = null;
     try {
+      raf = new RandomAccessFile(file, "r");
       checkNotResponded();
 
       // Write the initial line and the header.
@@ -160,12 +161,14 @@ final class BasicHttpResponder extends AbstractHttpResponder {
         channel.write(region);
         channel.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
       }
-    } catch (final Throwable t) {
+    } finally {
       try {
-        raf.close();
-      } catch (final IOException ex) {
+        if (raf != null) {
+          raf.close();
+        }
+      } catch (final IOException ignored) {
+        // nothing
       }
-      throw t;
     }
   }
 

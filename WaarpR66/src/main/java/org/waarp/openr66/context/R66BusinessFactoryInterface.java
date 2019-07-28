@@ -29,7 +29,7 @@ public interface R66BusinessFactoryInterface {
    * @return a Business object (new or same, depending on the implementation),
    *     maybe null
    */
-  public R66BusinessInterface getBusinessInterface(R66Session session);
+  R66BusinessInterface getBusinessInterface(R66Session session);
 
-  public void releaseResources();
+  void releaseResources();
 }

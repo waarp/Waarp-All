@@ -54,6 +54,8 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.Test;
 import org.waarp.common.cpu.WaarpConstraintLimitHandler;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
@@ -292,6 +294,7 @@ public class WaarpNettyUtilTest {
 
   @Test
   public void setServerBootstrap1GroupWithConstraint() {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     final GlobalTrafficShapingHandler trafficShapingHandler =
         new GlobalTrafficShapingHandler(workerGroup.next());

@@ -33,15 +33,15 @@ import java.awt.FocusTraversalPolicy;
  * @author scheglov_ke
  */
 public class FocusTraversalOnArray extends FocusTraversalPolicy {
-  private final Component m_Components[];
+  private final Component[] mComponents;
 
   ////////////////////////////////////////////////////////////////////////////
   //
   // Constructor
   //
   ////////////////////////////////////////////////////////////////////////////
-  public FocusTraversalOnArray(Component components[]) {
-    m_Components = components;
+  public FocusTraversalOnArray(Component[] components) {
+    mComponents = components;
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -50,16 +50,15 @@ public class FocusTraversalOnArray extends FocusTraversalPolicy {
   //
   ////////////////////////////////////////////////////////////////////////////
   private int indexCycle(int index, int delta) {
-    final int size = m_Components.length;
-    final int next = (index + delta + size) % size;
-    return next;
+    final int size = mComponents.length;
+    return (index + delta + size) % size;
   }
 
   private Component cycle(Component currentComponent, int delta) {
     int index = -1;
     loop:
-    for (int i = 0; i < m_Components.length; i++) {
-      final Component component = m_Components[i];
+    for (int i = 0; i < mComponents.length; i++) {
+      final Component component = mComponents[i];
       for (Component c = currentComponent; c != null; c = c.getParent()) {
         if (component == c) {
           index = i;
@@ -76,7 +75,7 @@ public class FocusTraversalOnArray extends FocusTraversalPolicy {
       }
       index = newIndex;
       //
-      final Component component = m_Components[newIndex];
+      final Component component = mComponents[newIndex];
       if (component.isEnabled()) {
         return component;
       }
@@ -102,12 +101,12 @@ public class FocusTraversalOnArray extends FocusTraversalPolicy {
   }
 
   public Component firstComponent(Container container) {
-    return m_Components[0];
+    return mComponents[0];
   }
 
   @Override
   public Component getLastComponent(Container container) {
-    return m_Components[m_Components.length - 1];
+    return mComponents[mComponents.length - 1];
   }
 
   @Override

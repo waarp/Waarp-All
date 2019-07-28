@@ -22,10 +22,10 @@ package org.waarp.openr66.client;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.ErrorCode;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
@@ -33,10 +33,10 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * class for direct Business Request call
- *
- *
  */
 public class BusinessRequest extends AbstractBusinessRequest {
   /**
@@ -69,11 +69,14 @@ public class BusinessRequest extends AbstractBusinessRequest {
     classname = DEFAULT_CLASS;
     if (!getParams(args) || classarg == null) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     Configuration.configuration.pipelineInit();
     final NetworkTransaction networkTransaction = new NetworkTransaction();
@@ -83,7 +86,7 @@ public class BusinessRequest extends AbstractBusinessRequest {
     final long time1 = System.currentTimeMillis();
 
     final BusinessRequestPacket packet =
-        new BusinessRequestPacket(classname + " " + classarg, 0);
+        new BusinessRequestPacket(classname + ' ' + classarg, 0);
     final BusinessRequest transaction =
         new BusinessRequest(networkTransaction, future, rhost, packet);
     transaction.run();
@@ -120,10 +123,10 @@ public class BusinessRequest extends AbstractBusinessRequest {
         outputFormat.sysout();
       }
       networkTransaction.closeAll();
-      System.exit(ErrorCode.Unknown.ordinal());
+      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
     }
     networkTransaction.closeAll();
-    System.exit(0);
+    System.exit(0);//NOSONAR
   }
 
 }

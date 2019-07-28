@@ -33,8 +33,6 @@ import java.io.IOException;
  * Json Object Command Message class for JsonCommandPacket
  * <p>
  * 1 string = comment
- *
- *
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class JsonPacket {

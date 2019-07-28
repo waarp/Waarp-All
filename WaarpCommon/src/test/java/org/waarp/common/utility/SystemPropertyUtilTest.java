@@ -68,8 +68,8 @@ public class SystemPropertyUtilTest {
     assertEquals(KEY_VALUE, SystemPropertyUtil.get(KEY_TEST));
     assertEquals(KEY_VALUE, SystemPropertyUtil.get(KEY_TEST, OTHER));
     assertEquals(KEY_VALUE, SystemPropertyUtil.getAndSet(KEY_TEST, OTHER));
-    assertEquals(OTHER, SystemPropertyUtil.getAndSet(KEY_TEST + "2", OTHER));
-    assertEquals(OTHER, SystemPropertyUtil.set(KEY_TEST + "2", OTHER));
+    assertEquals(OTHER, SystemPropertyUtil.getAndSet(KEY_TEST + '2', OTHER));
+    assertEquals(OTHER, SystemPropertyUtil.set(KEY_TEST + '2', OTHER));
   }
 
   @Test
@@ -80,19 +80,19 @@ public class SystemPropertyUtilTest {
                  SystemPropertyUtil.get(KEY_BTEST));
     assertEquals(KEY_BVALUE, SystemPropertyUtil.get(KEY_BTEST, false));
     assertEquals(KEY_BVALUE, SystemPropertyUtil.getAndSet(KEY_BTEST, false));
-    assertEquals(false, SystemPropertyUtil.getAndSet(KEY_BTEST + "2", false));
-    assertEquals(false, SystemPropertyUtil.set(KEY_BTEST + "2", false));
-    assertEquals(false, SystemPropertyUtil.get(KEY_BTEST + "3", false));
-    assertEquals(null, SystemPropertyUtil.set(KEY_BTEST + "3", "true"));
-    assertEquals(true, SystemPropertyUtil.get(KEY_BTEST + "3", false));
-    assertEquals("true", SystemPropertyUtil.set(KEY_BTEST + "3", "yes"));
-    assertEquals(true, SystemPropertyUtil.get(KEY_BTEST + "3", false));
-    assertEquals("yes", SystemPropertyUtil.set(KEY_BTEST + "3", "1"));
-    assertEquals(true, SystemPropertyUtil.get(KEY_BTEST + "3", false));
-    assertEquals("1", SystemPropertyUtil.set(KEY_BTEST + "3", "yes2"));
-    assertEquals(false, SystemPropertyUtil.get(KEY_BTEST + "3", false));
-    assertEquals("yes2", SystemPropertyUtil.set(KEY_BTEST + "3", ""));
-    assertEquals(true, SystemPropertyUtil.get(KEY_BTEST + "3", false));
+    assertFalse(SystemPropertyUtil.getAndSet(KEY_BTEST + '2', false));
+    assertFalse(SystemPropertyUtil.set(KEY_BTEST + '2', false));
+    assertFalse(SystemPropertyUtil.get(KEY_BTEST + '3', false));
+    assertNull(SystemPropertyUtil.set(KEY_BTEST + '3', "true"));
+    assertTrue(SystemPropertyUtil.get(KEY_BTEST + '3', false));
+    assertEquals("true", SystemPropertyUtil.set(KEY_BTEST + '3', "yes"));
+    assertTrue(SystemPropertyUtil.get(KEY_BTEST + '3', false));
+    assertEquals("yes", SystemPropertyUtil.set(KEY_BTEST + '3', "1"));
+    assertTrue(SystemPropertyUtil.get(KEY_BTEST + '3', false));
+    assertEquals("1", SystemPropertyUtil.set(KEY_BTEST + '3', "yes2"));
+    assertFalse(SystemPropertyUtil.get(KEY_BTEST + '3', false));
+    assertEquals("yes2", SystemPropertyUtil.set(KEY_BTEST + '3', ""));
+    assertTrue(SystemPropertyUtil.get(KEY_BTEST + '3', false));
   }
 
   @Test
@@ -103,11 +103,11 @@ public class SystemPropertyUtilTest {
                  SystemPropertyUtil.get(KEY_ITEST));
     assertEquals(KEY_IVALUE, SystemPropertyUtil.get(KEY_ITEST, 4));
     assertEquals(KEY_IVALUE, SystemPropertyUtil.getAndSet(KEY_ITEST, 4));
-    assertEquals(4, SystemPropertyUtil.getAndSet(KEY_ITEST + "2", 4));
-    assertEquals(4, SystemPropertyUtil.set(KEY_ITEST + "2", 4));
-    assertEquals(5, SystemPropertyUtil.get(KEY_ITEST + "3", 5));
-    assertEquals(null, SystemPropertyUtil.set(KEY_ITEST + "3", "yes2"));
-    assertEquals(6, SystemPropertyUtil.get(KEY_ITEST + "3", 6));
+    assertEquals(4, SystemPropertyUtil.getAndSet(KEY_ITEST + '2', 4));
+    assertEquals(4, SystemPropertyUtil.set(KEY_ITEST + '2', 4));
+    assertEquals(5, SystemPropertyUtil.get(KEY_ITEST + '3', 5));
+    assertNull(SystemPropertyUtil.set(KEY_ITEST + '3', "yes2"));
+    assertEquals(6, SystemPropertyUtil.get(KEY_ITEST + '3', 6));
   }
 
   @Test
@@ -117,11 +117,11 @@ public class SystemPropertyUtilTest {
     assertEquals(Long.toString(KEY_LVALUE), SystemPropertyUtil.get(KEY_LTEST));
     assertEquals(KEY_LVALUE, SystemPropertyUtil.get(KEY_LTEST, 3L));
     assertEquals(KEY_LVALUE, SystemPropertyUtil.getAndSet(KEY_LTEST, 3L));
-    assertEquals(3L, SystemPropertyUtil.getAndSet(KEY_LTEST + "2", 3L));
-    assertEquals(3L, SystemPropertyUtil.set(KEY_LTEST + "2", 3L));
-    assertEquals(4L, SystemPropertyUtil.get(KEY_LTEST + "3", 4L));
-    assertEquals(null, SystemPropertyUtil.set(KEY_LTEST + "3", "yes2"));
-    assertEquals(5L, SystemPropertyUtil.get(KEY_LTEST + "3", 5L));
+    assertEquals(3L, SystemPropertyUtil.getAndSet(KEY_LTEST + '2', 3L));
+    assertEquals(3L, SystemPropertyUtil.set(KEY_LTEST + '2', 3L));
+    assertEquals(4L, SystemPropertyUtil.get(KEY_LTEST + '3', 4L));
+    assertNull(SystemPropertyUtil.set(KEY_LTEST + '3', "yes2"));
+    assertEquals(5L, SystemPropertyUtil.get(KEY_LTEST + '3', 5L));
   }
 
   @Test

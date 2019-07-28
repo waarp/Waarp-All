@@ -39,8 +39,6 @@ import java.util.List;
  * types<br>
  * Force ASCII, EBCDIC or IMAGE (with NON PRINT). LOCAL and other subtypes are
  * not implemented.
- *
- *
  */
 @Sharable
 class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
@@ -131,7 +129,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    * @param type
    * @param subType
    */
-  public FtpDataTypeCodec(TransferType type, TransferSubType subType) {
+  FtpDataTypeCodec(TransferType type, TransferSubType subType) {
     setCharset(null);
     this.type = type;
     this.subType = subType;
@@ -193,14 +191,14 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
   }
 
   /**
-   * @param ByteBuf
+   * @param byteBuf
    *
-   * @return the ByteBuf
+   * @return the byteBuf
    *
    * @throws Exception
    */
-  protected ByteBuf decode(ByteBuf ByteBuf) throws Exception {
-    return Unpooled.copiedBuffer(ByteBuf.toString(type.charset), charsetName);
+  protected ByteBuf decode(ByteBuf byteBuf) throws Exception {
+    return Unpooled.copiedBuffer(byteBuf.toString(type.charset), charsetName);
   }
 
   @Override
@@ -223,14 +221,14 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
   }
 
   /**
-   * @param ByteBuf
+   * @param byteBuf
    *
    * @return the encoded buffer
    *
    * @throws Exception
    */
-  protected ByteBuf encode(ByteBuf ByteBuf) throws Exception {
-    final String chString = ByteBuf.toString(charsetName);
+  protected ByteBuf encode(ByteBuf byteBuf) throws Exception {
+    final String chString = byteBuf.toString(charsetName);
     return Unpooled.copiedBuffer(chString, type.charset);
   }
 }

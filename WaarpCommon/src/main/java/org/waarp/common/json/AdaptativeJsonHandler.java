@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,8 +46,6 @@ import java.util.Map;
 
 /**
  * JSON handler using adaptative format (Smile or Json - in that order -)
- *
- *
  */
 public class AdaptativeJsonHandler {
 
@@ -113,10 +112,10 @@ public class AdaptativeJsonHandler {
       codec = JsonCodec.JSON;
       mapper = JsonCodec.JSON.mapper; // default
     } else {
-      final JsonCodec codec = factoryForName.get(match.getMatchedFormatName());
-      if (codec != null) {
-        this.codec = codec;
-        mapper = codec.mapper;
+      final JsonCodec codec2 = factoryForName.get(match.getMatchedFormatName());
+      if (codec2 != null) {
+        this.codec = codec2;
+        mapper = codec2.mapper;
       } else {
         this.codec = JsonCodec.JSON;
         mapper = JsonCodec.JSON.mapper; // default
@@ -130,9 +129,9 @@ public class AdaptativeJsonHandler {
       codec = JsonCodec.JSON;
       mapper = JsonCodec.JSON.mapper; // default
     } else {
-      final JsonCodec codec = factoryForName.get(match.getMatchedFormatName());
+      final JsonCodec codec2 = factoryForName.get(match.getMatchedFormatName());
       if (codec != null) {
-        this.codec = codec;
+        this.codec = codec2;
         mapper = codec.mapper;
       } else {
         this.codec = JsonCodec.JSON;
@@ -232,7 +231,7 @@ public class AdaptativeJsonHandler {
     final JsonNode elt = node.get(field);
     if (elt != null) {
       final String val = elt.asText();
-      if (val.equals("null")) {
+      if ("null".equals(val)) {
         return defValue;
       }
       return val;
@@ -536,9 +535,12 @@ public class AdaptativeJsonHandler {
         info =
             mapper.readValue(value, new TypeReference<Map<String, Object>>() {
             });
-      } catch (final JsonParseException e1) {
-      } catch (final JsonMappingException e1) {
-      } catch (final IOException e1) {
+      } catch (final JsonParseException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final JsonMappingException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final IOException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
       if (info == null) {
         info = new HashMap<String, Object>();

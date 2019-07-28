@@ -69,7 +69,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor
       COUNT_CONFIG_FIELD + " = ?, " + COUNT_HOST_FIELD + " = ?, " +
       COUNT_RULE_FIELD + " = ? WHERE " + HOSTID_FIELD + " = ?";
 
-  protected Connection connection;
+  protected final Connection connection;
 
   public DBMultipleMonitorDAO(Connection con) {
     connection = con;
@@ -154,7 +154,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + " " + filter.operand + " ?");
+      query.append(filter.key + ' ' + filter.operand + " ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -207,7 +207,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor
       if (res.next()) {
         return getFromResultSet(res);
       } else {
-        throw new DAONoDataException(("No " + getClass().getName() + " found"));
+        throw new DAONoDataException("No " + getClass().getName() + " found");
       }
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);

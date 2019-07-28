@@ -37,6 +37,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
 import org.snmp4j.util.TableEvent;
 import org.snmp4j.util.TableUtils;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,8 +45,6 @@ import java.util.List;
 
 /**
  * Simple SNMP Client (for testing purpose)
- *
- *
  */
 public class WaarpSimpleSnmpClient {
 
@@ -65,7 +64,7 @@ public class WaarpSimpleSnmpClient {
     try {
       start();
     } catch (final IOException e) {
-      System.err.println(e);
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       throw new RuntimeException(e);
     }
   }

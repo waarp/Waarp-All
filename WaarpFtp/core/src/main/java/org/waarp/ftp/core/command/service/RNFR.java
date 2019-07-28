@@ -28,8 +28,6 @@ import org.waarp.ftp.core.file.FtpFile;
 
 /**
  * RNFR command
- *
- *
  */
 public class RNFR extends AbstractCommand {
   @Override

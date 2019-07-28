@@ -19,6 +19,8 @@
  */
 package org.waarp.common.future;
 
+import org.waarp.common.logging.SysErrLogger;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -26,10 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * ReentrantLock with a timeout in locking without exception and no exception on
  * unlock if the thread is not
  * locking it.
- *
- *
  */
-@SuppressWarnings("serial")
 public class WaarpLock extends ReentrantLock {
   /**
    *
@@ -62,6 +61,7 @@ public class WaarpLock extends ReentrantLock {
     try {
       tryLock(timeout, timeUnit);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }
 
@@ -69,7 +69,8 @@ public class WaarpLock extends ReentrantLock {
   public void unlock() {
     try {
       super.unlock();
-    } catch (final IllegalMonitorStateException e) {
+    } catch (final IllegalMonitorStateException ignored) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 

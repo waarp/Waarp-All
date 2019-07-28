@@ -20,13 +20,13 @@
 package org.waarp.openr66.client;
 
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -37,7 +37,10 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Client to submit a transfer for multiple files to multiple hosts at
@@ -58,14 +61,12 @@ import java.util.List;
  * Extra option is -client which allows the filename resolution on remote (recv
  * files) when using
  * wildcards.<br>
- *
- *
  */
 public class MultipleSubmitTransfer extends SubmitTransfer {
-  private int errorMultiple = 0;
-  private int doneMultiple = 0;
-  protected boolean submit = false;
-  protected NetworkTransaction networkTransaction = null;
+  private int errorMultiple;
+  private int doneMultiple;
+  protected boolean submit;
+  protected final NetworkTransaction networkTransaction;
   private final List<OutputFormat> results = new ArrayList<OutputFormat>();
 
   public MultipleSubmitTransfer(R66Future future, String remoteHost,
@@ -95,7 +96,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     if (!submit && dbrule.isRecvMode() && networkTransaction == null) {
       logger.error(Messages.getString("Configuration.WrongInit") +
@@ -104,16 +105,14 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     List<String> files = null;
     if (dbrule.isSendMode()) {
       files = getLocalFiles(dbrule, localfilenames);
     } else if (submit) {
       files = new ArrayList<String>();
-      for (final String string : localfilenames) {
-        files.add(string);
-      }
+      Collections.addAll(files, localfilenames);
     }
     for (String host : rhosts) {
       host = host.trim();
@@ -204,24 +203,25 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
     }
     boolean submit = true;
     for (final String string : args) {
-      if (string.equalsIgnoreCase("-client")) {
+      if ("-client".equalsIgnoreCase(string)) {
         submit = false;
+        break;
       }
     }
     if (!getParams(args, submit)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (!OutputFormat.isQuiet()) {
-        System.out.println(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
       if (DetectionUtils.isJunit()) {
         return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     NetworkTransaction networkTransaction = null;
     if (!submit) {
@@ -255,7 +255,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
           for (final OutputFormat result : transaction.getResults()) {
-            System.out.println();
+            SysErrLogger.FAKE_LOGGER.sysout();
             result.sysout();
           }
         }
@@ -263,12 +263,12 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
           networkTransaction.closeAll();
           networkTransaction = null;
         }
-        DbConstant.admin.close();
+        admin.close();
         if (DetectionUtils.isJunit()) {
           return;
         }
         ChannelUtils.stopLogger();
-        System.exit(0);
+        System.exit(0);//NOSONAR
       } else {
         outputFormat.setValue(FIELDS.status.name(), 2);
         outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
@@ -282,7 +282,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
           for (final OutputFormat result : transaction.getResults()) {
-            System.out.println();
+            SysErrLogger.FAKE_LOGGER.sysout();
             result.sysout();
           }
         }
@@ -290,12 +290,12 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
           networkTransaction.closeAll();
           networkTransaction = null;
         }
-        DbConstant.admin.close();
+        admin.close();
         if (DetectionUtils.isJunit()) {
           return;
         }
         ChannelUtils.stopLogger();
-        System.exit(transaction.getErrorMultiple());
+        System.exit(transaction.getErrorMultiple());//NOSONAR
       }
     } finally {
       if (networkTransaction != null) {

@@ -38,14 +38,11 @@ import org.waarp.ftp.simpleimpl.file.SimpleAuth;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * FtpConfiguration based on a XML file
- *
- *
  */
 public class FileBasedConfiguration extends FtpConfiguration {
   /**
@@ -57,7 +54,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * SERVER PASSWORD (shutdown)
    */
-  private static final String XML_SERVER_PASSWD = "/config/serverpasswd";
+  private static final String XML_SERVER_PSSWD = "/config/serverpasswd";
 
   /**
    * SERVER PORT
@@ -147,7 +144,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * Authentication Fields
    */
-  private static final String XML_AUTHENTIFICATION_PASSWD = "passwd";
+  private static final String XML_AUTHENTIFICATION_PSSWD = "passwd";
 
   /**
    * Authentication Fields
@@ -162,7 +159,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * RANGE of PORT for Passive Mode
    */
-  private CircularIntValue RANGE_PORT;
+  private CircularIntValue rangePort;
 
   /**
    * All authentications
@@ -195,7 +192,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   @SuppressWarnings("unchecked")
   public boolean setConfigurationFromXml(String filename) {
-    Document document = null;
+    Document document;
     // Open config file
     try {
       document = new SAXReader().read(filename);
@@ -207,8 +204,9 @@ public class FileBasedConfiguration extends FtpConfiguration {
       logger.error("Unable to read the XML Config file: " + filename);
       return false;
     }
-    Node nodebase, node = null;
-    node = document.selectSingleNode(XML_SERVER_PASSWD);
+    Node nodebase;
+    Node node;
+    node = document.selectSingleNode(XML_SERVER_PSSWD);
     if (node == null) {
       logger.error("Unable to find Password in Config file: " + filename);
       return false;
@@ -246,13 +244,13 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
     node = document.selectSingleNode(XML_SERVER_THREAD);
     if (node != null) {
-      setSERVER_THREAD(Integer.parseInt(node.getText()));
+      setServerThread(Integer.parseInt(node.getText()));
     }
     node = document.selectSingleNode(XML_CLIENT_THREAD);
     if (node != null) {
-      setCLIENT_THREAD(Integer.parseInt(node.getText()));
+      setClientThread(Integer.parseInt(node.getText()));
     }
-    if (getSERVER_THREAD() == 0 || getCLIENT_THREAD() == 0) {
+    if (getServerThread() == 0 || getClientThread() == 0) {
       computeNbThreads();
     }
     node = document.selectSingleNode(XML_LIMITGLOBAL);
@@ -276,7 +274,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     delayLimit = AbstractTrafficShapingHandler.DEFAULT_CHECK_INTERVAL;
     node = document.selectSingleNode(XML_TIMEOUTCON);
     if (node != null) {
-      setTIMEOUTCON(Integer.parseInt(node.getText()));
+      setTimeoutCon(Integer.parseInt(node.getText()));
     }
     node = document.selectSingleNode(XML_DELETEONABORT);
     if (node != null) {
@@ -296,7 +294,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
     node = document.selectSingleNode(XML_BLOCKSIZE);
     if (node != null) {
-      setBLOCKSIZE(Integer.parseInt(node.getText()));
+      setBlocksize(Integer.parseInt(node.getText()));
     }
     node = document.selectSingleNode(XML_RANGE_PORT_MIN);
     int min = 100;
@@ -308,8 +306,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
     if (node != null) {
       max = Integer.parseInt(node.getText());
     }
-    final CircularIntValue rangePort = new CircularIntValue(min, max);
-    setRangePort(rangePort);
+    final CircularIntValue circularIntValue = new CircularIntValue(min, max);
+    setRangePort(circularIntValue);
     // We use Apache Commons IO
     FilesystemBasedDirJdkAbstract.ueApacheCommonsIo = true;
     node = document.selectSingleNode(XML_AUTHENTIFICATION_FILE);
@@ -333,15 +331,14 @@ public class FileBasedConfiguration extends FtpConfiguration {
       return false;
     }
     final List<Node> list = document.selectNodes(XML_AUTHENTIFICATION_BASED);
-    final Iterator<Node> iterator = list.iterator();
-    while (iterator.hasNext()) {
-      nodebase = iterator.next();
+    for (final Node value : list) {
+      nodebase = value;
       node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_USER);
       if (node == null) {
         continue;
       }
       final String user = node.getText();
-      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_PASSWD);
+      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_PSSWD);
       if (node == null) {
         continue;
       }
@@ -349,7 +346,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_ADMIN);
       boolean isAdmin = false;
       if (node != null) {
-        isAdmin = node.getText().equals("1");
+        isAdmin = "1".equals(node.getText());
       }
       final List<Node> listaccount =
           nodebase.selectNodes(XML_AUTHENTIFICATION_ACCOUNT);
@@ -357,11 +354,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
       if (!listaccount.isEmpty()) {
         account = new String[listaccount.size()];
         int i = 0;
-        final Iterator<Node> iteratoraccount = listaccount.iterator();
-        while (iteratoraccount.hasNext()) {
-          node = iteratoraccount.next();
+        for (final Node item : listaccount) {
+          node = item;
           account[i] = node.getText();
-          // logger.debug("User: {} Acct: {}", user, account[i]);
+          // logger.debug("User: {} Acct: {}", user, account[i])
           i++;
         }
       }
@@ -369,7 +365,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
       auth.setAdmin(isAdmin);
       authentications.put(user, auth);
     }
-    document = null;
     return true;
   }
 
@@ -387,7 +382,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   @Override
   public int getNextRangePort() {
-    return RANGE_PORT.getNext();
+    return rangePort.getNext();
   }
 
   /**
@@ -395,7 +390,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *     connections
    */
   private void setRangePort(CircularIntValue rangePort) {
-    RANGE_PORT = rangePort;
+    this.rangePort = rangePort;
   }
 
   @Override

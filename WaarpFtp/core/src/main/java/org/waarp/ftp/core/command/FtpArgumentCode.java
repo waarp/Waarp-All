@@ -22,15 +22,14 @@ package org.waarp.ftp.core.command;
 import org.waarp.common.exception.InvalidArgumentException;
 
 import java.nio.charset.Charset;
-import java.util.Set;
-import java.util.SortedMap;
 
 /**
  * Definition of all Argument of Parameter commands (MODE, STRU, TYPE)
- *
- *
  */
 public class FtpArgumentCode {
+
+  private FtpArgumentCode() {
+  }
 
   /**
    * Type of transmission
@@ -58,12 +57,12 @@ public class FtpArgumentCode {
     /**
      * TransferType
      */
-    public char type;
+    public final char type;
 
     /**
      * Charset Name if any
      */
-    public Charset charset;
+    public final Charset charset;
 
     TransferType(char type) {
       this.type = type;
@@ -97,7 +96,7 @@ public class FtpArgumentCode {
     /**
      * TransferSubType
      */
-    public char subtype;
+    public final char subtype;
 
     TransferSubType(char subtype) {
       this.subtype = subtype;
@@ -125,7 +124,7 @@ public class FtpArgumentCode {
     /**
      * TransferStructure
      */
-    public char structure;
+    public final char structure;
 
     TransferStructure(char structure) {
       this.structure = structure;
@@ -153,7 +152,7 @@ public class FtpArgumentCode {
     /**
      * TransferMode
      */
-    public char mode;
+    public final char mode;
 
     TransferMode(char mode) {
       this.mode = mode;

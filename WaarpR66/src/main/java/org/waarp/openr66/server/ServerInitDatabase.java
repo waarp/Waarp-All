@@ -22,6 +22,7 @@ package org.waarp.openr66.server;
 import org.apache.commons.io.FileUtils;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -29,7 +30,6 @@ import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -39,10 +39,10 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 import java.io.File;
 import java.io.IOException;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Utility class to initiate the database for a server
- *
- *
  */
 public class ServerInitDatabase {
   /**
@@ -50,18 +50,21 @@ public class ServerInitDatabase {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       Messages.getString("ServerInitDatabase.Help");
 
-  static String sxml = null;
-  static boolean database = false;
-  static boolean upgradeDb = false;
-  static String sbusiness = null;
-  static String salias = null;
-  static String sroles = null;
-  static String sdirconfig = null;
-  static String shostauth = null;
-  static String slimitconfig = null;
+  static String sxml;
+  static boolean database;
+  static boolean upgradeDb;
+  static String sbusiness;
+  static String salias;
+  static String sroles;
+  static String sdirconfig;
+  static String shostauth;
+  static String slimitconfig;
+
+  private ServerInitDatabase() {
+  }
 
   protected static boolean getParams(String[] args) {
     if (args.length < 1) {
@@ -70,28 +73,28 @@ public class ServerInitDatabase {
     }
     sxml = args[0];
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-initdb")) {
+      if ("-initdb".equalsIgnoreCase(args[i])) {
         database = true;
         FileBasedConfiguration.autoupgrade = false;
         upgradeDb = true;
-      } else if (args[i].equalsIgnoreCase("-upgradeDb")) {
+      } else if ("-upgradeDb".equalsIgnoreCase(args[i])) {
         upgradeDb = true;
-      } else if (args[i].equalsIgnoreCase("-loadBusiness")) {
+      } else if ("-loadBusiness".equalsIgnoreCase(args[i])) {
         i++;
         sbusiness = args[i];
-      } else if (args[i].equalsIgnoreCase("-loadAlias")) {
+      } else if ("-loadAlias".equalsIgnoreCase(args[i])) {
         i++;
         salias = args[i];
-      } else if (args[i].equalsIgnoreCase("-loadRoles")) {
+      } else if ("-loadRoles".equalsIgnoreCase(args[i])) {
         i++;
         sroles = args[i];
-      } else if (args[i].equalsIgnoreCase("-dir")) {
+      } else if ("-dir".equalsIgnoreCase(args[i])) {
         i++;
         sdirconfig = args[i];
-      } else if (args[i].equalsIgnoreCase("-limit")) {
+      } else if ("-limit".equalsIgnoreCase(args[i])) {
         i++;
         slimitconfig = args[i];
-      } else if (args[i].equalsIgnoreCase("-auth")) {
+      } else if ("-auth".equalsIgnoreCase(args[i])) {
         i++;
         shostauth = args[i];
       }
@@ -109,15 +112,15 @@ public class ServerInitDatabase {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }
     if (!getParams(args)) {
-      System.out.println(_INFO_ARGS);
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      SysErrLogger.FAKE_LOGGER.sysout(_INFO_ARGS);
+      if (admin != null) {
+        admin.close();
       }
       if (DetectionUtils.isJunit()) {
         return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
 
     try {
@@ -126,47 +129,47 @@ public class ServerInitDatabase {
                                         database)) {
         System.err
             .format(Messages.getString("Configuration.NeedCorrectConfig"));
-        System.err.println();
+        SysErrLogger.FAKE_LOGGER.syserr();
         if (DetectionUtils.isJunit()) {
           return;
         }
         ChannelUtils.stopLogger();
-        System.exit(2);
+        System.exit(2);//NOSONAR
       }
       if (database) {
         // Init database
         System.out
             .format(Messages.getString("ServerInitDatabase.Create.Start"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
         initdb();
         System.out.format(Messages.getString("ServerInitDatabase.Create.Done"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (upgradeDb) {
         // try to upgrade DB schema
         System.out
             .format(Messages.getString("ServerInitDatabase.Upgrade.Start"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
         // TODO Split check for update and upgrade actions
         if (!upgradedb()) {
-          System.err.println(
+          SysErrLogger.FAKE_LOGGER.syserr(
               Messages.getString("ServerInitDatabase.SchemaNotUptodate"));
-          System.err.println();
+          SysErrLogger.FAKE_LOGGER.syserr();
           if (DetectionUtils.isJunit()) {
             return;
           }
-          System.exit(1);
+          System.exit(1);//NOSONAR
         }
         System.out
             .format(Messages.getString("ServerInitDatabase.Upgrade.Done"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (sdirconfig != null) {
         // load Rules
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadRule.Start"),
                     sdirconfig);
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
         final File dirConfig = new File(sdirconfig);
         if (dirConfig.isDirectory()) {
           if (!loadRules(dirConfig)) {
@@ -175,61 +178,61 @@ public class ServerInitDatabase {
             if (DetectionUtils.isJunit()) {
               return;
             }
-            System.exit(1);
+            System.exit(1);//NOSONAR
           }
         } else {
           System.err.format(
               Messages.getString("ServerInitDatabase.LoadRule.NoDirectory"),
               sdirconfig);
-          System.err.println();
+          SysErrLogger.FAKE_LOGGER.syserr();
           if (DetectionUtils.isJunit()) {
             return;
           }
-          System.exit(1);
+          System.exit(1);//NOSONAR
         }
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadRule.Done"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (shostauth != null) {
         // Load Host Authentications
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadAuth.Start"),
                     shostauth);
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
         if (!loadHostAuth(shostauth)) {
           System.err
               .format(Messages.getString("ServerInitDatabase.LoadAuth.Failed"));
-          System.err.println();
+          SysErrLogger.FAKE_LOGGER.syserr();
           if (DetectionUtils.isJunit()) {
             return;
           }
-          System.exit(1);
+          System.exit(1);//NOSONAR
         }
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadAuth.Done"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (slimitconfig != null) {
         // Load configuration
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadLimit.Start"),
                     slimitconfig);
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
         if (!FileBasedConfiguration
             .setConfigurationLoadLimitFromXml(Configuration.configuration,
                                               slimitconfig)) {
           System.err.format(
               Messages.getString("ServerInitDatabase.LoadLimit.Failed"));
-          System.err.println();
+          SysErrLogger.FAKE_LOGGER.syserr();
           if (DetectionUtils.isJunit()) {
             return;
           }
-          System.exit(1);
+          System.exit(1);//NOSONAR
         }
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadLimit.Done"));
-        System.out.println();
+        SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (sbusiness != null || salias != null || sroles != null) {
         if (sbusiness != null) {
@@ -244,40 +247,42 @@ public class ServerInitDatabase {
         DbHostConfiguration hostConfiguration;
         try {
           hostConfiguration =
-              new DbHostConfiguration(Configuration.configuration.getHOST_ID());
-          if (!salias.equals("")) {
+              new DbHostConfiguration(Configuration.configuration.getHostId());
+          if (!salias.isEmpty()) {
             hostConfiguration.setAliases(salias);
           }
-          if (!sbusiness.equals("")) {
+          if (!sbusiness.isEmpty()) {
             hostConfiguration.setBusiness(sbusiness);
           }
-          if (!sroles.equals("")) {
+          if (!sroles.isEmpty()) {
             hostConfiguration.setRoles(sroles);
           }
           hostConfiguration.update();
         } catch (final WaarpDatabaseException e) {
           hostConfiguration =
-              new DbHostConfiguration(Configuration.configuration.getHOST_ID(),
+              new DbHostConfiguration(Configuration.configuration.getHostId(),
                                       sbusiness, sroles, salias, "");
           hostConfiguration.insert();
         }
       }
-      System.out.println(Messages.getString("ServerInitDatabase.LoadDone"));
-      System.out.println();
+      SysErrLogger.FAKE_LOGGER
+          .sysout(Messages.getString("ServerInitDatabase.LoadDone"));
+      SysErrLogger.FAKE_LOGGER.sysout();
       if (DetectionUtils.isJunit()) {
         return;
       }
-      System.exit(0);
+      System.exit(0);//NOSONAR
     } catch (final WaarpDatabaseException e) {
-      System.err.println(Messages.getString("ServerInitDatabase.ErrDatabase"));
-      System.err.println();
+      SysErrLogger.FAKE_LOGGER
+          .syserr(Messages.getString("ServerInitDatabase.ErrDatabase"));
+      SysErrLogger.FAKE_LOGGER.syserr();
       if (DetectionUtils.isJunit()) {
         return;
       }
-      System.exit(3);
+      System.exit(3);//NOSONAR
     } finally {
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
     }
   }
@@ -292,7 +297,7 @@ public class ServerInitDatabase {
           res = value.replaceAll("\r|\n|  ", " ").trim();
         }
       } catch (final IOException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
       }
     }
     return res;
@@ -300,8 +305,7 @@ public class ServerInitDatabase {
 
   public static void initdb() throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
-    DbConstant.admin.getSession().getAdmin().getDbModel()
-                    .createTables(DbConstant.admin.getSession());
+    admin.getSession().getAdmin().getDbModel().createTables(admin.getSession());
   }
 
   /**
@@ -315,16 +319,14 @@ public class ServerInitDatabase {
     boolean uptodate = true;
     // Check if the database is up to date
     final String version = DbHostConfiguration
-        .getVersionDb(Configuration.configuration.getHOST_ID());
+        .getVersionDb(Configuration.configuration.getHostId());
     try {
       if (version != null) {
-        uptodate = DbConstant.admin.getSession().getAdmin().getDbModel()
-                                   .needUpgradeDb(DbConstant.admin.getSession(),
-                                                  version, true);
+        uptodate = admin.getSession().getAdmin().getDbModel()
+                        .needUpgradeDb(admin.getSession(), version, true);
       } else {
-        uptodate = DbConstant.admin.getSession().getAdmin().getDbModel()
-                                   .needUpgradeDb(DbConstant.admin.getSession(),
-                                                  "1.1.0", true);
+        uptodate = admin.getSession().getAdmin().getDbModel()
+                        .needUpgradeDb(admin.getSession(), "1.1.0", true);
       }
       if (uptodate) {
         logger.error(Messages.getString(
@@ -347,7 +349,7 @@ public class ServerInitDatabase {
     try {
       RuleFileBasedConfiguration.importRules(dirConfig);
     } catch (final OpenR66ProtocolSystemException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return false;
     }
     return true;

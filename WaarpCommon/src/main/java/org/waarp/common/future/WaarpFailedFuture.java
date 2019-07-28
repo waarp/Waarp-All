@@ -21,8 +21,6 @@ package org.waarp.common.future;
 
 /**
  * Future in failure
- *
- *
  */
 public class WaarpFailedFuture extends WaarpCompletedFuture {
 

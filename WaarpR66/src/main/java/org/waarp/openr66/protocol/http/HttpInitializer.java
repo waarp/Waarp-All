@@ -29,11 +29,9 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
  * Pipeline Factory for HTTP support
- *
- *
  */
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
-  private boolean useHttpCompression = false;
+  private final boolean useHttpCompression;
 
   public HttpInitializer(boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;

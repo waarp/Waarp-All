@@ -49,8 +49,6 @@ import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
  * Configuration Http REST interface: http://host/config?... +
  * ConfigExportJsonPacket or
  * ConfigImportJsonPacket as GET or PUT
- *
- *
  */
 public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
 
@@ -97,7 +95,7 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
         final boolean bbusiness = node.isBusiness();
         final boolean balias = node.isAlias();
         final boolean broles = node.isRoles();
-        final String sresult[] =
+        final String[] sresult =
             serverHandler.configExport(bhost, brule, bbusiness, balias, broles);
         // Now answer
         final ConfigExportResponseJsonPacket resp =
@@ -166,7 +164,8 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
                                                ACTIONS_TYPE.ExportConfig.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
     if (methods.contains(METHOD.PUT)) {
@@ -196,7 +195,8 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
                                ACTIONS_TYPE.ImportConfig.name(),
                                node4.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
 

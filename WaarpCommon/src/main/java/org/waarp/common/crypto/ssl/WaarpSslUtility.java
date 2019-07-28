@@ -42,7 +42,7 @@ import java.util.NoSuchElementException;
 /**
  * Utilities for SSL support
  */
-public class WaarpSslUtility {
+public final class WaarpSslUtility {
   /**
    * Internal Logger
    */
@@ -59,19 +59,24 @@ public class WaarpSslUtility {
    */
   private static final ChannelGroup sslChannelGroup =
       new DefaultChannelGroup("SslChannelGroup", SSL_EVENT_EXECUTOR);
+
   /**
    * Closing channel with SSL close at first step
    */
-  public static ChannelFutureListener SSLCLOSE = new ChannelFutureListener() {
+  public static final ChannelFutureListener SSLCLOSE =
+      new ChannelFutureListener() {
 
-    @Override
-    public void operationComplete(ChannelFuture future) throws Exception {
-      if (future.channel().isActive()) {
-        SSLTHREAD thread = new SSLTHREAD(future.channel());
-        thread.start();
-      }
-    }
-  };
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+          if (future.channel().isActive()) {
+            SSLTHREAD thread = new SSLTHREAD(future.channel());
+            thread.start();
+          }
+        }
+      };
+
+  private WaarpSslUtility() {
+  }
 
   /**
    * Add the Channel as SSL handshake will start soon
@@ -140,12 +145,11 @@ public class WaarpSslUtility {
         channel.close();
         return false;
       }
-      return true;
     } else {
       logger.info("SSL Not found but connected: {} {}",
                   handler.getClass().getName());
-      return true;
     }
+    return true;
   }
 
   /**
@@ -291,7 +295,7 @@ public class WaarpSslUtility {
         }
         return false;
       } catch (final NoSuchElementException e) {
-        // ignore;
+        // ignore
         if (channel.isActive()) {
           WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay);
         }

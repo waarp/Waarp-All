@@ -40,14 +40,14 @@ import io.netty.util.internal.logging.Slf4JLoggerFactory;
  * Creates an {@link WaarpLogger} or changes the default factory
  * implementation.
  * This factory allows you to
- * choose what logging framework VITAM should use. The default factory is
+ * choose what logging framework Waarp should use. The default factory is
  * {@link
  * WaarpSlf4JLoggerFactory}. If
  * SLF4J is not available, {@link WaarpSlf4JLoggerFactory} is used. If Log4J is
  * not available,
  * {@link WaarpJdkLoggerFactory} is used. You can change it to your preferred
  * logging framework before other
- * VITAM classes are loaded:
+ * Waarp classes are loaded:
  *
  * <pre>
  * {@link WaarpLoggerFactory}.setDefaultFactory(new {@link WaarpSlf4JLoggerFactory}());
@@ -67,12 +67,12 @@ public abstract class WaarpLoggerFactory {
     final String name = WaarpLoggerFactory.class.getName();
     WaarpLoggerFactory f;
     try {
-      f = new WaarpSlf4JLoggerFactory(true);
+      f = new WaarpSlf4JLoggerFactory(true);//NOSONAR
       f.newInstance(name)
        .debug("Using Logback (SLF4J) as the default logging framework");
       defaultFactory = f;
     } catch (final Throwable t1) {
-      f = new WaarpJdkLoggerFactory(null);
+      f = new WaarpJdkLoggerFactory(null);//NOSONAR
       f.newInstance(name)
        .debug("Using java.util.logging as the default logging framework", t1);
     }
@@ -177,7 +177,7 @@ public abstract class WaarpLoggerFactory {
   /**
    * @param level
    */
-  public WaarpLoggerFactory(final WaarpLogLevel level) {
+  protected WaarpLoggerFactory(final WaarpLogLevel level) {
     setInternalLogLevel(level);
     if (currentLevel == null) {
       setInternalLogLevel(getLevelSpecific());

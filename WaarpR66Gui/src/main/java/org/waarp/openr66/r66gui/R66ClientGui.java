@@ -20,6 +20,7 @@
 package org.waarp.openr66.r66gui;
 
 import com.swtdesigner.FocusTraversalOnArray;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -66,16 +67,14 @@ import java.io.PrintStream;
  * R66 Client GUI to show how to use the API and also to enable to test the
  * connectivity to R66 servers and
  * the validity of a transfer through a rule.
- *
- *
  */
 public class R66ClientGui {
   /**
    * Internal Logger
    */
-  private static WaarpLogger logger = null;
+  private static WaarpLogger logger;
 
-  static String[] static_args;
+  static String[] staticArgs;
   public static R66ClientGui window;
 
   public JFrame frmRClientGui;
@@ -83,8 +82,8 @@ public class R66ClientGui {
   private JTextField textFieldFile;
   private final R66Environment environnement = new R66Environment();
   private JEditorPane textFieldStatus;
-  private JComboBox comboBoxHosts;
-  private JComboBox comboBoxRules;
+  private JComboBox<String> comboBoxHosts;
+  private JComboBox<String> comboBoxRules;
   private JCheckBox checkBoxMD5;
   private JProgressBar progressBarTransfer;
   private JButton buttonTransferStart;
@@ -96,7 +95,7 @@ public class R66ClientGui {
   private JScrollPane scrollPane;
   private JScrollPane scrollPane_1;
   private JCheckBox checkBoxDebug;
-  protected boolean extended = false;
+  protected boolean extended;
 
   /**
    * Launch the application.
@@ -106,15 +105,15 @@ public class R66ClientGui {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
     }
-    static_args = args;
+    staticArgs = args;
     EventQueue.invokeLater(new Runnable() {
       @Override
       public void run() {
         try {
-          window = new R66ClientGui(static_args);
+          window = new R66ClientGui(staticArgs);
           window.frmRClientGui.setVisible(true);
         } catch (final Exception e) {
-          e.printStackTrace();
+          SysErrLogger.FAKE_LOGGER.syserr(e);
         }
       }
     });
@@ -161,12 +160,12 @@ public class R66ClientGui {
           frmRClientGui.dispose();
         } else {
           environnement.exit();
-          System.exit(0);
+          System.exit(0);//NOSONAR
         }
       }
     });
-    frmRClientGui.setTitle(
-        "R66 Client Gui: " + Configuration.configuration.getHOST_ID());
+    frmRClientGui
+        .setTitle("R66 Client Gui: " + Configuration.configuration.getHostId());
     frmRClientGui.setBounds(100, 100, 724, 546);
     if (extended) {
       frmRClientGui.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -189,7 +188,7 @@ public class R66ClientGui {
           frmRClientGui.dispose();
         } else {
           environnement.exit();
-          System.exit(0);
+          System.exit(0);//NOSONAR
         }
       }
     });
@@ -245,13 +244,13 @@ public class R66ClientGui {
     gbc_label.gridy = 0;
     frmRClientGui.getContentPane().add(label, gbc_label);
 
-    comboBoxHosts = new JComboBox(shosts);
+    comboBoxHosts = new JComboBox<String>(shosts);
     comboBoxHosts.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        environnement.GuiResultat =
+        environnement.guiResultat =
             R66Environment.getHost((String) comboBoxHosts.getSelectedItem());
-        setStatus(environnement.GuiResultat);
+        setStatus(environnement.guiResultat);
       }
     });
     label.setLabelFor(comboBoxHosts);
@@ -272,13 +271,13 @@ public class R66ClientGui {
     gbc_label_1.gridy = 1;
     frmRClientGui.getContentPane().add(label_1, gbc_label_1);
 
-    comboBoxRules = new JComboBox(srules);
+    comboBoxRules = new JComboBox<String>(srules);
     comboBoxRules.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        environnement.GuiResultat =
+        environnement.guiResultat =
             R66Environment.getRule((String) comboBoxRules.getSelectedItem());
-        setStatus(environnement.GuiResultat);
+        setStatus(environnement.guiResultat);
       }
     });
     label_1.setLabelFor(comboBoxRules);
@@ -471,7 +470,7 @@ public class R66ClientGui {
     static final int CHECKCONNECTION = 1;
     static final int STARTTRANSFER = 2;
     static final int FILESELECT = 3;
-    int method;
+    final int method;
 
     R66ClientGuiActions(int method) {
       this.method = method;
@@ -492,17 +491,17 @@ public class R66ClientGui {
           findFile();
           break;
         default:
-          environnement.GuiResultat =
+          environnement.guiResultat =
               Messages.getString("R66ClientGui.24"); //$NON-NLS-1$
       }
-      setStatus(environnement.GuiResultat);
+      setStatus(environnement.guiResultat);
       if (method != FILESELECT) {
         showDialog();
       } else {
         enableAllButtons();
       }
       stopRequest();
-      return environnement.GuiResultat;
+      return environnement.guiResultat;
     }
   }
 
@@ -512,16 +511,14 @@ public class R66ClientGui {
       dialog.dispose();
       dialog = null;
     }
-    if (dialog == null) {
-      dialog = new R66Dialog();
-      dialog.setLocationRelativeTo(frmRClientGui);
-      if (dialog.isAlwaysOnTopSupported()) {
-        dialog.setAlwaysOnTop(true);
-      } else {
-        dialog.toFront();
-      }
+    dialog = new R66Dialog();
+    dialog.setLocationRelativeTo(frmRClientGui);
+    if (dialog.isAlwaysOnTopSupported()) {
+      dialog.setAlwaysOnTop(true);
+    } else {
+      dialog.toFront();
     }
-    dialog.textPaneDialog.setText(environnement.GuiResultat);
+    dialog.textPaneDialog.setText(environnement.guiResultat);
     dialog.setVisible(true);
     dialog.requestFocus();
   }
@@ -552,13 +549,13 @@ public class R66ClientGui {
     if (environnement.hostId == null || environnement.hostId.trim().isEmpty()) {
       environnement.hostId =
           Messages.getString("R66ClientGui.26"); //$NON-NLS-1$
-      environnement.GuiResultat =
+      environnement.guiResultat =
           Messages.getString("R66ClientGui.27"); //$NON-NLS-1$
     } else {
       environnement.hostId = environnement.hostId.trim();
       environnement.checkConnection();
     }
-    setStatus(environnement.GuiResultat);
+    setStatus(environnement.guiResultat);
     showDialog();
     stopRequest();
   }
@@ -602,10 +599,10 @@ public class R66ClientGui {
       environnement.ruleId = environnement.ruleId.trim();
     }
     if (ok) {
-      logger.debug("start startTransfer: " + environnement.toString());
+      logger.debug("start startTransfer: " + environnement);
       environnement.startsTransfer(progressBarTransfer, textFieldStatus);
     } else {
-      environnement.GuiResultat =
+      environnement.guiResultat =
           Messages.getString("R66ClientGui.34") + //$NON-NLS-1$
           Messages.getString("R66ClientGui.35") + environnement.hostId +
           Messages.getString("R66ClientGui.36")
@@ -613,7 +610,7 @@ public class R66ClientGui {
           + environnement.ruleId + Messages.getString("R66ClientGui.37") +
           environnement.filePath; //$NON-NLS-1$
     }
-    setStatus(environnement.GuiResultat);
+    setStatus(environnement.guiResultat);
     showDialog();
   }
 
@@ -627,10 +624,11 @@ public class R66ClientGui {
         final File file = fc.getSelectedFile();
         try {
           textFieldFile.setText(file.getCanonicalPath());
-        } catch (final IOException e) {
+        } catch (final IOException ignored) {
+          // nothing
         }
         setFindFile();
-        environnement.GuiResultat =
+        environnement.guiResultat =
             Messages.getString("R66ClientGui.38"); //$NON-NLS-1$
       }
     } finally {
@@ -640,7 +638,7 @@ public class R66ClientGui {
   }
 
   private void setFindFile() {
-    String text = null;
+    String text;
     try {
       text = textFieldFile.getText();
     } catch (final NullPointerException e1) {
@@ -651,14 +649,14 @@ public class R66ClientGui {
       if (file.exists()) {
         text = file.toURI().toString();
       } else {
-        // text = "unknown file";
+        // nothing
       }
       textFieldFile.setText(text);
     }
   }
 
   public void disableAllButtons() {
-    // frmRClientGui.setEnabled(false);
+    // frmRClientGui.setEnabled(false)
     buttonCheckConnection.setEnabled(false);
     buttonFileFind.setEnabled(false);
     buttonTransferStart.setEnabled(false);
@@ -672,7 +670,7 @@ public class R66ClientGui {
   }
 
   public void enableAllButtons() {
-    // frmRClientGui.setEnabled(true);
+    // frmRClientGui.setEnabled(true)
     buttonCheckConnection.setEnabled(true);
     buttonFileFind.setEnabled(true);
     buttonTransferStart.setEnabled(true);
@@ -687,10 +685,9 @@ public class R66ClientGui {
   }
 
   public static class JTextAreaOutputStream extends OutputStream {
-    JTextArea ta;
+    final JTextArea ta;
 
     public JTextAreaOutputStream(JTextArea t) {
-      super();
       ta = t;
     }
 

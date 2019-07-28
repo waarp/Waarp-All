@@ -28,8 +28,6 @@ import org.waarp.ftp.core.file.FtpFile;
 
 /**
  * STOU command
- *
- *
  */
 public class STOU extends AbstractCommand {
   @Override

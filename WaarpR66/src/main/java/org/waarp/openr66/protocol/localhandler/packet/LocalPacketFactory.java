@@ -24,10 +24,8 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
 /**
  * Factory to create Packet according to type from a buffer
- *
- *
  */
-public class LocalPacketFactory {
+public final class LocalPacketFactory {
   public static final byte AUTHENTPACKET = 1;
 
   public static final byte STARTUPPACKET = 2;
@@ -77,6 +75,9 @@ public class LocalPacketFactory {
   public static final byte BLOCKREQUESTPACKET = 24;
 
   public static final byte JSONREQUESTPACKET = 25;
+
+  private LocalPacketFactory() {
+  }
 
   /**
    * This method create a Packet from the ByteBuf.
@@ -172,10 +173,8 @@ public class LocalPacketFactory {
       return -1;
     }
     final AbstractLocalPacket packet = (AbstractLocalPacket) o;
-    final int size =
-        packet.header.readableBytes() + packet.middle.readableBytes() +
-        packet.end.readableBytes();
-    return size;
+    return packet.header.readableBytes() + packet.middle.readableBytes() +
+           packet.end.readableBytes();
   }
 
 }

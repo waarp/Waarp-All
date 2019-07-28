@@ -18,30 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright 2009, Frederic Bregier, and individual contributors by the @author
- * tags. See the
- * COPYRIGHT.txt in the distribution for a full listing of individual
- * contributors.
- * <p>
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation; either
- * version 3.0 of the
- * License, or (at your option) any later version.
- * <p>
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this
- * software; if not, write to the Free Software Foundation, Inc., 51 Franklin
- * St, Fifth Floor,
- * Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.waarp.gateway.ftp.file;
 
 import org.waarp.common.command.NextCommandReply;
@@ -66,8 +42,6 @@ import java.io.File;
  * FtpAuth implementation based on a list of (user/password/account) stored in a
  * xml file load at startup from
  * configuration.
- *
- *
  */
 public class FileBasedAuth extends FilesystemBasedFtpAuth
     implements HttpAuthInterface {
@@ -123,7 +97,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
       throw new Reply530Exception("User name not allowed");
     }
     currentAuth = auth;
-    // logger.debug("User: {}", user);
+    // logger.debug("User: {}", user)
     return new NextCommandReply(FtpCommandCode.PASS,
                                 ReplyCode.REPLY_331_USER_NAME_OKAY_NEED_PASSWORD,
                                 null);
@@ -184,7 +158,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
       throw new Reply530Exception("ACCT needs a USER first");
     }
     if (currentAuth.isAccountValid(account)) {
-      // logger.debug("Account: {}", account);
+      // logger.debug("Account: {}", account)
       setIsIdentified(true);
       logger.info("User {} is authentified with account {}", user, account);
       return new NextCommandReply(FtpCommandCode.NOOP,
@@ -203,7 +177,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
 
   @Override
   protected String setBusinessRootFromAuth() throws Reply421Exception {
-    String path = null;
+    String path;
     if (account == null) {
       path = DirInterface.SEPARATOR + user;
     } else {
@@ -244,7 +218,8 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
                             (FtpSession) getSession()));
     try {
       setBusinessRootFromAuth();
-    } catch (final Reply421Exception e) {
+    } catch (final Reply421Exception ignored) {
+      // nothing
     }
     getSession().getDir().initAfterIdentification();
     currentAuth.setAdmin(true);

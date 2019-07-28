@@ -25,8 +25,6 @@ import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 
 /**
  * Constraint Limit (CPU and connection - network and local -) handler.
- *
- *
  */
 public class FtpConstraintLimitHandler extends WaarpConstraintLimitHandler {
 

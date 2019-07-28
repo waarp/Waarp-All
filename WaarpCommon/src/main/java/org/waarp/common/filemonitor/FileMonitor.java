@@ -34,6 +34,7 @@ import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpThreadFactory;
@@ -66,8 +67,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * for new, deleted and changed
  * files, in order to allow some functions like pooling a directory before
  * actions.
- *
- *
  */
 public class FileMonitor {
   /**
@@ -75,8 +74,8 @@ public class FileMonitor {
    */
   protected static volatile WaarpLogger logger;
   protected static final DigestAlgo defaultDigestAlgo = DigestAlgo.MD5;
-  protected static final long minimalDelay = 100;
-  protected static final long defaultDelay = 1000;
+  protected static final long MINIMAL_DELAY = 100;
+  protected static final long DEFAULT_DELAY = 1000;
 
   protected WaarpFuture future;
   protected WaarpFuture internalfuture;
@@ -86,19 +85,19 @@ public class FileMonitor {
   protected final File stopFile;
   protected final List<File> directories = new ArrayList<File>();
   protected final DigestAlgo digest;
-  protected long elapseTime = defaultDelay; // default to 1s
+  protected long elapseTime = DEFAULT_DELAY; // default to 1s
   protected long elapseWaarpTime = -1; // default set to run after each run
   protected Timer timer;
   protected Timer timerWaarp;
   // used only if elapseWaarpTime > defaultDelay (1s)
-  protected boolean scanSubDir;
+  protected final boolean scanSubDir;
 
   protected boolean initialized;
   protected File checkFile;
 
   protected final ConcurrentHashMap<String, FileItem> fileItems =
       new ConcurrentHashMap<String, FileItem>();
-  protected ConcurrentHashMap<String, FileItem> lastFileItems =
+  protected final ConcurrentHashMap<String, FileItem> lastFileItems =
       new ConcurrentHashMap<String, FileItem>();
 
   protected FileFilter filter = new FileFilter() {
@@ -107,22 +106,22 @@ public class FileMonitor {
       return pathname.isFile();
     }
   };
-  protected FileMonitorCommandRunnableFuture commandValidFile;
+  protected final FileMonitorCommandRunnableFuture commandValidFile;
   protected FileMonitorCommandFactory commandValidFileFactory;
   protected ExecutorService executor;
   protected int fixedThreadPool;
-  protected FileMonitorCommandRunnableFuture commandRemovedFile;
+  protected final FileMonitorCommandRunnableFuture commandRemovedFile;
   protected FileMonitorCommandRunnableFuture commandCheckIteration;
 
-  protected ConcurrentLinkedQueue<FileItem> toUse =
+  protected final ConcurrentLinkedQueue<FileItem> toUse =
       new ConcurrentLinkedQueue<FileItem>();
   protected final ConcurrentLinkedQueue<Future<?>> results =
       new ConcurrentLinkedQueue<Future<?>>();
 
-  protected AtomicLong globalok = new AtomicLong(0);
-  protected AtomicLong globalerror = new AtomicLong(0);
-  protected AtomicLong todayok = new AtomicLong(0);
-  protected AtomicLong todayerror = new AtomicLong(0);
+  protected final AtomicLong globalok = new AtomicLong(0);
+  protected final AtomicLong globalerror = new AtomicLong(0);
+  protected final AtomicLong todayok = new AtomicLong(0);
+  protected final AtomicLong todayerror = new AtomicLong(0);
   protected Date nextDay;
 
   /**
@@ -171,7 +170,7 @@ public class FileMonitor {
     } else {
       this.digest = digest;
     }
-    if (elapseTime >= minimalDelay) {
+    if (elapseTime >= MINIMAL_DELAY) {
       this.elapseTime = (elapseTime / 10) * 10;
     }
     if (filter != null) {
@@ -236,7 +235,7 @@ public class FileMonitor {
    * @param elapseWaarpTime the elapseWaarpTime to set
    */
   public void setElapseWaarpTime(long elapseWaarpTime) {
-    if (elapseWaarpTime >= defaultDelay) {
+    if (elapseWaarpTime >= DEFAULT_DELAY) {
       this.elapseWaarpTime = (elapseWaarpTime / 10) * 10;
     }
   }
@@ -275,10 +274,11 @@ public class FileMonitor {
       final long time = elapseTime * 10;
       logger.warn(
           "Waiting to check if another Monitor is running with the same configuration: " +
-          time / 1000 + "s");
+          time / 1000 + 's');
       try {
         Thread.sleep(time);
       } catch (final InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       return checkFile.exists();
     }
@@ -288,7 +288,8 @@ public class FileMonitor {
   private void createChkFile() {
     try {
       checkFile.createNewFile();
-    } catch (final IOException e) {
+    } catch (final IOException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 
@@ -318,9 +319,12 @@ public class FileMonitor {
                      });
       fileItems.putAll(newHashMap);
       initialized = true;
-    } catch (final JsonParseException e) {
-    } catch (final JsonMappingException e) {
-    } catch (final IOException e) {
+    } catch (final JsonParseException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    } catch (final JsonMappingException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    } catch (final IOException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 
@@ -338,9 +342,12 @@ public class FileMonitor {
     try {
       JsonHandler.mapper.writeValue(statusFile, fileItems);
       createChkFile();
-    } catch (final JsonGenerationException e) {
-    } catch (final JsonMappingException e) {
-    } catch (final IOException e) {
+    } catch (final JsonGenerationException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    } catch (final JsonMappingException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    } catch (final IOException ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 
@@ -371,8 +378,8 @@ public class FileMonitor {
     final ConcurrentHashMap<String, FileItem> newFileItems =
         new ConcurrentHashMap<String, FileItem>();
     if (!lastFileItems.isEmpty()) {
-      removedFileItems = ((Map) lastFileItems).keySet();
-      removedFileItems.removeAll(((Map) fileItems).keySet());
+      removedFileItems = ((Map<String, FileItem>) lastFileItems).keySet();
+      removedFileItems.removeAll(((Map<String, FileItem>) fileItems).keySet());
       for (final Entry<String, FileItem> key : fileItems.entrySet()) {
         if (!key.getValue().isStrictlySame(lastFileItems.get(key.getKey()))) {
           newFileItems.put(key.getKey(), key.getValue());
@@ -443,7 +450,7 @@ public class FileMonitor {
       timer.newTimeout(new FileMonitorTimerTask(this), elapseTime,
                        TimeUnit.MILLISECONDS);
     } // else already started
-    if (elapseWaarpTime >= defaultDelay && timerWaarp == null &&
+    if (elapseWaarpTime >= DEFAULT_DELAY && timerWaarp == null &&
         commandCheckIteration != null) {
       timerWaarp = new HashedWheelTimer(
           new WaarpThreadFactory("TimerFileMonitorWaarp_" + name), 100,
@@ -461,8 +468,7 @@ public class FileMonitor {
       timerWaarp.stop();
     }
     if (internalfuture != null) {
-      internalfuture
-          .awaitOrInterruptible(elapseTime * 2);
+      internalfuture.awaitOrInterruptible(elapseTime * 2);
       internalfuture.setSuccess();
     }
     if (timer != null) {
@@ -541,13 +547,13 @@ public class FileMonitor {
     setThreadName();
     boolean error = false;
     // Wait for all commands to finish before continuing
-    for (final Future<?> future : results) {
+    for (final Future<?> futureResult : results) {
       createChkFile();
       try {
-        future.get();
+        futureResult.get();
       } catch (final InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.info("Interruption so exit");
-        // e.printStackTrace();
         error = true;
       } catch (final ExecutionException e) {
         logger.error("Exception during execution", e);
@@ -561,7 +567,7 @@ public class FileMonitor {
     results.clear();
     if (error) {
       // do not save ?
-      // this.saveStatus();
+      // this.saveStatus()
       return false;
     }
     // now check that all existing items are still valid
@@ -574,16 +580,15 @@ public class FileMonitor {
     }
     // remove invalid files
     for (FileItem fileItem : todel) {
-      final String name =
+      final String newName =
           AbstractDir.normalizePath(fileItem.file.getAbsolutePath());
-      fileItems.remove(name);
+      fileItems.remove(newName);
       toUse.remove(fileItem);
       if (commandRemovedFile != null) {
         commandRemovedFile.run(fileItem);
       }
       fileItem.file = null;
       fileItem.hash = null;
-      fileItem = null;
       fileItemsChanged = true;
     }
     if (fileItemsChanged) {
@@ -618,11 +623,12 @@ public class FileMonitor {
         if (file.isDirectory()) {
           continue;
         }
-        final String name = AbstractDir.normalizePath(file.getAbsolutePath());
-        final FileItem fileItem = fileItems.get(name);
+        final String newName =
+            AbstractDir.normalizePath(file.getAbsolutePath());
+        final FileItem fileItem = fileItems.get(newName);
         if (fileItem == null) {
           // never seen until now
-          fileItems.put(name, new FileItem(file));
+          fileItems.put(newName, new FileItem(file));
           fileItemsChanged = true;
           continue;
         }
@@ -698,8 +704,6 @@ public class FileMonitor {
 
   /**
    * Timer task
-   *
-   *
    */
   protected static class FileMonitorTimerTask implements TimerTask {
     protected final FileMonitor fileMonitor;
@@ -747,8 +751,6 @@ public class FileMonitor {
   /**
    * Class to run Waarp Business information in fixed delay rather than after
    * each check
-   *
-   *
    */
   protected class FileMonitorTimerInformationTask implements TimerTask {
     protected final FileMonitorCommandRunnableFuture informationMonitorCommand;
@@ -799,8 +801,6 @@ public class FileMonitor {
 
   /**
    * Used by Waarp Business information
-   *
-   *
    */
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
   public static class FileMonitorInformation {
@@ -847,8 +847,6 @@ public class FileMonitor {
 
   /**
    * One element in the directory
-   *
-   *
    */
   public static class FileItem implements Cloneable {
     public File file;
@@ -877,8 +875,7 @@ public class FileMonitor {
     @Override
     public boolean equals(Object obj) {
       // equality is based on file itself
-      return obj != null && obj instanceof FileItem &&
-             file.equals(((FileItem) obj).file);
+      return obj instanceof FileItem && file.equals(((FileItem) obj).file);
     }
 
     /**
@@ -896,7 +893,7 @@ public class FileMonitor {
     }
 
     @Override
-    public FileItem clone() {
+    public FileItem clone() { //NOSONAR
       final FileItem clone = new FileItem(file);
       clone.hash = hash;
       clone.lastTime = lastTime;
@@ -909,31 +906,32 @@ public class FileMonitor {
 
   public static void main(String[] args) {
     if (args.length < 3) {
-      System.err
-          .println("Need a statusfile, a stopfile and a directory to test");
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Need a statusfile, a stopfile and a directory to test");
       return;
     }
     final File file = new File(args[0]);
     if (file.exists() && !file.isFile()) {
-      System.err.println("Not a correct status file");
+      SysErrLogger.FAKE_LOGGER.syserr("Not a correct status file");
       return;
     }
     final File stopfile = new File(args[1]);
     if (file.exists() && !file.isFile()) {
-      System.err.println("Not a correct stop file");
+      SysErrLogger.FAKE_LOGGER.syserr("Not a correct stop file");
       return;
     }
     final File dir = new File(args[2]);
     if (!dir.isDirectory()) {
-      System.err.println("Not a directory");
+      SysErrLogger.FAKE_LOGGER.syserr("Not a directory");
       return;
     }
     final FileMonitorCommandRunnableFuture filemonitor =
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem file) {
-            System.out.println("File New: " + file.file.getAbsolutePath());
-            finalize(true, 0);
+            SysErrLogger.FAKE_LOGGER
+                .syserr("File New: " + file.file.getAbsolutePath());
+            finalizeValidFile(true, 0);
           }
         };
     final FileMonitor monitor =
@@ -943,12 +941,13 @@ public class FileMonitor {
                         filemonitor, new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem file) {
-            System.err.println("File Del: " + file.file.getAbsolutePath());
+            SysErrLogger.FAKE_LOGGER
+                .syserr("File Del: " + file.file.getAbsolutePath());
           }
         }, new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem unused) {
-            System.err.println("Check done");
+            SysErrLogger.FAKE_LOGGER.syserr("Check done");
           }
         });
     filemonitor.setMonitor(monitor);

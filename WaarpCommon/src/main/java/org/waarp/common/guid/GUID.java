@@ -26,8 +26,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.BaseXx;
 import org.waarp.common.utility.SingletonUtils;
 
@@ -39,8 +37,6 @@ public class GUID implements Comparable<GUID> {
    * ARK header
    */
   public static final String ARK = "ark:/";
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(GUID.class);
 
   private static final String ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID =
       "Attempted to parse malformed ARK GUID: ";
@@ -83,7 +79,7 @@ public class GUID implements Comparable<GUID> {
    * real GUID
    */
   @JsonIgnore
-  final byte[] guid;
+  private final byte[] bguid;
 
   /**
    * @return the KeySize
@@ -99,7 +95,7 @@ public class GUID implements Comparable<GUID> {
    * @param size size of the byte representation
    */
   GUID(int size) {
-    guid = new byte[size];
+    bguid = new byte[size];
   }
 
   /**
@@ -154,7 +150,7 @@ public class GUID implements Comparable<GUID> {
           "Attempted to parse malformed GUID: (" + bytes.length + ") " +
           Arrays.toString(bytes));
     }
-    System.arraycopy(bytes, 0, guid, 0, size);
+    System.arraycopy(bytes, 0, bguid, 0, size);
     return this;
   }
 
@@ -199,7 +195,7 @@ public class GUID implements Comparable<GUID> {
       count = ++counter;
       if (count > 0xFFFFFF) {
         try {
-          FORSYNC.wait(1);
+          FORSYNC.wait(1);//NOSONAR
         } catch (final InterruptedException e) {
           // ignore
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
@@ -211,58 +207,58 @@ public class GUID implements Comparable<GUID> {
       time = tmptime;
     }
     // 1 bytes = Version (8)
-    guid[HEADER_POS] = (byte) VERSION;
+    bguid[HEADER_POS] = (byte) VERSION;
 
     // 4 bytes - 2 bits = Domain (30)
     int value = tenantId;
-    guid[TENANT_POS + 3] = (byte) (value & 0xFF);
+    bguid[TENANT_POS + 3] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[TENANT_POS + 2] = (byte) (value & 0xFF);
+    bguid[TENANT_POS + 2] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[TENANT_POS + 1] = (byte) (value & 0xFF);
+    bguid[TENANT_POS + 1] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[TENANT_POS] = (byte) (value & 0x3F);
+    bguid[TENANT_POS] = (byte) (value & 0x3F);
 
     // 4 bytes = -1 bit Platform (31)
     value = platformId;
-    guid[PLATFORM_POS + 3] = (byte) (value & 0xFF);
+    bguid[PLATFORM_POS + 3] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[PLATFORM_POS + 2] = (byte) (value & 0xFF);
+    bguid[PLATFORM_POS + 2] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[PLATFORM_POS + 1] = (byte) (value & 0xFF);
+    bguid[PLATFORM_POS + 1] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[PLATFORM_POS] = (byte) (value & 0x7F);
+    bguid[PLATFORM_POS] = (byte) (value & 0x7F);
 
     // 3 bytes = -2 bits JVMPID (22)
     value = JvmProcessId.JVMPID;
-    guid[PID_POS + 2] = (byte) (value & 0xFF);
+    bguid[PID_POS + 2] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[PID_POS + 1] = (byte) (value & 0xFF);
+    bguid[PID_POS + 1] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[PID_POS] = (byte) (value & 0xFF);
+    bguid[PID_POS] = (byte) (value & 0xFF);
 
     // 6 bytes = timestamp (so up to 8 925 years after Time 0 so year 10
     // 895)
     long lvalue = time;
-    guid[TIME_POS + 5] = (byte) (lvalue & 0xFF);
+    bguid[TIME_POS + 5] = (byte) (lvalue & 0xFF);
     lvalue >>>= BYTE_SIZE;
-    guid[TIME_POS + 4] = (byte) (lvalue & 0xFF);
+    bguid[TIME_POS + 4] = (byte) (lvalue & 0xFF);
     lvalue >>>= BYTE_SIZE;
-    guid[TIME_POS + 3] = (byte) (lvalue & 0xFF);
+    bguid[TIME_POS + 3] = (byte) (lvalue & 0xFF);
     lvalue >>>= BYTE_SIZE;
-    guid[TIME_POS + 2] = (byte) (lvalue & 0xFF);
+    bguid[TIME_POS + 2] = (byte) (lvalue & 0xFF);
     lvalue >>>= BYTE_SIZE;
-    guid[TIME_POS + 1] = (byte) (lvalue & 0xFF);
+    bguid[TIME_POS + 1] = (byte) (lvalue & 0xFF);
     lvalue >>>= BYTE_SIZE;
-    guid[TIME_POS] = (byte) (lvalue & 0xFF);
+    bguid[TIME_POS] = (byte) (lvalue & 0xFF);
 
     // 3 bytes = counter against collision
     value = count;
-    guid[COUNTER_POS + 2] = (byte) (value & 0xFF);
+    bguid[COUNTER_POS + 2] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[COUNTER_POS + 1] = (byte) (value & 0xFF);
+    bguid[COUNTER_POS + 1] = (byte) (value & 0xFF);
     value >>>= BYTE_SIZE;
-    guid[COUNTER_POS] = (byte) (value & 0xFF);
+    bguid[COUNTER_POS] = (byte) (value & 0xFF);
 
   }
 
@@ -271,7 +267,7 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public String toBase32() {
-    return BaseXx.getBase32(guid);
+    return BaseXx.getBase32(bguid);
   }
 
   /**
@@ -279,7 +275,7 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public String toBase64() {
-    return BaseXx.getBase64UrlWithoutPadding(guid);
+    return BaseXx.getBase64UrlWithoutPadding(bguid);
   }
 
   /**
@@ -287,7 +283,7 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public String toHex() {
-    return BaseXx.getBase16(guid);
+    return BaseXx.getBase16(bguid);
   }
 
   /**
@@ -344,17 +340,17 @@ public class GUID implements Comparable<GUID> {
         throw new InvalidArgumentException(
             ATTEMPTED_TO_PARSE_MALFORMED_ARK_GUID + id);
       }
-      System.arraycopy(base32, 0, guid, HEADER_POS, HEADER_SIZE);
+      System.arraycopy(base32, 0, bguid, HEADER_POS, HEADER_SIZE);
       // GUID Domain default to 0 (from 0 to 2^30-1)
-      guid[TENANT_POS + 3] = (byte) (tenantId & 0xFF);
+      bguid[TENANT_POS + 3] = (byte) (tenantId & 0xFF);
       tenantId >>>= BYTE_SIZE;
-      guid[TENANT_POS + 2] = (byte) (tenantId & 0xFF);
+      bguid[TENANT_POS + 2] = (byte) (tenantId & 0xFF);
       tenantId >>>= BYTE_SIZE;
-      guid[TENANT_POS + 1] = (byte) (tenantId & 0xFF);
+      bguid[TENANT_POS + 1] = (byte) (tenantId & 0xFF);
       tenantId >>>= BYTE_SIZE;
-      guid[TENANT_POS] = (byte) (tenantId & 0x3F);
+      bguid[TENANT_POS] = (byte) (tenantId & 0x3F);
       // BASE32
-      System.arraycopy(base32, HEADER_SIZE, guid, PLATFORM_POS,
+      System.arraycopy(base32, HEADER_SIZE, bguid, PLATFORM_POS,
                        PLATFORM_SIZE + PID_SIZE + TIME_SIZE + COUNTER_SIZE);
       return this;
     }
@@ -362,15 +358,14 @@ public class GUID implements Comparable<GUID> {
     try {
       if (len == KEYB16SIZE) {
         // HEXA BASE16
-        System.arraycopy(BaseXx.getFromBase16(idsource), 0, guid, 0, KEYSIZE);
+        System.arraycopy(BaseXx.getFromBase16(idsource), 0, bguid, 0, KEYSIZE);
       } else if (len == KEYB32SIZE) {
         // BASE32
-        System.arraycopy(BaseXx.getFromBase32(idsource), 0, guid, 0, KEYSIZE);
+        System.arraycopy(BaseXx.getFromBase32(idsource), 0, bguid, 0, KEYSIZE);
       } else if (len == KEYB64SIZE) {
         // BASE64
-        System
-            .arraycopy(BaseXx.getFromBase64UrlWithoutPadding(idsource), 0, guid,
-                       0, KEYSIZE);
+        System.arraycopy(BaseXx.getFromBase64UrlWithoutPadding(idsource), 0,
+                         bguid, 0, KEYSIZE);
       } else {
         throw new InvalidArgumentException(
             "Attempted to parse malformed GUID: (" + len + ") " + id);
@@ -389,7 +384,7 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public final int getVersion() {
-    return guid[HEADER_POS] & 0xFF;
+    return bguid[HEADER_POS] & 0xFF;
   }
 
   /**
@@ -397,10 +392,10 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public final int getTenantId() {
-    return (guid[TENANT_POS] & 0x3F) << BYTE_SIZE * 3 |
-           (guid[TENANT_POS + 1] & 0xFF) << BYTE_SIZE * 2 |
-           (guid[TENANT_POS + 2] & 0xFF) << BYTE_SIZE |
-           guid[TENANT_POS + 3] & 0xFF;
+    return (bguid[TENANT_POS] & 0x3F) << BYTE_SIZE * 3 |
+           (bguid[TENANT_POS + 1] & 0xFF) << BYTE_SIZE * 2 |
+           (bguid[TENANT_POS + 2] & 0xFF) << BYTE_SIZE |
+           bguid[TENANT_POS + 3] & 0xFF;
   }
 
   /**
@@ -410,10 +405,10 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public final int getPlatformId() {
-    return (guid[PLATFORM_POS] & 0x7F) << BYTE_SIZE * 3 |
-           (guid[PLATFORM_POS + 1] & 0xFF) << BYTE_SIZE * 2 |
-           (guid[PLATFORM_POS + 2] & 0xFF) << BYTE_SIZE |
-           guid[PLATFORM_POS + 3] & 0xFF;
+    return (bguid[PLATFORM_POS] & 0x7F) << BYTE_SIZE * 3 |
+           (bguid[PLATFORM_POS + 1] & 0xFF) << BYTE_SIZE * 2 |
+           (bguid[PLATFORM_POS + 2] & 0xFF) << BYTE_SIZE |
+           bguid[PLATFORM_POS + 3] & 0xFF;
   }
 
   /**
@@ -429,10 +424,10 @@ public class GUID implements Comparable<GUID> {
     final byte[] x = new byte[6];
     x[0] = 0;
     x[1] = 0;
-    x[2] = (byte) (guid[PLATFORM_POS] & 0x7F);
-    x[3] = guid[PLATFORM_POS + 1];
-    x[4] = guid[PLATFORM_POS + 2];
-    x[5] = guid[PLATFORM_POS + 3];
+    x[2] = (byte) (bguid[PLATFORM_POS] & 0x7F);
+    x[3] = bguid[PLATFORM_POS + 1];
+    x[4] = bguid[PLATFORM_POS + 2];
+    x[5] = bguid[PLATFORM_POS + 3];
     return x;
   }
 
@@ -447,8 +442,8 @@ public class GUID implements Comparable<GUID> {
     if (getVersion() != VERSION) {
       return -1;
     }
-    return (guid[PID_POS] & 0xFF) << BYTE_SIZE * 2 |
-           (guid[PID_POS + 1] & 0xFF) << BYTE_SIZE | guid[PID_POS + 2] & 0xFF;
+    return (bguid[PID_POS] & 0xFF) << BYTE_SIZE * 2 |
+           (bguid[PID_POS + 1] & 0xFF) << BYTE_SIZE | bguid[PID_POS + 2] & 0xFF;
   }
 
   /**
@@ -465,7 +460,7 @@ public class GUID implements Comparable<GUID> {
     long time = 0;
     for (int i = 0; i < TIME_SIZE; i++) {
       time <<= BYTE_SIZE;
-      time |= guid[TIME_POS + i] & 0xFF;
+      time |= bguid[TIME_POS + i] & 0xFF;
     }
     return time;
   }
@@ -475,9 +470,9 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public final int getCounter() {
-    return (guid[COUNTER_POS] & 0xFF) << BYTE_SIZE * 2 |
-           (guid[COUNTER_POS + 1] & 0xFF) << BYTE_SIZE |
-           guid[COUNTER_POS + 2] & 0xFF;
+    return (bguid[COUNTER_POS] & 0xFF) << BYTE_SIZE * 2 |
+           (bguid[COUNTER_POS + 1] & 0xFF) << BYTE_SIZE |
+           bguid[COUNTER_POS + 2] & 0xFF;
   }
 
   /**
@@ -485,8 +480,8 @@ public class GUID implements Comparable<GUID> {
    */
   public final String toArkName() {
     final byte[] temp = new byte[KEYSIZE - TENANT_SIZE];
-    System.arraycopy(guid, HEADER_POS, temp, 0, HEADER_SIZE);
-    System.arraycopy(guid, PLATFORM_POS, temp, HEADER_SIZE,
+    System.arraycopy(bguid, HEADER_POS, temp, 0, HEADER_SIZE);
+    System.arraycopy(bguid, PLATFORM_POS, temp, HEADER_SIZE,
                      PLATFORM_SIZE + PID_SIZE + TIME_SIZE + COUNTER_SIZE);
     return BaseXx.getBase32(temp);
   }
@@ -504,38 +499,38 @@ public class GUID implements Comparable<GUID> {
    */
   @JsonIgnore
   public byte[] getBytes() {
-    return Arrays.copyOf(guid, guid.length);
+    return Arrays.copyOf(bguid, bguid.length);
   }
 
   @Override
   @JsonIgnore
   public int hashCode() {
-    return Arrays.hashCode(guid);
+    return Arrays.hashCode(bguid);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof GUID)) {
+    if (!(o instanceof GUID)) {
       return false;
     }
-    return this == o || Arrays.equals(guid, ((GUID) o).guid);
+    return this == o || Arrays.equals(bguid, ((GUID) o).bguid);
   }
 
   @Override
-  public int compareTo(final GUID arg1) {
+  public int compareTo(final GUID guid) {
     int id = getTenantId();
-    int id2 = arg1.getTenantId();
+    int id2 = guid.getTenantId();
     if (id != id2) {
       return id < id2? -1 : 1;
     }
     final long ts = getTimestamp();
-    final long ts2 = arg1.getTimestamp();
+    final long ts2 = guid.getTimestamp();
     if (ts == ts2) {
       final int ct = getCounter();
-      final int ct2 = arg1.getCounter();
+      final int ct2 = guid.getCounter();
       if (ct == ct2) {
         // then all must be equals, else whatever
-        return Arrays.equals(guid, arg1.getBytes())? 0 : -1;
+        return Arrays.equals(this.bguid, guid.getBytes())? 0 : -1;
       }
       // Cannot be equal
       return ct < ct2? -1 : 1;

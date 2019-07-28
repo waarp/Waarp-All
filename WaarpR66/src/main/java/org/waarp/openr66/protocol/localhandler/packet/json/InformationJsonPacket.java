@@ -23,8 +23,6 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Information (on request or on filesystem) JSON packet
- *
- *
  */
 public class InformationJsonPacket extends JsonPacket {
 
@@ -163,6 +161,6 @@ public class InformationJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.INFORMATIONPACKET);
+    setRequestUserPacket(LocalPacketFactory.INFORMATIONPACKET);
   }
 }

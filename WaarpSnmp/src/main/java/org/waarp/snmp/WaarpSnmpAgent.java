@@ -50,6 +50,7 @@ import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.TransportMappings;
 import org.snmp4j.util.ThreadPool;
 import org.snmp4j.util.WorkerPool;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.snmp.SnmpConfiguration.TargetElement;
@@ -64,37 +65,35 @@ import java.util.List;
 /**
  * This Agent contains some functionalities for running a version 2c and 3 of
  * SNMP agent.
- *
- *
  */
 public class WaarpSnmpAgent extends BaseAgent {
   /**
    * Internal Logger
    */
-  private static WaarpLogger logger =
+  private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpSnmpAgent.class);
 
-  private String[] address = new String[] { SnmpConfiguration.DEFAULTADDRESS };
+  private String[] address = { SnmpConfiguration.DEFAULTADDRESS };
 
   private int nbThread = 4;
 
-  private boolean isFilterAccessEnabled = false;
+  private final boolean isFilterAccessEnabled;
 
   private boolean useTrap = true;
 
-  private int trapLevel = 0;
+  private int trapLevel;
 
   private final List<UsmUser> listUsmUser;
 
   private final List<TargetElement> listTargetElements;
 
-  private boolean hasV2 = false;
+  private final boolean hasV2;
 
-  private boolean hasV3 = false;
+  private final boolean hasV3;
 
   private final long systemTimeStart = System.currentTimeMillis();
 
-  private WorkerPool workerPool = null;
+  private final WorkerPool workerPool;
   /**
    * The associated monitor with this Agent
    */
@@ -144,7 +143,7 @@ public class WaarpSnmpAgent extends BaseAgent {
     hasV2 = SnmpConfiguration.hasV2;
     hasV3 = SnmpConfiguration.hasV3;
 
-    logger.debug("SNMP Configuration loaded: " + address[0] + ":" + nbThread);
+    logger.debug("SNMP Configuration loaded: " + address[0] + ':' + nbThread);
     workerPool = ThreadPool.create("SnmpRequestPool", nbThread);
     agent.setWorkerPool(workerPool);
     setMonitor(monitor);
@@ -221,31 +220,6 @@ public class WaarpSnmpAgent extends BaseAgent {
       logger.debug("User: " + userlist);
       usm.addUser(userlist.getSecurityName(), usm.getLocalEngineID(), userlist);
     }
-    /*
-     * Example user = new UsmUser(new OctetString("TEST"), AuthSHA.ID, new OctetString("maplesyrup"), PrivDES.ID,
-     * new OctetString("maplesyrup")); usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user); user =
-     * new UsmUser(new OctetString("SHA"), AuthSHA.ID, new OctetString("SHAAuthPassword"), null, null);
-     * usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user); user = new UsmUser(new
-     * OctetString("SHADES"), AuthSHA.ID, new OctetString("SHADESAuthPassword"), PrivDES.ID, new
-     * OctetString("SHADESPrivPassword")); usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user); user
-     * = new UsmUser(new OctetString("MD5DES"), AuthMD5.ID, new OctetString("MD5DESAuthPassword"), PrivDES.ID, new
-     * OctetString("MD5DESPrivPassword")); usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user); user
-     * = new UsmUser(new OctetString("SHAAES128"), AuthSHA.ID, new OctetString("SHAAES128AuthPassword"),
-     * PrivAES128.ID, new OctetString("SHAAES128PrivPassword")); usm.addUser(user.getSecurityName(),
-     * usm.getLocalEngineID(), user); user = new UsmUser(new OctetString("SHAAES192"), AuthSHA.ID, new
-     * OctetString("SHAAES192AuthPassword"), PrivAES192.ID, new OctetString("SHAAES192PrivPassword"));
-     * usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user); user = new UsmUser(new
-     * OctetString("SHAAES256"), AuthSHA.ID, new OctetString("SHAAES256AuthPassword"), PrivAES256.ID, new
-     * OctetString("SHAAES256PrivPassword")); usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user);
-     *
-     * user = new UsmUser(new OctetString("MD5AES128"), AuthMD5.ID, new OctetString("MD5AES128AuthPassword"),
-     * PrivAES128.ID, new OctetString("MD5AES128PrivPassword")); usm.addUser(user.getSecurityName(),
-     * usm.getLocalEngineID(), user); user = new UsmUser(new OctetString("MD5AES192"), AuthMD5.ID, new
-     * OctetString("MD5AES192AuthPassword"), PrivAES192.ID, new OctetString("MD5AES192PrivPassword"));
-     * usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user); user = new UsmUser(new
-     * OctetString("MD5AES256"), AuthMD5.ID, new OctetString("MD5AES256AuthPassword"), PrivAES256.ID, new
-     * OctetString("MD5AES256PrivPassword")); usm.addUser(user.getSecurityName(), usm.getLocalEngineID(), user);
-     */
     final UsmUser usernotify =
         new UsmUser(new OctetString(SnmpConfiguration.V3NOTIFY), null, null,
                     null, null);
@@ -383,7 +357,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    */
   @Override
   protected void addCommunities(SnmpCommunityMIB communityMIB) {
-    final Variable[] com2sec = new Variable[] {
+    final Variable[] com2sec = {
         new OctetString("public"), // community name
         new OctetString("cpublic"), // security name
         getAgent().getContextEngineID(), // local engine ID
@@ -413,7 +387,7 @@ public class WaarpSnmpAgent extends BaseAgent {
       if (addr != null) {
         logger.info("SNMP Agent InitTransport: {} {}",
                     addr.getClass().getSimpleName(), addr);
-        TransportMapping<?> tm = null;
+        TransportMapping<?> tm;
         try {
           tm = TransportMappings.getInstance().createTransportMapping(addr);
         } catch (final RuntimeException e) {
@@ -426,12 +400,8 @@ public class WaarpSnmpAgent extends BaseAgent {
       }
     }
     if (nb > 0) {
-      transportMappings = new TransportMapping[nb];
+      transportMappings = new TransportMapping<?>[nb];
       System.arraycopy(testMappings, 0, transportMappings, 0, nb);
-      /*
-       * for (int i = 0; i < nb; i ++) { transportMappings[i] = testMappings[i]; }
-       */
-      testMappings = null;
     } else {
       transportMappings = null;
       throw new IOException("No address to connect");
@@ -453,9 +423,6 @@ public class WaarpSnmpAgent extends BaseAgent {
       logger.warn("Error while SNMP starts ", e);
       throw e;
     }
-    // This method reads some old config from a file and causes
-    // unexpected behavior.
-    // loadConfig(ImportModes.REPLACE_CREATE);
     addShutdownHook();
     getServer().addContext(new OctetString("public"));
     finishInit();
@@ -515,6 +482,7 @@ public class WaarpSnmpAgent extends BaseAgent {
     try {
       Thread.sleep(100);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }
 
@@ -524,12 +492,15 @@ public class WaarpSnmpAgent extends BaseAgent {
     if (TrapLevel.StartStop.isLevelValid(getTrapLevel())) {
       sendShutdownNotification();
     }
-    super.stop();
+    if (session != null) {
+      super.stop();
+    }
     if (getMonitor() != null) {
       getMonitor().releaseResources();
       try {
         Thread.sleep(100);
       } catch (final InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       if (workerPool != null) {
         workerPool.cancel();

@@ -29,8 +29,6 @@ import org.waarp.ftp.core.command.FtpCommandCode;
 
 /**
  * PROT command accepting only C or P argument
- *
- *
  */
 public class PROT extends AbstractCommand {
 
@@ -46,7 +44,7 @@ public class PROT extends AbstractCommand {
       throw new Reply501Exception("Missing Parameter: P or C");
     }
     final String[] types = getArgs();
-    if (types[0].equalsIgnoreCase("P")) {
+    if ("P".equalsIgnoreCase(types[0])) {
       if (getSession().isDataSsl() &&
           getSession().getConfiguration().getFtpInternalConfiguration()
                       .isAcceptAuthProt()) {
@@ -56,7 +54,7 @@ public class PROT extends AbstractCommand {
       // Data will have SSL
       getSession().setDataSsl(true);
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY, null);
-    } else if (types[0].equalsIgnoreCase("C") &&
+    } else if ("C".equalsIgnoreCase(types[0]) &&
                !getSession().getConfiguration().getFtpInternalConfiguration()
                             .isAcceptAuthProt()) {
       if (!getSession().isDataSsl()) {

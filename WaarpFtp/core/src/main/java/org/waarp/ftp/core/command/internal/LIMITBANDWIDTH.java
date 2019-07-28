@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * Internal limit bandwidth command that will change the global limit bandwidth
- *
- *
  */
 public class LIMITBANDWIDTH extends AbstractCommand {
   @Override
@@ -44,8 +42,8 @@ public class LIMITBANDWIDTH extends AbstractCommand {
       return;
     }
     final String[] limits = getArgs();
-    long writeLimit = 0;
-    long readLimit = 0;
+    long writeLimit;
+    long readLimit;
     try {
       if (limits.length == 1) {
         writeLimit = Long.parseLong(limits[0]);

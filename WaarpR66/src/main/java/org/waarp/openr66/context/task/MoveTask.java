@@ -30,8 +30,6 @@ import java.io.File;
 
 /**
  * Move the file (without renaming it)
- *
- *
  */
 public class MoveTask extends AbstractTask {
   /**
@@ -54,12 +52,12 @@ public class MoveTask extends AbstractTask {
   @Override
   public void run() {
     logger
-        .info("Move with " + argRule + ":" + argTransfer + " and {}", session);
+        .info("Move with " + argRule + ':' + argTransfer + " and {}", session);
     String directory = argRule;
-    directory = getReplacedValue(directory, argTransfer.split(" ")).trim()
-                                                                   .replace(
-                                                                       '\\',
-                                                                       '/');
+    directory = getReplacedValue(directory, BLANK.split(argTransfer)).trim()
+                                                                     .replace(
+                                                                         '\\',
+                                                                         '/');
     final String finalname =
         directory + DirInterface.SEPARATOR + session.getFile().getBasename();
     final File from = session.getFile().getTrueFile();
@@ -68,7 +66,7 @@ public class MoveTask extends AbstractTask {
       FileUtils.copy(from, to, true, false);
     } catch (final Reply550Exception e) {
       logger.error(
-          "Move with " + argRule + ":" + argTransfer + " to " + finalname +
+          "Move with " + argRule + ':' + argTransfer + " to " + finalname +
           " and " + session, e);
       futureCompletion.setFailure(e);
       return;

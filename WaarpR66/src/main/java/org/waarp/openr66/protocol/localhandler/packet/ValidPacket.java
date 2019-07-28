@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Validation Message class for packet
  * <p>
  * 2 strings and one byte: sheader,smiddle,send
- *
- *
  */
 public class ValidPacket extends AbstractLocalPacket {
   private final String sheader;
@@ -97,7 +95,7 @@ public class ValidPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "ValidPacket: " + sheader + ":" + smiddle + ":" + send;
+    return "ValidPacket: " + sheader + ':' + smiddle + ':' + send;
   }
 
   @Override

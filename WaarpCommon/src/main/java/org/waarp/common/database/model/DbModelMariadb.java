@@ -30,6 +30,7 @@ import org.waarp.common.database.data.DbDataModel;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -42,8 +43,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * MariaDB Database Model implementation
- *
- *
  */
 public abstract class DbModelMariadb extends DbModelAbstract {
   /**
@@ -73,8 +72,8 @@ public abstract class DbModelMariadb extends DbModelAbstract {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMariadb(String dbserver, String dbuser, String dbpasswd,
-                        Timer timer, long delay)
+  protected DbModelMariadb(String dbserver, String dbuser, String dbpasswd,
+                           Timer timer, long delay)
       throws WaarpDatabaseNoConnectionException {
     this();
     mysqlConnectionPoolDataSource = new MariaDbDataSource();
@@ -112,7 +111,7 @@ public abstract class DbModelMariadb extends DbModelAbstract {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMariadb(String dbserver, String dbuser, String dbpasswd)
+  protected DbModelMariadb(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     this(dbserver, dbuser, dbpasswd, null, 0);
   }
@@ -132,7 +131,7 @@ public abstract class DbModelMariadb extends DbModelAbstract {
     } catch (final SQLException e) {
       // SQLException
       logger.error(
-          "Cannot register Driver " + type.name() + " " + e.getMessage());
+          "Cannot register Driver " + type.name() + ' ' + e.getMessage());
       DbSession.error(e);
       throw new WaarpDatabaseNoConnectionException(
           "Cannot load database drive:" + type.name(), e);
@@ -171,7 +170,8 @@ public abstract class DbModelMariadb extends DbModelAbstract {
     if (pool != null) {
       try {
         pool.dispose();
-      } catch (final SQLException e) {
+      } catch (final SQLException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
     pool = null;
@@ -192,9 +192,9 @@ public abstract class DbModelMariadb extends DbModelAbstract {
     VARBINARY(Types.VARBINARY, " BLOB "), DATE(Types.DATE, " DATE "),
     TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP ");
 
-    public int type;
+    public final int type;
 
-    public String constructor;
+    public final String constructor;
 
     DBType(int type, String constructor) {
       this.type = type;
@@ -240,114 +240,18 @@ public abstract class DbModelMariadb extends DbModelAbstract {
   private final ReentrantLock lock = new ReentrantLock();
 
   @Override
-  public void createTables(DbSession session)
-      throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
-    final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
-    final String primaryKey = " PRIMARY KEY ";
-    final String notNull = " NOT NULL ";
-
-    // Example
-    /*
-
-    String action = createTableH2 + DbDataModel.table + "(";
-    final DbDataModel.Columns[] ccolumns = DbDataModel.Columns.values();
-    for (int i = 0; i < ccolumns.length - 1; i++) {
-      action += ccolumns[i].name() + DBType.getType(DbDataModel.dbTypes[i]) +
-                notNull + ", ";
-    }
-    action += ccolumns[ccolumns.length - 1].name() +
-              DBType.getType(DbDataModel.dbTypes[ccolumns.length - 1]) +
-              primaryKey + ")";
-    logger.warn(action);
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } finally {
-      request.close();
-    }
-    // Index Example
-    action = "CREATE INDEX IDX_RUNNER ON " + DbDataModel.table + "(";
-    final DbDataModel.Columns[] icolumns = DbDataModel.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action += icolumns[i].name() + ", ";
-    }
-    action += icolumns[icolumns.length - 1].name() + ")";
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      return;
-    } finally {
-      request.close();
-    }
-
-     */
-    // example sequence
-    /*
-     * # Table to handle any number of sequences: CREATE TABLE Sequences ( name VARCHAR(22) NOT NULL, seq INT
-     * UNSIGNED NOT NULL, # (or BIGINT) PRIMARY KEY name ); # Create a Sequence: INSERT INTO Sequences (name, seq)
-     * VALUES (?, 0); # Drop a Sequence: DELETE FROM Sequences WHERE name = ?; # Get a sequence number: UPDATE
-     * Sequences SET seq = LAST_INSERT_ID(seq + 1) WHERE name = ?; $seq = $db->LastInsertId();
-     */
-    /*
-
-    action = "CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY," +
-             "seq BIGINT NOT NULL)";
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } finally {
-      request.close();
-    }
-    action =
-        "INSERT INTO Sequences (name, seq) VALUES ('" + DbDataModel.fieldseq +
-        "', " + (DbConstant.ILLEGALVALUE + 1) + ")";
-    logger.warn(action);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.warn("CreateTables Error", e);
-      return;
-    } finally {
-      request.close();
-    }
-     */
-  }
-
-  @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
     final String action =
         "UPDATE Sequences SET seq = " + newvalue + " WHERE name = '" +
-        DbDataModel.fieldseq + "'";
+        DbDataModel.fieldseq + '\'';
     final DbRequest request = new DbRequest(session);
     try {
       request.query(action);
     } catch (final WaarpDatabaseNoConnectionException e) {
       logger.warn("ResetSequence Error", e);
-      return;
     } catch (final WaarpDatabaseSqlException e) {
       logger.warn("ResetSequence Error", e);
-      return;
     } finally {
       request.close();
     }
@@ -368,7 +272,8 @@ public abstract class DbModelMariadb extends DbModelAbstract {
           new DbPreparedStatement(dbSession);
       try {
         dbSession.getConn().setAutoCommit(false);
-      } catch (final SQLException e1) {
+      } catch (final SQLException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
       try {
         preparedStatement.createPrepareStatement(action);
@@ -389,7 +294,7 @@ public abstract class DbModelMariadb extends DbModelAbstract {
       }
       action =
           "UPDATE Sequences SET seq = " + (result + 1) + " WHERE name = '" +
-          DbDataModel.fieldseq + "'";
+          DbDataModel.fieldseq + '\'';
       try {
         preparedStatement.createPrepareStatement(action);
         // Limit the search
@@ -401,7 +306,8 @@ public abstract class DbModelMariadb extends DbModelAbstract {
     } finally {
       try {
         dbSession.getConn().setAutoCommit(true);
-      } catch (final SQLException e1) {
+      } catch (final SQLException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
       lock.unlock();
     }

@@ -33,6 +33,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
@@ -56,15 +57,15 @@ import org.waarp.openr66.protocol.utils.Version;
 import java.io.StringReader;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * Configuration Table object
- *
- *
  */
 public class DbHostConfiguration extends AbstractDbData {
   /**
@@ -72,8 +73,11 @@ public class DbHostConfiguration extends AbstractDbData {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbHostConfiguration.class);
+  private static final Pattern WHITESPACES = Pattern.compile("\\s+");
+  private static final Pattern SPACE_BACKSLASH = Pattern.compile(" |\\|");
+  private static final Pattern COMMA = Pattern.compile(",");
 
-  public static enum Columns {
+  public enum Columns {
     BUSINESS, ROLES, ALIASES, OTHERS, UPDATEDINFO, HOSTID
   }
 
@@ -128,7 +132,7 @@ public class DbHostConfiguration extends AbstractDbData {
   public static final String XML_BUSINESSID = "businessid";
   private static final XmlDecl[] businessDecl = {
       new XmlDecl(XML_BUSINESS, XmlType.STRING,
-                  XML_BUSINESS + "/" + XML_BUSINESSID, true)
+                  XML_BUSINESS + '/' + XML_BUSINESSID, true)
   };
 
   /**
@@ -140,7 +144,7 @@ public class DbHostConfiguration extends AbstractDbData {
       new XmlDecl(XmlType.STRING, XML_ROLESET)
   };
   private static final XmlDecl[] roleDecl = {
-      new XmlDecl(XML_ROLES, XmlType.XVAL, XML_ROLES + "/" + XML_ROLE,
+      new XmlDecl(XML_ROLES, XmlType.XVAL, XML_ROLES + '/' + XML_ROLE,
                   configRoleDecls, true)
   };
   /**
@@ -153,11 +157,11 @@ public class DbHostConfiguration extends AbstractDbData {
   };
 
   private static final XmlDecl[] aliasDecl = {
-      new XmlDecl(XML_ALIASES, XmlType.XVAL, XML_ALIASES + "/" + XML_ALIAS,
+      new XmlDecl(XML_ALIASES, XmlType.XVAL, XML_ALIASES + '/' + XML_ALIAS,
                   configAliasDecls, true)
   };
 
-  public static enum OtherFields {
+  public enum OtherFields {
     root, version, seeallid
   }
 
@@ -165,9 +169,9 @@ public class DbHostConfiguration extends AbstractDbData {
   public static final int NBPRKEY = 1;
 
   protected static final String selectAllFields =
-      Columns.BUSINESS.name() + "," + Columns.ROLES.name() + "," +
-      Columns.ALIASES.name() + "," + Columns.OTHERS.name() + "," +
-      Columns.UPDATEDINFO.name() + "," + Columns.HOSTID.name();
+      Columns.BUSINESS.name() + ',' + Columns.ROLES.name() + ',' +
+      Columns.ALIASES.name() + ',' + Columns.OTHERS.name() + ',' +
+      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
 
   protected static final String updateAllFields =
       Columns.BUSINESS.name() + "=?," + Columns.ROLES.name() + "=?," +
@@ -221,7 +225,8 @@ public class DbHostConfiguration extends AbstractDbData {
       int len;
       do {
         len = business.getBusiness().length();
-        business.setBusiness(business.getBusiness().replaceAll("\\s+", " "));
+        business.setBusiness(
+            WHITESPACES.matcher(business.getBusiness()).replaceAll(" "));
       } while (len != business.getBusiness().length());
     }
     allFields[Columns.BUSINESS.ordinal()].setValue(business.getBusiness());
@@ -231,7 +236,8 @@ public class DbHostConfiguration extends AbstractDbData {
       int len;
       do {
         len = business.getRoles().length();
-        business.setRoles(business.getRoles().replaceAll("\\s+", " "));
+        business
+            .setRoles(WHITESPACES.matcher(business.getRoles()).replaceAll(" "));
       } while (len != business.getRoles().length());
     }
     allFields[Columns.ROLES.ordinal()].setValue(business.getRoles());
@@ -241,7 +247,8 @@ public class DbHostConfiguration extends AbstractDbData {
       int len;
       do {
         len = business.getAliases().length();
-        business.setAliases(business.getAliases().replaceAll("\\s+", " "));
+        business.setAliases(
+            WHITESPACES.matcher(business.getAliases()).replaceAll(" "));
       } while (len != business.getAliases().length());
     }
     allFields[Columns.ALIASES.ordinal()].setValue(business.getAliases());
@@ -251,7 +258,8 @@ public class DbHostConfiguration extends AbstractDbData {
       int len;
       do {
         len = business.getOthers().length();
-        business.setOthers(business.getOthers().replaceAll("\\s+", " "));
+        business.setOthers(
+            WHITESPACES.matcher(business.getOthers()).replaceAll(" "));
       } while (len != business.getOthers().length());
     }
     allFields[Columns.OTHERS.ordinal()].setValue(business.getOthers());
@@ -291,13 +299,11 @@ public class DbHostConfiguration extends AbstractDbData {
    */
   public DbHostConfiguration(String hostid, String business, String roles,
                              String aliases, String others) {
-    super();
     this.business = new Business(hostid, business, roles, aliases, others);
     setToArray();
   }
 
   public DbHostConfiguration(Business business) {
-    super();
     if (business == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -315,7 +321,6 @@ public class DbHostConfiguration extends AbstractDbData {
    */
   public DbHostConfiguration(ObjectNode source)
       throws WaarpDatabaseSqlException {
-    super();
     business = new Business();
     setFromJson(source, false);
     if (business.getHostid() == null || business.getHostid().isEmpty()) {
@@ -332,7 +337,6 @@ public class DbHostConfiguration extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public DbHostConfiguration(String hostid) throws WaarpDatabaseException {
-    super();
     BusinessDAO businessAccess = null;
     try {
       businessAccess = DAOFactory.getInstance().getBusinessDAO();
@@ -372,8 +376,8 @@ public class DbHostConfiguration extends AbstractDbData {
     int len;
     do {
       len = this.business.getBusiness().length();
-      this.business
-          .setBusiness(this.business.getBusiness().replaceAll("\\s+", " "));
+      this.business.setBusiness(
+          WHITESPACES.matcher(this.business.getBusiness()).replaceAll(" "));
     } while (len != this.business.getBusiness().length());
     Configuration.configuration.getBusinessWhiteSet().clear();
     if (!this.business.getBusiness().isEmpty()) {
@@ -398,7 +402,8 @@ public class DbHostConfiguration extends AbstractDbData {
     int len;
     do {
       len = getRoles().length();
-      business.setRoles(business.getRoles().replaceAll("\\s+", " "));
+      business
+          .setRoles(WHITESPACES.matcher(business.getRoles()).replaceAll(" "));
     } while (len != business.getRoles().length());
     Configuration.configuration.getRoles().clear();
     if (!business.getRoles().isEmpty()) {
@@ -423,7 +428,8 @@ public class DbHostConfiguration extends AbstractDbData {
     int len;
     do {
       len = business.getAliases().length();
-      business.setAliases(business.getAliases().replaceAll("\\s+", " "));
+      business.setAliases(
+          WHITESPACES.matcher(business.getAliases()).replaceAll(" "));
     } while (len != business.getAliases().length());
     Configuration.configuration.getAliases().clear();
     Configuration.configuration.getReverseAliases().clear();
@@ -436,7 +442,7 @@ public class DbHostConfiguration extends AbstractDbData {
 
   @SuppressWarnings("unchecked")
   private void readValuesFromXml(String input, XmlDecl[] config) {
-    Document document = null;
+    Document document;
     final StringReader reader = new StringReader(input);
     // Open config file
     try {
@@ -454,8 +460,8 @@ public class DbHostConfiguration extends AbstractDbData {
     }
     XmlValue[] configuration = XmlUtil.read(document, config);
     XmlHash hashConfig = new XmlHash(configuration);
-    XmlValue value = hashConfig.get(DbHostConfiguration.XML_BUSINESS);
-    if (value != null && (value.getList() != null)) {
+    XmlValue value = hashConfig.get(XML_BUSINESS);
+    if (value != null && value.getList() != null) {
       List<String> ids = (List<String>) value.getList();
       if (ids != null) {
         for (final String sval : ids) {
@@ -466,24 +472,23 @@ public class DbHostConfiguration extends AbstractDbData {
           Configuration.configuration.getBusinessWhiteSet().add(sval.trim());
         }
         ids.clear();
-        ids = null;
       }
     }
-    value = hashConfig.get(DbHostConfiguration.XML_ALIASES);
-    if (value != null && (value.getList() != null)) {
-      for (final XmlValue[] xml : (List<XmlValue[]>) value.getList()) {
+    value = hashConfig.get(XML_ALIASES);
+    if (value != null && value.getList() != null) {
+      for (final XmlValue[] xml : (Iterable<XmlValue[]>) value.getList()) {
         final XmlHash subHash = new XmlHash(xml);
-        value = subHash.get(DbHostConfiguration.XML_REALID);
-        if (value == null || (value.isEmpty())) {
+        value = subHash.get(XML_REALID);
+        if (value == null || value.isEmpty()) {
           continue;
         }
         final String refHostId = value.getString();
-        value = subHash.get(DbHostConfiguration.XML_ALIASID);
-        if (value == null || (value.isEmpty())) {
+        value = subHash.get(XML_ALIASID);
+        if (value == null || value.isEmpty()) {
           continue;
         }
         final String aliasset = value.getString();
-        final String[] alias = aliasset.split(" |\\|");
+        final String[] alias = SPACE_BACKSLASH.split(aliasset);
         for (final String namealias : alias) {
           Configuration.configuration.getAliases().put(namealias, refHostId);
         }
@@ -491,26 +496,25 @@ public class DbHostConfiguration extends AbstractDbData {
         logger.info("Aliases for: " + refHostId + " = " + aliasset);
       }
     }
-    value = hashConfig.get(DbHostConfiguration.XML_ROLES);
-    if (value != null && (value.getList() != null)) {
-      for (final XmlValue[] xml : (List<XmlValue[]>) value.getList()) {
+    value = hashConfig.get(XML_ROLES);
+    if (value != null && value.getList() != null) {
+      for (final XmlValue[] xml : (Iterable<XmlValue[]>) value.getList()) {
         final XmlHash subHash = new XmlHash(xml);
-        value = subHash.get(DbHostConfiguration.XML_ROLEID);
-        if (value == null || (value.isEmpty())) {
+        value = subHash.get(XML_ROLEID);
+        if (value == null || value.isEmpty()) {
           continue;
         }
         final String refHostId = value.getString();
-        value = subHash.get(DbHostConfiguration.XML_ROLESET);
-        if (value == null || (value.isEmpty())) {
+        value = subHash.get(XML_ROLESET);
+        if (value == null || value.isEmpty()) {
           continue;
         }
         final String roleset = value.getString();
-        final String[] roles = roleset.split(" |\\|");
+        final String[] roles = SPACE_BACKSLASH.split(roleset);
         final RoleDefault newrole = new RoleDefault();
         for (final String role : roles) {
           try {
-            final RoleDefault.ROLE roletype =
-                RoleDefault.ROLE.valueOf(role.toUpperCase());
+            final ROLE roletype = ROLE.valueOf(role.toUpperCase());
             if (roletype == ROLE.NOACCESS) {
               // reset
               newrole.setRole(roletype);
@@ -521,13 +525,11 @@ public class DbHostConfiguration extends AbstractDbData {
             // ignore
           }
         }
-        logger.info("New Role: " + refHostId + ":" + newrole);
+        logger.info("New Role: " + refHostId + ':' + newrole);
         Configuration.configuration.getRoles().put(refHostId, newrole);
       }
     }
     hashConfig.clear();
-    hashConfig = null;
-    configuration = null;
   }
 
   /**
@@ -545,7 +547,8 @@ public class DbHostConfiguration extends AbstractDbData {
     int len;
     do {
       len = business.getOthers().length();
-      business.setOthers(business.getOthers().replaceAll("\\s+", " "));
+      business
+          .setOthers(WHITESPACES.matcher(business.getOthers()).replaceAll(" "));
     } while (len != business.getOthers().length());
     allFields[Columns.OTHERS.ordinal()].setValue(others);
     isSaved = false;
@@ -663,7 +666,6 @@ public class DbHostConfiguration extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbHostConfiguration() {
-    super();
     business = new Business();
   }
 
@@ -697,7 +699,7 @@ public class DbHostConfiguration extends AbstractDbData {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final List<Filter> filters = new ArrayList<Filter>();
     filters.add(new Filter(DBBusinessDAO.HOSTID_FIELD, "=",
-                           Configuration.configuration.getHOST_ID()));
+                           Configuration.configuration.getHostId()));
     filters.add(new Filter(DBBusinessDAO.UPDATED_INFO_FIELD, "=",
                            UpdatedInfo.TOSUBMIT.ordinal()));
 
@@ -813,8 +815,7 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return True if this Configuration refers to the current host
    */
   public boolean isOwnConfiguration() {
-    return business.getHostid()
-                   .equals(Configuration.configuration.getHOST_ID());
+    return business.getHostid().equals(Configuration.configuration.getHostId());
   }
 
   /**
@@ -828,7 +829,7 @@ public class DbHostConfiguration extends AbstractDbData {
    */
   private boolean updateSet(String source, String path, HashSet<String> set) {
     if (source != null && !source.isEmpty()) {
-      Document document = null;
+      Document document;
       StringReader reader = null;
       if (source != null && !source.isEmpty()) {
         try {
@@ -838,17 +839,13 @@ public class DbHostConfiguration extends AbstractDbData {
           logger.error(
               "Unable to read the XML Config " + path + " string: " + source,
               e);
-          if (reader != null) {
-            reader.close();
-          }
+          FileUtils.close(reader);
           return false;
         }
         if (document == null) {
           logger.error(
               "Unable to read the XML Config " + path + " string: " + source);
-          if (reader != null) {
-            reader.close();
-          }
+          FileUtils.close(reader);
           return false;
         }
         @SuppressWarnings("unchecked")
@@ -862,11 +859,7 @@ public class DbHostConfiguration extends AbstractDbData {
         }
         list.clear();
         document.clearContent();
-        document = null;
-        if (reader != null) {
-          reader.close();
-          reader = null;
-        }
+        FileUtils.close(reader);
       }
     }
     return true;
@@ -886,19 +879,19 @@ public class DbHostConfiguration extends AbstractDbData {
   public boolean updateBusiness(Configuration config, String newbusiness,
                                 boolean purged) {
     HashSet<String> set = new HashSet<String>();
-    if (!updateSet(newbusiness, XML_BUSINESS + "/" + XML_BUSINESSID, set)) {
+    if (!updateSet(newbusiness, XML_BUSINESS + '/' + XML_BUSINESSID, set)) {
       return false;
     }
     if (purged) {
       config.getBusinessWhiteSet().clear();
     } else {
-      final String business = getBusiness();
-      if (!updateSet(business, XML_BUSINESS + "/" + XML_BUSINESSID, set)) {
+      final String businessStr = getBusiness();
+      if (!updateSet(businessStr, XML_BUSINESS + '/' + XML_BUSINESSID, set)) {
         return false;
       }
     }
     config.getBusinessWhiteSet().addAll(set);
-    if ((newbusiness != null && !newbusiness.isEmpty()) || purged) {
+    if (newbusiness != null && !newbusiness.isEmpty() || purged) {
       Document document = DocumentHelper
           .createDocument(DocumentHelper.createElement(XML_BUSINESS));
       final Element root = document.getRootElement();
@@ -911,14 +904,11 @@ public class DbHostConfiguration extends AbstractDbData {
         update();
       } catch (final WaarpDatabaseException e) {
         document.clearContent();
-        document = null;
         return false;
       }
       document.clearContent();
-      document = null;
     }
     set.clear();
-    set = null;
     return true;
   }
 
@@ -938,7 +928,7 @@ public class DbHostConfiguration extends AbstractDbData {
                             String valpath, String split,
                             HashMap<String, HashSet<String>> map) {
     if (source != null && !source.isEmpty()) {
-      Document document = null;
+      Document document;
       StringReader reader = null;
       if (source != null && !source.isEmpty()) {
         try {
@@ -948,17 +938,13 @@ public class DbHostConfiguration extends AbstractDbData {
           logger.error(
               "Unable to read the XML Config " + path + " string: " + source,
               e);
-          if (reader != null) {
-            reader.close();
-          }
+          FileUtils.close(reader);
           return false;
         }
         if (document == null) {
           logger.error(
               "Unable to read the XML Config " + path + " string: " + source);
-          if (reader != null) {
-            reader.close();
-          }
+          FileUtils.close(reader);
           return false;
         }
         @SuppressWarnings("unchecked")
@@ -975,24 +961,18 @@ public class DbHostConfiguration extends AbstractDbData {
           final String refHostId = nodeid.getText();
           final String aliasesid = nodeset.getText();
           final String[] aliasid = aliasesid.split(split);
-          HashSet<String> set = null;
+          HashSet<String> set;
           if (map.containsKey(refHostId)) {
             set = map.get(refHostId);
           } else {
             set = new HashSet<String>();
           }
-          for (final String namealias : aliasid) {
-            set.add(namealias);
-          }
+          set.addAll(Arrays.asList(aliasid));
           map.put(refHostId, set);
         }
         list.clear();
         document.clearContent();
-        document = null;
-        if (reader != null) {
-          reader.close();
-          reader = null;
-        }
+        FileUtils.close(reader);
       }
     }
     return true;
@@ -1013,7 +993,7 @@ public class DbHostConfiguration extends AbstractDbData {
                              boolean purged) {
     HashMap<String, HashSet<String>> map =
         new HashMap<String, HashSet<String>>();
-    if (!updateMap(newalias, XML_ALIASES + "/" + XML_ALIAS, XML_REALID,
+    if (!updateMap(newalias, XML_ALIASES + '/' + XML_ALIAS, XML_REALID,
                    XML_ALIASID, " |\\|", map)) {
       return false;
     }
@@ -1022,38 +1002,36 @@ public class DbHostConfiguration extends AbstractDbData {
       config.getAliases().clear();
     } else {
       final String alias = getAliases();
-      if (!updateMap(alias, XML_ALIASES + "/" + XML_ALIAS, XML_REALID,
+      if (!updateMap(alias, XML_ALIASES + '/' + XML_ALIAS, XML_REALID,
                      XML_ALIASID, " |\\|", map)) {
         return false;
       }
     }
-    if ((newalias != null && !newalias.isEmpty()) || purged) {
+    if (newalias != null && !newalias.isEmpty() || purged) {
       Document document = DocumentHelper
           .createDocument(DocumentHelper.createElement(XML_ALIASES));
       final Element root = document.getRootElement();
       for (final Entry<String, HashSet<String>> entry : map.entrySet()) {
         final Element elt = root.addElement(XML_ALIAS);
         elt.addElement(XML_REALID).setText(entry.getKey());
-        String cumul = null;
+        StringBuilder cumul = null;
         final String[] oldAlias =
             config.getReverseAliases().get(entry.getKey());
         final int size = oldAlias == null? 0 : oldAlias.length;
         final String[] alias = new String[entry.getValue().size() + size];
         int i = 0;
-        for (; i < size; i++) {
-          alias[i] = oldAlias[i];
-        }
+        System.arraycopy(oldAlias, 0, alias, 0, size);
         for (final String namealias : entry.getValue()) {
           config.getAliases().put(namealias, entry.getKey());
           if (cumul == null) {
-            cumul = namealias;
+            cumul = new StringBuilder(namealias);
           } else {
-            cumul += " " + namealias;
+            cumul.append(' ').append(namealias);
           }
           alias[i] = namealias;
           i++;
         }
-        elt.addElement(XML_ALIASID).setText(cumul);
+        elt.addElement(XML_ALIASID).setText(cumul.toString());
         config.getReverseAliases().put(entry.getKey(), alias);
       }
       setAliases(root.asXML());
@@ -1061,11 +1039,9 @@ public class DbHostConfiguration extends AbstractDbData {
         update();
       } catch (final WaarpDatabaseException e) {
         document.clearContent();
-        document = null;
         return false;
       }
       document.clearContent();
-      document = null;
     } else {
       for (final Entry<String, HashSet<String>> entry : map.entrySet()) {
         final String[] oldAlias =
@@ -1073,9 +1049,7 @@ public class DbHostConfiguration extends AbstractDbData {
         final int size = oldAlias == null? 0 : oldAlias.length;
         final String[] alias = new String[entry.getValue().size() + size];
         int i = 0;
-        for (; i < size; i++) {
-          alias[i] = oldAlias[i];
-        }
+        System.arraycopy(oldAlias, 0, alias, 0, size);
         for (final String namealias : entry.getValue()) {
           config.getAliases().put(namealias, entry.getKey());
           alias[i] = namealias;
@@ -1085,7 +1059,6 @@ public class DbHostConfiguration extends AbstractDbData {
       }
     }
     map.clear();
-    map = null;
     return true;
   }
 
@@ -1104,7 +1077,7 @@ public class DbHostConfiguration extends AbstractDbData {
                              boolean purged) {
     HashMap<String, HashSet<String>> map =
         new HashMap<String, HashSet<String>>();
-    if (!updateMap(newroles, XML_ROLES + "/" + XML_ROLE, XML_ROLEID,
+    if (!updateMap(newroles, XML_ROLES + '/' + XML_ROLE, XML_ROLEID,
                    XML_ROLESET, " |\\|", map)) {
       return false;
     }
@@ -1112,12 +1085,12 @@ public class DbHostConfiguration extends AbstractDbData {
       config.getRoles().clear();
     } else {
       final String roles = getRoles();
-      if (!updateMap(roles, XML_ROLES + "/" + XML_ROLE, XML_ROLEID, XML_ROLESET,
+      if (!updateMap(roles, XML_ROLES + '/' + XML_ROLE, XML_ROLEID, XML_ROLESET,
                      " |\\|", map)) {
         return false;
       }
     }
-    if ((newroles != null && !newroles.isEmpty()) || purged) {
+    if (newroles != null && !newroles.isEmpty() || purged) {
       Document document = DocumentHelper
           .createDocument(DocumentHelper.createElement(XML_ROLES));
       final Element root = document.getRootElement();
@@ -1125,41 +1098,38 @@ public class DbHostConfiguration extends AbstractDbData {
         final RoleDefault newrole = new RoleDefault();
         final Element elt = root.addElement(XML_ROLE);
         elt.addElement(XML_ROLEID).setText(entry.getKey());
-        String cumul = null;
+        StringBuilder cumul = null;
         if (entry.getValue().contains(ROLE.NOACCESS.name())) {
           newrole.setRole(ROLE.NOACCESS);
-          cumul = ROLE.NOACCESS.name();
+          cumul = new StringBuilder(ROLE.NOACCESS.name());
         }
         for (final String namerole : entry.getValue()) {
           try {
-            final RoleDefault.ROLE roletype =
-                RoleDefault.ROLE.valueOf(namerole.toUpperCase());
+            final ROLE roletype = ROLE.valueOf(namerole.toUpperCase());
             if (roletype != ROLE.NOACCESS) {
               newrole.addRole(roletype);
               if (cumul == null) {
-                cumul = namerole.toUpperCase();
+                cumul = new StringBuilder(namerole.toUpperCase());
               } else {
-                cumul += " " + namerole.toUpperCase();
+                cumul.append(' ').append(namerole.toUpperCase());
               }
             }
           } catch (final IllegalArgumentException e) {
             // ignore
           }
         }
-        logger.info("New Role: " + entry.getKey() + ":" + newrole);
+        logger.info("New Role: " + entry.getKey() + ':' + newrole);
         config.getRoles().put(entry.getKey(), newrole);
-        elt.addElement(XML_ROLESET).setText(cumul);
+        elt.addElement(XML_ROLESET).setText(cumul.toString());
       }
       setRoles(root.asXML());
       try {
         update();
       } catch (final WaarpDatabaseException e) {
         document.clearContent();
-        document = null;
         return false;
       }
       document.clearContent();
-      document = null;
     } else {
       for (final Entry<String, HashSet<String>> entry : map.entrySet()) {
         final RoleDefault newrole = new RoleDefault();
@@ -1168,8 +1138,7 @@ public class DbHostConfiguration extends AbstractDbData {
         }
         for (final String namerole : entry.getValue()) {
           try {
-            final RoleDefault.ROLE roletype =
-                RoleDefault.ROLE.valueOf(namerole.toUpperCase());
+            final ROLE roletype = ROLE.valueOf(namerole.toUpperCase());
             if (roletype != ROLE.NOACCESS) {
               newrole.addRole(roletype);
             }
@@ -1177,12 +1146,11 @@ public class DbHostConfiguration extends AbstractDbData {
             // ignore
           }
         }
-        logger.info("New Role: " + entry.getKey() + ":" + newrole);
+        logger.info("New Role: " + entry.getKey() + ':' + newrole);
         config.getRoles().put(entry.getKey(), newrole);
       }
     }
     map.clear();
-    map = null;
     return true;
   }
 
@@ -1208,8 +1176,8 @@ public class DbHostConfiguration extends AbstractDbData {
     }
     final Element others = hostConfiguration.getOtherElement();
     if (others != null) {
-      final Element version = (Element) others
-          .selectSingleNode(DbHostConfiguration.OtherFields.version.name());
+      final Element version =
+          (Element) others.selectSingleNode(OtherFields.version.name());
       if (version != null) {
         return version.getText();
       }
@@ -1220,10 +1188,10 @@ public class DbHostConfiguration extends AbstractDbData {
   public boolean isSeeAllId(String id) {
     final Element others = getOtherElement();
     if (others != null) {
-      final Element seeallids = (Element) others
-          .selectSingleNode(DbHostConfiguration.OtherFields.seeallid.name());
+      final Element seeallids =
+          (Element) others.selectSingleNode(OtherFields.seeallid.name());
       if (seeallids != null) {
-        final String[] split = seeallids.getText().split(",");
+        final String[] split = COMMA.split(seeallids.getText());
         for (final String string : split) {
           if (string.equals(id)) {
             return true;
@@ -1260,19 +1228,16 @@ public class DbHostConfiguration extends AbstractDbData {
     }
     Element others = hostConfiguration.getOtherElement();
     if (others != null) {
-      final Element eversion = (Element) others
-          .selectSingleNode(DbHostConfiguration.OtherFields.version.name());
+      final Element eversion =
+          (Element) others.selectSingleNode(OtherFields.version.name());
       if (eversion != null) {
         eversion.setText(version);
       } else {
-        others.addElement(DbHostConfiguration.OtherFields.version.name())
-              .addText(Version.ID);
+        others.addElement(OtherFields.version.name()).addText(Version.ID);
       }
     } else {
-      others = DocumentHelper
-          .createElement(DbHostConfiguration.OtherFields.root.name());
-      others.addElement(DbHostConfiguration.OtherFields.version.name())
-            .addText(Version.ID);
+      others = DocumentHelper.createElement(OtherFields.root.name());
+      others.addElement(OtherFields.version.name()).addText(Version.ID);
     }
     hostConfiguration.setOtherElement(others);
     try {
@@ -1280,7 +1245,6 @@ public class DbHostConfiguration extends AbstractDbData {
     } catch (final WaarpDatabaseException e) {
       logger.debug("Not update?", e);
       // ignore
-      return;
     }
   }
 

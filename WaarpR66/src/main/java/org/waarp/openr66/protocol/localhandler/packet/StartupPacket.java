@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Startup Message class
  * <p>
  * 1 localId (Integer): localId
- *
- *
  */
 public class StartupPacket extends AbstractLocalPacket {
   private final Integer localId;
@@ -47,7 +45,7 @@ public class StartupPacket extends AbstractLocalPacket {
                                                int middleLength, int endLength,
                                                ByteBuf buf) {
     final Integer newId = buf.readInt();
-    final Boolean fromSsl = buf.readBoolean();
+    final boolean fromSsl = buf.readBoolean();
     return new StartupPacket(newId, fromSsl);
   }
 

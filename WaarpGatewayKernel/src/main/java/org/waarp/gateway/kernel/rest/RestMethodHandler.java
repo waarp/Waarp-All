@@ -28,6 +28,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -39,13 +40,12 @@ import org.waarp.gateway.kernel.exception.HttpNotFoundRequestException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Rest Method handler (used by Http Rest Handler)
- *
- *
  */
 public abstract class RestMethodHandler {
   /**
@@ -53,6 +53,7 @@ public abstract class RestMethodHandler {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(RestMethodHandler.class);
+  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];
 
   protected final String name;
   protected final String path;
@@ -71,8 +72,9 @@ public abstract class RestMethodHandler {
    * @param config the associated configuration
    * @param method the associated methods
    */
-  public RestMethodHandler(String name, String path, boolean isBodyJsonDecode,
-                           RestConfiguration config, METHOD... method) {
+  protected RestMethodHandler(String name, String path,
+                              boolean isBodyJsonDecode,
+                              RestConfiguration config, METHOD... method) {
     this.name = name;
     this.path = path;
     methods = new HashSet<HttpRestHandler.METHOD>();
@@ -83,9 +85,7 @@ public abstract class RestMethodHandler {
   }
 
   protected void setMethods(METHOD... method) {
-    for (final METHOD method2 : method) {
-      methods.add(method2);
-    }
+    Collections.addAll(methods, method);
   }
 
   /**
@@ -97,15 +97,11 @@ public abstract class RestMethodHandler {
   protected void setIntersectionMethods(METHOD[] selectedMethods,
                                         METHOD... validMethod) {
     final Set<METHOD> set = new HashSet<METHOD>();
-    for (final METHOD method : validMethod) {
-      set.add(method);
-    }
+    Collections.addAll(set, validMethod);
     final Set<METHOD> set2 = new HashSet<METHOD>();
-    for (final METHOD method : selectedMethods) {
-      set2.add(method);
-    }
+    Collections.addAll(set2, selectedMethods);
     set.retainAll(set2);
-    final METHOD[] methodsToSet = set.toArray(new METHOD[0]);
+    final METHOD[] methodsToSet = set.toArray(METHOD_0_LENGTH);
     setMethods(methodsToSet);
   }
 
@@ -256,8 +252,7 @@ public abstract class RestMethodHandler {
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
     final HttpResponse response = handler.getResponse(buffer);
     if (status == HttpResponseStatus.UNAUTHORIZED) {
-      final ChannelFuture future = ctx.writeAndFlush(response);
-      return future;
+      return ctx.writeAndFlush(response);
     }
     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json");
     response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());
@@ -265,7 +260,8 @@ public abstract class RestMethodHandler {
     logger.debug("Msg ready");
     final ChannelFuture future = ctx.writeAndFlush(response);
     if (handler.isWillClose()) {
-      System.err.println("Will close session in RestMethodHandler");
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Will close session in RestMethodHandler");
       return future;
     }
     return null;
@@ -286,17 +282,19 @@ public abstract class RestMethodHandler {
     for (final METHOD methoditem : methods) {
       allMethods[methoditem.ordinal()] = true;
     }
-    String allow = null;
+    StringBuilder allow = null;
     for (int i = 0; i < allMethods.length; i++) {
       if (allMethods[i]) {
         if (allow == null) {
-          allow = realmethods[i].name();
+          allow = new StringBuilder(realmethods[i].name());
         } else {
-          allow += "," + realmethods[i].name();
+          allow.append(',').append(realmethods[i].name());
         }
       }
     }
-    result.addOptions(allow, path, getDetailedAllow());
+    if (allow != null) {
+      result.addOptions(allow.toString(), path, getDetailedAllow());
+    }
   }
 
   /**

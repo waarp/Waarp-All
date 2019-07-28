@@ -25,8 +25,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * OPTS command
- *
- *
  */
 public class OPTS extends AbstractCommand {
   @Override

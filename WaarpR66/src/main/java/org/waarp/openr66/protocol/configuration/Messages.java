@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 public class Messages {
   private static final String BUNDLE_NAME = "messages"; //$NON-NLS-1$
 
-  private static ResourceBundle RESOURCE_BUNDLE = null;
+  private static ResourceBundle resourceBundle;
   private static String slocale = "en";
 
   static {
@@ -42,6 +42,9 @@ public class Messages {
     init(new Locale(getSlocale()));
   }
 
+  private Messages() {
+  }
+
   public static void init(Locale locale) {
     if (locale == null) {
       setSlocale("en");
@@ -49,12 +52,12 @@ public class Messages {
     } else {
       setSlocale(locale.getLanguage());
     }
-    RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+    resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
   }
 
   public static String getString(String key) {
     try {
-      return RESOURCE_BUNDLE.getString(key);
+      return resourceBundle.getString(key);
     } catch (final MissingResourceException e) {
       return '!' + key + '!';
     }
@@ -62,7 +65,7 @@ public class Messages {
 
   public static String getString(String key, Object... args) {
     try {
-      final String source = RESOURCE_BUNDLE.getString(key);
+      final String source = resourceBundle.getString(key);
       return MessageFormat.format(source, args);
     } catch (final MissingResourceException e) {
       return '!' + key + '!';

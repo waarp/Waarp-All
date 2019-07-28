@@ -27,10 +27,8 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Utility that detects various properties specific to the current runtime
  * environment, such as Java version.
- *
- *
  */
-public class DetectionUtils {
+public final class DetectionUtils {
   private static final int JAVA_VERSION = javaVersion0();
   private static final boolean IS_WINDOWS;
   private static final boolean IS_UNIX_IBM;
@@ -40,11 +38,11 @@ public class DetectionUtils {
   static {
     final String os = SystemPropertyUtil.get("os.name").toLowerCase();
     // windows
-    IS_WINDOWS = os.indexOf("win") >= 0;
+    IS_WINDOWS = os.contains("win");
     if (!IS_WINDOWS) {
       String vendor = SystemPropertyUtil.get("java.vm.vendor");
       vendor = vendor.toLowerCase();
-      IS_UNIX_IBM = vendor.indexOf("ibm") >= 0;
+      IS_UNIX_IBM = vendor.contains("ibm");
     } else {
       IS_UNIX_IBM = false;
     }
@@ -54,14 +52,17 @@ public class DetectionUtils {
                                                          2));
   }
 
+  private DetectionUtils() {
+  }
+
   /**
    * Replacement for System.exit(value)
    *
    * @param value
    */
-  public static void SystemExit(int value) {
+  public static void systemExit(int value) {
     if (!isJunit()) {
-      System.exit(value);
+      System.exit(value);//NOSONAR
     }
   }
 
@@ -70,9 +71,9 @@ public class DetectionUtils {
    *
    * @param value
    */
-  public static void RuntimeGetRuntimeHalt(int value) {
+  public static void runtimeGetRuntimeHalt(int value) {
     if (!isJunit()) {
-      Runtime.getRuntime().halt(value);
+      Runtime.getRuntime().halt(value);//NOSONAR
     }
   }
 
@@ -102,14 +103,14 @@ public class DetectionUtils {
   }
 
   /**
-   * Return <code>true</code> if the JVM is running on Windows
+   * Return {@code true} if the JVM is running on Windows
    */
   public static boolean isWindows() {
     return IS_WINDOWS;
   }
 
   /**
-   * Return <code>true</code> if the JVM is running on IBM UNIX JVM
+   * Return {@code true} if the JVM is running on IBM UNIX JVM
    */
   public static boolean isUnixIBM() {
     return IS_UNIX_IBM;

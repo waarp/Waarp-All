@@ -34,12 +34,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Directory representation
- *
- *
  */
 public class R66Dir extends FilesystemBasedDirImpl {
 
@@ -70,7 +69,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
   public synchronized R66File setUniqueFile(long prefix, String filename)
       throws CommandAbstractException {
     checkIdentify();
-    File file = null;
+    File file;
     String prename = prefix + "_";
     if (prename.length() < 3) {
       prename = "xx_" + prename;
@@ -84,7 +83,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
     }
     try {
       file =
-          File.createTempFile(prename, "_" + basename + Configuration.EXT_R66,
+          File.createTempFile(prename, '_' + basename + Configuration.EXT_R66,
                               getFileFromPath(currentDir));
     } catch (final IOException e) {
       throw new Reply550Exception("Cannot create unique file from " + basename);
@@ -175,9 +174,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
       // Look for matches in all the current search paths
       for (final File dir : basedPaths) {
         if (dir.isDirectory()) {
-          for (final File match : dir.listFiles(fileFilter)) {
-            newBasedPaths.add(match);
-          }
+          Collections.addAll(newBasedPaths, dir.listFiles(fileFilter));
         }
       }
       // base Search Path changes now

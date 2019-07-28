@@ -31,10 +31,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Example of Table object
- *
- *
  */
 public class DbDataModel extends AbstractDbData {
+  private static final String NO_ROW_FOUND = "No row found";
+
+  private static final String WHERE = " WHERE ";
+
+  private static final String SELECT = "SELECT ";
+
+  private static final String FROM = " FROM ";
+
   public enum Columns {
     READGLOBALLIMIT, WRITEGLOBALLIMIT, READSESSIONLIMIT, WRITESESSIONLIMIT,
     DELAYLIMIT, UPDATEDINFO, HOSTID
@@ -76,10 +82,10 @@ public class DbDataModel extends AbstractDbData {
   public static final int NBPRKEY = 1;
 
   protected static final String selectAllFields =
-      Columns.READGLOBALLIMIT.name() + "," + Columns.WRITEGLOBALLIMIT.name() +
-      "," + Columns.READSESSIONLIMIT.name() + "," +
-      Columns.WRITESESSIONLIMIT.name() + "," + Columns.DELAYLIMIT.name() + "," +
-      Columns.UPDATEDINFO.name() + "," + Columns.HOSTID.name();
+      Columns.READGLOBALLIMIT.name() + ',' + Columns.WRITEGLOBALLIMIT.name() +
+      ',' + Columns.READSESSIONLIMIT.name() + ',' +
+      Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +
+      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
 
   protected static final String updateAllFields =
       Columns.READGLOBALLIMIT.name() + "=?," + Columns.WRITEGLOBALLIMIT.name() +
@@ -212,12 +218,12 @@ public class DbDataModel extends AbstractDbData {
         new DbPreparedStatement(dbSession);
     try {
       preparedStatement.createPrepareStatement(
-          "DELETE FROM " + table + " WHERE " + getWherePrimaryKey());
+          "DELETE FROM " + table + WHERE + getWherePrimaryKey());
       setPrimaryKey();
       setValues(preparedStatement, primaryKey);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       isSaved = false;
     } finally {
@@ -244,7 +250,7 @@ public class DbDataModel extends AbstractDbData {
       setValues(preparedStatement, allFields);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       isSaved = true;
     } finally {
@@ -261,7 +267,7 @@ public class DbDataModel extends AbstractDbData {
         new DbPreparedStatement(dbSession);
     try {
       preparedStatement.createPrepareStatement(
-          "SELECT " + primaryKey[0].getColumn() + " FROM " + table + " WHERE " +
+          SELECT + primaryKey[0].getColumn() + FROM + table + WHERE +
           getWherePrimaryKey());
       setPrimaryKey();
       setValues(preparedStatement, primaryKey);
@@ -277,7 +283,7 @@ public class DbDataModel extends AbstractDbData {
     if (dbSession == null) {
       final DbDataModel conf = dbR66ConfigurationHashMap.get(hostid);
       if (conf == null) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       } else {
         // copy info
         for (int i = 0; i < allFields.length; i++) {
@@ -292,7 +298,7 @@ public class DbDataModel extends AbstractDbData {
         new DbPreparedStatement(dbSession);
     try {
       preparedStatement.createPrepareStatement(
-          "SELECT " + selectAllFields + " FROM " + table + " WHERE " +
+          SELECT + selectAllFields + FROM + table + WHERE +
           getWherePrimaryKey());
       setPrimaryKey();
       setValues(preparedStatement, primaryKey);
@@ -302,7 +308,7 @@ public class DbDataModel extends AbstractDbData {
         setFromArray();
         isSaved = true;
       } else {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
     } finally {
       preparedStatement.realClose();
@@ -323,12 +329,12 @@ public class DbDataModel extends AbstractDbData {
         new DbPreparedStatement(dbSession);
     try {
       preparedStatement.createPrepareStatement(
-          "UPDATE " + table + " SET " + updateAllFields + " WHERE " +
+          "UPDATE " + table + " SET " + updateAllFields + WHERE +
           getWherePrimaryKey());
       setValues(preparedStatement, allFields);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       isSaved = true;
     } finally {
@@ -338,7 +344,10 @@ public class DbDataModel extends AbstractDbData {
 
   /**
    * Private constructor for Commander only
+   *
+   * @deprecated
    */
+  @Deprecated
   private DbDataModel(DbSession session) {
     super(session);
   }
@@ -372,10 +381,9 @@ public class DbDataModel extends AbstractDbData {
    */
   public static DbPreparedStatement getUpdatedPrepareStament(DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    String request = "SELECT " + selectAllFields;
-    request +=
-        " FROM " + table + " WHERE " + Columns.UPDATEDINFO.name() + " = " +
-        AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal();
+    String request = SELECT + selectAllFields;
+    request += FROM + table + WHERE + Columns.UPDATEDINFO.name() + " = " +
+               AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal();
     final DbPreparedStatement prep = new DbPreparedStatement(session, request);
     session.addLongTermPreparedStatement(prep);
     return prep;

@@ -31,7 +31,7 @@ class HttpCleanChannelFutureListener implements ChannelFutureListener {
   /**
    * @param handler
    */
-  public HttpCleanChannelFutureListener(HttpRequestHandler handler) {
+  HttpCleanChannelFutureListener(HttpRequestHandler handler) {
     this.handler = handler;
   }
 

@@ -21,8 +21,6 @@ package org.waarp.common.service;
 
 /**
  * Abstract class to implement to be able to start or shutdown a service
- *
- *
  */
 public abstract class EngineAbstract extends Thread {
   /**

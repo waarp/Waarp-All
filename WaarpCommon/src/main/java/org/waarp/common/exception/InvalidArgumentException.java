@@ -21,8 +21,6 @@ package org.waarp.common.exception;
 
 /**
  * Argument invalid exception
- *
- *
  */
 public class InvalidArgumentException extends Exception {
 

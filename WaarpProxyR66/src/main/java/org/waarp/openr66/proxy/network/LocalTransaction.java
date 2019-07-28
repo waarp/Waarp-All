@@ -41,12 +41,14 @@ public class LocalTransaction
 
   @Override
   protected void remove(LocalChannelReference localChannelReference) {
+    // nothing
   }
 
   /**
    *
    */
   public LocalTransaction() {
+    // nothing
   }
 
   @Override
@@ -62,6 +64,7 @@ public class LocalTransaction
 
   @Override
   public void setFromId(DbTaskRunner runner, LocalChannelReference lcr) {
+    // nothing
   }
 
   @Override
@@ -76,14 +79,17 @@ public class LocalTransaction
 
   @Override
   public void debugPrintActiveLocalChannels() {
+    // nothing
   }
 
   @Override
   public void shutdownLocalChannels() {
+    // nothing
   }
 
   @Override
   public void closeAll() {
+    // nothing
   }
 
 }

@@ -44,15 +44,11 @@ package org.waarp.common.crypto;
  * myStringDecrypt =
  * key.decryptStringInString(myStringCrypte);</li>
  * </ul>
- *
- *
  */
 public class DynamicKeyObject extends KeyObject {
 
   /**
    * Minimal key size
-   *
-   *
    */
   public enum INSTANCES {
     AES(128), // Min 128
@@ -62,7 +58,7 @@ public class DynamicKeyObject extends KeyObject {
     DESede(112), // 112 or 168 triple DES
     RC2(56), RC4(56);
 
-    int size;
+    final int size;
 
     INSTANCES(int size) {
       this.size = size;
@@ -72,8 +68,6 @@ public class DynamicKeyObject extends KeyObject {
   /**
    * Recommended key size when normal JVM installed (no extension on encrypt
    * support)
-   *
-   *
    */
   public enum INSTANCESMAX {
     AES(128), // Min 128
@@ -83,7 +77,7 @@ public class DynamicKeyObject extends KeyObject {
     DESede(168), // 112 or 168 triple DES
     RC2(128), RC4(128);
 
-    int size;
+    final int size;
 
     INSTANCESMAX(int size) {
       this.size = size;
@@ -93,22 +87,22 @@ public class DynamicKeyObject extends KeyObject {
   /**
    * This value could be between 32 and 128 due to license limitation.
    */
-  private final int KEY_SIZE;
+  private final int keySize;
   /**
    * Short name for the algorithm
    */
-  private final String ALGO;
+  private final String algo;
   /**
    * Could be the shortname again (default implementation in JVM) or the full
    * name as DES/ECB/PKCS5Padding
    */
-  private final String INSTANCE;
+  private final String instance;
   /**
    * The extension for the file to use when saving the key (note that an extra
    * file as extension.inf will be
    * also saved for the extra information)
    */
-  private final String EXTENSION;
+  private final String extension;
 
   /**
    * @param kEYSIZE example DES: 56
@@ -118,10 +112,10 @@ public class DynamicKeyObject extends KeyObject {
    */
   public DynamicKeyObject(int kEYSIZE, String aLGO, String iNSTANCE,
                           String eXTENSION) {
-    KEY_SIZE = kEYSIZE;
-    ALGO = aLGO;
-    INSTANCE = iNSTANCE;
-    EXTENSION = eXTENSION;
+    keySize = kEYSIZE;
+    algo = aLGO;
+    instance = iNSTANCE;
+    extension = eXTENSION;
   }
 
   /**
@@ -129,10 +123,10 @@ public class DynamicKeyObject extends KeyObject {
    * @param eXTENSION to use for files
    */
   public DynamicKeyObject(INSTANCES instance, String eXTENSION) {
-    KEY_SIZE = instance.size;
-    ALGO = instance.name();
-    INSTANCE = instance.name();
-    EXTENSION = eXTENSION;
+    keySize = instance.size;
+    algo = instance.name();
+    this.instance = instance.name();
+    extension = eXTENSION;
   }
 
   /**
@@ -140,30 +134,30 @@ public class DynamicKeyObject extends KeyObject {
    * @param eXTENSION to use for files
    */
   public DynamicKeyObject(INSTANCESMAX instance, String eXTENSION) {
-    KEY_SIZE = instance.size;
-    ALGO = instance.name();
-    INSTANCE = instance.name();
-    EXTENSION = eXTENSION;
+    keySize = instance.size;
+    algo = instance.name();
+    this.instance = instance.name();
+    extension = eXTENSION;
   }
 
   @Override
   public String getAlgorithm() {
-    return ALGO;
+    return algo;
   }
 
   @Override
   public String getInstance() {
-    return INSTANCE;
+    return instance;
   }
 
   @Override
   public int getKeySize() {
-    return KEY_SIZE;
+    return keySize;
   }
 
   @Override
   public String getFileExtension() {
-    return EXTENSION;
+    return extension;
   }
 
 }

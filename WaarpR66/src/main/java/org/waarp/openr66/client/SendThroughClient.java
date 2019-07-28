@@ -106,13 +106,12 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * <br>
  * <br>
  *
- *
  * @see TestSendThroughClient Class as example of usage in test part
  */
 public abstract class SendThroughClient extends AbstractTransfer {
   protected final NetworkTransaction networkTransaction;
   protected LocalChannelReference localChannelReference;
-  protected DbTaskRunner taskRunner = null;
+  protected DbTaskRunner taskRunner;
 
   /**
    * @param future
@@ -125,10 +124,10 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * @param networkTransaction
    * @param id
    */
-  public SendThroughClient(R66Future future, String remoteHost, String filename,
-                           String rulename, String fileinfo, boolean isMD5,
-                           int blocksize, long id,
-                           NetworkTransaction networkTransaction) {
+  protected SendThroughClient(R66Future future, String remoteHost,
+                              String filename, String rulename, String fileinfo,
+                              boolean isMD5, int blocksize, long id,
+                              NetworkTransaction networkTransaction) {
     super(SendThroughClient.class, future, filename, rulename, fileinfo, isMD5,
           remoteHost, blocksize, id, null);
     this.networkTransaction = networkTransaction;
@@ -222,7 +221,6 @@ public abstract class SendThroughClient extends AbstractTransfer {
         } catch (final OpenR66ProtocolNotYetConnectionException e) {
           logger.debug("Not Yet Connected", e);
           exc = e;
-          continue;
         }
       }
       if (exc != null) {
@@ -246,12 +244,11 @@ public abstract class SendThroughClient extends AbstractTransfer {
       // now start the send from external data
       return true;
     } finally {
-      if (taskRunner != null) {
-        if (future.isFailed()) {
-          try {
-            taskRunner.delete();
-          } catch (final WaarpDatabaseException e) {
-          }
+      if (taskRunner != null && future.isFailed()) {
+        try {
+          taskRunner.delete();
+        } catch (final WaarpDatabaseException ignored) {
+          // nothing
         }
       }
     }
@@ -301,7 +298,8 @@ public abstract class SendThroughClient extends AbstractTransfer {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, validPacket,
                                         true);
-        } catch (final OpenR66ProtocolPacketException e) {
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
         }
         if (!localChannelReference.getFutureRequest().awaitOrInterruptible()) {
           // valid it however
@@ -309,18 +307,19 @@ public abstract class SendThroughClient extends AbstractTransfer {
               localChannelReference.getFutureEndTransfer().getResult());
         }
         if (taskRunner != null && taskRunner.isSelfRequested()) {
-          ChannelUtils.close(localChannelReference.getLocalChannel());
+          localChannelReference.close();
         }
       } else {
         transferInError(null);
       }
     } finally {
       if (taskRunner != null) {
-        if ((future.isDone() && (!future.isSuccess())) || nolog ||
+        if (future.isDone() && !future.isSuccess() || nolog ||
             taskRunner.shallIgnoreSave()) {
           try {
             taskRunner.delete();
-          } catch (final WaarpDatabaseException e) {
+          } catch (final WaarpDatabaseException ignored) {
+            // nothing
           }
         }
       }
@@ -347,11 +346,12 @@ public abstract class SendThroughClient extends AbstractTransfer {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
       localChannelReference.invalidateRequest(result);
     }
-    ChannelUtils.close(localChannelReference.getLocalChannel());
+    localChannelReference.close();
   }
 
   /**

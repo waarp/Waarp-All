@@ -71,11 +71,11 @@ public abstract class AbstractHttpField implements Cloneable {
    * @param fieldposition
    * @param fieldrank
    */
-  public AbstractHttpField(String fieldname, FieldRole fieldtype,
-                           String fieldinfo, String fieldvalue,
-                           boolean fieldvisibility, boolean fieldmandatory,
-                           boolean fieldcookieset, boolean fieldtovalidate,
-                           FieldPosition fieldposition, int fieldrank) {
+  protected AbstractHttpField(String fieldname, FieldRole fieldtype,
+                              String fieldinfo, String fieldvalue,
+                              boolean fieldvisibility, boolean fieldmandatory,
+                              boolean fieldcookieset, boolean fieldtovalidate,
+                              FieldPosition fieldposition, int fieldrank) {
     setFieldname(fieldname);
     setFieldtype(fieldtype);
     setFieldinfo(fieldinfo);

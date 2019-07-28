@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 425 Can't open data connection.
- *
- *
  */
 public class Reply425Exception extends CommandAbstractException {
 

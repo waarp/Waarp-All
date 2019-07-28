@@ -24,8 +24,6 @@ import org.waarp.snmp.interf.WaarpTimeTicks;
 
 /**
  * Ftp Exec TimeTicks SNMP implementation
- *
- *
  */
 class FtpTimeTicks extends WaarpTimeTicks {
   /**
@@ -35,13 +33,13 @@ class FtpTimeTicks extends WaarpTimeTicks {
   private int type = 1;
   private final int entry;
 
-  public FtpTimeTicks(int type, int entry) {
+  FtpTimeTicks(int type, int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  public FtpTimeTicks(int type, int entry, long value) {
+  FtpTimeTicks(int type, int entry, long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -49,7 +47,8 @@ class FtpTimeTicks extends WaarpTimeTicks {
 
   @Override
   protected void setInternalValue() {
-    FileBasedConfiguration.fileBasedConfiguration.monitoring.run(type, entry);
+    FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                 .run(type, entry);
   }
 
   @Override

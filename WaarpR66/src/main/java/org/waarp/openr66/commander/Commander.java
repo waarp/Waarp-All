@@ -29,7 +29,6 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
@@ -38,14 +37,26 @@ import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
+import static org.waarp.openr66.database.DbConstantR66.*;
+
 /**
  * Commander is responsible to read from database updated data from time to time
  * in order to achieve new
  * runner or new configuration updates.
- *
- *
  */
 public class Commander implements CommanderInterface {
+  private static final String DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER =
+      "Database Error: Cannot execute Commander";
+
+  private static final String CONFIG = "Config ";
+
+  private static final String DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER =
+      "Database SQL Error: Cannot execute Commander";
+
+  private static final String
+      DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER =
+      "Database No Connection Error: Cannot execute Commander";
+
   /**
    * Internal Logger
    */
@@ -54,8 +65,8 @@ public class Commander implements CommanderInterface {
 
   private static final int LIMITSUBMIT = 100;
 
-  private InternalRunner internalRunner = null;
-  private DbPreparedStatement preparedStatementLock = null;
+  private InternalRunner internalRunner;
+  private DbPreparedStatement preparedStatementLock;
 
   /**
    * Prepare requests that will be executed from time to time
@@ -84,7 +95,7 @@ public class Commander implements CommanderInterface {
     internalConstructor(runner);
     if (fromStartup) {
       // Change RUNNING or INTERRUPTED to TOSUBMIT since they should be ready
-      DbTaskRunner.resetToSubmit(DbConstant.admin.getSession());
+      DbTaskRunner.resetToSubmit(admin.getSession());
     }
   }
 
@@ -93,7 +104,7 @@ public class Commander implements CommanderInterface {
     try {
       if (Configuration.configuration.getMultipleMonitors() > 1) {
         preparedStatementLock = DbMultipleMonitor
-            .getUpdatedPrepareStament(DbConstant.noCommitAdmin.getSession());
+            .getUpdatedPrepareStament(noCommitAdmin.getSession());
       } else {
         preparedStatementLock = null;
       }
@@ -108,8 +119,8 @@ public class Commander implements CommanderInterface {
         }
       } else {
         if (preparedStatementLock != null) {
-          DbConstant.noCommitAdmin.getSession().addLongTermPreparedStatement(
-              preparedStatementLock);
+          noCommitAdmin.getSession()
+                       .addLongTermPreparedStatement(preparedStatementLock);
         }
       }
     }
@@ -119,27 +130,28 @@ public class Commander implements CommanderInterface {
    * Finalize internal data
    */
   @Override
-  public void finalize() {
+  public void finalizeCommander() {
     if (preparedStatementLock != null) {
       try {
-        DbConstant.noCommitAdmin.getSession().commit();
-      } catch (final WaarpDatabaseSqlException e) {
-      } catch (final WaarpDatabaseNoConnectionException e) {
+        noCommitAdmin.getSession().commit();
+      } catch (final WaarpDatabaseSqlException ignored) {
+        // nothing
+      } catch (final WaarpDatabaseNoConnectionException ignored) {
+        // nothing
       }
       preparedStatementLock.realClose();
-      DbConstant.noCommitAdmin.getSession().removeLongTermPreparedStatements(
-          preparedStatementLock);
-      // DbConstant.noCommitAdmin.session.removeLongTermPreparedStatements();
+      noCommitAdmin.getSession()
+                   .removeLongTermPreparedStatements(preparedStatementLock);
+      // DbConstant.noCommitAdmin.session.removeLongTermPreparedStatements()
     }
-    // DbConstant.admin.session.removeLongTermPreparedStatements();
+    // DbConstant.admin.session.removeLongTermPreparedStatements()
   }
 
   @Override
   public void run() {
     Thread.currentThread().setName("OpenR66Commander");
-    if (DbConstant.admin.getSession() != null &&
-        DbConstant.admin.getSession().isDisActive()) {
-      DbConstant.admin.getSession().checkConnectionNoException();
+    if (admin.getSession() != null && admin.getSession().isDisActive()) {
+      admin.getSession().checkConnectionNoException();
     }
     // each time it is runned, it parses all database for updates
     DbMultipleMonitor multipleMonitor = null;
@@ -153,20 +165,21 @@ public class Commander implements CommanderInterface {
               DbMultipleMonitor.getFromStatement(preparedStatementLock);
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
-        logger
-            .error("Database No Connection Error: Cannot execute Commander", e);
+        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         try {
-          DbConstant.noCommitAdmin.getDbModel().validConnection(
-              DbConstant.noCommitAdmin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          noCommitAdmin.getDbModel()
+                       .validConnection(noCommitAdmin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
         return;
       } catch (final WaarpDatabaseSqlException e) {
-        logger.error("Database SQL Error: Cannot execute Commander", e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         try {
-          DbConstant.noCommitAdmin.getDbModel().validConnection(
-              DbConstant.noCommitAdmin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          noCommitAdmin.getDbModel()
+                       .validConnection(noCommitAdmin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
         return;
       }
@@ -188,10 +201,10 @@ public class Commander implements CommanderInterface {
               configuration
                   .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
               configuration.update();
-              logger.debug("Config " + multipleMonitor);
+              logger.debug(CONFIG + multipleMonitor);
             } else {
               configuration.update();
-              logger.debug("Config " + multipleMonitor);
+              logger.debug(CONFIG + multipleMonitor);
             }
           } else {
             configuration
@@ -202,35 +215,34 @@ public class Commander implements CommanderInterface {
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger
-            .error("Database No Connection Error: Cannot execute Commander", e);
+        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database SQL Error: Cannot execute Commander", e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database Error: Cannot execute Commander", e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       }
       // check HostConfiguration
       try {
         final DbHostConfiguration[] configurations =
             DbHostConfiguration.getUpdatedPrepareStament();
-        final int i = 0;
+        int i = 0;
         while (i < configurations.length) {
           // should be only one...
           final DbHostConfiguration configuration = configurations[i];
@@ -243,42 +255,42 @@ public class Commander implements CommanderInterface {
               configuration
                   .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
               configuration.update();
-              logger.debug("Config " + multipleMonitor);
+              logger.debug(CONFIG + multipleMonitor);
             } else {
               configuration.update();
-              logger.debug("Config " + multipleMonitor);
+              logger.debug(CONFIG + multipleMonitor);
             }
           } else {
             configuration
                 .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
             configuration.update();
           }
+          i++;
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger
-            .error("Database No Connection Error: Cannot execute Commander", e);
+        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database SQL Error: Cannot execute Commander", e);
-        // XXX no return since table might not be initialized return;
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        // XXX no return since table might not be initialized 
       } catch (final WaarpDatabaseException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database Error: Cannot execute Commander", e);
-        // XXX no return since table might not be initialized return;
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        // XXX no return since table might not be initialized 
       }
       // ConsistencyCheck HostAuthent
       try {
@@ -299,13 +311,11 @@ public class Commander implements CommanderInterface {
             // Update the Host configuration in HA mode
             if (lastUpdate) {
               hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-              hostAuth.update();
-              logger.debug("Host " + multipleMonitor);
             } else {
               // Nothing to do except validate
-              hostAuth.update();
-              logger.debug("Host " + multipleMonitor);
             }
+            hostAuth.update();
+            logger.debug("Host " + multipleMonitor);
           } else {
             // Nothing to do except validate
             hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
@@ -315,28 +325,27 @@ public class Commander implements CommanderInterface {
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger
-            .error("Database No Connection Error: Cannot execute Commander", e);
+        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database SQL Error: Cannot execute Commander", e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database Error: Cannot execute Commander", e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       }
 
@@ -357,13 +366,11 @@ public class Commander implements CommanderInterface {
             // Update the Rules in HA mode
             if (lastUpdate) {
               rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-              rule.update();
-              logger.debug("Rule " + multipleMonitor);
             } else {
               // Nothing to do except validate
-              rule.update();
-              logger.debug("Rule " + multipleMonitor);
             }
+            rule.update();
+            logger.debug("Rule " + multipleMonitor);
           } else {
             // Nothing to do except validate
             rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
@@ -373,36 +380,35 @@ public class Commander implements CommanderInterface {
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger
-            .error("Database No Connection Error: Cannot execute Commander", e);
+        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database SQL Error: Cannot execute Commander", e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseNoDataException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database Error: Cannot execute Commander", e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database Error: Cannot execute Commander", e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       }
       if (WaarpShutdownHook.isShutdownStarting()) {
@@ -417,7 +423,8 @@ public class Commander implements CommanderInterface {
         final DbTaskRunner[] tasks = DbTaskRunner
             .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, false,
                                                LIMITSUBMIT);
-        final int i = 0;
+        logger.debug("TaskRunner to launch: {}", tasks.length);
+        int i = 0;
         while (i < tasks.length) {
           if (WaarpShutdownHook.isShutdownStarting()) {
             logger.info("Will not start transfers, server is in shutdown.");
@@ -428,8 +435,8 @@ public class Commander implements CommanderInterface {
           logger.debug("get a task: {}", taskRunner);
           // Launch if possible this task
           final String key =
-              taskRunner.getRequested() + " " + taskRunner.getRequester() +
-              " " + taskRunner.getSpecialId();
+              taskRunner.getRequested() + ' ' + taskRunner.getRequester() +
+              ' ' + taskRunner.getSpecialId();
           if (Configuration.configuration.getLocalTransaction()
                                          .getFromRequest(key) != null) {
             // already running
@@ -442,36 +449,35 @@ public class Commander implements CommanderInterface {
               taskRunner.update();
             } catch (final WaarpDatabaseNoDataException e) {
               logger.warn("Update failed, no transfer found");
-              continue;
             }
             continue;
           }
           internalRunner.submitTaskRunner(taskRunner);
+          i++;
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger
-            .error("Database No Connection Error: Cannot execute Commander", e);
+        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database SQL Error: Cannot execute Commander", e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       } catch (final WaarpDatabaseException e) {
         try {
-          DbConstant.admin.getDbModel()
-                          .validConnection(DbConstant.admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException e1) {
+          admin.getDbModel().validConnection(admin.getSession());
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
-        logger.error("Database Error: Cannot execute Commander", e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       }
       logger.debug("end commander");
@@ -481,12 +487,13 @@ public class Commander implements CommanderInterface {
           // Now update and Commit so releasing the lock
           logger.debug("Update " + multipleMonitor);
           multipleMonitor.update();
-          DbConstant.noCommitAdmin.getSession().commit();
+          noCommitAdmin.getSession().commit();
         } catch (final WaarpDatabaseException e) {
           try {
-            DbConstant.noCommitAdmin.getDbModel().validConnection(
-                DbConstant.noCommitAdmin.getSession());
-          } catch (final WaarpDatabaseNoConnectionException e1) {
+            noCommitAdmin.getDbModel()
+                         .validConnection(noCommitAdmin.getSession());
+          } catch (final WaarpDatabaseNoConnectionException ignored) {
+            // nothing
           }
         }
       }

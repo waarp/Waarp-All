@@ -19,6 +19,8 @@
  */
 package org.waarp.xample;
 
+import org.waarp.common.logging.SysErrLogger;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -28,6 +30,7 @@ import javax.swing.border.Border;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -42,7 +45,6 @@ import java.awt.event.WindowEvent;
  * "About" dialog for the XAmple application.
  *
  * @author Felix Golubov
- *
  * @version 1.0
  */
 
@@ -51,22 +53,23 @@ public class DlgAbout extends JDialog implements ActionListener {
    *
    */
   private static final long serialVersionUID = -2724699673221265107L;
-  JPanel panel1 = new JPanel();
-  JPanel panel2 = new JPanel();
-  JPanel insetsPanel1 = new JPanel();
-  JPanel insetsPanel3 = new JPanel();
-  JButton button1 = new JButton();
-  JLabel label1 = new JLabel();
-  JLabel label2 = new JLabel();
-  JLabel label3 = new JLabel();
-  JLabel label4 = new JLabel();
-  BorderLayout borderLayout1 = new BorderLayout();
-  BorderLayout borderLayout2 = new BorderLayout();
-  GridLayout gridLayout1 = new GridLayout();
-  String product = "XAmple-Waarp XML Configuration Editor";
-  String version = "Version 1.0";
-  String copyright = "Copyright (c) 2002 Felix Golubov & 2010 Frederic Bregier";
-  String comments = "Helper for XML Configuration editing";
+  final JPanel panel1 = new JPanel();
+  final JPanel panel2 = new JPanel();
+  final JPanel insetsPanel1 = new JPanel();
+  final JPanel insetsPanel3 = new JPanel();
+  final JButton button1 = new JButton();
+  final JLabel label1 = new JLabel();
+  final JLabel label2 = new JLabel();
+  final JLabel label3 = new JLabel();
+  final JLabel label4 = new JLabel();
+  final BorderLayout borderLayout1 = new BorderLayout();
+  final BorderLayout borderLayout2 = new BorderLayout();
+  final GridLayout gridLayout1 = new GridLayout();
+  final String product = "XAmple-Waarp XML Configuration Editor";
+  final String version = "Version 1.0";
+  final String copyright =
+      "Copyright (c) 2002 Felix Golubov & 2010 Frederic Bregier";
+  final String comments = "Helper for XML Configuration editing";
   Border border1;
 
   public DlgAbout(Frame parent) {
@@ -75,7 +78,7 @@ public class DlgAbout extends JDialog implements ActionListener {
     try {
       jbInit();
     } catch (final Exception e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
     pack();
   }
@@ -90,7 +93,7 @@ public class DlgAbout extends JDialog implements ActionListener {
     panel2.setLayout(borderLayout2);
     gridLayout1.setRows(4);
     gridLayout1.setColumns(1);
-    label1.setFont(new java.awt.Font("Dialog", 1, 18));
+    label1.setFont(new Font("Dialog", 1, 18));
     label1.setText(product);
     label2.setText(version);
     label3.setText(copyright);

@@ -20,6 +20,7 @@
 package org.waarp.ftp.simpleimpl;
 
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -32,8 +33,6 @@ import org.waarp.ftp.simpleimpl.data.FileSystemBasedDataBusinessHandler;
  * Example of FTP Server using simple authentication (XML FileInterface based),
  * and standard Directory and
  * FileInterface implementation (Filesystem based).
- *
- *
  */
 public class SimpleGatewayFtpServer {
   /**
@@ -48,8 +47,9 @@ public class SimpleGatewayFtpServer {
    */
   public static void main(String[] args) {
     if (args.length != 1) {
-      System.err.println("Usage: " + SimpleGatewayFtpServer.class.getName() +
-                         " <config-file>");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Usage: " + SimpleGatewayFtpServer.class.getName() +
+          " <config-file>");
       return;
     }
     WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
@@ -61,7 +61,7 @@ public class SimpleGatewayFtpServer {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     if (!configuration.setConfigurationFromXml(config)) {
-      System.err.println("Bad configuration");
+      SysErrLogger.FAKE_LOGGER.syserr("Bad configuration");
       return;
     }
     // Start server.

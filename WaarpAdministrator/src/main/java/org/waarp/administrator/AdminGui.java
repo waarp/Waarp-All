@@ -21,12 +21,13 @@ package org.waarp.administrator;
 
 import org.waarp.administrator.guipwd.AdminUiPassword;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -65,6 +66,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static org.waarp.openr66.database.DbConstantR66.*;
+
 public class AdminGui {
   /**
    * Internal Logger
@@ -75,7 +78,7 @@ public class AdminGui {
   private final List<AdminXample> xamples = new ArrayList<AdminXample>();
   private final List<AdminUiPassword> passwords =
       new ArrayList<AdminUiPassword>();
-  private static R66Environment environnement = new R66Environment();
+  private static final R66Environment environnement = new R66Environment();
 
   JButton btnEditXml;
   JButton btnCheckPartners;
@@ -86,6 +89,7 @@ public class AdminGui {
   JButton btnFileTransfer;
 
   protected static boolean getParams(String[] args) {
+    ParametersChecker.checkParameter(ParametersChecker.DEFAULT_ERROR, args);
     if (args.length < 1) {
       logger
           .error(Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
@@ -124,10 +128,10 @@ public class AdminGui {
       JOptionPane.showMessageDialog(null, Messages
                                         .getString("Configuration.WrongInit"), //$NON-NLS-1$
                                     "Attention", JOptionPane.WARNING_MESSAGE);
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     String[] args2;
 
@@ -151,7 +155,7 @@ public class AdminGui {
           final AdminGui window = new AdminGui();
           window.frmWaarpRCentral.setVisible(true);
         } catch (final Throwable e) {
-          e.printStackTrace();
+          SysErrLogger.FAKE_LOGGER.syserr(e);
         }
       }
     });
@@ -166,7 +170,7 @@ public class AdminGui {
 
   private void langReinit() {
     frmWaarpRCentral.setTitle(Messages.getString("AdminGui.title") +
-                              Configuration.configuration.getHOST_ID());
+                              Configuration.configuration.getHostId());
     btnEditXml.setText(Messages.getString("AdminGui.EditXml"));
     btnCheckPartners.setText(Messages.getString("AdminGui.CheckPartners"));
     btnEditPassword.setText(Messages.getString("AdminGui.EditPassword"));
@@ -182,7 +186,7 @@ public class AdminGui {
   private void initialize() {
     frmWaarpRCentral = new JFrame();
     frmWaarpRCentral.setTitle("Waarp R66 Central Administrator: " +
-                              Configuration.configuration.getHOST_ID());
+                              Configuration.configuration.getHostId());
     frmWaarpRCentral.setBounds(100, 100, 850, 300);
     frmWaarpRCentral.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -218,11 +222,11 @@ public class AdminGui {
         // Check all Known Partners
         try {
           TestPacket packet;
-          String myhost = null;
+          String myhost;
           try {
-            myhost = (AdminGui.getEnvironnement().hostId == null?
+            myhost = getEnvironnement().hostId == null?
                 InetAddress.getLocalHost().getHostName() :
-                AdminGui.getEnvironnement().hostId);
+                getEnvironnement().hostId;
           } catch (final UnknownHostException e) {
             myhost = Messages.getString("AdminGui.NameUnknown");
           }
@@ -230,28 +234,27 @@ public class AdminGui {
               new TestPacket("MSG", "Administrator checking from " + myhost,
                              100);
           packet.retain();
-          String result = Messages.getString("AdminGui.CheckedHosts");
-          DbConstant.admin.getSession();
+          StringBuilder result =
+              new StringBuilder(Messages.getString("AdminGui.CheckedHosts"));
           for (final DbHostAuth host : DbHostAuth.getAllHosts()) {
             final R66Future future = new R66Future(true);
             final Message mesg =
-                new Message(AdminGui.getEnvironnement().networkTransaction,
-                            future, host, packet);
+                new Message(getEnvironnement().networkTransaction, future, host,
+                            packet);
             mesg.run();
             packet.retain();
             future.awaitOrInterruptible();
             if (future.isSuccess()) {
-              result += "OK: " + host.toString() + "\n";
+              result.append("OK: ").append(host).append('\n');
             } else {
-              result += "KO: " + host.toString() + "\n";
+              result.append("KO: ").append(host).append('\n');
             }
           }
           packet.clear();
 
-          JOptionPane.showMessageDialog(null, result);
+          JOptionPane.showMessageDialog(null, result.toString());
         } catch (final WaarpDatabaseNoConnectionException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          SysErrLogger.FAKE_LOGGER.syserr(e);
         }
       }
     });
@@ -269,8 +272,7 @@ public class AdminGui {
             try {
               inst = new AdminUiPassword(passwords);
             } catch (final Exception e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
               return;
             }
             inst.setLocationRelativeTo(null);
@@ -314,7 +316,7 @@ public class AdminGui {
                   .setWindow(new AdminR66OperationsGui(frmWaarpRCentral));
               AdminR66OperationsGui.getWindow().setVisible(true);
             } catch (final Exception e) {
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             }
           }
         });
@@ -341,7 +343,7 @@ public class AdminGui {
               R66ClientGui.window = new AdminSimpleR66ClientGui();
               R66ClientGui.window.frmRClientGui.setVisible(true);
             } catch (final Exception e) {
-              e.printStackTrace();
+              SysErrLogger.FAKE_LOGGER.syserr(e);
             }
           }
         });
@@ -366,11 +368,11 @@ public class AdminGui {
       btnFr.setText("FR");
     }
     btnFr.setToolTipText("FR");
-    final GridBagConstraints gbc_btnFr = new GridBagConstraints();
-    gbc_btnFr.insets = new Insets(0, 0, 0, 5);
-    gbc_btnFr.gridx = 1;
-    gbc_btnFr.gridy = 0;
-    frmWaarpRCentral.getContentPane().add(btnFr, gbc_btnFr);
+    final GridBagConstraints gbcBtnFr = new GridBagConstraints();
+    gbcBtnFr.insets = new Insets(0, 0, 0, 5);
+    gbcBtnFr.gridx = 1;
+    gbcBtnFr.gridy = 0;
+    frmWaarpRCentral.getContentPane().add(btnFr, gbcBtnFr);
 
     final JButton btnEn = new JButton("");
     btnEn.addActionListener(new ActionListener() {
@@ -388,10 +390,10 @@ public class AdminGui {
       btnEn.setText("EN");
     }
     btnEn.setMargin(new Insets(2, 2, 2, 2));
-    final GridBagConstraints gbc_btnEn = new GridBagConstraints();
-    gbc_btnEn.gridx = 2;
-    gbc_btnEn.gridy = 0;
-    frmWaarpRCentral.getContentPane().add(btnEn, gbc_btnEn);
+    final GridBagConstraints gbcBtnEn = new GridBagConstraints();
+    gbcBtnEn.gridx = 2;
+    gbcBtnEn.gridy = 0;
+    frmWaarpRCentral.getContentPane().add(btnEn, gbcBtnEn);
   }
 
   /**
@@ -408,9 +410,7 @@ public class AdminGui {
       xample.exit();
     }
     final List<AdminUiPassword> list2 = new ArrayList<AdminUiPassword>();
-    for (final AdminUiPassword pwd : passwords) {
-      list2.add(pwd);
-    }
+    list2.addAll(passwords);
     for (final AdminUiPassword pwd : list2) {
       pwd.exit(null);
     }
@@ -419,7 +419,7 @@ public class AdminGui {
       R66ClientGui.window = null;
     }
     frmWaarpRCentral.dispose();
-    System.exit(0);
+    System.exit(0);//NOSONAR
   }
 
   /**

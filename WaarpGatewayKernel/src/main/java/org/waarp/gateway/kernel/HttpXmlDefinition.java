@@ -47,7 +47,12 @@ import java.util.List;
 /**
  *
  */
-public class HttpXmlDefinition {
+public final class HttpXmlDefinition {
+  private static final String UNABLE_TO_LINK_VALUE_OF_FIELD =
+      "Unable to link value of field: ";
+
+  private static final String UNABLE_TO_FIND_FIELD = "Unable to find field: ";
+
   /**
    * Internal Logger
    */
@@ -66,7 +71,7 @@ public class HttpXmlDefinition {
   /**
    * HTTP global root
    */
-  private static final String XML_HTTP_ROOT = "/" + XML_ROOT_NAME + "/";
+  private static final String XML_HTTP_ROOT = '/' + XML_ROOT_NAME + '/';
   /**
    * HTTP Pages
    */
@@ -207,7 +212,7 @@ public class HttpXmlDefinition {
       new XmlDecl(XmlType.STRING, XML_HTTP_CLASSNAME),
       // all fields
       new XmlDecl(XML_HTTP_FIELD, XmlType.XVAL,
-                  XML_HTTP_FIELDS + "/" + XML_HTTP_FIELD, configHttpField, true)
+                  XML_HTTP_FIELDS + '/' + XML_HTTP_FIELD, configHttpField, true)
   };
 
   /**
@@ -218,34 +223,37 @@ public class HttpXmlDefinition {
   private static final XmlDecl[] configHttpPages = {
       // all pages
       new XmlDecl(XML_HTTP_PAGE, XmlType.XVAL,
-                  XML_HTTP_ROOT + XML_HTTP_PAGES + "/" + XML_HTTP_PAGE,
+                  XML_HTTP_ROOT + XML_HTTP_PAGES + '/' + XML_HTTP_PAGE,
                   configHttpPage, true)
   };
 
-  protected static AbstractHttpField loadHttpPage(XmlValue[] xmlValue)
+  private HttpXmlDefinition() {
+  }
+
+  static AbstractHttpField loadHttpPage(XmlValue[] xmlValue)
       throws InvalidArgumentException {
     final XmlHash hash = new XmlHash(xmlValue);
     XmlValue value = hash.get(XML_HTTP_FIELDNAME);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_FIELDNAME);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDNAME);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_FIELDNAME);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDNAME);
     }
     final String fieldname = value.getString();
     value = hash.get(XML_HTTP_FIELDTYPE);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_FIELDTYPE);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDTYPE);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_FIELDTYPE);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDTYPE);
     }
     final String fieldtype = value.getString();
-    FieldRole fieldRole = null;
+    FieldRole fieldRole;
     try {
       fieldRole = FieldRole.valueOf(fieldtype);
     } catch (final IllegalArgumentException e) {
-      logger.error("Unable to link value of field: " + XML_HTTP_FIELDTYPE);
+      logger.error(UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_FIELDTYPE);
       throw new InvalidArgumentException(
-          "Unable to link value of field: " + XML_HTTP_FIELDTYPE);
+          UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_FIELDTYPE);
     }
     value = hash.get(XML_HTTP_FIELDINFO);
     String fieldinfo = fieldname;
@@ -284,9 +292,9 @@ public class HttpXmlDefinition {
     }
     value = hash.get(XML_HTTP_FIELDRANK);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_FIELDRANK);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDRANK);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_FIELDRANK);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDRANK);
     }
     final int fieldrank = value.getInteger();
     return new DefaultHttpField(fieldname, fieldRole, fieldinfo, fieldvalue,
@@ -294,15 +302,15 @@ public class HttpXmlDefinition {
                                 fieldtovalidate, fieldposition, fieldrank);
   }
 
-  protected static HttpPage loadHttpConfiguration(XmlValue[] xmlValue)
+  static HttpPage loadHttpConfiguration(XmlValue[] xmlValue)
       throws InvalidArgumentException, ClassNotFoundException,
              InstantiationException, IllegalAccessException {
     final XmlHash hash = new XmlHash(xmlValue);
     XmlValue value = hash.get(XML_HTTP_PAGENAME);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_PAGENAME);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_PAGENAME);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_PAGENAME);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_PAGENAME);
     }
     final String pagename = value.getString();
     value = hash.get(XML_HTTP_FILEFORM);
@@ -337,38 +345,37 @@ public class HttpXmlDefinition {
     }
     value = hash.get(XML_HTTP_URI);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_URI);
-      throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_URI);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_URI);
+      throw new InvalidArgumentException(UNABLE_TO_FIND_FIELD + XML_HTTP_URI);
     }
     final String uri = value.getString();
     value = hash.get(XML_HTTP_PAGEROLE);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_PAGEROLE);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_PAGEROLE);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_PAGEROLE);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_PAGEROLE);
     }
     final String pagerole = value.getString();
-    PageRole pageRole = null;
+    PageRole pageRole;
     try {
       pageRole = PageRole.valueOf(pagerole);
     } catch (final IllegalArgumentException e) {
-      logger.error("Unable to link value of field: " + XML_HTTP_PAGEROLE);
+      logger.error(UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_PAGEROLE);
       throw new InvalidArgumentException(
-          "Unable to link value of field: " + XML_HTTP_PAGEROLE);
+          UNABLE_TO_LINK_VALUE_OF_FIELD + XML_HTTP_PAGEROLE);
     }
     value = hash.get(XML_HTTP_ERRORPAGE);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_ERRORPAGE);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_ERRORPAGE);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_ERRORPAGE);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_ERRORPAGE);
     }
     final String errorpage = value.getString();
     value = hash.get(XML_HTTP_CLASSNAME);
     if (value == null || value.isEmpty() || value.getString().length() == 0) {
-      logger.error("Unable to find field: " + XML_HTTP_CLASSNAME);
+      logger.error(UNABLE_TO_FIND_FIELD + XML_HTTP_CLASSNAME);
       throw new InvalidArgumentException(
-          "Unable to find field: " + XML_HTTP_CLASSNAME);
+          UNABLE_TO_FIND_FIELD + XML_HTTP_CLASSNAME);
     }
     final String classname = value.getString();
     // now getting Fields
@@ -383,14 +390,12 @@ public class HttpXmlDefinition {
       listFields.add(field.getFieldrank(), field);
     }
     list.clear();
-    list = null;
     final LinkedHashMap<String, AbstractHttpField> linkedHashMap =
         new LinkedHashMap<String, AbstractHttpField>(listFields.size());
     for (final AbstractHttpField abstractHttpField : listFields) {
       linkedHashMap.put(abstractHttpField.getFieldname(), abstractHttpField);
     }
     listFields.clear();
-    listFields = null;
     return new HttpPage(pagename, fileform, header, footer, beginform, endform,
                         nextinform, uri, pageRole, errorpage, classname,
                         linkedHashMap);
@@ -411,7 +416,7 @@ public class HttpXmlDefinition {
   public static HttpPageHandler setConfigurationHttpServerFromXml(
       String filename) throws InvalidArgumentException, ClassNotFoundException,
                               InstantiationException, IllegalAccessException {
-    Document document = null;
+    Document document;
     // Open config file
     try {
       document = new SAXReader().read(filename);
@@ -440,8 +445,6 @@ public class HttpXmlDefinition {
       pages.put(page.getUri(), page);
     }
     list.clear();
-    list = null;
-    values = null;
     return new HttpPageHandler(pages);
   }
 
@@ -453,7 +456,7 @@ public class HttpXmlDefinition {
    *
    * @return the new Element
    */
-  private static final Element newElement(String name, String value) {
+  private static Element newElement(String name, String value) {
     final Element node = new DefaultElement(name);
     if (value != null && value.length() > 0) {
       node.addText(value);
@@ -461,7 +464,7 @@ public class HttpXmlDefinition {
     return node;
   }
 
-  protected static void addToField(Element root, AbstractHttpField field) {
+  static void addToField(Element root, AbstractHttpField field) {
     root.add(newElement(XML_HTTP_FIELDNAME, field.getFieldname()));
     root.add(newElement(XML_HTTP_FIELDTYPE, field.getFieldtype().name()));
     root.add(newElement(XML_HTTP_FIELDINFO, field.getFieldinfo()));
@@ -480,7 +483,7 @@ public class HttpXmlDefinition {
         newElement(XML_HTTP_FIELDRANK, Integer.toString(field.getFieldrank())));
   }
 
-  protected static void addToElement(Element root, HttpPage page) {
+  static void addToElement(Element root, HttpPage page) {
     root.add(newElement(XML_HTTP_PAGENAME, page.getPagename()));
     root.add(newElement(XML_HTTP_FILEFORM, page.getFileform()));
     root.add(newElement(XML_HTTP_HEADER, page.getHeader()));

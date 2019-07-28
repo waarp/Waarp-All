@@ -72,8 +72,6 @@ import java.nio.charset.UnsupportedCharsetException;
  * Note: by default, no connection are closed except in case of error or if in
  * HTTP 1.0 or explicitly to be
  * closed.
- *
- *
  */
 public abstract class HttpRestR66ClientResponseHandler
     extends SimpleChannelInboundHandler<HttpObject> {
@@ -83,8 +81,8 @@ public abstract class HttpRestR66ClientResponseHandler
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestR66ClientResponseHandler.class);
 
-  private ByteBuf cumulativeBody = null;
-  protected JsonNode jsonObject = null;
+  private ByteBuf cumulativeBody;
+  protected JsonNode jsonObject;
 
   protected void addContent(FullHttpResponse response)
       throws HttpIncorrectRequestException {
@@ -126,28 +124,20 @@ public abstract class HttpRestR66ClientResponseHandler
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
     restFuture.setRestArgument(ra);
     switch (ra.getMethod()) {
-      case CONNECT:
-        break;
       case DELETE:
         includeValidation = delete(channel, ra);
         break;
       case GET:
         includeValidation = get(channel, ra);
         break;
-      case HEAD:
-        break;
       case OPTIONS:
         includeValidation = options(channel, ra);
-        break;
-      case PATCH:
         break;
       case POST:
         includeValidation = post(channel, ra);
         break;
       case PUT:
         includeValidation = put(channel, ra);
-        break;
-      case TRACE:
         break;
       default:
         break;
@@ -360,8 +350,7 @@ public abstract class HttpRestR66ClientResponseHandler
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
       throws Exception {
-    final HttpObject obj = msg;
-    if (obj instanceof HttpResponse) {
+    if (msg instanceof HttpResponse) {
       final HttpResponse response = (HttpResponse) msg;
       final HttpResponseStatus status = response.status();
       logger.debug(HttpHeaderNames.REFERER + ": " +
@@ -377,11 +366,11 @@ public abstract class HttpRestR66ClientResponseHandler
           final RestFuture restFuture = ctx.channel().attr(
               HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
           restFuture.setRestArgument(ra);
-          logger.error("Error: " + response.status().code() + " " +
-                       response.status().reasonPhrase() + "\n" +
+          logger.error("Error: " + response.status().code() + ' ' +
+                       response.status().reasonPhrase() + '\n' +
                        ra.prettyPrint());
         } else {
-          logger.error("Error: " + response.status().code() + " " +
+          logger.error("Error: " + response.status().code() + ' ' +
                        response.status().reasonPhrase());
         }
         if (!afterError(ctx.channel(), ra)) {

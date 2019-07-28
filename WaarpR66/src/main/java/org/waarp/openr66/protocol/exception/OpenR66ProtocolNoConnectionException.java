@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol Exception when no connection is possible
- *
- *
  */
 public class OpenR66ProtocolNoConnectionException extends OpenR66Exception {
 
@@ -35,7 +33,6 @@ public class OpenR66ProtocolNoConnectionException extends OpenR66Exception {
    *
    */
   public OpenR66ProtocolNoConnectionException() {
-    super();
   }
 
   /**

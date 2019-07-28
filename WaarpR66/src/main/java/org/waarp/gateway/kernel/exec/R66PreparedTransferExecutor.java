@@ -18,41 +18,17 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright 2009, Frederic Bregier, and individual contributors by the @author
- * tags. See the
- * COPYRIGHT.txt in the distribution for a full listing of individual
- * contributors.
- * <p>
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation; either
- * version 3.0 of the
- * License, or (at your option) any later version.
- * <p>
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this
- * software; if not, write to the Free Software Foundation, Inc., 51 Franklin
- * St, Fifth Floor,
- * Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+
 package org.waarp.gateway.kernel.exec;
 
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.database.DbSession;
-import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -64,6 +40,8 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * R66PreparedTransferExecutor class. If the command starts with "REFUSED", the
@@ -101,10 +79,10 @@ import java.util.Date;
  * [-delay +delay] [-info ##UUID##
  * #USER# #ACCOUNT# #COMMAND# INFO]" <br>
  * will be a standard use of this function.
- *
- *
  */
 public class R66PreparedTransferExecutor extends AbstractExecutor {
+  private static final String CANNOT_GET_NEW_TASK = "Cannot get new task\n    ";
+
   /**
    * Internal Logger
    */
@@ -113,21 +91,21 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
 
   protected final WaarpFuture future;
 
-  protected String filename = null;
+  protected String filename;
 
-  protected String rulename = null;
+  protected String rulename;
 
-  protected String fileinfo = null;
+  protected String fileinfo;
 
-  protected boolean isMD5 = false;
+  protected boolean isMD5;
 
-  protected boolean nolog = false;
+  protected boolean nolog;
 
-  protected Timestamp timestart = null;
+  protected Timestamp timestart;
 
-  protected String remoteHost = null;
+  protected String remoteHost;
 
-  protected int blocksize = Configuration.configuration.getBLOCKSIZE();
+  protected int blocksize = Configuration.configuration.getBlockSize();
 
   protected DbSession dbsession;
 
@@ -138,41 +116,41 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
    */
   public R66PreparedTransferExecutor(String command, long delay,
                                      WaarpFuture futureCompletion) {
-    final String args[] = command.split(" ");
+    final String[] args = BLANK.split(command);
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-to")) {
+      if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         remoteHost = args[i];
         if (Configuration.configuration.getAliases().containsKey(remoteHost)) {
           remoteHost = Configuration.configuration.getAliases().get(remoteHost);
         }
-      } else if (args[i].equalsIgnoreCase("-file")) {
+      } else if ("-file".equalsIgnoreCase(args[i])) {
         i++;
         filename = args[i];
-      } else if (args[i].equalsIgnoreCase("-rule")) {
+      } else if ("-rule".equalsIgnoreCase(args[i])) {
         i++;
         rulename = args[i];
-      } else if (args[i].equalsIgnoreCase("-info")) {
+      } else if ("-info".equalsIgnoreCase(args[i])) {
         i++;
         fileinfo = args[i];
         i++;
         while (i < args.length) {
-          fileinfo += " " + args[i];
+          fileinfo += ' ' + args[i];
           i++;
         }
-      } else if (args[i].equalsIgnoreCase("-md5")) {
+      } else if ("-md5".equalsIgnoreCase(args[i])) {
         isMD5 = true;
-      } else if (args[i].equalsIgnoreCase("-block")) {
+      } else if ("-block".equalsIgnoreCase(args[i])) {
         i++;
         blocksize = Integer.parseInt(args[i]);
         if (blocksize < 100) {
           logger.warn("Block size is too small: " + blocksize);
-          blocksize = Configuration.configuration.getBLOCKSIZE();
+          blocksize = Configuration.configuration.getBlockSize();
         }
-      } else if (args[i].equalsIgnoreCase("-nolog")) {
+      } else if ("-nolog".equalsIgnoreCase(args[i])) {
         nolog = true;
         i++;
-      } else if (args[i].equalsIgnoreCase("-start")) {
+      } else if ("-start".equalsIgnoreCase(args[i])) {
         i++;
         final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyyMMddHHmmss");
@@ -180,9 +158,10 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
         try {
           date = dateFormat.parse(args[i]);
           timestart = new Timestamp(date.getTime());
-        } catch (final ParseException e) {
+        } catch (final ParseException ignored) {
+          // nothing
         }
-      } else if (args[i].equalsIgnoreCase("-delay")) {
+      } else if ("-delay".equalsIgnoreCase(args[i])) {
         i++;
         if (args[i].charAt(0) == '+') {
           timestart = new Timestamp(System.currentTimeMillis() +
@@ -241,8 +220,8 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
       }
     }
     final RequestPacket request =
-        new RequestPacket(rulename, mode, filename, blocksize, 0,
-                          DbConstant.ILLEGALVALUE, fileinfo, originalSize, sep);
+        new RequestPacket(rulename, mode, filename, blocksize, 0, ILLEGALVALUE,
+                          fileinfo, originalSize, sep);
     // Not isRecv since it is the requester, so send => isRetrieve is true
     final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
     logger.debug("Will prepare: {}", request);
@@ -253,19 +232,19 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
     } catch (final WaarpDatabaseException e) {
       logger.error("Cannot get new task since {}\n    " + message,
                    e.getMessage());
-      throw new Reply421Exception("Cannot get new task\n    " + message);
+      throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);
     }
-    taskRunner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);
+    taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
     if (!taskRunner.forceSaveStatus()) {
       try {
         if (!taskRunner.specialSubmit()) {
           logger.error("Cannot prepare task: " + message);
-          throw new Reply421Exception("Cannot get new task\n    " + message);
+          throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);
         }
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot prepare task since {}\n    " + message,
                      e.getMessage());
-        throw new Reply421Exception("Cannot get new task\n    " + message);
+        throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);
       }
     }
     logger.debug("R66PreparedTransfer prepared: {}", request);

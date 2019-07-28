@@ -18,9 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *
- */
 package org.waarp.ftp.client;
 
 import org.waarp.common.logging.WaarpLogger;
@@ -40,9 +37,6 @@ import static junit.framework.TestCase.*;
 /**
  * Simple test example using predefined scenario (Note: this uses the configuration example for user shutdown
  * command)
- *
- *
- *
  */
 public class FtpClientTest {
   public static AtomicLong numberOK = new AtomicLong(0);
@@ -71,7 +65,7 @@ public class FtpClientTest {
     if (args.length < 8) {
       System.err.println("Usage: " + FtpClientTest.class.getSimpleName() +
                          " server port user pwd acct localfilename nbThread nbIter");
-      DetectionUtils.SystemExit(1);
+      DetectionUtils.systemExit(1);
       return;
     }
     server = args[0];
@@ -119,6 +113,7 @@ public class FtpClientTest {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
+      assertEquals("No KO", 0, numberKO.get());
       return;
     }
     try {
@@ -139,7 +134,7 @@ public class FtpClientTest {
     if (isSSL > 0) {
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignored) {
       }
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -158,7 +153,7 @@ public class FtpClientTest {
           } else {
             Thread.sleep(newdel);
           }
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       } else {
         Thread.yield();
@@ -191,11 +186,11 @@ public class FtpClientTest {
     }
 
     logger.warn(
-        localFilename + " " + numberThread + " " + numberIteration + " " +
+        localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +
         type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
         " KO: " + numberKO.get() + " Trf/s: " +
         numberOK.get() * 1000 / (date2 - date1));
-    assertTrue("No KO", numberKO.get() == 0);
+    assertEquals("No KO", 0, numberKO.get());
   }
 
 }

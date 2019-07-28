@@ -25,7 +25,6 @@ import java.util.Map;
 /**
  * Capacity based LRU version of LinkedHashMap
  *
- *
  * @author Damian Momot
  */
 class CapacityLruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {

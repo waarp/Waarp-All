@@ -25,14 +25,12 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * PWD command
- *
- *
  */
 public class PWD extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
     getSession().setReplyCode(ReplyCode.REPLY_257_PATHNAME_CREATED,
-                              "\"" + getSession().getDir().getPwd() +
+                              '"' + getSession().getDir().getPwd() +
                               "\" is current directory");
   }
 

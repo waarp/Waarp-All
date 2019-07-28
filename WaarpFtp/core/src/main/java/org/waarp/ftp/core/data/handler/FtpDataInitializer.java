@@ -31,8 +31,6 @@ import org.waarp.ftp.core.config.FtpConfiguration;
 
 /**
  * Pipeline Factory for Data Network.
- *
- *
  */
 public class FtpDataInitializer extends ChannelInitializer<SocketChannel> {
   /**
@@ -121,7 +119,8 @@ public class FtpDataInitializer extends ChannelInitializer<SocketChannel> {
     pipeline.addLast(CODEC_TYPE, ftpDataTypeCodec);
     pipeline.addLast(CODEC_STRUCTURE, ftpDataStructureCodec);
     // and then business logic. New one on every connection
-    final DataBusinessHandler newbusiness = dataBusinessHandler.newInstance();
+    final DataBusinessHandler newbusiness =
+        dataBusinessHandler.getDeclaredConstructor().newInstance();
     final DataNetworkHandler newNetworkHandler =
         new DataNetworkHandler(configuration, newbusiness, isActive);
     pipeline

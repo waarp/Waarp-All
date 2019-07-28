@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol exception due to a network error
- *
- *
  */
 public class OpenR66ProtocolNetworkException extends OpenR66Exception {
   /**
@@ -34,7 +32,6 @@ public class OpenR66ProtocolNetworkException extends OpenR66Exception {
    *
    */
   public OpenR66ProtocolNetworkException() {
-    super();
   }
 
   /**

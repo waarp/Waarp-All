@@ -33,7 +33,6 @@ import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Host;
-import org.waarp.openr66.protocol.http.restv2.RestConstants;
 import org.waarp.openr66.protocol.http.restv2.converters.HostConverter;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
@@ -131,13 +130,13 @@ public class HostsHandler extends AbstractRestDbHandler {
 
     final List<RestError> errors = new ArrayList<RestError>();
 
-    int limit = 20, offset = 0;
+    int limit = 20;
+    int offset = 0;
     HostConverter.Order order = HostConverter.Order.ascId;
     try {
       limit = Integer.parseInt(limit_str);
     } catch (final NumberFormatException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(RestConstants.GetHostsParams.LIMIT,
-                                         limit_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));
     }
     try {
       order = HostConverter.Order.valueOf(order_str);
@@ -151,13 +150,13 @@ public class HostsHandler extends AbstractRestDbHandler {
     }
 
     if (limit < 0) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(RestConstants.GetHostsParams.LIMIT,
-                                         limit_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));
     } else if (offset < 0) {
       errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));
     }
 
-    boolean isSSL = false, isActive = false;
+    boolean isSSL = false;
+    boolean isActive = false;
     if (isSSL_str != null) {
       try {
         isSSL = RestUtils.stringToBoolean(isSSL_str);

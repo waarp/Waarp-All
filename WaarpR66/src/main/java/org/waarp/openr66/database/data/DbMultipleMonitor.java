@@ -38,11 +38,9 @@ import java.sql.Types;
 
 /**
  * Configuration Table object
- *
- *
  */
 public class DbMultipleMonitor extends AbstractDbData {
-  public static enum Columns {
+  public enum Columns {
     COUNTCONFIG, COUNTHOST, COUNTRULE, HOSTID
   }
 
@@ -57,8 +55,8 @@ public class DbMultipleMonitor extends AbstractDbData {
   public static final int NBPRKEY = 1;
 
   protected static final String selectAllFields =
-      Columns.COUNTCONFIG.name() + "," + Columns.COUNTHOST.name() + "," +
-      Columns.COUNTRULE.name() + "," + Columns.HOSTID.name();
+      Columns.COUNTCONFIG.name() + ',' + Columns.COUNTHOST.name() + ',' +
+      Columns.COUNTRULE.name() + ',' + Columns.HOSTID.name();
 
   protected static final String updateAllFields =
       Columns.COUNTCONFIG.name() + "=?," + Columns.COUNTHOST.name() + "=?," +
@@ -134,7 +132,6 @@ public class DbMultipleMonitor extends AbstractDbData {
    * @param cr count for Rule
    */
   public DbMultipleMonitor(String hostid, int cc, int ch, int cr) {
-    super();
     multipleMonitor = new MultipleMonitor(hostid, cc, ch, cr);
   }
 
@@ -144,7 +141,6 @@ public class DbMultipleMonitor extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public DbMultipleMonitor(String hostid) throws WaarpDatabaseException {
-    super();
     MultipleMonitorDAO monitorAccess = null;
     try {
       monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
@@ -250,7 +246,6 @@ public class DbMultipleMonitor extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbMultipleMonitor() {
-    super();
     multipleMonitor = new MultipleMonitor();
   }
 
@@ -284,20 +279,19 @@ public class DbMultipleMonitor extends AbstractDbData {
   public static DbPreparedStatement getUpdatedPrepareStament(DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbMultipleMonitor multipleMonitor =
-        new DbMultipleMonitor(Configuration.configuration.getHOST_ID(), 0, 0,
-                              0);
+        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);
     try {
       if (!multipleMonitor.exist()) {
         multipleMonitor.insert();
         session.commit();
       }
-    } catch (final WaarpDatabaseException e1) {
+    } catch (final WaarpDatabaseException ignored) {
+      // ignore
     }
     String request = "SELECT " + selectAllFields;
     request += " FROM " + table + " WHERE " + Columns.HOSTID.name() + " = '" +
-               Configuration.configuration.getHOST_ID() + "'" + " FOR UPDATE ";
-    final DbPreparedStatement prep = new DbPreparedStatement(session, request);
-    return prep;
+               Configuration.configuration.getHostId() + '\'' + " FOR UPDATE ";
+    return new DbPreparedStatement(session, request);
   }
 
   /**
@@ -353,6 +347,7 @@ public class DbMultipleMonitor extends AbstractDbData {
 
   @Override
   public void changeUpdatedInfo(UpdatedInfo info) {
+    // ignore
   }
 
   /**
@@ -360,7 +355,7 @@ public class DbMultipleMonitor extends AbstractDbData {
    */
   @Override
   public String toString() {
-    return "DbMM " + getCountConfig() + ":" + getCountHost() + ":" +
+    return "DbMM " + getCountConfig() + ':' + getCountHost() + ':' +
            getCountRule();
   }
 

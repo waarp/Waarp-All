@@ -48,7 +48,12 @@ import java.util.List;
  * <li>Supports special SubXml tree as element (singleton or multiple)</li>
  * </ul>
  */
-public class XmlUtil {
+public final class XmlUtil {
+
+  private static final String NODE_NOT_FOUND = "Node not found: ";
+
+  private XmlUtil() {
+  }
 
   /**
    * @param filename
@@ -317,12 +322,12 @@ public class XmlUtil {
   public static Element getParentElement(Element ref, String path)
       throws DocumentException {
     String npath = path;
-    while (npath.charAt(0) == '/') {// startsWith("/")) {
+    while (npath.charAt(0) == '/') {
       npath = npath.substring(1);
     }
     final Element current = (Element) ref.selectSingleNode(npath);
     if (current == null) {
-      throw new DocumentException("Node not found: " + path);
+      throw new DocumentException(NODE_NOT_FOUND + path);
     }
     return current.getParent();
   }
@@ -339,12 +344,12 @@ public class XmlUtil {
   public static Element getElement(Element ref, String path)
       throws DocumentException {
     String npath = path;
-    while (npath.charAt(0) == '/') {// .startsWith("/")) {
+    while (npath.charAt(0) == '/') {
       npath = npath.substring(1);
     }
     final Element current = (Element) ref.selectSingleNode(npath);
     if (current == null) {
-      throw new DocumentException("Node not found: " + path);
+      throw new DocumentException(NODE_NOT_FOUND + path);
     }
     return current;
   }
@@ -362,7 +367,7 @@ public class XmlUtil {
   public static List<Element> getElementMultiple(Element ref, String path)
       throws DocumentException {
     String npath = path;
-    while (npath.charAt(0) == '/') {// .startsWith("/")) {
+    while (npath.charAt(0) == '/') {
       npath = npath.substring(1);
     }
     final List<Element> list = ref.selectNodes(npath);
@@ -385,7 +390,9 @@ public class XmlUtil {
   public static Element addOrSetElement(Document doc, String path,
                                         String value) {
     final Element current = addOrGetElement(doc, path);
-    current.setText(value);
+    if (current != null) {
+      current.setText(value);
+    }
     return current;
   }
 
@@ -400,7 +407,7 @@ public class XmlUtil {
    */
   public static Element addOrGetElement(Document doc, String path) {
     final String[] pathes = path.split("/");
-    int rank = 0;
+    int rank;
     for (rank = 0; rank < pathes.length; rank++) {
       if (!pathes[rank].isEmpty()) {
         break; // found
@@ -440,7 +447,9 @@ public class XmlUtil {
   public static Element addAndSetElementMultiple(Document doc, String path,
                                                  String value) {
     final Element current = addAndGetElementMultiple(doc, path);
-    current.setText(value);
+    if (current != null) {
+      current.setText(value);
+    }
     return current;
   }
 
@@ -454,7 +463,7 @@ public class XmlUtil {
    */
   public static Element addAndGetElementMultiple(Document doc, String path) {
     final String[] pathes = path.split("/");
-    int rank = 0;
+    int rank;
     for (rank = 0; rank < pathes.length; rank++) {
       if (!pathes[rank].isEmpty()) {
         break; // found
@@ -503,7 +512,7 @@ public class XmlUtil {
       throws DocumentException {
     final Element current = (Element) doc.selectSingleNode(path);
     if (current == null) {
-      throw new DocumentException("Node not found: " + path);
+      throw new DocumentException(NODE_NOT_FOUND + path);
     }
     return current.getParent();
   }
@@ -520,7 +529,7 @@ public class XmlUtil {
       throws DocumentException {
     final Element current = (Element) doc.selectSingleNode(path);
     if (current == null) {
-      throw new DocumentException("Node not found: " + path);
+      throw new DocumentException(NODE_NOT_FOUND + path);
     }
     return current;
   }
@@ -563,7 +572,7 @@ public class XmlUtil {
    * @return XmlValues
    */
   public static XmlValue[] read(Document doc, XmlDecl[] decls) {
-    XmlValue[] values = null;
+    XmlValue[] values;
     final int len = decls.length;
     values = new XmlValue[len];
     for (int i = 0; i < len; i++) {
@@ -585,7 +594,7 @@ public class XmlUtil {
             try {
               value.addValue(newValue);
             } catch (final InvalidObjectException e) {
-              continue;
+              // nothing
             }
           }
         } else {
@@ -602,7 +611,7 @@ public class XmlUtil {
           try {
             value.setValue(newValue);
           } catch (final InvalidObjectException e) {
-            continue;
+            // nothing
           }
         }
       } else if (decls[i].isMultiple()) {
@@ -617,9 +626,9 @@ public class XmlUtil {
           try {
             value.addFromString(getExtraTrimed(svalue));
           } catch (final InvalidObjectException e) {
-            continue;
+            // nothing
           } catch (final InvalidArgumentException e) {
-            continue;
+            // nothing
           }
         }
       } else {
@@ -633,7 +642,7 @@ public class XmlUtil {
         try {
           value.setFromString(getExtraTrimed(svalue));
         } catch (final InvalidArgumentException e) {
-          continue;
+          // nothing
         }
       }
     }
@@ -649,7 +658,7 @@ public class XmlUtil {
    * @return XmlValues
    */
   public static XmlValue[] read(Element ref, XmlDecl[] decls) {
-    XmlValue[] values = null;
+    XmlValue[] values;
     final int len = decls.length;
     values = new XmlValue[len];
     for (int i = 0; i < len; i++) {
@@ -671,7 +680,7 @@ public class XmlUtil {
             try {
               value.addValue(newValue);
             } catch (final InvalidObjectException e) {
-              continue;
+              // nothing
             }
           }
         } else {
@@ -688,7 +697,7 @@ public class XmlUtil {
           try {
             value.setValue(newValue);
           } catch (final InvalidObjectException e) {
-            continue;
+            // nothing
           }
         }
       } else if (decls[i].isMultiple()) {
@@ -703,9 +712,9 @@ public class XmlUtil {
           try {
             value.addFromString(getExtraTrimed(svalue));
           } catch (final InvalidObjectException e) {
-            continue;
+            // nothing
           } catch (final InvalidArgumentException e) {
-            continue;
+            // nothing
           }
         }
       } else {
@@ -719,7 +728,7 @@ public class XmlUtil {
         try {
           value.setFromString(getExtraTrimed(svalue));
         } catch (final InvalidArgumentException e) {
-          continue;
+          // nothing
         }
       }
     }
@@ -734,31 +743,28 @@ public class XmlUtil {
    */
   @SuppressWarnings("unchecked")
   public static void write(Document doc, XmlValue[] values) {
-    final int len = values.length;
-    for (int i = 0; i < len; i++) {
-      if (values[i] != null) {
-        if (values[i].isSubXml()) {
-          if (values[i].isMultiple()) {
-            final List<XmlValue[]> list =
-                (List<XmlValue[]>) values[i].getList();
+    for (final XmlValue value : values) {
+      if (value != null) {
+        if (value.isSubXml()) {
+          if (value.isMultiple()) {
+            final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
             for (final XmlValue[] object : list) {
               final Element ref =
-                  addAndGetElementMultiple(doc, values[i].getXmlPath());
+                  addAndGetElementMultiple(doc, value.getXmlPath());
               write(ref, object);
             }
           } else {
-            final Element ref = addOrGetElement(doc, values[i].getXmlPath());
-            write(ref, values[i].getSubXml());
+            final Element ref = addOrGetElement(doc, value.getXmlPath());
+            write(ref, value.getSubXml());
           }
-        } else if (values[i].isMultiple()) {
-          final List<?> list = values[i].getList();
+        } else if (value.isMultiple()) {
+          final List<?> list = value.getList();
           for (final Object object : list) {
-            addAndSetElementMultiple(doc, values[i].getXmlPath(),
+            addAndSetElementMultiple(doc, value.getXmlPath(),
                                      object.toString());
           }
         } else {
-          addOrSetElement(doc, values[i].getXmlPath(),
-                          values[i].getIntoString());
+          addOrSetElement(doc, value.getXmlPath(), value.getIntoString());
         }
       }
     }
@@ -772,31 +778,28 @@ public class XmlUtil {
    */
   @SuppressWarnings("unchecked")
   public static void write(Element ref, XmlValue[] values) {
-    final int len = values.length;
-    for (int i = 0; i < len; i++) {
-      if (values[i] != null) {
-        if (values[i].isSubXml()) {
-          if (values[i].isMultiple()) {
-            final List<XmlValue[]> list =
-                (List<XmlValue[]>) values[i].getList();
+    for (final XmlValue value : values) {
+      if (value != null) {
+        if (value.isSubXml()) {
+          if (value.isMultiple()) {
+            final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
             for (final XmlValue[] object : list) {
               final Element newref =
-                  addAndGetElementMultiple(ref, values[i].getXmlPath());
+                  addAndGetElementMultiple(ref, value.getXmlPath());
               write(newref, object);
             }
           } else {
-            final Element newref = addOrGetElement(ref, values[i].getXmlPath());
-            write(newref, values[i].getSubXml());
+            final Element newref = addOrGetElement(ref, value.getXmlPath());
+            write(newref, value.getSubXml());
           }
-        } else if (values[i].isMultiple()) {
-          final List<?> list = values[i].getList();
+        } else if (value.isMultiple()) {
+          final List<?> list = value.getList();
           for (final Object object : list) {
-            addAndSetElementMultiple(ref, values[i].getXmlPath(),
+            addAndSetElementMultiple(ref, value.getXmlPath(),
                                      object.toString());
           }
         } else {
-          addOrSetElement(ref, values[i].getXmlPath(),
-                          values[i].getIntoString());
+          addOrSetElement(ref, value.getXmlPath(), value.getIntoString());
         }
       }
     }
@@ -819,12 +822,13 @@ public class XmlUtil {
     } else {
       format.setEncoding(WaarpStringUtils.UTF8.name());
     }
-    XMLWriter writer = null;
+    XMLWriter writer;
     writer = new XMLWriter(new FileWriter(filename), format);
     writer.write(document);
     try {
       writer.close();
-    } catch (final IOException e) {
+    } catch (final IOException ignored) {
+      // nothing
     }
   }
 }

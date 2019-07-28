@@ -72,7 +72,7 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
       OTHERS_FIELD + " = ?, " + UPDATED_INFO_FIELD + " = ? WHERE " +
       HOSTID_FIELD + " = ?";
 
-  protected Connection connection;
+  protected final Connection connection;
 
   public DBBusinessDAO(Connection con) {
     connection = con;
@@ -155,7 +155,7 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + " " + filter.operand + " ?");
+      query.append(filter.key + ' ' + filter.operand + " ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -208,7 +208,7 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
       if (res.next()) {
         return getFromResultSet(res);
       } else {
-        throw new DAONoDataException(("No " + getClass().getName() + " found"));
+        throw new DAONoDataException("No " + getClass().getName() + " found");
       }
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);

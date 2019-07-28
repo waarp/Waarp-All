@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol exception on Business part due to Query is still running
- *
- *
  */
 public class OpenR66ProtocolBusinessQueryStillRunningException
     extends OpenR66ProtocolBusinessException {
@@ -36,7 +34,6 @@ public class OpenR66ProtocolBusinessQueryStillRunningException
    *
    */
   public OpenR66ProtocolBusinessQueryStillRunningException() {
-    super();
   }
 
   /**

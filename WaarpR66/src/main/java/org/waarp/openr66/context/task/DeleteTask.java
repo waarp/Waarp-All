@@ -30,8 +30,6 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 /**
  * Delete the file. The current file is no more valid.<br>
  * No arguments are taken into account.
- *
- *
  */
 public class DeleteTask extends AbstractTask {
   /**
@@ -56,12 +54,6 @@ public class DeleteTask extends AbstractTask {
     logger.info("Delete file from session {}", session);
     try {
       if (!session.getFile().delete()) {
-        /*
-         * logger.debug("CANNOT Delete file {} from session {}", session.getFile().getFile(), session); R66Result
-         * result = new R66Result(session, false, ErrorCode.FileNotFound, session.getRunner());
-         * futureCompletion.setResult(result); futureCompletion.setFailure(new
-         * OpenR66ProtocolSystemException("File not deleted: "+session.getFile().getFile()));
-         */
         logger.warn("CANNOT Delete file {} from session {}",
                     session.getFile().getFile(), session);
         session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);

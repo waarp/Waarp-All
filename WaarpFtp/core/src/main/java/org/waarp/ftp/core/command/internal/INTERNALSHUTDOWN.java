@@ -33,8 +33,6 @@ import org.waarp.ftp.core.utils.FtpChannelUtils;
 
 /**
  * Internal shutdown command that will shutdown the FTP service with a password
- *
- *
  */
 public class INTERNALSHUTDOWN extends AbstractCommand {
   /**
@@ -73,6 +71,7 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
       throw new Reply501Exception("Shutdown Need password");
     }
     final String password = getArg();
+    logger.debug("{} {}", password, getConfiguration().checkPassword(password));
     if (!getConfiguration().checkPassword(password)) {
       throw new Reply501Exception("Shutdown Need a correct password");
     }

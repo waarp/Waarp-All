@@ -147,7 +147,7 @@ class MD5 {
    * Init()
    * after every Final()
    */
-  synchronized void Init() {
+  synchronized void init() {
     state = new MD5State();
     finals = null;
   }
@@ -156,7 +156,7 @@ class MD5 {
    * Class constructor
    */
   MD5() {
-    Init();
+    init();
   }
 
   /**
@@ -170,13 +170,7 @@ class MD5 {
     Update(ob.toString());
   }
 
-  private void Decode(byte buffer[], int shift, int[] out) {
-    /*
-     * len += shift; for (int i = 0; shift < len; i++, shift += 4) { out[i] = ((int) (buffer[shift] & 0xff)) |
-     * (((int) (buffer[shift + 1] & 0xff)) << 8) | (((int) (buffer[shift + 2] & 0xff)) << 16) | (((int)
-     * buffer[shift + 3]) << 24); }
-     */
-
+  private void Decode(byte[] buffer, int shift, int[] out) {
     // unrolled loop (original loop shown above)
     out[0] = buffer[shift] & 0xff | (buffer[shift + 1] & 0xff) << 8 |
              (buffer[shift + 2] & 0xff) << 16 | buffer[shift + 3] << 24;
@@ -212,160 +206,161 @@ class MD5 {
               (buffer[shift + 62] & 0xff) << 16 | buffer[shift + 63] << 24;
   }
 
-  private void Transform(MD5State stat, byte buffer[], int shift,
-                         int[] decode_buf) {
-    int a = stat.state[0], b = stat.state[1], c = stat.state[2], d =
-        stat.state[3];
-    final int[] x = decode_buf;
+  private void Transform(MD5State stat, byte[] buffer, int shift,
+                         int[] decodeBuf) {
+    int a = stat.state[0];
+    int b = stat.state[1];
+    int c = stat.state[2];
+    int d = stat.state[3];
 
-    Decode(buffer, shift, decode_buf);
+    Decode(buffer, shift, decodeBuf);
 
     /* Round 1 */
-    a += (b & c | ~b & d) + x[0] + 0xd76aa478; /* 1 */
+    a += (b & c | ~b & d) + decodeBuf[0] + 0xd76aa478; /* 1 */
     a = (a << 7 | a >>> 25) + b;
-    d += (a & b | ~a & c) + x[1] + 0xe8c7b756; /* 2 */
+    d += (a & b | ~a & c) + decodeBuf[1] + 0xe8c7b756; /* 2 */
     d = (d << 12 | d >>> 20) + a;
-    c += (d & a | ~d & b) + x[2] + 0x242070db; /* 3 */
+    c += (d & a | ~d & b) + decodeBuf[2] + 0x242070db; /* 3 */
     c = (c << 17 | c >>> 15) + d;
-    b += (c & d | ~c & a) + x[3] + 0xc1bdceee; /* 4 */
+    b += (c & d | ~c & a) + decodeBuf[3] + 0xc1bdceee; /* 4 */
     b = (b << 22 | b >>> 10) + c;
 
-    a += (b & c | ~b & d) + x[4] + 0xf57c0faf; /* 5 */
+    a += (b & c | ~b & d) + decodeBuf[4] + 0xf57c0faf; /* 5 */
     a = (a << 7 | a >>> 25) + b;
-    d += (a & b | ~a & c) + x[5] + 0x4787c62a; /* 6 */
+    d += (a & b | ~a & c) + decodeBuf[5] + 0x4787c62a; /* 6 */
     d = (d << 12 | d >>> 20) + a;
-    c += (d & a | ~d & b) + x[6] + 0xa8304613; /* 7 */
+    c += (d & a | ~d & b) + decodeBuf[6] + 0xa8304613; /* 7 */
     c = (c << 17 | c >>> 15) + d;
-    b += (c & d | ~c & a) + x[7] + 0xfd469501; /* 8 */
+    b += (c & d | ~c & a) + decodeBuf[7] + 0xfd469501; /* 8 */
     b = (b << 22 | b >>> 10) + c;
 
-    a += (b & c | ~b & d) + x[8] + 0x698098d8; /* 9 */
+    a += (b & c | ~b & d) + decodeBuf[8] + 0x698098d8; /* 9 */
     a = (a << 7 | a >>> 25) + b;
-    d += (a & b | ~a & c) + x[9] + 0x8b44f7af; /* 10 */
+    d += (a & b | ~a & c) + decodeBuf[9] + 0x8b44f7af; /* 10 */
     d = (d << 12 | d >>> 20) + a;
-    c += (d & a | ~d & b) + x[10] + 0xffff5bb1; /* 11 */
+    c += (d & a | ~d & b) + decodeBuf[10] + 0xffff5bb1; /* 11 */
     c = (c << 17 | c >>> 15) + d;
-    b += (c & d | ~c & a) + x[11] + 0x895cd7be; /* 12 */
+    b += (c & d | ~c & a) + decodeBuf[11] + 0x895cd7be; /* 12 */
     b = (b << 22 | b >>> 10) + c;
 
-    a += (b & c | ~b & d) + x[12] + 0x6b901122; /* 13 */
+    a += (b & c | ~b & d) + decodeBuf[12] + 0x6b901122; /* 13 */
     a = (a << 7 | a >>> 25) + b;
-    d += (a & b | ~a & c) + x[13] + 0xfd987193; /* 14 */
+    d += (a & b | ~a & c) + decodeBuf[13] + 0xfd987193; /* 14 */
     d = (d << 12 | d >>> 20) + a;
-    c += (d & a | ~d & b) + x[14] + 0xa679438e; /* 15 */
+    c += (d & a | ~d & b) + decodeBuf[14] + 0xa679438e; /* 15 */
     c = (c << 17 | c >>> 15) + d;
-    b += (c & d | ~c & a) + x[15] + 0x49b40821; /* 16 */
+    b += (c & d | ~c & a) + decodeBuf[15] + 0x49b40821; /* 16 */
     b = (b << 22 | b >>> 10) + c;
 
     /* Round 2 */
-    a += (b & d | c & ~d) + x[1] + 0xf61e2562; /* 17 */
+    a += (b & d | c & ~d) + decodeBuf[1] + 0xf61e2562; /* 17 */
     a = (a << 5 | a >>> 27) + b;
-    d += (a & c | b & ~c) + x[6] + 0xc040b340; /* 18 */
+    d += (a & c | b & ~c) + decodeBuf[6] + 0xc040b340; /* 18 */
     d = (d << 9 | d >>> 23) + a;
-    c += (d & b | a & ~b) + x[11] + 0x265e5a51; /* 19 */
+    c += (d & b | a & ~b) + decodeBuf[11] + 0x265e5a51; /* 19 */
     c = (c << 14 | c >>> 18) + d;
-    b += (c & a | d & ~a) + x[0] + 0xe9b6c7aa; /* 20 */
+    b += (c & a | d & ~a) + decodeBuf[0] + 0xe9b6c7aa; /* 20 */
     b = (b << 20 | b >>> 12) + c;
 
-    a += (b & d | c & ~d) + x[5] + 0xd62f105d; /* 21 */
+    a += (b & d | c & ~d) + decodeBuf[5] + 0xd62f105d; /* 21 */
     a = (a << 5 | a >>> 27) + b;
-    d += (a & c | b & ~c) + x[10] + 0x02441453; /* 22 */
+    d += (a & c | b & ~c) + decodeBuf[10] + 0x02441453; /* 22 */
     d = (d << 9 | d >>> 23) + a;
-    c += (d & b | a & ~b) + x[15] + 0xd8a1e681; /* 23 */
+    c += (d & b | a & ~b) + decodeBuf[15] + 0xd8a1e681; /* 23 */
     c = (c << 14 | c >>> 18) + d;
-    b += (c & a | d & ~a) + x[4] + 0xe7d3fbc8; /* 24 */
+    b += (c & a | d & ~a) + decodeBuf[4] + 0xe7d3fbc8; /* 24 */
     b = (b << 20 | b >>> 12) + c;
 
-    a += (b & d | c & ~d) + x[9] + 0x21e1cde6; /* 25 */
+    a += (b & d | c & ~d) + decodeBuf[9] + 0x21e1cde6; /* 25 */
     a = (a << 5 | a >>> 27) + b;
-    d += (a & c | b & ~c) + x[14] + 0xc33707d6; /* 26 */
+    d += (a & c | b & ~c) + decodeBuf[14] + 0xc33707d6; /* 26 */
     d = (d << 9 | d >>> 23) + a;
-    c += (d & b | a & ~b) + x[3] + 0xf4d50d87; /* 27 */
+    c += (d & b | a & ~b) + decodeBuf[3] + 0xf4d50d87; /* 27 */
     c = (c << 14 | c >>> 18) + d;
-    b += (c & a | d & ~a) + x[8] + 0x455a14ed; /* 28 */
+    b += (c & a | d & ~a) + decodeBuf[8] + 0x455a14ed; /* 28 */
     b = (b << 20 | b >>> 12) + c;
 
-    a += (b & d | c & ~d) + x[13] + 0xa9e3e905; /* 29 */
+    a += (b & d | c & ~d) + decodeBuf[13] + 0xa9e3e905; /* 29 */
     a = (a << 5 | a >>> 27) + b;
-    d += (a & c | b & ~c) + x[2] + 0xfcefa3f8; /* 30 */
+    d += (a & c | b & ~c) + decodeBuf[2] + 0xfcefa3f8; /* 30 */
     d = (d << 9 | d >>> 23) + a;
-    c += (d & b | a & ~b) + x[7] + 0x676f02d9; /* 31 */
+    c += (d & b | a & ~b) + decodeBuf[7] + 0x676f02d9; /* 31 */
     c = (c << 14 | c >>> 18) + d;
-    b += (c & a | d & ~a) + x[12] + 0x8d2a4c8a; /* 32 */
+    b += (c & a | d & ~a) + decodeBuf[12] + 0x8d2a4c8a; /* 32 */
     b = (b << 20 | b >>> 12) + c;
 
     /* Round 3 */
-    a += (b ^ c ^ d) + x[5] + 0xfffa3942; /* 33 */
+    a += (b ^ c ^ d) + decodeBuf[5] + 0xfffa3942; /* 33 */
     a = (a << 4 | a >>> 28) + b;
-    d += (a ^ b ^ c) + x[8] + 0x8771f681; /* 34 */
+    d += (a ^ b ^ c) + decodeBuf[8] + 0x8771f681; /* 34 */
     d = (d << 11 | d >>> 21) + a;
-    c += (d ^ a ^ b) + x[11] + 0x6d9d6122; /* 35 */
+    c += (d ^ a ^ b) + decodeBuf[11] + 0x6d9d6122; /* 35 */
     c = (c << 16 | c >>> 16) + d;
-    b += (c ^ d ^ a) + x[14] + 0xfde5380c; /* 36 */
+    b += (c ^ d ^ a) + decodeBuf[14] + 0xfde5380c; /* 36 */
     b = (b << 23 | b >>> 9) + c;
 
-    a += (b ^ c ^ d) + x[1] + 0xa4beea44; /* 37 */
+    a += (b ^ c ^ d) + decodeBuf[1] + 0xa4beea44; /* 37 */
     a = (a << 4 | a >>> 28) + b;
-    d += (a ^ b ^ c) + x[4] + 0x4bdecfa9; /* 38 */
+    d += (a ^ b ^ c) + decodeBuf[4] + 0x4bdecfa9; /* 38 */
     d = (d << 11 | d >>> 21) + a;
-    c += (d ^ a ^ b) + x[7] + 0xf6bb4b60; /* 39 */
+    c += (d ^ a ^ b) + decodeBuf[7] + 0xf6bb4b60; /* 39 */
     c = (c << 16 | c >>> 16) + d;
-    b += (c ^ d ^ a) + x[10] + 0xbebfbc70; /* 40 */
+    b += (c ^ d ^ a) + decodeBuf[10] + 0xbebfbc70; /* 40 */
     b = (b << 23 | b >>> 9) + c;
 
-    a += (b ^ c ^ d) + x[13] + 0x289b7ec6; /* 41 */
+    a += (b ^ c ^ d) + decodeBuf[13] + 0x289b7ec6; /* 41 */
     a = (a << 4 | a >>> 28) + b;
-    d += (a ^ b ^ c) + x[0] + 0xeaa127fa; /* 42 */
+    d += (a ^ b ^ c) + decodeBuf[0] + 0xeaa127fa; /* 42 */
     d = (d << 11 | d >>> 21) + a;
-    c += (d ^ a ^ b) + x[3] + 0xd4ef3085; /* 43 */
+    c += (d ^ a ^ b) + decodeBuf[3] + 0xd4ef3085; /* 43 */
     c = (c << 16 | c >>> 16) + d;
-    b += (c ^ d ^ a) + x[6] + 0x04881d05; /* 44 */
+    b += (c ^ d ^ a) + decodeBuf[6] + 0x04881d05; /* 44 */
     b = (b << 23 | b >>> 9) + c;
 
-    a += (b ^ c ^ d) + x[9] + 0xd9d4d039; /* 33 */
+    a += (b ^ c ^ d) + decodeBuf[9] + 0xd9d4d039; /* 33 */
     a = (a << 4 | a >>> 28) + b;
-    d += (a ^ b ^ c) + x[12] + 0xe6db99e5; /* 34 */
+    d += (a ^ b ^ c) + decodeBuf[12] + 0xe6db99e5; /* 34 */
     d = (d << 11 | d >>> 21) + a;
-    c += (d ^ a ^ b) + x[15] + 0x1fa27cf8; /* 35 */
+    c += (d ^ a ^ b) + decodeBuf[15] + 0x1fa27cf8; /* 35 */
     c = (c << 16 | c >>> 16) + d;
-    b += (c ^ d ^ a) + x[2] + 0xc4ac5665; /* 36 */
+    b += (c ^ d ^ a) + decodeBuf[2] + 0xc4ac5665; /* 36 */
     b = (b << 23 | b >>> 9) + c;
 
     /* Round 4 */
-    a += (c ^ (b | ~d)) + x[0] + 0xf4292244; /* 49 */
+    a += (c ^ (b | ~d)) + decodeBuf[0] + 0xf4292244; /* 49 */
     a = (a << 6 | a >>> 26) + b;
-    d += (b ^ (a | ~c)) + x[7] + 0x432aff97; /* 50 */
+    d += (b ^ (a | ~c)) + decodeBuf[7] + 0x432aff97; /* 50 */
     d = (d << 10 | d >>> 22) + a;
-    c += (a ^ (d | ~b)) + x[14] + 0xab9423a7; /* 51 */
+    c += (a ^ (d | ~b)) + decodeBuf[14] + 0xab9423a7; /* 51 */
     c = (c << 15 | c >>> 17) + d;
-    b += (d ^ (c | ~a)) + x[5] + 0xfc93a039; /* 52 */
+    b += (d ^ (c | ~a)) + decodeBuf[5] + 0xfc93a039; /* 52 */
     b = (b << 21 | b >>> 11) + c;
 
-    a += (c ^ (b | ~d)) + x[12] + 0x655b59c3; /* 53 */
+    a += (c ^ (b | ~d)) + decodeBuf[12] + 0x655b59c3; /* 53 */
     a = (a << 6 | a >>> 26) + b;
-    d += (b ^ (a | ~c)) + x[3] + 0x8f0ccc92; /* 54 */
+    d += (b ^ (a | ~c)) + decodeBuf[3] + 0x8f0ccc92; /* 54 */
     d = (d << 10 | d >>> 22) + a;
-    c += (a ^ (d | ~b)) + x[10] + 0xffeff47d; /* 55 */
+    c += (a ^ (d | ~b)) + decodeBuf[10] + 0xffeff47d; /* 55 */
     c = (c << 15 | c >>> 17) + d;
-    b += (d ^ (c | ~a)) + x[1] + 0x85845dd1; /* 56 */
+    b += (d ^ (c | ~a)) + decodeBuf[1] + 0x85845dd1; /* 56 */
     b = (b << 21 | b >>> 11) + c;
 
-    a += (c ^ (b | ~d)) + x[8] + 0x6fa87e4f; /* 57 */
+    a += (c ^ (b | ~d)) + decodeBuf[8] + 0x6fa87e4f; /* 57 */
     a = (a << 6 | a >>> 26) + b;
-    d += (b ^ (a | ~c)) + x[15] + 0xfe2ce6e0; /* 58 */
+    d += (b ^ (a | ~c)) + decodeBuf[15] + 0xfe2ce6e0; /* 58 */
     d = (d << 10 | d >>> 22) + a;
-    c += (a ^ (d | ~b)) + x[6] + 0xa3014314; /* 59 */
+    c += (a ^ (d | ~b)) + decodeBuf[6] + 0xa3014314; /* 59 */
     c = (c << 15 | c >>> 17) + d;
-    b += (d ^ (c | ~a)) + x[13] + 0x4e0811a1; /* 60 */
+    b += (d ^ (c | ~a)) + decodeBuf[13] + 0x4e0811a1; /* 60 */
     b = (b << 21 | b >>> 11) + c;
 
-    a += (c ^ (b | ~d)) + x[4] + 0xf7537e82; /* 61 */
+    a += (c ^ (b | ~d)) + decodeBuf[4] + 0xf7537e82; /* 61 */
     a = (a << 6 | a >>> 26) + b;
-    d += (b ^ (a | ~c)) + x[11] + 0xbd3af235; /* 62 */
+    d += (b ^ (a | ~c)) + decodeBuf[11] + 0xbd3af235; /* 62 */
     d = (d << 10 | d >>> 22) + a;
-    c += (a ^ (d | ~b)) + x[2] + 0x2ad7d2bb; /* 63 */
+    c += (a ^ (d | ~b)) + decodeBuf[2] + 0x2ad7d2bb; /* 63 */
     c = (c << 15 | c >>> 17) + d;
-    b += (d ^ (c | ~a)) + x[9] + 0xeb86d391; /* 64 */
+    b += (d ^ (c | ~a)) + decodeBuf[9] + 0xeb86d391; /* 64 */
     b = (b << 21 | b >>> 11) + c;
 
     stat.state[0] += a;
@@ -385,8 +380,11 @@ class MD5 {
    * @param length Use at maximum `length' bytes (absolute maximum is
    *     buffer.length)
    */
-  void Update(MD5State stat, byte buffer[], int offset, int length) {
-    int index, partlen, i, start;
+  void Update(MD5State stat, byte[] buffer, int offset, int length) {
+    int index;
+    int partlen;
+    int i;
+    int start;
     finals = null;
     int newlength = length;
     /* Length can be told to be shorter, but not inter */
@@ -404,17 +402,17 @@ class MD5 {
     if (newlength >= partlen) {
       // update state (using only Java) to reflect input
 
-      final int[] decode_buf = new int[16];
+      final int[] decodeBuf = new int[16];
       if (partlen == 64) {
         partlen = 0;
       } else {
         for (i = 0; i < partlen; i++) {
           stat.buffer[i + index] = buffer[i + offset];
         }
-        Transform(stat, stat.buffer, 0, decode_buf);
+        Transform(stat, stat.buffer, 0, decodeBuf);
       }
       for (i = partlen; i + 63 < newlength; i += 64) {
-        Transform(stat, buffer, i + offset, decode_buf);
+        Transform(stat, buffer, i + offset, decodeBuf);
       }
       index = 0;
     } else {
@@ -442,7 +440,7 @@ class MD5 {
    * @param length
    */
 
-  void Update(byte buffer[], int offset, int length) {
+  void Update(byte[] buffer, int offset, int length) {
     Update(state, buffer, offset, length);
   }
 
@@ -452,7 +450,7 @@ class MD5 {
    * @param buffer
    * @param length
    */
-  void Update(byte buffer[], int length) {
+  void Update(byte[] buffer, int length) {
     Update(state, buffer, 0, length);
   }
 
@@ -461,7 +459,7 @@ class MD5 {
    *
    * @param buffer Array of bytes to use for updating the hash
    */
-  void Update(byte buffer[]) {
+  void Update(byte[] buffer) {
     Update(buffer, 0, buffer.length);
   }
 
@@ -506,7 +504,7 @@ class MD5 {
    *
    * @param s String to be update to hash (is used as
    *     s.getBytes(charset_name))
-   * @param charset_name The character set to use to convert s to a
+   * @param charsetName The character set to use to convert s to a
    *     byte
    *     array, or null if the "ISO8859_1"
    *     character set is desired.
@@ -515,11 +513,11 @@ class MD5 {
    *     is
    *     not supported.
    */
-  void Update(String s, String charset_name)
+  void Update(String s, String charsetName)
       throws UnsupportedEncodingException {
     Charset newcharset = FilesystemBasedDigest.UTF8;
-    if (charset_name != null) {
-      newcharset = Charset.forName(charset_name);
+    if (charsetName != null) {
+      newcharset = Charset.forName(charsetName);
     }
     final byte[] chars = s.getBytes(newcharset);
     Update(chars, chars.length);
@@ -562,8 +560,9 @@ class MD5 {
     Update(state, bytes, start, len);
   }
 
-  private byte[] Encode(int input[], int len) {
-    int i, j;
+  private byte[] Encode(int[] input, int len) {
+    int i;
+    int j;
     byte[] out;
 
     out = new byte[len];
@@ -589,15 +588,16 @@ class MD5 {
    */
   synchronized byte[] Final() {
     byte[] bits;
-    int index, padlen;
+    int index;
+    int padlen;
     MD5State fin;
 
     if (finals == null) {
       fin = new MD5State(state);
 
-      final int[] count_ints =
+      final int[] countInts =
           { (int) (fin.count << 3), (int) (fin.count >> 29) };
-      bits = Encode(count_ints, 8);
+      bits = Encode(countInts, 8);
 
       index = (int) (fin.count & 0x3f);
       padlen = index < 56? 56 - index : 120 - index;
@@ -625,7 +625,7 @@ class MD5 {
    *
    * @return Generated hex string
    */
-  static final String asHex(byte hash[]) {
+  static final String asHex(byte[] hash) {
     final char[] buf = new char[hash.length * 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
       buf[x++] = HEX_CHARS[hash[i] >>> 4 & 0xf];
@@ -658,7 +658,7 @@ class MD5 {
       } else {
         code2 -= HEX_CHARS[0];
       }
-      hash[i] = (byte) ((code1 << 4) + code2);
+      hash[i] = (byte) ((code1 << 4) + (code2 & 0xFF));
     }
     return hash;
   }
@@ -682,37 +682,32 @@ class MD5 {
    * @throws IOException
    **/
   static byte[] getHash(File f) throws IOException {
-    InputStream close_me = null;
+    FileInputStream in = null;
     try {
-      long buf_size = f.length();
-      if (buf_size < 512) {
-        buf_size = 512;
+      long bufSize = f.length();
+      if (bufSize < 512) {
+        bufSize = 512;
       }
-      if (buf_size > 65536) {
-        buf_size = 65536;
+      if (bufSize > 65536) {
+        bufSize = 65536;
       }
-      byte[] buf = new byte[(int) buf_size];
-      FileInputStream in = new FileInputStream(f);
-      close_me = in;
+      byte[] buf = new byte[(int) bufSize];
+      in = new FileInputStream(f);
       final MD5 md5 = new MD5();
-      int read = 0;
+      int read;
       while ((read = in.read(buf)) >= 0) {
         md5.Update(md5.state, buf, 0, read);
       }
-      in.close();
-      in = null;
-      close_me = null;
-      buf = null;
       buf = md5.Final();
       return buf;
-    } catch (final IOException e) {
-      if (close_me != null) {
+    } finally {
+      if (in != null) {
         try {
-          close_me.close();
-        } catch (final Exception e2) {
+          in.close();
+        } catch (final Exception ignored) {
+          // ignored
         }
       }
-      throw e;
     }
   }
 
@@ -731,23 +726,22 @@ class MD5 {
     if (!f.exists()) {
       throw new FileNotFoundException(f.toString());
     }
-    InputStream close_me = null;
+    FileInputStream in = null;
+    FileChannel fileChannel = null;
     try {
-      long buf_size = f.length();
-      if (buf_size < 512) {
-        buf_size = 512;
+      long bufSize = f.length();
+      if (bufSize < 512) {
+        bufSize = 512;
       }
-      if (buf_size > 65536) {
-        buf_size = 65536;
+      if (bufSize > 65536) {
+        bufSize = 65536;
       }
-      byte[] buf = new byte[(int) buf_size];
+      byte[] buf = new byte[(int) bufSize];
 
-      @SuppressWarnings("resource")
-      FileInputStream in = new FileInputStream(f);
-      close_me = in;
-      FileChannel fileChannel = in.getChannel();
+      in = new FileInputStream(f);
+      fileChannel = in.getChannel();
       ByteBuffer bb = ByteBuffer.wrap(buf);
-      int read = 0;
+      int read;
       MD5 md5 = new MD5();
       read = fileChannel.read(bb);
       while (read > 0) {
@@ -755,23 +749,22 @@ class MD5 {
         bb.clear();
         read = fileChannel.read(bb);
       }
-      fileChannel.close();
-      fileChannel = null;
-      in = null;
-      close_me = null;
-      bb = null;
-      buf = null;
-      buf = md5.Final();
-      md5 = null;
-      return buf;
-    } catch (final IOException e) {
-      if (close_me != null) {
+      return md5.Final();
+    } finally {
+      if (fileChannel != null) {
         try {
-          close_me.close();
-        } catch (final Exception e2) {
+          fileChannel.close();
+        } catch (final Exception ignored) {
+          // ignored
         }
       }
-      throw e;
+      if (in != null) {
+        try {
+          in.close();
+        } catch (final Exception ignored) {
+          // ignored
+        }
+      }
     }
   }
 
@@ -789,22 +782,17 @@ class MD5 {
       final long buf_size = 65536;
       byte[] buf = new byte[(int) buf_size];
       final MD5 md5 = new MD5();
-      int read = 0;
+      int read;
       while ((read = stream.read(buf)) >= 0) {
         md5.Update(md5.state, buf, 0, read);
       }
-      stream.close();
-      buf = null;
-      buf = md5.Final();
-      return buf;
-    } catch (final IOException e) {
-      if (stream != null) {
-        try {
-          stream.close();
-        } catch (final Exception e2) {
-        }
+      return md5.Final();
+    } finally {
+      try {
+        stream.close();
+      } catch (final Exception ignored) {
+        // ignored
       }
-      throw e;
     }
   }
 

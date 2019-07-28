@@ -19,14 +19,12 @@
  */
 package org.waarp.openr66.database.model;
 
-import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
@@ -37,12 +35,10 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.utils.R66Versions;
 
-import java.sql.SQLException;
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * H2 Database Model implementation
- *
- *
  */
 public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   /**
@@ -68,216 +64,221 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     final String notNull = " NOT NULL ";
 
     // Multiple Mode
-    String action = createTableH2 + DbMultipleMonitor.table + "(";
+    StringBuilder action =
+        new StringBuilder(createTableH2 + DbMultipleMonitor.table + '(');
     final DbMultipleMonitor.Columns[] mcolumns =
         DbMultipleMonitor.Columns.values();
     for (int i = 0; i < mcolumns.length - 1; i++) {
-      action +=
-          mcolumns[i].name() + DBType.getType(DbMultipleMonitor.dbTypes[i]) +
-          notNull + ", ";
+      action.append(mcolumns[i].name())
+            .append(DBType.getType(DbMultipleMonitor.dbTypes[i]))
+            .append(notNull).append(", ");
     }
-    action += mcolumns[mcolumns.length - 1].name() +
-              DBType.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]) +
-              primaryKey + ")";
-    System.out.println(action);
+    action.append(mcolumns[mcolumns.length - 1].name()).append(
+        DBType.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))
+          .append(primaryKey).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     DbRequest request = new DbRequest(session);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
     final DbMultipleMonitor multipleMonitor =
-        new DbMultipleMonitor(Configuration.configuration.getHOST_ID(), 0, 0,
-                              0);
+        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);
     try {
       if (!multipleMonitor.exist()) {
         multipleMonitor.insert();
       }
     } catch (final WaarpDatabaseException e1) {
-      e1.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e1);
     }
 
     // Configuration
-    action = createTableH2 + DbConfiguration.table + "(";
+    action = new StringBuilder(createTableH2 + DbConfiguration.table + '(');
     final DbConfiguration.Columns[] ccolumns = DbConfiguration.Columns.values();
     for (int i = 0; i < ccolumns.length - 1; i++) {
-      action +=
-          ccolumns[i].name() + DBType.getType(DbConfiguration.dbTypes[i]) +
-          notNull + ", ";
+      action.append(ccolumns[i].name())
+            .append(DBType.getType(DbConfiguration.dbTypes[i])).append(notNull)
+            .append(", ");
     }
-    action += ccolumns[ccolumns.length - 1].name() +
-              DBType.getType(DbConfiguration.dbTypes[ccolumns.length - 1]) +
-              primaryKey + ")";
-    System.out.println(action);
+    action.append(ccolumns[ccolumns.length - 1].name())
+          .append(DBType.getType(DbConfiguration.dbTypes[ccolumns.length - 1]))
+          .append(primaryKey).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     request = new DbRequest(session);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
 
     // HostConfiguration
-    action = createTableH2 + DbHostConfiguration.table + "(";
+    action = new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
     final DbHostConfiguration.Columns[] chcolumns =
         DbHostConfiguration.Columns.values();
     for (int i = 0; i < chcolumns.length - 1; i++) {
-      action +=
-          chcolumns[i].name() + DBType.getType(DbHostConfiguration.dbTypes[i]) +
-          notNull + ", ";
+      action.append(chcolumns[i].name())
+            .append(DBType.getType(DbHostConfiguration.dbTypes[i]))
+            .append(notNull).append(", ");
     }
-    action += chcolumns[chcolumns.length - 1].name() + DBType
-        .getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]) +
-              primaryKey + ")";
-    System.out.println(action);
+    action.append(chcolumns[chcolumns.length - 1].name()).append(
+        DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+          .append(primaryKey).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     request = new DbRequest(session);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
 
     // hosts
-    action = createTableH2 + DbHostAuth.table + "(";
+    action = new StringBuilder(createTableH2 + DbHostAuth.table + '(');
     final DbHostAuth.Columns[] hcolumns = DbHostAuth.Columns.values();
     for (int i = 0; i < hcolumns.length - 1; i++) {
-      action +=
-          hcolumns[i].name() + DBType.getType(DbHostAuth.dbTypes[i]) + notNull +
-          ", ";
+      action.append(hcolumns[i].name())
+            .append(DBType.getType(DbHostAuth.dbTypes[i])).append(notNull)
+            .append(", ");
     }
-    action += hcolumns[hcolumns.length - 1].name() +
-              DBType.getType(DbHostAuth.dbTypes[hcolumns.length - 1]) +
-              primaryKey + ")";
-    System.out.println(action);
+    action.append(hcolumns[hcolumns.length - 1].name())
+          .append(DBType.getType(DbHostAuth.dbTypes[hcolumns.length - 1]))
+          .append(primaryKey).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
 
     // rules
-    action = createTableH2 + DbRule.table + "(";
+    action = new StringBuilder(createTableH2 + DbRule.table + '(');
     final DbRule.Columns[] rcolumns = DbRule.Columns.values();
     for (int i = 0; i < rcolumns.length - 1; i++) {
-      action += rcolumns[i].name() + DBType.getType(DbRule.dbTypes[i]) + ", ";
+      action.append(rcolumns[i].name())
+            .append(DBType.getType(DbRule.dbTypes[i])).append(", ");
     }
-    action += rcolumns[rcolumns.length - 1].name() +
-              DBType.getType(DbRule.dbTypes[rcolumns.length - 1]) + primaryKey +
-              ")";
-    System.out.println(action);
+    action.append(rcolumns[rcolumns.length - 1].name())
+          .append(DBType.getType(DbRule.dbTypes[rcolumns.length - 1]))
+          .append(primaryKey).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
 
     // runner
-    action = createTableH2 + DbTaskRunner.table + "(";
+    action = new StringBuilder(createTableH2 + DbTaskRunner.table + '(');
     final DbTaskRunner.Columns[] acolumns = DbTaskRunner.Columns.values();
     for (int i = 0; i < acolumns.length; i++) {
-      action += acolumns[i].name() + DBType.getType(DbTaskRunner.dbTypes[i]) +
-                notNull + ", ";
+      action.append(acolumns[i].name())
+            .append(DBType.getType(DbTaskRunner.dbTypes[i])).append(notNull)
+            .append(", ");
     }
     // Several columns for primary key
-    action += " CONSTRAINT runner_pk " + primaryKey + "(";
+    action.append(" CONSTRAINT runner_pk " + primaryKey + '(');
     for (int i = DbTaskRunner.NBPRKEY; i > 1; i--) {
-      action += acolumns[acolumns.length - i].name() + ",";
+      action.append(acolumns[acolumns.length - i].name()).append(',');
     }
-    action += acolumns[acolumns.length - 1].name() + "))";
-    System.out.println(action);
+    action.append(acolumns[acolumns.length - 1].name()).append("))");
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
     // Index Runner
-    action =
-        "CREATE INDEX IF NOT EXISTS IDX_RUNNER ON " + DbTaskRunner.table + "(";
+    action = new StringBuilder(
+        "CREATE INDEX IF NOT EXISTS IDX_RUNNER ON " + DbTaskRunner.table + '(');
     final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;
     for (int i = 0; i < icolumns.length - 1; i++) {
-      action += icolumns[i].name() + ", ";
+      action.append(icolumns[i].name()).append(", ");
     }
-    action += icolumns[icolumns.length - 1].name() + ")";
-    System.out.println(action);
+    action.append(icolumns[icolumns.length - 1].name()).append(')');
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      // XXX FIX no return;
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      // XXX FIX no return
     } finally {
       request.close();
     }
 
     // cptrunner
-    action = "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
-             " START WITH " + (DbConstant.ILLEGALVALUE + 1) + " MINVALUE " +
-             (DbConstant.ILLEGALVALUE + 1);
-    System.out.println(action);
+    action = new StringBuilder(
+        "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
+        " START WITH " + (ILLEGALVALUE + 1) + " MINVALUE " +
+        (ILLEGALVALUE + 1));
+    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action);
+      request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
       // version <= 1.2.173
-      action = "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
-               " START WITH " + (DbConstant.ILLEGALVALUE + 1);
-      System.out.println(action);
+      action = new StringBuilder(
+          "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
+          " START WITH " + (ILLEGALVALUE + 1));
+      SysErrLogger.FAKE_LOGGER.sysout(action);
       try {
-        request.query(action);
+        request.query(action.toString());
       } catch (final WaarpDatabaseNoConnectionException e2) {
-        e2.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e2);
         return;
       } catch (final WaarpDatabaseSqlException e2) {
-        e2.printStackTrace();
-        // XXX FIX no return;
+        SysErrLogger.FAKE_LOGGER.syserr(e2);
+        // XXX FIX no return
       } finally {
         request.close();
       }
-      // XXX FIX no return;
+      // XXX FIX no return
     } finally {
       request.close();
     }
 
-    DbHostConfiguration
-        .updateVersionDb(Configuration.configuration.getHOST_ID(),
-                         R66Versions.V2_4_25.getVersion());
+    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),
+                                        R66Versions.V2_4_25.getVersion());
   }
 
   @Override
@@ -285,30 +286,31 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
       throws WaarpDatabaseNoConnectionException {
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
-      System.out.println(
+      SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_13.getVersion() + "? " + true);
       final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
       final String primaryKey = " PRIMARY KEY ";
       final String notNull = " NOT NULL ";
 
       // HostConfiguration
-      String action = createTableH2 + DbHostConfiguration.table + "(";
+      StringBuilder action =
+          new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
       final DbHostConfiguration.Columns[] chcolumns =
           DbHostConfiguration.Columns.values();
       for (int i = 0; i < chcolumns.length - 1; i++) {
-        action += chcolumns[i].name() +
-                  DBType.getType(DbHostConfiguration.dbTypes[i]) + notNull +
-                  ", ";
+        action.append(chcolumns[i].name())
+              .append(DBType.getType(DbHostConfiguration.dbTypes[i]))
+              .append(notNull).append(", ");
       }
-      action += chcolumns[chcolumns.length - 1].name() + DBType
-          .getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]) +
-                primaryKey + ")";
-      System.out.println(action);
+      action.append(chcolumns[chcolumns.length - 1].name()).append(
+          DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+            .append(primaryKey).append(')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
       final DbRequest request = new DbRequest(session);
       try {
-        request.query(action);
+        request.query(action.toString());
       } catch (final WaarpDatabaseSqlException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         return false;
       } finally {
         request.close();
@@ -316,20 +318,20 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     }
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
-      System.out.println(
+      SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_17.getVersion() + "? " + true);
       final String command =
           "ALTER TABLE " + DbTaskRunner.table + " ADD COLUMN IF NOT EXISTS " +
-          DbTaskRunner.Columns.TRANSFERINFO.name() + " " + DBType.getType(
+          DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' + DBType.getType(
               DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
                   .ordinal()]) + " NOT NULL DEFAULT '{}' " + " AFTER " +
           DbTaskRunner.Columns.FILEINFO.name();
       final DbRequest request = new DbRequest(session);
       try {
-        System.out.println("Command: " + command);
+        SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         return false;
       } finally {
         request.close();
@@ -337,36 +339,36 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     }
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
-      System.out.println(
+      SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_23.getVersion() + "? " + true);
       String command =
           "ALTER TABLE " + DbHostAuth.table + " ADD COLUMN IF NOT EXISTS " +
-          DbHostAuth.Columns.ISACTIVE.name() + " " + DBType.getType(
+          DbHostAuth.Columns.ISACTIVE.name() + ' ' + DBType.getType(
               DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE.ordinal()]) +
           " NOT NULL DEFAULT " + true + " AFTER " +
           DbHostAuth.Columns.ISCLIENT.name();
       DbRequest request = new DbRequest(session);
       try {
-        System.out.println("Command: " + command);
+        SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         return false;
       } finally {
         request.close();
       }
       command =
           "ALTER TABLE " + DbHostAuth.table + " ADD COLUMN IF NOT EXISTS " +
-          DbHostAuth.Columns.ISPROXIFIED.name() + " " + DBType.getType(
+          DbHostAuth.Columns.ISPROXIFIED.name() + ' ' + DBType.getType(
               DbHostAuth.dbTypes[DbHostAuth.Columns.ISPROXIFIED.ordinal()]) +
           " NOT NULL DEFAULT " + false + " AFTER " +
           DbHostAuth.Columns.ISACTIVE.name();
       request = new DbRequest(session);
       try {
-        System.out.println("Command: " + command);
+        SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         return false;
       } finally {
         request.close();
@@ -374,41 +376,40 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     }
     if (PartnerConfiguration
         .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
-      System.out.println(
+      SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_25.getVersion() + "? " + true);
       String command = "ALTER TABLE " + DbTaskRunner.table + " ALTER COLUMN " +
-                       DbTaskRunner.Columns.FILENAME.name() + " " + DBType
+                       DbTaskRunner.Columns.FILENAME.name() + ' ' + DBType
                            .getType(
                                DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME
                                    .ordinal()]) + " NOT NULL ";
       DbRequest request = new DbRequest(session);
       try {
-        System.out.println("Command: " + command);
+        SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         return false;
       } finally {
         request.close();
       }
       command = "ALTER TABLE " + DbTaskRunner.table + " ALTER COLUMN " +
-                DbTaskRunner.Columns.ORIGINALNAME.name() + " " + DBType.getType(
+                DbTaskRunner.Columns.ORIGINALNAME.name() + ' ' + DBType.getType(
           DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME.ordinal()]) +
                 " NOT NULL ";
       request = new DbRequest(session);
       try {
-        System.out.println("Command: " + command);
+        SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         return false;
       } finally {
         request.close();
       }
     }
-    DbHostConfiguration
-        .updateVersionDb(Configuration.configuration.getHOST_ID(),
-                         R66Versions.V2_4_25.getVersion());
+    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),
+                                        R66Versions.V2_4_25.getVersion());
     return true;
   }
 
@@ -426,10 +427,10 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
             "select " + DbHostConfiguration.Columns.HOSTID.name() + " from " +
             DbHostConfiguration.table + " where " +
             DbHostConfiguration.Columns.HOSTID + " = '" +
-            Configuration.configuration.getHOST_ID() + "'");
+            Configuration.configuration.getHostId() + '\'');
         request.close();
         DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHOST_ID(),
+            .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_13.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
         return !upgradeDb(session, version);
@@ -447,10 +448,10 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
         request.select(
             "select " + DbTaskRunner.Columns.TRANSFERINFO.name() + " from " +
             DbTaskRunner.table + " where " + DbTaskRunner.Columns.SPECIALID +
-            " = " + DbConstant.ILLEGALVALUE);
+            " = " + ILLEGALVALUE);
         request.close();
         DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHOST_ID(),
+            .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_17.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
         return !upgradeDb(session, version);
@@ -470,7 +471,7 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
             DbHostAuth.table + " where " + DbHostAuth.Columns.PORT + " = " + 0);
         request.close();
         DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHOST_ID(),
+            .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_23.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
         return !upgradeDb(session, version);
@@ -483,15 +484,12 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     request = null;
     if (PartnerConfiguration
         .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
-      try {
-        if (upgradeDb(session, version)) {
-          DbHostConfiguration
-              .updateVersionDb(Configuration.configuration.getHOST_ID(),
-                               R66Versions.V2_4_25.getVersion());
-        } else {
-          return true;
-        }
-      } finally {
+      if (upgradeDb(session, version)) {
+        DbHostConfiguration
+            .updateVersionDb(Configuration.configuration.getHostId(),
+                             R66Versions.V2_4_25.getVersion());
+      } else {
+        return true;
       }
     }
     return false;

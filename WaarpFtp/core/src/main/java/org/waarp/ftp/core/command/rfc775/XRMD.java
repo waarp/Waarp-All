@@ -23,8 +23,6 @@ import org.waarp.ftp.core.command.service.RMD;
 
 /**
  * XRMD command
- *
- *
  */
 public class XRMD extends RMD {
 

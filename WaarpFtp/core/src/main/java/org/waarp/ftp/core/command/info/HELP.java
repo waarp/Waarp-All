@@ -24,8 +24,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * HELP command
- *
- *
  */
 public class HELP extends AbstractCommand {
   @Override

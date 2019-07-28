@@ -21,8 +21,6 @@ package org.waarp.common.future;
 
 /**
  * Future in success
- *
- *
  */
 public class WaarpSucceededFuture extends WaarpCompletedFuture {
 

@@ -32,8 +32,6 @@ import org.waarp.snmp.interf.WaarpInterfaceVariableFactory;
 
 /**
  * R66 implementation of VariableFactory for SNMP support
- *
- *
  */
 public class R66VariableFactory implements WaarpInterfaceVariableFactory {
 

@@ -29,6 +29,8 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.waarp.commandexec.utils.LocalExecDefaultResult;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -41,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.RejectedExecutionException;
@@ -50,9 +53,13 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public class LocalExecServerHandler
     extends SimpleChannelInboundHandler<String> {
+  private static final String EXCEPTION_WHILE_ANSWERED =
+      "Exception while answered: ";
+  private static final String EXEC_IN_ERROR_WITH = " Exec in error with ";
+  private static final String EXCEPTION = "Exception: ";
   // Fixed delay, but could change if necessary at construction
   private long delay = LocalExecDefaultResult.MAXWAITPROCESS;
-  protected LocalExecServerInitializer factory;
+  protected final LocalExecServerInitializer factory;
   protected static boolean isShutdown;
 
   /**
@@ -74,9 +81,9 @@ public class LocalExecServerHandler
     if (isShutdown) {
       channel.writeAndFlush(
           LocalExecDefaultResult.ConnectionRefused.getStatus() + " " +
-          LocalExecDefaultResult.ConnectionRefused.getResult() + "\n");
+          LocalExecDefaultResult.ConnectionRefused.getResult() + '\n');
       WaarpNettyUtil.awaitOrInterrupted(
-          channel.writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + "\n"),
+          channel.writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + '\n'),
           30000);
       WaarpSslUtility.closingSslChannel(channel);
       return true;
@@ -96,14 +103,14 @@ public class LocalExecServerHandler
    */
   private static void printStackTrace(Thread thread,
                                       StackTraceElement[] stacks) {
-    System.err.print(thread + " : ");
+    SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + " : ");
     for (int i = 0; i < stacks.length - 1; i++) {
-      System.err.print(stacks[i] + " ");
+      SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + " ");
     }
     if (stacks.length > 0) {
-      System.err.println(stacks[stacks.length - 1]);
+      SysErrLogger.FAKE_LOGGER.syserr(stacks[stacks.length - 1]);
     } else {
-      System.err.println();
+      SysErrLogger.FAKE_LOGGER.syserr();
     }
   }
 
@@ -111,21 +118,21 @@ public class LocalExecServerHandler
    * Shutdown thread
    */
   private static class GGLEThreadShutdown extends Thread {
-    long delay = 3000;
-    LocalExecServerInitializer factory;
+    static final long DELAY = 3000;
+    final LocalExecServerInitializer factory;
 
-    public GGLEThreadShutdown(LocalExecServerInitializer factory) {
+    private GGLEThreadShutdown(LocalExecServerInitializer factory) {
       this.factory = factory;
     }
 
     @Override
     public void run() {
-      Timer timer = null;
+      Timer timer;
       timer = new Timer(true);
       final GGLETimerTask ggleTimerTask = new GGLETimerTask();
-      timer.schedule(ggleTimerTask, delay);
+      timer.schedule(ggleTimerTask, DELAY);
       factory.releaseResources();
-      //FBGEXIT DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0)
     }
 
   }
@@ -144,14 +151,14 @@ public class LocalExecServerHandler
     public void run() {
       logger.error("System will force EXIT");
       final Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
-      for (final Thread thread : map.keySet()) {
+      for (final Entry<Thread, StackTraceElement[]> entry : map.entrySet()) {
         try {
-          printStackTrace(thread, map.get(thread));
+          printStackTrace(entry.getKey(), entry.getValue());
         } catch (ArrayIndexOutOfBoundsException e) {
           // ignore
         }
       }
-      //FBGEXIT DetectionUtils.SystemExit(0);
+      //FBGEXIT DetectionUtils.SystemExit(0)
     }
   }
 
@@ -190,7 +197,6 @@ public class LocalExecServerHandler
   protected void channelRead0(ChannelHandlerContext ctx, String msg)
       throws Exception {
     answered = false;
-    final String request = msg;
 
     // Generate and write a response.
     String response;
@@ -198,12 +204,12 @@ public class LocalExecServerHandler
                LocalExecDefaultResult.NoStatus.getResult();
     ExecuteWatchdog watchdog = null;
     try {
-      if (request.length() == 0) {
+      if (msg.length() == 0) {
         // No command
         response = LocalExecDefaultResult.NoCommand.getStatus() + " " +
                    LocalExecDefaultResult.NoCommand.getResult();
       } else {
-        final String[] args = request.split(" ");
+        final String[] args = msg.split(" ");
         int cpt = 0;
         long tempDelay;
         try {
@@ -227,7 +233,7 @@ public class LocalExecServerHandler
         if (exec.isAbsolute()) {
           // If true file, is it executable
           if (!exec.canExecute()) {
-            logger.error("Exec command is not executable: " + request);
+            logger.error("Exec command is not executable: " + msg);
             response = LocalExecDefaultResult.NotExecutable.getStatus() + " " +
                        LocalExecDefaultResult.NotExecutable.getResult();
             return;
@@ -261,74 +267,65 @@ public class LocalExecServerHandler
             try {
               Thread.sleep(LocalExecDefaultResult.RETRYINMS);
             } catch (final InterruptedException e1) {
+              SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             }
             try {
               status = defaultExecutor.execute(commandLine);
             } catch (final ExecuteException e1) {
               try {
                 pumpStreamHandler.stop();
-              } catch (final IOException e3) {
+              } catch (final IOException ignored) {
+                // nothing
               }
-              logger.error(
-                  "Exception: " + e.getMessage() + " Exec in error with " +
-                  commandLine);
+              logger.error(EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH +
+                           commandLine);
               response = LocalExecDefaultResult.BadExecution.getStatus() + " " +
                          LocalExecDefaultResult.BadExecution.getResult();
-              try {
-                outputStream.close();
-              } catch (final IOException e2) {
-              }
+              FileUtils.close(outputStream);
               return;
             } catch (final IOException e1) {
               try {
                 pumpStreamHandler.stop();
-              } catch (final IOException e3) {
+              } catch (final IOException ignored) {
+                // nothing
               }
-              logger.error(
-                  "Exception: " + e.getMessage() + " Exec in error with " +
-                  commandLine);
+              logger.error(EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH +
+                           commandLine);
               response = LocalExecDefaultResult.BadExecution.getStatus() + " " +
                          LocalExecDefaultResult.BadExecution.getResult();
-              try {
-                outputStream.close();
-              } catch (final IOException e2) {
-              }
+              FileUtils.close(outputStream);
               return;
             }
           } else {
             try {
               pumpStreamHandler.stop();
-            } catch (final IOException e3) {
+            } catch (final IOException ignored) {
+              // nothing
             }
             logger.error(
-                "Exception: " + e.getMessage() + " Exec in error with " +
-                commandLine);
+                EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);
             response = LocalExecDefaultResult.BadExecution.getStatus() + " " +
                        LocalExecDefaultResult.BadExecution.getResult();
-            try {
-              outputStream.close();
-            } catch (final IOException e2) {
-            }
+            FileUtils.close(outputStream);
             return;
           }
         } catch (final IOException e) {
           try {
             pumpStreamHandler.stop();
-          } catch (final IOException e3) {
+          } catch (final IOException ignored) {
+            // nothing
           }
-          logger.error("Exception: " + e.getMessage() + " Exec in error with " +
-                       commandLine);
+          logger.error(
+              EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);
           response = LocalExecDefaultResult.BadExecution.getStatus() + " " +
                      LocalExecDefaultResult.BadExecution.getResult();
-          try {
-            outputStream.close();
-          } catch (final IOException e2) {
-          }
+          FileUtils.close(outputStream);
           return;
         }
         try {
           pumpStreamHandler.stop();
-        } catch (final IOException e3) {
+        } catch (final IOException ignored) {
+          // nothing
         }
         if (defaultExecutor.isFailure(status) && watchdog != null &&
             watchdog.killedProcess()) {
@@ -336,10 +333,7 @@ public class LocalExecServerHandler
           logger.error("Exec is in Time Out");
           response = LocalExecDefaultResult.TimeOutExecution.getStatus() + " " +
                      LocalExecDefaultResult.TimeOutExecution.getResult();
-          try {
-            outputStream.close();
-          } catch (final IOException e2) {
-          }
+          FileUtils.close(outputStream);
         } else {
           try {
             response = status + " " +
@@ -347,23 +341,20 @@ public class LocalExecServerHandler
           } catch (final UnsupportedEncodingException e) {
             response = status + " " + outputStream;
           }
-          try {
-            outputStream.close();
-          } catch (final IOException e2) {
-          }
+          FileUtils.close(outputStream);
         }
       }
     } finally {
       // We do not need to write a ByteBuf here.
       // We know the encoder inserted at LocalExecInitializer will do the
       // conversion.
-      ctx.channel().writeAndFlush(response + "\n");
+      ctx.channel().writeAndFlush(response + '\n');
       answered = true;
       if (watchdog != null) {
         watchdog.stop();
       }
-      logger.info("End of Command: " + request + " : " + response);
-      ctx.channel().writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + "\n");
+      logger.info("End of Command: " + msg + " : " + response);
+      ctx.channel().writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + '\n');
     }
   }
 
@@ -374,30 +365,31 @@ public class LocalExecServerHandler
       logger.error("Unexpected exception from Outband while not answered.",
                    cause);
     }
-    final Throwable e1 = cause;
     // Look if Nothing to do since execution will stop later on and
     // an error will occur on client side
     // since no message arrived before close (or partially)
-    if (e1 instanceof CancelledKeyException) {
-    } else if (e1 instanceof ClosedChannelException) {
-    } else if (e1 instanceof NullPointerException) {
+    if (cause instanceof CancelledKeyException) {
+      // nothing
+    } else if (cause instanceof ClosedChannelException) {
+      // nothing
+    } else if (cause instanceof NullPointerException) {
       if (ctx.channel().isActive()) {
         if (answered) {
-          logger.debug("Exception while answered: ", cause);
+          logger.debug(EXCEPTION_WHILE_ANSWERED, cause);
         }
         WaarpSslUtility.closingSslChannel(ctx.channel());
       }
-    } else if (e1 instanceof IOException) {
+    } else if (cause instanceof IOException) {
       if (ctx.channel().isActive()) {
         if (answered) {
-          logger.debug("Exception while answered: ", cause);
+          logger.debug(EXCEPTION_WHILE_ANSWERED, cause);
         }
         WaarpSslUtility.closingSslChannel(ctx.channel());
       }
-    } else if (e1 instanceof RejectedExecutionException) {
+    } else if (cause instanceof RejectedExecutionException) {
       if (ctx.channel().isActive()) {
         if (answered) {
-          logger.debug("Exception while answered: ", cause);
+          logger.debug(EXCEPTION_WHILE_ANSWERED, cause);
         }
         WaarpSslUtility.closingSslChannel(ctx.channel());
       }

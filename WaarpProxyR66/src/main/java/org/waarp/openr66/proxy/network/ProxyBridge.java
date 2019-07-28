@@ -21,15 +21,15 @@ package org.waarp.openr66.proxy.network;
 
 import io.netty.channel.Channel;
 import org.waarp.openr66.protocol.utils.R66Future;
-import org.waarp.openr66.proxy.configuration.Configuration;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+import static org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer.*;
 
 /**
  * Proxy bridge between a request and a proxified server
- *
- *
  */
 public class ProxyBridge {
-  public static NetworkTransaction transaction = null;
+  public static NetworkTransaction transaction;
 
   private final ProxyEntry proxyEntry;
   private final NetworkServerHandler source;
@@ -58,8 +58,7 @@ public class ProxyBridge {
       futureRemoteConnected.cancel();
       return;
     }
-    proxified = (NetworkServerHandler) proxy.pipeline().get(
-        NetworkServerInitializer.HANDLER);
+    proxified = (NetworkServerHandler) proxy.pipeline().get(NETWORK_HANDLER);
     proxified.setBridge(this);
   }
 
@@ -68,8 +67,7 @@ public class ProxyBridge {
   }
 
   public boolean waitForRemoteConnection() {
-    futureRemoteConnected.awaitOrInterruptible(
-        Configuration.configuration.getTIMEOUTCON());
+    futureRemoteConnected.awaitOrInterruptible(configuration.getTimeoutCon());
     if (!futureRemoteConnected.isSuccess()) {
       futureRemoteConnected.cancel();
       return false;

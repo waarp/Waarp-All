@@ -26,7 +26,7 @@ import org.waarp.common.file.FileParameterInterface;
  */
 public class FilesystemBasedFileParameterImpl
     implements FileParameterInterface {
-  public static FileParameterInterface fileParameterInterface =
+  public static final FileParameterInterface fileParameterInterface =
       new FilesystemBasedFileParameterImpl();
 
   /**

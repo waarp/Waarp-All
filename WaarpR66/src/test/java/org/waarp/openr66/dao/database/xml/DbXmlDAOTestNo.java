@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database.xml;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
@@ -110,7 +111,7 @@ public abstract class DbXmlDAOTestNo extends DBAllDAOTest {
       dao.insert(new Limit("server2", 2, 3, 2, 2, 2, UpdatedInfo.valueOf(0)));
       dao.insert(new Limit("server3", 5, 6, 3, 4, 3, UpdatedInfo.valueOf(0)));
     } catch (final DAOConnectionException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
     try {
       final XMLBusinessDAO dao = new XMLBusinessDAO(path);

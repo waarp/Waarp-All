@@ -36,10 +36,11 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
-import org.waarp.openr66.proxy.configuration.Configuration;
 
 import java.io.IOException;
 import java.util.Date;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
 /**
  * Handler for HTTP information support
@@ -56,6 +57,7 @@ public class HttpFormattedHandler
     index("index.html"), error("monitoring_header.html", "monitoring_end.html"),
     statusxml("");
 
+    private static final String MONITOR = "monitor/";
     private final String header;
     private final String end;
 
@@ -64,7 +66,7 @@ public class HttpFormattedHandler
      *
      * @param uniquefile
      */
-    private REQUEST(String uniquefile) {
+    REQUEST(String uniquefile) {
       header = uniquefile;
       end = uniquefile;
     }
@@ -73,7 +75,7 @@ public class HttpFormattedHandler
      * @param header
      * @param end
      */
-    private REQUEST(String header, String end) {
+    REQUEST(String header, String end) {
       this.header = header;
       this.end = end;
     }
@@ -84,18 +86,18 @@ public class HttpFormattedHandler
      * @return the content of the unique file
      */
     public String readFileUnique(HttpFormattedHandler handler) {
-      return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + "monitor/" + header);
+      return handler
+          .readFileHeader(configuration.getHttpBasePath() + MONITOR + header);
     }
 
     public String readHeader(HttpFormattedHandler handler) {
-      return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + "monitor/" + header);
+      return handler
+          .readFileHeader(configuration.getHttpBasePath() + MONITOR + header);
     }
 
     public String readEnd() {
-      return WaarpStringUtils.readFile(
-          Configuration.configuration.getHttpBasePath() + "monitor/" + end);
+      return WaarpStringUtils
+          .readFile(configuration.getHttpBasePath() + MONITOR + end);
     }
   }
 
@@ -115,25 +117,24 @@ public class HttpFormattedHandler
     final StringBuilder builder = new StringBuilder(value);
 
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),
-                             (new Date()).toString());
+                             new Date().toString());
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),
-                             Integer.toString(Configuration.configuration
-                                                  .getLocalTransaction()
-                                                  .getNumberLocalChannel()));
+                             Integer.toString(
+                                 configuration.getLocalTransaction()
+                                              .getNumberLocalChannel()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),
-                             Integer.toString(Configuration.configuration
-                                                  .getLocalTransaction()
-                                                  .getNumberLocalChannel()));
+                             Integer.toString(
+                                 configuration.getLocalTransaction()
+                                              .getNumberLocalChannel()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-                             Configuration.configuration.getHOST_ID());
+                             configuration.getHostId());
     final TrafficCounter trafficCounter =
-        Configuration.configuration.getGlobalTrafficShapingHandler()
-                                   .trafficCounter();
+        configuration.getGlobalTrafficShapingHandler().trafficCounter();
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
                              "IN:" +
-                             (trafficCounter.lastReadThroughput() / 131072) +
+                             trafficCounter.lastReadThroughput() / 131072 +
                              "Mbits&nbsp;&nbsp;OUT:" +
-                             (trafficCounter.lastWriteThroughput() / 131072) +
+                             trafficCounter.lastWriteThroughput() / 131072 +
                              "Mbits");
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
     return builder.toString();
@@ -152,20 +153,19 @@ public class HttpFormattedHandler
     logger.debug("Msg: " + uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-      HttpWriteCacheEnable.writeFile(request, ctx, Configuration.configuration
-                                                       .getHttpBasePath() +
-                                                   uriRequest,
-                                     "XYZR66NOSESSION");
+      HttpWriteCacheEnable
+          .writeFile(request, ctx, configuration.getHttpBasePath() + uriRequest,
+                     "XYZR66NOSESSION");
       return;
     }
     char cval = 'z';
     long nb = LIMITROW;
     // check the URI
-    if (uriRequest.equalsIgnoreCase("/statusxml")) {
+    if ("/statusxml".equalsIgnoreCase(uriRequest)) {
       cval = '5';
       nb = 0; // since it could be the default or setup by request
       isCurrentRequestXml = true;
-    } else if (uriRequest.equalsIgnoreCase("/statusjson")) {
+    } else if ("/statusjson".equalsIgnoreCase(uriRequest)) {
       cval = '7';
       nb = 0; // since it could be the default or setup by request
       isCurrentRequestJson = true;
@@ -173,7 +173,7 @@ public class HttpFormattedHandler
     if (request.method() == HttpMethod.GET) {
       params = queryStringDecoder.parameters();
     }
-    final boolean getMenu = (cval == 'z');
+    final boolean getMenu = cval == 'z';
     final boolean extraBoolean = false;
     if (!params.isEmpty()) {
       final String langarg = getTrimValue("setLng");
@@ -217,7 +217,6 @@ public class HttpFormattedHandler
       }
     } else {
       // Nothing to do
-      return;
     }
   }
 
@@ -230,12 +229,10 @@ public class HttpFormattedHandler
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     logger.debug("Connected");
-    authentHttp.getAuth().specialNoSessionAuth(false,
-                                               Configuration.configuration
-                                                   .getHOST_ID());
+    authentHttp.getAuth()
+               .specialNoSessionAuth(false, configuration.getHostId());
     super.channelActive(ctx);
-    final ChannelGroup group =
-        Configuration.configuration.getHttpChannelGroup();
+    final ChannelGroup group = configuration.getHttpChannelGroup();
     if (group != null) {
       group.add(ctx.channel());
     }

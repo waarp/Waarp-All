@@ -46,18 +46,18 @@ import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
 
 /**
  * DBConfiguration Rest Handler
- *
- *
  */
 public class DbConfigurationR66RestMethodHandler
     extends DataModelRestMethodHandler<DbConfiguration> {
+  private static final String HOST_ID_AS_VARCHAR_IN_URI_AS =
+      "HostId as VARCHAR in URI as ";
   public static final String BASEURI = "configurations";
 
-  public static enum FILTER_ARGS {
+  public enum FILTER_ARGS {
     HOSTID("host name"), BANDWIDTH(
         "<0 for no filter, =0 for no bandwidth, >0 for a limit greater than value");
 
-    public String type;
+    public final String type;
 
     FILTER_ARGS(String type) {
       this.type = type;
@@ -163,13 +163,14 @@ public class DbConfigurationR66RestMethodHandler
       node1.put(dbValue.getColumn(), dbValue.getType());
     }
 
-    ObjectNode node2, node3;
+    ObjectNode node2;
+    ObjectNode node3;
     if (methods.contains(METHOD.GET)) {
       node2 = RestArgument
           .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
                              JsonHandler.createObjectNode().put(
                                  DbConfiguration.Columns.HOSTID.name(),
-                                 "HostId as VARCHAR in URI as " + path + "/id"),
+                                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id"),
                              node1);
       node.add(node2);
 
@@ -185,7 +186,7 @@ public class DbConfigurationR66RestMethodHandler
     if (methods.contains(METHOD.PUT)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbConfiguration.Columns.HOSTID.name(),
-                "HostId as VARCHAR in URI as " + path + "/id");
+                HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
       for (final DbValue dbValue : values) {
         if (dbValue.getColumn()
                    .equalsIgnoreCase(DbConfiguration.Columns.HOSTID.name())) {
@@ -201,7 +202,7 @@ public class DbConfigurationR66RestMethodHandler
     if (methods.contains(METHOD.DELETE)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbConfiguration.Columns.HOSTID.name(),
-                "HostId as VARCHAR in URI as " + path + "/id");
+                HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
       node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + "/id",
                                              COMMAND_TYPE.DELETE.name(), node3,
                                              node1);

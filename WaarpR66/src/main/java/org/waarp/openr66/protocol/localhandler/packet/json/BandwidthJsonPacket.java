@@ -23,14 +23,14 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Bandwidth setting or getting JSON packet
- *
- *
  */
 public class BandwidthJsonPacket extends JsonPacket {
 
   protected boolean setter;
-  protected long writeglobal = -10, readglobal = -10, writesession = -10,
-      readsession = -10;
+  protected long writeglobal = -10;
+  protected long readglobal = -10;
+  protected long writesession = -10;
+  protected long readsession = -10;
 
   /**
    * @return the setter
@@ -117,7 +117,7 @@ public class BandwidthJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.BANDWIDTHPACKET);
+    setRequestUserPacket(LocalPacketFactory.BANDWIDTHPACKET);
   }
 
 }

@@ -31,7 +31,6 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -45,12 +44,16 @@ import java.util.Date;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Java Task for SpooledDirectory information to the Waarp Server
- *
- *
  */
 public class SpooledInformTask extends AbstractExecJavaTask {
+
+  private static final String TD_TD = "</TD><TD>";
+
+  private static final String TH_TH = "</TH><TH>";
 
   /**
    * Internal Logger
@@ -59,16 +62,16 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       WaarpLoggerFactory.getLogger(SpooledInformTask.class);
 
   static final TreeMap<String, SpooledInformation> spooledInformationMap =
-      new TreeMap<String, SpooledInformTask.SpooledInformation>();
+      new TreeMap<String, SpooledInformation>();
 
   public static class SpooledInformation {
-    public String host;
+    public final String host;
     public FileMonitorInformation fileMonitorInformation;
     public Date lastUpdate = new Date();
 
     /**
      * @param host
-     * @param fileItemHashMap
+     * @param fileMonitorInformation
      */
     private SpooledInformation(String host,
                                FileMonitorInformation fileMonitorInformation) {
@@ -91,7 +94,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
               "Receive SpooledInform of size: " + fullarg.length() + " (" +
               fileMonitorInformation.fileItems.size() + ", " +
               (fileMonitorInformation.removedFileItems != null?
-                  fileMonitorInformation.removedFileItems.size() : -1) + ")");
+                  fileMonitorInformation.removedFileItems.size() : -1) + ')');
           final String host = session.getAuth().getUser();
           synchronized (spooledInformationMap) {
             if (fileMonitorInformation.removedFileItems == null ||
@@ -108,7 +111,6 @@ public class SpooledInformTask extends AbstractExecJavaTask {
                 }
                 old.fileMonitorInformation = null;
               }
-              old = null;
             } else {
               // partial update
               final SpooledInformation update =
@@ -130,23 +132,23 @@ public class SpooledInformTask extends AbstractExecJavaTask {
             }
           }
         } catch (final JsonParseException e1) {
-          logger.warn("Cannot parse SpooledInformation: " + fullarg + " " +
+          logger.warn("Cannot parse SpooledInformation: " + fullarg + ' ' +
                       e1.getMessage());
         } catch (final JsonMappingException e1) {
-          logger.warn("Cannot parse SpooledInformation: " + fullarg + " " +
+          logger.warn("Cannot parse SpooledInformation: " + fullarg + ' ' +
                       e1.getMessage());
         } catch (final IOException e1) {
           logger.warn("Cannot parse SpooledInformation: " + e1.getMessage());
         }
         final BusinessRequestPacket packet =
-            new BusinessRequestPacket(this.getClass().getName() + " informed",
-                                      0);
+            new BusinessRequestPacket(getClass().getName() + " informed", 0);
         validate(packet);
         try {
           ChannelUtils
               .writeAbstractLocalPacket(session.getLocalChannelReference(),
                                         packet, true);
-        } catch (final OpenR66ProtocolPacketException e) {
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
         }
         status = 0;
       }
@@ -232,23 +234,23 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     // title first
     builder.append("<THEAD><TR><TH>")
            .append(Messages.getString("SpooledInformTask.0")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.1")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.2")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.3")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.4")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.5")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.6")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.7")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.8")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.9")) //$NON-NLS-1$
            .append("</TH></TR></THEAD><TBODY>");
     return builder;
@@ -269,9 +271,9 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       return null;
     }
     final long time = inform.lastUpdate.getTime() +
-                      Configuration.configuration.getTIMEOUTCON();
+                      Configuration.configuration.getTimeoutCon();
     final long curtime = System.currentTimeMillis();
-    if (time + Configuration.configuration.getTIMEOUTCON() < curtime) {
+    if (time + Configuration.configuration.getTimeoutCon() < curtime) {
       if (status > 0) {
         return inform;
       }
@@ -282,7 +284,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     }
     builder.append("<TR><TH>").append(name.replace(',', ' '))
            .append("</TH><TD>").append(inform.host).append("</TD>");
-    if (time + Configuration.configuration.getTIMEOUTCON() < curtime) {
+    if (time + Configuration.configuration.getTimeoutCon() < curtime) {
       builder.append("<TD bgcolor=Red>");
     } else if (time < curtime) {
       builder.append("<TD bgcolor=Orange>");
@@ -299,17 +301,17 @@ public class SpooledInformTask extends AbstractExecJavaTask {
           .append(Messages.getString("SpooledInformTask.TodayOk")) //$NON-NLS-1$
           .append(inform.fileMonitorInformation.todayok).append(
           Messages.getString("SpooledInformTask.TodayError")) //$NON-NLS-1$
-          .append(inform.fileMonitorInformation.todayerror).append("</TD><TD>")
-          .append(inform.fileMonitorInformation.elapseTime).append("</TD><TD>")
-          .append(inform.fileMonitorInformation.stopFile).append("</TD><TD>")
-          .append(inform.fileMonitorInformation.statusFile).append("</TD><TD>")
+          .append(inform.fileMonitorInformation.todayerror).append(TD_TD)
+          .append(inform.fileMonitorInformation.elapseTime).append(TD_TD)
+          .append(inform.fileMonitorInformation.stopFile).append(TD_TD)
+          .append(inform.fileMonitorInformation.statusFile).append(TD_TD)
           .append(inform.fileMonitorInformation.scanSubDir).append("</TD>");
-      String dirs = "<ul class='list-unstyled'>";
+      StringBuilder dirs = new StringBuilder("<ul class='list-unstyled'>");
       for (final File dir : inform.fileMonitorInformation.directories) {
-        dirs += "<li>" + dir + "</li>";
+        dirs.append("<li>").append(dir).append("</li>");
       }
-      dirs += "</ul>";
-      builder.append("<TD>").append(dirs).append("</TD><TD>");
+      dirs.append("</ul>");
+      builder.append("<TD>").append(dirs).append(TD_TD);
       if (detailed && inform.fileMonitorInformation.fileItems != null) {
         buildSpooledTableFiles(builder, inform);
       } else {
@@ -330,7 +332,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     return inform;
   }
 
-  private static DateFormat dateFormat =
+  private static final DateFormat dateFormat =
       DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG);
 
   /**
@@ -341,33 +343,32 @@ public class SpooledInformTask extends AbstractExecJavaTask {
                                              SpooledInformation inform) {
     builder.append(
         "<small><TABLE class='table table-condensed table-bordered' BORDER=1><THEAD><TR><TH>") //$NON-NLS-1$
-           .append(Messages.getString("SpooledInformTask.10"))
-           .append("</TH><TH>")
+           .append(Messages.getString("SpooledInformTask.10")).append(TH_TH)
            .append(Messages.getString("SpooledInformTask.11")) //$NON-NLS-2$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.12")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.13")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.14")) //$NON-NLS-1$
-           .append("</TH><TH>")
+           .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.15")) //$NON-NLS-1$
            .append("</TH></TR></THEAD><TBODY>");
     for (final FileItem fileItem : inform.fileMonitorInformation.fileItems
         .values()) {
-      builder.append("<TR><TD>").append(fileItem.file).append("</TD><TD>");
+      builder.append("<TR><TD>").append(fileItem.file).append(TD_TD);
       if (fileItem.hash != null) {
         builder.append(FilesystemBasedDigest.getHex(fileItem.hash));
       }
-      builder.append("</TD><TD>");
+      builder.append(TD_TD);
       if (fileItem.lastTime > 0) {
         builder.append(dateFormat.format(new Date(fileItem.lastTime)));
       }
-      builder.append("</TD><TD>");
+      builder.append(TD_TD);
       if (fileItem.timeUsed > 0) {
         builder.append(dateFormat.format(new Date(fileItem.timeUsed)));
       }
-      builder.append("</TD><TD>").append(fileItem.used).append("</TD><TD>")
+      builder.append(TD_TD).append(fileItem.used).append(TD_TD)
              .append(fileItem.specialId).append("</TD></TR>");
     }
     builder.append("</TBODY></TABLE></small>");
@@ -416,7 +417,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
   /**
    * @param detailed
    * @param status
-   * @param builder
+   * @param array
    * @param name
    */
   private static void buildSpooledJsonElement(boolean detailed, int status,
@@ -426,10 +427,10 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       return;
     }
     final long time = inform.lastUpdate.getTime() +
-                      Configuration.configuration.getTIMEOUTCON();
+                      Configuration.configuration.getTimeoutCon();
     final long curtime = System.currentTimeMillis();
     if (status != 0) {
-      if (time + Configuration.configuration.getTIMEOUTCON() < curtime) {
+      if (time + Configuration.configuration.getTimeoutCon() < curtime) {
         if (status < 0) {
           return;
         }
@@ -440,15 +441,15 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     final ObjectNode elt = JsonHandler.createObjectNode();
     elt.put("NAME", name.replace(',', ' '));
     elt.put("HOST", inform.host);
-    String val = null;
-    if (time + Configuration.configuration.getTIMEOUTCON() < curtime) {
+    String val;
+    if (time + Configuration.configuration.getTimeoutCon() < curtime) {
       val = "bg-danger";
     } else if (time < curtime) {
       val = "bg-warning";
     } else {
       val = "bg-success";
     }
-    elt.put("LAST_UPDATE", val + " " + inform.lastUpdate.getTime());
+    elt.put("LAST_UPDATE", val + ' ' + inform.lastUpdate.getTime());
     if (inform.fileMonitorInformation != null) {
       elt.put("GLOBALOK", inform.fileMonitorInformation.globalok.get());
       elt.put("GLOBALERROR", inform.fileMonitorInformation.globalerror.get());
@@ -458,17 +459,17 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       elt.put("STOPFILE", inform.fileMonitorInformation.stopFile.getPath());
       elt.put("STATUSFILE", inform.fileMonitorInformation.statusFile.getPath());
       elt.put("SUBDIRS", inform.fileMonitorInformation.scanSubDir);
-      String dirs = "";
-      String dirs2 = "";
+      StringBuilder dirs = new StringBuilder();
+      StringBuilder dirs2 = new StringBuilder();
       int i = 0;
       for (final File dir : inform.fileMonitorInformation.directories) {
         i++;
-        dirs += dir + "(" + i + ") ";
-        dirs2 += dir + " ";
+        dirs.append(dir).append('(').append(i).append(") ");
+        dirs2.append(dir).append(' ');
       }
-      elt.put("DIRECTORIES", dirs);
+      elt.put("DIRECTORIES", dirs.toString());
       if (detailed && inform.fileMonitorInformation.fileItems != null) {
-        buildSpooledJsonFiles(elt, inform, dirs2.split(" "));
+        buildSpooledJsonFiles(elt, inform, dirs2.toString().split(" "));
       } else {
         // simply print number of files
         if (inform.fileMonitorInformation.fileItems != null) {
@@ -480,18 +481,18 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       }
     }
     array.add(elt);
-    return;
   }
 
   /**
-   * @param builder
+   * @param node
    * @param inform
+   * @param dirs
    */
   private static void buildSpooledJsonFiles(ObjectNode node,
                                             SpooledInformation inform,
                                             String[] dirs) {
     final ArrayNode array = node.putArray("FILES");
-    if (inform.fileMonitorInformation.fileItems.size() == 0) {
+    if (inform.fileMonitorInformation.fileItems.isEmpty()) {
       array.add(0);
       return;
     }
@@ -512,7 +513,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       for (final String dir : dirs) {
         i++;
         if (path.startsWith(dir + sep)) {
-          path = "(" + i + ")" + path.substring(dir.length());
+          path = "(" + i + ')' + path.substring(dir.length());
           break;
         }
       }
@@ -533,7 +534,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
         elt.putNull("USEDTIME");
       }
       elt.put("USED", fileItem.used);
-      if (fileItem.specialId == DbConstant.ILLEGALVALUE) {
+      if (fileItem.specialId == ILLEGALVALUE) {
         elt.put("ID", "");
       } else {
         elt.put("ID", Long.toString(fileItem.specialId));

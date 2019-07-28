@@ -31,8 +31,6 @@ import java.net.InetSocketAddress;
 
 /**
  * PORT command
- *
- *
  */
 public class PORT extends AbstractCommand {
   /**
@@ -50,7 +48,7 @@ public class PORT extends AbstractCommand {
       getSession().getDataConn().setActive(inetSocketAddress);
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                                 "PORT command successful on (" +
-                                inetSocketAddress + ")");
+                                inetSocketAddress + ')');
       return;
     }
     // Check if Inet Address is OK
@@ -75,6 +73,6 @@ public class PORT extends AbstractCommand {
     getSession().getDataConn().setActive(inetSocketAddress);
     getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                               "PORT command successful on (" +
-                              inetSocketAddress + ")");
+                              inetSocketAddress + ')');
   }
 }

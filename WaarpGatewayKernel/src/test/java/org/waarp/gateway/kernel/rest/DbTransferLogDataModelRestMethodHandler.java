@@ -52,7 +52,7 @@ public class DbTransferLogDataModelRestMethodHandler
     FILENAME("FILENAME information subtext"),
     INFOSTATUS("Info status information subtext");
 
-    public String type;
+    public final String type;
 
     FILTER_ARGS(String type) {
       this.type = type;
@@ -63,7 +63,6 @@ public class DbTransferLogDataModelRestMethodHandler
   public String account;
 
   /**
-   * @param name
    * @param config
    * @param method
    */

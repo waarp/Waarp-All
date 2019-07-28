@@ -26,6 +26,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.FileInterface;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.OptsMLSxInterface;
 import org.waarp.common.file.SessionInterface;
 import org.waarp.common.file.filesystembased.specific.FilesystemBasedCommonsIo;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -53,10 +55,13 @@ import java.util.zip.CheckedInputStream;
 
 /**
  * Directory implementation for Filesystem Based
- *
- *
  */
 public abstract class FilesystemBasedDirImpl extends AbstractDir {
+  private static final String ERROR_WHILE_READING_FILE =
+      "Error while reading file: ";
+
+  private static final String DIRECTORY_NOT_FOUND = "Directory not found: ";
+
   /**
    * Internal Logger
    */
@@ -70,7 +75,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
 
   /**
    * Initialize the filesystem
-   */ {
+   */
+  static {
     initJdkDependent();
   }
 
@@ -102,8 +108,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @param session
    * @param optsMLSx
    */
-  public FilesystemBasedDirImpl(SessionInterface session,
-                                OptsMLSxInterface optsMLSx) {
+  protected FilesystemBasedDirImpl(SessionInterface session,
+                                   OptsMLSxInterface optsMLSx) {
     this.session = session;
     this.optsMLSx = optsMLSx;
     this.optsMLSx.setOptsModify((byte) 1);
@@ -189,9 +195,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       // Look for matches in all the current search paths
       for (final File dir : basedPaths) {
         if (dir.isDirectory()) {
-          for (final File match : dir.listFiles(fileFilter)) {
-            newBasedPaths.add(match);
-          }
+          newBasedPaths.addAll(Arrays.asList(dir.listFiles(fileFilter)));
         }
       }
       // base Search Path changes now
@@ -273,7 +277,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     if (paths.size() != 1) {
       logger.warn("CD error: {}", newpath);
       throw new Reply550Exception(
-          "Directory not found: " + paths.size() + " founds");
+          DIRECTORY_NOT_FOUND + paths.size() + " founds");
     }
     String extDir = paths.get(0);
     extDir = validatePath(extDir);
@@ -281,7 +285,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       currentDir = extDir;
       return true;
     }
-    throw new Reply550Exception("Directory not found: " + extDir);
+    throw new Reply550Exception(DIRECTORY_NOT_FOUND + extDir);
   }
 
   @Override
@@ -293,7 +297,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     if (paths.size() != 1) {
       logger.warn("CD error: {}", newpath);
       throw new Reply550Exception(
-          "Directory not found: " + paths.size() + " founds");
+          DIRECTORY_NOT_FOUND + paths.size() + " founds");
     }
     String extDir = paths.get(0);
     extDir = validatePath(extDir);
@@ -328,7 +332,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     final List<String> paths = wildcardFiles(normalizePath(newdirectory));
     if (paths.size() != 1) {
       throw new Reply550Exception(
-          "Directory not found: " + paths.size() + " founds");
+          DIRECTORY_NOT_FOUND + paths.size() + " founds");
     }
     String extDir = paths.get(0);
     extDir = validatePath(extDir);
@@ -360,7 +364,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     if (file.exists()) {
       return getModificationTime(file);
     }
-    throw new Reply550Exception("\"" + path + "\" does not exist");
+    throw new Reply550Exception('"' + path + "\" does not exist");
   }
 
   /**
@@ -531,7 +535,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       return "Listing of \"" + paths.get(0) + "\"\n" + mlsxInfo(file) +
              "\nEnd of listing";
     }
-    return "No file with name \"" + path + "\"";
+    return "No file with name \"" + path + '"';
   }
 
   /**
@@ -569,17 +573,14 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
            .append(file.length())// size
            .append('\t');
     final long lastmod = file.lastModified();
-    String fmt = null;
+    String fmt;
     // It seems Full Time is not recognized by some FTP client
-    /*
-     * if(isFullTime()) { fmt = "EEE MMM dd HH:mm:ss yyyy"; } else {
-     */
     final long currentTime = System.currentTimeMillis();
     if (currentTime > lastmod + 6L * 30L * 24L * 60L * 60L * 1000L // Old.
         || currentTime < lastmod - 60L * 60L * 1000L) { // In the
       // future.
       // The file is fairly old or in the future.
-      // POSIX says the cutoff is 6 months old;
+      // POSIX says the cutoff is 6 months old.
       // approximate this by 6*30 days.
       // Allow a 1 hour slop factor for what is considered "the future",
       // to allow for NFS server/client clock disagreement.
@@ -588,7 +589,6 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     } else {
       fmt = "MMM dd HH:mm";
     }
-    /* } */
     final SimpleDateFormat dateFormat = (SimpleDateFormat) DateFormat
         .getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.ENGLISH);
     dateFormat.applyPattern(fmt);
@@ -649,7 +649,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
             if (validatePath(file) != null) {
               builder.append('d').append('m').append('p');
             }
-          } catch (final CommandAbstractException e) {
+          } catch (final CommandAbstractException ignored) {
+            // nothing
           }
         }
         if (file.canRead()) {
@@ -677,7 +678,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public FileInterface setUniqueFile() throws CommandAbstractException {
     checkIdentify();
-    File file = null;
+    File file;
     try {
       file = File.createTempFile(getSession().getAuth().getUser(),
                                  session.getUniqueExtension(),
@@ -711,28 +712,26 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public long getCRC(String path) throws CommandAbstractException {
     final File file = getTrueFile(path);
+    FileInputStream fis = null;
     CheckedInputStream cis = null;
     try {
       try {
         // Computer CRC32 checksum
-        cis = new CheckedInputStream(new FileInputStream(file), new CRC32());
+        fis = new FileInputStream(file);
+        cis = new CheckedInputStream(fis, new CRC32());
       } catch (final FileNotFoundException e) {
         throw new Reply550Exception("File not found: " + path);
       }
       final byte[] buf = new byte[session.getBlockSize()];
       while (cis.read(buf) >= 0) {
+        // nothing
       }
-      final long result = cis.getChecksum().getValue();
-      return result;
+      return cis.getChecksum().getValue();
     } catch (final IOException e) {
-      throw new Reply550Exception("Error while reading file: " + path);
+      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     } finally {
-      if (cis != null) {
-        try {
-          cis.close();
-        } catch (final IOException e) {
-        }
-      }
+      FileUtils.close(cis);
+      FileUtils.close(fis);
     }
   }
 
@@ -745,7 +744,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       }
       return FilesystemBasedDigest.getHashMd5(file);
     } catch (final IOException e1) {
-      throw new Reply550Exception("Error while reading file: " + path);
+      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     }
   }
 
@@ -758,7 +757,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       }
       return FilesystemBasedDigest.getHashSha1(file);
     } catch (final IOException e1) {
-      throw new Reply550Exception("Error while reading file: " + path);
+      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     }
   }
 
@@ -769,7 +768,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
           .getHash(file, FilesystemBasedFileParameterImpl.useNio,
                    DigestAlgo.SHA256);
     } catch (final IOException e1) {
-      throw new Reply550Exception("Error while reading file: " + path);
+      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     }
   }
 
@@ -780,7 +779,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
           .getHash(file, FilesystemBasedFileParameterImpl.useNio,
                    DigestAlgo.SHA512);
     } catch (final IOException e1) {
-      throw new Reply550Exception("Error while reading file: " + path);
+      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     }
   }
 }

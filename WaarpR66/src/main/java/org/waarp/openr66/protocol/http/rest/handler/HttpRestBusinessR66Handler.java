@@ -50,8 +50,6 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 /**
  * Business Http REST interface: http://host/business?... +
  * BusinessRequestJsonPacket as GET
- *
- *
  */
 public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
 
@@ -103,13 +101,13 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
             r66result =
                 new R66Result(session, false, ErrorCode.ExternalOp, null);
           }
-          logger.info("Task in Error:" + node.getClassName() + " " + r66result);
+          logger.info("Task in Error:" + node.getClassName() + ' ' + r66result);
           if (!r66result.isAnswered()) {
             node.setValidated(false);
             session.newState(ERROR);
           }
           result.setDetail(
-              "Task in Error:" + node.getClassName() + " " + r66result);
+              "Task in Error:" + node.getClassName() + ' ' + r66result);
           setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);
         } else {
           final R66Result r66result = future.getResult();
@@ -151,7 +149,8 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
                                                    .name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
     final ObjectNode node2 = RestArgument

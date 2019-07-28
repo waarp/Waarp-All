@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Business Protocol exception due to no valid authentication
- *
- *
  */
 public class OpenR66ProtocolNotAuthenticatedException
     extends OpenR66ProtocolBusinessException {
@@ -36,7 +34,6 @@ public class OpenR66ProtocolNotAuthenticatedException
    *
    */
   public OpenR66ProtocolNotAuthenticatedException() {
-    super();
   }
 
   /**

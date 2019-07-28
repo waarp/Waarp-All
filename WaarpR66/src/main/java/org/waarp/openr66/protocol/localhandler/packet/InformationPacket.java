@@ -28,13 +28,13 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Information of files class
  * <p>
  * header = "rulename" middle = requestedInfo end = "FILENAME"
- *
- *
  */
 public class InformationPacket extends AbstractLocalPacket {
 
-  public static enum ASKENUM {
-    ASKEXIST, ASKMLSDETAIL, ASKLIST, ASKMLSLIST;
+  private static final String NOT_ENOUGH_DATA = "Not enough data";
+
+  public enum ASKENUM {
+    ASKEXIST, ASKMLSDETAIL, ASKLIST, ASKMLSLIST
   }
 
   private final String rulename;
@@ -58,10 +58,10 @@ public class InformationPacket extends AbstractLocalPacket {
                                                    int endLength, ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     if (middleLength != 1) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bend = new byte[endLength];
@@ -99,7 +99,7 @@ public class InformationPacket extends AbstractLocalPacket {
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (rulename == null) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     header = Unpooled.wrappedBuffer(rulename.getBytes());
   }
@@ -117,7 +117,7 @@ public class InformationPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "InformationPacket: " + requestedInfo + " " + rulename + " " +
+    return "InformationPacket: " + requestedInfo + ' ' + rulename + ' ' +
            filename;
   }
 

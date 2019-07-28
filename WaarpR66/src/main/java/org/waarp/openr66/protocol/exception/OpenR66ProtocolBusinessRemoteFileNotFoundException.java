@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.exception;
 /**
  * Protocol exception on Business part telling that remote host did not find the
  * file.
- *
- *
  */
 public class OpenR66ProtocolBusinessRemoteFileNotFoundException
     extends OpenR66ProtocolBusinessException {
@@ -37,7 +35,6 @@ public class OpenR66ProtocolBusinessRemoteFileNotFoundException
    *
    */
   public OpenR66ProtocolBusinessRemoteFileNotFoundException() {
-    super();
   }
 
   /**

@@ -60,8 +60,91 @@ public class ParametersCheckerTest {
     } catch (final IllegalArgumentException e) { // NOSONAR
     }
     try {
+      ParametersChecker.checkParameter("test message", "notnull", " ");
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
       ParametersChecker.checkParameter("test message", "notNull", "notnull");
       ParametersChecker.checkParameter("test message", "notnull");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+      fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    }
+  }
+
+  @Test
+  public final void testIsNotEmptyStringStringArray() {
+    try {
+      assertFalse(ParametersChecker.isNotEmpty((String[]) null));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      assertFalse(
+          ParametersChecker.isNotEmpty("test message", null, "notnull"));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      assertFalse(
+          ParametersChecker.isNotEmpty("test message", "notnull", null));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      assertFalse(ParametersChecker.isNotEmpty("test message", "", "notnull"));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      assertFalse(ParametersChecker.isNotEmpty("test message", "notnull", ""));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      assertFalse(ParametersChecker.isNotEmpty("test message", "notnull", " "));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      assertTrue(
+          ParametersChecker.isNotEmpty("test message", "notNull", "notnull"));
+      assertTrue(ParametersChecker.isNotEmpty("test message", "notnull"));
+    } catch (final IllegalArgumentException e) { // NOSONAR
+      fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    }
+  }
+
+  @Test
+  public final void testCheckParamaterDefaultStringStringArray() {
+    try {
+      ParametersChecker.checkParameterDefault("test message", (String[]) null);
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", null, "notnull");
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", "notnull", null);
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", "", "notnull");
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", "notnull", "");
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", "notnull", " ");
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker
+          .checkParameterDefault("test message", "notNull", "notnull");
+      ParametersChecker.checkParameterDefault("test message", "notnull");
     } catch (final IllegalArgumentException e) { // NOSONAR
       fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
     }
@@ -124,6 +207,32 @@ public class ParametersCheckerTest {
     try {
       ParametersChecker.checkParameter("test message", list, list);
       ParametersChecker.checkParameter("test message", list);
+    } catch (final IllegalArgumentException e) { // NOSONAR
+      fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    }
+  }
+
+  @Test
+  public final void testCheckParamaterDefaultStringObjectArray() {
+    try {
+      ParametersChecker.checkParameterDefault("test message", (Object[]) null);
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    final List<String> list = new ArrayList<String>();
+    try {
+      ParametersChecker.checkParameterDefault("test message", null, list);
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", list, null);
+      fail("SHOULD_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
+    } catch (final IllegalArgumentException e) { // NOSONAR
+    }
+    try {
+      ParametersChecker.checkParameterDefault("test message", list, list);
+      ParametersChecker.checkParameterDefault("test message", list);
     } catch (final IllegalArgumentException e) { // NOSONAR
       fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
     }

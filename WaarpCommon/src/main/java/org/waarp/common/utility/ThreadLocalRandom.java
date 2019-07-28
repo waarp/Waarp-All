@@ -55,9 +55,9 @@ import java.util.Random;
  */
 public final class ThreadLocalRandom extends Random {
   // same constants as Random, but must be redeclared because private
-  private static final long multiplier = 0x5DEECE66DL;
-  private static final long addend = 0xBL;
-  private static final long mask = (1L << 48) - 1;
+  private static final long MULTIPLIER = 0x5DEECE66DL;
+  private static final long ADDEND = 0xBL;
+  private static final long MASK = (1L << 48) - 1;
 
   /**
    * The random seed. We can't use super.seed.
@@ -76,13 +76,13 @@ public final class ThreadLocalRandom extends Random {
   /**
    * The actual ThreadLocal
    */
-  private static final ThreadLocal<ThreadLocalRandom> localRandom =
+  private static final ThreadLocal<ThreadLocalRandom> localRandom =//NOSONAR
       new ThreadLocal<ThreadLocalRandom>() {
         @Override
         protected ThreadLocalRandom initialValue() {
           return new ThreadLocalRandom();
         }
-      };
+      };//NOSONAR
 
   /**
    * Returns the current thread's {@code ThreadLocalRandom}.
@@ -100,19 +100,19 @@ public final class ThreadLocalRandom extends Random {
    * @throws UnsupportedOperationException always
    */
   @Override
-  public void setSeed(long seed) {
+  public void setSeed(long seed) {//NOSONAR
     // We rely on the fact that the superclass no-arg constructor
     // invokes setSeed exactly once to initialize.
     if (initialized) {
       throw new UnsupportedOperationException();
     }
     initialized = true;
-    rnd = (seed ^ multiplier) & mask;
+    rnd = (seed ^ MULTIPLIER) & MASK;
   }
 
   @Override
   protected int next(int bits) {
-    rnd = rnd * multiplier + addend & mask;
+    rnd = rnd * MULTIPLIER + ADDEND & MASK;
     return (int) (rnd >>> 48 - bits);
   }
 

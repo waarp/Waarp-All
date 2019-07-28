@@ -137,8 +137,6 @@ import java.util.Map;
  * {@link #arrayFormat(String, Object[])} methods for more details.
  */
 final class MessageFormatter {
-  private static final WaarpLogger LOGGER =
-      WaarpLoggerFactory.getInstance(MessageFormatter.class);
 
   static final char DELIM_START = '{';
   static final char DELIM_STOP = '}';
@@ -226,8 +224,8 @@ final class MessageFormatter {
    *
    * @return The formatted message
    */
-  static final FormattingTuple arrayFormat(final String messagePattern,
-                                           final Object[] argArray) {
+  static FormattingTuple arrayFormat(final String messagePattern,
+                                     final Object[] argArray) {
 
     final Throwable throwableCandidate = getThrowableCandidate(argArray);
 
@@ -296,8 +294,8 @@ final class MessageFormatter {
     }
   }
 
-  static final boolean isEscapedDelimeter(final String messagePattern,
-                                          final int delimeterStartIndex) {
+  static boolean isEscapedDelimeter(final String messagePattern,
+                                    final int delimeterStartIndex) {
     ParametersChecker
         .checkParameterNullOnly("Must not be null", messagePattern);
     if (delimeterStartIndex == 0) {
@@ -306,8 +304,8 @@ final class MessageFormatter {
     return messagePattern.charAt(delimeterStartIndex - 1) == ESCAPE_CHAR;
   }
 
-  static final boolean isDoubleEscaped(final String messagePattern,
-                                       final int delimeterStartIndex) {
+  static boolean isDoubleEscaped(final String messagePattern,
+                                 final int delimeterStartIndex) {
     ParametersChecker
         .checkParameterNullOnly("Must not be null", messagePattern);
     return delimeterStartIndex >= 2 &&
@@ -316,9 +314,8 @@ final class MessageFormatter {
   }
 
   // special treatment of array values was suggested by 'lizongbo'
-  static final void deeplyAppendParameter(final StringBuilder sbuild,
-                                          final Object o,
-                                          final Map<Object[], Void> seenMap) {
+  static void deeplyAppendParameter(final StringBuilder sbuild, final Object o,
+                                    final Map<Object[], Void> seenMap) {
     if (o == null) {
       sbuild.append("null");
       return;
@@ -350,8 +347,8 @@ final class MessageFormatter {
     }
   }
 
-  private static final void safeObjectAppend(final StringBuilder sbuild,
-                                             final Object o) {
+  private static void safeObjectAppend(final StringBuilder sbuild,
+                                       final Object o) {
     try {
       final String oAsString = o.toString();
       sbuild.append(oAsString);
@@ -364,9 +361,9 @@ final class MessageFormatter {
     }
   }
 
-  private static final void objectArrayAppend(final StringBuilder sbuild,
-                                              final Object[] a,
-                                              final Map<Object[], Void> seenMap) {
+  private static void objectArrayAppend(final StringBuilder sbuild,
+                                        final Object[] a,
+                                        final Map<Object[], Void> seenMap) {
     sbuild.append('[');
     if (!seenMap.containsKey(a)) {
       seenMap.put(a, null);
@@ -385,8 +382,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void booleanArrayAppend(final StringBuilder sbuild,
-                                               final boolean[] a) {
+  private static void booleanArrayAppend(final StringBuilder sbuild,
+                                         final boolean[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -398,8 +395,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void byteArrayAppend(final StringBuilder sbuild,
-                                            final byte[] a) {
+  private static void byteArrayAppend(final StringBuilder sbuild,
+                                      final byte[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -411,8 +408,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void charArrayAppend(final StringBuilder sbuild,
-                                            final char[] a) {
+  private static void charArrayAppend(final StringBuilder sbuild,
+                                      final char[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -424,8 +421,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void shortArrayAppend(final StringBuilder sbuild,
-                                             final short[] a) {
+  private static void shortArrayAppend(final StringBuilder sbuild,
+                                       final short[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -437,8 +434,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void intArrayAppend(final StringBuilder sbuild,
-                                           final int[] a) {
+  private static void intArrayAppend(final StringBuilder sbuild,
+                                     final int[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -450,8 +447,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void longArrayAppend(final StringBuilder sbuild,
-                                            final long[] a) {
+  private static void longArrayAppend(final StringBuilder sbuild,
+                                      final long[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -463,8 +460,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void floatArrayAppend(final StringBuilder sbuild,
-                                             final float[] a) {
+  private static void floatArrayAppend(final StringBuilder sbuild,
+                                       final float[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {
@@ -476,8 +473,8 @@ final class MessageFormatter {
     sbuild.append(']');
   }
 
-  private static final void doubleArrayAppend(final StringBuilder sbuild,
-                                              final double[] a) {
+  private static void doubleArrayAppend(final StringBuilder sbuild,
+                                        final double[] a) {
     sbuild.append('[');
     final int len = a.length;
     for (int i = 0; i < len; i++) {

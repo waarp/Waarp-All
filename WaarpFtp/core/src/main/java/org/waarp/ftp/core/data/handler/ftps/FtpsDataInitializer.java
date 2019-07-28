@@ -73,7 +73,8 @@ public class FtpsDataInitializer extends FtpDataInitializer {
     pipeline.addLast(FtpDataInitializer.CODEC_TYPE, ftpDataTypeCodec);
     pipeline.addLast(FtpDataInitializer.CODEC_STRUCTURE, ftpDataStructureCodec);
     // and then business logic. New one on every connection
-    final DataBusinessHandler newbusiness = dataBusinessHandler.newInstance();
+    final DataBusinessHandler newbusiness =
+        dataBusinessHandler.getDeclaredConstructor().newInstance();
     final DataNetworkHandler newNetworkHandler =
         new DataNetworkHandler(configuration, newbusiness, isActive);
     pipeline

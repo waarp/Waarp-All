@@ -20,6 +20,7 @@
 package org.waarp.openr66.client;
 
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
@@ -27,7 +28,6 @@ import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -37,6 +37,8 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Direct Transfer from a client with or without database connection to transfer
@@ -53,12 +55,11 @@ import java.util.List;
  * -to host2 -file file2<br>
  * -to host3 -file file1<br>
  * -to host3 -file file2<br>
- *
- *
  */
 public class MultipleDirectTransfer extends DirectTransfer {
-  private int errorMultiple = 0;
-  private int doneMultiple = 0;
+  private static final String TRANSFER_STATUS = "Transfer.Status";
+  private int errorMultiple;
+  private int doneMultiple;
   private final List<OutputFormat> results = new ArrayList<OutputFormat>();
 
   public MultipleDirectTransfer(R66Future future, String remoteHost,
@@ -78,7 +79,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
     boolean inError = false;
     R66Result resultError = null;
     // first check if filenames contains wildcards
-    DbRule dbrule = null;
+    DbRule dbrule;
     try {
       dbrule = new DbRule(rulename);
     } catch (final WaarpDatabaseException e1) {
@@ -108,7 +109,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
                 new DirectTransfer(future, host, filename, rulename, fileinfo,
                                    isMD5, blocksize, id, networkTransaction);
             transaction.normalInfoAsWarn = normalInfoAsWarn;
-            logger.debug("rhost: " + host + ":" + transaction.remoteHost);
+            logger.debug("rhost: " + host + ':' + transaction.remoteHost);
             transaction.run();
             future.awaitOrInterruptible();
             final long time2 = System.currentTimeMillis();
@@ -121,20 +122,20 @@ public class MultipleDirectTransfer extends DirectTransfer {
               if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
                 outputFormat.setValue(FIELDS.status.name(), 1);
                 outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString("Transfer.Status") +
+                                      Messages.getString(TRANSFER_STATUS) +
                                       Messages.getString(
                                           "RequestInformation.Warned")); //$NON-NLS-1$
               } else {
                 outputFormat.setValue(FIELDS.status.name(), 0);
                 outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString("Transfer.Status") +
+                                      Messages.getString(TRANSFER_STATUS) +
                                       Messages.getString(
                                           "RequestInformation.Success")); //$NON-NLS-1$
               }
               outputFormat.setValue(FIELDS.remote.name(), host);
               outputFormat.setValueString(result.getRunner().getJson());
-              outputFormat.setValue("filefinal", (result.getFile() != null?
-                  result.getFile().toString() : "no file"));
+              outputFormat.setValue("filefinal", result.getFile() != null?
+                  result.getFile().toString() : "no file");
               outputFormat.setValue("delay", delay);
               getResults().add(outputFormat);
               setDoneMultiple(getDoneMultiple() + 1);
@@ -166,18 +167,18 @@ public class MultipleDirectTransfer extends DirectTransfer {
                   return;
                 }
                 networkTransaction.closeAll();
-                System.exit(ErrorCode.Unknown.ordinal());
+                System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
               }
               if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
                 outputFormat.setValue(FIELDS.status.name(), 1);
                 outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString("Transfer.Status") +
+                                      Messages.getString(TRANSFER_STATUS) +
                                       Messages.getString(
                                           "RequestInformation.Warned")); //$NON-NLS-1$
               } else {
                 outputFormat.setValue(FIELDS.status.name(), 2);
                 outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString("Transfer.Status") +
+                                      Messages.getString(TRANSFER_STATUS) +
                                       Messages.getString(
                                           "RequestInformation.Failure")); //$NON-NLS-1$
               }
@@ -220,17 +221,17 @@ public class MultipleDirectTransfer extends DirectTransfer {
     if (!getParams(args, false)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (!OutputFormat.isQuiet()) {
-        System.out.println(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
       if (DetectionUtils.isJunit()) {
         return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
 
     Configuration.configuration.pipelineInit();
@@ -253,7 +254,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
       if (future.isSuccess()) {
         outputFormat.setValue(FIELDS.status.name(), 0);
         outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
-            .getString("Transfer.Status") +
+            .getString(TRANSFER_STATUS) +
                                                        Messages.getString(
                                                            "RequestInformation.Success")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
@@ -268,14 +269,14 @@ public class MultipleDirectTransfer extends DirectTransfer {
           outputFormat.sysout();
           for (final OutputFormat result : multipleDirectTransfer
               .getResults()) {
-            System.out.println();
+            SysErrLogger.FAKE_LOGGER.sysout();
             result.sysout();
           }
         }
       } else {
         outputFormat.setValue(FIELDS.status.name(), 2);
         outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
-            .getString("Transfer.Status") +
+            .getString(TRANSFER_STATUS) +
                                                        Messages.getString(
                                                            "RequestInformation.Failure")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
@@ -287,7 +288,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
           outputFormat.sysout();
           for (final OutputFormat result : multipleDirectTransfer
               .getResults()) {
-            System.out.println();
+            SysErrLogger.FAKE_LOGGER.sysout();
             result.sysout();
           }
         }
@@ -295,16 +296,15 @@ public class MultipleDirectTransfer extends DirectTransfer {
           return;
         }
         networkTransaction.closeAll();
-        System.exit(multipleDirectTransfer.getErrorMultiple());
+        System.exit(multipleDirectTransfer.getErrorMultiple());//NOSONAR
       }
     } catch (final Throwable e) {
       logger.error("Exception", e);
     } finally {
-      if (DetectionUtils.isJunit()) {
-        return;
+      if (!DetectionUtils.isJunit()) {
+        networkTransaction.closeAll();
+        System.exit(0);//NOSONAR
       }
-      networkTransaction.closeAll();
-      System.exit(0);
     }
   }
 

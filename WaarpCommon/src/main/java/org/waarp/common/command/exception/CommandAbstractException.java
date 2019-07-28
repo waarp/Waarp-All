@@ -23,10 +23,7 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * Abstract class for exception in commands
- *
- *
  */
-@SuppressWarnings("serial")
 public abstract class CommandAbstractException extends Exception {
   /**
    *
@@ -36,12 +33,12 @@ public abstract class CommandAbstractException extends Exception {
   /**
    * Associated code
    */
-  public ReplyCode code;
+  public final ReplyCode code;
 
   /**
    * Associated Message if any
    */
-  public String message;
+  public final String message;
 
   /**
    * Simplest constructor
@@ -49,7 +46,7 @@ public abstract class CommandAbstractException extends Exception {
    * @param code
    * @param message
    */
-  public CommandAbstractException(ReplyCode code, String message) {
+  protected CommandAbstractException(ReplyCode code, String message) {
     super(code.getMesg());
     this.code = code;
     this.message = message;
@@ -62,7 +59,8 @@ public abstract class CommandAbstractException extends Exception {
    * @param message
    * @param e
    */
-  public CommandAbstractException(ReplyCode code, String message, Throwable e) {
+  protected CommandAbstractException(ReplyCode code, String message,
+                                     Throwable e) {
     super(code.getMesg(), e);
     this.code = code;
     this.message = message;

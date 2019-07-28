@@ -25,8 +25,6 @@ import org.waarp.openr66.protocol.configuration.Messages;
  * This enum class keeps all code that will be returned into the result and
  * store (char representation) into
  * the runner.
- *
- *
  */
 public enum ErrorCode {
   /**
@@ -173,9 +171,9 @@ public enum ErrorCode {
   /**
    * Code could be used to switch case operations
    */
-  public char code;
+  public final char code;
 
-  private ErrorCode(char code) {
+  ErrorCode(char code) {
     this.code = code;
   }
 
@@ -268,9 +266,9 @@ public enum ErrorCode {
       case 'd':
         return SizeNotAllowed;
       default:
-        ErrorCode ecode = Unknown;
+        ErrorCode ecode;
         try {
-          ecode = ErrorCode.valueOf(code.trim());
+          ecode = valueOf(code.trim());
         } catch (final IllegalArgumentException e) {
           return Unknown;
         }

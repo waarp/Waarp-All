@@ -31,8 +31,6 @@ import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
  * first Id is the localId on receive operation and the remoteId on send
  * operation. The second Id is the
  * reverse.
- *
- *
  */
 public class NetworkPacket {
   private ByteBuf buffer;
@@ -120,10 +118,8 @@ public class NetworkPacket {
   }
 
   public void clear() {
-    if (buffer != null) {
-      if (buffer.release()) {
-        buffer = null;
-      }
+    if (buffer != null && buffer.release()) {
+      buffer = null;
     }
   }
 }

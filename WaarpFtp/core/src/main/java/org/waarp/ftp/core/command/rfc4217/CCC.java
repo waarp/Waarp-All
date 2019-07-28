@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * CCC command
- *
- *
  */
 public class CCC extends AbstractCommand {
 

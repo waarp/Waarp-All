@@ -37,10 +37,9 @@ import java.text.SimpleDateFormat;
 
 /**
  * Database Value to help getting and setting value from and to database
- *
- *
  */
 public class DbValue {
+  private static final String TYPE_UNKNOWN = "Type unknown: ";
   /**
    * Real value
    */
@@ -48,7 +47,7 @@ public class DbValue {
   /**
    * Data Type
    */
-  int type;
+  final int type;
   /**
    * Column name
    */
@@ -325,7 +324,7 @@ public class DbValue {
       case Types.BLOB:
         return value;
       default:
-        throw new IllegalAccessError("Type unknown: " + type);
+        throw new IllegalAccessError(TYPE_UNKNOWN + type);
     }
   }
 
@@ -345,7 +344,6 @@ public class DbValue {
       case Types.BIGINT:
         return ((Long) getValue()).toString();
       case Types.REAL:
-        return getValue().toString();
       case Types.DOUBLE:
       case Types.DATE:
       case Types.TIMESTAMP:
@@ -371,7 +369,7 @@ public class DbValue {
         return sBuilder.toString();
       }
       default:
-        throw new WaarpDatabaseSqlException("Type unknown: " + type);
+        throw new WaarpDatabaseSqlException(TYPE_UNKNOWN + type);
     }
   }
 
@@ -449,7 +447,7 @@ public class DbValue {
         }
         break;
       default:
-        throw new WaarpDatabaseSqlException("Type unknown: " + type);
+        throw new WaarpDatabaseSqlException(TYPE_UNKNOWN + type);
     }
   }
 

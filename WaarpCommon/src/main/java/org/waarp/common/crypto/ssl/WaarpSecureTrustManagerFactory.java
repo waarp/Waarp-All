@@ -29,8 +29,6 @@ import java.security.KeyStore;
 
 /**
  * A SecureTrustManagerFactory
- *
- *
  */
 public class WaarpSecureTrustManagerFactory extends TrustManagerFactorySpi {
   private final WaarpX509TrustManager ggTrustManager;

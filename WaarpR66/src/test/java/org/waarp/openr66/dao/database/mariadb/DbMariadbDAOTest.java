@@ -21,6 +21,7 @@
 package org.waarp.openr66.dao.database.mariadb;
 
 import org.junit.ClassRule;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MariaDBContainer;
 import org.waarp.openr66.dao.database.DBAllDAOTest;
 import org.waarp.openr66.dao.database.DBTransferDAO;
@@ -31,7 +32,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DbMariadbDAOTest extends DBAllDAOTest {
-
   @ClassRule
   public static MariaDBContainer db = new MariaDBContainer();
   private final String createScript = "mariadb/create.sql";
@@ -58,5 +58,10 @@ public class DbMariadbDAOTest extends DBAllDAOTest {
   @Override
   public void cleanDB() {
     runScript(cleanScript);
+  }
+
+  @Override
+  public JdbcDatabaseContainer getJDC() {
+    return db;
   }
 }

@@ -20,6 +20,7 @@
 package org.waarp.common.crypto.ssl;
 
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -38,17 +39,36 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
+import static org.waarp.common.digest.WaarpBC.*;
+
 /**
  * SecureKeyStore for SLL
- *
- *
  */
 public class WaarpSecureKeyStore {
+  private static final String CANNOT_SAVE_TO_FILE_KEY_STORE_INSTANCE =
+      "Cannot save to file KeyStore Instance";
+
+  private static final String CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE =
+      "Cannot create KeyManagerFactory Instance";
+
+  private static final String CANNOT_CREATE_KEY_STORE_INSTANCE =
+      "Cannot create KeyStore Instance";
+
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpSecureKeyStore.class);
+  private static final String CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE =
+      "Cannot create TrustManagerFactory Instance";
+  private static final String CANNOT_CREATE_KEY_TRUST_STORE_INSTANCE =
+      "Cannot create keyTrustStore Instance";
+  private static final String CANNOT_SAVE_TO_FILE_KEY_TRUST_STORE_INSTANCE =
+      "Cannot save to file keyTrustStore Instance";
+
+  static {
+    initializedTlsContext();
+  }
 
   private String keyStoreFilename;
   private KeyStore keyStore;
@@ -63,36 +83,36 @@ public class WaarpSecureKeyStore {
   /**
    * Initialize empty KeyStore. No TrustStore is internally created.
    *
-   * @param _keyStorePasswd
-   * @param _keyPassword
+   * @param keyStorePasswd
+   * @param keyPassword
    *
    * @throws CryptoException
    */
-  public WaarpSecureKeyStore(String _keyStorePasswd, String _keyPassword)
+  public WaarpSecureKeyStore(String keyStorePasswd, String keyPassword)
       throws CryptoException {
-    keyStorePasswd = _keyStorePasswd;
-    keyPassword = _keyPassword;
+    this.keyStorePasswd = keyStorePasswd;
+    this.keyPassword = keyPassword;
     try {
       keyStore = KeyStore.getInstance("JKS");
     } catch (final KeyStoreException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     }
     try {
       // Empty keyStore created so null for the InputStream
       keyStore.load(null, getKeyStorePassword());
     } catch (final NoSuchAlgorithmException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } catch (final CertificateException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } catch (final IOException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     }
     initKeyManagerFactory();
   }
@@ -101,40 +121,40 @@ public class WaarpSecureKeyStore {
    * Initialize the SecureKeyStore with no TrustStore from file
    *
    * @param keyStoreFilename
-   * @param _keyStorePasswd
-   * @param _keyPassword
+   * @param keyStorePasswd
+   * @param keyPassword
    *
    * @throws CryptoException
    */
-  public WaarpSecureKeyStore(String keyStoreFilename, String _keyStorePasswd,
-                             String _keyPassword) throws CryptoException {
-    initKeyStore(keyStoreFilename, _keyStorePasswd, _keyPassword);
+  public WaarpSecureKeyStore(String keyStoreFilename, String keyStorePasswd,
+                             String keyPassword) throws CryptoException {
+    initKeyStore(keyStoreFilename, keyStorePasswd, keyPassword);
   }
 
   /**
    * Initialize the SecureKeyStore and TrustStore from files
    *
    * @param keyStoreFilename
-   * @param _keyStorePasswd
-   * @param _keyPassword
+   * @param keyStorePasswd
+   * @param keyPassword
    * @param trustStoreFilename if Null, no TrustKeyStore will be
    *     created
-   * @param _trustStorePasswd
+   * @param trustStorePasswd
    * @param needClientAuthent True if the TrustStore is also used for
    *     Client
    *     Authentication
    *
    * @throws CryptoException
    */
-  public WaarpSecureKeyStore(String keyStoreFilename, String _keyStorePasswd,
-                             String _keyPassword, String trustStoreFilename,
-                             String _trustStorePasswd,
-                             boolean needClientAuthent) throws CryptoException {
+  public WaarpSecureKeyStore(String keyStoreFilename, String keyStorePasswd,
+                             String keyPassword, String trustStoreFilename,
+                             String trustStorePasswd, boolean needClientAuthent)
+      throws CryptoException {
     // Create the KeyStore
-    initKeyStore(keyStoreFilename, _keyStorePasswd, _keyPassword);
+    initKeyStore(keyStoreFilename, keyStorePasswd, keyPassword);
     // Now create the TrustKeyStore
     if (trustStoreFilename != null) {
-      initTrustStore(trustStoreFilename, _trustStorePasswd, needClientAuthent);
+      initTrustStore(trustStoreFilename, trustStorePasswd, needClientAuthent);
     } else {
       initEmptyTrustStore();
     }
@@ -143,47 +163,42 @@ public class WaarpSecureKeyStore {
   /**
    * Initialize the SecureKeyStore with no TrustStore from file
    *
-   * @param _keyStoreFilename
-   * @param _keyStorePasswd
-   * @param _keyPassword
+   * @param keystoreFilename
+   * @param keystorePasswd
+   * @param keyPasswordNew
    *
    * @throws CryptoException
    */
-  public void initKeyStore(String _keyStoreFilename, String _keyStorePasswd,
-                           String _keyPassword) throws CryptoException {
-    keyStoreFilename = _keyStoreFilename;
-    keyStorePasswd = _keyStorePasswd;
-    keyPassword = _keyPassword;
+  public void initKeyStore(String keystoreFilename, String keystorePasswd,
+                           String keyPasswordNew) throws CryptoException {
+    keyStoreFilename = keystoreFilename;
+    keyStorePasswd = keystorePasswd;
+    keyPassword = keyPasswordNew;
     // First keyStore itself
     try {
       keyStore = KeyStore.getInstance("JKS");
     } catch (final KeyStoreException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     }
     FileInputStream inputStream = null;
     try {
       inputStream = new FileInputStream(keyStoreFilename);
       keyStore.load(inputStream, getKeyStorePassword());
     } catch (final NoSuchAlgorithmException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } catch (final CertificateException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } catch (final IOException e) {
-      logger.error("Cannot create KeyStore Instance", e);
-      throw new CryptoException("Cannot create KeyStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
     } finally {
-      try {
-        if (inputStream != null) {
-          inputStream.close();
-        }
-      } catch (final IOException e) {
-      }
+      FileUtils.close(inputStream);
     }
     initKeyManagerFactory();
   }
@@ -197,22 +212,21 @@ public class WaarpSecureKeyStore {
     try {
       keyManagerFactory = KeyManagerFactory
           .getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      // "SunX509");
     } catch (final NoSuchAlgorithmException e) {
-      logger.error("Cannot create KeyManagerFactory Instance", e);
-      throw new CryptoException("Cannot create KeyManagerFactory Instance", e);
+      logger.error(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
     }
     try {
       keyManagerFactory.init(keyStore, getCertificatePassword());
     } catch (final UnrecoverableKeyException e) {
-      logger.error("Cannot create KeyManagerFactory Instance", e);
-      throw new CryptoException("Cannot create KeyManagerFactory Instance", e);
+      logger.error(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
     } catch (final KeyStoreException e) {
-      logger.error("Cannot create KeyManagerFactory Instance", e);
-      throw new CryptoException("Cannot create KeyManagerFactory Instance", e);
+      logger.error(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
     } catch (final NoSuchAlgorithmException e) {
-      logger.error("Cannot create KeyManagerFactory Instance", e);
-      throw new CryptoException("Cannot create KeyManagerFactory Instance", e);
+      logger.error(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
     }
   }
 
@@ -266,28 +280,23 @@ public class WaarpSecureKeyStore {
       try {
         keyStore.store(fos, getKeyStorePassword());
       } catch (final KeyStoreException e) {
-        logger.error("Cannot save to file KeyStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_STORE_INSTANCE, e);
         return false;
       } catch (final NoSuchAlgorithmException e) {
-        logger.error("Cannot save to file KeyStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_STORE_INSTANCE, e);
         return false;
       } catch (final CertificateException e) {
-        logger.error("Cannot save to file KeyStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_STORE_INSTANCE, e);
         return false;
       } catch (final IOException e) {
-        logger.error("Cannot save to file KeyStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_STORE_INSTANCE, e);
         return false;
       }
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot save to file KeyStore Instance", e);
+      logger.error(CANNOT_SAVE_TO_FILE_KEY_STORE_INSTANCE, e);
       return false;
     } finally {
-      try {
-        if (fos != null) {
-          fos.close();
-        }
-      } catch (final IOException e) {
-      }
+      FileUtils.close(fos);
     }
     return true;
   }
@@ -295,24 +304,23 @@ public class WaarpSecureKeyStore {
   /**
    * Initialize the TrustStore from a filename and its password
    *
-   * @param _trustStoreFilename
-   * @param _trustStorePasswd
+   * @param truststoreFilename
+   * @param truststorePasswd
    * @param needClientAuthent True if the TrustStore is also to
    *     authenticate
    *     clients
    *
    * @throws CryptoException
    */
-  public void initTrustStore(String _trustStoreFilename,
-                             String _trustStorePasswd,
+  public void initTrustStore(String truststoreFilename, String truststorePasswd,
                              boolean needClientAuthent) throws CryptoException {
-    trustStoreFilename = _trustStoreFilename;
-    trustStorePasswd = _trustStorePasswd;
+    trustStoreFilename = truststoreFilename;
+    trustStorePasswd = truststorePasswd;
     try {
       keyTrustStore = KeyStore.getInstance("JKS");
     } catch (final KeyStoreException e) {
-      logger.error("Cannot create TrustManagerFactory Instance", e);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e);
     }
     FileInputStream inputStream = null;
@@ -320,43 +328,38 @@ public class WaarpSecureKeyStore {
       inputStream = new FileInputStream(trustStoreFilename);
       keyTrustStore.load(inputStream, getKeyTrustStorePassword());
     } catch (final NoSuchAlgorithmException e) {
-      logger.error("Cannot create TrustManagerFactory Instance", e);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e);
     } catch (final CertificateException e) {
-      logger.error("Cannot create TrustManagerFactory Instance", e);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e);
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot create TrustManagerFactory Instance", e);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e);
     } catch (final IOException e) {
-      logger.error("Cannot create TrustManagerFactory Instance", e);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e);
     } finally {
-      try {
-        if (inputStream != null) {
-          inputStream.close();
-        }
-      } catch (final IOException e2) {
-      }
+      FileUtils.close(inputStream);
     }
-    TrustManagerFactory trustManagerFactory = null;
+    TrustManagerFactory trustManagerFactory;
     try {
       trustManagerFactory = TrustManagerFactory
           .getInstance(KeyManagerFactory.getDefaultAlgorithm());
     } catch (final NoSuchAlgorithmException e1) {
-      logger.error("Cannot create TrustManagerFactory Instance", e1);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e1);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e1);
     }
     try {
       trustManagerFactory.init(keyTrustStore);
     } catch (final KeyStoreException e1) {
-      logger.error("Cannot create TrustManagerFactory Instance", e1);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e1);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e1);
     }
     try {
@@ -364,8 +367,8 @@ public class WaarpSecureKeyStore {
           new WaarpSecureTrustManagerFactory(trustManagerFactory,
                                              needClientAuthent);
     } catch (final CryptoException e) {
-      logger.error("Cannot create TrustManagerFactory Instance", e);
-      throw new CryptoException("Cannot create TrustManagerFactory Instance",
+      logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
+      throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
                                 e);
     }
   }
@@ -376,27 +379,27 @@ public class WaarpSecureKeyStore {
    * @return True if correctly initialized empty
    */
   public boolean initEmptyTrustStore() {
-    trustStorePasswd = "secret";
+    trustStorePasswd = "secret";//NOSONAR
     try {
       keyTrustStore = KeyStore.getInstance("JKS");
     } catch (final KeyStoreException e) {
-      logger.error("Cannot create keyTrustStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_TRUST_STORE_INSTANCE, e);
       return false;
     }
     try {
       // Empty keyTrustStore created so null for the InputStream
       keyTrustStore.load(null, getKeyTrustStorePassword());
     } catch (final NoSuchAlgorithmException e) {
-      logger.error("Cannot create keyTrustStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_TRUST_STORE_INSTANCE, e);
       return false;
     } catch (final CertificateException e) {
-      logger.error("Cannot create keyTrustStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_TRUST_STORE_INSTANCE, e);
       return false;
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot create keyTrustStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_TRUST_STORE_INSTANCE, e);
       return false;
     } catch (final IOException e) {
-      logger.error("Cannot create keyTrustStore Instance", e);
+      logger.error(CANNOT_CREATE_KEY_TRUST_STORE_INSTANCE, e);
       return false;
     }
     secureTrustManagerFactory = new WaarpSecureTrustManagerFactory();
@@ -452,28 +455,23 @@ public class WaarpSecureKeyStore {
       try {
         keyTrustStore.store(fos, getKeyTrustStorePassword());
       } catch (final KeyStoreException e) {
-        logger.error("Cannot save to file keyTrustStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_TRUST_STORE_INSTANCE, e);
         return false;
       } catch (final NoSuchAlgorithmException e) {
-        logger.error("Cannot save to file keyTrustStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_TRUST_STORE_INSTANCE, e);
         return false;
       } catch (final CertificateException e) {
-        logger.error("Cannot save to file keyTrustStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_TRUST_STORE_INSTANCE, e);
         return false;
       } catch (final IOException e) {
-        logger.error("Cannot save to file keyTrustStore Instance", e);
+        logger.error(CANNOT_SAVE_TO_FILE_KEY_TRUST_STORE_INSTANCE, e);
         return false;
       }
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot save to file keyTrustStore Instance", e);
+      logger.error(CANNOT_SAVE_TO_FILE_KEY_TRUST_STORE_INSTANCE, e);
       return false;
     } finally {
-      try {
-        if (fos != null) {
-          fos.close();
-        }
-      } catch (final IOException e) {
-      }
+      FileUtils.close(fos);
     }
     return true;
   }
@@ -495,10 +493,7 @@ public class WaarpSecureKeyStore {
     try {
       return cf.generateCertificate(in);
     } finally {
-      try {
-        in.close();
-      } catch (final IOException e) {
-      }
+      FileUtils.close(in);
     }
   }
 
@@ -509,7 +504,7 @@ public class WaarpSecureKeyStore {
     if (keyPassword != null) {
       return keyPassword.toCharArray();
     }
-    return "secret".toCharArray();
+    return "nopwd".toCharArray();
   }
 
   /**
@@ -519,7 +514,7 @@ public class WaarpSecureKeyStore {
     if (keyStorePasswd != null) {
       return keyStorePasswd.toCharArray();
     }
-    return "secret".toCharArray();
+    return "nopwd".toCharArray();
   }
 
   /**
@@ -529,7 +524,7 @@ public class WaarpSecureKeyStore {
     if (trustStorePasswd != null) {
       return trustStorePasswd.toCharArray();
     }
-    return "secret".toCharArray();
+    return "nopwd".toCharArray();
   }
 
   /**

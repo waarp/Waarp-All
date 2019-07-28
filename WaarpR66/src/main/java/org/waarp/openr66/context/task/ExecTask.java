@@ -21,24 +21,20 @@ package org.waarp.openr66.context.task;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.R66Session;
-import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
-import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 /**
  * Execute an external command
- *
- *
  */
 public class ExecTask extends AbstractExecTask {
 
@@ -67,7 +63,7 @@ public class ExecTask extends AbstractExecTask {
      * else 1 for a warning else as an error. No change should be done in the FILENAME
      */
     logger
-        .debug("Exec with " + argRule + ":" + argTransfer + " and {}", session);
+        .debug("Exec with " + argRule + ':' + argTransfer + " and {}", session);
     final String finalname = applyTransferSubstitutions(argRule);
 
     // Check if the execution will be done through LocalExec daemon
@@ -120,13 +116,12 @@ public class ExecTask extends AbstractExecTask {
       }
       logger.info("Exec OK with {}", commandLine);
     } else if (status == 1) {
-      logger.warn("Exec in warning with " + commandLine.toString());
+      logger.warn("Exec in warning with " + commandLine);
       if (waitForValidation) {
         futureCompletion.setSuccess();
       }
     } else {
-      logger.error("Status: " + status + " Exec in error with " +
-                   commandLine.toString());
+      logger.error("Status: " + status + " Exec in error with " + commandLine);
       if (waitForValidation) {
         futureCompletion.cancel();
       }
@@ -139,11 +134,10 @@ public class ExecTask extends AbstractExecTask {
     try {
       Thread.sleep(Configuration.RETRYINMS);
     } catch (final InterruptedException e2) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
     }
     logger.error("Status: " + status + " Exec in error with " + commandLine +
                  " returns " + e.getMessage());
-    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(
-        "<STATUS>" + status + "</STATUS><ERROR>" + e.getMessage() + "</ERROR>");
     if (waitForValidation) {
       futureCompletion.setFailure(e);
     }

@@ -26,6 +26,7 @@ import io.netty.channel.ChannelPipelineException;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -35,17 +36,16 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
-import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.network.ssl.NetworkSslServerHandler;
-import org.waarp.openr66.proxy.network.ssl.NetworkSslServerInitializer;
+import org.waarp.openr66.proxy.network.ssl.NetworkSslServerInitializerProxy;
 
 import java.net.ConnectException;
 import java.net.SocketAddress;
 
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+
 /**
  * This class handles Network Transaction connections
- *
- *
  */
 public class NetworkTransaction {
   /**
@@ -60,29 +60,26 @@ public class NetworkTransaction {
 
   public NetworkTransaction() {
     networkChannelGroup = new DefaultChannelGroup("NetworkChannels",
-                                                  Configuration.configuration
+                                                  configuration
                                                       .getSubTaskGroup()
                                                       .next());
-    final NetworkServerInitializer networkServerInitializer =
-        new NetworkServerInitializer(false);
+    final NetworkServerInitializerProxy networkServerInitializerProxy =
+        new NetworkServerInitializerProxy(false);
     clientBootstrap = new Bootstrap();
-    WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration
-        .getNetworkWorkerGroup(), (int) Configuration.configuration
-        .getTIMEOUTCON());
-    clientBootstrap.handler(networkServerInitializer);
+    WaarpNettyUtil
+        .setBootstrap(clientBootstrap, configuration.getNetworkWorkerGroup(),
+                      (int) configuration.getTimeoutCon());
+    clientBootstrap.handler(networkServerInitializerProxy);
     clientSslBootstrap = new Bootstrap();
-    if (Configuration.configuration.isUseSSL() &&
-        Configuration.configuration.getHOST_SSLID() != null) {
-      final NetworkSslServerInitializer networkSslServerInitializer =
-          new NetworkSslServerInitializer(true);
+    if (configuration.isUseSSL() && configuration.getHostSslId() != null) {
+      final NetworkSslServerInitializerProxy networkSslServerInitializerProxy =
+          new NetworkSslServerInitializerProxy(true);
       WaarpNettyUtil.setBootstrap(clientSslBootstrap,
-                                  Configuration.configuration
-                                      .getNetworkWorkerGroup(),
-                                  (int) Configuration.configuration
-                                      .getTIMEOUTCON());
-      clientSslBootstrap.handler(networkSslServerInitializer);
+                                  configuration.getNetworkWorkerGroup(),
+                                  (int) configuration.getTimeoutCon());
+      clientSslBootstrap.handler(networkSslServerInitializerProxy);
     } else {
-      if (Configuration.configuration.isWarnOnStartup()) {
+      if (configuration.isWarnOnStartup()) {
         logger.warn("No SSL support configured");
       } else {
         logger.info("No SSL support configured");
@@ -102,7 +99,7 @@ public class NetworkTransaction {
                                            boolean isSSL) {
     Channel channel = null;
     OpenR66Exception lastException = null;
-    for (int i = 0; i < Configuration.RETRYNB; i++) {
+    for (int i = 0; i < RETRYNB; i++) {
       try {
         channel = createConnection(socketAddress, isSSL);
         break;
@@ -119,8 +116,9 @@ public class NetworkTransaction {
         lastException = e1;
         channel = null;
         try {
-          Thread.sleep(Configuration.WAITFORNETOP * 5);
+          Thread.sleep(WAITFORNETOP * 5);
         } catch (final InterruptedException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           break;
         }
       }
@@ -153,9 +151,8 @@ public class NetworkTransaction {
     boolean ok = false;
     // check valid limit on server side only (could be the initiator but not a client)
     boolean valid = false;
-    for (int i = 0; i < Configuration.RETRYNB * 2; i++) {
-      if (Configuration.configuration.getConstraintLimitHandler()
-                                     .checkConstraintsSleep(i)) {
+    for (int i = 0; i < RETRYNB * 2; i++) {
+      if (configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {
         logger.debug("Constraints exceeded: " + i);
       } else {
         logger.debug("Constraints NOT exceeded");
@@ -201,10 +198,10 @@ public class NetworkTransaction {
              OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
     ChannelFuture channelFuture = null;
-    for (int i = 0; i < Configuration.RETRYNB; i++) {
+    for (int i = 0; i < RETRYNB; i++) {
       try {
         if (isSSL) {
-          if (Configuration.configuration.getHOST_SSLID() != null) {
+          if (configuration.getHostSslId() != null) {
             channelFuture = clientSslBootstrap.connect(socketServerAddress);
           } else {
             throw new OpenR66ProtocolNoConnectionException("No SSL support");
@@ -217,25 +214,25 @@ public class NetworkTransaction {
             "Cannot connect to remote server due to a channel exception");
       }
       try {
-        channelFuture.await(Configuration.configuration.getTIMEOUTCON() / 3);
+        channelFuture.await(configuration.getTimeoutCon() / 3);
       } catch (final InterruptedException e1) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
       if (channelFuture.isSuccess()) {
         final Channel channel = channelFuture.channel();
-        if (isSSL) {
-          if (!NetworkSslServerHandler.isSslConnectedChannel(channel)) {
-            logger.debug("KO CONNECT since SSL handshake is over");
-            channel.close();
-            throw new OpenR66ProtocolNoConnectionException(
-                "Cannot finish connect to remote server");
-          }
+        if (isSSL && !NetworkSslServerHandler.isSslConnectedChannel(channel)) {
+          logger.debug("KO CONNECT since SSL handshake is over");
+          channel.close();
+          throw new OpenR66ProtocolNoConnectionException(
+              "Cannot finish connect to remote server");
         }
         networkChannelGroup.add(channel);
         return channel;
       } else {
         try {
-          Thread.sleep(Configuration.WAITFORNETOP * 2);
+          Thread.sleep(WAITFORNETOP * 2);
         } catch (final InterruptedException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
         if (!channelFuture.isDone()) {
           throw new OpenR66ProtocolNoConnectionException(
@@ -250,8 +247,9 @@ public class NetworkTransaction {
         }
       }
     }
+    Throwable cause = channelFuture == null? null : channelFuture.cause();
     throw new OpenR66ProtocolNetworkException("Cannot connect to remote server",
-                                              channelFuture.cause());
+                                              cause);
   }
 
   /**
@@ -260,10 +258,11 @@ public class NetworkTransaction {
   public void closeAll() {
     logger.debug("close All Network Channels");
     try {
-      Thread.sleep(Configuration.RETRYINMS * 2);
+      Thread.sleep(RETRYINMS * 2);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
-    if (!Configuration.configuration.isServer()) {
+    if (!configuration.isServer()) {
       WaarpShutdownHook.shutdownHook.launchFinalExit();
     }
     for (final Channel channel : networkChannelGroup) {
@@ -271,10 +270,11 @@ public class NetworkTransaction {
     }
     WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());
     try {
-      Thread.sleep(Configuration.WAITFORNETOP);
+      Thread.sleep(WAITFORNETOP);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
-    Configuration.configuration.clientStop();
+    configuration.clientStop();
     logger.debug("Last action before exit");
     ChannelUtils.stopLogger();
   }

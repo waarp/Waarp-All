@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.file.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,8 +29,6 @@ import java.io.PipedInputStream;
 /**
  * This class is used with external process in order to get the All echo from
  * the stdout of the process.
- *
- *
  */
 class AllLineReader implements Runnable {
   private final BufferedReader reader;
@@ -37,7 +37,7 @@ class AllLineReader implements Runnable {
    */
   private final StringBuilder lastLine = new StringBuilder();
 
-  public AllLineReader(PipedInputStream inputStream) {
+  AllLineReader(PipedInputStream inputStream) {
     reader = new BufferedReader(new InputStreamReader(inputStream));
   }
 
@@ -56,10 +56,7 @@ class AllLineReader implements Runnable {
       // writer is found
       // before the thread closes the write pipe
     }
-    try {
-      reader.close();
-    } catch (final IOException e) {
-    }
+    FileUtils.close(reader);
   }
 
   /**

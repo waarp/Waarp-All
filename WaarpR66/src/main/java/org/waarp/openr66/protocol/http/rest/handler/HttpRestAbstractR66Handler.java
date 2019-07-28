@@ -49,8 +49,6 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
 /**
  * Common method implementation for Action Rest R66 handlers
- *
- *
  */
 public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
 
@@ -60,7 +58,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);
 
-  public static enum ACTIONS_TYPE {
+  public enum ACTIONS_TYPE {
     OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,
     ImportConfig, GetInformation, GetTransferInformation, GetLog,
     ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,
@@ -71,8 +69,8 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
    * @param path
    * @param method
    */
-  public HttpRestAbstractR66Handler(String path, RestConfiguration config,
-                                    METHOD... method) {
+  protected HttpRestAbstractR66Handler(String path, RestConfiguration config,
+                                       METHOD... method) {
     super(path, path, true, config, method);
   }
 
@@ -90,7 +88,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
       throws HttpIncorrectRequestException {
     // should not be
     logger.debug(
-        "debug: " + data.getName() + ":" + data.getHttpDataType().name());
+        "debug: " + data.getName() + ':' + data.getHttpDataType().name());
   }
 
   protected void setError(HttpRestHandler handler, RestArgument result,
@@ -107,7 +105,8 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
     if (packet != null) {
       try {
         result.addResult(packet.createObjectNode());
-      } catch (final OpenR66ProtocolPacketException e) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
   }
@@ -147,8 +146,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
     response.headers()
             .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
     if (status == HttpResponseStatus.UNAUTHORIZED) {
-      final ChannelFuture future = ctx.writeAndFlush(response);
-      return future;
+      return ctx.writeAndFlush(response);
     }
     response.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json");
     response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());
@@ -165,7 +163,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   public Object getBody(HttpRestHandler handler, ByteBuf body,
                         RestArgument arguments, RestArgument result)
       throws HttpIncorrectRequestException {
-    JsonPacket packet = null;
+    JsonPacket packet;
     try {
       final String json = body.toString(WaarpStringUtils.UTF8);
       packet = JsonPacket.createFromBuffer(json);

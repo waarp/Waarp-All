@@ -33,8 +33,6 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
  * Example of Java Task for ExecJava
  * <p>
  * 2nd argument is a numerical rank. When rank > 100 stops, else increment rank.
- *
- *
  */
 public class TestExecJavaTask extends AbstractExecJavaTask {
 
@@ -49,12 +47,11 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
     if (callFromBusiness) {
       // Business Request to validate?
       if (isToValidate) {
-        final String[] args = fullarg.split(" ");
+        final String[] args = BLANK.split(fullarg);
         int rank = Integer.parseInt(args[1]);
         rank++;
         final BusinessRequestPacket packet = new BusinessRequestPacket(
-            this.getClass().getName() + " business " + rank + " final return",
-            0);
+            getClass().getName() + " business " + rank + " final return", 0);
         if (rank > 100) {
           validate(packet);
           logger.info("Will NOT close the channel: " + rank);
@@ -65,7 +62,8 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
               ChannelUtils
                   .writeAbstractLocalPacket(session.getLocalChannelReference(),
                                             packet, true);
-            } catch (final OpenR66ProtocolPacketException e) {
+            } catch (final OpenR66ProtocolPacketException ignored) {
+              // nothing
             }
           }
         }
@@ -73,7 +71,6 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
         return;
       }
       finalValidate("Validated");
-      return;
     } else {
       // Rule EXECJAVA based
       final R66File file = session.getFile();
@@ -83,7 +80,8 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
       } else {
         try {
           logger.info("TestExecJavaTask File: " + file.getFile());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
       }
       if (runner == null) {

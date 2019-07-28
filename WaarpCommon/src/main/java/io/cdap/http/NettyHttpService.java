@@ -237,7 +237,8 @@ public final class NettyHttpService {
         } else {
           shutdownExecutorGroups(0, 5, TimeUnit.SECONDS, eventExecutorGroup);
         }
-      } catch (final Throwable t2) {
+      } catch (final Throwable ignored) {
+        // nothing
       }
       state = State.FAILED;
       throw t;
@@ -332,8 +333,8 @@ public final class NettyHttpService {
     }
 
     final ThreadFactory threadFactory = new ThreadFactory() {
-      private final ThreadGroup threadGroup =
-          new ThreadGroup(serviceName + "-executor-thread");
+      private final ThreadGroup threadGroup =//NOSONAR
+          new ThreadGroup(serviceName + "-executor-thread");//NOSONAR
       private final AtomicLong count = new AtomicLong(0);
 
       @Override
@@ -392,52 +393,55 @@ public final class NettyHttpService {
     final EventLoopGroup workerGroup =
         new NioEventLoopGroup(workerThreadPoolSize, createDaemonThreadFactory(
             serviceName + "-worker-thread-%d"));
-    final ServerBootstrap bootstrap = new ServerBootstrap();
-    bootstrap.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new ChannelInitializer<SocketChannel>() {
-               @Override
-               protected void initChannel(SocketChannel ch) throws Exception {
-                 channelGroup.add(ch);
+    final ServerBootstrap bootstrapNew = new ServerBootstrap();
+    bootstrapNew.group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                  @Override
+                  protected void initChannel(SocketChannel ch)
+                      throws Exception {
+                    channelGroup.add(ch);
 
-                 final ChannelPipeline pipeline = ch.pipeline();
-                 if (sslHandlerFactory != null) {
-                   // Add SSLHandler if SSL is enabled
-                   pipeline
-                       .addLast("ssl", sslHandlerFactory.create(ch.alloc()));
-                 }
-                 pipeline.addLast("codec", new HttpServerCodec());
-                 pipeline.addLast("compressor", new HttpContentCompressor());
-                 pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
-                 pipeline
-                     .addLast("keepAlive", new HttpServerKeepAliveHandler());
-                 pipeline.addLast("router", new RequestRouter(resourceHandler,
-                                                              httpChunkLimit,
-                                                              sslHandlerFactory !=
-                                                              null));
-                 if (eventExecutorGroup == null) {
-                   pipeline.addLast("dispatcher", new HttpDispatcher());
-                 } else {
-                   pipeline.addLast(eventExecutorGroup, "dispatcher",
-                                    new HttpDispatcher());
-                 }
+                    final ChannelPipeline pipeline = ch.pipeline();
+                    if (sslHandlerFactory != null) {
+                      // Add SSLHandler if SSL is enabled
+                      pipeline
+                          .addLast("ssl", sslHandlerFactory.create(ch.alloc()));
+                    }
+                    pipeline.addLast("codec", new HttpServerCodec());
+                    pipeline.addLast("compressor", new HttpContentCompressor());
+                    pipeline
+                        .addLast("chunkedWriter", new ChunkedWriteHandler());
+                    pipeline
+                        .addLast("keepAlive", new HttpServerKeepAliveHandler());
+                    pipeline.addLast("router",
+                                     new RequestRouter(resourceHandler,
+                                                       httpChunkLimit,
+                                                       sslHandlerFactory !=
+                                                       null));
+                    if (eventExecutorGroup == null) {
+                      pipeline.addLast("dispatcher", new HttpDispatcher());
+                    } else {
+                      pipeline.addLast(eventExecutorGroup, "dispatcher",
+                                       new HttpDispatcher());
+                    }
 
-                 if (pipelineModifier != null) {
-                   pipelineModifier.modify(pipeline);
-                 }
-               }
-             });
+                    if (pipelineModifier != null) {
+                      pipelineModifier.modify(pipeline);
+                    }
+                  }
+                });
 
     for (final Map.Entry<ChannelOption, Object> entry : channelConfigs
         .entrySet()) {
-      bootstrap.option(entry.getKey(), entry.getValue());
+      bootstrapNew.option(entry.getKey(), entry.getValue());
     }
     for (final Map.Entry<ChannelOption, Object> entry : childChannelConfigs
         .entrySet()) {
-      bootstrap.childOption(entry.getKey(), entry.getValue());
+      bootstrapNew.childOption(entry.getKey(), entry.getValue());
     }
 
-    return bootstrap;
+    return bootstrapNew;
   }
 
   /**

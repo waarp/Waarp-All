@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.localhandler;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.local.LocalChannel;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -45,6 +44,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Retrieve transfer runner
  */
 public class RetrieveRunner extends Thread {
+  private static final String END_RETRIEVE_IN_ERROR = "End Retrieve in Error";
+
   /**
    * Internal Logger
    */
@@ -55,27 +56,22 @@ public class RetrieveRunner extends Thread {
 
   private final LocalChannelReference localChannelReference;
 
-  private final LocalChannel channel;
+  private boolean done;
 
-  private boolean done = false;
-
-  protected AtomicBoolean running = new AtomicBoolean(true);
+  protected final AtomicBoolean running = new AtomicBoolean(true);
 
   protected RetrieveRunner() {
     // empty constructor
     session = null;
     localChannelReference = null;
-    channel = null;
   }
 
   /**
    * @param session
-   * @param channel local channel
    */
-  public RetrieveRunner(R66Session session, LocalChannel channel) {
+  public RetrieveRunner(R66Session session) {
     this.session = session;
     localChannelReference = this.session.getLocalChannelReference();
-    this.channel = channel;
   }
 
   /**
@@ -89,7 +85,8 @@ public class RetrieveRunner extends Thread {
   public void run() {
     boolean requestValidDone = false;
     try {
-      Thread.currentThread().setName("RetrieveRunner: " + channel.id());
+      Thread.currentThread()
+            .setName("RetrieveRunner: " + localChannelReference.getLocalId());
       try {
         if (session.getRunner().getGloballaststep() ==
             TASKSTEP.POSTTASK.ordinal()) {
@@ -99,7 +96,7 @@ public class RetrieveRunner extends Thread {
             ChannelUtils.writeEndTransfer(localChannelReference);
           } catch (final OpenR66ProtocolPacketException e) {
             transferInError(e);
-            logger.error("End Retrieve in Error");
+            logger.error(END_RETRIEVE_IN_ERROR);
             return;
           }
         } else {
@@ -108,11 +105,11 @@ public class RetrieveRunner extends Thread {
         }
       } catch (final OpenR66RunnerErrorException e) {
         transferInError(e);
-        logger.info("End Retrieve in Error");
+        logger.info(END_RETRIEVE_IN_ERROR);
         return;
       } catch (final OpenR66ProtocolSystemException e) {
         transferInError(e);
-        logger.info("End Retrieve in Error");
+        logger.info(END_RETRIEVE_IN_ERROR);
         return;
       }
       localChannelReference.getFutureEndTransfer().awaitOrInterruptible();
@@ -134,7 +131,8 @@ public class RetrieveRunner extends Thread {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, validPacket,
                                         true);
-        } catch (final OpenR66ProtocolPacketException e) {
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
         }
         if (!localChannelReference.getFutureRequest().awaitOrInterruptible() ||
             Thread.interrupted()) {
@@ -150,7 +148,7 @@ public class RetrieveRunner extends Thread {
         }
         if (session.getRunner() != null &&
             session.getRunner().isSelfRequested()) {
-          ChannelUtils.close(localChannelReference.getLocalChannel());
+          localChannelReference.close();
         }
         done = true;
       } else {
@@ -168,7 +166,8 @@ public class RetrieveRunner extends Thread {
             try {
               ChannelUtils
                   .writeAbstractLocalPacket(localChannelReference, error, true);
-            } catch (final OpenR66ProtocolPacketException e) {
+            } catch (final OpenR66ProtocolPacketException ignored) {
+              // ignore
             }
           }
         }
@@ -182,7 +181,7 @@ public class RetrieveRunner extends Thread {
           localChannelReference.invalidateRequest(result);
         }
         done = true;
-        logger.info("End Retrieve in Error");
+        logger.info(END_RETRIEVE_IN_ERROR);
       }
     } finally {
       if (!done) {
@@ -203,7 +202,8 @@ public class RetrieveRunner extends Thread {
               ChannelUtils
                   .writeAbstractLocalPacket(localChannelReference, validPacket,
                                             true);
-            } catch (final OpenR66ProtocolPacketException e) {
+            } catch (final OpenR66ProtocolPacketException ignored) {
+              // nothing
             }
           }
           session.getRunner().setAllDone();
@@ -216,7 +216,7 @@ public class RetrieveRunner extends Thread {
               localChannelReference.getFutureEndTransfer().getResult());
           if (session.getRunner() != null &&
               session.getRunner().isSelfRequested()) {
-            ChannelUtils.close(localChannelReference.getLocalChannel());
+            localChannelReference.close();
           }
         } else {
           if (localChannelReference.getFutureEndTransfer().isDone()) {
@@ -233,7 +233,8 @@ public class RetrieveRunner extends Thread {
                 ChannelUtils
                     .writeAbstractLocalPacket(localChannelReference, error,
                                               true);
-              } catch (final OpenR66ProtocolPacketException e) {
+              } catch (final OpenR66ProtocolPacketException ignored) {
+                // ignore
               }
             }
           } else {
@@ -262,10 +263,11 @@ public class RetrieveRunner extends Thread {
                         ErrorPacket.FORWARDCLOSECODE);
     try {
       ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
-    } catch (final OpenR66ProtocolPacketException e1) {
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // ignore
     }
     localChannelReference.invalidateRequest(result);
-    ChannelUtils.close(channel);
+    localChannelReference.close();
     done = true;
   }
 
@@ -315,8 +317,8 @@ public class RetrieveRunner extends Thread {
    * When submit RetrieveRunner cannot be done since Executor is already stopped
    */
   public void notStartRunner() {
-    transferInError(new OpenR66RunnerErrorException(
-        "Cannot Start Runner: " + session.toString()));
+    transferInError(
+        new OpenR66RunnerErrorException("Cannot Start Runner: " + session));
     stopRunner();
   }
 

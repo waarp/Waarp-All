@@ -31,8 +31,6 @@ import java.sql.Statement;
 
 /**
  * Class to handle request
- *
- *
  */
 public class DbRequest {
   /**
@@ -40,6 +38,8 @@ public class DbRequest {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbRequest.class);
+  private static final String SQL_EXCEPTION_REQUEST = "SQL Exception Request:";
+  private static final String SQL_EXCEPTION_REQUEST1 = "SQL Exception Request:";
 
   /**
    * Internal Statement
@@ -116,7 +116,6 @@ public class DbRequest {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
-    // rs = stmt.executeQuery(select);
     // or alternatively, if you don't know ahead of time that
     // the query will be a SELECT...
     try {
@@ -124,10 +123,10 @@ public class DbRequest {
         rs = stmt.getResultSet();
       }
     } catch (final SQLException e) {
-      logger.error("SQL Exception Request:" + select + " " + e.getMessage());
+      logger.error(SQL_EXCEPTION_REQUEST + select + ' ' + e.getMessage());
       DbSession.error(e);
       ls.checkConnectionNoException();
-      throw new WaarpDatabaseSqlException("SQL Exception Request:" + select, e);
+      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);
     }
   }
 
@@ -155,7 +154,6 @@ public class DbRequest {
         // ignore
       }
     }
-    // rs = stmt.executeQuery(select);
     // or alternatively, if you don't know ahead of time that
     // the query will be a SELECT...
     try {
@@ -163,10 +161,10 @@ public class DbRequest {
         rs = stmt.getResultSet();
       }
     } catch (final SQLException e) {
-      logger.error("SQL Exception Request:" + select + " " + e.getMessage());
+      logger.error(SQL_EXCEPTION_REQUEST1 + select + ' ' + e.getMessage());
       DbSession.error(e);
       ls.checkConnectionNoException();
-      throw new WaarpDatabaseSqlException("SQL Exception Request:" + select, e);
+      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);
     }
   }
 
@@ -192,10 +190,10 @@ public class DbRequest {
       logger.debug("QUERY(" + rowcount + "): {}", query);
       return rowcount;
     } catch (final SQLException e) {
-      logger.error("SQL Exception Request:" + query + " " + e.getMessage());
+      logger.error(SQL_EXCEPTION_REQUEST1 + query + ' ' + e.getMessage());
       DbSession.error(e);
       ls.checkConnectionNoException();
-      throw new WaarpDatabaseSqlException("SQL Exception Request:" + query, e);
+      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + query, e);
     }
   }
 
@@ -235,19 +233,25 @@ public class DbRequest {
    * @throws WaarpDatabaseNoDataException
    */
   public long getLastId() throws WaarpDatabaseNoDataException {
-    ResultSet rstmp;
+    ResultSet rstmp = null;
     long result = DbConstant.ILLEGALVALUE;
     try {
       rstmp = stmt.getGeneratedKeys();
       if (rstmp.next()) {
         result = rstmp.getLong(1);
       }
-      rstmp.close();
-      rstmp = null;
     } catch (final SQLException e) {
       DbSession.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseNoDataException("No data found", e);
+    } finally {
+      if (rstmp != null) {
+        try {
+          rstmp.close();
+        } catch (SQLException e) {
+          // nothing
+        }
+      }
     }
     return result;
   }
@@ -275,7 +279,7 @@ public class DbRequest {
     try {
       return rs.next();
     } catch (final SQLException e) {
-      logger.warn("SQL Exception to getNextRow" + " " + e.getMessage());
+      logger.warn("SQL Exception to getNextRow" + ' ' + e.getMessage());
       DbSession.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException("SQL Exception to getNextRow", e);
@@ -303,6 +307,6 @@ public class DbRequest {
    * @return the string as result
    */
   public static String getIsNull(String value) {
-    return value == null? " is NULL" : " = '" + value + "'";
+    return value == null? " is NULL" : " = '" + value + '\'';
   }
 }

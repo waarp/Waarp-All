@@ -26,8 +26,6 @@ import java.util.List;
 
 /**
  * This interface is for Object used in Passthrough mode.
- *
- *
  */
 public interface PassthroughFile {
 

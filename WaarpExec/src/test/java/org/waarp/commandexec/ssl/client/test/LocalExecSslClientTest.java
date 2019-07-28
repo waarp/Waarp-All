@@ -25,6 +25,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.junit.Test;
@@ -37,6 +39,7 @@ import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -108,6 +111,7 @@ public class LocalExecSslClientTest extends Thread {
   public void testSslClient() throws Exception {
     WaarpLoggerFactory
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     DetectionUtils.setJunit(true);
     InetAddress addr;
     final byte[] loop = { 127, 0, 0, 1 };
@@ -188,9 +192,10 @@ public class LocalExecSslClientTest extends Thread {
       }
       long second = System.currentTimeMillis();
       // print time for one exec
-      System.err.println("1=Total time in ms: " + (second - first) + " or " +
-                         1 * 1000 / (second - first) + " exec/s");
-      System.err.println("Result: " + ok + ":" + ko);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "1=Total time in ms: " + (second - first) + " or " +
+          1 * 1000 / (second - first) + " exec/s");
+      SysErrLogger.FAKE_LOGGER.syserr("Result: " + ok + ':' + ko);
       ok = 0;
       ko = 0;
 
@@ -207,7 +212,7 @@ public class LocalExecSslClientTest extends Thread {
       System.err.println(
           nit + "=Total time in ms: " + (second - first) + " or " +
           nit * 1000 / (second - first) + " exec/s");
-      System.err.println("Result: " + ok + ":" + ko);
+      System.err.println("Result: " + ok + ':' + ko);
       ok = 0;
       ko = 0;
 
@@ -219,7 +224,7 @@ public class LocalExecSslClientTest extends Thread {
       for (int i = 0; i < nth; i++) {
         executorService.submit(new LocalExecSslClientTest());
       }
-      Thread.sleep(500);
+      Thread.sleep(100);
       executorService.shutdown();
       while (!executorService.awaitTermination(200, TimeUnit.MILLISECONDS)) {
         Thread.sleep(50);
@@ -230,7 +235,7 @@ public class LocalExecSslClientTest extends Thread {
       System.err.println(
           nit * nth + "=Total time in ms: " + (second - first) + " or " +
           nit * nth * 1000 / (second - first) + " exec/s");
-      System.err.println("Result: " + ok + ":" + ko);
+      System.err.println("Result: " + ok + ':' + ko);
       ok = 0;
       ko = 0;
 
@@ -244,7 +249,7 @@ public class LocalExecSslClientTest extends Thread {
       // print time for one exec
       System.err.println("1=Total time in ms: " + (second - first) + " or " +
                          1 * 1000 / (second - first) + " exec/s");
-      System.err.println("Result: " + ok + ":" + ko);
+      System.err.println("Result: " + ok + ':' + ko);
       assertEquals(0, ko);
       ok = 0;
       ko = 0;
@@ -289,7 +294,7 @@ public class LocalExecSslClientTest extends Thread {
     final LocalExecSslClientHandler clientHandler =
         (LocalExecSslClientHandler) channel.pipeline().last();
     // Command to execute
-    final String line = command + " " + atomicInteger.incrementAndGet();
+    final String line = command + ' ' + atomicInteger.incrementAndGet();
     clientHandler.initExecClient(0, line);
     // Wait for the end of the exec command
     final LocalExecResult localExecResult = clientHandler.waitFor(10000);

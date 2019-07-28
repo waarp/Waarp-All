@@ -41,7 +41,7 @@ abstract class StatementExecutor {
   }
 
   public void executeUpdate(PreparedStatement stm) throws SQLException {
-    int res = 0;
+    int res;
     res = stm.executeUpdate();
     if (res < 1) {
       logger.warn("Update failed, no record updated.");

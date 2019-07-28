@@ -22,6 +22,8 @@ package org.waarp.ftp.core.config;
 import io.netty.channel.Channel;
 import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
 import org.waarp.common.file.FileParameterInterface;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook.ShutdownConfiguration;
 import org.waarp.ftp.core.control.BusinessHandler;
 import org.waarp.ftp.core.data.handler.DataBusinessHandler;
@@ -38,30 +40,35 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Abstract class for configuration
- *
- *
  */
 public abstract class FtpConfiguration {
+  private static final String STOU = ".stou";
+  private static final String PROPERTY_HAS_NO_VALUE = "Property has no value: ";
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(FtpConfiguration.class);
   // FTP Configuration: Externals
   /**
    * Default session limit 64Mbit, so up to 8 full simultaneous clients
    */
-  static long DEFAULT_SESSION_LIMIT = 0x800000L;
+  static final long DEFAULT_SESSION_LIMIT = 0x800000L;
 
   /**
    * Default global limit 512Mbit
    */
-  static long DEFAULT_GLOBAL_LIMIT = 0x4000000L;
+  static final long DEFAULT_GLOBAL_LIMIT = 0x4000000L;
 
   /**
    * Nb of milliseconds after pending data transfer is in timeout
    */
-  private static long DATATIMEOUTCON = 5000;
+  private static long dataTimeoutCon = 5000;
 
   /**
    * PASSWORD for SHUTDOWN
    */
-  private static final String FTP_PASSWORD = "FTP_PASSWORD";
+  private static final String FTP_PASSWORD = "FTP_PASSWORD";//NOSONAR
 
   // END OF STATIC VALUES
   /**
@@ -72,16 +79,16 @@ public abstract class FtpConfiguration {
   /**
    * SERVER PORT
    */
-  private int SERVER_PORT = 21;
+  private int serverPort = 21;
   /**
    * Default Address if any
    */
-  private String SERVER_ADDRESS;
+  private String serverAddress;
 
   /**
    * Base Directory
    */
-  private String BASE_DIRECTORY;
+  private String baseDirectory;
 
   /**
    * Associated FileParameterInterface
@@ -100,27 +107,27 @@ public abstract class FtpConfiguration {
    * Default 0 means in proportion of
    * real core number.
    */
-  private int SERVER_THREAD;
+  private int serverThread;
 
   /**
    * Default number of threads in pool for Client part.
    */
-  private int CLIENT_THREAD = 80;
+  private int clientThread = 80;
 
   /**
    * Which class owns this configuration
    */
-  Class<?> fromClass;
+  final Class<?> fromClass;
 
   /**
    * Which class will be used for DataBusinessHandler
    */
-  Class<? extends DataBusinessHandler> dataBusinessHandler;
+  final Class<? extends DataBusinessHandler> dataBusinessHandler;
 
   /**
    * Which class will be used for BusinessHandler
    */
-  Class<? extends BusinessHandler> businessHandler;
+  final Class<? extends BusinessHandler> businessHandler;
 
   /**
    * Internal Lock
@@ -130,14 +137,14 @@ public abstract class FtpConfiguration {
   /**
    * Nb of milliseconds after connection is in timeout
    */
-  private long TIMEOUTCON = 30000;
+  private long timeoutCon = 30000;
 
   /**
    * Size by default of block size for receive/sending files. Should be a
    * multiple of 8192 (maximum = 64K due to
    * block limitation to 2 bytes)
    */
-  private int BLOCKSIZE = 0x10000; // 64K
+  private int blocksize = 0x10000; // 64K
 
   /**
    * Limit in Write byte/s to apply globally to the FTP Server
@@ -197,10 +204,10 @@ public abstract class FtpConfiguration {
    *     DataBusinessHandler
    * @param fileParameter the FileParameterInterface to used
    */
-  public FtpConfiguration(Class<?> classtype,
-                          Class<? extends BusinessHandler> businessHandler,
-                          Class<? extends DataBusinessHandler> dataBusinessHandler,
-                          FileParameterInterface fileParameter) {
+  protected FtpConfiguration(Class<?> classtype,
+                             Class<? extends BusinessHandler> businessHandler,
+                             Class<? extends DataBusinessHandler> dataBusinessHandler,
+                             FileParameterInterface fileParameter) {
     fromClass = classtype;
     this.dataBusinessHandler = dataBusinessHandler;
     this.businessHandler = businessHandler;
@@ -218,7 +225,7 @@ public abstract class FtpConfiguration {
   public String getStringProperty(String key) throws FtpUnknownFieldException {
     final String s = (String) properties.get(key);
     if (s == null) {
-      throw new FtpUnknownFieldException("Property has no value: " + key);
+      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
     }
     return s;
   }
@@ -233,7 +240,7 @@ public abstract class FtpConfiguration {
   public int getIntProperty(String key) throws FtpUnknownFieldException {
     final Integer i = (Integer) properties.get(key);
     if (i == null) {
-      throw new FtpUnknownFieldException("Property has no value: " + key);
+      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
     }
     return i;
   }
@@ -248,7 +255,7 @@ public abstract class FtpConfiguration {
   public File getFileProperty(String key) throws FtpUnknownFieldException {
     final File f = (File) properties.get(key);
     if (f == null) {
-      throw new FtpUnknownFieldException("Property has no value: " + key);
+      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
     }
     return f;
   }
@@ -263,7 +270,7 @@ public abstract class FtpConfiguration {
   public Object getProperty(String key) throws FtpUnknownFieldException {
     final Object o = properties.get(key);
     if (o == null) {
-      throw new FtpUnknownFieldException("Property has no value: " + key);
+      throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
     }
     return o;
   }
@@ -272,14 +279,14 @@ public abstract class FtpConfiguration {
    * @return the TCP Port to listen in the Ftp Server
    */
   public int getServerPort() {
-    return SERVER_PORT;
+    return serverPort;
   }
 
   /**
    * @return the Address of the Ftp Server if any (may be null)
    */
   public String getServerAddress() {
-    return SERVER_ADDRESS;
+    return serverAddress;
   }
 
   /**
@@ -347,7 +354,7 @@ public abstract class FtpConfiguration {
    * @return the Base Directory of this Ftp Server
    */
   public String getBaseDirectory() {
-    return BASE_DIRECTORY;
+    return baseDirectory;
   }
 
   /**
@@ -386,21 +393,21 @@ public abstract class FtpConfiguration {
    * @param port the new port
    */
   public void setServerPort(int port) {
-    SERVER_PORT = port;
+    serverPort = port;
   }
 
   /**
    * @param address the address to use while answering for address
    */
   public void setServerAddress(String address) {
-    SERVER_ADDRESS = address;
+    serverAddress = address;
   }
 
   /**
    * @param dir the new base directory
    */
   public void setBaseDirectory(String dir) {
-    BASE_DIRECTORY = dir;
+    baseDirectory = dir;
   }
 
   /**
@@ -423,7 +430,9 @@ public abstract class FtpConfiguration {
    * @throws FtpNoConnectionException
    */
   public void serverStartup() throws FtpNoConnectionException {
+    logger.debug("Server Startup");
     internalConfiguration.serverStartup();
+    logger.debug("Server Startup done");
   }
 
   /**
@@ -464,11 +473,11 @@ public abstract class FtpConfiguration {
     if (nb > 32) {
       nb = Runtime.getRuntime().availableProcessors() + 1;
     }
-    if (getSERVER_THREAD() < nb) {
-      setSERVER_THREAD(nb);
-      setCLIENT_THREAD(getSERVER_THREAD() * 10);
-    } else if (getCLIENT_THREAD() < nb) {
-      setCLIENT_THREAD(nb * 10);
+    if (getServerThread() < nb) {
+      setServerThread(nb);
+      setClientThread(getServerThread() * 10);
+    } else if (getClientThread() < nb) {
+      setClientThread(nb * 10);
     }
   }
 
@@ -567,7 +576,7 @@ public abstract class FtpConfiguration {
 
   public String getUniqueExtension() {
     // Can be overridden if necessary
-    return ".stou";
+    return STOU;
   }
 
   /**
@@ -599,57 +608,57 @@ public abstract class FtpConfiguration {
   /**
    * @return the sERVER_THREAD
    */
-  public int getSERVER_THREAD() {
-    return SERVER_THREAD;
+  public int getServerThread() {
+    return serverThread;
   }
 
   /**
-   * @param sERVER_THREAD the sERVER_THREAD to set
+   * @param serverThread0 the sERVER_THREAD to set
    */
-  public void setSERVER_THREAD(int sERVER_THREAD) {
-    SERVER_THREAD = sERVER_THREAD;
+  public void setServerThread(int serverThread0) {
+    serverThread = serverThread0;
   }
 
   /**
    * @return the cLIENT_THREAD
    */
-  public int getCLIENT_THREAD() {
-    return CLIENT_THREAD;
+  public int getClientThread() {
+    return clientThread;
   }
 
   /**
-   * @param cLIENT_THREAD the cLIENT_THREAD to set
+   * @param clientThread0 the cLIENT_THREAD to set
    */
-  public void setCLIENT_THREAD(int cLIENT_THREAD) {
-    CLIENT_THREAD = cLIENT_THREAD;
+  public void setClientThread(int clientThread0) {
+    clientThread = clientThread0;
   }
 
   /**
    * @return the tIMEOUTCON
    */
-  public long getTIMEOUTCON() {
-    return TIMEOUTCON;
+  public long getTimeoutCon() {
+    return timeoutCon;
   }
 
   /**
    * @param tIMEOUTCON the tIMEOUTCON to set
    */
-  public void setTIMEOUTCON(long tIMEOUTCON) {
-    TIMEOUTCON = tIMEOUTCON;
+  public void setTimeoutCon(long tIMEOUTCON) {
+    timeoutCon = tIMEOUTCON;
   }
 
   /**
    * @return the bLOCKSIZE
    */
-  public int getBLOCKSIZE() {
-    return BLOCKSIZE;
+  public int getBlocksize() {
+    return blocksize;
   }
 
   /**
    * @param bLOCKSIZE the bLOCKSIZE to set
    */
-  public void setBLOCKSIZE(int bLOCKSIZE) {
-    BLOCKSIZE = bLOCKSIZE;
+  public void setBlocksize(int bLOCKSIZE) {
+    blocksize = bLOCKSIZE;
   }
 
   /**
@@ -669,15 +678,15 @@ public abstract class FtpConfiguration {
   /**
    * @return the dATATIMEOUTCON
    */
-  public static long getDATATIMEOUTCON() {
-    return DATATIMEOUTCON;
+  public static long getDataTimeoutCon() {
+    return dataTimeoutCon;
   }
 
   /**
    * @param dATATIMEOUTCON the dATATIMEOUTCON to set
    */
-  public static void setDATATIMEOUTCON(long dATATIMEOUTCON) {
-    DATATIMEOUTCON = dATATIMEOUTCON;
+  public static void setDataTimeoutCon(long dATATIMEOUTCON) {
+    dataTimeoutCon = dATATIMEOUTCON;
   }
 
   /**

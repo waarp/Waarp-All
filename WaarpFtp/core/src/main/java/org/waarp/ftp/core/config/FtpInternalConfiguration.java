@@ -55,11 +55,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal configuration of the FTP server, related to Netty
- *
- *
  */
 public class FtpInternalConfiguration {
   // Static values
@@ -87,7 +86,7 @@ public class FtpInternalConfiguration {
   /**
    * Hack to say Windows or Unix (USR1 not OK on Windows)
    */
-  static Boolean ISUNIX;
+  static Boolean isUnix;
 
   /**
    * Default size for buffers (NIO)
@@ -179,7 +178,7 @@ public class FtpInternalConfiguration {
   private ServerBootstrap passiveSslBootstrap;
 
   /**
-   *  org.waarp.ftp.core.config BindAddress
+   * org.waarp.ftp.core.config BindAddress
    */
   public static class BindAddress {
     /**
@@ -190,7 +189,7 @@ public class FtpInternalConfiguration {
     /**
      * Number of binded Data connections
      */
-    public volatile int nbBind;
+    public final AtomicInteger nbBind = new AtomicInteger();
 
     /**
      * Constructor
@@ -199,7 +198,7 @@ public class FtpInternalConfiguration {
      */
     public BindAddress(Channel channel) {
       parent = channel;
-      nbBind = 0;
+      nbBind.set(0);
     }
   }
 
@@ -222,18 +221,18 @@ public class FtpInternalConfiguration {
    */
   public FtpInternalConfiguration(FtpConfiguration configuration) {
     this.configuration = configuration;
-    ISUNIX = !DetectionUtils.isWindows();
+    isUnix = !DetectionUtils.isWindows();
     configuration.getShutdownConfiguration().timeout =
-        configuration.getTIMEOUTCON();
+        configuration.getTimeoutCon();
     new FtpShutdownHook(configuration.getShutdownConfiguration(),
                         configuration);
-    execCommandEvent = new NioEventLoopGroup(configuration.getCLIENT_THREAD(),
+    execCommandEvent = new NioEventLoopGroup(configuration.getClientThread(),
                                              new WaarpThreadFactory("Command"));
-    execDataEvent = new NioEventLoopGroup(configuration.getCLIENT_THREAD(),
+    execDataEvent = new NioEventLoopGroup(configuration.getClientThread(),
                                           new WaarpThreadFactory("Data"));
-    execWorker = new NioEventLoopGroup(configuration.getCLIENT_THREAD(),
+    execWorker = new NioEventLoopGroup(configuration.getClientThread(),
                                        new WaarpThreadFactory("CommandWorker"));
-    execDataWorker = new NioEventLoopGroup(configuration.getCLIENT_THREAD() * 2,
+    execDataWorker = new NioEventLoopGroup(configuration.getClientThread() * 2,
                                            new WaarpThreadFactory(
                                                "DataWorker"));
   }
@@ -244,8 +243,7 @@ public class FtpInternalConfiguration {
    * @throws FtpNoConnectionException
    */
   public void serverStartup() throws FtpNoConnectionException {
-    WaarpLoggerFactory
-        .setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
+    logger.debug("Start groups");
     // Command
     commandChannelGroup =
         new DefaultChannelGroup(configuration.fromClass.getName(),
@@ -255,11 +253,11 @@ public class FtpInternalConfiguration {
         new DefaultChannelGroup(configuration.fromClass.getName() + ".data",
                                 execWorker.next());
 
+    logger.debug("Start data connections");
     // Passive Data Connections
     passiveBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(passiveBootstrap,
-                                      execDataWorker,
-                                      (int) configuration.getTIMEOUTCON());
+    WaarpNettyUtil.setServerBootstrap(passiveBootstrap, execDataWorker,
+                                      (int) configuration.getTimeoutCon());
     if (usingNativeSsl) {
       passiveBootstrap.childHandler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
@@ -271,10 +269,8 @@ public class FtpInternalConfiguration {
     }
     if (acceptAuthProt) {
       passiveSslBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(passiveSslBootstrap,
-                              execDataWorker,
-                              (int) configuration.getTIMEOUTCON());
+      WaarpNettyUtil.setServerBootstrap(passiveSslBootstrap, execDataWorker,
+                                        (int) configuration.getTimeoutCon());
       passiveSslBootstrap.childHandler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, false));
@@ -285,7 +281,7 @@ public class FtpInternalConfiguration {
     // Active Data Connections
     activeBootstrap = new Bootstrap();
     WaarpNettyUtil.setBootstrap(activeBootstrap, execDataWorker,
-                                (int) configuration.getTIMEOUTCON());
+                                (int) configuration.getTimeoutCon());
     if (usingNativeSsl) {
       activeBootstrap.handler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
@@ -298,7 +294,7 @@ public class FtpInternalConfiguration {
     if (acceptAuthProt) {
       activeSslBootstrap = new Bootstrap();
       WaarpNettyUtil.setBootstrap(activeSslBootstrap, execDataWorker,
-                                  (int) configuration.getTIMEOUTCON());
+                                  (int) configuration.getTimeoutCon());
       activeSslBootstrap.handler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, true));
@@ -306,10 +302,11 @@ public class FtpInternalConfiguration {
       activeSslBootstrap = activeBootstrap;
     }
 
+    logger.debug("Start command connections {}", configuration.getServerPort());
     // Main Command server
     serverBootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(serverBootstrap, execWorker,
-                                      (int) configuration.getTIMEOUTCON());
+                                      (int) configuration.getTimeoutCon());
     if (usingNativeSsl) {
       serverBootstrap.childHandler(
           new FtpsInitializer(configuration.businessHandler, configuration));
@@ -317,19 +314,24 @@ public class FtpInternalConfiguration {
       serverBootstrap.childHandler(
           new FtpInitializer(configuration.businessHandler, configuration));
     }
-
+    InetSocketAddress socketAddress =
+        new InetSocketAddress(configuration.getServerPort());
+    ChannelFuture future = serverBootstrap.bind(socketAddress);
     try {
-      FtpChannelUtils.addCommandChannel(serverBootstrap.bind(
-          new InetSocketAddress(configuration.getServerPort())).sync()
-                                                       .channel(),
-                                        configuration);
-    } catch (final InterruptedException e) {
+      future = future.sync();
+    } catch (InterruptedException e) {
+      logger.error("Cannot start command conections", e);
       throw new FtpNoConnectionException("Can't initiate the FTP server", e);
     }
+    if (!future.isSuccess()) {
+      logger.error("Cannot start command conections");
+      throw new FtpNoConnectionException("Can't initiate the FTP server");
+    }
+    FtpChannelUtils.addCommandChannel(future.channel(), configuration);
 
     // Init Shutdown Hook handler
     configuration.getShutdownConfiguration().timeout =
-        configuration.getTIMEOUTCON();
+        configuration.getTimeoutCon();
     WaarpShutdownHook.addShutdownHook();
     // Factory for TrafficShapingHandler
     globalTrafficShapingHandler =
@@ -423,15 +425,15 @@ public class FtpInternalConfiguration {
       BindAddress bindAddress = hashBindPassiveDataConn.get(address);
       if (bindAddress == null) {
         logger.debug("Bind really to {}", address);
-        Channel parentChannel = null;
+        Channel parentChannel;
         try {
-          ChannelFuture future = null;
+          ChannelFuture future;
           if (ssl) {
             future = passiveSslBootstrap.bind(address);
           } else {
             future = passiveBootstrap.bind(address);
           }
-          if (future.await(configuration.getTIMEOUTCON())) {
+          if (future.await(configuration.getTimeoutCon())) {
             parentChannel = future.sync().channel();
           } else {
             logger.warn("Cannot open passive connection due to Timeout");
@@ -449,7 +451,7 @@ public class FtpInternalConfiguration {
         FtpChannelUtils.addDataChannel(parentChannel, configuration);
         hashBindPassiveDataConn.put(address, bindAddress);
       }
-      bindAddress.nbBind++;
+      bindAddress.nbBind.getAndIncrement();
       logger.debug("Bind number to {} is {}", address, bindAddress.nbBind);
     } finally {
       configuration.bindUnlock();
@@ -472,10 +474,10 @@ public class FtpInternalConfiguration {
     try {
       final BindAddress bindAddress = hashBindPassiveDataConn.get(address);
       if (bindAddress != null) {
-        bindAddress.nbBind--;
+        bindAddress.nbBind.getAndDecrement();
         logger
             .debug("Bind number to {} left is {}", address, bindAddress.nbBind);
-        if (bindAddress.nbBind == 0) {
+        if (bindAddress.nbBind.get() == 0) {
           WaarpSslUtility.closingSslChannel(bindAddress.parent);
           hashBindPassiveDataConn.remove(address);
         }
@@ -567,7 +569,9 @@ public class FtpInternalConfiguration {
     WaarpSslUtility.forceCloseAllSslChannels();
     execWorker.shutdownGracefully();
     execDataWorker.shutdownGracefully();
-    globalTrafficShapingHandler.release();
+    if (globalTrafficShapingHandler != null) {
+      globalTrafficShapingHandler.release();
+    }
     executorService.shutdown();
   }
 

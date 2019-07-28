@@ -24,8 +24,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 
 /**
  * Empty Business factory
- *
- *
  */
 public class R66DefaultBusinessFactory implements R66BusinessFactoryInterface {
   /**
@@ -42,6 +40,7 @@ public class R66DefaultBusinessFactory implements R66BusinessFactoryInterface {
 
   @Override
   public void releaseResources() {
+    // nothing
   }
 
 }

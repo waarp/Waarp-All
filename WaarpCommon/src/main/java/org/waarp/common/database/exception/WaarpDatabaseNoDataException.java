@@ -21,8 +21,6 @@ package org.waarp.common.database.exception;
 
 /**
  * Database no data exception
- *
- *
  */
 public class WaarpDatabaseNoDataException extends WaarpDatabaseException {
 

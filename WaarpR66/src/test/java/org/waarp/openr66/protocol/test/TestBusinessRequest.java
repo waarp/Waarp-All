@@ -38,8 +38,6 @@ import java.util.concurrent.Executors;
 
 /**
  * Test class for internal Business test
- *
- *
  */
 public class TestBusinessRequest extends AbstractBusinessRequest {
   /**
@@ -72,7 +70,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     Configuration.configuration.pipelineInit();
 
     final NetworkTransaction networkTransaction = new NetworkTransaction();
-    final DbHostAuth host = Configuration.configuration.getHOST_AUTH();
+    final DbHostAuth host = Configuration.configuration.getHostAuth();
     runTest(networkTransaction, host, 1);
     networkTransaction.closeAll();
   }
@@ -83,12 +81,11 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
       logger = WaarpLoggerFactory.getLogger(TestBusinessRequest.class);
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
-    final int nb = nbToDo;
 
-    final R66Future[] arrayFuture = new R66Future[nb];
+    final R66Future[] arrayFuture = new R66Future[nbToDo];
     logger.info("Start Test of Transaction");
     long time1 = System.currentTimeMillis();
-    for (int i = 0; i < nb; i++) {
+    for (int i = 0; i < nbToDo; i++) {
       arrayFuture[i] = new R66Future(true);
       final BusinessRequestPacket packet = new BusinessRequestPacket(
           TestExecJavaTask.class.getName() +
@@ -100,7 +97,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     }
     int success = 0;
     int error = 0;
-    for (int i = 0; i < nb; i++) {
+    for (int i = 0; i < nbToDo; i++) {
       arrayFuture[i].awaitOrInterruptible();
       if (arrayFuture[i].isSuccess()) {
         success++;
@@ -156,13 +153,13 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     time1 = System.currentTimeMillis();
     final String argsAdd =
         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-    String value = " business 0 ";
-    int lastnb = nb;
-    for (int i = 0; i < nb; i++) {
+    StringBuilder value = new StringBuilder(" business 0 ");
+    int lastnb = nbToDo;
+    for (int i = 0; i < nbToDo; i++) {
       arrayFuture[i] = new R66Future(true);
       try {
-        value += argsAdd + argsAdd + argsAdd + argsAdd + argsAdd + argsAdd +
-                 argsAdd + argsAdd + argsAdd + argsAdd;
+        value.append(argsAdd + argsAdd + argsAdd + argsAdd + argsAdd + argsAdd +
+                     argsAdd + argsAdd + argsAdd + argsAdd);
       } catch (final OutOfMemoryError e) {
         logger.warn("Send size: " + value.length());
         lastnb = i;
@@ -190,7 +187,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     logger.warn(
         "Simple TestExecJavaTask with increasing argument size Success: " +
         success2 + " Error: " + error2 + " NB/s: " +
-        success2 * nb * 1000 / (time2 - time1));
+        success2 * nbToDo * 1000 / (time2 - time1));
     executorService.shutdown();
     return error + error2;
   }

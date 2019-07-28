@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 530 Not logged in.
- *
- *
  */
 public class Reply530Exception extends CommandAbstractException {
 

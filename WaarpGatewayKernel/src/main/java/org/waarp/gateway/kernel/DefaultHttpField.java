@@ -69,7 +69,7 @@ public class DefaultHttpField extends AbstractHttpField {
         for (final String string : values) {
           builder.append(inputtype).append(getFieldname());
           if (fieldvalue != null && fieldvalue.length() > 0) {
-            builder.append(" value=\"").append(string).append("\"");
+            builder.append(" value=\"").append(string).append('"');
             if (finalValues != null) {
               for (final String value : finalValues) {
                 if (value.equals(string)) {
@@ -111,7 +111,7 @@ public class DefaultHttpField extends AbstractHttpField {
         }
         builder.append(getFieldname());
         if (fieldvalue != null && fieldvalue.length() > 0) {
-          builder.append(" value=\"").append(fieldvalue).append("\"");
+          builder.append(" value=\"").append(fieldvalue).append('"');
         }
         builder.append('>');
         break;
@@ -179,13 +179,11 @@ public class DefaultHttpField extends AbstractHttpField {
 
   @Override
   public DefaultHttpField clone() {
-    final DefaultHttpField newField =
-        new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),
-                             fieldvalue, isFieldvisibility(),
-                             isFieldmandatory(), isFieldcookieset(),
-                             isFieldtovalidate(), getFieldposition(),
-                             getFieldrank());
-    return newField;
+    return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),
+                                fieldvalue, isFieldvisibility(),
+                                isFieldmandatory(), isFieldcookieset(),
+                                isFieldtovalidate(), getFieldposition(),
+                                getFieldrank());
   }
 
   @Override
@@ -195,7 +193,7 @@ public class DefaultHttpField extends AbstractHttpField {
       case BUSINESS_INPUT_CHECKBOX:
         if (fieldvalue != null) {
           if (fieldvalue.length() > 0) {
-            fieldvalue += "," + value;
+            fieldvalue += ',' + value;
           } else {
             fieldvalue = value;
           }

@@ -23,8 +23,6 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Business Request JSON packet
- *
- *
  */
 public class BusinessRequestJsonPacket extends JsonPacket {
 
@@ -121,6 +119,6 @@ public class BusinessRequestJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.BUSINESSREQUESTPACKET);
+    setRequestUserPacket(LocalPacketFactory.BUSINESSREQUESTPACKET);
   }
 }

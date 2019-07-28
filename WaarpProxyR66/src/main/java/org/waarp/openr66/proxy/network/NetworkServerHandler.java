@@ -25,6 +25,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
@@ -45,15 +46,15 @@ import org.waarp.openr66.proxy.configuration.Configuration;
 
 import java.net.BindException;
 import java.net.SocketAddress;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
 /**
  * Network Server Handler (Requester side)
- *
- *
  */
 public class NetworkServerHandler
     extends SimpleChannelInboundHandler<NetworkPacket> {
-  // extends SimpleChannelHandler {
   /**
    * Internal Logger
    */
@@ -79,15 +80,15 @@ public class NetworkServerHandler
   /**
    * Does this Handler is for SSL
    */
-  protected volatile boolean isSSL = false;
+  protected volatile boolean isSSL;
   /**
    * Is this Handler a server side
    */
-  protected boolean isServer = false;
+  protected final boolean isServer;
   /**
    * To handle the keep alive
    */
-  private volatile int keepAlivedSent = 0;
+  private final AtomicInteger keepAlivedSent = new AtomicInteger();
   /**
    * Future to wait for Client to be setup
    */
@@ -109,9 +110,9 @@ public class NetworkServerHandler
       proxyChannel = bridge.getSource().getNetworkChannel();
     }
     clientFuture.setSuccess();
-    logger.debug("setBridge: " + isServer + " " + (bridge != null?
-        bridge.getProxyEntry().toString() + " proxyChannelId: " +
-        proxyChannel.id() : "nobridge"));
+    logger.debug("setBridge: " + isServer + ' ' + (bridge != null?
+        bridge.getProxyEntry() + " proxyChannelId: " + proxyChannel.id() :
+        "nobridge"));
   }
 
   /**
@@ -142,26 +143,24 @@ public class NetworkServerHandler
         // error
         // XXX FIXME need to send error !
         WaarpSslUtility.closingSslChannel(networkChannel);
-        logger.error(
-            "No proxy configuration found for: " + localAddress.toString());
+        logger.error("No proxy configuration found for: " + localAddress);
         return;
       }
       bridge = new ProxyBridge(entry, this);
       bridge.initializeProxy();
       if (!bridge.waitForRemoteConnection()) {
-        logger.error("No connection for proxy: " + localAddress.toString());
+        logger.error("No connection for proxy: " + localAddress);
         WaarpSslUtility.closingSslChannel(networkChannel);
         return;
       }
       proxyChannel = bridge.getProxified().networkChannel;
-      logger.warn("Connected: " + isServer + " " + (bridge != null?
-          bridge.getProxyEntry().toString() + " proxyChannelId: " +
-          proxyChannel.id() : "nobridge"));
+      logger.warn("Connected: " + isServer + ' ' + (bridge != null?
+          bridge.getProxyEntry() + " proxyChannelId: " + proxyChannel.id() :
+          "nobridge"));
     } else {
-      clientFuture.awaitOrInterruptible(
-          Configuration.configuration.getTIMEOUTCON());
+      clientFuture.awaitOrInterruptible(configuration.getTimeoutCon());
       if (bridge == null || !clientFuture.isDone()) {
-        logger.error("No connection for proxy: " + localAddress.toString());
+        logger.error("No connection for proxy: " + localAddress);
         WaarpSslUtility.closingSslChannel(networkChannel);
         return;
       }
@@ -173,25 +172,24 @@ public class NetworkServerHandler
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
       throws Exception {
-    if (Configuration.configuration.isShutdown()) {
+    if (configuration.isShutdown()) {
       return;
     }
     if (evt instanceof IdleStateEvent) {
-      if (keepAlivedSent > 0) {
-        if (keepAlivedSent < 5) {
+      if (keepAlivedSent.get() > 0) {
+        if (keepAlivedSent.get() < 5) {
           // ignore this time
-          keepAlivedSent++;
+          keepAlivedSent.getAndIncrement();
           return;
         }
         logger.error("Not getting KAlive: closing channel");
-        if (Configuration.configuration.getR66Mib() != null) {
-          Configuration.configuration.getR66Mib()
-                                     .notifyWarning("KeepAlive get no answer",
-                                                    "Closing network connection");
+        if (configuration.getR66Mib() != null) {
+          configuration.getR66Mib().notifyWarning("KeepAlive get no answer",
+                                                  "Closing network connection");
         }
         ChannelCloseTimer.closeFutureChannel(ctx.channel());
       } else {
-        keepAlivedSent = 1;
+        keepAlivedSent.set(1);
         final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
         final NetworkPacket response =
             new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,
@@ -203,37 +201,33 @@ public class NetworkServerHandler
   }
 
   public void setKeepAlivedSent() {
-    keepAlivedSent = 0;
+    keepAlivedSent.set(0);
   }
 
   @Override
   public void channelRead0(ChannelHandlerContext ctx, NetworkPacket msg)
       throws Exception {
-    final NetworkPacket packet = msg;
-    if (packet.getCode() == LocalPacketFactory.NOOPPACKET) {
+    if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {
       // Will forward
-      /*
-       * packet.clear(); return;
-       */
-    } else if (packet.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
-      logger.debug("NetworkRecv: {}", packet);
+    } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
+      logger.debug("NetworkRecv: {}", msg);
       // Special code to STOP here
-      if (packet.getLocalId() == ChannelUtils.NOCHANNEL) {
+      if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
         // No way to know what is wrong: close all connections with
         // remote host
         logger.error(
             "Will close NETWORK channel, Cannot continue connection with remote Host: " +
-            packet.toString() + " : " + ctx.channel().remoteAddress());
+            msg + " : " + ctx.channel().remoteAddress());
         WaarpSslUtility.closingSslChannel(ctx.channel());
-        packet.clear();
+        msg.clear();
         return;
       }
-    } else if (packet.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
-      keepAlivedSent = 0;
+    } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
+      keepAlivedSent.set(0);
       try {
         final KeepAlivePacket keepAlivePacket =
             (KeepAlivePacket) LocalPacketCodec
-                .decodeNetworkPacket(packet.getBuffer());
+                .decodeNetworkPacket(msg.getBuffer());
         if (keepAlivePacket.isToValidate()) {
           keepAlivePacket.validate();
           final NetworkPacket response =
@@ -244,16 +238,17 @@ public class NetworkServerHandler
         } else {
           logger.info("Get KAlive");
         }
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
-      packet.clear();
+      msg.clear();
       return;
     }
     // forward message
     if (proxyChannel != null) {
-      proxyChannel.writeAndFlush(packet);
+      proxyChannel.writeAndFlush(msg);
     } else {
-      packet.clear();
+      msg.clear();
     }
   }
 
@@ -304,7 +299,6 @@ public class NetworkServerHandler
       ChannelCloseTimer.closeFutureChannel(channel);
     } else {
       // Nothing to do
-      return;
     }
   }
 
@@ -321,13 +315,15 @@ public class NetworkServerHandler
     NetworkPacket networkPacket = null;
     try {
       networkPacket = new NetworkPacket(localId, remoteId, error, null);
-    } catch (final OpenR66ProtocolPacketException e) {
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // nothing
     }
     try {
       if (channel.isActive()) {
         channel.writeAndFlush(networkPacket).await(Configuration.WAITFORNETOP);
       }
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }
 

@@ -23,18 +23,16 @@ import org.snmp4j.agent.MOAccess;
 
 /**
  * Entry for MIB definition
- *
- *
  */
 public class WaarpEntry {
   /**
    * ConstantsType as defined in SNMP4J
    */
-  int smiConstantsType;
+  final int smiConstantsType;
   /**
    * Access as defined in SNMP4J
    */
-  MOAccess access;
+  final MOAccess access;
 
   /**
    * @param smiConstantsType as defined in SNMP4J

@@ -30,9 +30,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
-import org.waarp.common.xml.XmlType;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
 import org.waarp.openr66.database.data.DbHostAuth;
@@ -44,100 +42,22 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.waarp.openr66.configuration.FileBasedElements.*;
+
 /**
  * Authentication from File support
- *
- *
  */
 public class AuthenticationFileBasedConfiguration {
+  private static final String CANNOT_READ_KEY_FOR_HOST_ID =
+      "Cannot read key for hostId ";
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AuthenticationFileBasedConfiguration.class);
 
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ROOT = "authent";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ENTRY = "entry";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_BASED =
-      "/" + XML_AUTHENTIFICATION_ROOT + "/" + XML_AUTHENTIFICATION_ENTRY;
-
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_HOSTID = "hostid";
-
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_KEYFILE = "keyfile";
-
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_KEY = "key";
-
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ADMIN = "admin";
-
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ADDRESS = "address";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_PORT = "port";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ISSSL = "isssl";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ISCLIENT = "isclient";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ISACTIVE = "isactive";
-  /**
-   * Authentication Fields
-   */
-  public static final String XML_AUTHENTIFICATION_ISPROXIFIED = "isproxified";
-
-  /**
-   * Structure of the Configuration file
-   */
-  private static final XmlDecl[] configAuthenticationDecls = {
-      // identity
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_HOSTID),
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_KEYFILE),
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_KEY),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ADMIN),
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_ADDRESS),
-      new XmlDecl(XmlType.INTEGER, XML_AUTHENTIFICATION_PORT),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISSSL),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISCLIENT),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISACTIVE),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISPROXIFIED)
-  };
-  /**
-   * Global Structure for Server Configuration
-   */
-  private static final XmlDecl[] authentElements = {
-      new XmlDecl(XML_AUTHENTIFICATION_ENTRY, XmlType.XVAL,
-                  XML_AUTHENTIFICATION_BASED, configAuthenticationDecls, true)
-  };
+  private AuthenticationFileBasedConfiguration() {
+  }
 
   /**
    * Load Authentication from File
@@ -149,7 +69,7 @@ public class AuthenticationFileBasedConfiguration {
   @SuppressWarnings("unchecked")
   public static boolean loadAuthentication(Configuration config,
                                            String filename) {
-    Document document = null;
+    Document document;
     try {
       document = new SAXReader().read(filename);
     } catch (final DocumentException e) {
@@ -172,14 +92,14 @@ public class AuthenticationFileBasedConfiguration {
       final XmlValue[] subvalues = iterator.next();
       final XmlHash subHash = new XmlHash(subvalues);
       value = subHash.get(XML_AUTHENTIFICATION_HOSTID);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         continue;
       }
       final String refHostId = value.getString();
       value = subHash.get(XML_AUTHENTIFICATION_KEYFILE);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         value = subHash.get(XML_AUTHENTIFICATION_KEY);
-        if (value == null || (value.isEmpty())) {
+        if (value == null || value.isEmpty()) {
           // Allow empty key
           byteKeys = null;
         } else {
@@ -189,8 +109,8 @@ public class AuthenticationFileBasedConfiguration {
             try {
               byteKeys = config.getCryptoKey().decryptHexInBytes(skey);
             } catch (final Exception e) {
-              logger.error(
-                  "Cannot read key for hostId " + refHostId + ":" + skey);
+              logger
+                  .error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId + ':' + skey);
               continue;
             }
           } else {
@@ -202,51 +122,51 @@ public class AuthenticationFileBasedConfiguration {
         // load key from file
         key = new File(skey);
         if (!key.canRead()) {
-          logger.error("Cannot read key for hostId " + refHostId + ":" + skey);
+          logger.error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId + ':' + skey);
           continue;
         }
         try {
           byteKeys = config.getCryptoKey().decryptHexFile(key);
         } catch (final Exception e2) {
-          logger.error("Cannot read key for hostId " + refHostId, e2);
+          logger.error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId, e2);
           continue;
         }
       }
       boolean isAdmin = false;
       value = subHash.get(XML_AUTHENTIFICATION_ADMIN);
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         isAdmin = value.getBoolean();
       }
       value = subHash.get(XML_AUTHENTIFICATION_ADDRESS);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         continue;
       }
       final String address = value.getString();
       int port;
       value = subHash.get(XML_AUTHENTIFICATION_PORT);
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         port = value.getInteger();
       } else {
         continue;
       }
       boolean isSsl = false;
       value = subHash.get(XML_AUTHENTIFICATION_ISSSL);
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         isSsl = value.getBoolean();
       }
       boolean isClient = false;
       value = subHash.get(XML_AUTHENTIFICATION_ISCLIENT);
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         isClient = value.getBoolean();
       }
       boolean isActive = true;
       value = subHash.get(XML_AUTHENTIFICATION_ISACTIVE);
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         isActive = value.getBoolean();
       }
       boolean isProxified = false;
       value = subHash.get(XML_AUTHENTIFICATION_ISPROXIFIED);
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         isProxified = value.getBoolean();
       }
       final DbHostAuth auth =
@@ -266,9 +186,7 @@ public class AuthenticationFileBasedConfiguration {
       }
       logger.debug("Add {} {}", refHostId, auth);
     }
-    document = null;
     hash.clear();
-    values = null;
     return true;
   }
 

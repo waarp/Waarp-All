@@ -47,8 +47,10 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.ErrorCode;
@@ -59,7 +61,6 @@ import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.pojo.Transfer;
@@ -77,30 +78,35 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Handler for HTTP information support
- *
- *
  */
 public class HttpFormattedHandler
     extends SimpleChannelInboundHandler<FullHttpRequest> {
+  private static final String OPEN_R66_WEB_ERROR = "OpenR66 Web Error {}";
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpFormattedHandler.class);
 
-  private static enum REQUEST {
-    index("index.html"),
-    active("monitoring_header.html", "monitoring_end.html"),
-    error("monitoring_header.html", "monitoring_end.html"),
-    done("monitoring_header.html", "monitoring_end.html"),
-    all("monitoring_header.html", "monitoring_end.html"),
-    status("monitoring_header.html", "monitoring_end.html"), statusxml(""),
+  private static final String MONITORING_HEADER_HTML = "monitoring_header.html";
+  private static final String MONITORING_END_HTML = "monitoring_end.html";
+
+  private enum REQUEST {
+    index("index.html"), active(MONITORING_HEADER_HTML, MONITORING_END_HTML),
+    error(MONITORING_HEADER_HTML, MONITORING_END_HTML),
+    done(MONITORING_HEADER_HTML, MONITORING_END_HTML),
+    all(MONITORING_HEADER_HTML, MONITORING_END_HTML),
+    status(MONITORING_HEADER_HTML, MONITORING_END_HTML), statusxml(""),
     statusjson("");
 
+    private static final String MONITOR = "monitor/";
     private final String header;
     private final String end;
 
@@ -109,7 +115,7 @@ public class HttpFormattedHandler
      *
      * @param uniquefile
      */
-    private REQUEST(String uniquefile) {
+    REQUEST(String uniquefile) {
       header = uniquefile;
       end = uniquefile;
     }
@@ -118,7 +124,7 @@ public class HttpFormattedHandler
      * @param header
      * @param end
      */
-    private REQUEST(String header, String end) {
+    REQUEST(String header, String end) {
       this.header = header;
       this.end = end;
     }
@@ -130,23 +136,23 @@ public class HttpFormattedHandler
      */
     public String readFileUnique(HttpFormattedHandler handler) {
       return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + "monitor/" + header);
+          Configuration.configuration.getHttpBasePath() + MONITOR + header);
     }
 
     public String readHeader(HttpFormattedHandler handler) {
       return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + "monitor/" + header);
+          Configuration.configuration.getHttpBasePath() + MONITOR + header);
     }
 
     public String readEnd() {
       return WaarpStringUtils.readFile(
-          Configuration.configuration.getHttpBasePath() + "monitor/" + end);
+          Configuration.configuration.getHttpBasePath() + MONITOR + end);
     }
   }
 
-  protected static enum REPLACEMENT {
+  protected enum REPLACEMENT {
     XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX,
-    XXXLANGXXX;
+    XXXLANGXXX
   }
 
   public static final int LIMITROW = 60; // better if it can be divided by 4
@@ -164,22 +170,24 @@ public class HttpFormattedHandler
 
   protected String uriRequest;
 
-  private static final String sINFO = "INFO", sNB = "NB", sDETAIL = "DETAIL";
+  private static final String sINFO = "INFO";
+  private static final String sNB = "NB";
+  private static final String sDETAIL = "DETAIL";
 
   /**
    * The Database connection attached to this NetworkChannelReference shared
    * among all associated LocalChannels
    */
-  private DbSession dbSession = DbConstant.admin.getSession();
+  private DbSession dbSession = admin.getSession();
 
   /**
    * Does this dbSession is private and so should be closed
    */
   private final boolean isPrivateDbSession = false;
-  protected boolean isCurrentRequestXml = false;
-  protected boolean isCurrentRequestJson = false;
+  protected boolean isCurrentRequestXml;
+  protected boolean isCurrentRequestJson;
 
-  protected Map<String, List<String>> params = null;
+  protected Map<String, List<String>> params;
 
   private String readFileHeader(String filename) {
     String value;
@@ -195,7 +203,7 @@ public class HttpFormattedHandler
     final StringBuilder builder = new StringBuilder(value);
 
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),
-                             (new Date()).toString());
+                             new Date().toString());
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),
                              Integer.toString(Configuration.configuration
                                                   .getLocalTransaction()
@@ -203,22 +211,22 @@ public class HttpFormattedHandler
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),
                              Integer.toString(DbAdmin.getNbConnection()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-                             Configuration.configuration.getHOST_ID());
+                             Configuration.configuration.getHostId());
     final TrafficCounter trafficCounter =
         Configuration.configuration.getGlobalTrafficShapingHandler()
                                    .trafficCounter();
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
                              "IN:" +
-                             (trafficCounter.lastReadThroughput() / 131072) +
+                             trafficCounter.lastReadThroughput() / 131072 +
                              "Mbits&nbsp;&nbsp;OUT:" +
-                             (trafficCounter.lastWriteThroughput() / 131072) +
+                             trafficCounter.lastWriteThroughput() / 131072 +
                              "Mbits");
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
     return builder.toString();
   }
 
   protected String getTrimValue(String varname) {
-    String value = null;
+    String value;
     try {
       value = params.get(varname).get(0).trim();
     } catch (final NullPointerException e) {
@@ -236,158 +244,166 @@ public class HttpFormattedHandler
     isCurrentRequestXml = false;
     isCurrentRequestJson = false;
     status = HttpResponseStatus.OK;
-    final FullHttpRequest request = this.request = msg;
+    final FullHttpRequest httpRequest = this.request = msg;
     QueryStringDecoder queryStringDecoder =
-        new QueryStringDecoder(request.uri());
+        new QueryStringDecoder(httpRequest.uri());
     uriRequest = queryStringDecoder.path();
     logger.debug("Msg: " + uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-      HttpWriteCacheEnable.writeFile(request, ctx, Configuration.configuration
-                                                       .getHttpBasePath() +
-                                                   uriRequest,
+      HttpWriteCacheEnable.writeFile(httpRequest, ctx,
+                                     Configuration.configuration
+                                         .getHttpBasePath() + uriRequest,
                                      "XYZR66NOSESSION");
       return;
     }
-    /*
-     * try { if (DbConstant.admin.isActive) { this.dbSession = new DbSession(DbConstant.admin, false);
-     * DbAdmin.nbHttpSession++; this.isPrivateDbSession = true; } } catch (WaarpDatabaseNoConnectionException e1)
-     * { // Cannot connect so use default connection logger.warn("Use default database connection");
-     * this.dbSession = DbConstant.admin.session; }
-     */
-    try {
-      char cval = 'z';
-      long nb = LIMITROW;
-      // check the URI
-      if (uriRequest.equalsIgnoreCase("/active")) {
-        cval = '0';
-      } else if (uriRequest.equalsIgnoreCase("/error")) {
-        cval = '1';
-      } else if (uriRequest.equalsIgnoreCase("/done")) {
-        cval = '2';
-      } else if (uriRequest.equalsIgnoreCase("/all")) {
-        cval = '3';
-      } else if (uriRequest.equalsIgnoreCase("/status")) {
-        cval = '4';
-      } else if (uriRequest.equalsIgnoreCase("/statusxml")) {
-        cval = '5';
-        nb = 0; // since it could be the default or setup by request
-        isCurrentRequestXml = true;
-      } else if (uriRequest.toLowerCase().startsWith("/spooled")) {
-        cval = '6';
-      } else if (uriRequest.equalsIgnoreCase("/statusjson")) {
-        cval = '7';
-        nb = 0; // since it could be the default or setup by request
-        isCurrentRequestJson = true;
-      }
-      // Get the params according to get or post
-      if (request.method() == HttpMethod.GET) {
-        params = queryStringDecoder.parameters();
-      } else if (request.method() == HttpMethod.POST) {
-        final ByteBuf content = request.content();
-        if (content.isReadable()) {
-          final String param = content.toString(WaarpStringUtils.UTF8);
-          queryStringDecoder = new QueryStringDecoder("/?" + param);
-        } else {
-          responseContent.append(REQUEST.index.readFileUnique(this));
-          writeResponse(ctx);
-          return;
-        }
-        params = queryStringDecoder.parameters();
-      }
-      boolean getMenu = (cval == 'z');
-      boolean extraBoolean = false;
-      if (!params.isEmpty()) {
-        // if not uri, from get or post
-        if (getMenu) {
-          final String info = getTrimValue(sINFO);
-          if (info != null) {
-            getMenu = false;
-            cval = info.charAt(0);
-          } else {
-            getMenu = true;
-          }
-        }
-        // search the nb param
-        final String snb = getTrimValue(sNB);
-        if (snb != null) {
-          try {
-            nb = Long.parseLong(snb);
-          } catch (final Exception e1) {
-          }
-        }
-        // search the detail param
-        final String sdetail = getTrimValue(sDETAIL);
-        if (sdetail != null) {
-          try {
-            if (Integer.parseInt(sdetail) > 0) {
-              extraBoolean = true;
-            }
-          } catch (final Exception e1) {
-          }
-        }
-        final String langarg = getTrimValue("setLng");
-        if (langarg != null && !langarg.isEmpty()) {
-          lang = langarg;
-        }
-      }
-      if (getMenu) {
-        responseContent.append(REQUEST.index.readFileUnique(this));
+
+    char cval = 'z';
+    long nb = LIMITROW;
+    // check the URI
+    if ("/active".equalsIgnoreCase(uriRequest)) {
+      cval = '0';
+    } else if ("/error".equalsIgnoreCase(uriRequest)) {
+      cval = '1';
+    } else if ("/done".equalsIgnoreCase(uriRequest)) {
+      cval = '2';
+    } else if ("/all".equalsIgnoreCase(uriRequest)) {
+      cval = '3';
+    } else if ("/status".equalsIgnoreCase(uriRequest)) {
+      cval = '4';
+    } else if ("/statusxml".equalsIgnoreCase(uriRequest)) {
+      cval = '5';
+      nb = 0; // since it could be the default or setup by request
+      isCurrentRequestXml = true;
+    } else if (uriRequest.toLowerCase().startsWith("/spooled")) {
+      cval = '6';
+    } else if ("/statusjson".equalsIgnoreCase(uriRequest)) {
+      cval = '7';
+      nb = 0; // since it could be the default or setup by request
+      isCurrentRequestJson = true;
+    }
+    // Get the params according to get or post
+    if (httpRequest.method() == HttpMethod.GET) {
+      params = queryStringDecoder.parameters();
+    } else if (httpRequest.method() == HttpMethod.POST) {
+      final ByteBuf content = httpRequest.content();
+      if (content.isReadable()) {
+        final String param = content.toString(WaarpStringUtils.UTF8);
+        queryStringDecoder = new QueryStringDecoder("/?" + param);
       } else {
-        // Use value 0=Active 1=Error 2=Done 3=All
-        switch (cval) {
-          case '0':
-            active(ctx, (int) nb);
-            break;
-          case '1':
-            error(ctx, (int) nb);
-            break;
-          case '2':
-            done(ctx, (int) nb);
-            break;
-          case '3':
-            all(ctx, (int) nb);
-            break;
-          case '4':
-            status(ctx, (int) nb);
-            break;
-          case '5':
-            statusxml(ctx, nb, extraBoolean);
-            break;
-          case '6':
-            String name = null;
-            if (params.containsKey("name")) {
-              name = getTrimValue("name");
-            }
-            int istatus = 0;
-            if (params.containsKey("status")) {
-              final String status = getTrimValue("status");
-              try {
-                istatus = Integer.parseInt(status);
-              } catch (final NumberFormatException e1) {
-                istatus = 0;
-              }
-            }
-            if (uriRequest.toLowerCase().startsWith("/spooleddetail")) {
-              extraBoolean = true;
-            }
-            spooled(ctx, extraBoolean, name, istatus);
-            break;
-          case '7':
-            statusjson(ctx, nb, extraBoolean);
-            break;
-          default:
-            responseContent.append(REQUEST.index.readFileUnique(this));
+        responseContent.append(REQUEST.index.readFileUnique(this));
+        writeResponse(ctx);
+        return;
+      }
+      params = queryStringDecoder.parameters();
+      boolean invalidEntry = false;
+      for (Entry<String, List<String>> paramCheck : params.entrySet()) {
+        try {
+          ParametersChecker.checkSanityString(paramCheck.getValue().toArray(
+              ParametersChecker.ZERO_ARRAY_STRING));
+        } catch (InvalidArgumentException e) {
+          logger.error(
+              "Arguments incompatible with Security: " + paramCheck.getKey(),
+              e);
+          invalidEntry = true;
         }
       }
-      writeResponse(ctx);
-    } finally {
-      if (isPrivateDbSession && dbSession != null) {
-        dbSession.forceDisconnect();
-        DbAdmin.decHttpSession();
-        dbSession = null;
+      if (invalidEntry) {
+        for (Entry<String, List<String>> paramCheck : params.entrySet()) {
+          paramCheck.getValue().clear();
+        }
+        params.clear();
+        logger.error("No parameter validated since security issue found");
       }
     }
+    boolean getMenu = cval == 'z';
+    boolean extraBoolean = false;
+    if (!params.isEmpty()) {
+      // if not uri, from get or post
+      if (getMenu) {
+        final String info = getTrimValue(sINFO);
+        if (info != null) {
+          getMenu = false;
+          cval = info.charAt(0);
+        } else {
+          getMenu = true;
+        }
+      }
+      // search the nb param
+      final String snb = getTrimValue(sNB);
+      if (snb != null) {
+        try {
+          nb = Long.parseLong(snb);
+        } catch (final Exception ignored) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+        }
+      }
+      // search the detail param
+      final String sdetail = getTrimValue(sDETAIL);
+      if (sdetail != null) {
+        try {
+          if (Integer.parseInt(sdetail) > 0) {
+            extraBoolean = true;
+          }
+        } catch (final Exception ignored) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+        }
+      }
+      final String langarg = getTrimValue("setLng");
+      if (langarg != null && !langarg.isEmpty()) {
+        lang = langarg;
+      }
+    }
+    if (getMenu) {
+      responseContent.append(REQUEST.index.readFileUnique(this));
+    } else {
+      // Use value 0=Active 1=Error 2=Done 3=All
+      switch (cval) {
+        case '0':
+          active(ctx, (int) nb);
+          break;
+        case '1':
+          error(ctx, (int) nb);
+          break;
+        case '2':
+          done(ctx, (int) nb);
+          break;
+        case '3':
+          all(ctx, (int) nb);
+          break;
+        case '4':
+          status(ctx, (int) nb);
+          break;
+        case '5':
+          statusxml(ctx, nb, extraBoolean);
+          break;
+        case '6':
+          String name = null;
+          if (params.containsKey("name")) {
+            name = getTrimValue("name");
+          }
+          int istatus = 0;
+          if (params.containsKey("status")) {
+            final String statusNew = getTrimValue("status");
+            try {
+              istatus = Integer.parseInt(statusNew);
+            } catch (final NumberFormatException e1) {
+              istatus = 0;
+            }
+          }
+          if (uriRequest.toLowerCase().startsWith("/spooleddetail")) {
+            extraBoolean = true;
+          }
+          spooled(ctx, extraBoolean, name, istatus);
+          break;
+        case '7':
+          statusjson(ctx, nb, extraBoolean);
+          break;
+        default:
+          responseContent.append(REQUEST.index.readFileUnique(this));
+      }
+    }
+    writeResponse(ctx);
   }
 
   /**
@@ -437,7 +453,7 @@ public class HttpFormattedHandler
 
     TransferDAO transferAccess = null;
     final List<Filter> filters = new ArrayList<Filter>();
-    List<Transfer> transfers = null;
+    List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
@@ -445,7 +461,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.Running.getCode()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.Running.getMesg(), nb);
@@ -456,7 +472,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INTERRUPTED.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -469,7 +485,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.TOSUBMIT.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -482,7 +498,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.InitOk.getCode()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.InitOk.getMesg(), nb);
@@ -493,7 +509,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.PreProcessingOk.getCode()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.PreProcessingOk.getMesg(), nb);
@@ -504,7 +520,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.TransferOk.getCode()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.TransferOk.getMesg(), nb);
@@ -515,14 +531,13 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.PostProcessingOk.getCode()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.PostProcessingOk.getMesg(), nb);
     } catch (final DAOConnectionException e) {
-      logger.warn("OpenR66 Web Error {}", e.getMessage());
+      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
-      return;
     } finally {
       if (transferAccess != null) {
         transferAccess.close();
@@ -541,7 +556,7 @@ public class HttpFormattedHandler
     responseContent.append(REQUEST.error.readHeader(this));
     TransferDAO transferAccess = null;
     final List<Filter> filters = new ArrayList<Filter>();
-    List<Transfer> transfers = null;
+    List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
@@ -549,7 +564,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INERROR.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -562,7 +577,7 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INTERRUPTED.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -575,14 +590,14 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.GLOBAL_STEP_FIELD, "=",
                              Transfer.TASKSTEP.ERRORTASK.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 4);
       addRunners(transfers, TASKSTEP.ERRORTASK.name(), nb / 4);
     } catch (final DAOConnectionException e) {
-      logger.warn("OpenR66 Web Error {}", e.getMessage());
+      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
@@ -603,7 +618,7 @@ public class HttpFormattedHandler
     responseContent.append(REQUEST.done.readHeader(this));
 
     TransferDAO transferAccess = null;
-    List<Transfer> transfers = null;
+    List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
@@ -611,13 +626,13 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.CompleteOk.getCode()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, "ALL RUNNERS: " + nb, nb);
     } catch (final DAOConnectionException e) {
-      logger.warn("OpenR66 Web Error {}", e.getMessage());
+      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
@@ -638,19 +653,19 @@ public class HttpFormattedHandler
     responseContent.append(REQUEST.all.readHeader(this));
 
     TransferDAO transferAccess = null;
-    List<Transfer> transfers = null;
+    List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
       final List<Filter> filters = new ArrayList<Filter>();
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, "ALL RUNNERS: " + nb, nb);
     } catch (final DAOConnectionException e) {
-      logger.warn("OpenR66 Web Error {}", e.getMessage());
+      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
@@ -672,7 +687,7 @@ public class HttpFormattedHandler
 
     TransferDAO transferAccess = null;
     final List<Filter> filters = new ArrayList<Filter>();
-    List<Transfer> transfers = null;
+    List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
@@ -680,11 +695,11 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INERROR.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
-      if (transfers.size() > 0) {
+      if (!transfers.isEmpty()) {
         responseContent.append("<p>Some Transfers are in ERROR</p><br>");
         status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
       }
@@ -695,11 +710,11 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INTERRUPTED.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
-      if (transfers.size() > 0) {
+      if (!transfers.isEmpty()) {
         responseContent.append("<p>Some Transfers are INTERRUPTED</p><br>");
         status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
       }
@@ -710,16 +725,16 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.GLOBAL_STEP_FIELD, "=",
                              Transfer.TASKSTEP.ERRORTASK.ordinal()));
       filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHOST_ID()));
+                             Configuration.configuration.getHostId()));
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
-      if (transfers.size() > 0) {
+      if (!transfers.isEmpty()) {
         responseContent.append("<p>Some Transfers are in ERRORTASK</p><br>");
         status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
       }
     } catch (final DAOConnectionException e) {
-      logger.warn("OpenR66 Web Error {}", e.getMessage());
+      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
@@ -751,7 +766,8 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  protected void statusjson(ChannelHandlerContext ctx, long nb, boolean detail) {
+  protected void statusjson(ChannelHandlerContext ctx, long nb,
+                            boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
     responseContent
         .append(Configuration.configuration.getMonitoring().exportJson(detail));
@@ -790,7 +806,7 @@ public class HttpFormattedHandler
                        "<td></td><td class='col_MenuHaut'><a data-i18n='menu2.sous-menu4f' href='SpooledDetailed.html?status=1' style='display:block;width:100%;height:100%;line-height:15px;'>")
                    .append(
                        "SPOOLED DIRECTORY detailed OK</a></td></tr></table></p>");
-    String uri = null;
+    String uri;
     if (detail) {
       uri = "SpooledDetailed.html";
     } else {
@@ -827,7 +843,7 @@ public class HttpFormattedHandler
     // Decide whether to close the connection or not.
     final boolean keepAlive = HttpUtil.isKeepAlive(request);
     final boolean close = HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(
-        request.headers().get(HttpHeaderNames.CONNECTION)) || (!keepAlive);
+        request.headers().get(HttpHeaderNames.CONNECTION)) || !keepAlive;
 
     // Build the response object.
     final FullHttpResponse response =
@@ -896,10 +912,11 @@ public class HttpFormattedHandler
    * @param ctx
    * @param status
    */
-  protected void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+  protected void sendError(ChannelHandlerContext ctx,
+                           HttpResponseStatus status) {
     responseContent.setLength(0);
     responseContent.append(REQUEST.error.readHeader(this))
-                   .append("OpenR66 Web Failure: ").append(status.toString())
+                   .append("OpenR66 Web Failure: ").append(status)
                    .append(REQUEST.error.readEnd());
     final ByteBuf buf = Unpooled
         .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
@@ -921,11 +938,6 @@ public class HttpFormattedHandler
     if (exception != null) {
       if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
         if (cause instanceof IOException) {
-          if (isPrivateDbSession && dbSession != null) {
-            dbSession.forceDisconnect();
-            DbAdmin.decHttpSession();
-            dbSession = null;
-          }
           // Nothing to do
           return;
         }
@@ -934,14 +946,6 @@ public class HttpFormattedHandler
       if (ctx.channel().isActive()) {
         sendError(ctx, HttpResponseStatus.BAD_REQUEST);
       }
-    } else {
-      if (isPrivateDbSession && dbSession != null) {
-        dbSession.forceDisconnect();
-        DbAdmin.decHttpSession();
-        dbSession = null;
-      }
-      // Nothing to do
-      return;
     }
   }
 
@@ -949,11 +953,6 @@ public class HttpFormattedHandler
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
     logger.debug("Closed");
-    if (isPrivateDbSession && dbSession != null) {
-      dbSession.forceDisconnect();
-      DbAdmin.decHttpSession();
-      dbSession = null;
-    }
   }
 
   @Override
@@ -961,7 +960,7 @@ public class HttpFormattedHandler
     logger.debug("Connected");
     getAuthentHttp().getAuth().specialNoSessionAuth(false,
                                                     Configuration.configuration
-                                                        .getHOST_ID());
+                                                        .getHostId());
     super.channelActive(ctx);
     final ChannelGroup group =
         Configuration.configuration.getHttpChannelGroup();

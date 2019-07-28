@@ -41,14 +41,12 @@ import org.waarp.snmp.utils.WaarpUptime;
 
 /**
  * Waarp OpenR66 Private MIB implementation
- *
- *
  */
 public class R66PrivateMib extends WaarpPrivateMib {
   /**
    * Internal Logger
    */
-  private static WaarpLogger logger =
+  private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(R66PrivateMib.class);
 
   /**
@@ -76,7 +74,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
                              MibLevel.staticInfo.ordinal());
     rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(), "Waarp OpenR66");
     rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),
-                     Configuration.configuration.getHOST_ID());
+                     Configuration.configuration.getHostId());
     rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);
     rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),
                      "Waarp OpenR66: File Transfer Monitor");
@@ -318,9 +316,10 @@ public class R66PrivateMib extends WaarpPrivateMib {
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.specialIdInfo
                                                                    .getOID()),
-                                                       new OctetString("" +
-                                                                       runner
-                                                                           .getSpecialId())),
+                                                       new OctetString(String
+                                                                           .valueOf(
+                                                                               runner
+                                                                                   .getSpecialId()))),
                                                    // End of Task
                                                    new VariableBinding(
                                                        SnmpConstants.sysDescr,
@@ -338,7 +337,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
                                                        SnmpConstants.sysLocation,
                                                        snmpv2.getLocation())
                                                });
-    } catch (final NullPointerException e) {
+    } catch (final NullPointerException ignored) {
+      // nothing
     }
   }
 
@@ -355,7 +355,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
     }
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Notify: " + NotificationElements.InfoTask + ":" + message + ":" +
+          "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
           runner.toShortString());
     }
     notifyInternalTask(message, runner);
@@ -374,7 +374,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
     }
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Notify: " + NotificationElements.InfoTask + ":" + message + ":" +
+          "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
           runner.toShortString());
     }
     notifyInternalTask(message, runner);
@@ -391,7 +391,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
                       String message2) {
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Notify: " + element + ":" + message + ":" + message2);
+        logger.debug("Notify: " + element + ':' + message + ':' + message2);
       }
       agent.getNotificationOriginator()
            .notify(new OctetString("public"), element.getOID(rootOIDWaarpNotif),
@@ -413,16 +413,19 @@ public class R66PrivateMib extends WaarpPrivateMib {
                        new VariableBinding(SnmpConstants.sysLocation,
                                            snmpv2.getLocation())
                    });
-    } catch (final NullPointerException e) {
+    } catch (final NullPointerException ignored) {
+      // nothing
     }
   }
 
   @Override
   public void updateServices(WaarpMOScalar scalar) {
+    // nothing
   }
 
   @Override
   public void updateServices(MOScope range) {
+    // nothing
   }
 
 }

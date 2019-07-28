@@ -28,7 +28,6 @@ import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.authentication.R66Auth;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -42,18 +41,18 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.net.SocketAddress;
 
+import static org.waarp.openr66.database.DbConstantR66.*;
+
 /**
  * Abstract class for internal Business Request
- *
- *
  */
 public abstract class AbstractBusinessRequest implements Runnable {
   /**
    * Internal Logger
    */
-  static protected volatile WaarpLogger logger;
+  protected static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       Messages.getString("AbstractBusinessRequest.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
@@ -67,10 +66,10 @@ public abstract class AbstractBusinessRequest implements Runnable {
 
   private LocalChannelReference localChannelReference;
 
-  public AbstractBusinessRequest(Class<?> clasz, R66Future future,
-                                 String remoteHost,
-                                 NetworkTransaction networkTransaction,
-                                 BusinessRequestPacket packet) {
+  protected AbstractBusinessRequest(Class<?> clasz, R66Future future,
+                                    String remoteHost,
+                                    NetworkTransaction networkTransaction,
+                                    BusinessRequestPacket packet) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(clasz);
     }
@@ -85,13 +84,13 @@ public abstract class AbstractBusinessRequest implements Runnable {
     try {
       initRequest();
       sendRequest();
-    } catch (final OpenR66ProtocolNoConnectionException e) {
+    } catch (final OpenR66ProtocolNoConnectionException ignored) {
+      // notning
     }
   }
 
   public void initRequest() throws OpenR66ProtocolNoConnectionException {
-    final DbHostAuth host =
-        R66Auth.getServerAuth(remoteHost);
+    final DbHostAuth host = R66Auth.getServerAuth(remoteHost);
     if (host == null) {
       future.setResult(null);
       final OpenR66ProtocolNoConnectionException e2 =
@@ -109,7 +108,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       final OpenR66ProtocolNoConnectionException e2 =
           new OpenR66ProtocolNoConnectionException(
               Messages.getString("AdminR66OperationsGui.188") +
-              host.toString()); //$NON-NLS-1$
+              host); //$NON-NLS-1$
       future.setFailure(e2);
       throw e2;
     }
@@ -121,7 +120,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       final OpenR66ProtocolNoConnectionException e =
           new OpenR66ProtocolNoConnectionException(
               Messages.getString("AdminR66OperationsGui.188") +
-              host.toString()); //$NON-NLS-1$
+              host); //$NON-NLS-1$
       future.setFailure(e);
       throw e;
     }
@@ -136,8 +135,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);
-      localChannelReference.getLocalChannel().close();
-      return;
+      localChannelReference.close();
     }
 
   }
@@ -154,14 +152,14 @@ public abstract class AbstractBusinessRequest implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
       if (DetectionUtils.isJunit()) {
         return;
       }
       ChannelUtils.stopLogger();
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
 
     Configuration.configuration.pipelineInit();
@@ -171,11 +169,11 @@ public abstract class AbstractBusinessRequest implements Runnable {
     logger.info("Start Test of Transaction");
     final long time1 = System.currentTimeMillis();
 
-    new BusinessRequestPacket(classname + " " + classarg, 0);
+    new BusinessRequestPacket(classname + ' ' + classarg, 0);
     // XXX FIXME this has to be adapted
     /*
      * AbstractBusinessRequest transaction = new AbstractBusinessRequest( AbstractBusinessRequest.class, future,
-     * rhost, networkTransaction, packet); transaction.run(); future.awaitUninterruptibly();
+     * rhost, networkTransaction, packet); transaction.run(); future.awaitUninterruptibly()
      */
     final long time2 = System.currentTimeMillis();
     logger.debug("Finish Business Request: " + future.isSuccess());
@@ -193,15 +191,15 @@ public abstract class AbstractBusinessRequest implements Runnable {
         return;
       }
       networkTransaction.closeAll();
-      System.exit(ErrorCode.Unknown.ordinal());
+      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
     }
     networkTransaction.closeAll();
   }
 
-  static protected String rhost = null;
-  static protected String classname = null;
-  static protected String classarg = null;
-  static protected boolean nolog = false;
+  protected static String rhost;
+  protected static String classname;
+  protected static String classarg;
+  protected static boolean nolog;
 
   /**
    * Parse the parameter and set current values
@@ -211,8 +209,6 @@ public abstract class AbstractBusinessRequest implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
-    _INFO_ARGS = Messages.getString("AbstractBusinessRequest.0") +
-                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 3) {
       logger.error(_INFO_ARGS);
       return false;
@@ -225,19 +221,19 @@ public abstract class AbstractBusinessRequest implements Runnable {
     }
     // Now set default values from configuration
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-to")) {
+      if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         rhost = args[i];
         if (Configuration.configuration.getAliases().containsKey(rhost)) {
           rhost = Configuration.configuration.getAliases().get(rhost);
         }
-      } else if (args[i].equalsIgnoreCase("-class")) {
+      } else if ("-class".equalsIgnoreCase(args[i])) {
         i++;
         classname = args[i];
-      } else if (args[i].equalsIgnoreCase("-arg")) {
+      } else if ("-arg".equalsIgnoreCase(args[i])) {
         i++;
         classarg = args[i];
-      } else if (args[i].equalsIgnoreCase("-nolog")) {
+      } else if ("-nolog".equalsIgnoreCase(args[i])) {
         nolog = true;
         i++;
       }

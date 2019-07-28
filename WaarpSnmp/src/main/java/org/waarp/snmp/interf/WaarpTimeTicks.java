@@ -23,10 +23,7 @@ import org.snmp4j.smi.TimeTicks;
 
 /**
  * Generic TimeTicks with update possibility for GoldenGate
- *
- *
  */
-@SuppressWarnings("serial")
 public abstract class WaarpTimeTicks extends TimeTicks {
   /**
    *
@@ -45,11 +42,11 @@ public abstract class WaarpTimeTicks extends TimeTicks {
    */
   protected abstract void setInternalValue(long value);
 
-  public WaarpTimeTicks() {
+  protected WaarpTimeTicks() {
     setInternalValue();
   }
 
-  public WaarpTimeTicks(long value) {
+  protected WaarpTimeTicks(long value) {
     setInternalValue(value);
   }
 

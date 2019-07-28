@@ -21,7 +21,6 @@ package org.waarp.ftp.core.utils;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.ftp.core.config.FtpConfiguration;
 
 import java.util.TimerTask;
@@ -29,8 +28,6 @@ import java.util.TimerTask;
 /**
  * Timer Task used mainly when the server is going to shutdown in order to be
  * sure the program exit.
- *
- *
  */
 public class FtpTimerTask extends TimerTask {
   /**
@@ -71,13 +68,12 @@ public class FtpTimerTask extends TimerTask {
     switch (type) {
       case TIMER_EXIT:
         logger.error("System will force EXIT");
-        //FBGEXIT DetectionUtils.SystemExit(0);
+        //FBGEXIT DetectionUtils.SystemExit(0)
         break;
       case TIMER_CONTROL:
         logger.info("Exit Shutdown Command");
         FtpChannelUtils.terminateCommandChannels(getConfiguration());
         logger.warn("Exit end of Command Shutdown");
-        // FtpChannelUtils.stopLogger();
         break;
       default:
         logger.info("Type unknown in TimerTask");

@@ -30,8 +30,6 @@ import java.nio.charset.Charset;
  * End of Request class
  * <p>
  * header = Error.code middle = way end = might be empty
- *
- *
  */
 public class EndRequestPacket extends AbstractLocalPacket {
   private static final byte ASKVALIDATE = 0;
@@ -132,8 +130,8 @@ public class EndRequestPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "EndRequestPacket: " + code + " " + way +
-           (optional != null? " " + optional : "");
+    return "EndRequestPacket: " + code + ' ' + way +
+           (optional != null? ' ' + optional : "");
   }
 
   /**

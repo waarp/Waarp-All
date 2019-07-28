@@ -37,7 +37,6 @@ import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
@@ -54,13 +53,13 @@ import org.waarp.openr66.protocol.localhandler.packet.json.TransferRequestJsonPa
 
 import java.util.Date;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Transfer Http REST interface: http://host/control?... + InformationJsonPacket
  * (should be on Transfer only)
  * RestartTransferJsonPacket StopOrCancelJsonPacket TransferRequestJsonPacket as
  * GET PUT PUT POST
- *
- *
  */
 public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
 
@@ -104,7 +103,7 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
         final InformationJsonPacket node = (InformationJsonPacket) json;
         if (node.isIdRequest()) {
           result.setCommand(ACTIONS_TYPE.GetTransferInformation.name());
-          ValidPacket validPacket = null;
+          ValidPacket validPacket;
           if (node.isIdRequest()) {
             validPacket = serverHandler
                 .informationRequest(node.getId(), node.isTo(),
@@ -150,7 +149,7 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
         final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;
         R66Result resulttest;
         if (node.getRequested() == null || node.getRequester() == null ||
-            node.getSpecialid() == DbConstant.ILLEGALVALUE) {
+            node.getSpecialid() == ILLEGALVALUE) {
           final ErrorCode code = ErrorCode.CommandNotFound;
           resulttest = new R66Result(session, true, code, session.getRunner());
           result.setDetail("Not enough argument passed to identify a transfer");
@@ -213,7 +212,8 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                                                    .name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
     if (methods.contains(METHOD.PUT)) {
@@ -231,7 +231,8 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                                ACTIONS_TYPE.RestartTransfer.name(),
                                node4.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
       final StopOrCancelJsonPacket node5 = new StopOrCancelJsonPacket();
       node5.setRequestUserPacket();
@@ -246,7 +247,8 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                                ACTIONS_TYPE.StopOrCancelTransfer.name(),
                                node5.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
     if (methods.contains(METHOD.POST)) {
@@ -266,7 +268,8 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                                ACTIONS_TYPE.CreateTransfer.name(),
                                node6.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
 

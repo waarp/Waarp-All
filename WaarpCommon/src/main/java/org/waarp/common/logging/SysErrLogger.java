@@ -21,7 +21,7 @@
 package org.waarp.common.logging;
 
 /**
- * Utility class to be used only in classes where VitamLogger is not allowed
+ * Utility class to be used only in classes where WaarpLogger is not allowed
  */
 public final class SysErrLogger {
   /**
@@ -36,7 +36,7 @@ public final class SysErrLogger {
   /**
    * Utility method to log nothing
    * <p>
-   * Used only in classes where VitamLogger is not allowed
+   * Used only in classes where WaarpLogger is not allowed
    *
    * @param throwable to log ignore
    */
@@ -45,20 +45,51 @@ public final class SysErrLogger {
   }
 
   /**
+   * Utility method to log through System.out
+   * <p>
+   * Used only in classes where WaarpLogger is not allowed
+   */
+  public void sysout() {
+    System.out.println(); // NOSONAR
+  }
+
+  /**
+   * Utility method to log through System.out
+   * <p>
+   * Used only in classes where WaarpLogger is not allowed
+   *
+   * @param message to write for no error log
+   */
+  public void sysout(Object message) {
+    System.out.println(message); // NOSONAR
+  }
+
+  /**
    * Utility method to log through System.err
    * <p>
-   * Used only in classes where VitamLogger is not allowed
+   * Used only in classes where WaarpLogger is not allowed
    *
    * @param message to write for error
    */
-  public void syserr(String message) {
+  public void syserrNoLn(Object message) {
+    System.err.print("ERROR " + message); // NOSONAR
+  }
+
+  /**
+   * Utility method to log through System.err
+   * <p>
+   * Used only in classes where WaarpLogger is not allowed
+   *
+   * @param message to write for error
+   */
+  public void syserr(Object message) {
     System.err.println("ERROR " + message); // NOSONAR
   }
 
   /**
    * Utility method to log through System.err the current Stacktrace
    * <p>
-   * Used only in classes where VitamLogger is not allowed
+   * Used only in classes where WaarpLogger is not allowed
    */
   public void syserr() {
     new Exception("ERROR Stacktrace").printStackTrace(); // NOSONAR
@@ -67,13 +98,25 @@ public final class SysErrLogger {
   /**
    * Utility method to log through System.err the current Stacktrace
    * <p>
-   * Used only in classes where VitamLogger is not allowed
+   * Used only in classes where WaarpLogger is not allowed
    *
    * @param message to write for error
    * @param e throw to write as error
    */
   public void syserr(String message, Throwable e) {
     System.err.print("ERROR " + message + ": "); // NOSONAR
+    e.printStackTrace(); // NOSONAR
+  }
+
+  /**
+   * Utility method to log through System.err the current Stacktrace
+   * <p>
+   * Used only in classes where WaarpLogger is not allowed
+   *
+   * @param e throw to write as error
+   */
+  public void syserr(Throwable e) {
+    System.err.print("ERROR: "); // NOSONAR
     e.printStackTrace(); // NOSONAR
   }
 }

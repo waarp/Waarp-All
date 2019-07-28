@@ -31,8 +31,6 @@ import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 
 /**
  * Engine used to start and stop the real Gateway Ftp service
- *
- *
  */
 public class FtpEngine extends EngineAbstract {
   /**

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.waarp.common.utility.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,26 +46,26 @@ public class UUIDTest {
     final long least = id.getLeastSignificantBits();
     final long most = id.getMostSignificantBits();
     final UUID id2 = new UUID(most, least);
-    assertTrue(id2.getLeastSignificantBits() == least);
-    assertTrue(id2.getMostSignificantBits() == most);
+    assertEquals(id2.getLeastSignificantBits(), least);
+    assertEquals(id2.getMostSignificantBits(), most);
     final java.util.UUID id3 = new java.util.UUID(most, least);
     final UUID id4 = new UUID(id3);
-    assertTrue(id3.getLeastSignificantBits() == least);
-    assertTrue(id3.getMostSignificantBits() == most);
-    assertTrue(id4.getLeastSignificantBits() == least);
-    assertTrue(id4.getMostSignificantBits() == most);
+    assertEquals(id3.getLeastSignificantBits(), least);
+    assertEquals(id3.getMostSignificantBits(), most);
+    assertEquals(id4.getLeastSignificantBits(), least);
+    assertEquals(id4.getMostSignificantBits(), most);
     final java.util.UUID id5 = id4.getJavaUuid();
-    assertTrue(id5.getLeastSignificantBits() == least);
-    assertTrue(id5.getMostSignificantBits() == most);
+    assertEquals(id5.getLeastSignificantBits(), least);
+    assertEquals(id5.getMostSignificantBits(), most);
     final UUID id6 = new UUID(id.javaUuidGetBytes());
-    assertTrue(id6.getLeastSignificantBits() == least);
-    assertTrue(id6.getMostSignificantBits() == most);
+    assertEquals(id6.getLeastSignificantBits(), least);
+    assertEquals(id6.getMostSignificantBits(), most);
 
     final byte[] random = StringUtils.getRandom(6);
-    JvmProcessId.setMAC(random);
+    JvmProcessId.setMac(random);
     final UUID id7 = new UUID(1);
     assertArrayEquals(id7.getMacFragment(), random);
-    assertTrue(id7.getVersion() == 1);
+    assertEquals(1, id7.getVersion());
   }
 
   @Test
@@ -96,7 +97,7 @@ public class UUIDTest {
     }
 
     for (int i = 1; i < n; i++) {
-      assertFalse(ids[i - 1].equals(ids[i]));
+      assertNotEquals(ids[i - 1], ids[i]);
     }
   }
 
@@ -129,10 +130,9 @@ public class UUIDTest {
   public void testVersionField() {
     final UUID generated = new UUID();
     assertEquals(VERSION, generated.getVersion());
-
-    final UUID parsed1 = new UUID("AKG8zkAvFAgAJ3vUswABS0W_baw=");
+    final UUID parsed1 = new UUID("AMgW/kB00AgAJxRfewABbIFn5RE=");
     assertEquals(VERSION, parsed1.getVersion());
-    final UUID parsed2 = new UUID("00a1bcce402f140800277bd4b300014b45bf6dac");
+    final UUID parsed2 = new UUID("00c816fe4074d0080027145f7b00016c8167e511");
     assertEquals(VERSION, parsed2.getVersion());
     assertEquals(parsed1, parsed2);
   }
@@ -158,7 +158,7 @@ public class UUIDTest {
     // if the machine is not connected to a network it has no active MAC address
     if (mac == null || mac.length < 6) {
       mac = StringUtils.getRandom(6);
-      JvmProcessId.setMAC(mac);
+      JvmProcessId.setMac(mac);
     }
 
     final UUID id = new UUID();
@@ -186,9 +186,7 @@ public class UUIDTest {
         "Time = " + (stop - start) + " so " + n * 1000 / (stop - start) +
         " Uuids/s");
 
-    for (int i = 0; i < n; i++) {
-      uuids.add(uuidArray[i]);
-    }
+    uuids.addAll(Arrays.asList(uuidArray).subList(0, n));
 
     System.out.println("Create " + n + " and get: " + uuids.size());
     assertEquals(n, uuids.size());
@@ -277,18 +275,14 @@ public class UUIDTest {
     final Set<UUID> uuidSet = new HashSet<UUID>();
 
     final int effectiveN = n / numThreads * numThreads;
-    for (int i = 0; i < effectiveN; i++) {
-      uuidSet.add(uuids[i]);
-    }
+    uuidSet.addAll(Arrays.asList(uuids).subList(0, effectiveN));
 
     assertEquals(effectiveN, uuidSet.size());
     uuidSet.clear();
     System.out.println("TimeConcurrent = " + (stop - start) + " so " +
                        uuids.length * 1000 / (stop - start) + " UUIDs/s");
     final TreeSet<UUID> set = new TreeSet<UUID>();
-    for (final UUID uuid : uuids) {
-      set.add(uuid);
-    }
+    Collections.addAll(set, uuids);
     checkConsecutive(set.toArray(new UUID[0]));
 
   }

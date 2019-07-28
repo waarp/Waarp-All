@@ -21,9 +21,11 @@ package org.waarp.openr66.client;
 
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.commander.CommanderNoDb;
@@ -33,7 +35,6 @@ import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.authentication.R66Auth;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -57,41 +58,43 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Class to request information or request cancellation or restart
- *
- *
  */
 public class RequestTransfer implements Runnable {
+  private static final String REQUEST_ON_TRANSFER = "Request on Transfer";
+
   /**
    * Internal Logger
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static String _infoArgs =
       Messages.getString("RequestTransfer.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
   protected final NetworkTransaction networkTransaction;
   final R66Future future;
   final long specialId;
-  String requested = null;
-  String requester = null;
-  boolean cancel = false;
-  boolean stop = false;
-  boolean restart = false;
-  String restarttime = null;
+  final String requested;
+  final String requester;
+  final boolean cancel;
+  final boolean stop;
+  final boolean restart;
+  final String restarttime;
   boolean normalInfoAsWarn = true;
 
   static long sspecialId;
-  static String srequested = null;
-  static String srequester = null;
-  static String rhost = null;
-  static boolean scancel = false;
-  static boolean sstop = false;
-  static boolean srestart = false;
-  static String srestarttime = null;
-  static protected boolean snormalInfoAsWarn = true;
+  static String srequested;
+  static String srequester;
+  static String rhost;
+  static boolean scancel;
+  static boolean sstop;
+  static boolean srestart;
+  static String srestarttime;
+  protected static boolean snormalInfoAsWarn = true;
 
   /**
    * Parse the parameter and set current values
@@ -101,10 +104,10 @@ public class RequestTransfer implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
-    _INFO_ARGS = Messages.getString("RequestTransfer.0") +
-                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
+    _infoArgs = Messages.getString("RequestTransfer.0") +
+                Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
-      logger.error(_INFO_ARGS);
+      logger.error(_infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -114,7 +117,7 @@ public class RequestTransfer implements Runnable {
       return false;
     }
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-id")) {
+      if ("-id".equalsIgnoreCase(args[i])) {
         i++;
         try {
           sspecialId = Long.parseLong(args[i]);
@@ -123,7 +126,7 @@ public class RequestTransfer implements Runnable {
                        e); //$NON-NLS-1$
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-to")) {
+      } else if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         srequested = args[i];
         if (Configuration.configuration.getAliases().containsKey(srequested)) {
@@ -132,13 +135,13 @@ public class RequestTransfer implements Runnable {
         rhost = srequested;
         try {
           srequester = Configuration.configuration
-              .getHostId(DbConstant.admin.getSession(), srequested);
+              .getHostId(admin.getSession(), srequested);
         } catch (final WaarpDatabaseException e) {
           logger.error(Messages.getString("RequestTransfer.5") + srequested,
                        e); //$NON-NLS-1$
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-from")) {
+      } else if ("-from".equalsIgnoreCase(args[i])) {
         i++;
         srequester = args[i];
         if (Configuration.configuration.getAliases().containsKey(srequester)) {
@@ -147,26 +150,26 @@ public class RequestTransfer implements Runnable {
         rhost = srequester;
         try {
           srequested = Configuration.configuration
-              .getHostId(DbConstant.admin.getSession(), srequester);
+              .getHostId(admin.getSession(), srequester);
         } catch (final WaarpDatabaseException e) {
           logger.error(Messages.getString("RequestTransfer.5") + srequester,
                        e); //$NON-NLS-1$
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-cancel")) {
+      } else if ("-cancel".equalsIgnoreCase(args[i])) {
         scancel = true;
-      } else if (args[i].equalsIgnoreCase("-stop")) {
+      } else if ("-stop".equalsIgnoreCase(args[i])) {
         sstop = true;
-      } else if (args[i].equalsIgnoreCase("-restart")) {
+      } else if ("-restart".equalsIgnoreCase(args[i])) {
         srestart = true;
-      } else if (args[i].equalsIgnoreCase("-start")) {
+      } else if ("-start".equalsIgnoreCase(args[i])) {
         i++;
         srestarttime = args[i];
-      } else if (args[i].equalsIgnoreCase("-logWarn")) {
+      } else if ("-logWarn".equalsIgnoreCase(args[i])) {
         snormalInfoAsWarn = true;
-      } else if (args[i].equalsIgnoreCase("-notlogWarn")) {
+      } else if ("-notlogWarn".equalsIgnoreCase(args[i])) {
         snormalInfoAsWarn = false;
-      } else if (args[i].equalsIgnoreCase("-delay")) {
+      } else if ("-delay".equalsIgnoreCase(args[i])) {
         i++;
         final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyyMMddHHmmss");
@@ -181,14 +184,14 @@ public class RequestTransfer implements Runnable {
       }
       OutputFormat.getParams(args);
     }
-    if ((scancel && srestart) || (scancel && sstop) || (srestart && sstop)) {
+    if (scancel && srestart || scancel && sstop || srestart && sstop) {
       logger.error(
-          Messages.getString("RequestTransfer.15") + _INFO_ARGS); //$NON-NLS-1$
+          Messages.getString("RequestTransfer.15") + _infoArgs); //$NON-NLS-1$
       return false;
     }
-    if (sspecialId == DbConstant.ILLEGALVALUE || srequested == null) {
+    if (sspecialId == ILLEGALVALUE || srequested == null) {
       logger.error(
-          Messages.getString("RequestTransfer.16") + _INFO_ARGS); //$NON-NLS-1$
+          Messages.getString("RequestTransfer.16") + _infoArgs); //$NON-NLS-1$
       return false;
     }
 
@@ -248,7 +251,7 @@ public class RequestTransfer implements Runnable {
       }
       try {
         runner = new DbTaskRunner(null, null, specialId, requester, requested);
-        logger.info("Found previous Runner: " + runner.toString());
+        logger.info("Found previous Runner: " + runner);
       } catch (final WaarpDatabaseException e) {
         // Maybe we can ask to the remote
         final R66Future futureInfo = new R66Future(true);
@@ -268,9 +271,8 @@ public class RequestTransfer implements Runnable {
             // useful ?
             CommanderNoDb.todoList.add(runner);
 
-            logger.info("Get Runner from remote: " + runner.toString());
-            if (runner.getSpecialId() == DbConstant.ILLEGALVALUE ||
-                !runner.isSender()) {
+            logger.info("Get Runner from remote: " + runner);
+            if (runner.getSpecialId() == ILLEGALVALUE || !runner.isSender()) {
               logger.error(
                   Messages.getString("RequestTransfer.18")); //$NON-NLS-1$
               future.setResult(
@@ -312,12 +314,11 @@ public class RequestTransfer implements Runnable {
           if (runner.isAllDone()) {
             // nothing to do since already finished
             setDone(runner);
-            logger.info("Transfer already finished: " + runner.toString());
+            logger.info("Transfer already finished: " + runner);
             future.setResult(
                 new R66Result(null, true, ErrorCode.TransferOk, runner));
             future.getResult().setRunner(runner);
             future.setSuccess();
-            return;
           } else {
             // Send a request of cancel
             final ErrorCode code =
@@ -513,17 +514,17 @@ public class RequestTransfer implements Runnable {
       }
     }
 
-    LocalChannelReference localChannelReference = AbstractTransfer.tryConnect(host, future,
-                                                                              networkTransaction);
+    LocalChannelReference localChannelReference =
+        AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return ErrorCode.ConnectionImpossible;
     }
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
-    AbstractLocalPacket packet = null;
+    AbstractLocalPacket packet;
     if (useJson) {
       final RestartTransferJsonPacket node = new RestartTransferJsonPacket();
-      node.setComment("Request on Transfer");
+      node.setComment(REQUEST_ON_TRANSFER);
       node.setRequested(requested);
       node.setRequester(requester);
       node.setSpecialid(specialId);
@@ -536,22 +537,21 @@ public class RequestTransfer implements Runnable {
         try {
           final Date date = dateFormat.parse(restarttime);
           node.setRestarttime(date);
-        } catch (final ParseException e) {
+        } catch (final ParseException ignored) {
+          // nothing
         }
-        packet = new JsonCommandPacket(node, code);
-      } else {
-        packet = new JsonCommandPacket(node, code);
       }
+      packet = new JsonCommandPacket(node, code);
     } else {
       if (restarttime != null && code == LocalPacketFactory.VALIDPACKET) {
         // restart time set
         logger.debug("Restart with time: " + restarttime);
-        packet = new ValidPacket("Request on Transfer",
-                                 requested + " " + requester + " " + specialId +
-                                 " " + restarttime, code);
+        packet = new ValidPacket(REQUEST_ON_TRANSFER,
+                                 requested + ' ' + requester + ' ' + specialId +
+                                 ' ' + restarttime, code);
       } else {
-        packet = new ValidPacket("Request on Transfer",
-                                 requested + " " + requester + " " + specialId,
+        packet = new ValidPacket(REQUEST_ON_TRANSFER,
+                                 requested + ' ' + requester + ' ' + specialId,
                                  code);
       }
     }
@@ -584,29 +584,29 @@ public class RequestTransfer implements Runnable {
       return ErrorCode.Internal;
     }
 
-    LocalChannelReference localChannelReference = AbstractTransfer.tryConnect(host, future,
-                                               networkTransaction);
+    LocalChannelReference localChannelReference =
+        AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return ErrorCode.ConnectionImpossible;
     }
 
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
-    AbstractLocalPacket packet = null;
+    AbstractLocalPacket packet;
     if (useJson) {
       final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();
-      node.setComment("Request on Transfer");
+      node.setComment(REQUEST_ON_TRANSFER);
       node.setRequested(requested);
       node.setRequester(requester);
       node.setSpecialid(specialId);
       packet = new JsonCommandPacket(node, code);
     } else {
-      packet = new ValidPacket("Request on Transfer",
-                               requested + " " + requester + " " + specialId,
+      packet = new ValidPacket(REQUEST_ON_TRANSFER,
+                               requested + ' ' + requester + ' ' + specialId,
                                code);
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    if (! AbstractTransfer
+    if (!AbstractTransfer
         .sendValidPacket(host, localChannelReference, packet, future)) {
       return ErrorCode.Internal;
     }
@@ -631,14 +631,17 @@ public class RequestTransfer implements Runnable {
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (!OutputFormat.isQuiet()) {
-        System.out.println(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     int value = 99;
     try {
@@ -879,10 +882,10 @@ public class RequestTransfer implements Runnable {
         }
       }
     } finally {
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(value);
+      System.exit(value);//NOSONAR
     }
   }
 

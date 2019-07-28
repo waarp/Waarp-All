@@ -20,22 +20,24 @@
 
 package org.waarp.common.lru;
 
-import java.util.Collections;
+import com.google.common.collect.Sets;
+
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Wrapper for a Collections.newSetFromMap(new ConcurrentHashMap<T, Boolean>()
  */
 public final class ConcurrentUtility {
 
+  private ConcurrentUtility() {
+  }
+
   /**
-   *
    * @param <E> Type parameter
+   *
    * @return the Set<E> using a concurrent implementation
    */
-  public static final <E> Set<E> newConcurrentSet() {
-    return Collections
-        .newSetFromMap(new ConcurrentHashMap<E, Boolean>());
+  public static <E> Set<E> newConcurrentSet() {
+    return Sets.newConcurrentHashSet();
   }
 }

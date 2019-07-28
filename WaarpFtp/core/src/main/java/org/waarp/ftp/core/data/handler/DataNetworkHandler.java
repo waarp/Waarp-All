@@ -31,6 +31,7 @@ import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DataBlock;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -160,7 +161,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         getDataBusinessHandler().executeChannelClosed();
         // release file and other permanent objects
         getDataBusinessHandler().clear();
-      } catch (final FtpNoConnectionException e1) {
+      } catch (final FtpNoConnectionException ignored) {
+        // nothing
       }
       dataBusinessHandler = null;
       channelPipeline = null;
@@ -178,6 +180,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
         } catch (final InterruptedException e1) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           break;
         }
       } else {
@@ -190,7 +193,6 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
       WaarpSslUtility.closingSslChannel(channel);
       // Problem: control connection could not be directly informed!!!
       // Only timeout will occur
-      return;
     }
   }
 
@@ -244,7 +246,6 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
       logger.debug("Connected but no more alive so will disconnect");
       session.getDataConn().getFtpTransferControl()
              .setOpenedDataChannel(null, this);
-      return;
     }
   }
 
@@ -291,59 +292,56 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
       logger.debug("Error without any session active {}", cause);
       return;
     }
-    final Throwable e1 = cause;
-    if (e1 instanceof ConnectException) {
-      final ConnectException e2 = (ConnectException) e1;
+    if (cause instanceof ConnectException) {
+      final ConnectException e2 = (ConnectException) cause;
       logger.warn("Connection impossible since {}", e2.getMessage());
-    } else if (e1 instanceof ChannelException) {
-      final ChannelException e2 = (ChannelException) e1;
+    } else if (cause instanceof ChannelException) {
+      final ChannelException e2 = (ChannelException) cause;
       logger.warn("Connection (example: timeout) impossible since {}",
                   e2.getMessage());
-    } else if (e1 instanceof ClosedChannelException) {
+    } else if (cause instanceof ClosedChannelException) {
       logger.debug("Connection closed before end");
-    } else if (e1 instanceof InvalidArgumentException) {
-      final InvalidArgumentException e2 = (InvalidArgumentException) e1;
+    } else if (cause instanceof InvalidArgumentException) {
+      final InvalidArgumentException e2 = (InvalidArgumentException) cause;
       logger.warn("Bad configuration in Codec in {}", e2.getMessage());
-    } else if (e1 instanceof NullPointerException) {
-      final NullPointerException e2 = (NullPointerException) e1;
+    } else if (cause instanceof NullPointerException) {
+      final NullPointerException e2 = (NullPointerException) cause;
       logger.warn("Null pointer Exception", e2);
       try {
         if (dataBusinessHandler != null) {
-          dataBusinessHandler.exceptionLocalCaught(e1);
-          if (session.getDataConn() != null) {
-            if (session.getDataConn().checkCorrectChannel(ctx.channel())) {
-              session.getDataConn().getFtpTransferControl()
-                     .setTransferAbortedFromInternal(true);
-            }
+          dataBusinessHandler.exceptionLocalCaught(cause);
+          if (session.getDataConn() != null &&
+              session.getDataConn().checkCorrectChannel(ctx.channel())) {
+            session.getDataConn().getFtpTransferControl()
+                   .setTransferAbortedFromInternal(true);
           }
         }
-      } catch (final NullPointerException e3) {
+      } catch (final NullPointerException ignored) {
+        // nothing
       }
       return;
-    } else if (e1 instanceof CancelledKeyException) {
-      final CancelledKeyException e2 = (CancelledKeyException) e1;
+    } else if (cause instanceof CancelledKeyException) {
+      final CancelledKeyException e2 = (CancelledKeyException) cause;
       logger.warn("Connection aborted since {}", e2.getMessage());
       // XXX TODO FIXME is it really what we should do ?
       // No action
       return;
-    } else if (e1 instanceof IOException) {
-      final IOException e2 = (IOException) e1;
+    } else if (cause instanceof IOException) {
+      final IOException e2 = (IOException) cause;
       logger.warn("Connection aborted since {}", e2.getMessage());
-    } else if (e1 instanceof NotYetConnectedException) {
-      final NotYetConnectedException e2 = (NotYetConnectedException) e1;
+    } else if (cause instanceof NotYetConnectedException) {
+      final NotYetConnectedException e2 = (NotYetConnectedException) cause;
       logger.debug("Ignore this exception {}", e2.getMessage());
       return;
-    } else if (e1 instanceof BindException) {
-      final BindException e2 = (BindException) e1;
+    } else if (cause instanceof BindException) {
+      final BindException e2 = (BindException) cause;
       logger.warn("Address already in use {}", e2.getMessage());
-    } else if (e1 instanceof ConnectException) {
-      final ConnectException e2 = (ConnectException) e1;
-      logger.warn("Timeout occurs {}", e2.getMessage());
     } else {
-      logger.warn("Unexpected exception from Outband: {}", e1.getMessage(), e1);
+      logger.warn("Unexpected exception from Outband: {}", cause.getMessage(),
+                  cause);
     }
     if (dataBusinessHandler != null) {
-      dataBusinessHandler.exceptionLocalCaught(e1);
+      dataBusinessHandler.exceptionLocalCaught(cause);
     }
     if (session.getDataConn().checkCorrectChannel(ctx.channel())) {
       session.getDataConn().getFtpTransferControl()
@@ -372,9 +370,9 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
           try {
             Thread.sleep(100);
           } catch (final InterruptedException e1) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             break;
           }
-          continue;
         }
       }
       if (ftpTransfer == null) {
@@ -392,7 +390,6 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
           logger.debug(e1);
           session.getDataConn().getFtpTransferControl()
                  .setTransferAbortedFromInternal(true);
-          return;
         } catch (final FileTransferException e1) {
           logger.debug(e1);
           session.getDataConn().getFtpTransferControl()

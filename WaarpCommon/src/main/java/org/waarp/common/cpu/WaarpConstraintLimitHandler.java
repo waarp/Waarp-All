@@ -21,18 +21,17 @@ package org.waarp.common.cpu;
 
 import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.waarp.common.database.DbAdmin;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ThreadLocalRandom;
 
 import java.util.LinkedList;
-import java.util.Random;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract class for Constraint Limit Handler for Waarp project
- *
- *
  */
 public abstract class WaarpConstraintLimitHandler implements Runnable {
   /**
@@ -48,19 +47,19 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   private boolean useCpuLimits;
   private boolean useBandwidthLimit;
 
-  private final Random random = new Random();
+  private final ThreadLocalRandom random = ThreadLocalRandom.current();
   private CpuManagementInterface cpuManagement;
-  private double cpuLimit = 1.0; // was 0.8;
-  private int channelLimit; // was 1000;
+  private double cpuLimit = 1.0; // was 0.8
+  private int channelLimit; // was 1000
   private boolean isServer;
   private double lastLA;
   private long lastTime;
 
   // Dynamic throttling
-  private long WAITFORNETOP = 1000;
-  private long TIMEOUTCON = 10000;
-  private double highCpuLimit; // was 0.8;
-  private double lowCpuLimit; // was 0.5;
+  private long waitForNetOp = 1000;
+  private long timeoutCon = 10000;
+  private double highCpuLimit; // was 0.8
+  private double lowCpuLimit; // was 0.5
   private double percentageDecreaseRatio = 0.25;
   private long delay = 1000;
   private long limitLowBandwidth = LOWBANDWIDTH_DEFAULT;
@@ -79,7 +78,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
 
   private final LinkedList<CurLimits> curLimits = new LinkedList<CurLimits>();
   private int nbSinceLastDecrease;
-  private static final int payload = 5;
+  private static final int PAYLOAD = 5;
   // 5 seconds of payload when new high cpu
 
   /**
@@ -95,8 +94,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   /**
    * This constructor enables only throttling bandwidth with cpu usage
    *
-   * @param WAITFORNETOP2 1000 ms as wait for a network operation
-   * @param TIMEOUTCON2 10000 ms as timeout limit
+   * @param waitForNetOp 1000 ms as wait for a network operation
+   * @param timeOutCon 10000 ms as timeout limit
    * @param useJdkCpuLimit True to use JDK Cpu native or False for
    *     JavaSysMon
    * @param lowcpuLimit for proactive cpu limitation (throttling
@@ -121,13 +120,13 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public WaarpConstraintLimitHandler(long WAITFORNETOP2, long TIMEOUTCON2,
+  public WaarpConstraintLimitHandler(long waitForNetOp, long timeOutCon,
                                      boolean useJdkCpuLimit, double lowcpuLimit,
                                      double highcpuLimit,
                                      double percentageDecrease,
                                      AbstractTrafficShapingHandler handler,
                                      long delay, long limitLowBandwidth) {
-    this(WAITFORNETOP2, TIMEOUTCON2, true, useJdkCpuLimit, 0, 0, lowcpuLimit,
+    this(waitForNetOp, timeOutCon, true, useJdkCpuLimit, 0, 0, lowcpuLimit,
          highcpuLimit, percentageDecrease, handler, delay, limitLowBandwidth);
   }
 
@@ -141,11 +140,11 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     connections
    * @param channellimit number of connection limit (0<= x)
    */
-  public WaarpConstraintLimitHandler(long WAITFORNETOP2, long TIMEOUTCON2,
+  public WaarpConstraintLimitHandler(long waitForNetOp, long timeOutCon,
                                      boolean useCpuLimit,
                                      boolean useJdKCpuLimit, double cpulimit,
                                      int channellimit) {
-    this(WAITFORNETOP2, TIMEOUTCON2, useCpuLimit, useJdKCpuLimit, cpulimit,
+    this(waitForNetOp, timeOutCon, useCpuLimit, useJdKCpuLimit, cpulimit,
          channellimit, 0, 0, 0.01, null, 1000000, LOWBANDWIDTH_DEFAULT);
   }
 
@@ -153,8 +152,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    * This constructor enables both Connection check ability and throttling
    * bandwidth with cpu usage
    *
-   * @param WAITFORNETOP2 1000 ms as wait for a network operation
-   * @param TIMEOUTCON2 10000 ms as timeout limit
+   * @param waitForNetOp2 1000 ms as wait for a network operation
+   * @param timeOutCon2 10000 ms as timeout limit
    * @param useCpuLimit True to enable cpuLimit on connection check
    * @param useJdKCpuLimit True to use JDK Cpu native or False for
    *     JavaSysMon
@@ -183,7 +182,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public WaarpConstraintLimitHandler(long WAITFORNETOP2, long TIMEOUTCON2,
+  public WaarpConstraintLimitHandler(long waitForNetOp2, long timeOutCon2,
                                      boolean useCpuLimit,
                                      boolean useJdKCpuLimit, double cpulimit,
                                      int channellimit, double lowcpuLimit,
@@ -192,8 +191,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
                                      AbstractTrafficShapingHandler handler,
                                      long delay, long limitLowBandwidth) {
     useCpuLimits = useCpuLimit;
-    WAITFORNETOP = WAITFORNETOP2;
-    TIMEOUTCON = TIMEOUTCON2;
+    waitForNetOp = waitForNetOp2;
+    timeoutCon = timeOutCon2;
     lowCpuLimit = lowcpuLimit;
     highCpuLimit = highcpuLimit;
     this.limitLowBandwidth = limitLowBandwidth;
@@ -210,8 +209,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
     } else if (percentageDecreaseRatio >= 1) {
       percentageDecreaseRatio /= 100;
     }
-    if (delay < WAITFORNETOP >> 1) {
-      this.delay = WAITFORNETOP;
+    if (delay < waitForNetOp >> 1) {
+      this.delay = waitForNetOp;
     }
     this.handler = handler;
     if (useCpuLimits || highCpuLimit > 0) {
@@ -264,7 +263,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   private double getLastLA() {
     final long newTime = System.currentTimeMillis();
     // first check if last test was done too shortly
-    if (newTime - lastTime < WAITFORNETOP >> 1) {
+    if (newTime - lastTime < waitForNetOp >> 1) {
       // If last test was wrong, then redo the test
       if (lastLA <= cpuLimit) {
         // last test was OK, so Continue
@@ -290,11 +289,9 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         lastAlert = NOALERT;
         return false;
       }
-      if (lastLA > cpuLimit) {
-        lastAlert = "CPU Constraint: " + lastLA + " > " + cpuLimit;
-        logger.debug(lastAlert);
-        return true;
-      }
+      lastAlert = "CPU Constraint: " + lastLA + " > " + cpuLimit;
+      logger.debug(lastAlert);
+      return true;
     }
     if (channelLimit > 0) {
       // FIXME since change that removes DbAdmin, this is no more accurate
@@ -334,19 +331,21 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
     if (!isServer) {
       return false;
     }
-    long delay = WAITFORNETOP >> 1;
+    long delayNew = waitForNetOp >> 1;
     if (useCpuLimits && cpuLimit < 1 && cpuLimit > 0) {
       final long newTime = System.currentTimeMillis();
       // first check if last test was done too shortly
-      if (newTime - lastTime < delay) {
+      if (newTime - lastTime < delayNew) {
         // If last test was wrong, then wait a bit then redo the test
         if (lastLA > cpuLimit) {
-          final double sleep = lastLA * delay * (step + 1) * random.nextFloat();
+          final double sleep =
+              lastLA * delayNew * (step + 1) * random.nextFloat();
           final long shorttime = ((long) sleep / 10) * 10;
           if (shorttime >= 10) {
             try {
               Thread.sleep(shorttime);
             } catch (final InterruptedException e) {
+              SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             }
           }
         } else {
@@ -357,10 +356,11 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       }
     }
     if (checkConstraints()) {
-      delay = getSleepTime() * (step + 1);
+      delayNew = getSleepTime() * (step + 1);
       try {
-        Thread.sleep(delay);
+        Thread.sleep(delayNew);
       } catch (final InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       return true;
     } else {
@@ -373,7 +373,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    * @return a time below TIMEOUTCON with a random
    */
   public long getSleepTime() {
-    return (((long) (TIMEOUTCON * random.nextFloat()) + 5000) / 10) * 10;
+    return (((long) (timeoutCon * random.nextFloat()) + 5000) / 10) * 10;
   }
 
   /**
@@ -462,7 +462,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       return;
     }
     if (curLA > highCpuLimit) {
-      CurLimits curlimit = null;
+      CurLimits curlimit;
       if (curLimits.isEmpty()) {
         // get current limit setting
         curlimit = new CurLimits(getReadLimit(), getWriteLimit());
@@ -497,10 +497,10 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         // Not same limit so add this limit
         curLimits.add(newlimit);
         logger.debug(
-            "Set new low limit since CPU = " + curLA + " " + newwrite + ":" +
+            "Set new low limit since CPU = " + curLA + ' ' + newwrite + ':' +
             newread);
         handler.configure(newlimit.write, newlimit.read);
-        nbSinceLastDecrease += payload;
+        nbSinceLastDecrease += PAYLOAD;
       }
     } else if (curLA < lowCpuLimit) {
       if (curLimits.isEmpty()) {
@@ -514,13 +514,13 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       }
       nbSinceLastDecrease = 0;
       curLimits.pollLast();
-      CurLimits newlimit = null;
+      CurLimits newlimit;
       if (curLimits.isEmpty()) {
         // reset to default limits
         final long newread = getReadLimit();
         final long newwrite = getWriteLimit();
         logger.debug(
-            "restore limit since CPU = " + curLA + " " + newwrite + ":" +
+            "restore limit since CPU = " + curLA + ' ' + newwrite + ':' +
             newread);
         handler.configure(newwrite, newread);
       } else {
@@ -529,11 +529,11 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         final long newread = newlimit.read;
         final long newwrite = newlimit.write;
         logger.debug(
-            "Set new upper limit since CPU = " + curLA + " " + newwrite + ":" +
+            "Set new upper limit since CPU = " + curLA + ' ' + newwrite + ':' +
             newread);
         handler.configure(newwrite, newread);
         // give extra payload to prevent a brutal return to normal
-        nbSinceLastDecrease = payload;
+        nbSinceLastDecrease = PAYLOAD;
       }
     }
   }

@@ -28,12 +28,9 @@ import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
@@ -41,18 +38,15 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.localhandler.packet.json.BandwidthJsonPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
-import java.net.SocketAddress;
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * This command enables the dynamic change of bandwidth limitation. It does not
  * changed the valuesin the
  * database but only dynamic values while the server is running and until it is
  * shutdown.
- *
- *
  */
 public class ChangeBandwidthLimits implements Runnable {
   /**
@@ -60,7 +54,7 @@ public class ChangeBandwidthLimits implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       "Need the configuration file as first argument then at least one of\n" +
       "   -wglob limitGlobalWrite\n" + "   -rglob limitGlobalRead\n" +
       "   -wsess limitSessionWrite\n" + "   -rsess limitSessionWrite\n" +
@@ -83,7 +77,7 @@ public class ChangeBandwidthLimits implements Runnable {
     writeSessionLimit = wsl;
     readSessionLimit = rsl;
     this.networkTransaction = networkTransaction;
-    host = Configuration.configuration.getHOST_SSLAUTH();
+    host = Configuration.configuration.getHostSslAuth();
   }
 
   public void setHost(DbHostAuth host) {
@@ -100,14 +94,13 @@ public class ChangeBandwidthLimits implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
     }
-    LocalChannelReference localChannelReference = AbstractTransfer
-        .tryConnect(host, future,
-                    networkTransaction);
+    LocalChannelReference localChannelReference =
+        AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    AbstractLocalPacket valid = null;
+    AbstractLocalPacket valid;
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
     if (useJson) {
@@ -116,15 +109,14 @@ public class ChangeBandwidthLimits implements Runnable {
           writeSessionLimit < 0 && readSessionLimit < 0) {
         // will ask current values instead
         node.setSetter(false);
-        valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
       } else {
         node.setSetter(true);
         node.setWriteglobal(writeGlobalLimit);
         node.setReadglobal(readGlobalLimit);
         node.setWritesession(writeSessionLimit);
         node.setReadsession(readSessionLimit);
-        valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
       }
+      valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
     } else {
       if (writeGlobalLimit < 0 && readGlobalLimit < 0 &&
           writeSessionLimit < 0 && readSessionLimit < 0) {
@@ -146,7 +138,7 @@ public class ChangeBandwidthLimits implements Runnable {
   protected static long sreadGlobalLimit = -1;
   protected static long swriteSessionLimit = -1;
   protected static long sreadSessionLimit = -1;
-  protected static String stohost = null;
+  protected static String stohost;
 
   protected static boolean getParams(String[] args) {
     if (args.length < 3) {
@@ -160,23 +152,24 @@ public class ChangeBandwidthLimits implements Runnable {
     }
     for (int i = 1; i < args.length; i++) {
       try {
-        if (args[i].equalsIgnoreCase("-wglob")) {
+        if ("-wglob".equalsIgnoreCase(args[i])) {
           i++;
           swriteGlobalLimit = Long.parseLong(args[i]);
-        } else if (args[i].equalsIgnoreCase("-rglob")) {
+        } else if ("-rglob".equalsIgnoreCase(args[i])) {
           i++;
           sreadGlobalLimit = Long.parseLong(args[i]);
-        } else if (args[i].equalsIgnoreCase("-wsess")) {
+        } else if ("-wsess".equalsIgnoreCase(args[i])) {
           i++;
           swriteSessionLimit = Long.parseLong(args[i]);
-        } else if (args[i].equalsIgnoreCase("-rsess")) {
+        } else if ("-rsess".equalsIgnoreCase(args[i])) {
           i++;
           sreadSessionLimit = Long.parseLong(args[i]);
-        } else if (args[i].equalsIgnoreCase("-host")) {
+        } else if ("-host".equalsIgnoreCase(args[i])) {
           i++;
           stohost = args[i];
         }
-      } catch (final NumberFormatException e) {
+      } catch (final NumberFormatException ignored) {
+        // nothing
       }
     }
     if (swriteGlobalLimit == -1 && sreadGlobalLimit == -1 &&
@@ -194,10 +187,10 @@ public class ChangeBandwidthLimits implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final long time1 = System.currentTimeMillis();
     final R66Future future = new R66Future(true);
@@ -217,10 +210,10 @@ public class ChangeBandwidthLimits implements Runnable {
               "Bandwidth in     FAILURE since Host is not found: " + stohost,
               e);
           networkTransaction.closeAll();
-          System.exit(10);
+          System.exit(10);//NOSONAR
         }
       } else {
-        stohost = Configuration.configuration.getHOST_SSLID();
+        stohost = Configuration.configuration.getHostSslId();
       }
       transaction.run();
       future.awaitOrInterruptible();
@@ -230,7 +223,7 @@ public class ChangeBandwidthLimits implements Runnable {
       final boolean useJson = PartnerConfiguration.useJson(stohost);
       logger.debug("UseJson: " + useJson);
       if (future.isSuccess()) {
-        String sresult = null;
+        String sresult;
         if (result.getOther() != null) {
           if (useJson) {
             sresult = ((JsonCommandPacket) result.getOther()).getRequest();
@@ -250,17 +243,15 @@ public class ChangeBandwidthLimits implements Runnable {
       } else {
         if (result.getCode() == ErrorCode.Warning) {
           logger.warn("Bandwidth is     WARNED", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         } else {
           logger.error("Bandwidth in     FAILURE", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         }
+        networkTransaction.closeAll();
+        System.exit(result.getCode().ordinal());//NOSONAR
       }
     } finally {
       networkTransaction.closeAll();
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
   }
 

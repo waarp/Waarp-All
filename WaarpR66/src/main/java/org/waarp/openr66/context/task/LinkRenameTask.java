@@ -27,6 +27,7 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 /**
  * Create a link of the current file and make the file pointing to it.
@@ -34,8 +35,6 @@ import java.io.File;
  * The link first tries to be a hard link, then a soft link, and if really not
  * possible (not supported by the
  * filesystem), it does a copy and rename task.
- *
- *
  */
 public class LinkRenameTask extends AbstractTask {
   /**
@@ -43,6 +42,7 @@ public class LinkRenameTask extends AbstractTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(LinkRenameTask.class);
+  private static final Pattern COMPILE = Pattern.compile(" ");
 
   /**
    * @param argRule
@@ -58,8 +58,8 @@ public class LinkRenameTask extends AbstractTask {
   @Override
   public void run() {
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" "));
-    logger.info("Move and Rename to " + finalname + " with " + argRule + ":" +
+    finalname = getReplacedValue(finalname, COMPILE.split(argTransfer));
+    logger.info("Move and Rename to " + finalname + " with " + argRule + ':' +
                 argTransfer + " and {}", session);
     // First try hard link
     // FIXME wait for NIO.2 in JDK7 to have such functions, in the meantime only move...
@@ -69,7 +69,7 @@ public class LinkRenameTask extends AbstractTask {
       FileUtils.copy(from, to, false, false);
     } catch (final Reply550Exception e1) {
       logger.error(
-          "Copy and Rename to " + finalname + " with " + argRule + ":" +
+          "Copy and Rename to " + finalname + " with " + argRule + ':' +
           argTransfer + " and " + session, e1);
       futureCompletion.setFailure(new OpenR66ProtocolSystemException(e1));
       return;

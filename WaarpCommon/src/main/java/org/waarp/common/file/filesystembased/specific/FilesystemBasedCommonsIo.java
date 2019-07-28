@@ -30,12 +30,14 @@ import java.io.IOException;
  * but loosing freespace and
  * wildcard support.
  * <p>
- *   Warning: FilesystemUtils from Apache Commons is deprecated but
- *   replacement FileStore is only from Java 1.7
+ * Warning: FilesystemUtils from Apache Commons is deprecated but
+ * replacement FileStore is only from Java 1.7
  * </p>
- *
  */
-public class FilesystemBasedCommonsIo {
+public final class FilesystemBasedCommonsIo {
+
+  private FilesystemBasedCommonsIo() {
+  }
 
   /**
    * @param pathname

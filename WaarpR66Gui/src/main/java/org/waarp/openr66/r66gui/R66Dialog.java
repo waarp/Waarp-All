@@ -42,12 +42,12 @@ class R66Dialog extends JDialog {
    */
   private static final long serialVersionUID = -6105635300084413738L;
   private final JPanel contentPanel = new JPanel();
-  JEditorPane textPaneDialog;
+  final JEditorPane textPaneDialog;
 
   /**
    * Create the dialog.
    */
-  public R66Dialog() {
+  R66Dialog() {
     setTitle("R66 Gui Dialog");
     setBounds(100, 100, 426, 298);
     getContentPane().setLayout(new BorderLayout());

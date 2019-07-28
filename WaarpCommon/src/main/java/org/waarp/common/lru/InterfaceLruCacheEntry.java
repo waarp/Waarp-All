@@ -22,7 +22,6 @@ package org.waarp.common.lru;
 /**
  * Cache Entry interface
  *
- *
  * @author Damian Momot
  */
 public interface InterfaceLruCacheEntry<V> {

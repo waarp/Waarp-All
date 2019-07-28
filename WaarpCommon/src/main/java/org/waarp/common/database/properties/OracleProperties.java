@@ -28,16 +28,17 @@ import java.sql.Statement;
 /**
  * Oracle Database Model
  */
-public class OracleProperties extends DbProperties {
+public class OracleProperties implements DbProperties {
   public static final String PROTOCOL = "h2";
 
-  private final String DRIVER_NAME = "oracle.jdbc.OracleDriver";
-  private final String VALIDATION_QUERY = "select 1 from dual";
-  private final String MAX_CONNECTION_QUERY =
+  private static final String DRIVER_NAME = "oracle.jdbc.OracleDriver";
+  private static final String VALIDATION_QUERY = "select 1 from dual";
+  private static final String MAX_CONNECTION_QUERY =
       "select limit_value " + "from v$resource_limit " +
       "where resource_name='sessions'";
 
   public OracleProperties() {
+    // nothing
   }
 
   public static String getProtocolID() {
@@ -67,10 +68,18 @@ public class OracleProperties extends DbProperties {
       return rs.getInt(1);
     } finally {
       if (rs != null) {
-        rs.close();
+        try {
+          rs.close();
+        } catch (SQLException ignored) {
+          // nothing
+        }
       }
       if (stm != null) {
-        stm.close();
+        try {
+          stm.close();
+        } catch (SQLException ignored) {
+          // nothing
+        }
       }
     }
   }

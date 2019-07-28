@@ -24,14 +24,12 @@ import org.waarp.common.file.filesystembased.FilesystemBasedAuthImpl;
 
 /**
  * Authentication implementation for Passthrough Based
- *
- *
  */
 public abstract class PassthroughBasedAuthImpl extends FilesystemBasedAuthImpl {
   /**
    * @param session
    */
-  public PassthroughBasedAuthImpl(SessionInterface session) {
+  protected PassthroughBasedAuthImpl(SessionInterface session) {
     super(session);
   }
 }

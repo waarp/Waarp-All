@@ -21,8 +21,6 @@ package org.waarp.ftp.core.exception;
 
 /**
  * Unknown Field exception
- *
- *
  */
 public class FtpUnknownFieldException extends Exception {
   /**

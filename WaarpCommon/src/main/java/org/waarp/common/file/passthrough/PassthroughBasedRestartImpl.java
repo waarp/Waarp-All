@@ -24,15 +24,13 @@ import org.waarp.common.file.filesystembased.FilesystemBasedRestartImpl;
 
 /**
  * Restart implementation for Passthrough Based
- *
- *
  */
 public abstract class PassthroughBasedRestartImpl
     extends FilesystemBasedRestartImpl {
   /**
    * @param session
    */
-  public PassthroughBasedRestartImpl(SessionInterface session) {
+  protected PassthroughBasedRestartImpl(SessionInterface session) {
     super(session);
   }
 }

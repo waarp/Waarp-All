@@ -23,8 +23,6 @@ package org.waarp.openr66.dao.xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -46,10 +44,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class XMLHostDAO implements HostDAO {
+import static org.waarp.openr66.dao.DAOFactory.*;
 
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(XMLHostDAO.class);
+public class XMLHostDAO implements HostDAO {
 
   /**
    * HashTable in case of lack of database
@@ -78,6 +75,7 @@ public class XMLHostDAO implements HostDAO {
 
   @Override
   public void close() {
+    // ignore
   }
 
   @Override
@@ -96,7 +94,7 @@ public class XMLHostDAO implements HostDAO {
       throw new DAOConnectionException("File doesn't exist");
     }
     try {
-      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().parse(file);
       // Setup XPath query
       final XPath xPath = XPathFactory.newInstance().newXPath();
@@ -132,17 +130,18 @@ public class XMLHostDAO implements HostDAO {
       throw new DAOConnectionException("File doesn't exist");
     }
     try {
-      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().parse(file);
       // Setup XPath variable
       final SimpleVariableResolver resolver = new SimpleVariableResolver();
-      resolver.addVariable(new QName(null, "hostid"), hostid);
+      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);
       // Setup XPath query
       final XPath xPath = XPathFactory.newInstance().newXPath();
       xPath.setXPathVariableResolver(resolver);
       final XPathExpression xpe = xPath.compile(XML_SELECT);
       // Query will return "" if nothing is found
-      return (!"".equals(xpe.evaluate(document)));
+      return xpe.evaluate(document) != null &&
+             !xpe.evaluate(document).isEmpty();
     } catch (final SAXException e) {
       throw new DAOConnectionException(e);
     } catch (final XPathExpressionException e) {
@@ -176,11 +175,11 @@ public class XMLHostDAO implements HostDAO {
           "File " + file.getPath() + " doesn't exist");
     }
     try {
-      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().parse(file);
       // Setup XPath variable
       final SimpleVariableResolver resolver = new SimpleVariableResolver();
-      resolver.addVariable(new QName(null, "hostid"), hostid);
+      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);
       // Setup XPath query
       final XPath xPath = XPathFactory.newInstance().newXPath();
       xPath.setXPathVariableResolver(resolver);

@@ -23,10 +23,7 @@ import org.snmp4j.smi.Counter32;
 
 /**
  * Generic Counter32 with update possibility for GoldenGate
- *
- *
  */
-@SuppressWarnings("serial")
 public abstract class WaarpCounter32 extends Counter32 {
   /**
    *
@@ -45,11 +42,11 @@ public abstract class WaarpCounter32 extends Counter32 {
    */
   protected abstract void setInternalValue(long value);
 
-  public WaarpCounter32() {
+  protected WaarpCounter32() {
     setInternalValue();
   }
 
-  public WaarpCounter32(long value) {
+  protected WaarpCounter32(long value) {
     setInternalValue(value);
   }
 

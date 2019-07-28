@@ -21,8 +21,6 @@ package org.waarp.gateway.kernel.session;
 
 /**
  * Interface for CommandExecutor (defined in WaarpR66 module since dependency)
- *
- *
  */
 public interface CommandExecutorInterface {
 

@@ -23,11 +23,11 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -42,14 +42,14 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.net.SocketAddress;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Local client to shutdown the server (using network)
- *
- *
  */
 public class ServerShutdown {
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       "Needs a correct configuration file as first argument and optionally [-nossl].\n" +
       "If '-block' or '-unblock' is specified, it will only block or unblock new request, but no shutdown will occur.\n" +
       "If '-restart' is specified, the server will shutdown then restart immediately";
@@ -65,19 +65,25 @@ public class ServerShutdown {
         WaarpLoggerFactory.getLogger(ServerShutdown.class);
     if (args.length < 1) {
       logger.error(_INFO_ARGS);
+      if (DetectionUtils.isJunit()) {
+        return;
+      }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
       return;
     }
     if (!FileBasedConfiguration
         .setConfigurationServerShutdownFromXml(Configuration.configuration,
                                                args[0])) {
       logger.error(_INFO_ARGS);
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
       return;
     }
     boolean useSsl = true;
@@ -86,44 +92,50 @@ public class ServerShutdown {
     boolean isRestart = false;
     if (args.length > 1) {
       for (int i = 1; i < args.length; i++) {
-        if (args[i].equalsIgnoreCase("-nossl")) {
+        if ("-nossl".equalsIgnoreCase(args[i])) {
           useSsl = false;
-        } else if (args[i].equalsIgnoreCase("-block")) {
+        } else if ("-block".equalsIgnoreCase(args[i])) {
           isblock = true;
-        } else if (args[i].equalsIgnoreCase("-unblock")) {
+        } else if ("-unblock".equalsIgnoreCase(args[i])) {
           isunblock = true;
-        } else if (args[i].equalsIgnoreCase("-restart")) {
+        } else if ("-restart".equalsIgnoreCase(args[i])) {
           isRestart = true;
         }
       }
     }
-    DbHostAuth host = null;
+    DbHostAuth host;
     if (useSsl) {
-      host = Configuration.configuration.getHOST_SSLAUTH();
+      host = Configuration.configuration.getHostSslAuth();
     } else {
-      host = Configuration.configuration.getHOST_AUTH();
+      host = Configuration.configuration.getHostAuth();
     }
     if (host == null) {
       logger.error("Host id not found while SSL mode is : " + useSsl);
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
       return;
     }
     if (isunblock && isblock) {
       logger.error("Only one of '-block' or '-unblock' must be specified");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
       return;
     }
     byte[] key;
     key = FilesystemBasedDigest
-        .passwdCrypt(Configuration.configuration.getSERVERADMINKEY());
+        .passwdCrypt(Configuration.configuration.getServerAdminKey());
     final AbstractLocalPacket packet;
     if (isblock || isunblock) {
       packet = new BlockRequestPacket(isblock, key);
@@ -139,8 +151,11 @@ public class ServerShutdown {
       socketServerAddress = host.getSocketAddress();
     } catch (final IllegalArgumentException e) {
       logger.error("Needs a correct configuration file as first argument");
+      if (DetectionUtils.isJunit()) {
+        return;
+      }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
       return;
     }
     Configuration.configuration.pipelineInit();
@@ -168,9 +183,9 @@ public class ServerShutdown {
       } else {
         final R66Result result =
             localChannelReference.getFutureRequest().getResult();
-        logger.error("Cannot " + (isblock? "Blocking" : "Unblocking") + ": " +
-                     result.toString(),
-                     localChannelReference.getFutureRequest().getCause());
+        logger.error(
+            "Cannot " + (isblock? "Blocking" : "Unblocking") + ": " + result,
+            localChannelReference.getFutureRequest().getCause());
         value = result.getCode().ordinal();
       }
     } else {
@@ -189,14 +204,17 @@ public class ServerShutdown {
           logger.warn("Shutdown command done");
           value = 0;
         } else {
-          logger.error("Cannot Shutdown: " + result.toString(),
+          logger.error("Cannot Shutdown: " + result,
                        localChannelReference.getFutureRequest().getCause());
           value = result.getCode().ordinal();
         }
       }
     }
     networkTransaction.closeAll();
-    System.exit(value);
+    if (DetectionUtils.isJunit()) {
+      return;
+    }
+    System.exit(value);//NOSONAR
   }
 
 }

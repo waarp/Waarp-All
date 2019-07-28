@@ -19,13 +19,9 @@
  */
 package org.waarp.common.utility;
 
-import org.waarp.common.exception.InvalidArgumentException;
+import com.google.common.base.Charsets;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.regex.Pattern;
 
 
 /**
@@ -35,42 +31,12 @@ public final class StringUtils {
   /**
    * Random Generator
    */
-  //1.7: private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
-  public static final Random RANDOM = new Random();
+  public static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
   public static final String LINE_SEP;
-  // default parameters for XML check
-  private static final String CDATA_TAG_UNESCAPED = "<![CDATA[";
-  private static final String CDATA_TAG_ESCAPED = "&lt;![CDATA[";
-  private static final String ENTITY_TAG_UNESCAPED = "<!ENTITY";
-  private static final String ENTITY_TAG_ESCAPED = "&lt;!ENTITY";
-  // default parameters for Javascript check
-  private static final String SCRIPT_TAG_UNESCAPED = "<script>";
-  private static final String SCRIPT_TAG_ESCAPED = "&lt;script&gt;";
-  // default parameters for Json check
-  private static final String TAG_START =
-      "\\<\\w+((\\s+\\w+(\\s*\\=\\s*(?:\".*?\"|'.*?'|[^'\"\\>\\s]+))?)+\\s*|\\s*)\\>";
-  private static final String TAG_END = "\\</\\w+\\>";
-  private static final String TAG_SELF_CLOSING =
-      "\\<\\w+((\\s+\\w+(\\s*\\=\\s*(?:\".*?\"|'.*?'|[^'\"\\>\\s]+))?)+\\s*|\\s*)/\\>";
-  private static final String HTML_ENTITY = "&[a-zA-Z][a-zA-Z0-9]+;";
-  public static final Pattern HTML_PATTERN = Pattern.compile(
-      "(" + TAG_START + ".*" + TAG_END + ")|(" + TAG_SELF_CLOSING + ")|(" +
-      HTML_ENTITY + ")", Pattern.DOTALL);
-  // Default ASCII for Param check
-  public static final Pattern UNPRINTABLE_PATTERN =
-      Pattern.compile("[\\p{Cntrl}&&[^\r\n\t]]");
-  public static final List<String> RULES = new ArrayList<String>();
 
   static {
-    RULES.add(CDATA_TAG_UNESCAPED);
-    RULES.add(CDATA_TAG_ESCAPED);
-    RULES.add(ENTITY_TAG_UNESCAPED);
-    RULES.add(ENTITY_TAG_ESCAPED);
-    RULES.add(SCRIPT_TAG_UNESCAPED);
-    RULES.add(SCRIPT_TAG_ESCAPED);
-    LINE_SEP =
-        SystemPropertyUtil.get("line.separator");
+    LINE_SEP = SystemPropertyUtil.get("line.separator");
   }
 
   /**
@@ -80,44 +46,10 @@ public final class StringUtils {
   /**
    * UTF-8 Charset
    */
-  public static final Charset UTF8 = Charset.forName(UTF_8);
+  public static final Charset UTF8 = Charsets.UTF_8;
 
   private StringUtils() {
     // empty
-  }
-
-  /**
-   * Check external argument to avoid Path Traversal attack
-   *
-   * @param value to check
-   *
-   * @throws InvalidArgumentException
-   */
-  public static String checkSanityString(String value)
-      throws InvalidArgumentException {
-    checkSanityString(new String[] { value });
-    return value;
-  }
-
-  /**
-   * Check external argument
-   *
-   * @param strings
-   *
-   * @throws InvalidArgumentException
-   */
-  public static void checkSanityString(String... strings)
-      throws InvalidArgumentException {
-    for (String field : strings) {
-      if (UNPRINTABLE_PATTERN.matcher(field).find()) {
-        throw new InvalidArgumentException("Invalid input bytes");
-      }
-      for (final String rule : RULES) {
-        if (field != null && rule != null && field.contains(rule)) {
-          throw new InvalidArgumentException("Invalid tag sanity check");
-        }
-      }
-    }
   }
 
   /**
@@ -125,7 +57,7 @@ public final class StringUtils {
    *
    * @return a byte array with random values
    */
-  public static final byte[] getRandom(final int length) {
+  public static byte[] getRandom(final int length) {
     if (length <= 0) {
       return SingletonUtils.getSingletonByteArray();
     }
@@ -145,8 +77,7 @@ public final class StringUtils {
    *
    * @throws IllegalArgumentException if bytesString is null or empty
    */
-  public static final byte[] getBytesFromArraysToString(
-      final String bytesString) {
+  public static byte[] getBytesFromArraysToString(final String bytesString) {
     ParametersChecker
         .checkParameter("Should not be null or empty", bytesString);
     final String[] strings =
@@ -167,7 +98,7 @@ public final class StringUtils {
    *
    * @return the short name of the Class of this object
    */
-  public static final String getClassName(Object object) {
+  public static String getClassName(Object object) {
     final Class<?> clasz = object.getClass();
     String name = clasz.getSimpleName();
     if (name != null && !name.isEmpty()) {

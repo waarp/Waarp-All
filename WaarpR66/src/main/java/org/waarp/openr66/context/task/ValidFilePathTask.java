@@ -39,8 +39,6 @@ import java.io.File;
  * For instance "#OUTPATH# #INPATH# #WORKPATH# #ARHCPATH#" will test that the
  * current file is in one of the
  * standard path.
- *
- *
  */
 public class ValidFilePathTask extends AbstractTask {
   /**
@@ -64,25 +62,24 @@ public class ValidFilePathTask extends AbstractTask {
   public void run() {
     String finalname = argRule;
     finalname = AbstractDir
-        .normalizePath(getReplacedValue(finalname, argTransfer.split(" ")));
+        .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)));
     logger.info("Test Valid Path with " + finalname + " from {}", session);
     final File from = session.getFile().getTrueFile();
     final String curpath = AbstractDir.normalizePath(from.getAbsolutePath());
-    final String[] paths = finalname.split(" ");
+    final String[] paths = BLANK.split(finalname);
     for (final String base : paths) {
       if (curpath.startsWith(base)) {
         if (delay > 0) {
           logger.info(
               "Validate File " + curpath + " from " + base + " and     " +
-              session.toString());
+              session);
         }
         futureCompletion.setSuccess();
         return;
       }
     }
     if (delay > 0) {
-      logger
-          .error("Unvalidate File: " + curpath + "     " + session.toString());
+      logger.error("Unvalidate File: " + curpath + "     " + session);
     }
     futureCompletion
         .setFailure(new OpenR66RunnerException("File not Validated"));

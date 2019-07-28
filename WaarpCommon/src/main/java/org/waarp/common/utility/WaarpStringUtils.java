@@ -19,6 +19,8 @@
  */
 package org.waarp.common.utility;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.dom4j.Node;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -26,8 +28,6 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
@@ -40,10 +40,8 @@ import java.util.GregorianCalendar;
 
 /**
  * Various utilities for reading files, transforming dates, ...
- *
- *
  */
-public class WaarpStringUtils {
+public final class WaarpStringUtils {
   public static final String UTF_8 = "UTF-8";
 
   /**
@@ -56,6 +54,9 @@ public class WaarpStringUtils {
    * Format used for Files
    */
   public static final Charset UTF8 = Charset.forName(UTF_8);
+
+  private WaarpStringUtils() {
+  }
 
   /**
    * Read a file and return its content in String format
@@ -76,32 +77,12 @@ public class WaarpStringUtils {
           "File is too big for this convenience method (" + file.length() +
           " bytes).");
     }
-    final char[] chars = new char[(int) file.length()];
-    FileReader fileReader;
     try {
-      fileReader = new FileReader(file);
-    } catch (final FileNotFoundException e) {
-      logger.error("File not found while trying to access: " + filename, e);
-      throw new InvalidArgumentException(
-          "File not found while trying to access", e);
-      // return null;
-    }
-    try {
-      fileReader.read(chars);
-    } catch (final IOException e) {
-      try {
-        fileReader.close();
-      } catch (final IOException e1) {
-      }
+      return Files.toString(file, Charsets.UTF_8);
+    } catch (IOException e) {
       logger.error("Error on File while trying to read: " + filename, e);
       throw new FileTransferException("Error on File while trying to read", e);
-      // return null;
     }
-    try {
-      fileReader.close();
-    } catch (final IOException e) {
-    }
-    return new String(chars);
   }
 
   /**
@@ -130,7 +111,7 @@ public class WaarpStringUtils {
    *
    * @return the corresponding Timestamp
    */
-  public static final Timestamp fixDate(String date) {
+  public static Timestamp fixDate(String date) {
     Timestamp tdate = null;
     if (date == null) {
       return tdate;
@@ -165,7 +146,7 @@ public class WaarpStringUtils {
    *
    * @return the end date
    */
-  public static final Timestamp fixDate(String date, Timestamp before) {
+  public static Timestamp fixDate(String date, Timestamp before) {
     Timestamp tdate = null;
     if (date == null) {
       return tdate;
@@ -193,7 +174,7 @@ public class WaarpStringUtils {
     return tdate;
   }
 
-  public static final Timestamp getTodayMidnight() {
+  public static Timestamp getTodayMidnight() {
     final GregorianCalendar calendar = new GregorianCalendar();
     calendar.set(Calendar.HOUR_OF_DAY, 0);
     calendar.set(Calendar.MINUTE, 0);
@@ -254,8 +235,8 @@ public class WaarpStringUtils {
    *
    * @return True if one element is found
    */
-  public static final boolean replace(StringBuilder builder, String find,
-                                      String replace) {
+  public static boolean replace(StringBuilder builder, String find,
+                                String replace) {
     if (find == null) {
       return false;
     }
@@ -280,9 +261,10 @@ public class WaarpStringUtils {
    * @param find
    * @param replace
    */
-  public static final void replaceAll(StringBuilder builder, String find,
-                                      String replace) {
+  public static void replaceAll(StringBuilder builder, String find,
+                                String replace) {
     while (replace(builder, find, replace)) {
+      // nothing
     }
   }
 
@@ -294,7 +276,7 @@ public class WaarpStringUtils {
    *
    * @return the String of length count filled with fillChar
    */
-  public static final String fillString(char fillChar, int count) {
+  public static String fillString(char fillChar, int count) {
     final char[] chars = new char[count];
     Arrays.fill(chars, fillChar);
     return new String(chars);
@@ -308,7 +290,7 @@ public class WaarpStringUtils {
    *
    * @return the cleaned String
    */
-  public static final String cleanJsonForHtml(String json) {
+  public static String cleanJsonForHtml(String json) {
     return json.replaceAll("([^\\\\])\\\\n", "$1")
                .replaceAll("([^\\\\])\\\\r", "$1")
                .replaceAll("([^\\\\])\\\\\"", "$1").replace("\\\\", "\\\\\\\\");

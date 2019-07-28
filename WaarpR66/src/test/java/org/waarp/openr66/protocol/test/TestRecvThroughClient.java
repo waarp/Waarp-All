@@ -27,7 +27,7 @@ import org.waarp.openr66.client.RecvThroughClient;
 import org.waarp.openr66.client.RecvThroughHandler;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
@@ -35,8 +35,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 /**
  * Test class for Recv Through client
- *
- *
  */
 public class TestRecvThroughClient extends RecvThroughClient {
   /**
@@ -55,7 +53,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
                                int blocksize,
                                NetworkTransaction networkTransaction) {
     super(future, handler, remoteHost, filename, rulename, fileinfo, isMD5,
-          blocksize, DbConstant.ILLEGALVALUE, networkTransaction);
+          blocksize, DbConstantR66.ILLEGALVALUE, networkTransaction);
   }
 
   /**
@@ -68,10 +66,10 @@ public class TestRecvThroughClient extends RecvThroughClient {
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (DbConstantR66.admin != null) {
+        DbConstantR66.admin.close();
       }
-      DetectionUtils.SystemExit(1);
+      DetectionUtils.systemExit(1);
       return;
     }
     Configuration.configuration.pipelineInit();
@@ -106,22 +104,20 @@ public class TestRecvThroughClient extends RecvThroughClient {
         if (result == null || result.getRunner() == null) {
           logger.warn("Transfer in Error with no Id", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(1);
+          DetectionUtils.systemExit(1);
           return;
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
           logger.warn("Transfer in Warning with Id: " +
                       result.getRunner().getSpecialId(), future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(result.getCode().ordinal());
-          return;
+          DetectionUtils.systemExit(result.getCode().ordinal());
         } else {
           logger.error(
               "Transfer in Error with Id: " + result.getRunner().getSpecialId(),
               future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(result.getCode().ordinal());
-          return;
+          DetectionUtils.systemExit(result.getCode().ordinal());
         }
       }
     } finally {

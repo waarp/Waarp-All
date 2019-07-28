@@ -23,7 +23,6 @@ import org.waarp.common.utility.Hexa;
 import org.waarp.common.utility.StringUtils;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -36,8 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <br>
  * But force sequence and take care of errors and improves some performance
  * issues
- *
- *
  */
 public final class LongUuid {
   /**
@@ -162,7 +159,7 @@ public final class LongUuid {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof LongUuid)) {
+    if (!(o instanceof LongUuid)) {
       return false;
     }
     return this == o || Arrays.equals(uuid, ((LongUuid) o).uuid);

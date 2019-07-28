@@ -24,8 +24,6 @@ import org.waarp.snmp.interf.WaarpCounter32;
 
 /**
  * Ftp Exec Counter32 SNMP implementation
- *
- *
  */
 class FtpCounter32 extends WaarpCounter32 {
 
@@ -36,13 +34,13 @@ class FtpCounter32 extends WaarpCounter32 {
   private int type = 1;
   private final int entry;
 
-  public FtpCounter32(int type, int entry) {
+  FtpCounter32(int type, int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  public FtpCounter32(int type, int entry, long value) {
+  FtpCounter32(int type, int entry, long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -50,7 +48,8 @@ class FtpCounter32 extends WaarpCounter32 {
 
   @Override
   protected void setInternalValue() {
-    FileBasedConfiguration.fileBasedConfiguration.monitoring.run(type, entry);
+    FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
+                                                 .run(type, entry);
   }
 
   @Override

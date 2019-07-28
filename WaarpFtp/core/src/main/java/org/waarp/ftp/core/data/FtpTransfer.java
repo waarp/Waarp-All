@@ -30,8 +30,6 @@ import java.util.List;
 
 /**
  * Class that owns one transfer to be run
- *
- *
  */
 public class FtpTransfer {
   private static final WaarpLogger logger =
@@ -84,7 +82,8 @@ public class FtpTransfer {
     currentFile = file;
     try {
       path = file.getFile();
-    } catch (final CommandAbstractException e) {
+    } catch (final CommandAbstractException ignored) {
+      // nothing
     }
     info = null;
   }
@@ -144,6 +143,6 @@ public class FtpTransfer {
    */
   @Override
   public String toString() {
-    return command.name() + " " + path;
+    return command.name() + ' ' + path;
   }
 }

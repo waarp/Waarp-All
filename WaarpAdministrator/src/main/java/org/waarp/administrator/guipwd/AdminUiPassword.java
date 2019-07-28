@@ -26,8 +26,6 @@ import java.util.List;
 
 /**
  * Password Gui helper
- *
- *
  */
 public class AdminUiPassword extends WaarpUiPassword {
 

@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 502 Command not implemented.
- *
- *
  */
 public class Reply502Exception extends CommandAbstractException {
 

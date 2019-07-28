@@ -24,8 +24,6 @@ import org.waarp.snmp.interf.WaarpGauge32;
 
 /**
  * Example of WaarpGauge32 Usage
- *
- *
  */
 @SuppressWarnings("serial")
 public class ExampleImplGauge32 extends WaarpGauge32 {
@@ -44,7 +42,6 @@ public class ExampleImplGauge32 extends WaarpGauge32 {
    *
    */
   public ExampleImplGauge32(OID oid) {
-    super();
     this.oid = oid;
   }
 

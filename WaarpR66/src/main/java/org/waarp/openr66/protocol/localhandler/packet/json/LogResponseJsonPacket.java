@@ -23,14 +23,13 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Export Log response JSON packet
- *
- *
  */
 public class LogResponseJsonPacket extends LogJsonPacket {
 
   protected byte command;
   protected String filename;
-  protected long exported, purged;
+  protected long exported;
+  protected long purged;
 
   /**
    * @return the command
@@ -90,6 +89,6 @@ public class LogResponseJsonPacket extends LogJsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.LOGPACKET);
+    setRequestUserPacket(LocalPacketFactory.LOGPACKET);
   }
 }

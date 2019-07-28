@@ -20,6 +20,7 @@
 package org.waarp.openr66.context.task;
 
 import org.waarp.common.file.AbstractDir;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.R66Session;
@@ -41,8 +42,6 @@ import java.io.IOException;
  * be used.<br>
  * <p>
  * delay >= 1 will make a log using info level for 1, warn level for 2.
- *
- *
  */
 public class UnzeroedFileTask extends AbstractTask {
   /**
@@ -75,36 +74,28 @@ public class UnzeroedFileTask extends AbstractTask {
         out.write(toWrite.getBytes());
         if (delay > 0) {
           if (delay > 1) {
-            logger.warn(
-                "Unzeroed File: " + curpath + " from " + session.toString());
+            logger.warn("Unzeroed File: " + curpath + " from " + session);
           } else {
-            logger.info(
-                "Unzeroed File: " + curpath + " from " + session.toString());
+            logger.info("Unzeroed File: " + curpath + " from " + session);
           }
         }
         futureCompletion.setSuccess();
       } catch (final IOException e) {
-        logger.error(
-            "Cannot unzeroed File: " + curpath + " from " + session.toString());
+        logger.error("Cannot unzeroed File: " + curpath + " from " + session);
         futureCompletion
             .setFailure(new OpenR66RunnerException("File not Unzeroed"));
       } finally {
-        if (out != null) {
-          try {
-            out.close();
-          } catch (final IOException e) {
-          }
-        }
+        FileUtils.close(out);
       }
       return;
     }
     if (delay > 0) {
       if (delay > 1) {
-        logger.warn("Unzeroed File not applicable to " + curpath + " from " +
-                    session.toString());
+        logger.warn(
+            "Unzeroed File not applicable to " + curpath + " from " + session);
       } else {
-        logger.info("Unzeroed File not applicable to " + curpath + " from " +
-                    session.toString());
+        logger.info(
+            "Unzeroed File not applicable to " + curpath + " from " + session);
       }
     }
     futureCompletion.setSuccess();

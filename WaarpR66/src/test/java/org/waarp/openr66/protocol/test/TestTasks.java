@@ -46,7 +46,9 @@ import org.waarp.openr66.context.task.UnzeroedFileTask;
 import org.waarp.openr66.context.task.ValidFilePathTask;
 import org.waarp.openr66.context.task.ZipTask;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.context.task.javatask.AddDigestJavaTask;
+import org.waarp.openr66.context.task.javatask.AddUuidJavaTask;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -60,8 +62,6 @@ import static org.junit.Assert.*;
 
 /**
  * The object of this class is to test various tasks.
- *
- *
  */
 public class TestTasks {
 
@@ -86,7 +86,7 @@ public class TestTasks {
     final String in = args[1];
     final String out = args[2];
     final String filename = args[3];
-    final File file = new File(in + "/" + filename);
+    final File file = new File(in + '/' + filename);
     final File out2 = new File(out + "/move");
     out2.mkdirs();
     final long size = file.length();
@@ -103,11 +103,11 @@ public class TestTasks {
                           argTransfer, size,
                           PartnerConfiguration.BAR_SEPARATOR_FIELD);
     DbTaskRunner runner = null;
-    DbConstant.admin = new DbAdmin();
+    DbConstantR66.admin = new DbAdmin();
     session.getAuth().specialNoSessionAuth(false, "false");
     try {
       runner = new DbTaskRunner(session, rule, false, requestPacket);
-    } catch (final WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException ignored) {
     }
     runner.setPostTask();
     session.setBadRunner(runner, ErrorCode.QueryAlreadyFinished);
@@ -120,8 +120,8 @@ public class TestTasks {
     fileCheckTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println(
         "FileCheckTask: " + fileCheckTask.getFutureCompletion().isSuccess());
-    assertEquals("FileCheckTask should be OK", true,
-                 fileCheckTask.getFutureCompletion().isSuccess());
+    assertTrue("FileCheckTask should be OK",
+               fileCheckTask.getFutureCompletion().isSuccess());
 
     // UnzeroedFileTask
     final UnzeroedFileTask unzeroedFileTask =
@@ -130,8 +130,8 @@ public class TestTasks {
     unzeroedFileTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("UnzeroedFileTask: " +
                        unzeroedFileTask.getFutureCompletion().isSuccess());
-    assertEquals("UnzeroedFileTask should be OK", true,
-                 unzeroedFileTask.getFutureCompletion().isSuccess());
+    assertTrue("UnzeroedFileTask should be OK",
+               unzeroedFileTask.getFutureCompletion().isSuccess());
 
     // CHMOD
     final ChModTask chModTask = new ChModTask("u=rw", 1, argTransfer, session);
@@ -139,8 +139,8 @@ public class TestTasks {
     chModTask.getFutureCompletion().awaitOrInterruptible();
     System.out
         .println("ChModTask: " + chModTask.getFutureCompletion().isSuccess());
-    assertEquals("ChModTask should be OK", true,
-                 chModTask.getFutureCompletion().isSuccess());
+    assertTrue("ChModTask should be OK",
+               chModTask.getFutureCompletion().isSuccess());
 
     // SNMP
     final SnmpTask snmpTask = new SnmpTask(argRule, 0, argTransfer, session);
@@ -148,24 +148,47 @@ public class TestTasks {
     snmpTask.getFutureCompletion().awaitOrInterruptible();
     System.out
         .println("SnmpTask: " + snmpTask.getFutureCompletion().isSuccess());
-    assertEquals("SnmpTask should be OK", true,
-                 snmpTask.getFutureCompletion().isSuccess());
+    assertTrue("SnmpTask should be OK",
+               snmpTask.getFutureCompletion().isSuccess());
 
     // LOG
     LogTask logTask = new LogTask(argRule, 1, argTransfer, session);
     logTask.run();
     logTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("LOG: " + logTask.getFutureCompletion().isSuccess());
-    assertEquals("LOG should be OK", true,
-                 logTask.getFutureCompletion().isSuccess());
+    assertTrue("LOG should be OK", logTask.getFutureCompletion().isSuccess());
     // LOG
     logTask =
-        new LogTask(argRule + " " + out + "/log.txt", 3, argTransfer, session);
+        new LogTask(argRule + ' ' + out + "/log.txt", 3, argTransfer, session);
     logTask.run();
     logTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("LOG2: " + logTask.getFutureCompletion().isSuccess());
-    assertEquals("LOG2 should be OK", true,
-                 logTask.getFutureCompletion().isSuccess());
+    assertTrue("LOG2 should be OK", logTask.getFutureCompletion().isSuccess());
+
+    // ADDDIGEST
+    final AddDigestJavaTask addDigestJavaTask = new AddDigestJavaTask();
+    String arg = "-digest SHA512 -format -##DIGEST##";
+    addDigestJavaTask
+        .setArgs(session, true, false, 0, AddDigestJavaTask.class.getName(),
+                 arg, false, false);
+    addDigestJavaTask.run();
+    System.out.println(
+        "ADDDIGEST: " + addDigestJavaTask.getFinalStatus() + ":" +
+        session.getRunner().getFileInformation());
+    assertEquals("ADDIGEST should be OK", 0,
+                 addDigestJavaTask.getFinalStatus());
+
+    // UUID
+    final AddUuidJavaTask addUuidJavaTask = new AddUuidJavaTask();
+    arg = "-format -##UUID##";
+    addUuidJavaTask
+        .setArgs(session, true, false, 0, AddUuidJavaTask.class.getName(), arg,
+                 false, false);
+    addUuidJavaTask.run();
+    System.out.println("ADDUUID: " + addUuidJavaTask.getFinalStatus() + ":" +
+                       session.getRunner().getFileInformation());
+    assertEquals("ADDUUID should be OK", 0, addUuidJavaTask.getFinalStatus());
+
 
     // COPYRENAME
     CopyRenameTask copyRenameTask =
@@ -174,16 +197,15 @@ public class TestTasks {
     copyRenameTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println(
         "COPYRENAME: " + copyRenameTask.getFutureCompletion().isSuccess());
-    assertEquals("COPYRENAME should be OK", true,
-                 copyRenameTask.getFutureCompletion().isSuccess());
+    assertTrue("COPYRENAME should be OK",
+               copyRenameTask.getFutureCompletion().isSuccess());
 
     // COPY
     final CopyTask copyTask = new CopyTask(out, 0, argTransfer, session);
     copyTask.run();
     copyTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("COPY: " + copyTask.getFutureCompletion().isSuccess());
-    assertEquals("COPY should be OK", true,
-                 copyTask.getFutureCompletion().isSuccess());
+    assertTrue("COPY should be OK", copyTask.getFutureCompletion().isSuccess());
 
     // EXEC
     final ExecTask execTask =
@@ -191,8 +213,7 @@ public class TestTasks {
     execTask.run();
     execTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("EXEC: " + execTask.getFutureCompletion().isSuccess());
-    assertEquals("EXEC should be OK", true,
-                 execTask.getFutureCompletion().isSuccess());
+    assertTrue("EXEC should be OK", execTask.getFutureCompletion().isSuccess());
 
     // EXECOUTPUT
     final ExecOutputTask execOutputTask =
@@ -201,8 +222,8 @@ public class TestTasks {
     execOutputTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println(
         "EXECOUTPUT: " + execOutputTask.getFutureCompletion().isSuccess());
-    assertEquals("EXECOUTPUT should be OK", true,
-                 execOutputTask.getFutureCompletion().isSuccess());
+    assertTrue("EXECOUTPUT should be OK",
+               execOutputTask.getFutureCompletion().isSuccess());
 
     // VALIDFILEPATH
     final ValidFilePathTask validFilePathTask =
@@ -211,8 +232,8 @@ public class TestTasks {
     validFilePathTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("VALIDFILEPATH: " +
                        validFilePathTask.getFutureCompletion().isSuccess());
-    assertEquals("VALIDFILEPATH should be OK", true,
-                 validFilePathTask.getFutureCompletion().isSuccess());
+    assertTrue("VALIDFILEPATH should be OK",
+               validFilePathTask.getFutureCompletion().isSuccess());
 
     // TAR
     TarTask tarTask =
@@ -220,16 +241,14 @@ public class TestTasks {
     tarTask.run();
     tarTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("TAR: " + tarTask.getFutureCompletion().isSuccess());
-    assertEquals("TAR should be OK", true,
-                 tarTask.getFutureCompletion().isSuccess());
+    assertTrue("TAR should be OK", tarTask.getFutureCompletion().isSuccess());
 
     tarTask = new TarTask(out + "/test.tar " + out + "/move", 1, argTransfer,
                           session);
     tarTask.run();
     tarTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("UNTAR: " + tarTask.getFutureCompletion().isSuccess());
-    assertEquals("UNTAR should be OK", true,
-                 tarTask.getFutureCompletion().isSuccess());
+    assertTrue("UNTAR should be OK", tarTask.getFutureCompletion().isSuccess());
 
     // ZIP
     ZipTask zipTask =
@@ -237,16 +256,14 @@ public class TestTasks {
     zipTask.run();
     zipTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("ZIP: " + zipTask.getFutureCompletion().isSuccess());
-    assertEquals("ZIP should be OK", true,
-                 zipTask.getFutureCompletion().isSuccess());
+    assertTrue("ZIP should be OK", zipTask.getFutureCompletion().isSuccess());
 
     zipTask = new ZipTask(out + "/test.zip " + out + "/move", 1, argTransfer,
                           session);
     zipTask.run();
     zipTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("UNZIP: " + zipTask.getFutureCompletion().isSuccess());
-    assertEquals("UNZIP should be OK", true,
-                 zipTask.getFutureCompletion().isSuccess());
+    assertTrue("UNZIP should be OK", zipTask.getFutureCompletion().isSuccess());
 
     // TRANSCODE
     final TranscodeTask transcodeTask =
@@ -256,8 +273,8 @@ public class TestTasks {
     transcodeTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println(
         "TRANSCODE: " + transcodeTask.getFutureCompletion().isSuccess());
-    assertEquals("TRANSCODE should be OK", true,
-                 transcodeTask.getFutureCompletion().isSuccess());
+    assertTrue("TRANSCODE should be OK",
+               transcodeTask.getFutureCompletion().isSuccess());
 
     // MOVERENAME
     final MoveRenameTask moveReameTask =
@@ -266,8 +283,8 @@ public class TestTasks {
     moveReameTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println(
         "MOVERENAME: " + moveReameTask.getFutureCompletion().isSuccess());
-    assertEquals("MOVERENAME should be OK", true,
-                 moveReameTask.getFutureCompletion().isSuccess());
+    assertTrue("MOVERENAME should be OK",
+               moveReameTask.getFutureCompletion().isSuccess());
 
     try {
       session.setFileAfterPreRunner(false);
@@ -279,13 +296,13 @@ public class TestTasks {
       fail(e.getMessage());
     }
     copyRenameTask =
-        new CopyRenameTask(in + "/" + filename, 0, argTransfer, session);
+        new CopyRenameTask(in + '/' + filename, 0, argTransfer, session);
     copyRenameTask.run();
     copyRenameTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println(
         "COPYRENAME: " + copyRenameTask.getFutureCompletion().isSuccess());
-    assertEquals("COPYRENAME should be OK", true,
-                 copyRenameTask.getFutureCompletion().isSuccess());
+    assertTrue("COPYRENAME should be OK",
+               copyRenameTask.getFutureCompletion().isSuccess());
 
     // MOVE
     final MoveTask moveTask =
@@ -293,23 +310,20 @@ public class TestTasks {
     moveTask.run();
     moveTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("MOVE: " + moveTask.getFutureCompletion().isSuccess());
-    assertEquals("MOVE should be OK", true,
-                 moveTask.getFutureCompletion().isSuccess());
+    assertTrue("MOVE should be OK", moveTask.getFutureCompletion().isSuccess());
 
     zipTask = new ZipTask(out + "/testx.zip " + out, 2, argTransfer, session);
     zipTask.run();
     zipTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("ZIP: " + zipTask.getFutureCompletion().isSuccess());
-    assertEquals("ZIP should be OK", true,
-                 zipTask.getFutureCompletion().isSuccess());
+    assertTrue("ZIP should be OK", zipTask.getFutureCompletion().isSuccess());
 
     zipTask = new ZipTask(out + "/testx.zip " + out + "/move", 1, argTransfer,
                           session);
     zipTask.run();
     zipTask.getFutureCompletion().awaitOrInterruptible();
     System.out.println("UNZIP: " + zipTask.getFutureCompletion().isSuccess());
-    assertEquals("UNZIP should be OK", true,
-                 zipTask.getFutureCompletion().isSuccess());
+    assertTrue("UNZIP should be OK", zipTask.getFutureCompletion().isSuccess());
 
     // RENAME
     final RenameTask renameTask =
@@ -318,8 +332,8 @@ public class TestTasks {
     renameTask.getFutureCompletion().awaitOrInterruptible();
     System.out
         .println("RenameTask: " + renameTask.getFutureCompletion().isSuccess());
-    assertEquals("RenameTask should be OK", true,
-                 renameTask.getFutureCompletion().isSuccess());
+    assertTrue("RenameTask should be OK",
+               renameTask.getFutureCompletion().isSuccess());
 
     // DELETE
     final DeleteTask deleteTask =
@@ -328,8 +342,9 @@ public class TestTasks {
     deleteTask.getFutureCompletion().awaitOrInterruptible();
     System.out
         .println("DELETE: " + deleteTask.getFutureCompletion().isSuccess());
-    assertEquals("DELETE should be OK", true,
-                 deleteTask.getFutureCompletion().isSuccess());
+    assertTrue("DELETE should be OK",
+               deleteTask.getFutureCompletion().isSuccess());
+
   }
 
 }

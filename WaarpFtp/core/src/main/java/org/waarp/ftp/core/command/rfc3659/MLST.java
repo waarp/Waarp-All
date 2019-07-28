@@ -25,14 +25,12 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * MLST command
- *
- *
  */
 public class MLST extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
     // First Check if any argument
-    String path = null;
+    String path;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
     } else {

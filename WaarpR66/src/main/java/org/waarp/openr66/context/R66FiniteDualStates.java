@@ -28,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Finite Dual State Machine for OpenR66 (Requester=R, requesteD=D, Sender=S,
  * Receive=R)
- *
- *
  */
 public enum R66FiniteDualStates {
   OPENEDCHANNEL, CLOSEDCHANNEL, ERROR, STARTUP, AUTHENTR, AUTHENTD, REQUESTR,
@@ -37,9 +35,9 @@ public enum R66FiniteDualStates {
   ENDREQUESTS, TEST, INFORMATION, VALIDOTHER, SHUTDOWN, BUSINESSR, BUSINESSD;
   // not used in LSH
   // CONNECTERROR,
-  // KEEPALIVEPACKET;
+  // KEEPALIVEPACKET
 
-  private static enum R66Transition {
+  private enum R66Transition {
     tOPENEDCHANNEL(OPENEDCHANNEL, EnumSet.of(STARTUP, CLOSEDCHANNEL, ERROR)),
     tSTARTUP(STARTUP, EnumSet.of(AUTHENTR, AUTHENTD, CLOSEDCHANNEL, ERROR)),
     tAUTHENTR(AUTHENTR, EnumSet.of(AUTHENTD, CLOSEDCHANNEL, ERROR)),
@@ -68,16 +66,15 @@ public enum R66FiniteDualStates {
     tBUSINESSD(BUSINESSD, EnumSet
         .of(ERROR, BUSINESSD, BUSINESSR, CLOSEDCHANNEL, VALIDOTHER));
 
-    public Transition<R66FiniteDualStates> elt;
+    public final Transition<R66FiniteDualStates> elt;
 
-    private R66Transition(R66FiniteDualStates state,
-                          EnumSet<R66FiniteDualStates> set) {
+    R66Transition(R66FiniteDualStates state, EnumSet<R66FiniteDualStates> set) {
       elt = new Transition<R66FiniteDualStates>(state, set);
     }
   }
 
-  private static ConcurrentHashMap<R66FiniteDualStates, EnumSet<?>> stateMap =
-      new ConcurrentHashMap<R66FiniteDualStates, EnumSet<?>>();
+  private static final ConcurrentHashMap<R66FiniteDualStates, EnumSet<?>>
+      stateMap = new ConcurrentHashMap<R66FiniteDualStates, EnumSet<?>>();
 
   /**
    * This method should be called once at startup to initialize the Finite
@@ -93,9 +90,7 @@ public enum R66FiniteDualStates {
    * @return a new Session MachineState for OpenR66
    */
   public static MachineState<R66FiniteDualStates> newSessionMachineState() {
-    final MachineState<R66FiniteDualStates> machine =
-        new MachineState<R66FiniteDualStates>(OPENEDCHANNEL, stateMap);
-    return machine;
+    return new MachineState<R66FiniteDualStates>(OPENEDCHANNEL, stateMap);
   }
 
   /**

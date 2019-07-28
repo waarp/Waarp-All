@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * Unrecognized command (unknown command)
- *
- *
  */
 public class UnknownCommand extends AbstractCommand {
   /**

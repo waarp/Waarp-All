@@ -26,6 +26,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.core.config.FtpConfiguration;
@@ -50,8 +51,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
    */
   FtpSession session;
 
-  public FtpsTemporaryFirstHandler(FtpConfiguration configuration,
-                                   boolean active) {
+  FtpsTemporaryFirstHandler(FtpConfiguration configuration, boolean active) {
     this.configuration = configuration;
     this.active = active;
   }
@@ -71,6 +71,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
         } catch (final InterruptedException e1) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           break;
         }
       } else {
@@ -83,7 +84,6 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
       WaarpSslUtility.closingSslChannel(channel);
       // Problem: control connection could not be directly informed!!!
       // Only timeout will occur
-      return;
     }
   }
 
@@ -126,7 +126,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
                                       try {
                                         logger.debug(
                                             "Handshake: " + future.isSuccess() +
-                                            ":" + future.get(), future.cause());
+                                            ':' + future.get(), future.cause());
                                         if (future.isSuccess()) {
                                           logger.debug(
                                               "End of initialization of SSL and data channel");

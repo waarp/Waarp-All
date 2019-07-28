@@ -28,12 +28,10 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Shutdown Message class for packet
  * <p>
  * 1 string: spassword(or key) + 1 byte (optional) to restart (if not null)
- *
- *
  */
 public class ShutdownPacket extends AbstractLocalPacket {
   private final byte[] key;
-  private byte restart = 0;
+  private final byte restart;
 
   /**
    * @param headerLength

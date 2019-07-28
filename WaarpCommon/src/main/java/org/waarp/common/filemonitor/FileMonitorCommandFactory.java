@@ -23,14 +23,12 @@ import org.waarp.common.filemonitor.FileMonitor.FileItem;
 
 /**
  * Factory for FileMonitorCommandRunnableFuture
- *
- *
  */
-public abstract class FileMonitorCommandFactory {
+public interface FileMonitorCommandFactory {
 
   /**
    * @return a new FileMonitorCommandRunnableFuture
    */
-  public abstract FileMonitorCommandRunnableFuture create(FileItem fileItem);
+  FileMonitorCommandRunnableFuture create(FileItem fileItem);
 
 }

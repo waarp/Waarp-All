@@ -28,13 +28,11 @@ import org.waarp.snmp.utils.WaarpMOScalar;
 
 /**
  * Interface for All MIBs in Waarp project
- *
- *
  */
 public interface WaarpInterfaceMib extends MOGroup {
-  public static OID rootEnterpriseMib = new OID(".1.3.6.1.4.1");
+  OID rootEnterpriseMib = new OID(".1.3.6.1.4.1");
 
-  public static enum TrapLevel {
+  enum TrapLevel {
     /**
      * No Trap/Notification at all
      */
@@ -61,7 +59,7 @@ public interface WaarpInterfaceMib extends MOGroup {
     AllEvents;
 
     public boolean isLevelValid(int level) {
-      return (level >= ordinal());
+      return level >= ordinal();
     }
   }
 
@@ -70,29 +68,29 @@ public interface WaarpInterfaceMib extends MOGroup {
    *
    * @param agent
    */
-  public abstract void setAgent(WaarpSnmpAgent agent);
+  void setAgent(WaarpSnmpAgent agent);
 
   /**
    * @return the base OID for trap or notification of Start or Shutdown
    */
-  public abstract OID getBaseOidStartOrShutdown();
+  OID getBaseOidStartOrShutdown();
 
   /**
    * @return the SNMPv2MIB associated with this MIB
    */
-  public abstract SNMPv2MIB getSNMPv2MIB();
+  SNMPv2MIB getSNMPv2MIB();
 
   /**
    * Update the row for these services
    *
    * @param scalar
    */
-  public abstract void updateServices(WaarpMOScalar scalar);
+  void updateServices(WaarpMOScalar scalar);
 
   /**
    * Update the row for these services
    *
    * @param range
    */
-  public abstract void updateServices(MOScope range);
+  void updateServices(MOScope range);
 }

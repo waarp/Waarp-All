@@ -27,6 +27,7 @@ import org.waarp.commandexec.client.LocalExecClientInitializer;
 import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -44,11 +45,11 @@ public class LocalExecClient {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(LocalExecClient.class);
 
-  static public InetSocketAddress address;
+  public static InetSocketAddress address;
   // Configure the client.
-  static private Bootstrap bootstrapLocalExec;
+  private static Bootstrap bootstrapLocalExec;
   // Configure the pipeline factory.
-  static private LocalExecClientInitializer localExecClientInitializer;
+  private static LocalExecClientInitializer localExecClientInitializer;
 
   /**
    * Initialize the LocalExec Client context
@@ -59,7 +60,7 @@ public class LocalExecClient {
     WaarpNettyUtil.setBootstrap(bootstrapLocalExec,
                                 Configuration.configuration.getSubTaskGroup(),
                                 (int) Configuration.configuration
-                                    .getTIMEOUTCON());
+                                    .getTimeoutCon());
     // Configure the pipeline factory.
     localExecClientInitializer = new LocalExecClientInitializer();
     bootstrapLocalExec.handler(localExecClientInitializer);
@@ -73,7 +74,7 @@ public class LocalExecClient {
       return;
     }
     // Shut down all thread pools to exit.
-    bootstrapLocalExec.group().shutdownGracefully();
+    bootstrapLocalExec.config().group().shutdownGracefully();
     localExecClientInitializer.releaseResources();
   }
 
@@ -81,7 +82,7 @@ public class LocalExecClient {
   private LocalExecResult result;
 
   public LocalExecClient() {
-
+    // nothing
   }
 
   public LocalExecResult getLocalExecResult() {
@@ -110,8 +111,7 @@ public class LocalExecClient {
       logger.info("Exec OK with {}", command);
     }
     // Wait for the end of the exec command
-    final LocalExecResult localExecResult = clientHandler.waitFor(delay * 2);
-    result = localExecResult;
+    result = clientHandler.waitFor(delay * 2);
     if (futureCompletion == null) {
       return;
     }
@@ -128,7 +128,7 @@ public class LocalExecClient {
     } else {
       logger.error(
           "Status: " + result.getStatus() + " Exec in error with " + command +
-          " " + result.getResult());
+          ' ' + result.getResult());
       if (waitFor) {
         futureCompletion.cancel();
       }
@@ -146,6 +146,7 @@ public class LocalExecClient {
     try {
       channel = future.await().sync().channel();
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (!future.isSuccess()) {
       logger.error("Client Not Connected", future.cause());

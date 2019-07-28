@@ -30,12 +30,10 @@ import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -48,13 +46,12 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.io.File;
-import java.net.SocketAddress;
 import java.sql.Timestamp;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Log Export from a client (local or allowed)
- *
- *
  */
 public class LogExtendedExport implements Runnable {
   /**
@@ -62,7 +59,7 @@ public class LogExtendedExport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _INFO_ARGS =
+  protected static final String _INFO_ARGS =
       "Need at least the configuration file as first argument then optionally\n" +
       "    -purge\n    -clean\n    -startid id\n    -stopid id\n    -rule rule\n    -request host\n" +
       "    -pending\n    -transfer\n    -done\n    -error\n" +
@@ -87,8 +84,8 @@ public class LogExtendedExport implements Runnable {
   protected final boolean statustransfer;
   protected final boolean statusdone;
   protected final boolean statuserror;
-  protected String ruleDownload = null;
-  protected boolean tryimport = false;
+  protected String ruleDownload;
+  protected boolean tryimport;
   protected final NetworkTransaction networkTransaction;
   protected DbHostAuth host;
 
@@ -143,8 +140,8 @@ public class LogExtendedExport implements Runnable {
   public void setDownloadTryImport(String ruleDownload, boolean tryimport) {
     this.ruleDownload = ruleDownload;
     if (ruleDownload != null && tryimport &&
-        !host.getHostid().equals(Configuration.configuration.getHOST_ID()) &&
-        !host.getHostid().equals(Configuration.configuration.getHOST_SSLID())) {
+        !host.getHostid().equals(Configuration.configuration.getHostId()) &&
+        !host.getHostid().equals(Configuration.configuration.getHostSslId())) {
       this.tryimport = tryimport;
     } else {
       this.tryimport = false;
@@ -170,7 +167,7 @@ public class LogExtendedExport implements Runnable {
       return;
     }
 
-    final byte type = (purgeLog)? LocalPacketFactory.LOGPURGEPACKET :
+    final byte type = purgeLog? LocalPacketFactory.LOGPURGEPACKET :
         LocalPacketFactory.LOGPACKET;
     final LogJsonPacket node = new LogJsonPacket();
     node.setClean(clean);
@@ -189,9 +186,8 @@ public class LogExtendedExport implements Runnable {
     JsonCommandPacket valid = new JsonCommandPacket(node, type);
     logger.debug("ExtendedLogCommand: " + valid.getRequest());
     final R66Future newFuture = new R66Future(true);
-    LocalChannelReference localChannelReference = AbstractTransfer
-        .tryConnect(host, newFuture,
-                    networkTransaction);
+    LocalChannelReference localChannelReference =
+        AbstractTransfer.tryConnect(host, newFuture, networkTransaction);
     if (localChannelReference == null) {
       future.setResult(newFuture.getResult());
       future.setFailure(future.getCause());
@@ -203,10 +199,8 @@ public class LogExtendedExport implements Runnable {
           .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException e) {
       logger.error("Bad Protocol", e);
-      localChannelReference.getLocalChannel().close();
-      localChannelReference = null;
+      localChannelReference.close();
       host = null;
-      valid = null;
       future.setResult(
           new R66Result(e, null, true, ErrorCode.TransferError, null));
       future.setFailure(e);
@@ -221,8 +215,7 @@ public class LogExtendedExport implements Runnable {
       try {
         importLog(newFuture);
       } catch (final OpenR66ProtocolBusinessException e) {
-        localChannelReference.getLocalChannel().close();
-        localChannelReference = null;
+        localChannelReference.close();
         return;
       }
     }
@@ -237,8 +230,7 @@ public class LogExtendedExport implements Runnable {
       }
       future.cancel();
     }
-    localChannelReference.getLocalChannel().close();
-    localChannelReference = null;
+    localChannelReference.close();
   }
 
   public void importLog(R66Future future)
@@ -258,11 +250,11 @@ public class LogExtendedExport implements Runnable {
               new DirectTransfer(futuretemp, host.getHostid(), fileExported,
                                  ruleToExport, "Get Exported Logs from " +
                                                Configuration.configuration
-                                                   .getHOST_ID(), false,
-                                 Configuration.configuration.getBLOCKSIZE(),
-                                 DbConstant.ILLEGALVALUE, networkTransaction);
+                                                   .getHostId(), false,
+                                 Configuration.configuration.getBlockSize(),
+                                 ILLEGALVALUE, networkTransaction);
           transfer.run();
-          File logsFile = null;
+          File logsFile;
           if (!futuretemp.isSuccess()) {
             if (futuretemp.getCause() != null) {
               throw new OpenR66ProtocolBusinessException(futuretemp.getCause());
@@ -273,7 +265,7 @@ public class LogExtendedExport implements Runnable {
             logsFile = futuretemp.getResult().getFile().getTrueFile();
           }
           // FIXME always true since change for DbAdmin
-          if (tryimport && DbConstant.admin.isActive()) {
+          if (tryimport && admin.isActive()) {
             try {
               DbTaskRunner.loadXml(logsFile);
             } catch (final OpenR66ProtocolBusinessException e) {
@@ -300,16 +292,21 @@ public class LogExtendedExport implements Runnable {
     }
   }
 
-  protected static boolean sclean = false;
-  protected static boolean spurgeLog = false;
-  protected static Timestamp sstart = null;
-  protected static Timestamp sstop = null;
-  protected static String sstartid, sstopid, srule, srequest;
-  protected static boolean sstatuspending = false, sstatustransfer = false,
-      sstatusdone = true, sstatuserror = false;
-  protected static String stohost = null;
-  protected static String sruleDownload = null;
-  protected static boolean stryimport = false;
+  protected static boolean sclean;
+  protected static boolean spurgeLog;
+  protected static Timestamp sstart;
+  protected static Timestamp sstop;
+  protected static String sstartid;
+  protected static String sstopid;
+  protected static String srule;
+  protected static String srequest;
+  protected static boolean sstatuspending;
+  protected static boolean sstatustransfer;
+  protected static boolean sstatusdone = true;
+  protected static boolean sstatuserror;
+  protected static String stohost;
+  protected static String sruleDownload;
+  protected static boolean stryimport;
 
   protected static boolean getParams(String[] args) {
     if (args.length < 1) {
@@ -324,42 +321,42 @@ public class LogExtendedExport implements Runnable {
     String ssstart = null;
     String ssstop = null;
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-purge")) {
+      if ("-purge".equalsIgnoreCase(args[i])) {
         spurgeLog = true;
-      } else if (args[i].equalsIgnoreCase("-clean")) {
+      } else if ("-clean".equalsIgnoreCase(args[i])) {
         sclean = true;
-      } else if (args[i].equalsIgnoreCase("-start")) {
+      } else if ("-start".equalsIgnoreCase(args[i])) {
         i++;
         ssstart = args[i];
-      } else if (args[i].equalsIgnoreCase("-stop")) {
+      } else if ("-stop".equalsIgnoreCase(args[i])) {
         i++;
         ssstop = args[i];
-      } else if (args[i].equalsIgnoreCase("-startid")) {
+      } else if ("-startid".equalsIgnoreCase(args[i])) {
         i++;
         sstartid = args[i];
-      } else if (args[i].equalsIgnoreCase("-stopid")) {
+      } else if ("-stopid".equalsIgnoreCase(args[i])) {
         i++;
         sstopid = args[i];
-      } else if (args[i].equalsIgnoreCase("-rule")) {
+      } else if ("-rule".equalsIgnoreCase(args[i])) {
         i++;
         srule = args[i];
-      } else if (args[i].equalsIgnoreCase("-request")) {
+      } else if ("-request".equalsIgnoreCase(args[i])) {
         i++;
         srequest = args[i];
-      } else if (args[i].equalsIgnoreCase("-pending")) {
+      } else if ("-pending".equalsIgnoreCase(args[i])) {
         sstatuspending = true;
-      } else if (args[i].equalsIgnoreCase("-transfer")) {
+      } else if ("-transfer".equalsIgnoreCase(args[i])) {
         sstatustransfer = true;
-      } else if (args[i].equalsIgnoreCase("-done")) {
+      } else if ("-done".equalsIgnoreCase(args[i])) {
         sstatusdone = true;
-      } else if (args[i].equalsIgnoreCase("-error")) {
+      } else if ("-error".equalsIgnoreCase(args[i])) {
         sstatuserror = true;
-      } else if (args[i].equalsIgnoreCase("-import")) {
+      } else if ("-import".equalsIgnoreCase(args[i])) {
         stryimport = true;
-      } else if (args[i].equalsIgnoreCase("-host")) {
+      } else if ("-host".equalsIgnoreCase(args[i])) {
         i++;
         stohost = args[i];
-      } else if (args[i].equalsIgnoreCase("-ruleDownload")) {
+      } else if ("-ruleDownload".equalsIgnoreCase(args[i])) {
         i++;
         sruleDownload = args[i];
       }
@@ -392,10 +389,10 @@ public class LogExtendedExport implements Runnable {
     }
     if (!getParams(args)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     final long time1 = System.currentTimeMillis();
     DbHostAuth dbhost = null;
@@ -404,14 +401,14 @@ public class LogExtendedExport implements Runnable {
         dbhost = new DbHostAuth(stohost);
       } catch (final WaarpDatabaseException e) {
         logger.error("Wrong initialization");
-        if (DbConstant.admin != null) {
-          DbConstant.admin.close();
+        if (admin != null) {
+          admin.close();
         }
-        System.exit(2);
+        System.exit(2);//NOSONAR
       }
     } else {
-      dbhost = Configuration.configuration.getHOST_SSLAUTH();
-      stohost = Configuration.configuration.getHOST_SSLID();
+      dbhost = Configuration.configuration.getHostSslAuth();
+      stohost = Configuration.configuration.getHostSslId();
     }
     final R66Future future = new R66Future(true);
 
@@ -443,17 +440,15 @@ public class LogExtendedExport implements Runnable {
       } else {
         if (result.getCode() == ErrorCode.Warning) {
           logger.warn("LogExtendedExport is     WARNED", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         } else {
           logger.error("LogExtendedExport in     FAILURE", future.getCause());
-          networkTransaction.closeAll();
-          System.exit(result.getCode().ordinal());
         }
+        networkTransaction.closeAll();
+        System.exit(result.getCode().ordinal());//NOSONAR
       }
     } finally {
       networkTransaction.closeAll();
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
   }
 

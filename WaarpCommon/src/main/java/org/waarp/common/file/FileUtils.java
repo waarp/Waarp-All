@@ -19,8 +19,11 @@
  */
 package org.waarp.common.file;
 
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,15 +31,100 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * File Utils
- *
- *
  */
-public class FileUtils {
+public final class FileUtils {
+
+  private static final File[] FILE_0_LENGTH = new File[0];
+
+  private FileUtils() {
+  }
+
+  public static final void close(Reader stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.close();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(Writer stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.flush();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+    try {
+      stream.close();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(InputStream stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.close();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(OutputStream stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.flush();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+    try {
+      stream.close();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(FileChannel stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.close();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(RandomAccessFile accessFile) {
+    if (accessFile == null) {
+      return;
+    }
+    try {
+      accessFile.close();
+    } catch (Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
 
   /**
    * Delete the directory associated with the File as path if empty
@@ -94,22 +182,16 @@ public class FileUtils {
       final File[] subfrom = from.listFiles();
       for (final File element : subfrom) {
         if (element.isFile()) {
-          try {
-            to.add(copyToDir(element, directoryTo, move));
-          } catch (final Reply550Exception e) {
-            throw e;
-          }
+          to.add(copyToDir(element, directoryTo, move));
         } else {
           final File newTo = new File(directoryTo, element.getName());
           newTo.mkdirs();
           final File[] copied = copyRecursive(element, newTo, move);
-          for (final File file : copied) {
-            to.add(file);
-          }
+          to.addAll(Arrays.asList(copied));
         }
       }
     }
-    return to.toArray(new File[0]);
+    return to.toArray(FILE_0_LENGTH);
   }
 
   /**
@@ -134,11 +216,7 @@ public class FileUtils {
       to = new File[from.length];
       for (int i = 0; i < from.length; i++) {
         if (from[i].isFile()) {
-          try {
-            to[i] = copyToDir(from[i], directoryTo, move);
-          } catch (final Reply550Exception e) {
-            throw e;
-          }
+          to[i] = copyToDir(from[i], directoryTo, move);
         }
       }
     }
@@ -186,26 +264,20 @@ public class FileUtils {
       if (move && from.renameTo(to)) {
         return to;
       }
-      final FileChannel fileChannelIn = getFileChannel(from, false, false);
-      if (fileChannelIn == null) {
-        throw new Reply550Exception("Cannot read source file");
-      }
-      final FileChannel fileChannelOut = getFileChannel(to, true, false);
-      if (fileChannelOut == null) {
+      if (move) {
         try {
-          fileChannelIn.close();
-        } catch (final IOException e) {
+          Files.move(from, to);
+        } catch (IOException e) {
+          throw new Reply550Exception("Cannot write destination file");
         }
-        throw new Reply550Exception("Cannot write destination file");
-      }
-      if (write(fileChannelIn, fileChannelOut) > 0) {
-        if (move) {
-          // do not test the delete
-          from.delete();
+      } else {
+        try {
+          Files.copy(from, to);
+        } catch (IOException e) {
+          throw new Reply550Exception("Cannot write destination file");
         }
-        return to;
       }
-      throw new Reply550Exception("Cannot write destination file");
+      return to;
     }
     throw new Reply550Exception("Cannot access to parent dir of destination");
   }
@@ -225,19 +297,20 @@ public class FileUtils {
   private static FileChannel getFileChannel(File file, boolean isOut,
                                             boolean append)
       throws Reply550Exception {
-    FileChannel fileChannel = null;
+    FileChannel fileChannel;
     try {
       if (isOut) {
         @SuppressWarnings("resource")
         final FileOutputStream fileOutputStream =
-            new FileOutputStream(file.getPath(), append);
+            new FileOutputStream(file.getPath(), append);//NOSONAR
         fileChannel = fileOutputStream.getChannel();
         if (append) {
           // Bug in JVM since it does not respect the API (position
           // should be set as length)
           try {
             fileChannel.position(file.length());
-          } catch (final IOException e) {
+          } catch (final IOException ignored) {
+            // nothing
           }
         }
       } else {
@@ -246,7 +319,7 @@ public class FileUtils {
         }
         @SuppressWarnings("resource")
         final FileInputStream fileInputStream =
-            new FileInputStream(file.getPath());
+            new FileInputStream(file.getPath());//NOSONAR
         fileChannel = fileInputStream.getChannel();
       }
     } catch (final FileNotFoundException e) {
@@ -270,51 +343,22 @@ public class FileUtils {
       throws Reply550Exception {
     if (fileChannelIn == null) {
       if (fileChannelOut != null) {
-        try {
-          fileChannelOut.close();
-        } catch (final IOException e) {
-        }
+        close(fileChannelOut);
       }
       throw new Reply550Exception("FileChannelIn is null");
     }
     if (fileChannelOut == null) {
-      try {
-        fileChannelIn.close();
-      } catch (final IOException e) {
-      }
+      close(fileChannelIn);
       throw new Reply550Exception("FileChannelOut is null");
     }
-    long size = 0;
-    long transfert = 0;
     try {
-      transfert = fileChannelOut.position();
-      size = fileChannelIn.size();
-      long chunkSize = size;
-      while (transfert < size) {
-        chunkSize = size - transfert;
-        transfert +=
-            fileChannelOut.transferFrom(fileChannelIn, transfert, chunkSize);
-      }
-    } catch (final IOException e) {
-      try {
-        fileChannelOut.close();
-        fileChannelIn.close();
-      } catch (final IOException e1) {
-      }
+      return ByteStreams.copy(fileChannelIn, fileChannelOut);
+    } catch (IOException e) {
       throw new Reply550Exception("An error during copy occurs", e);
+    } finally {
+      close(fileChannelIn);
+      close(fileChannelOut);
     }
-    try {
-      fileChannelOut.close();
-      fileChannelIn.close();
-    } catch (final IOException e) {// Close error can be ignored
-    }
-    final boolean retour = size == transfert;
-    if (!retour) {
-      throw new Reply550Exception(
-          "Copy is not complete: " + transfert + " bytes instead of " + size +
-          " original bytes");
-    }
-    return size;
   }
 
   /**
@@ -343,14 +387,10 @@ public class FileUtils {
       final FileChannel fileChannelIn = getFileChannel(from, false, false);
       if (fileChannelIn == null) {
         throw new Reply550Exception("Cannot read source file");
-        // return false;
       }
       final FileChannel fileChannelOut = getFileChannel(to, true, append);
       if (fileChannelOut == null) {
-        try {
-          fileChannelIn.close();
-        } catch (final IOException e) {
-        }
+        close(fileChannelIn);
         throw new Reply550Exception("Cannot write destination file");
       }
       if (write(fileChannelIn, fileChannelOut) > -1) {
@@ -383,7 +423,6 @@ public class FileUtils {
     }
     File[] list = dir.listFiles();
     if (list == null || list.length == 0) {
-      list = null;
       return dir.delete();
     }
     final int len = list.length;
@@ -394,11 +433,9 @@ public class FileUtils {
         }
       } else {
         retour = false;
-        list = null;
         return retour;
       }
     }
-    list = null;
     if (retour) {
       retour = dir.delete();
     }
@@ -425,22 +462,19 @@ public class FileUtils {
     }
     File[] list = directory.listFiles();
     if (list == null || list.length == 0) {
-      list = null;
       return true;
     }
-    final int len = list.length;
-    for (int i = 0; i < len; i++) {
-      if (list[i].isDirectory()) {
-        if (!forceDeleteRecursiveSubDir(list[i])) {
+    for (final File file : list) {
+      if (file.isDirectory()) {
+        if (!forceDeleteRecursiveSubDir(file)) {
           retour = false;
         }
       } else {
-        if (!list[i].delete()) {
+        if (!file.delete()) {
           retour = false;
         }
       }
     }
-    list = null;
     if (retour) {
       retour = directory.delete();
     }
@@ -467,22 +501,19 @@ public class FileUtils {
     }
     File[] list = directory.listFiles();
     if (list == null || list.length == 0) {
-      list = null;
       return true;
     }
-    final int len = list.length;
-    for (int i = 0; i < len; i++) {
-      if (list[i].isDirectory()) {
-        if (!forceDeleteRecursiveSubDir(list[i])) {
+    for (final File file : list) {
+      if (file.isDirectory()) {
+        if (!forceDeleteRecursiveSubDir(file)) {
           retour = false;
         }
       } else {
-        if (!list[i].delete()) {
+        if (!file.delete()) {
           retour = false;
         }
       }
     }
-    list = null;
     return retour;
   }
 
@@ -507,21 +538,18 @@ public class FileUtils {
     }
     File[] list = directory.listFiles();
     if (list == null || list.length == 0) {
-      list = null;
       retour = directory.delete();
       return retour;
     }
-    final int len = list.length;
-    for (int i = 0; i < len; i++) {
-      if (list[i].isDirectory()) {
-        if (!deleteRecursiveFileDir(list[i])) {
+    for (final File file : list) {
+      if (file.isDirectory()) {
+        if (!deleteRecursiveFileDir(file)) {
           retour = false;
         }
       } else {
         retour = false;
       }
     }
-    list = null;
     if (retour) {
       retour = directory.delete();
     }
@@ -529,14 +557,14 @@ public class FileUtils {
   }
 
   /**
-   * @param _FileName
-   * @param _Path
+   * @param fileName
+   * @param path
    *
    * @return true if the file exist in the specified path
    */
-  public static final boolean fileExist(String _FileName, String _Path) {
+  public static final boolean fileExist(String fileName, String path) {
     boolean exist = false;
-    final String fileString = _Path + File.separator + _FileName;
+    final String fileString = path + File.separator + fileName;
     final File file = new File(fileString);
     if (file.exists()) {
       exist = true;
@@ -553,7 +581,7 @@ public class FileUtils {
    */
   public static final File[] getFiles(File directory) {
     if (directory == null || !directory.isDirectory()) {
-      return null;
+      return FILE_0_LENGTH;
     }
     return directory.listFiles();
   }
@@ -572,7 +600,7 @@ public class FileUtils {
     }
     final byte[] bytes = new byte[65536];
     int still = length;
-    int len = still > 65536? 65536 : still;
+    int len = Math.min(still, 65536);
     FileInputStream inputStream = null;
     try {
       inputStream = new FileInputStream(file);
@@ -582,19 +610,14 @@ public class FileUtils {
         if (still <= 0) {
           break;
         }
-        len = still > 65536? 65536 : still;
+        len = Math.min(still, 65536);
       }
     } catch (final FileNotFoundException e) {
       // error
     } catch (final IOException e) {
       // error
     } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (final IOException e) {
-        }
-      }
+      close(inputStream);
     }
   }
 
@@ -606,9 +629,9 @@ public class FileUtils {
    *
    * @return the list of files (as an array)
    */
-  public final static File[] getFiles(File directory, FilenameFilter filter) {
+  public static final File[] getFiles(File directory, FilenameFilter filter) {
     if (directory == null || !directory.isDirectory()) {
-      return null;
+      return FILE_0_LENGTH;
     }
     return directory.listFiles(filter);
   }

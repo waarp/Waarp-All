@@ -51,10 +51,8 @@ import java.util.TimeZone;
 
 /**
  * Utility class to write external file with cache enable properties
- *
- *
  */
-public class HttpWriteCacheEnable {
+public final class HttpWriteCacheEnable {
   /**
    * US locale - all HTTP dates are in english
    */
@@ -88,7 +86,7 @@ public class HttpWriteCacheEnable {
   static {
     mimetypesFileTypeMap.addMimeTypes("text/css css CSS");
     mimetypesFileTypeMap.addMimeTypes("text/javascript js JS");
-    // Official but not supported mimetypesFileTypeMap.addMimeTypes("application/javascript js JS");
+    // Official but not supported mimetypesFileTypeMap.addMimeTypes("application/javascript js JS")
     mimetypesFileTypeMap.addMimeTypes("application/json json JSON");
     mimetypesFileTypeMap.addMimeTypes("text/plain txt text TXT");
     mimetypesFileTypeMap.addMimeTypes("text/html htm html HTM HTML htmls htx");
@@ -96,6 +94,9 @@ public class HttpWriteCacheEnable {
     mimetypesFileTypeMap.addMimeTypes("image/png png PNG");
     mimetypesFileTypeMap.addMimeTypes("image/gif gif GIF");
     mimetypesFileTypeMap.addMimeTypes("image/x-icon ico ICO");
+  }
+
+  private HttpWriteCacheEnable() {
   }
 
   /**
@@ -136,7 +137,8 @@ public class HttpWriteCacheEnable {
           ctx.writeAndFlush(response);
           return;
         }
-      } catch (final ParseException e) {
+      } catch (final ParseException ignored) {
+        // nothing
       }
     }
     final long size = file.length();
@@ -190,6 +192,7 @@ public class HttpWriteCacheEnable {
         // Remove all Session for images
         for (final Cookie cookie : cookies) {
           if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {
+            // nothing
           } else {
             response.headers().add(HttpHeaderNames.SET_COOKIE,
                                    ServerCookieEncoder.LAX.encode(cookie));

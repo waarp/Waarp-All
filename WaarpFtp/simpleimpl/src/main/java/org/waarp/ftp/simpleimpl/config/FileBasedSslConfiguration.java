@@ -37,8 +37,6 @@ import org.waarp.ftp.core.control.ftps.FtpsInitializer;
 
 /**
  * FtpConfiguration based on a XML file
- *
- *
  */
 public class FileBasedSslConfiguration {
   /**
@@ -104,6 +102,9 @@ public class FileBasedSslConfiguration {
   };
   private static XmlValue[] configuration;
   private static XmlHash hashConfig;
+
+  private FileBasedSslConfiguration() {
+  }
 
   protected static boolean loadSsl(FtpConfiguration config) {
     // StoreKey for Server
@@ -200,7 +201,7 @@ public class FileBasedSslConfiguration {
    */
   public static boolean setConfigurationServerFromXml(FtpConfiguration config,
                                                       String filename) {
-    Document document = null;
+    Document document;
     // Open config file
     try {
       document = new SAXReader().read(filename);

@@ -84,37 +84,37 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
    */
   private static final long serialVersionUID = 4353436426114132650L;
   FXModel model;
-  FTree tree;
-  JTextField mouseInfo;
-  JTextArea errorInfoArea;
-  JTextArea nodesInfoArea;
-  Vector viewListeners;
-  InnerListener innerListener;
-  boolean _insert;
-  boolean _remove;
-  boolean _moveUp;
-  boolean _moveDown;
-  JPopupMenu popup;
-  JMenuItem mSelect;
-  JMenuItem mUnselect;
-  JMenuItem mInsBefore;
-  JMenuItem mInsAfter;
-  JMenuItem mRemove;
-  JMenuItem mMoveUp;
-  JMenuItem mMoveDown;
-  JMenuItem mFindInvalid;
-  JMenuItem mFindNode;
-  JMenuItem mNS;
+  final FTree tree;
+  final JTextField mouseInfo;
+  final JTextArea errorInfoArea;
+  final JTextArea nodesInfoArea;
+  final Vector<FXViewStatusListener> viewListeners;
+  final InnerListener innerListener;
+  boolean insert;
+  boolean remove;
+  boolean moveUp;
+  boolean moveDown;
+  final JPopupMenu popup;
+  final JMenuItem mSelect;
+  final JMenuItem mUnselect;
+  final JMenuItem mInsBefore;
+  final JMenuItem mInsAfter;
+  final JMenuItem mRemove;
+  final JMenuItem mMoveUp;
+  final JMenuItem mMoveDown;
+  final JMenuItem mFindInvalid;
+  final JMenuItem mFindNode;
+  final JMenuItem mNS;
   SearchDialog searchDialog;
 
   public FXBasicView(FXModel model) {
     this.model = null;
-    viewListeners = new Vector();
+    viewListeners = new Vector<FXViewStatusListener>();
     innerListener = new InnerListener();
-    _insert = false;
-    _remove = false;
-    _moveUp = false;
-    _moveDown = false;
+    insert = false;
+    remove = false;
+    moveUp = false;
+    moveDown = false;
     popup = new JPopupMenu();
     mSelect = new JMenuItem("Select Node");
     mUnselect = new JMenuItem("Unselect Node");
@@ -216,56 +216,52 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   }
 
   void setInsert(boolean insert) {
-    if (insert == _insert) {
+    if (insert == this.insert) {
       return;
     }
-    _insert = insert;
-    final FXStatusEvent e = new FXStatusEvent(this, _insert);
+    this.insert = insert;
+    final FXStatusEvent e = new FXStatusEvent(this, this.insert);
     for (int i = 0; i < viewListeners.size(); i++) {
-      final FXViewStatusListener fxl =
-          (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl = viewListeners.get(i);
       fxl.canInsertStatusChanged(e);
     }
 
   }
 
   void setRemove(boolean remove) {
-    if (remove == _remove) {
+    if (remove == this.remove) {
       return;
     }
-    _remove = remove;
-    final FXStatusEvent e = new FXStatusEvent(this, _remove);
+    this.remove = remove;
+    final FXStatusEvent e = new FXStatusEvent(this, this.remove);
     for (int i = 0; i < viewListeners.size(); i++) {
-      final FXViewStatusListener fxl =
-          (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl = viewListeners.get(i);
       fxl.canRemoveStatusChanged(e);
     }
 
   }
 
   void setMoveUp(boolean moveUp) {
-    if (moveUp == _moveUp) {
+    if (moveUp == this.moveUp) {
       return;
     }
-    _moveUp = moveUp;
-    final FXStatusEvent e = new FXStatusEvent(this, _moveUp);
+    this.moveUp = moveUp;
+    final FXStatusEvent e = new FXStatusEvent(this, this.moveUp);
     for (int i = 0; i < viewListeners.size(); i++) {
-      final FXViewStatusListener fxl =
-          (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl = viewListeners.get(i);
       fxl.canMoveUpStatusChanged(e);
     }
 
   }
 
   void setMoveDown(boolean moveDown) {
-    if (moveDown == _moveDown) {
+    if (moveDown == this.moveDown) {
       return;
     }
-    _moveDown = moveDown;
-    final FXStatusEvent e = new FXStatusEvent(this, _moveDown);
+    this.moveDown = moveDown;
+    final FXStatusEvent e = new FXStatusEvent(this, this.moveDown);
     for (int i = 0; i < viewListeners.size(); i++) {
-      final FXViewStatusListener fxl =
-          (FXViewStatusListener) viewListeners.get(i);
+      final FXViewStatusListener fxl = viewListeners.get(i);
       fxl.canMoveDownStatusChanged(e);
     }
 
@@ -273,6 +269,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
   @Override
   public void docValidityStatusChanged(FXStatusEvent fxstatusevent) {
+    // nothing
   }
 
   public FXModel getFXModel() {
@@ -448,11 +445,8 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       return;
     }
     final FToggleNode parent = (FToggleNode) node.getParent();
-    if (parent == null) {
-      return;
-    } else {
+    if (parent != null) {
       setEditorFlags(parent, node);
-      return;
     }
   }
 
@@ -514,19 +508,19 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   }
 
   public boolean canInsert() {
-    return _insert;
+    return insert;
   }
 
   public boolean canRemove() {
-    return _remove;
+    return remove;
   }
 
   public boolean canMoveUp() {
-    return _moveUp;
+    return moveUp;
   }
 
   public boolean canMoveDown() {
-    return _moveDown;
+    return moveDown;
   }
 
   public void insertNodeBefore() {
@@ -601,16 +595,13 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       return;
     }
     final FToggleNode parent = (FToggleNode) node.getParent();
-    if (parent == null) {
-      return;
-    } else {
+    if (parent != null) {
       final int index = parent.getIndex(node);
       parent.remove(index);
       parent.insert(node, index - 1);
       model.fireTreeModelDataChanged(true);
       tree.setSelectedPath(node.getPath());
       setEditorFlags(parent, node);
-      return;
     }
   }
 
@@ -623,16 +614,13 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       return;
     }
     final FToggleNode parent = (FToggleNode) node.getParent();
-    if (parent == null) {
-      return;
-    } else {
+    if (parent != null) {
       final int index = parent.getIndex(node);
       parent.remove(index);
       parent.insert(node, index + 1);
       model.fireTreeModelDataChanged(true);
       tree.setSelectedPath(node.getPath());
       setEditorFlags(parent, node);
-      return;
     }
   }
 
@@ -659,23 +647,23 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
   public void showNSQualifiersDialog() {
     final Frame frame =
-        (Frame) SwingUtilities.getAncestorOfClass(java.awt.Frame.class, this);
+        (Frame) SwingUtilities.getAncestorOfClass(Frame.class, this);
     final NSQualifiersDialog dlg = new NSQualifiersDialog(frame, model);
     setDialogLocation(dlg);
     dlg.setVisible(true);
   }
 
   int[] createPath(FBasicNode treeNode) {
-    final Vector v = new Vector();
+    final Vector<FBasicNode> v = new Vector<FBasicNode>();
     for (FBasicNode node = treeNode; node != null;
          node = (FBasicNode) node.getParent()) {
       v.add(0, node);
     }
 
-    final int path[] = new int[v.size()];
-    FBasicNode parent = (FBasicNode) v.get(0);
+    final int[] path = new int[v.size()];
+    FBasicNode parent = v.get(0);
     for (int i = 1; i < v.size(); i++) {
-      final FBasicNode child = (FBasicNode) v.get(i);
+      final FBasicNode child = v.get(i);
       path[i - 1] = parent.getIndex(child);
       parent = child;
     }
@@ -684,9 +672,9 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     return path;
   }
 
-  FToggleNode getInvalidNode(FToggleNode parent, int startPath[], int level) {
+  FToggleNode getInvalidNode(FToggleNode parent, int[] startPath, int level) {
     final int startIndex = startPath[level];
-    FToggleNode node = null;
+    FToggleNode node;
     for (int i = startIndex; i < parent.getRealChildCount(); i++) {
       final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
       if (child.isToggleSelected() &&
@@ -706,18 +694,22 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   }
 
   FToggleNode getInvalidNode(FToggleNode parent) {
-    if (!parent.getNodeValidity()) {
+    getInvalidNode:
+    while (true) {
+      if (!parent.getNodeValidity()) {
+        return parent;
+      }
+      for (int i = 0; i < parent.getRealChildCount(); i++) {
+        final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
+        if (child.isToggleSelected() &&
+            (!child.getChildrenValidity() || !child.getNodeValidity())) {
+          parent = child;
+          continue getInvalidNode;
+        }
+      }
+
       return parent;
     }
-    for (int i = 0; i < parent.getRealChildCount(); i++) {
-      final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);
-      if (child.isToggleSelected() &&
-          (!child.getChildrenValidity() || !child.getNodeValidity())) {
-        return getInvalidNode(child);
-      }
-    }
-
-    return parent;
   }
 
   public void showInvalidNode() {
@@ -731,7 +723,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       startNode = (FToggleNode) startNode.getSubstituteNode();
     }
     if (startNode != null) {
-      final int startPath[] = createPath(startNode);
+      final int[] startPath = createPath(startNode);
       node = getInvalidNode(rootNode, startPath, 0);
     }
     if (node == null) {
@@ -741,7 +733,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       if (node.getParent() instanceof FToggleSwitchNode) {
         node = (FToggleNode) node.getParent();
       }
-      final Object path[] = node.getPath();
+      final Object[] path = node.getPath();
       tree.makeVisible(path);
       tree.setSelectedPath(path);
     }
@@ -750,7 +742,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   public void showSearchDialog() {
     if (searchDialog == null) {
       final Frame frame =
-          (Frame) SwingUtilities.getAncestorOfClass(java.awt.Frame.class, this);
+          (Frame) SwingUtilities.getAncestorOfClass(Frame.class, this);
       searchDialog = new SearchDialog(frame, this);
       searchDialog.pack();
       setDialogLocation(searchDialog);
@@ -773,7 +765,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       FToggleNode node = (FToggleNode) e.getTreeNode();
       node = (FToggleNode) node.getSubstituteNode();
       if (node != null && model.populateNode(node)) {
-        final Object selPath[] = tree.getSelectedPath();
+        final Object[] selPath = tree.getSelectedPath();
         model.fireTreeModelDataChanged(true);
         tree.setSelectedPath(selPath);
       }
@@ -781,6 +773,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
     @Override
     public void nodeWillCollapse(FTreeNodeEvent ftreenodeevent) {
+      // nothing
     }
 
     @Override
@@ -822,7 +815,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
         return;
       }
       nodesInfoArea.setText(model.getNodeMessage(node));
-      if (FXBasicView.hasValue(node)) {
+      if (hasValue(node)) {
         final String errMessage =
             model.getValidityMessage(node, node.getValue());
         if (errMessage != null) {
@@ -856,16 +849,16 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       if (parent != null) {
         final XSRef ref = (XSRef) parent.getAssociate();
         if (ref.isArray()) {
-          text = "  Folder: #" + (parent.getIndex(node) + 1) + " ";
+          text = "  Folder: #" + (parent.getIndex(node) + 1) + ' ';
         }
       }
-      text = text + node.getLabelText();
+      text += node.getLabelText();
       final FAbstractToggleNode subNode = node.getSubstituteNode();
       if (subNode != null && subNode != node) {
-        text = text + " " + subNode.getLabelText();
+        text = text + ' ' + subNode.getLabelText();
       }
       if (node.getValue() != null) {
-        text = text + "     " + node.getValue().toString();
+        text = text + "     " + node.getValue();
       }
       mouseInfo.setText(text);
       mouseInfo.setCaretPosition(0);
@@ -878,6 +871,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
     @Override
     public void cellEditingStarted(FTreeEditorEvent ftreeeditorevent) {
+      // nothing
     }
 
     @Override
@@ -887,7 +881,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       }
       FToggleNode node = (FToggleNode) e.getTreeNode();
       node = (FToggleNode) node.getSubstituteNode();
-      if (node == null || !FXBasicView.hasValue(node) || !node.isEditable()) {
+      if (node == null || !hasValue(node) || !node.isEditable()) {
         return;
       }
       final JComponent editor = e.getEditor();
@@ -961,9 +955,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     void showPopup(MouseEvent e) {
-      if (!e.isPopupTrigger()) {
-        return;
-      } else {
+      if (e.isPopupTrigger()) {
         treeNode = (FToggleNode) tree.getNodeAt(e.getX(), e.getY());
         final boolean b =
             treeNode != null && treeNode == tree.getSelectedNode();
@@ -980,12 +972,12 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
         mFindInvalid.setEnabled(hasDocument() && !isDocValid());
         mFindNode.setEnabled(hasDocument());
         popup.show(tree, e.getX(), e.getY());
-        return;
       }
     }
 
     @Override
     public void mouseClicked(MouseEvent mouseevent) {
+      // nothing
     }
 
     @Override
@@ -995,10 +987,12 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
     @Override
     public void mouseEntered(MouseEvent mouseevent) {
+      // nothing
     }
 
     @Override
     public void mouseExited(MouseEvent mouseevent) {
+      // nothing
     }
   }
 }

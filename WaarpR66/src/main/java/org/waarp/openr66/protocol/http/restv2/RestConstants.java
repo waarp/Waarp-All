@@ -49,7 +49,7 @@ public final class RestConstants {
    */
   private RestConstants() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ########################## SERVER CONSTANTS ##############################
@@ -58,7 +58,7 @@ public final class RestConstants {
    * The name of this R66 server instance.
    */
   public static final String SERVER_NAME =
-      Configuration.configuration.getHOST_ID();
+      Configuration.configuration.getHostId();
 
   /**
    * The DAO_FACTORY to generate connections to the underlying database.
@@ -66,7 +66,7 @@ public final class RestConstants {
   public static final DAOFactory DAO_FACTORY;
 
   /**
-   * The UTF-8 {@link java.nio.charset.Charset} constant.
+   * The UTF-8 {@link Charset} constant.
    */
   public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
@@ -104,7 +104,7 @@ public final class RestConstants {
   /**
    * Regex corresponding to the id URI parameter of an entry in a collection.
    */
-  private static final String ID_PARAMETER = "/{" + URI_ID + "}";
+  private static final String ID_PARAMETER = "/{" + URI_ID + '}';
 
   /**
    * Access point of the transfers collection.
@@ -167,6 +167,9 @@ public final class RestConstants {
     public static final String RESTART_URI = "restart";
     public static final String LOGS_URI = "logs";
     public static final String CONFIG_URI = "config";
+
+    private ServerCommandsURI() {
+    }
   }
 
   /**
@@ -177,6 +180,9 @@ public final class RestConstants {
     public static final String RESTART_URI = "restart";
     public static final String STOP_URI = "stop";
     public static final String CANCEL_URI = "cancel";
+
+    private TransferCommandsURI() {
+    }
   }
 
   // ######################### JSON FIELDS NAMES ##############################
@@ -192,6 +198,9 @@ public final class RestConstants {
     public static final String HOST_NAME = "hostName";
     public static final String ROLE_LIST = "roleList";
     public static final String ALIAS_LIST = "aliasList";
+
+    private HostConfigFields() {
+    }
   }
 
   /**
@@ -201,12 +210,15 @@ public final class RestConstants {
     public static final String HOST_NAME = "name";
     public static final String ADDRESS = "address";
     public static final String PORT = "port";
-    public static final String PASSWORD = "password";
+    public static final String PASSWORD = "password";//NOSONAR
     public static final String IS_SSL = "isSSL";
     public static final String IS_CLIENT = "isClient";
     public static final String IS_ADMIN = "isAdmin";
     public static final String IS_ACTIVE = "isActive";
     public static final String IS_PROXY = "isProxy";
+
+    private HostFields() {
+    }
   }
 
   /**
@@ -218,6 +230,9 @@ public final class RestConstants {
     public static final String WRITE_SESSION_LIMIT = "upSessionLimit";
     public static final String READ_SESSION_LIMIT = "downSessionLimit";
     public static final String DELAY_LIMIT = "delayLimit";
+
+    private LimitsFields() {
+    }
   }
 
   /**
@@ -240,6 +255,9 @@ public final class RestConstants {
     public static final String TASK_TYPE = "type";
     public static final String TASK_ARGUMENTS = "arguments";
     public static final String TASK_DELAY = "delay";
+
+    private RuleFields() {
+    }
   }
 
   /**
@@ -266,6 +284,9 @@ public final class RestConstants {
     public static final String RETRIEVE = "retrieve";
     public static final String ERROR_CODE = "errorCode";
     public static final String ERROR_MESSAGE = "errorMessage";
+
+    private TransferFields() {
+    }
   }
 
   // ######################### QUERY PARAM NAMES ##############################
@@ -281,6 +302,9 @@ public final class RestConstants {
     public static final String ADDRESS = "address";
     public static final String IS_SSL = "isSSL";
     public static final String IS_ACTIVE = "isActive";
+
+    private GetHostsParams() {
+    }
   }
 
   /**
@@ -292,6 +316,9 @@ public final class RestConstants {
     public static final String OFFSET = "offset";
     public static final String ORDER = "order";
     public static final String MODE_TRANS = "modeTrans";
+
+    private GetRulesParams() {
+    }
   }
 
   /**
@@ -301,6 +328,8 @@ public final class RestConstants {
   public static final class GetStatusParams {
     public static final String PERIOD = "period";
 
+    private GetStatusParams() {
+    }
   }
 
   /**
@@ -317,6 +346,9 @@ public final class RestConstants {
     public static final String START_ID = "startID";
     public static final String STOP_ID = "stopID";
     public static final String REQUESTED = "requester";
+
+    private GetLogsParams() {
+    }
   }
 
   /**
@@ -329,6 +361,9 @@ public final class RestConstants {
     public static final String EXPORT_BUSINESS = "exportBusiness";
     public static final String EXPORT_ALIASES = "exportAliases";
     public static final String EXPORT_ROLES = "exportRoles";
+
+    private ExportConfigParams() {
+    }
   }
 
   /**
@@ -346,6 +381,9 @@ public final class RestConstants {
     public static final String BUSINESS_FILE = "businessFile";
     public static final String ALIAS_FILE = "aliasesFile";
     public static final String ROLE_FILE = "rolesFile";
+
+    private ImportConfigParams() {
+    }
   }
 
   /**
@@ -362,5 +400,8 @@ public final class RestConstants {
     public static final String FILENAME = "filename";
     public static final String START_TRANS = "startTrans";
     public static final String STOP_TRANS = "stopTrans";
+
+    private GetTransfersParams() {
+    }
   }
 }

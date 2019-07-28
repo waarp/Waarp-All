@@ -41,6 +41,7 @@ public class LogJavaTask implements GatewayRunnable {
    *
    */
   public LogJavaTask() {
+    // nothing
   }
 
   @Override
@@ -50,17 +51,11 @@ public class LogJavaTask implements GatewayRunnable {
       builder.append(arg).append(' ');
     }
     switch (delay) {
-      case 0:
-        logger.warn(builder.toString());
-        break;
       case 1:
         logger.debug(builder.toString());
         break;
       case 2:
         logger.info(builder.toString());
-        break;
-      case 3:
-        logger.warn(builder.toString());
         break;
       case 4:
         logger.error(builder.toString());

@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Thread Pool Executor for ClientRunner
- *
- *
  */
 public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
   /**
@@ -44,8 +42,6 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
 
   /**
    * RejectedExecutionHandler for this ThreadPoolRunnerExecutor
-   *
-   *
    */
   private static class RunnerRejectedExecutionHandler
       implements RejectedExecutionHandler {

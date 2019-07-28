@@ -21,6 +21,11 @@
 package org.waarp.common.utility;
 
 import com.google.common.base.Strings;
+import org.waarp.common.exception.InvalidArgumentException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Checker for Parameters <br>
@@ -29,6 +34,41 @@ import com.google.common.base.Strings;
  * For null String only, use the special method.
  */
 public final class ParametersChecker {
+  public static final String DEFAULT_ERROR =
+      "Parameter should not be null or empty";
+  // Default ASCII for Param check
+  public static final Pattern UNPRINTABLE_PATTERN =
+      Pattern.compile("[\\p{Cntrl}&&[^\r\n\t]]");
+  public static final List<String> RULES = new ArrayList<String>();
+  public static final String[] ZERO_ARRAY_STRING = new String[0];
+  // default parameters for XML check
+  static final String CDATA_TAG_UNESCAPED = "<![CDATA[";
+  static final String CDATA_TAG_ESCAPED = "&lt;![CDATA[";
+  static final String ENTITY_TAG_UNESCAPED = "<!ENTITY";
+  static final String ENTITY_TAG_ESCAPED = "&lt;!ENTITY";
+  // default parameters for Javascript check
+  static final String SCRIPT_TAG_UNESCAPED = "<script>";
+  static final String SCRIPT_TAG_ESCAPED = "&lt;script&gt;";
+  // default parameters for Json check
+  private static final String TAG_START =
+      "\\<\\w+((\\s+\\w+(\\s*\\=\\s*(?:\".*?\"|'.*?'|[^'\"\\>\\s]+))?)+\\s*|\\s*)\\>";
+  private static final String TAG_END = "\\</\\w+\\>";
+  private static final String TAG_SELF_CLOSING =
+      "\\<\\w+((\\s+\\w+(\\s*\\=\\s*(?:\".*?\"|'.*?'|[^'\"\\>\\s]+))?)+\\s*|\\s*)/\\>";
+  private static final String HTML_ENTITY = "&[a-zA-Z][a-zA-Z0-9]+;";
+  // Allowed
+  public static final Pattern HTML_PATTERN = Pattern.compile(
+      '(' + TAG_START + ".*" + TAG_END + ")|(" + TAG_SELF_CLOSING + ")|(" +
+      HTML_ENTITY + ')', Pattern.DOTALL);
+
+  static {
+    RULES.add(CDATA_TAG_UNESCAPED);
+    RULES.add(CDATA_TAG_ESCAPED);
+    RULES.add(ENTITY_TAG_UNESCAPED);
+    RULES.add(ENTITY_TAG_ESCAPED);
+    RULES.add(SCRIPT_TAG_UNESCAPED);
+    RULES.add(SCRIPT_TAG_ESCAPED);
+  }
 
   private ParametersChecker() {
     // empty
@@ -45,8 +85,7 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null or empty
    */
-  public static final void checkParameter(String errorMessage,
-                                          String... parameters) {
+  public static void checkParameter(String errorMessage, String... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage);
     }
@@ -66,8 +105,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null or empty
    */
-  public static final void checkParameterDefault(String errorMessage,
-                                                 String... parameters) {
+  public static void checkParameterDefault(String errorMessage,
+                                           String... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);
     }
@@ -85,7 +124,7 @@ public final class ParametersChecker {
    *
    * @return True if not null and not empty neither containing only spaces
    */
-  public static final boolean isNotEmpty(String... parameters) {
+  public static boolean isNotEmpty(String... parameters) {
     if (parameters == null) {
       return false;
     }
@@ -106,8 +145,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null or empty
    */
-  public static final void checkParameterDefault(String errorMessage,
-                                                 Object... parameters) {
+  public static void checkParameterDefault(String errorMessage,
+                                           Object... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);
     }
@@ -127,8 +166,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null
    */
-  public static final void checkParameterNullOnly(String errorMessage,
-                                                  String... parameters) {
+  public static void checkParameterNullOnly(String errorMessage,
+                                            String... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage);
     }
@@ -148,8 +187,7 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null
    */
-  public static final void checkParameter(String errorMessage,
-                                          Object... parameters) {
+  public static void checkParameter(String errorMessage, Object... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage);
     }
@@ -167,11 +205,47 @@ public final class ParametersChecker {
    * @param variable the value of variable to check
    * @param minValue the min value
    */
-  public static final void checkValue(String name, long variable,
-                                      long minValue) {
+  public static void checkValue(String name, long variable, long minValue) {
     if (variable < minValue) {
       throw new IllegalArgumentException(
           "Parameter " + name + " is less than " + minValue);
+    }
+  }
+
+  /**
+   * Check external argument to avoid Path Traversal attack
+   *
+   * @param value to check
+   *
+   * @throws InvalidArgumentException
+   */
+  public static String checkSanityString(String value)
+      throws InvalidArgumentException {
+    checkSanityString(new String[] { value });
+    return value;
+  }
+
+  /**
+   * Check external argument
+   *
+   * @param strings
+   *
+   * @throws InvalidArgumentException
+   */
+  public static void checkSanityString(String... strings)
+      throws InvalidArgumentException {
+    for (String field : strings) {
+      if (field == null || field.isEmpty()) {
+        continue;
+      }
+      if (UNPRINTABLE_PATTERN.matcher(field).find()) {
+        throw new InvalidArgumentException("Invalid input bytes");
+      }
+      for (final String rule : RULES) {
+        if (field != null && rule != null && field.contains(rule)) {
+          throw new InvalidArgumentException("Invalid tag sanity check");
+        }
+      }
     }
   }
 }

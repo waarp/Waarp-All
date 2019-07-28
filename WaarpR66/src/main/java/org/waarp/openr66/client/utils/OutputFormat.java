@@ -32,17 +32,20 @@ import java.util.Map.Entry;
 
 /**
  * This method allows to format output for Waarp R66 clients
- *
- *
  */
 public class OutputFormat extends JsonHandler {
-  public static enum OUTPUTFORMAT {
+  private static final String XML = "XML";
+  private static final String PROPERTY = "PROPERTY";
+  private static final String CSV = "CSV";
+  private static final String MESSAGE_CANT_CONVERT = "Message.CantConvert";
+
+  public enum OUTPUTFORMAT {
     QUIET, JSON, XML, PROPERTY, CSV
   }
 
   static OUTPUTFORMAT defaultOutput = OUTPUTFORMAT.JSON;
 
-  public static enum FIELDS {
+  public enum FIELDS {
     command, args, status, statusTxt, transfer, error, remote
   }
 
@@ -53,15 +56,15 @@ public class OutputFormat extends JsonHandler {
    */
   public static void getParams(String[] args) {
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-quiet")) {
+      if ("-quiet".equalsIgnoreCase(args[i])) {
         defaultOutput = OUTPUTFORMAT.QUIET;
-      } else if (args[i].equalsIgnoreCase("-xml")) {
+      } else if ("-xml".equalsIgnoreCase(args[i])) {
         defaultOutput = OUTPUTFORMAT.XML;
-      } else if (args[i].equalsIgnoreCase("-csv")) {
+      } else if ("-csv".equalsIgnoreCase(args[i])) {
         defaultOutput = OUTPUTFORMAT.CSV;
-      } else if (args[i].equalsIgnoreCase("-json")) {
+      } else if ("-json".equalsIgnoreCase(args[i])) {
         defaultOutput = OUTPUTFORMAT.JSON;
-      } else if (args[i].equalsIgnoreCase("-property")) {
+      } else if ("-property".equalsIgnoreCase(args[i])) {
         defaultOutput = OUTPUTFORMAT.PROPERTY;
       }
     }
@@ -191,13 +194,13 @@ public class OutputFormat extends JsonHandler {
    */
   public void sysout() {
     if (format != OUTPUTFORMAT.QUIET) {
-      System.out.println(getContext());
-      System.out.println(this.toString(format));
+      System.out.println(getContext());//NOSONAR
+      System.out.println(toString(format));//NOSONAR
     }
   }
 
   private String getContext() {
-    return "[" + getValue(node, FIELDS.command, "") + "] " +
+    return '[' + getValue(node, FIELDS.command, "") + "] " +
            getValue(node, FIELDS.statusTxt, "");
   }
 
@@ -225,9 +228,6 @@ public class OutputFormat extends JsonHandler {
   public String toString(OUTPUTFORMAT format) {
     final String inString = writeAsString(node);
     switch (format) {
-      case QUIET:
-      case JSON:
-        return inString;
       case CSV:
         try {
           final Map<String, Object> map = mapper
@@ -246,13 +246,13 @@ public class OutputFormat extends JsonHandler {
             builderKeys.append(entry.getKey());
             builderValues.append(entry.getValue());
           }
-          return builderKeys.toString() + "\n" + builderValues.toString();
+          return builderKeys + "\n" + builderValues;
         } catch (final JsonParseException e) {
-          return Messages.getString("Message.CantConvert", "CSV") + inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;
         } catch (final JsonMappingException e) {
-          return Messages.getString("Message.CantConvert", "CSV") + inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;
         } catch (final IOException e) {
-          return Messages.getString("Message.CantConvert", "CSV") + inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;
         }
       case PROPERTY:
         try {
@@ -271,14 +271,11 @@ public class OutputFormat extends JsonHandler {
           }
           return builder.toString();
         } catch (final JsonParseException e) {
-          return Messages.getString("Message.CantConvert", "PROPERTY") +
-                 inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;
         } catch (final JsonMappingException e) {
-          return Messages.getString("Message.CantConvert", "PROPERTY") +
-                 inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;
         } catch (final IOException e) {
-          return Messages.getString("Message.CantConvert", "PROPERTY") +
-                 inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;
         }
       case XML:
         try {
@@ -294,12 +291,14 @@ public class OutputFormat extends JsonHandler {
           builder.append("</xml>");
           return builder.toString();
         } catch (final JsonParseException e) {
-          return Messages.getString("Message.CantConvert", "XML") + inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;
         } catch (final JsonMappingException e) {
-          return Messages.getString("Message.CantConvert", "XML") + inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;
         } catch (final IOException e) {
-          return Messages.getString("Message.CantConvert", "XML") + inString;
+          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;
         }
+      case QUIET:
+      case JSON:
       default:
         return inString;
     }

@@ -18,14 +18,14 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *
- */
 package org.waarp.ftp.client;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -48,9 +48,6 @@ import static junit.framework.TestCase.*;
 /**
  * Simple test example using predefined scenario (Note: this uses the configuration example for user shutdown
  * command)
- *
- *
- *
  */
 public class FtpClientTest {
   public static AtomicLong numberOK = new AtomicLong(0);
@@ -77,9 +74,10 @@ public class FtpClientTest {
     int numberThread = 1;
     int numberIteration = 1;
     if (args.length < 8) {
-      System.err.println("Usage: " + FtpClientTest.class.getSimpleName() +
-                         " server port user pwd acct localfilename nbThread nbIter");
-      DetectionUtils.SystemExit(1);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Usage: " + FtpClientTest.class.getSimpleName() +
+          " server port user pwd acct localfilename nbThread nbIter");
+      DetectionUtils.systemExit(1);
       return;
     }
     server = args[0];
@@ -127,6 +125,7 @@ public class FtpClientTest {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
+      assertEquals("No KO", 0, numberKO.get());
       return;
     }
     try {
@@ -135,11 +134,13 @@ public class FtpClientTest {
         client.makeDir("T" + i);
       }
       logger.warn("Feature commands");
-      System.err.println("SITE: " + client.featureEnabled("SITE"));
-      System.err.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));
-      System.err.println("CRC: " + client.featureEnabled("XCRC"));
-      System.err.println("MD5: " + client.featureEnabled("XMD5"));
-      System.err.println("SHA1: " + client.featureEnabled("XSHA1"));
+      SysErrLogger.FAKE_LOGGER.syserr("SITE: " + client.featureEnabled("SITE"));
+      SysErrLogger.FAKE_LOGGER
+          .syserr("SITE CRC: " + client.featureEnabled("SITE XCRC"));
+      SysErrLogger.FAKE_LOGGER.syserr("CRC: " + client.featureEnabled("XCRC"));
+      SysErrLogger.FAKE_LOGGER.syserr("MD5: " + client.featureEnabled("XMD5"));
+      SysErrLogger.FAKE_LOGGER
+          .syserr("SHA1: " + client.featureEnabled("XSHA1"));
     } finally {
       logger.warn("Logout");
       client.logout();
@@ -147,7 +148,7 @@ public class FtpClientTest {
     if (isSSL > 0) {
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException ignored) {
       }
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -166,7 +167,7 @@ public class FtpClientTest {
           } else {
             Thread.sleep(newdel);
           }
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException ignored) {
         }
       } else {
         Thread.yield();
@@ -175,7 +176,7 @@ public class FtpClientTest {
     try {
       Thread.sleep(100);
     } catch (final InterruptedException e1) {
-      e1.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e1);
       executorService.shutdownNow();
       // Thread.currentThread().interrupt();
     }
@@ -186,30 +187,31 @@ public class FtpClientTest {
         date2 = System.currentTimeMillis() - 120000 * 60;
         executorService.shutdownNow();
         if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-          System.err.println("Really not shutdown normally");
+          SysErrLogger.FAKE_LOGGER.syserr("Really not shutdown normally");
         }
       } else {
         date2 = System.currentTimeMillis();
       }
     } catch (final InterruptedException e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       executorService.shutdownNow();
       date2 = System.currentTimeMillis();
       // Thread.currentThread().interrupt();
     }
 
     logger.warn(
-        localFilename + " " + numberThread + " " + numberIteration + " " +
+        localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +
         type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
         " KO: " + numberKO.get() + " Trf/s: " +
         numberOK.get() * 1000 / (date2 - date1));
-    assertTrue("No KO", numberKO.get() == 0);
+    assertEquals("No KO", 0, numberKO.get());
   }
 
   @BeforeClass
   public static void startServer() throws IOException {
     WaarpLoggerFactory
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
 
     FtpServer.startFtpServer("config.xml");
     final File localFilename = new File("/tmp/ftpfile.bin");
@@ -227,7 +229,7 @@ public class FtpClientTest {
     logger.warn("Will shutdown from client");
     try {
       Thread.sleep(500);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
     final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest("127.0.0.1", 2021, "fredo", "fred1", "a",
@@ -240,9 +242,9 @@ public class FtpClientTest {
     try {
       final String[] results =
           client.executeSiteCommand("internalshutdown abcdef");
-      System.err.print("SHUTDOWN: ");
+      SysErrLogger.FAKE_LOGGER.syserrNoLn("SHUTDOWN: ");
       for (final String string : results) {
-        System.err.println(string);
+        SysErrLogger.FAKE_LOGGER.syserr(string);
       }
     } finally {
       client.disconnect();
@@ -251,7 +253,7 @@ public class FtpClientTest {
     FtpServer.stopFtpServer();
     try {
       Thread.sleep(1000);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
   }
 

@@ -23,8 +23,6 @@ import java.io.File;
 
 /**
  * JDK6 version of specific functions for Filesystem.
- *
- *
  */
 public class FilesystemBasedDirJdk6 extends FilesystemBasedDirJdkAbstract {
   /**

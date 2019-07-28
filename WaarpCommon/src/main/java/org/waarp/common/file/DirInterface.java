@@ -26,8 +26,6 @@ import java.util.List;
 
 /**
  * Interface for Directory support
- *
- *
  */
 public interface DirInterface {
   /**

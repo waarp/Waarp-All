@@ -28,6 +28,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.waarp.commandexec.utils.LocalExecDefaultResult;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
@@ -42,8 +43,8 @@ import java.net.InetSocketAddress;
  */
 public class LocalExecSslServer {
 
-  static EventLoopGroup workerGroup = new NioEventLoopGroup();
-  static EventExecutorGroup executor =
+  static final EventLoopGroup workerGroup = new NioEventLoopGroup();
+  static final EventExecutorGroup executor =
       new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),
                                     new WaarpThreadFactory("LocalExecServer"));
 
@@ -67,8 +68,11 @@ public class LocalExecSslServer {
     int port = 9999;
     InetAddress addr;
     long delay = LocalExecDefaultResult.MAXWAITPROCESS;
-    String keyStoreFilename, keyStorePasswd, keyPassword;
-    String trustStoreFilename = null, trustStorePasswd = null;
+    String keyStoreFilename;
+    String keyStorePasswd;
+    String keyPassword;
+    String trustStoreFilename = null;
+    String trustStorePasswd = null;
     final byte[] loop = { 127, 0, 0, 1 };
     addr = InetAddress.getByAddress(loop);
     if (args.length >= 3) {
@@ -89,8 +93,8 @@ public class LocalExecSslServer {
         }
       }
     } else {
-      System.err
-          .println("Need at least 3 arguments: Filename KeyStorePswd KeyPswd");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Need at least 3 arguments: Filename " + "KeyStorePswd KeyPswd");
       return;
     }
     // Configure the server.
@@ -99,18 +103,18 @@ public class LocalExecSslServer {
       WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
 
       // Load the KeyStore (No certificates)
-      final WaarpSecureKeyStore WaarpSecureKeyStore =
+      final WaarpSecureKeyStore WaarpSecureKeyStoreNew =
           new WaarpSecureKeyStore(keyStoreFilename, keyStorePasswd,
                                   keyPassword);
       if (trustStoreFilename != null) {
         // Include certificates
-        WaarpSecureKeyStore
+        WaarpSecureKeyStoreNew
             .initTrustStore(trustStoreFilename, trustStorePasswd, true);
       } else {
-        WaarpSecureKeyStore.initEmptyTrustStore();
+        WaarpSecureKeyStoreNew.initEmptyTrustStore();
       }
       final WaarpSslContextFactory waarpSslContextFactory =
-          new WaarpSslContextFactory(WaarpSecureKeyStore, true);
+          new WaarpSslContextFactory(WaarpSecureKeyStoreNew, true);
       // Configure the pipeline factory.
       bootstrap.childHandler(
           new LocalExecSslServerInitializer(waarpSslContextFactory, delay,

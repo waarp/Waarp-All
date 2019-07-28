@@ -31,8 +31,6 @@ import java.util.TimerTask;
 
 /**
  * Timeout listener for Data connection for FTP4J model
- *
- *
  */
 public class DataTimeOutListener implements FTPDataTransferListener {
   /**
@@ -43,7 +41,7 @@ public class DataTimeOutListener implements FTPDataTransferListener {
 
   private final FTPClient client;
   private final Timer timer;
-  private long timeout = 10000;
+  private long timeout;
   private long last = System.currentTimeMillis();
   private boolean finished;
   private final String command;
@@ -69,10 +67,12 @@ public class DataTimeOutListener implements FTPDataTransferListener {
         if (now - last - timeout > 0) {
           try {
             logger
-                .warn("Timeout during file transfer: " + command + " " + file);
+                .warn("Timeout during file transfer: " + command + ' ' + file);
             client.abortCurrentDataTransfer(true);
-          } catch (final IOException e) {
-          } catch (final FTPIllegalReplyException e) {
+          } catch (final IOException ignored) {
+            // nothing
+          } catch (final FTPIllegalReplyException ignored) {
+            // nothing
           }
         } else {
           renewTask();
@@ -102,16 +102,12 @@ public class DataTimeOutListener implements FTPDataTransferListener {
 
   @Override
   public void aborted() {
-    finished = true;
-    last = System.currentTimeMillis();
-    timer.cancel();
+    completed();
   }
 
   @Override
   public void failed() {
-    finished = true;
-    last = System.currentTimeMillis();
-    timer.cancel();
+    completed();
   }
 
 }

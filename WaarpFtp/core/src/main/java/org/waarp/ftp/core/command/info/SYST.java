@@ -24,8 +24,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * SYST command
- *
- *
  */
 public class SYST extends AbstractCommand {
   @Override

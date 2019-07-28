@@ -45,10 +45,10 @@ import java.nio.channels.FileChannel;
  * If one wants to implement special actions, he/she just has to extend this
  * class and override the default
  * empty implementation.
- *
- *
  */
 public abstract class PassthroughBasedFileImpl extends AbstractFile {
+  private static final String NO_FILE_IS_READY = "No file is ready";
+
   /**
    * Internal Logger
    */
@@ -100,9 +100,9 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
    * @throws CommandAbstractException
    * @throws PassthroughException
    */
-  public PassthroughBasedFileImpl(SessionInterface session,
-                                  PassthroughBasedDirImpl dir, String path,
-                                  boolean append)
+  protected PassthroughBasedFileImpl(SessionInterface session,
+                                     PassthroughBasedDirImpl dir, String path,
+                                     boolean append)
       throws CommandAbstractException {
     this.session = session;
     auth = (PassthroughBasedAuthImpl) session.getAuth();
@@ -125,7 +125,8 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
     } else {
       try {
         setPosition(0);
-      } catch (final IOException e) {
+      } catch (final IOException ignored) {
+        // nothing
       }
     }
   }
@@ -308,7 +309,7 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       final DataBlock dataBlock = new DataBlock();
-      ByteBuf buffer = null;
+      ByteBuf buffer;
       buffer = getBlock(getSession().getBlockSize());
       if (buffer != null) {
         dataBlock.setBlock(buffer);
@@ -318,7 +319,7 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
         return dataBlock;
       }
     }
-    throw new FileTransferException("No file is ready");
+    throw new FileTransferException(NO_FILE_IS_READY);
   }
 
   @Override
@@ -331,7 +332,7 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
       writeBlock(dataBlock.getBlock());
       return;
     }
-    throw new FileTransferException("No file is ready");
+    throw new FileTransferException(NO_FILE_IS_READY);
   }
 
   /**
@@ -374,7 +375,8 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
     if (isReady) {
       try {
         pfile.flush();
-      } catch (final PassthroughException e) {
+      } catch (final PassthroughException ignored) {
+        // nothing
       }
     }
   }
@@ -394,7 +396,7 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
    */
   private void writeBlock(ByteBuf buffer) throws FileTransferException {
     if (!isReady) {
-      throw new FileTransferException("No file is ready");
+      throw new FileTransferException(NO_FILE_IS_READY);
     }
     // An empty buffer is allowed
     if (buffer == null) {
@@ -411,7 +413,8 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
     if (!result) {
       try {
         pfile.close();
-      } catch (final PassthroughException e) {
+      } catch (final PassthroughException ignored) {
+        // nothing
       }
       // NO this.realFile.delete(); NO DELETE SINCE BY BLOCK IT CAN BE
       // REDO
@@ -434,7 +437,8 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
     writeBlock(buffer);
     try {
       closeFile();
-    } catch (final CommandAbstractException e) {
+    } catch (final CommandAbstractException ignored) {
+      // nothing
     }
   }
 
@@ -457,7 +461,7 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
   private ByteBuf getBlock(int sizeblock)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
-      throw new FileTransferException("No file is ready");
+      throw new FileTransferException(NO_FILE_IS_READY);
     }
     ByteBuf buffer;
     try {
@@ -469,7 +473,8 @@ public abstract class PassthroughBasedFileImpl extends AbstractFile {
     if (sizeout < sizeblock) {// last block
       try {
         pfile.close();
-      } catch (final PassthroughException e) {
+      } catch (final PassthroughException ignored) {
+        // nothing
       }
       isReady = false;
     }

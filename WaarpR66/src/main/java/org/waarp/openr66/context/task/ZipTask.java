@@ -32,8 +32,6 @@ import java.util.List;
 
 /**
  * TAR task
- *
- *
  */
 public class ZipTask extends AbstractTask {
   /**
@@ -56,21 +54,21 @@ public class ZipTask extends AbstractTask {
   @Override
   public void run() {
     logger.info(
-        "ZIP with " + argRule + ":" + argTransfer + ":" + delay + " and {}",
+        "ZIP with " + argRule + ':' + argTransfer + ':' + delay + " and {}",
         session);
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" "));
-    boolean zip = false;
+    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));
+    boolean zip;
     switch (delay) {
       case 2: {
         // directory: zip finalname where finalname="target directory"
-        final String[] args = finalname.split(" ");
+        final String[] args = BLANK.split(finalname);
         zip = ZipUtility.createZipFromDirectory(args[1], args[0], true);
         break;
       }
       case 3: {
         // list of files: zip finalname where finalname="target file1 file2..."
-        final String[] args = finalname.split(" ");
+        final String[] args = BLANK.split(finalname);
         final List<File> files = new ArrayList<File>(args.length - 1);
         for (int i = 1; i < args.length; i++) {
           files.add(new File(args[i]));
@@ -81,7 +79,7 @@ public class ZipTask extends AbstractTask {
       default: {
         // unzip
         // directory: unzip finalname where finalname="source directory"
-        final String[] args = finalname.split(" ");
+        final String[] args = BLANK.split(finalname);
         final File zipFile = new File(args[0]);
         final File directory = new File(args[1]);
         try {
@@ -96,7 +94,7 @@ public class ZipTask extends AbstractTask {
     }
     if (!zip) {
       logger.error(
-          "Zip error with " + argRule + ":" + argTransfer + ":" + delay +
+          "Zip error with " + argRule + ':' + argTransfer + ':' + delay +
           " and " + session);
       futureCompletion
           .setFailure(new OpenR66ProtocolSystemException("Zip error"));

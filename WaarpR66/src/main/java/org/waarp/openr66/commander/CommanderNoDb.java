@@ -23,6 +23,7 @@ import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
@@ -35,6 +36,7 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.regex.Pattern;
 
 /**
  * Commander is responsible to read list of updated data from time to time in
@@ -42,8 +44,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * new configuration updates.
  * <p>
  * Based on no Database support
- *
- *
  */
 public class CommanderNoDb implements CommanderInterface {
   /**
@@ -51,8 +51,9 @@ public class CommanderNoDb implements CommanderInterface {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(CommanderNoDb.class);
+  private static final Pattern COMPILE_ = Pattern.compile("_");
 
-  private InternalRunner internalRunner = null;
+  private InternalRunner internalRunner;
   public static final ConcurrentLinkedQueue<AbstractDbData> todoList =
       new ConcurrentLinkedQueue<AbstractDbData>();
 
@@ -76,10 +77,6 @@ public class CommanderNoDb implements CommanderInterface {
     if (fromStartup) {
       ClientRunner.activeRunners = new ConcurrentLinkedQueue<ClientRunner>();
       // Change RUNNING or INTERRUPTED to TOSUBMIT since they should be ready
-      /*
-       * Configuration.configuration.baseDirectory+ Configuration.configuration.archivePath+R66Dir.SEPARATOR+
-       * this.requesterHostId+"_"+this.requestedHostId+"_"+this.ruleId+"_"+this.specialId +XMLEXTENSION;
-       */
       final File directory = new File(
           Configuration.configuration.getBaseDirectory() +
           Configuration.configuration.getArchivePath());
@@ -87,7 +84,7 @@ public class CommanderNoDb implements CommanderInterface {
           .getFiles(directory, new ExtensionFilter(DbTaskRunner.XMLEXTENSION));
       for (final File file : files) {
         final String shortname = file.getName();
-        final String[] info = shortname.split("_");
+        final String[] info = COMPILE_.split(shortname);
         if (info.length < 5) {
           continue;
         }
@@ -110,7 +107,6 @@ public class CommanderNoDb implements CommanderInterface {
           }
         } catch (final WaarpDatabaseException e) {
           logger.warn("Cannot reload the task named: " + shortname);
-          continue;
         }
       }
     }
@@ -124,9 +120,9 @@ public class CommanderNoDb implements CommanderInterface {
    * Finalize internal data
    */
   @Override
-  public void finalize() {
+  public void finalizeCommander() {
     // no since it will be reloaded
-    // todoList.clear();
+    // todoList.clear()
   }
 
   @Override
@@ -142,22 +138,21 @@ public class CommanderNoDb implements CommanderInterface {
           if (configuration.isOwnConfiguration()) {
             configuration.updateConfiguration();
           }
-          configuration
-              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          configuration.changeUpdatedInfo(UpdatedInfo.NOTUPDATED);
           configuration.update();
         }
         // Check HostAuthent
         else if (data instanceof DbHostAuth) {
           final DbHostAuth hostAuth = (DbHostAuth) data;
           // Nothing to do except validate
-          hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          hostAuth.changeUpdatedInfo(UpdatedInfo.NOTUPDATED);
           hostAuth.update();
         }
         // Check Rules
         else if (data instanceof DbRule) {
           // Nothing to do except validate
           final DbRule rule = (DbRule) data;
-          rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          rule.changeUpdatedInfo(UpdatedInfo.NOTUPDATED);
           rule.update();
         }
         // Check TaskRunner
@@ -166,8 +161,8 @@ public class CommanderNoDb implements CommanderInterface {
           logger.debug("get a task: {}", taskRunner);
           // Launch if possible this task
           final String key =
-              taskRunner.getRequested() + " " + taskRunner.getRequester() +
-              " " + taskRunner.getSpecialId();
+              taskRunner.getRequested() + ' ' + taskRunner.getRequester() +
+              ' ' + taskRunner.getSpecialId();
           if (Configuration.configuration.getLocalTransaction()
                                          .getFromRequest(key) != null) {
             // already running
@@ -185,8 +180,8 @@ public class CommanderNoDb implements CommanderInterface {
           try {
             Thread.sleep(Configuration.RETRYINMS);
           } catch (final InterruptedException e) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           }
-          taskRunner = null;
         }
         if (WaarpShutdownHook.isShutdownStarting()) {
           // no more task to submit

@@ -46,8 +46,6 @@ import static org.junit.Assert.*;
 
 /**
  * Test class for Agent and simple Client
- *
- *
  */
 public class WaarpSnmpClientAgentTest {
   static WaarpSnmpAgent agent;
@@ -59,7 +57,7 @@ public class WaarpSnmpClientAgentTest {
   @Test
   public void allTests() throws Exception {
     WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.DEBUG));
+        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     final ClassLoader classLoader =
         WaarpSnmpClientAgentTest.class.getClassLoader();
     final File file =
@@ -79,7 +77,7 @@ public class WaarpSnmpClientAgentTest {
     final long uptime = agent.getUptime();
     final long systemUptime = agent.getUptimeSystemTime();
     assertTrue(uptime < systemUptime);
-    testAddUser();
+    addUser();
     System.out.println("Stopping");
     tearDown();
   }
@@ -115,7 +113,7 @@ public class WaarpSnmpClientAgentTest {
   public static void verifyTableContents() {
     for (final WaarpMOScalar scalar : test.rowInfo.getRow()) {
       try {
-        System.out.println("Read " + scalar.getID() + ":" +
+        System.out.println("Read " + scalar.getID() + ':' +
                            client.getAsString(scalar.getID()));
       } catch (final IOException e) {
         System.err.println(scalar.getID() + ":" + e.getMessage());
@@ -129,7 +127,7 @@ public class WaarpSnmpClientAgentTest {
     test.notifyError("Une seconde alerte", "un second texte d'alerte", 20);
   }
 
-  public void testAddUser() {
+  public void addUser() {
     final USM usm = new USM();
     UsmUser user = new UsmUser(new OctetString("TEST"), AuthSHA.ID,
                                new OctetString("maplesyrup"), PrivDES.ID,
@@ -191,7 +189,7 @@ public class WaarpSnmpClientAgentTest {
 
   static class StringResponseListener implements ResponseListener {
 
-    private String value = null;
+    private String value;
 
     @Override
     public void onResponse(ResponseEvent event) {

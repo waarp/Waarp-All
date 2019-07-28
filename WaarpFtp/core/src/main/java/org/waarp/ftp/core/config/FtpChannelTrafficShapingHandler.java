@@ -24,8 +24,6 @@ import org.waarp.common.file.DataBlock;
 
 /**
  * Channel Traffic Shaping Handler for FTP
- *
- *
  */
 public class FtpChannelTrafficShapingHandler
     extends ChannelTrafficShapingHandler {

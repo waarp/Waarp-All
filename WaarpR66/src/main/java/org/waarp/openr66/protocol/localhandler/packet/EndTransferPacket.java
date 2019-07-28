@@ -30,8 +30,6 @@ import java.nio.charset.Charset;
  * End of Transfer class
  * <p>
  * header = "request" middle = way end = might be empty
- *
- *
  */
 public class EndTransferPacket extends AbstractLocalPacket {
   private static final byte ASKVALIDATE = 0;
@@ -142,8 +140,8 @@ public class EndTransferPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "EndTransferPacket: " + request + " " + way +
-           (hashOptional != null? " " + hashOptional : "");
+    return "EndTransferPacket: " + request + ' ' + way +
+           (hashOptional != null? ' ' + hashOptional : "");
   }
 
   /**

@@ -38,8 +38,6 @@ import java.util.List;
 
 /**
  * Abstract Main Implementation of Directory
- *
- *
  */
 public abstract class AbstractDir implements DirInterface {
   /**
@@ -186,7 +184,7 @@ public abstract class AbstractDir implements DirInterface {
   public boolean isAbsolute(String path) {
     File file = new File(path);
     logger.debug(
-        "isAbsolute: " + file + ":" + ISUNIX + ":" + file.isAbsolute() + ":" +
+        "isAbsolute: " + file + ':' + ISUNIX + ':' + file.isAbsolute() + ':' +
         file.getParentFile());
     if (!ISUNIX) {
       return file.isAbsolute();
@@ -248,9 +246,9 @@ public abstract class AbstractDir implements DirInterface {
       // Now filter on '..' or '.'
       for (int i = list.size() - 1; i >= 0; i--) {
         final String curdir = list.get(i);
-        if (curdir.equals(".")) {
+        if (".".equals(curdir)) {
           list.remove(i);// removes '.'
-        } else if (curdir.equals("..")) {
+        } else if ("..".equals(curdir)) {
           list.remove(i);// removes '..'
           final int len = list.size();
           if (len > 0 && i < len) {
@@ -288,7 +286,7 @@ public abstract class AbstractDir implements DirInterface {
    * @throws CommandAbstractException
    */
   protected String validatePath(File dir) throws CommandAbstractException {
-    String extDir = null;
+    String extDir;
     extDir = normalizePath(getCanonicalPath(dir));
     // Get the relative business path
     extDir = getSession().getAuth().getRelativePath(extDir);
@@ -330,7 +328,7 @@ public abstract class AbstractDir implements DirInterface {
    * @throws CommandAbstractException
    */
   protected boolean isPathInCurrentDir(File dir) {
-    String extDir = null;
+    String extDir;
     extDir = normalizePath(getCanonicalPath(dir));
     // Get the relative business path
     extDir = getSession().getAuth().getRelativePath(extDir);

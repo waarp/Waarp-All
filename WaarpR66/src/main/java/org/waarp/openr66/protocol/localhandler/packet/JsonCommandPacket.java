@@ -33,8 +33,6 @@ import java.io.IOException;
  * Json Command Message class for packet
  * <p>
  * 2 strings and one byte: request,result,send
- *
- *
  */
 public class JsonCommandPacket extends AbstractLocalPacket {
   private final String request;
@@ -125,7 +123,7 @@ public class JsonCommandPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "JsonCommandPacket: " + request + ":" + result + ":" + send;
+    return "JsonCommandPacket: " + request + ':' + result + ':' + send;
   }
 
   @Override

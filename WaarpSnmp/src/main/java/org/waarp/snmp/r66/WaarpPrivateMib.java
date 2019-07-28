@@ -42,26 +42,24 @@ import org.waarp.snmp.utils.WaarpUptime;
 
 /**
  * Private MIB for Waarp OpenR66
- *
- *
  */
 public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Internal Logger
    */
-  private static WaarpLogger logger =
+  private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpPrivateMib.class);
 
   // These are both standard in RFC-1213
   /**
    * SnmpConstants.sysDescr
    */
-  public String textualSysDecr = null;
+  public final String textualSysDecr;
 
   /**
    * SnmpConstants.sysObjectID
    */
-  public OID ggObjectId = null; // will be smiPrivateCode.typeWaarp
+  public final OID ggObjectId; // will be smiPrivateCode.typeWaarp
 
   /**
    * SnmpConstants.sysContact
@@ -88,19 +86,19 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * SnmpConstants.sysUpTime
    */
-  public SysUpTime upTime = null;
+  public SysUpTime upTime;
 
   /**
    * need to add ".port" like "6666" Only in TCP (no UDP supported for Waarp)
    * <p>
    * example: rootEnterpriseMib+"66666"+".1.1.4.";
    */
-  public String applicationProtocolBase = null;
+  public final String applicationProtocolBase;
 
   /**
    * will be = new OID(applicationProtocolBase+port);
    */
-  public OID applicationProtocol = null;
+  public final OID applicationProtocol;
 
   /**
    * Private MIB: not published so take an OID probably not attributed
@@ -114,26 +112,26 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * root OID in String
    */
-  public String srootOIDWaarp;
+  public final String srootOIDWaarp;
   /**
    * root OID
    */
-  public OID rootOIDWaarp;
+  public final OID rootOIDWaarp;
 
   /**
    * Used in Notify
    */
-  public OID rootOIDWaarpNotif;
+  public final OID rootOIDWaarpNotif;
 
   /**
    * Used in Notify Start or Shutdown
    */
-  public OID rootOIDWaarpNotifStartOrShutdown;
+  public final OID rootOIDWaarpNotifStartOrShutdown;
 
   /**
    * Info static part
    */
-  public OID rootOIDWaarpInfo;
+  public final OID rootOIDWaarpInfo;
   /**
    * Info Row access
    */
@@ -142,7 +140,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Global dynamic part
    */
-  public OID rootOIDWaarpGlobal;
+  public final OID rootOIDWaarpGlobal;
   /**
    * Global Row access
    */
@@ -151,17 +149,17 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Uptime OID
    */
-  public OID rootOIDWaarpGlobalUptime;
+  public final OID rootOIDWaarpGlobalUptime;
 
   /**
    * Corresponding UpTime in Mib
    */
-  public WaarpMOScalar scalarUptime = null;
+  public WaarpMOScalar scalarUptime;
 
   /**
    * Detailed dynamic part
    */
-  public OID rootOIDWaarpDetailed;
+  public final OID rootOIDWaarpDetailed;
   /**
    * Detailed Row access
    */
@@ -170,7 +168,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Error dynamic part
    */
-  public OID rootOIDWaarpError;
+  public final OID rootOIDWaarpError;
   /**
    * Error Row access
    */
@@ -196,9 +194,10 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    * @param saddress the address to show
    * @param iservice the service to show (should be 72)
    */
-  public WaarpPrivateMib(String sysdesc, int port, int smiPrivateCodeFinal,
-                         int typeWaarpObject, String scontactName,
-                         String stextualName, String saddress, int iservice) {
+  protected WaarpPrivateMib(String sysdesc, int port, int smiPrivateCodeFinal,
+                            int typeWaarpObject, String scontactName,
+                            String stextualName, String saddress,
+                            int iservice) {
     textualSysDecr = sysdesc;
     smiPrivateCode = smiPrivateCodeFinal;
     smiTypeWaarp = typeWaarpObject;
@@ -206,17 +205,17 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     textualName = stextualName;
     address = saddress;
     service = iservice;
-    srootOIDWaarp = rootEnterpriseMib.toString() + "." + smiPrivateCode + "." +
-                    smiTypeWaarp;
+    srootOIDWaarp =
+        rootEnterpriseMib + "." + smiPrivateCode + '.' + smiTypeWaarp;
     applicationProtocolBase = srootOIDWaarp + ".1.1.4.";
     ggObjectId = new OID(srootOIDWaarp);
     applicationProtocol = new OID(applicationProtocolBase + port);
     rootOIDWaarp = new OID(srootOIDWaarp);
     rootOIDWaarpInfo = new OID(srootOIDWaarp + ".1");
     rootOIDWaarpGlobal = new OID(srootOIDWaarp + ".2");
-    rootOIDWaarpGlobalUptime = new OID(rootOIDWaarpGlobal.toString() + "." +
-                                       WaarpGlobalValuesIndex.applUptime
-                                           .getOID() + ".0");
+    rootOIDWaarpGlobalUptime = new OID(
+        rootOIDWaarpGlobal + "." + WaarpGlobalValuesIndex.applUptime.getOID() +
+        ".0");
     rootOIDWaarpDetailed = new OID(srootOIDWaarp + ".3");
     rootOIDWaarpError = new OID(srootOIDWaarp + ".4");
     rootOIDWaarpNotif = new OID(srootOIDWaarp + ".5.1");
@@ -261,9 +260,9 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     snmpv2.registerMOs(agent.getServer(), null);
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "SNMPV2: " + snmpv2.getContact() + ":" + snmpv2.getDescr() + ":" +
-          snmpv2.getLocation() + ":" + snmpv2.getName() + ":" +
-          snmpv2.getObjectID() + ":" + snmpv2.getServices() + ":" +
+          "SNMPV2: " + snmpv2.getContact() + ':' + snmpv2.getDescr() + ':' +
+          snmpv2.getLocation() + ':' + snmpv2.getName() + ':' +
+          snmpv2.getObjectID() + ':' + snmpv2.getServices() + ':' +
           snmpv2.getUpTime());
     }
     // Save UpTime reference since used everywhere
@@ -362,10 +361,8 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * MIB entry levels
-   *
-   *
    */
-  public static enum MibLevel {
+  public enum MibLevel {
     staticInfo, globalInfo, detailedInfo, errorInfo, trapInfo
   }
 
@@ -373,16 +370,14 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Notification Elements
-   *
-   *
    */
-  public static enum NotificationElements {
+  public enum NotificationElements {
     TrapShutdown(1), TrapError(2), TrapWarning(3), TrapOverloaded(4),
     InfoTask(5);
 
-    public int[] oid;
+    public final int[] oid;
 
-    private NotificationElements(int oid) {
+    NotificationElements(int oid) {
       this.oid = new int[] { oid };
     }
 
@@ -391,17 +386,15 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     }
 
     public OID getOID(OID oidBase, int rank) {
-      final int[] ids = new int[] { oid[0], rank };
+      final int[] ids = { oid[0], rank };
       return new OID(oidBase.getValue(), ids);
     }
   }
 
   /**
    * Notification for a task trap
-   *
-   *
    */
-  public static enum NotificationTasks {
+  public enum NotificationTasks {
     globalStepInfo, stepInfo, rankFileInfo, stepStatusInfo, filenameInfo,
     originalNameInfo, idRuleInfo, modeTransInfo, retrieveModeInfo,
     startTransInfo, infoStatusInfo, requesterInfo, requestedInfo, specialIdInfo;
@@ -413,10 +406,8 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Definition part
-   *
-   *
    */
-  public static enum WaarpDefinitionIndex {
+  public enum WaarpDefinitionIndex {
     applName, applServerName, applVersion, applDescription, applURL,
     applApplicationProtocol;
 
@@ -428,7 +419,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Definition part
    */
-  public static WaarpEntry[] WaarpDefinition = {
+  public static final WaarpEntry[] WaarpDefinition = {
       // applName
       new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -451,10 +442,8 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Global part
-   *
-   *
    */
-  public static enum WaarpGlobalValuesIndex {
+  public enum WaarpGlobalValuesIndex {
     applUptime, applOperStatus, applLastChange, applInboundAssociations,
     applOutboundAssociations, applAccumInboundAssociations,
     applAccumOutboundAssociations, applLastInboundActivity,
@@ -473,7 +462,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Global part
    */
-  public static WaarpEntry[] WaarpGlobalValues = {
+  public static final WaarpEntry[] WaarpGlobalValues = {
       // applUptime
       new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -558,10 +547,8 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Detailed part
-   *
-   *
    */
-  public static enum WaarpDetailedValuesIndex {
+  public enum WaarpDetailedValuesIndex {
     nbStepNotask, nbStepPretask, nbStepTransfer, nbStepPosttask, nbStepAllDone,
     nbStepError, nbAllRunningStep, nbRunningStep, nbInitOkStep,
     nbPreProcessingOkStep, nbTransferOkStep, nbPostProcessingOkStep,
@@ -575,7 +562,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Detailed part
    */
-  public static WaarpEntry[] WaarpDetailedValues = {
+  public static final WaarpEntry[] WaarpDetailedValues = {
       // nbStepNotask
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
                      MOAccessImpl.ACCESS_READ_ONLY),
@@ -619,10 +606,8 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Error part
-   *
-   *
    */
-  public static enum WaarpErrorValuesIndex {
+  public enum WaarpErrorValuesIndex {
     nbStatusConnectionImpossible, nbStatusServerOverloaded, nbStatusBadAuthent,
     nbStatusExternalOp, nbStatusTransferError, nbStatusMD5Error,
     nbStatusDisconnection, nbStatusFinalOp, nbStatusUnimplemented,
@@ -641,7 +626,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Error part
    */
-  public static WaarpEntry[] WaarpErrorValues = {
+  public static final WaarpEntry[] WaarpErrorValues = {
       // Error Status on all transfers
       // nbStatusConnectionImpossible
       new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
@@ -718,15 +703,13 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
   /**
    * Oper Status (as defined in Net Application SNMP)
-   *
-   *
    */
-  public static enum OperStatus {
+  public enum OperStatus {
     up(1), down(2), halted(3), congested(4), restarting(5), quiescing(6);
 
-    public int status;
+    public final int status;
 
-    private OperStatus(int status) {
+    OperStatus(int status) {
       this.status = status;
     }
   }

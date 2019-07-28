@@ -25,17 +25,15 @@ import org.waarp.openr66.database.data.DbTaskRunner;
 
 /**
  * Future implementation
- *
- *
  */
 public class R66Future extends WaarpFuture {
 
-  private R66Result result = null;
+  private R66Result result;
   /**
    * Used in some specific occasion, such as client submission in API mode
    */
-  private DbTaskRunner runner = null;
-  private long filesize = 0;
+  private DbTaskRunner runner;
+  private long filesize;
 
   /**
    *
@@ -66,8 +64,8 @@ public class R66Future extends WaarpFuture {
 
   @Override
   public String toString() {
-    return "Future: " + isDone() + " " + isSuccess() + " " +
-           (getCause() != null? getCause().getMessage() : "no cause") + " " +
+    return "Future: " + isDone() + ' ' + isSuccess() + ' ' +
+           (getCause() != null? getCause().getMessage() : "no cause") + ' ' +
            (result != null? result.toString() : "no result");
   }
 

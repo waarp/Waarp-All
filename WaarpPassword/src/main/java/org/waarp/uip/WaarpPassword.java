@@ -23,6 +23,8 @@ import org.waarp.common.crypto.Blowfish;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.KeyObject;
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -38,8 +40,6 @@ import java.io.InputStreamReader;
 /**
  * Console Command Line Main class to provide Password Management for GoldenGate
  * Products.
- *
- *
  */
 public class WaarpPassword {
   static boolean desModel = true;
@@ -80,27 +80,27 @@ public class WaarpPassword {
       if (DetectionUtils.isJunit()) {
         return;
       }
-      System.exit(2);
+      System.exit(2);//NOSONAR
     }
     final WaarpPassword waarpPassword = new WaarpPassword();
     if (po == null && pi == null) {
       // stop
-      System.err.println("Key written");
+      SysErrLogger.FAKE_LOGGER.syserr("Key written");
       if (DetectionUtils.isJunit()) {
         return;
       }
-      System.exit(0);
+      System.exit(0);//NOSONAR
     }
     if (waarpPassword.clearPassword == null ||
         waarpPassword.clearPassword.length() == 0) {
-      System.err.println("Password to crypt:");
+      SysErrLogger.FAKE_LOGGER.syserr("Password to crypt:");
       final String newp = waarpPassword.readString();
       if (newp == null || newp.length() == 0) {
-        System.err.println("No password as input");
+        SysErrLogger.FAKE_LOGGER.syserr("No password as input");
         if (DetectionUtils.isJunit()) {
           return;
         }
-        System.exit(4);
+        System.exit(4);//NOSONAR
       }
       waarpPassword.setClearPassword(newp);
       if (po != null) {
@@ -108,8 +108,10 @@ public class WaarpPassword {
         waarpPassword.savePasswordFile();
       }
       if (clearPasswordView) {
-        System.err.println("ClearPwd: " + waarpPassword.getClearPassword());
-        System.err.println("CryptedPwd: " + waarpPassword.getCryptedPassword());
+        SysErrLogger.FAKE_LOGGER
+            .syserr("ClearPwd: " + waarpPassword.getClearPassword());
+        SysErrLogger.FAKE_LOGGER
+            .syserr("CryptedPwd: " + waarpPassword.getCryptedPassword());
       }
     }
   }
@@ -124,92 +126,94 @@ public class WaarpPassword {
     pwd = null;
     cpwd = null;
 
-    int i = 0;
+    int i;
     if (args.length == 0) {
-      System.err.println(HELPOPTIONS);
+      SysErrLogger.FAKE_LOGGER.syserr(HELPOPTIONS);
       return false;
     }
     if (!SystemPropertyUtil.isFileEncodingCorrect()) {
-      System.err.println(
+      SysErrLogger.FAKE_LOGGER.syserr(
           "Issue while trying to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument\n" +
           "Currently file.encoding is: " +
           SystemPropertyUtil.get(SystemPropertyUtil.FILE_ENCODING));
       return false;
     }
     for (i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-ki")) {
+      if ("-ki".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           ki = args[i];
         } else {
-          System.err.println("-ki needs a file as argument");
+          SysErrLogger.FAKE_LOGGER.syserr("-ki needs a file as argument");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-ko")) {
+      } else if ("-ko".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           ko = args[i];
         } else {
-          System.err.println("-ko needs a file as argument");
+          SysErrLogger.FAKE_LOGGER.syserr("-ko needs a file as argument");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-pi")) {
+      } else if ("-pi".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           pi = args[i];
         } else {
-          System.err.println("-pi needs a file as argument");
+          SysErrLogger.FAKE_LOGGER.syserr("-pi needs a file as argument");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-po")) {
+      } else if ("-po".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           po = args[i];
         } else {
-          System.err.println("-po needs a file as argument");
+          SysErrLogger.FAKE_LOGGER.syserr("-po needs a file as argument");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-des")) {
+      } else if ("-des".equalsIgnoreCase(args[i])) {
         desModel = true;
-      } else if (args[i].equalsIgnoreCase("-blf")) {
+      } else if ("-blf".equalsIgnoreCase(args[i])) {
         desModel = false;
-      } else if (args[i].equalsIgnoreCase("-pwd")) {
+      } else if ("-pwd".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           pwd = args[i];
         } else {
-          System.err.println("-pwd needs a password as argument");
+          SysErrLogger.FAKE_LOGGER.syserr("-pwd needs a password as argument");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-cpwd")) {
+      } else if ("-cpwd".equalsIgnoreCase(args[i])) {
         i++;
         if (i < args.length) {
           cpwd = args[i];
         } else {
-          System.err.println("-cpwd needs a crypted password as argument");
+          SysErrLogger.FAKE_LOGGER
+              .syserr("-cpwd needs a crypted password as argument");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-clear")) {
+      } else if ("-clear".equalsIgnoreCase(args[i])) {
         clearPasswordView = true;
       } else {
-        System.err.println("Unknown option: " + args[i]);
+        SysErrLogger.FAKE_LOGGER.syserr("Unknown option: " + args[i]);
         return false;
       }
     }
     if (ki == null && ko == null) {
-      System.err.println("You must specify one of ki or ko options");
+      SysErrLogger.FAKE_LOGGER
+          .syserr("You must specify one of ki or ko options");
       return false;
     }
     if (ki == null) {
       ki = ko;
     }
     if (ki == null && (po != null || pi != null)) {
-      System.err.println(
+      SysErrLogger.FAKE_LOGGER.syserr(
           "If pi or po options are set, ki or ko options must be set also!\n");
       return false;
     }
     if (pi == null && po == null && (pwd != null || cpwd != null)) {
-      System.err.println(
+      SysErrLogger.FAKE_LOGGER.syserr(
           "Cannot create a password if no password GGP file is specified with pi or po options");
       return false;
     }
@@ -245,9 +249,9 @@ public class WaarpPassword {
     }
     if (clearPassword != null) {
       if (clearPasswordView) {
-        System.err.println("ClearPwd: " + getClearPassword());
+        SysErrLogger.FAKE_LOGGER.syserr("ClearPwd: " + getClearPassword());
       }
-      System.err.println("CryptedPwd: " + getCryptedPassword());
+      SysErrLogger.FAKE_LOGGER.syserr("CryptedPwd: " + getCryptedPassword());
     }
   }
 
@@ -259,8 +263,7 @@ public class WaarpPassword {
     try {
       read = reader.readLine();
     } catch (final IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
     return read;
   }
@@ -362,9 +365,8 @@ public class WaarpPassword {
     final FileOutputStream outputStream = new FileOutputStream(passwordFile);
     try {
       outputStream.write(cryptedPassword.getBytes(WaarpStringUtils.UTF8));
-      outputStream.flush();
     } finally {
-      outputStream.close();
+      FileUtils.close(outputStream);
     }
   }
 
@@ -377,7 +379,7 @@ public class WaarpPassword {
     if (passwordFile.canRead()) {
       final int len = (int) passwordFile.length();
       final byte[] key = new byte[len];
-      FileInputStream inputStream = null;
+      FileInputStream inputStream;
       inputStream = new FileInputStream(passwordFile);
       DataInputStream dis = null;
       try {
@@ -385,9 +387,9 @@ public class WaarpPassword {
         dis.readFully(key);
       } finally {
         if (dis != null) {
-          dis.close();
+          FileUtils.close(dis);
         } else {
-          inputStream.close();
+          FileUtils.close(inputStream);
         }
       }
       setCryptedPassword(new String(key, WaarpStringUtils.UTF8));

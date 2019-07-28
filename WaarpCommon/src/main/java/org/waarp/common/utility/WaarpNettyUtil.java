@@ -32,7 +32,7 @@ import org.waarp.common.logging.SysErrLogger;
 /**
  * Utility class for Netty usage
  */
-public class WaarpNettyUtil {
+public final class WaarpNettyUtil {
 
   private static final int TIMEOUT_MILLIS = 1000;
   private static final int BUFFER_SIZE_1MB = 1048576;
@@ -78,7 +78,7 @@ public class WaarpNettyUtil {
                                         int timeout) {
     bootstrap.channel(NioServerSocketChannel.class);
     bootstrap.group(groupBoss, groupWorker);
-    // bootstrap.option(ChannelOption.TCP_NODELAY, true);
+    // bootstrap.option(ChannelOption.TCP_NODELAY, true)
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
     bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
@@ -101,7 +101,7 @@ public class WaarpNettyUtil {
                                         EventLoopGroup group, int timeout) {
     bootstrap.channel(NioServerSocketChannel.class);
     bootstrap.group(group);
-    // bootstrap.option(ChannelOption.TCP_NODELAY, true);
+    // bootstrap.option(ChannelOption.TCP_NODELAY, true)
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
     bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
@@ -125,8 +125,8 @@ public class WaarpNettyUtil {
           return true;
         }
       }
-    } catch (final InterruptedException e) {
-      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
+    } catch (final InterruptedException e) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     return false;
   }
@@ -143,8 +143,8 @@ public class WaarpNettyUtil {
       if (future.await(timeMilliseconds)) {
         return !Thread.interrupted();
       }
-    } catch (final InterruptedException e) {
-      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
+    } catch (final InterruptedException e) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     return false;
   }
@@ -162,8 +162,8 @@ public class WaarpNettyUtil {
           return future.isSuccess();
         }
       }
-    } catch (final InterruptedException e) {
-      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
+    } catch (final InterruptedException e) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     return false;
   }

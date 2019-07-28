@@ -30,14 +30,12 @@ import java.util.Map.Entry;
 
 /**
  * General RestConfiguration model
- *
- *
  */
 public class RestConfiguration {
   public enum CRUD {
     CREATE(0x01), READ(0x02), UPDATE(0x04), DELETE(0x08), ALL(0x0F);
 
-    public byte mask;
+    public final byte mask;
 
     CRUD(int mask) {
       this.mask = (byte) mask;
@@ -51,43 +49,43 @@ public class RestConfiguration {
   /**
    * SERVER REST interface using explicit address (null means all available)
    */
-  public String REST_ADDRESS;
+  private String restAddress;
   /**
    * Http REST port (SSL or not SSL)
    */
-  public int REST_PORT = -1;
+  private int restPort = -1;
   /**
    * SERVER REST interface using SSL
    */
-  public boolean REST_SSL;
+  private boolean restSsl;
   /**
    * SERVER REST interface using time limit (default: no limit <= 0)
    */
-  public long REST_TIME_LIMIT = -1;
+  private long restTimeLimit = -1;
   /**
    * SERVER REST interface using authentication
    */
-  public boolean REST_AUTHENTICATED;
+  private boolean restAuthenticated;
   /**
    * SERVER REST interface using signature
    */
-  public boolean REST_SIGNATURE = true;
+  private boolean restSignature = true;
   /**
    * Key for signature in SHA-256
    */
-  public HmacSha256 hmacSha256;
+  private HmacSha256 hmacSha256;
   /**
    * SERVER REST interface allowing one Handler and associated CRUD (or
    * equivalent POST, GET, PUT, DELETE)
    * methods (2^0 for active, 2^1 as Create/POST, 2^2 as Read/GET, 2^3 as
    * Update/PUT, 2^4 as Delete/DELETE)
    */
-  public byte[] RESTHANDLERS_CRUD;
+  private byte[] resthandlersCrud;
 
   /**
    * Associated RestMethod Handlers
    */
-  public HashMap<String, RestMethodHandler> restHashMap =
+  public final HashMap<String, RestMethodHandler> restHashMap =
       new HashMap<String, RestMethodHandler>();
 
   /**
@@ -96,8 +94,8 @@ public class RestConfiguration {
    * @param authentKey
    */
   public void initializeKey(String authentKey) {
-    hmacSha256 = new HmacSha256();
-    hmacSha256.setSecretKey(authentKey.getBytes(WaarpStringUtils.UTF8));
+    setHmacSha256(new HmacSha256());
+    getHmacSha256().setSecretKey(authentKey.getBytes(WaarpStringUtils.UTF8));
   }
 
   /**
@@ -110,24 +108,138 @@ public class RestConfiguration {
    */
   public void initializeKey(File authentKey)
       throws CryptoException, IOException {
-    hmacSha256 = new HmacSha256();
-    hmacSha256.setSecretKey(authentKey);
+    setHmacSha256(new HmacSha256());
+    getHmacSha256().setSecretKey(authentKey);
   }
 
   @Override
   public String toString() {
-    String result =
-        "{address: " + REST_ADDRESS + ", port: " + REST_PORT + ", ssl: " +
-        REST_SSL + ", time: " + REST_TIME_LIMIT + ", authent:" +
-        REST_AUTHENTICATED + ", signature: " + REST_SIGNATURE + ", handlers: [";
+    StringBuilder result = new StringBuilder(
+        "{address: " + getRestAddress() + ", port: " + getRestPort() +
+        ", ssl: " + isRestSsl() + ", time: " + getRestTimeLimit() +
+        ", authent:" + isRestAuthenticated() + ", signature: " +
+        isRestSignature() + ", handlers: [");
     for (final Entry<String, RestMethodHandler> elt : restHashMap.entrySet()) {
-      result += elt.getKey() + "=" + elt.getValue().methods + ", ";
+      result.append(elt.getKey()).append('=').append(elt.getValue().methods)
+            .append(", ");
     }
-    result += "], crud: [";
-    for (final byte crud : RESTHANDLERS_CRUD) {
-      result += (int) crud + ", ";
+    result.append("], crud: [");
+    for (final byte crud : getResthandlersCrud()) {
+      result.append(crud).append(", ");
     }
-    result += "] }";
-    return result;
+    result.append("] }");
+    return result.toString();
+  }
+
+  /**
+   * @return the restAddress
+   */
+  public String getRestAddress() {
+    return restAddress;
+  }
+
+  /**
+   * @param restAddress the restAddress to set
+   */
+  public void setRestAddress(String restAddress) {
+    this.restAddress = restAddress;
+  }
+
+  /**
+   * @return the restPort
+   */
+  public int getRestPort() {
+    return restPort;
+  }
+
+  /**
+   * @param restPort the restPort to set
+   */
+  public void setRestPort(int restPort) {
+    this.restPort = restPort;
+  }
+
+  /**
+   * @return the restSsl
+   */
+  public boolean isRestSsl() {
+    return restSsl;
+  }
+
+  /**
+   * @param restSsl the restSsl to set
+   */
+  public void setRestSsl(boolean restSsl) {
+    this.restSsl = restSsl;
+  }
+
+  /**
+   * @return the restTimeLimit
+   */
+  public long getRestTimeLimit() {
+    return restTimeLimit;
+  }
+
+  /**
+   * @param restTimeLimit the restTimeLimit to set
+   */
+  public void setRestTimeLimit(long restTimeLimit) {
+    this.restTimeLimit = restTimeLimit;
+  }
+
+  /**
+   * @return the restAuthenticated
+   */
+  public boolean isRestAuthenticated() {
+    return restAuthenticated;
+  }
+
+  /**
+   * @param restAuthenticated the restAuthenticated to set
+   */
+  public void setRestAuthenticated(boolean restAuthenticated) {
+    this.restAuthenticated = restAuthenticated;
+  }
+
+  /**
+   * @return the restSignature
+   */
+  public boolean isRestSignature() {
+    return restSignature;
+  }
+
+  /**
+   * @param restSignature the restSignature to set
+   */
+  public void setRestSignature(boolean restSignature) {
+    this.restSignature = restSignature;
+  }
+
+  /**
+   * @return the hmacSha256
+   */
+  public HmacSha256 getHmacSha256() {
+    return hmacSha256;
+  }
+
+  /**
+   * @param hmacSha256 the hmacSha256 to set
+   */
+  public void setHmacSha256(HmacSha256 hmacSha256) {
+    this.hmacSha256 = hmacSha256;
+  }
+
+  /**
+   * @return the resthandlersCrud
+   */
+  public byte[] getResthandlersCrud() {
+    return resthandlersCrud;
+  }
+
+  /**
+   * @param resthandlersCrud the resthandlersCrud to set
+   */
+  public void setResthandlersCrud(byte[] resthandlersCrud) {
+    this.resthandlersCrud = resthandlersCrud;
   }
 }

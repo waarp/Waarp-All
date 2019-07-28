@@ -60,6 +60,20 @@ import java.util.Map;
 
 public class R66Request
     implements TBase<R66Request, R66Request._Fields>, Cloneable {
+  private static final String ACTION2 = "action";
+
+  private static final String NOTRACE2 = "notrace";
+
+  private static final String DELAY2 = "delay";
+
+  private static final String START2 = "start";
+
+  private static final String BLOCKSIZE2 = "blocksize";
+
+  private static final String DESTUID2 = "destuid";
+
+  private static final String FROMUID2 = "fromuid";
+
   /**
    *
    */
@@ -70,9 +84,9 @@ public class R66Request
   private static final TField MODE_FIELD_DESC =
       new TField("mode", TType.I32, (short) 1);
   private static final TField FROMUID_FIELD_DESC =
-      new TField("fromuid", TType.STRING, (short) 2);
+      new TField(FROMUID2, TType.STRING, (short) 2);
   private static final TField DESTUID_FIELD_DESC =
-      new TField("destuid", TType.STRING, (short) 3);
+      new TField(DESTUID2, TType.STRING, (short) 3);
   private static final TField FILE_FIELD_DESC =
       new TField("file", TType.STRING, (short) 4);
   private static final TField RULE_FIELD_DESC =
@@ -82,17 +96,17 @@ public class R66Request
   private static final TField MD5_FIELD_DESC =
       new TField("md5", TType.BOOL, (short) 11);
   private static final TField BLOCKSIZE_FIELD_DESC =
-      new TField("blocksize", TType.I32, (short) 12);
+      new TField(BLOCKSIZE2, TType.I32, (short) 12);
   private static final TField START_FIELD_DESC =
-      new TField("start", TType.STRING, (short) 13);
+      new TField(START2, TType.STRING, (short) 13);
   private static final TField DELAY_FIELD_DESC =
-      new TField("delay", TType.STRING, (short) 14);
+      new TField(DELAY2, TType.STRING, (short) 14);
   private static final TField NOTRACE_FIELD_DESC =
-      new TField("notrace", TType.BOOL, (short) 15);
+      new TField(NOTRACE2, TType.BOOL, (short) 15);
   private static final TField TID_FIELD_DESC =
       new TField("tid", TType.I64, (short) 20);
   private static final TField ACTION_FIELD_DESC =
-      new TField("action", TType.I32, (short) 21);
+      new TField(ACTION2, TType.I32, (short) 21);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes =
       new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -116,6 +130,11 @@ public class R66Request
   private long tid; // optional
   private Action action; // optional
 
+  @Override
+  public R66Request clone() throws CloneNotSupportedException {
+    return (R66Request) super.clone();
+  }
+
   /**
    * The set of fields this struct contains, along with convenience methods
    * for
@@ -125,16 +144,16 @@ public class R66Request
     /**
      * @see RequestMode
      */
-    MODE((short) 1, "mode"), FROMUID((short) 2, "fromuid"),
-    DESTUID((short) 3, "destuid"), FILE((short) 4, "file"),
+    MODE((short) 1, "mode"), FROMUID((short) 2, FROMUID2),
+    DESTUID((short) 3, DESTUID2), FILE((short) 4, "file"),
     RULE((short) 5, "rule"), INFO((short) 10, "info"), MD5((short) 11, "md5"),
-    BLOCKSIZE((short) 12, "blocksize"), START((short) 13, "start"),
-    DELAY((short) 14, "delay"), NOTRACE((short) 15, "notrace"),
+    BLOCKSIZE((short) 12, BLOCKSIZE2), START((short) 13, START2),
+    DELAY((short) 14, DELAY2), NOTRACE((short) 15, NOTRACE2),
     TID((short) 20, "tid"),
     /**
      * @see Action
      */
-    ACTION((short) 21, "action");
+    ACTION((short) 21, ACTION2);
 
     private static final Map<String, _Fields> byName =
         new HashMap<String, _Fields>();
@@ -204,31 +223,31 @@ public class R66Request
       return byName.get(name);
     }
 
-    private final short _thriftId;
-    private final String _fieldName;
+    private final short thriftId;
+    private final String fieldName;
 
     _Fields(short thriftId, String fieldName) {
-      _thriftId = thriftId;
-      _fieldName = fieldName;
+      this.thriftId = thriftId;
+      this.fieldName = fieldName;
     }
 
     @Override
     public short getThriftFieldId() {
-      return _thriftId;
+      return thriftId;
     }
 
     @Override
     public String getFieldName() {
-      return _fieldName;
+      return fieldName;
     }
   }
 
   // isset id assignments
-  private static final int __MD5_ISSET_ID = 0;
-  private static final int __BLOCKSIZE_ISSET_ID = 1;
-  private static final int __NOTRACE_ISSET_ID = 2;
-  private static final int __TID_ISSET_ID = 3;
-  private byte __isset_bitfield;
+  private static final int MD_5_ISSET_ID = 0;
+  private static final int BLOCKSIZE_ISSET_ID = 1;
+  private static final int NOTRACE_ISSET_ID = 2;
+  private static final int TID_ISSET_ID = 3;
+  private byte issetBitfield;
   public static final Map<_Fields, FieldMetaData> metaDataMap;
 
   static {
@@ -239,10 +258,10 @@ public class R66Request
                                  new EnumMetaData(TType.ENUM,
                                                   RequestMode.class)));
     tmpMap.put(_Fields.FROMUID,
-               new FieldMetaData("fromuid", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(FROMUID2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.DESTUID,
-               new FieldMetaData("destuid", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(DESTUID2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.FILE,
                new FieldMetaData("file", TFieldRequirementType.OPTIONAL,
@@ -257,22 +276,22 @@ public class R66Request
                new FieldMetaData("md5", TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.BLOCKSIZE,
-               new FieldMetaData("blocksize", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(BLOCKSIZE2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I32)));
     tmpMap.put(_Fields.START,
-               new FieldMetaData("start", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(START2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.DELAY,
-               new FieldMetaData("delay", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(DELAY2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.NOTRACE,
-               new FieldMetaData("notrace", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(NOTRACE2, TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.TID,
                new FieldMetaData("tid", TFieldRequirementType.OPTIONAL,
                                  new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.ACTION,
-               new FieldMetaData("action", TFieldRequirementType.OPTIONAL,
+               new FieldMetaData(ACTION2, TFieldRequirementType.OPTIONAL,
                                  new EnumMetaData(TType.ENUM, Action.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(R66Request.class, metaDataMap);
@@ -294,7 +313,7 @@ public class R66Request
    * Performs a deep copy on <i>other</i>.
    */
   public R66Request(R66Request other) {
-    __isset_bitfield = other.__isset_bitfield;
+    issetBitfield = other.issetBitfield;
     if (other.isSetMode()) {
       mode = other.mode;
     }
@@ -535,7 +554,7 @@ public class R66Request
   }
 
   public void unsetMd5() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MD5_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, MD_5_ISSET_ID);
   }
 
   /**
@@ -543,12 +562,11 @@ public class R66Request
    * otherwise
    */
   public boolean isSetMd5() {
-    return EncodingUtils.testBit(__isset_bitfield, __MD5_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, MD_5_ISSET_ID);
   }
 
   public void setMd5IsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __MD5_ISSET_ID, value);
+    issetBitfield = EncodingUtils.setBit(issetBitfield, MD_5_ISSET_ID, value);
   }
 
   public int getBlocksize() {
@@ -562,8 +580,7 @@ public class R66Request
   }
 
   public void unsetBlocksize() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __BLOCKSIZE_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
   /**
@@ -571,12 +588,12 @@ public class R66Request
    * false otherwise
    */
   public boolean isSetBlocksize() {
-    return EncodingUtils.testBit(__isset_bitfield, __BLOCKSIZE_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
   public void setBlocksizeIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __BLOCKSIZE_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, BLOCKSIZE_ISSET_ID, value);
   }
 
   public String getStart() {
@@ -644,8 +661,7 @@ public class R66Request
   }
 
   public void unsetNotrace() {
-    __isset_bitfield =
-        EncodingUtils.clearBit(__isset_bitfield, __NOTRACE_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, NOTRACE_ISSET_ID);
   }
 
   /**
@@ -654,12 +670,12 @@ public class R66Request
    * otherwise
    */
   public boolean isSetNotrace() {
-    return EncodingUtils.testBit(__isset_bitfield, __NOTRACE_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, NOTRACE_ISSET_ID);
   }
 
   public void setNotraceIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __NOTRACE_ISSET_ID, value);
+    issetBitfield =
+        EncodingUtils.setBit(issetBitfield, NOTRACE_ISSET_ID, value);
   }
 
   public long getTid() {
@@ -673,7 +689,7 @@ public class R66Request
   }
 
   public void unsetTid() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TID_ISSET_ID);
+    issetBitfield = EncodingUtils.clearBit(issetBitfield, TID_ISSET_ID);
   }
 
   /**
@@ -681,12 +697,11 @@ public class R66Request
    * otherwise
    */
   public boolean isSetTid() {
-    return EncodingUtils.testBit(__isset_bitfield, __TID_ISSET_ID);
+    return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
   }
 
   public void setTidIsSet(boolean value) {
-    __isset_bitfield =
-        EncodingUtils.setBit(__isset_bitfield, __TID_ISSET_ID, value);
+    issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
   }
 
   /**
@@ -936,19 +951,19 @@ public class R66Request
       return false;
     }
 
-    final boolean this_present_mode = true && isSetMode();
-    final boolean that_present_mode = true && that.isSetMode();
+    final boolean this_present_mode = isSetMode();
+    final boolean that_present_mode = that.isSetMode();
     if (this_present_mode || that_present_mode) {
       if (!(this_present_mode && that_present_mode)) {
         return false;
       }
-      if (!mode.equals(that.mode)) {
+      if (mode != that.mode) {
         return false;
       }
     }
 
-    final boolean this_present_fromuid = true && isSetFromuid();
-    final boolean that_present_fromuid = true && that.isSetFromuid();
+    final boolean this_present_fromuid = isSetFromuid();
+    final boolean that_present_fromuid = that.isSetFromuid();
     if (this_present_fromuid || that_present_fromuid) {
       if (!(this_present_fromuid && that_present_fromuid)) {
         return false;
@@ -958,8 +973,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_destuid = true && isSetDestuid();
-    final boolean that_present_destuid = true && that.isSetDestuid();
+    final boolean this_present_destuid = isSetDestuid();
+    final boolean that_present_destuid = that.isSetDestuid();
     if (this_present_destuid || that_present_destuid) {
       if (!(this_present_destuid && that_present_destuid)) {
         return false;
@@ -969,8 +984,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_file = true && isSetFile();
-    final boolean that_present_file = true && that.isSetFile();
+    final boolean this_present_file = isSetFile();
+    final boolean that_present_file = that.isSetFile();
     if (this_present_file || that_present_file) {
       if (!(this_present_file && that_present_file)) {
         return false;
@@ -980,8 +995,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_rule = true && isSetRule();
-    final boolean that_present_rule = true && that.isSetRule();
+    final boolean this_present_rule = isSetRule();
+    final boolean that_present_rule = that.isSetRule();
     if (this_present_rule || that_present_rule) {
       if (!(this_present_rule && that_present_rule)) {
         return false;
@@ -991,8 +1006,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_info = true && isSetInfo();
-    final boolean that_present_info = true && that.isSetInfo();
+    final boolean this_present_info = isSetInfo();
+    final boolean that_present_info = that.isSetInfo();
     if (this_present_info || that_present_info) {
       if (!(this_present_info && that_present_info)) {
         return false;
@@ -1002,8 +1017,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_md5 = true && isSetMd5();
-    final boolean that_present_md5 = true && that.isSetMd5();
+    final boolean this_present_md5 = isSetMd5();
+    final boolean that_present_md5 = that.isSetMd5();
     if (this_present_md5 || that_present_md5) {
       if (!(this_present_md5 && that_present_md5)) {
         return false;
@@ -1013,8 +1028,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_blocksize = true && isSetBlocksize();
-    final boolean that_present_blocksize = true && that.isSetBlocksize();
+    final boolean this_present_blocksize = isSetBlocksize();
+    final boolean that_present_blocksize = that.isSetBlocksize();
     if (this_present_blocksize || that_present_blocksize) {
       if (!(this_present_blocksize && that_present_blocksize)) {
         return false;
@@ -1024,8 +1039,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_start = true && isSetStart();
-    final boolean that_present_start = true && that.isSetStart();
+    final boolean this_present_start = isSetStart();
+    final boolean that_present_start = that.isSetStart();
     if (this_present_start || that_present_start) {
       if (!(this_present_start && that_present_start)) {
         return false;
@@ -1035,8 +1050,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_delay = true && isSetDelay();
-    final boolean that_present_delay = true && that.isSetDelay();
+    final boolean this_present_delay = isSetDelay();
+    final boolean that_present_delay = that.isSetDelay();
     if (this_present_delay || that_present_delay) {
       if (!(this_present_delay && that_present_delay)) {
         return false;
@@ -1046,8 +1061,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_notrace = true && isSetNotrace();
-    final boolean that_present_notrace = true && that.isSetNotrace();
+    final boolean this_present_notrace = isSetNotrace();
+    final boolean that_present_notrace = that.isSetNotrace();
     if (this_present_notrace || that_present_notrace) {
       if (!(this_present_notrace && that_present_notrace)) {
         return false;
@@ -1057,8 +1072,8 @@ public class R66Request
       }
     }
 
-    final boolean this_present_tid = true && isSetTid();
-    final boolean that_present_tid = true && that.isSetTid();
+    final boolean this_present_tid = isSetTid();
+    final boolean that_present_tid = that.isSetTid();
     if (this_present_tid || that_present_tid) {
       if (!(this_present_tid && that_present_tid)) {
         return false;
@@ -1068,13 +1083,13 @@ public class R66Request
       }
     }
 
-    final boolean this_present_action = true && isSetAction();
-    final boolean that_present_action = true && that.isSetAction();
+    final boolean this_present_action = isSetAction();
+    final boolean that_present_action = that.isSetAction();
     if (this_present_action || that_present_action) {
       if (!(this_present_action && that_present_action)) {
         return false;
       }
-      return action.equals(that.action);
+      return action == that.action;
     }
 
     return true;
@@ -1086,153 +1101,146 @@ public class R66Request
   }
 
   @Override
-  public int compareTo(R66Request other) {
+  public int compareTo(final R66Request other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
-    int lastComparison = 0;
-    final R66Request typedOther = other;
+    int lastComparison;
 
-    lastComparison =
-        Boolean.valueOf(isSetMode()).compareTo(typedOther.isSetMode());
+    lastComparison = Boolean.valueOf(isSetMode()).compareTo(other.isSetMode());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetMode()) {
-      lastComparison = TBaseHelper.compareTo(mode, typedOther.mode);
+      lastComparison = TBaseHelper.compareTo(mode, other.mode);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetFromuid()).compareTo(typedOther.isSetFromuid());
+        Boolean.valueOf(isSetFromuid()).compareTo(other.isSetFromuid());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetFromuid()) {
-      lastComparison = TBaseHelper.compareTo(fromuid, typedOther.fromuid);
+      lastComparison = TBaseHelper.compareTo(fromuid, other.fromuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetDestuid()).compareTo(typedOther.isSetDestuid());
+        Boolean.valueOf(isSetDestuid()).compareTo(other.isSetDestuid());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetDestuid()) {
-      lastComparison = TBaseHelper.compareTo(destuid, typedOther.destuid);
+      lastComparison = TBaseHelper.compareTo(destuid, other.destuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetFile()).compareTo(typedOther.isSetFile());
+    lastComparison = Boolean.valueOf(isSetFile()).compareTo(other.isSetFile());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetFile()) {
-      lastComparison = TBaseHelper.compareTo(file, typedOther.file);
+      lastComparison = TBaseHelper.compareTo(file, other.file);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetRule()).compareTo(typedOther.isSetRule());
+    lastComparison = Boolean.valueOf(isSetRule()).compareTo(other.isSetRule());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetRule()) {
-      lastComparison = TBaseHelper.compareTo(rule, typedOther.rule);
+      lastComparison = TBaseHelper.compareTo(rule, other.rule);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetInfo()).compareTo(typedOther.isSetInfo());
+    lastComparison = Boolean.valueOf(isSetInfo()).compareTo(other.isSetInfo());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetInfo()) {
-      lastComparison = TBaseHelper.compareTo(info, typedOther.info);
+      lastComparison = TBaseHelper.compareTo(info, other.info);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetMd5()).compareTo(typedOther.isSetMd5());
+    lastComparison = Boolean.valueOf(isSetMd5()).compareTo(other.isSetMd5());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetMd5()) {
-      lastComparison = TBaseHelper.compareTo(md5, typedOther.md5);
+      lastComparison = TBaseHelper.compareTo(md5, other.md5);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetBlocksize())
-                            .compareTo(typedOther.isSetBlocksize());
+    lastComparison =
+        Boolean.valueOf(isSetBlocksize()).compareTo(other.isSetBlocksize());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetBlocksize()) {
-      lastComparison = TBaseHelper.compareTo(blocksize, typedOther.blocksize);
+      lastComparison = TBaseHelper.compareTo(blocksize, other.blocksize);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetStart()).compareTo(typedOther.isSetStart());
+        Boolean.valueOf(isSetStart()).compareTo(other.isSetStart());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetStart()) {
-      lastComparison = TBaseHelper.compareTo(start, typedOther.start);
+      lastComparison = TBaseHelper.compareTo(start, other.start);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetDelay()).compareTo(typedOther.isSetDelay());
+        Boolean.valueOf(isSetDelay()).compareTo(other.isSetDelay());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetDelay()) {
-      lastComparison = TBaseHelper.compareTo(delay, typedOther.delay);
+      lastComparison = TBaseHelper.compareTo(delay, other.delay);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetNotrace()).compareTo(typedOther.isSetNotrace());
+        Boolean.valueOf(isSetNotrace()).compareTo(other.isSetNotrace());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetNotrace()) {
-      lastComparison = TBaseHelper.compareTo(notrace, typedOther.notrace);
+      lastComparison = TBaseHelper.compareTo(notrace, other.notrace);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison =
-        Boolean.valueOf(isSetTid()).compareTo(typedOther.isSetTid());
+    lastComparison = Boolean.valueOf(isSetTid()).compareTo(other.isSetTid());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetTid()) {
-      lastComparison = TBaseHelper.compareTo(tid, typedOther.tid);
+      lastComparison = TBaseHelper.compareTo(tid, other.tid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     lastComparison =
-        Boolean.valueOf(isSetAction()).compareTo(typedOther.isSetAction());
+        Boolean.valueOf(isSetAction()).compareTo(other.isSetAction());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetAction()) {
-      lastComparison = TBaseHelper.compareTo(action, typedOther.action);
+      lastComparison = TBaseHelper.compareTo(action, other.action);
       return lastComparison;
     }
     return 0;
@@ -1387,9 +1395,8 @@ public class R66Request
       } else {
         sb.append(action);
       }
-      first = false;
     }
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 
@@ -1415,7 +1422,7 @@ public class R66Request
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and
       // doesn't call the default constructor.
-      __isset_bitfield = 0;
+      issetBitfield = 0;
       read(new TCompactProtocol(new TIOStreamTransport(in)));
     } catch (final TException te) {
       throw new IOException(te);
@@ -1569,40 +1576,30 @@ public class R66Request
         oprot.writeI32(struct.mode.getValue());
         oprot.writeFieldEnd();
       }
-      if (struct.fromuid != null) {
-        if (struct.isSetFromuid()) {
-          oprot.writeFieldBegin(FROMUID_FIELD_DESC);
-          oprot.writeString(struct.fromuid);
-          oprot.writeFieldEnd();
-        }
+      if (struct.fromuid != null && struct.isSetFromuid()) {
+        oprot.writeFieldBegin(FROMUID_FIELD_DESC);
+        oprot.writeString(struct.fromuid);
+        oprot.writeFieldEnd();
       }
-      if (struct.destuid != null) {
-        if (struct.isSetDestuid()) {
-          oprot.writeFieldBegin(DESTUID_FIELD_DESC);
-          oprot.writeString(struct.destuid);
-          oprot.writeFieldEnd();
-        }
+      if (struct.destuid != null && struct.isSetDestuid()) {
+        oprot.writeFieldBegin(DESTUID_FIELD_DESC);
+        oprot.writeString(struct.destuid);
+        oprot.writeFieldEnd();
       }
-      if (struct.file != null) {
-        if (struct.isSetFile()) {
-          oprot.writeFieldBegin(FILE_FIELD_DESC);
-          oprot.writeString(struct.file);
-          oprot.writeFieldEnd();
-        }
+      if (struct.file != null && struct.isSetFile()) {
+        oprot.writeFieldBegin(FILE_FIELD_DESC);
+        oprot.writeString(struct.file);
+        oprot.writeFieldEnd();
       }
-      if (struct.rule != null) {
-        if (struct.isSetRule()) {
-          oprot.writeFieldBegin(RULE_FIELD_DESC);
-          oprot.writeString(struct.rule);
-          oprot.writeFieldEnd();
-        }
+      if (struct.rule != null && struct.isSetRule()) {
+        oprot.writeFieldBegin(RULE_FIELD_DESC);
+        oprot.writeString(struct.rule);
+        oprot.writeFieldEnd();
       }
-      if (struct.info != null) {
-        if (struct.isSetInfo()) {
-          oprot.writeFieldBegin(INFO_FIELD_DESC);
-          oprot.writeString(struct.info);
-          oprot.writeFieldEnd();
-        }
+      if (struct.info != null && struct.isSetInfo()) {
+        oprot.writeFieldBegin(INFO_FIELD_DESC);
+        oprot.writeString(struct.info);
+        oprot.writeFieldEnd();
       }
       if (struct.isSetMd5()) {
         oprot.writeFieldBegin(MD5_FIELD_DESC);
@@ -1614,19 +1611,15 @@ public class R66Request
         oprot.writeI32(struct.blocksize);
         oprot.writeFieldEnd();
       }
-      if (struct.start != null) {
-        if (struct.isSetStart()) {
-          oprot.writeFieldBegin(START_FIELD_DESC);
-          oprot.writeString(struct.start);
-          oprot.writeFieldEnd();
-        }
+      if (struct.start != null && struct.isSetStart()) {
+        oprot.writeFieldBegin(START_FIELD_DESC);
+        oprot.writeString(struct.start);
+        oprot.writeFieldEnd();
       }
-      if (struct.delay != null) {
-        if (struct.isSetDelay()) {
-          oprot.writeFieldBegin(DELAY_FIELD_DESC);
-          oprot.writeString(struct.delay);
-          oprot.writeFieldEnd();
-        }
+      if (struct.delay != null && struct.isSetDelay()) {
+        oprot.writeFieldBegin(DELAY_FIELD_DESC);
+        oprot.writeString(struct.delay);
+        oprot.writeFieldEnd();
       }
       if (struct.isSetNotrace()) {
         oprot.writeFieldBegin(NOTRACE_FIELD_DESC);
@@ -1638,12 +1631,10 @@ public class R66Request
         oprot.writeI64(struct.tid);
         oprot.writeFieldEnd();
       }
-      if (struct.action != null) {
-        if (struct.isSetAction()) {
-          oprot.writeFieldBegin(ACTION_FIELD_DESC);
-          oprot.writeI32(struct.action.getValue());
-          oprot.writeFieldEnd();
-        }
+      if (struct.action != null && struct.isSetAction()) {
+        oprot.writeFieldBegin(ACTION_FIELD_DESC);
+        oprot.writeI32(struct.action.getValue());
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();

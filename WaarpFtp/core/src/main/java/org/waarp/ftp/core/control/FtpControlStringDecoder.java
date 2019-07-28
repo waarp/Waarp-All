@@ -25,31 +25,29 @@ import java.nio.charset.Charset;
 
 /**
  * Exactly same as StringDecoder from Netty
- *
- *
  */
 class FtpControlStringDecoder extends StringDecoder {
   /**
    *
    */
-  public FtpControlStringDecoder() {
+  FtpControlStringDecoder() {
   }
 
   /**
-   * @param arg0
+   * @param charset
    *
    * @see StringDecoder
    */
-  public FtpControlStringDecoder(String arg0) {
-    super(Charset.forName(arg0));
+  FtpControlStringDecoder(String charset) {
+    super(Charset.forName(charset));
   }
 
   /**
-   * @param arg0
+   * @param charset
    *
    * @see StringDecoder
    */
-  public FtpControlStringDecoder(Charset arg0) {
-    super(arg0);
+  FtpControlStringDecoder(Charset charset) {
+    super(charset);
   }
 }

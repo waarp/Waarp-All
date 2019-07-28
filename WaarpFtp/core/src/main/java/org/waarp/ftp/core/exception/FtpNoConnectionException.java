@@ -21,8 +21,6 @@ package org.waarp.ftp.core.exception;
 
 /**
  * No Connection exception
- *
- *
  */
 public class FtpNoConnectionException extends Exception {
 

@@ -35,7 +35,7 @@ public class IntegerUuidTest {
     IntegerUuid id = new IntegerUuid();
     String str = id.toString();
 
-    assertEquals(str.length(), 8);
+    assertEquals(8, str.length());
   }
 
   @Test
@@ -75,7 +75,7 @@ public class IntegerUuidTest {
     bytes[1] = 0;
     bytes[2] = 0;
 
-    assertTrue(Arrays.equals(id.getBytes(), original));
+    assertArrayEquals(id.getBytes(), original);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class IntegerUuidTest {
     bytes[0] = 0;
     bytes[1] = 0;
 
-    assertTrue(Arrays.equals(id2.getBytes(), original));
+    assertArrayEquals(id2.getBytes(), original);
   }
 
   @Test
@@ -137,9 +137,9 @@ public class IntegerUuidTest {
     if (largest == 0) {
       largest = n;
     }
-    System.out.println(uuidArray[0] + "(" + uuidArray[0].getTimestamp() + ":" +
-                       uuidArray[0].getInt() + ") - " + uuidArray[n - 1] + "(" +
-                       uuidArray[n - 1].getTimestamp() + ":" +
+    System.out.println(uuidArray[0] + "(" + uuidArray[0].getTimestamp() + ':' +
+                       uuidArray[0].getInt() + ") - " + uuidArray[n - 1] + '(' +
+                       uuidArray[n - 1].getTimestamp() + ':' +
                        uuidArray[n - 1].getInt() + ") = " +
                        (uuidArray[n - 1].getInt() - uuidArray[0].getInt() + 1));
     System.out.println(largest + " different consecutive elements");
@@ -151,7 +151,7 @@ public class IntegerUuidTest {
     int n;
     int numThreads;
 
-    public Generator(int n, IntegerUuid[] uuids, int id, int numThreads) {
+    private Generator(int n, IntegerUuid[] uuids, int id, int numThreads) {
       this.n = n;
       this.uuids = uuids;
       this.id = id;
@@ -190,9 +190,7 @@ public class IntegerUuidTest {
     Set<IntegerUuid> uuidSet = new HashSet<IntegerUuid>();
 
     int effectiveN = n / numThreads * numThreads;
-    for (int i = 0; i < effectiveN; i++) {
-      uuidSet.add(uuids[i]);
-    }
+    uuidSet.addAll(Arrays.asList(uuids).subList(0, effectiveN));
 
     assertEquals(effectiveN, uuidSet.size());
   }

@@ -35,8 +35,6 @@ import org.waarp.ftp.core.command.internal.IncorrectCommand;
  * SITE command: implements some specific command like {@link XMD5} {@link XCRC}
  * {@link XSHA1} as if they were
  * called directly
- *
- *
  */
 public class SITE extends AbstractCommand {
 

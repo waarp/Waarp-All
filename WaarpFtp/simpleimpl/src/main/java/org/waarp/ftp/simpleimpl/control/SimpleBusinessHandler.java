@@ -38,10 +38,9 @@ import org.waarp.ftp.simpleimpl.file.FileBasedDir;
  * BusinessHandler implementation that allows pre and post actions on any
  * operations and specifically on
  * transfer operations
- *
- *
  */
 public class SimpleBusinessHandler extends BusinessHandler {
+  private static final String GBBH_TRANSFER = "GBBH: Transfer: {} ";
   /**
    * Internal Logger
    */
@@ -61,19 +60,19 @@ public class SimpleBusinessHandler extends BusinessHandler {
   @Override
   public void afterRunCommandOk() throws CommandAbstractException {
     // TO DO Auto-generated method stub
-    // logger.info("GBBH: AFTOK: {}", getFtpSession());
+    // logger.info("GBBH: AFTOK: {}", getFtpSession())
   }
 
   @Override
   public void beforeRunCommand() throws CommandAbstractException {
     // TO DO Auto-generated method stub
-    // logger.info("GBBH: BEFCD: {}", getFtpSession());
+    // logger.info("GBBH: BEFCD: {}", getFtpSession())
   }
 
   @Override
   protected void cleanSession() {
     // TO DO Auto-generated method stub
-    // logger.info("GBBH: CLNSE: {}", getFtpSession());
+    // logger.info("GBBH: CLNSE: {}", getFtpSession())
   }
 
   @Override
@@ -86,13 +85,13 @@ public class SimpleBusinessHandler extends BusinessHandler {
   public void executeChannelClosed() {
     // TO DO Auto-generated method stub
     // logger.info("GBBH: CLOSED: for user {} with session {} ",
-    // getFtpSession().getAuth().getUser(), getFtpSession());
+    // getFtpSession().getAuth().getUser(), getFtpSession())
   }
 
   @Override
   public void executeChannelConnected(Channel channel) {
     // TO DO Auto-generated method stub
-    // logger.info("GBBH: CONNEC: {}", getFtpSession());
+    // logger.info("GBBH: CONNEC: {}", getFtpSession())
   }
 
   @Override
@@ -152,16 +151,16 @@ public class SimpleBusinessHandler extends BusinessHandler {
   public void afterTransferDoneBeforeAnswer(FtpTransfer transfer)
       throws CommandAbstractException {
     if (transfer.getCommand() == FtpCommandCode.APPE) {
-      logger.info("GBBH: Transfer: {} " + transfer.getStatus() + " {}",
+      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
                   transfer.getCommand(), transfer.getPath());
     } else if (transfer.getCommand() == FtpCommandCode.RETR) {
-      logger.info("GBBH: Transfer: {} " + transfer.getStatus() + " {}",
+      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
                   transfer.getCommand(), transfer.getPath());
     } else if (transfer.getCommand() == FtpCommandCode.STOR) {
-      logger.info("GBBH: Transfer: {} " + transfer.getStatus() + " {}",
+      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
                   transfer.getCommand(), transfer.getPath());
     } else if (transfer.getCommand() == FtpCommandCode.STOU) {
-      logger.info("GBBH: Transfer: {} " + transfer.getStatus() + " {}",
+      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
                   transfer.getCommand(), transfer.getPath());
     } else {
       logger.warn("GBBH: Transfer unknown: {} " + transfer.getStatus() + " {}",

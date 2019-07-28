@@ -59,7 +59,7 @@ public class SysErrLoggerTest {
   @Test
   public void testSyserr() {
     SysErrLogger.FAKE_LOGGER.ignoreLog(new Exception("Fake exception"));
-    assertTrue(buf.length() == 0);
+    assertEquals(0, buf.length());
     SysErrLogger.FAKE_LOGGER.syserr(NOT_EMPTY);
     assertTrue(buf.length() > 0);
     buf.setLength(0);

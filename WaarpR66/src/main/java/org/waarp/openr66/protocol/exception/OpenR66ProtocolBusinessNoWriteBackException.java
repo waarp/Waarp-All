@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol exception on Business part without any write back action
- *
- *
  */
 public class OpenR66ProtocolBusinessNoWriteBackException
     extends OpenR66ProtocolBusinessException {
@@ -36,7 +34,6 @@ public class OpenR66ProtocolBusinessNoWriteBackException
    *
    */
   public OpenR66ProtocolBusinessNoWriteBackException() {
-    super();
   }
 
   /**

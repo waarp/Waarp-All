@@ -23,12 +23,14 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Exporting Configuration JSON packet
- *
- *
  */
 public class ConfigExportJsonPacket extends JsonPacket {
 
-  protected boolean host, rule, business, alias, roles;
+  protected boolean host;
+  protected boolean rule;
+  protected boolean business;
+  protected boolean alias;
+  protected boolean roles;
 
   /**
    * @return the host
@@ -115,6 +117,6 @@ public class ConfigExportJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.CONFEXPORTPACKET);
+    setRequestUserPacket(LocalPacketFactory.CONFEXPORTPACKET);
   }
 }

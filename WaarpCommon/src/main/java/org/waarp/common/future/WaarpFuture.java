@@ -29,8 +29,6 @@ import static java.util.concurrent.TimeUnit.*;
  * Ftp Future operation<br>
  * Completely inspired from the excellent ChannelFuture of Netty, but without
  * any channel inside.
- *
- *
  */
 public class WaarpFuture {
   private static final Throwable CANCELLED = new Throwable();
@@ -125,20 +123,20 @@ public class WaarpFuture {
       return this;
     }
 
-    final Throwable cause = getCause();
-    if (cause == null) {
+    final Throwable causeNew = getCause();
+    if (causeNew == null) {
       return this;
     }
 
-    if (cause instanceof Exception) {
-      throw (Exception) cause;
+    if (causeNew instanceof Exception) {
+      throw (Exception) causeNew;
     }
 
-    if (cause instanceof Error) {
-      throw (Error) cause;
+    if (causeNew instanceof Error) {
+      throw (Error) causeNew;
     }
 
-    throw new RuntimeException(cause);
+    throw new RuntimeException(causeNew);
   }
 
   /**
@@ -205,7 +203,8 @@ public class WaarpFuture {
         waiters++;
         try {
           wait();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           interrupted = true;
         } finally {
           waiters--;
@@ -237,7 +236,8 @@ public class WaarpFuture {
   public boolean awaitUninterruptibly(long timeout, TimeUnit unit) {
     try {
       return await0(unit.toNanos(timeout), false);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       throw new InternalError();
     }
   }
@@ -251,13 +251,15 @@ public class WaarpFuture {
    *
    * @return {@code true} if and only if the future was completed within the
    *     specified time limit
+   *
    * @deprecated Should use awaitForDoneOrInterruptible()
    */
   @Deprecated
   public boolean awaitUninterruptibly(long timeoutMillis) {
     try {
       return await0(MILLISECONDS.toNanos(timeoutMillis), false);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       throw new InternalError();
     }
   }
@@ -280,8 +282,8 @@ public class WaarpFuture {
    * @return True if the Future is done or False if interrupted
    */
   public boolean awaitOrInterruptible(long timeoutMilliseconds) {
-    return awaitOrInterruptible(
-        MILLISECONDS.toNanos(timeoutMilliseconds), false);
+    return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),
+                                false);
   }
 
   /**
@@ -303,13 +305,11 @@ public class WaarpFuture {
   private boolean awaitOrInterruptible(long timeoutNanos,
                                        boolean interruptable) {
     try {
-      if (await0(timeoutNanos, interruptable)) {
-        if (!Thread.interrupted()) {
-          return true;
-        }
+      if (await0(timeoutNanos, interruptable) && !Thread.interrupted()) {
+        return true;
       }
-    } catch (final InterruptedException e) {
-      SysErrLogger.FAKE_LOGGER.syserr("Interruption", e);
+    } catch (final InterruptedException e) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     return false;
   }
@@ -341,6 +341,7 @@ public class WaarpFuture {
           try {
             wait(waitTime / 1000000, (int) (waitTime % 1000000));
           } catch (InterruptedException e) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             if (interruptable) {
               throw e;
             } else {

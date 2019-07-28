@@ -25,31 +25,29 @@ import java.nio.charset.Charset;
 
 /**
  * Exactly same as StringEncoder from Netty
- *
- *
  */
 class FtpControlStringEncoder extends StringEncoder {
   /**
    *
    */
-  public FtpControlStringEncoder() {
+  FtpControlStringEncoder() {
   }
 
   /**
-   * @param arg0
+   * @param charset
    *
    * @see StringEncoder
    */
-  public FtpControlStringEncoder(String arg0) {
-    super(Charset.forName(arg0));
+  FtpControlStringEncoder(String charset) {
+    super(Charset.forName(charset));
   }
 
   /**
-   * @param arg0
+   * @param charset
    *
    * @see StringEncoder
    */
-  public FtpControlStringEncoder(Charset arg0) {
-    super(arg0);
+  FtpControlStringEncoder(Charset charset) {
+    super(charset);
   }
 }

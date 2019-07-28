@@ -21,8 +21,6 @@ package org.waarp.openr66.context.task.exception;
 
 /**
  * Runner exception in end of tasks status
- *
- *
  */
 public class OpenR66RunnerEndTasksException extends OpenR66RunnerException {
 
@@ -35,7 +33,6 @@ public class OpenR66RunnerEndTasksException extends OpenR66RunnerException {
    *
    */
   public OpenR66RunnerEndTasksException() {
-    super();
   }
 
   /**

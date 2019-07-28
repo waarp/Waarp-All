@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -86,7 +85,7 @@ public class BaseXxTest {
     assertNotNull(encoded);
     final byte[] bytes = BaseXx.getFromBase64UrlPadding(encoded);
     assertNotNull(bytes);
-    assertTrue(Arrays.equals(bytes, "WaarpTest64P".getBytes()));
+    assertArrayEquals(bytes, "WaarpTest64P".getBytes());
   }
 
   @Test
@@ -95,7 +94,7 @@ public class BaseXxTest {
     assertNotNull(encoded);
     final byte[] bytes = BaseXx.getFromBase64(encoded);
     assertNotNull(bytes);
-    assertTrue(Arrays.equals(bytes, "WaarpTest64P".getBytes()));
+    assertArrayEquals(bytes, "WaarpTest64P".getBytes());
   }
 
   @Test
@@ -105,7 +104,7 @@ public class BaseXxTest {
     assertNotNull(encoded);
     final byte[] bytes = BaseXx.getFromBase64UrlWithoutPadding(encoded);
     assertNotNull(bytes);
-    assertTrue(Arrays.equals(bytes, "WaarpTest64".getBytes()));
+    assertArrayEquals(bytes, "WaarpTest64".getBytes());
   }
 
   @Test
@@ -114,7 +113,7 @@ public class BaseXxTest {
     assertNotNull(encoded);
     final byte[] bytes = BaseXx.getFromBase32(encoded);
     assertNotNull(bytes);
-    assertTrue(Arrays.equals(bytes, "WaarpTest32".getBytes()));
+    assertArrayEquals(bytes, "WaarpTest32".getBytes());
   }
 
   @Test
@@ -123,7 +122,7 @@ public class BaseXxTest {
     assertNotNull(encoded);
     final byte[] bytes = BaseXx.getFromBase16(encoded);
     assertNotNull(bytes);
-    assertTrue(Arrays.equals(bytes, "WaarpTest16".getBytes()));
+    assertArrayEquals(bytes, "WaarpTest16".getBytes());
   }
 
 }

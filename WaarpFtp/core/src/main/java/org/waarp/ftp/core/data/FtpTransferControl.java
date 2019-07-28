@@ -28,6 +28,7 @@ import org.waarp.common.command.exception.Reply425Exception;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.future.WaarpChannelFuture;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -144,7 +145,7 @@ public class FtpTransferControl {
     if (!isDataNetworkHandlerReady) {
       Thread.sleep(10);
       if (!isDataNetworkHandlerReady) {
-        // logger.debug("Wait for DataNetwork Ready over {}");
+        // logger.debug("Wait for DataNetwork Ready over {}")
         throw new InterruptedException("Bad initialization");
       }
     }
@@ -287,8 +288,9 @@ public class FtpTransferControl {
       final ChannelFuture future =
           bootstrap.connect(inetSocketAddress, dataAsyncConn.getLocalAddress());
       try {
-        future.await(session.getConfiguration().getTIMEOUTCON());
+        future.await(session.getConfiguration().getTimeoutCon());
       } catch (final InterruptedException e1) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
       if (!future.isSuccess()) {
         logger.warn(
@@ -335,7 +337,8 @@ public class FtpTransferControl {
     try {
       session.getDataConn().getDataNetworkHandler()
              .setFtpTransfer(executingCommand);
-    } catch (final FtpNoConnectionException e1) {
+    } catch (final FtpNoConnectionException ignored) {
+      // nothing
     }
 
     if (!waitForOpenedDataChannel.awaitOrInterruptible()) {
@@ -344,17 +347,6 @@ public class FtpTransferControl {
       return;
     }
     waitForOpenedDataChannel.channel().config().setAutoRead(true);
-    /*
-     * final WaarpFuture toFinish = commandFinishing; final WaarpFuture toCommand = endOfCommand; try {
-     * session.getDataConn().getCurrentDataChannel().closeFuture() .addListener(new GenericFutureListener<Future<?
-     * super Void>>() { public void operationComplete(Future<? super Void> future) throws Exception { if
-     * (!toFinish.isDone() || !toCommand.isDone()) { logger.debug("Schedule to finish command: " + session + ":" +
-     * toFinish.isDone() + ":" + toCommand.isDone()); scheduleService.schedule(new Runnable() { public void run()
-     * { if (!toFinish.isDone() || !toCommand.isDone()) { logger.warn("Will try to finish command: " + session +
-     * " CommandFinishing:" + toFinish.isDone() + " EndOfCommand:" + toCommand.isDone());
-     * setTransferAbortedFromInternal(true); //toFinish.cancel(); } } }, FtpConfiguration.DATATIMEOUTCON * 2,
-     * TimeUnit.MILLISECONDS); } } }); } catch (FtpNoConnectionException e1) { //e1.printStackTrace(); }
-     */
     // Run the command
     if (executorService == null) {
       executorService = Executors.newSingleThreadExecutor();
@@ -418,7 +410,8 @@ public class FtpTransferControl {
     }
     try {
       session.getDataConn().getDataNetworkHandler().setFtpTransfer(null);
-    } catch (final FtpNoConnectionException e1) {
+    } catch (final FtpNoConnectionException ignored) {
+      // nothing
     }
   }
 
@@ -426,10 +419,10 @@ public class FtpTransferControl {
     boolean notFinished = true;
     for (int i = 0; i < FtpInternalConfiguration.RETRYNB * 100; i++) {
       if (isExecutingCommandFinished || commandFinishing == null ||
-          session.isCurrentCommandFinished() || (commandFinishing != null &&
-                                                 commandFinishing
-                                                     .awaitOrInterruptible(
-                                                         FtpInternalConfiguration.RETRYINMS))) {
+          session.isCurrentCommandFinished() || commandFinishing != null &&
+                                                commandFinishing
+                                                    .awaitOrInterruptible(
+                                                        FtpInternalConfiguration.RETRYINMS)) {
         notFinished = false;
         break;
       }
@@ -517,7 +510,7 @@ public class FtpTransferControl {
       return false;
     } else if (FtpCommandCode
         .isRetrLikeCommand(executedTransfer.getCommand())) {
-      FtpFile file = null;
+      FtpFile file;
       try {
         file = executedTransfer.getFtpFile();
       } catch (final FtpNoFileException e) {
@@ -540,7 +533,7 @@ public class FtpTransferControl {
       return false;
     } else if (FtpCommandCode
         .isStoreLikeCommand(executedTransfer.getCommand())) {
-      // logger.debug("Check: Store OK");
+      // logger.debug("Check: Store OK")
       closeTransfer();
       return false;
     } else {
@@ -556,7 +549,7 @@ public class FtpTransferControl {
   private void abortTransfer() {
     logger
         .debug("Will abort transfer and write: ", new Exception("trace only"));
-    FtpFile file = null;
+    FtpFile file;
     FtpTransfer current = null;
     try {
       current = getExecutingFtpTransfer();
@@ -564,7 +557,8 @@ public class FtpTransferControl {
       file.abortFile();
     } catch (final FtpNoTransferException e) {
       logger.warn("Abort problem", e);
-    } catch (final FtpNoFileException e) {
+    } catch (final FtpNoFileException ignored) {
+      // nothing
     } catch (final CommandAbstractException e) {
       logger.warn("Abort problem", e);
     }
@@ -576,13 +570,12 @@ public class FtpTransferControl {
                          "Transfer aborted for " +
                          (current == null? "Unknown command" :
                              current.toString()));
-    if (current != null) {
-      if (!FtpCommandCode.isListLikeCommand(current.getCommand())) {
-        try {
-          session.getBusinessHandler().afterTransferDoneBeforeAnswer(current);
-        } catch (final CommandAbstractException e) {
-          session.setReplyCode(e);
-        }
+    if (current != null &&
+        !FtpCommandCode.isListLikeCommand(current.getCommand())) {
+      try {
+        session.getBusinessHandler().afterTransferDoneBeforeAnswer(current);
+      } catch (final CommandAbstractException e) {
+        session.setReplyCode(e);
       }
     }
     finalizeExecution();
@@ -593,7 +586,7 @@ public class FtpTransferControl {
    */
   private void closeTransfer() {
     logger.debug("Will close transfer");
-    FtpFile file = null;
+    FtpFile file;
     FtpTransfer current = null;
     try {
       current = getExecutingFtpTransfer();
@@ -601,7 +594,8 @@ public class FtpTransferControl {
       file.closeFile();
     } catch (final FtpNoTransferException e) {
       logger.warn("Close problem", e);
-    } catch (final FtpNoFileException e) {
+    } catch (final FtpNoFileException ignored) {
+      // nothing
     } catch (final CommandAbstractException e) {
       logger.warn("Close problem", e);
     }
@@ -627,6 +621,7 @@ public class FtpTransferControl {
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
         } catch (final InterruptedException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       }
     }
@@ -640,8 +635,8 @@ public class FtpTransferControl {
   public void setEndOfTransfer() {
     try {
       checkFtpTransferStatus();
-    } catch (final FtpNoTransferException e) {
-      return;
+    } catch (final FtpNoTransferException ignored) {
+      // nothing
     }
   }
 
@@ -688,16 +683,14 @@ public class FtpTransferControl {
         throw new InterruptedException("Transfer aborted");
       }
     }
-    // logger.debug("waitEndOfCommand over");
+    // logger.debug("waitEndOfCommand over")
   }
-
-  // XXX ExecutorHandler functions
 
   /**
    * Finalize execution
    */
   private void finalizeExecution() {
-    // logger.debug("Finalize execution");
+    // logger.debug("Finalize execution")
     if (commandFinishing != null) {
       commandFinishing.setSuccess();
     }
@@ -705,8 +698,6 @@ public class FtpTransferControl {
     executingCommand = null;
     resetWaitForOpenedDataChannel();
   }
-
-  // XXX Finalize of Transfer
 
   /**
    * End the data connection if any
@@ -717,7 +708,7 @@ public class FtpTransferControl {
       WaarpNettyUtil
           .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(dataChannel));
       isDataNetworkHandlerReady = false;
-      // logger.debug("waitForClosedDataChannel over");
+      // logger.debug("waitForClosedDataChannel over")
       dataChannel = null;
     }
   }
@@ -730,7 +721,7 @@ public class FtpTransferControl {
    * connection from {@link NetworkHandler}.
    */
   public void clear() {
-    // logger.debug("Clear Ftp Transfer Control");
+    // logger.debug("Clear Ftp Transfer Control")
     endDataConnection();
     finalizeExecution();
     if (endOfCommand != null) {

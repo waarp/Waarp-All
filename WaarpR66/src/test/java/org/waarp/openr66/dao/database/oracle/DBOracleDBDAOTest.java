@@ -21,6 +21,7 @@
 package org.waarp.openr66.dao.database.oracle;
 
 import org.junit.ClassRule;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.OracleContainer;
 import org.waarp.openr66.dao.database.DBAllDAOTest;
 import org.waarp.openr66.dao.database.DBTransferDAO;
@@ -60,4 +61,11 @@ public class DBOracleDBDAOTest extends DBAllDAOTest {
   public void cleanDB() {
     runScript(cleanScript);
   }
+
+
+  @Override
+  public JdbcDatabaseContainer getJDC() {
+    return db;
+  }
+
 }

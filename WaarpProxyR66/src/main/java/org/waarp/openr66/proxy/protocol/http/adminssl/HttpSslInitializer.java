@@ -27,13 +27,14 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import org.waarp.openr66.proxy.configuration.Configuration;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
 /**
  *
  */
 public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
-  boolean useHttpCompression = false;
+  final boolean useHttpCompression;
 
   public HttpSslInitializer(boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
@@ -44,7 +45,7 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
     final SslHandler sslhandler =
-        Configuration.getWaarpSslContextFactory().initInitializer(true, false);
+        getWaarpSslContextFactory().initInitializer(true, false);
     pipeline.addLast("ssl", sslhandler);
 
     pipeline.addLast("decoder", new HttpServerCodec());

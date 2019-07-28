@@ -31,8 +31,6 @@ import java.net.InetSocketAddress;
 
 /**
  * EPRT command
- *
- *
  */
 public class EPRT extends AbstractCommand {
   private static final WaarpLogger logger =
@@ -48,7 +46,7 @@ public class EPRT extends AbstractCommand {
       getSession().getDataConn().setActive(inetSocketAddress);
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                                 "EPRT command successful on (" + FtpChannelUtils
-                                    .get2428Address(inetSocketAddress) + ")");
+                                    .get2428Address(inetSocketAddress) + ')');
       return;
     }
     // Check if Inet Address is OK
@@ -65,6 +63,6 @@ public class EPRT extends AbstractCommand {
     getSession().getDataConn().setActive(inetSocketAddress);
     getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                               "EPRT command successful on (" + FtpChannelUtils
-                                  .get2428Address(inetSocketAddress) + ")");
+                                  .get2428Address(inetSocketAddress) + ')');
   }
 }

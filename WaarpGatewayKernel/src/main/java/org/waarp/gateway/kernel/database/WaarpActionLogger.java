@@ -18,30 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright 2009, Frederic Bregier, and individual contributors by the @author
- * tags. See the
- * COPYRIGHT.txt in the distribution for a full listing of individual
- * contributors.
- * <p>
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation; either
- * version 3.0 of the
- * License, or (at your option) any later version.
- * <p>
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this
- * software; if not, write to the Free Software Foundation, Inc., 51 Franklin
- * St, Fifth Floor,
- * Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.waarp.gateway.kernel.database;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -57,15 +33,16 @@ import org.waarp.gateway.kernel.session.HttpSession;
 
 /**
  * Class to help to log any actions through the interface of Waarp
- *
- *
  */
-public class WaarpActionLogger {
+public final class WaarpActionLogger {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpActionLogger.class);
+
+  private WaarpActionLogger() {
+  }
 
   /**
    * Log the action
@@ -77,7 +54,7 @@ public class WaarpActionLogger {
   public static void logCreate(DbSession dbSession, String message,
                                HttpSession session) {
     final String sessionContexte = session.toString();
-    logger.info(message + " " + sessionContexte);
+    logger.info(message + ' ' + sessionContexte);
     if (dbSession != null) {
       final PageRole code = session.getCurrentCommand();
       boolean isSender = false;
@@ -104,8 +81,8 @@ public class WaarpActionLogger {
         final DbTransferLog log =
             new DbTransferLog(dbSession, session.getAuth().getUser(),
                               session.getAuth().getAccount(),
-                              DbConstant.ILLEGALVALUE,
-                              isSender, session.getFilename(), code.name(),
+                              DbConstant.ILLEGALVALUE, isSender,
+                              session.getFilename(), code.name(),
                               HttpResponseStatus.OK, message,
                               UpdatedInfo.TOSUBMIT);
         logger.debug("Create FS: " + log);
@@ -114,11 +91,6 @@ public class WaarpActionLogger {
       } catch (final WaarpDatabaseException e1) {
         // Do nothing
       }
-      /*
-       * if (FileBasedConfiguration.fileBasedConfiguration.monitoring != null) { if (isSender) {
-       * FileBasedConfiguration.fileBasedConfiguration.monitoring .updateLastOutBand(); } else {
-       * FileBasedConfiguration.fileBasedConfiguration.monitoring .updateLastInBound(); } }
-       */
     }
     session.setLogid(DbConstant.ILLEGALVALUE);
   }
@@ -137,21 +109,19 @@ public class WaarpActionLogger {
                                UpdatedInfo info) {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
-    logger.info(message + " " + sessionContexte);
-    if (dbSession != null &&
-        specialId != DbConstant.ILLEGALVALUE) {
+    logger.info(message + ' ' + sessionContexte);
+    if (dbSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
-        case ERROR:
-        case HTML:
-        case MENU:
-          return;
         case DELETE:
         case GETDOWNLOAD:
         case POST:
         case POSTUPLOAD:
         case PUT:
           break;
+        case ERROR:
+        case HTML:
+        case MENU:
         default:
           return;
       }
@@ -166,7 +136,6 @@ public class WaarpActionLogger {
         log.update();
         logger.debug("Update FS: " + log);
         session.setLogid(log.getSpecialId());
-        return;
       } catch (final WaarpDatabaseException e) {
         // Do nothing
       }
@@ -185,22 +154,20 @@ public class WaarpActionLogger {
                                     String message, HttpResponseStatus rcode) {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
-    logger.error(rcode.code() + ":" + message + " " + sessionContexte);
+    logger.error(rcode.code() + ":" + message + ' ' + sessionContexte);
     logger.warn("To Change to debug Log", new Exception("Log"));
-    if (dbSession != null &&
-        specialId != DbConstant.ILLEGALVALUE) {
+    if (dbSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
-        case ERROR:
-        case HTML:
-        case MENU:
-          return;
         case DELETE:
         case GETDOWNLOAD:
         case POST:
         case POSTUPLOAD:
         case PUT:
           break;
+        case ERROR:
+        case HTML:
+        case MENU:
         default:
           return;
       }

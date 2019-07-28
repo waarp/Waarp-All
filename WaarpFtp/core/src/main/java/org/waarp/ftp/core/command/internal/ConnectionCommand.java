@@ -27,8 +27,6 @@ import org.waarp.ftp.core.session.FtpSession;
 
 /**
  * Connection command: initialize the process of authentication
- *
- *
  */
 public class ConnectionCommand extends AbstractCommand {
 

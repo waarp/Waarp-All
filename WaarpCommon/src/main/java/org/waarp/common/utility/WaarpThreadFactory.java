@@ -24,11 +24,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Thread Factory that build named threads, by default daemon threads.
- *
- *
  */
 public class WaarpThreadFactory implements ThreadFactory {
-  private final String GlobalName;
+  private final String globalName;
   private final AtomicLong counter = new AtomicLong();
   private boolean isDaemon = true;
 
@@ -38,7 +36,7 @@ public class WaarpThreadFactory implements ThreadFactory {
    * @param globalName
    */
   public WaarpThreadFactory(String globalName) {
-    GlobalName = globalName + "-";
+    this.globalName = globalName + '-';
   }
 
   /**
@@ -47,14 +45,14 @@ public class WaarpThreadFactory implements ThreadFactory {
    *     Daemon threads left)
    */
   public WaarpThreadFactory(String globalName, boolean isDaemon) {
-    GlobalName = globalName + "-";
+    this.globalName = globalName + '-';
     this.isDaemon = isDaemon;
   }
 
   @Override
   public Thread newThread(Runnable arg0) {
     final Thread thread =
-        new Thread(arg0, GlobalName + counter.incrementAndGet());
+        new Thread(arg0, globalName + counter.incrementAndGet());
     thread.setDaemon(isDaemon);
     return thread;
   }

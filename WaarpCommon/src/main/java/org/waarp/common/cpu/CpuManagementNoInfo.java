@@ -21,8 +21,6 @@ package org.waarp.common.cpu;
 
 /**
  * CpuManagement with no Information on Load Average
- *
- *
  */
 class CpuManagementNoInfo implements CpuManagementInterface {
 

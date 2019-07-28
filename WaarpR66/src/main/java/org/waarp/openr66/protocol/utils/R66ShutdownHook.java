@@ -34,7 +34,7 @@ public class R66ShutdownHook extends WaarpShutdownHook {
   }
 
   @Override
-  protected void exit() {
+  protected void exitService() {
     ChannelUtils.exit();
   }
 

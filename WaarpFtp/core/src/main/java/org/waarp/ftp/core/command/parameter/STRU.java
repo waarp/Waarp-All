@@ -28,8 +28,6 @@ import org.waarp.ftp.core.command.FtpArgumentCode;
 
 /**
  * STRU command
- *
- *
  */
 public class STRU extends AbstractCommand {
   @Override

@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class StringUtilsTest {
+  private static final byte[] BYTES_0_LENGTH = {};
+
   @Test
   public void testRandom() {
     final byte[] byteArray0 = StringUtils.getRandom(90);
@@ -40,11 +43,11 @@ public class StringUtilsTest {
     final byte[] byteArray1 = StringUtils.getRandom(90);
     assertFalse(Arrays.equals(byteArray0, byteArray1));
     final byte[] byteArray2 = StringUtils.getBytesFromArraysToString(", ");
-    assertArrayEquals(new byte[] {}, byteArray2);
+    assertArrayEquals(BYTES_0_LENGTH, byteArray2);
     final byte[] byteArray3 = StringUtils.getRandom(0);
-    assertArrayEquals(new byte[] {}, byteArray3);
+    assertArrayEquals(BYTES_0_LENGTH, byteArray3);
     final byte[] byteArray4 = StringUtils.getRandom(-10);
-    assertArrayEquals(new byte[] {}, byteArray4);
+    assertArrayEquals(BYTES_0_LENGTH, byteArray4);
   }
 
   @Test
@@ -78,6 +81,21 @@ public class StringUtilsTest {
     } catch (final IllegalArgumentException e) { // NOSONAR
       // Ignore
     }
+  }
+
+  @Test
+  public void testGetClassName() {
+    StringUtilsTest test = new StringUtilsTest();
+    String name = StringUtils.getClassName(test);
+    assertNotEquals(test.getClass().getName(), name);
+    assertEquals(test.getClass().getSimpleName(), name);
+  }
+
+  @Test
+  public void testWaarpStringUtils() {
+    Timestamp timestamp = WaarpStringUtils.getTodayMidnight();
+    Timestamp timestamp1 = new Timestamp(System.currentTimeMillis());
+    assertTrue(timestamp.before(timestamp1));
   }
 
   @Test
@@ -143,7 +161,7 @@ public class StringUtilsTest {
     assertEquals(-1, emptyIS.read());
     assertEquals(-1, emptyIS.read(buffer));
     assertEquals(-1, emptyIS.read(buffer, 0, buffer.length));
-    assertEquals(true, emptyIS.markSupported());
+    assertTrue(emptyIS.markSupported());
     emptyIS.mark(5);
     emptyIS.reset();
     emptyIS.close();

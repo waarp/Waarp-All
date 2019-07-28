@@ -28,16 +28,17 @@ import java.sql.Statement;
 /**
  * MySQL Database Model
  */
-public class MySQLProperties extends DbProperties {
+public class MySQLProperties implements DbProperties {
   public static final String PROTOCOL = "mysql";
 
-  private final String DRIVER_NAME = "com.mysql.jdbc.Driver";
-  private final String VALIDATION_QUERY = "select 1";
-  private final String MAX_CONNECTION_QUERY =
+  private static final String DRIVER_NAME = "com.mysql.jdbc.Driver";
+  private static final String VALIDATION_QUERY = "select 1";
+  private static final String MAX_CONNECTION_QUERY =
       "select GLOBAL_VALUE " + "from INFORMATION_SCHEMA.SYSTEM_VARIABLES " +
       "where VARIABLE_NAME LIKE 'max_connections'";
 
   public MySQLProperties() {
+    // nothing
   }
 
   public static String getProtocolID() {
@@ -67,10 +68,18 @@ public class MySQLProperties extends DbProperties {
       return rs.getInt(1);
     } finally {
       if (rs != null) {
-        rs.close();
+        try {
+          rs.close();
+        } catch (SQLException ignored) {
+          // nothing
+        }
       }
       if (stm != null) {
-        stm.close();
+        try {
+          stm.close();
+        } catch (SQLException ignored) {
+          // nothing
+        }
       }
     }
   }

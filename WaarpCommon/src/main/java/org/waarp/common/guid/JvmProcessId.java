@@ -20,6 +20,7 @@
 
 package org.waarp.common.guid;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.StringUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 
@@ -37,7 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-public class JvmProcessId {
+public final class JvmProcessId {
   /**
    * Definition for Machine Id replacing MAC address
    */
@@ -52,16 +53,21 @@ public class JvmProcessId {
    * 2 bytes value maximum
    */
   static final int JVMPID;
+  private static final Object[] EMPTY_OBJECTS = new Object[0];
+  private static final Class<?>[] EMPTY_CLASSES = new Class<?>[0];
   /**
    * Try to get Mac Address but could be also changed dynamically
    */
-  static byte[] MAC;
-  static int MACInt;
+  static byte[] mac;
+  static int macInt;
 
   static {
     JVMPID = jvmProcessId();
-    MAC = macAddress();
-    MACInt = macAddressAsInt();
+    mac = macAddress();
+    macInt = macAddressAsInt();
+  }
+
+  private JvmProcessId() {
   }
 
 
@@ -74,9 +80,8 @@ public class JvmProcessId {
     try {
       final ClassLoader loader = getSystemClassLoader();
       String value;
-      final Object[] emptyObjects = new Object[0];
-      final Class<?>[] emptyClasses = new Class<?>[0];
-      value = jvmProcessIdManagementFactory(loader, emptyObjects, emptyClasses);
+      value =
+          jvmProcessIdManagementFactory(loader, EMPTY_OBJECTS, EMPTY_CLASSES);
       final int atIndex = value.indexOf('@');
       if (atIndex >= 0) {
         value = value.substring(0, atIndex);
@@ -88,7 +93,7 @@ public class JvmProcessId {
       }
       return processId;
     } catch (final Exception e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       return StringUtils.RANDOM.nextInt(MAX_PID + 1);
     }
   }
@@ -101,10 +106,9 @@ public class JvmProcessId {
       byte[] machineId = null;
       final String customMachineId =
           SystemPropertyUtil.get("org.waarp.machineId");
-      if (customMachineId != null) {
-        if (MACHINE_ID_PATTERN.matcher(customMachineId).matches()) {
-          machineId = parseMachineId(customMachineId);
-        }
+      if (customMachineId != null &&
+          MACHINE_ID_PATTERN.matcher(customMachineId).matches()) {
+        machineId = parseMachineId(customMachineId);
       }
 
       if (machineId == null) {
@@ -112,8 +116,6 @@ public class JvmProcessId {
       }
       return machineId;
     } catch (final Exception e) {
-      // System.err.println("Could not get MAC address");
-      // e.printStackTrace();
       return StringUtils.getRandom(MACHINE_ID_LEN);
     }
   }
@@ -122,8 +124,8 @@ public class JvmProcessId {
    * @return MAC address as int (truncated to 4 bytes instead of 6)
    */
   public static int macAddressAsInt() {
-    return (MAC[3] & 0xFF) << 24 | (MAC[2] & 0xFF) << 16 |
-           (MAC[1] & 0xFF) << 8 | MAC[0] & 0xFF;
+    return (mac[3] & 0xFF) << 24 | (mac[2] & 0xFF) << 16 |
+           (mac[1] & 0xFF) << 8 | mac[0] & 0xFF;
   }
 
   /**
@@ -134,17 +136,16 @@ public class JvmProcessId {
    *     bytes will
    *     be used)
    */
-  public static synchronized void setMAC(final byte[] mac) {
+  public static synchronized void setMac(final byte[] mac) {
     if (mac == null) {
-      MAC = StringUtils.getRandom(MACHINE_ID_LEN);
-      MACInt = macAddressAsInt();
+      JvmProcessId.mac = StringUtils.getRandom(MACHINE_ID_LEN);
     } else {
-      MAC = Arrays.copyOf(mac, MACHINE_ID_LEN);
+      JvmProcessId.mac = Arrays.copyOf(mac, MACHINE_ID_LEN);
       for (int i = mac.length; i < MACHINE_ID_LEN; i++) {
-        MAC[i] = (byte) StringUtils.RANDOM.nextInt(256);
+        JvmProcessId.mac[i] = (byte) StringUtils.RANDOM.nextInt(256);
       }
-      MACInt = macAddressAsInt();
     }
+    macInt = macAddressAsInt();
   }
 
   /**
@@ -222,7 +223,7 @@ public class JvmProcessId {
   }
 
   // pulled from http://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id
-  private static final ClassLoader getSystemClassLoader() {
+  private static ClassLoader getSystemClassLoader() {
     if (System.getSecurityManager() == null) {
       return ClassLoader.getSystemClassLoader();
     } else {
@@ -281,8 +282,8 @@ public class JvmProcessId {
           runtimeMxBeanType.getDeclaredMethod("getName", emptyClasses);
       value = (String) getName.invoke(bean, emptyObjects);
     } catch (final Exception e) {
-      System.err
-          .println("Unable to get PID, try another way: " + e.getMessage());
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Unable to get PID, try another way: " + e.getMessage());
 
       try {
         // Invoke android.os.Process.myPid()
@@ -291,7 +292,8 @@ public class JvmProcessId {
         final Method myPid = processType.getMethod("myPid", emptyClasses);
         value = myPid.invoke(null, emptyObjects).toString();
       } catch (final Exception e2) {
-        System.err.println("Unable to get PID: " + e2.getMessage());
+        SysErrLogger.FAKE_LOGGER
+            .syserr("Unable to get PID: " + e2.getMessage());
         value = "";
       }
     }
@@ -312,9 +314,9 @@ public class JvmProcessId {
 
   private static byte[] defaultMachineId() {
     // Find the best MAC address available.
-    final byte[] NOT_FOUND = { -1 };
-    byte[] bestMacAddr = NOT_FOUND;
-    InetAddress bestInetAddr = null;
+    final byte[] notFound = { -1 };
+    byte[] bestMacAddr = notFound;
+    InetAddress bestInetAddr;
     try {
       bestInetAddr = InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 });
     } catch (final UnknownHostException e) {
@@ -338,7 +340,8 @@ public class JvmProcessId {
           }
         }
       }
-    } catch (final SocketException e) {
+    } catch (final SocketException ignored) {
+      // nothing
     }
 
     for (final Entry<NetworkInterface, InetAddress> entry : ifaces.entrySet()) {
@@ -380,7 +383,7 @@ public class JvmProcessId {
       }
     }
 
-    if (bestMacAddr == NOT_FOUND) {
+    if (bestMacAddr == notFound) {
       bestMacAddr = StringUtils.getRandom(MACHINE_ID_LEN);
     }
     return bestMacAddr;

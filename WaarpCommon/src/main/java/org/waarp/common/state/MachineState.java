@@ -25,6 +25,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * This is the base class for the basic support of Finite State Machine in
@@ -33,19 +34,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * <br>
  * Note: the type EnumSet< ? > is in fact of type EnumSet< EnumState >
  *
- * @param <EnumState>
- *
- *
+ * @param <E>
  */
-public class MachineState<EnumState> {
+public class MachineState<E> {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(MachineState.class);
 
-  private ConcurrentHashMap<EnumState, EnumSet<?>> statemap;
-  private EnumState currentState;
+  private ConcurrentMap<E, EnumSet<?>> statemap;
+  private E currentState;
 
   /**
    * Initialize with an initialState
@@ -55,8 +54,7 @@ public class MachineState<EnumState> {
    *     following
    *     states
    */
-  public MachineState(EnumState initialState,
-                      ConcurrentHashMap<EnumState, EnumSet<?>> map) {
+  public MachineState(E initialState, ConcurrentMap<E, EnumSet<?>> map) {
     statemap = map;
     currentState = initialState;
   }
@@ -67,8 +65,8 @@ public class MachineState<EnumState> {
    *
    * @param initialState initial MachineState
    */
-  public MachineState(EnumState initialState) {
-    statemap = new ConcurrentHashMap<EnumState, EnumSet<?>>();
+  public MachineState(E initialState) {
+    statemap = new ConcurrentHashMap<E, EnumSet<?>>();
     currentState = initialState;
   }
 
@@ -82,7 +80,7 @@ public class MachineState<EnumState> {
    *
    * @return the previous association if any
    */
-  public EnumSet<?> addNewAssociation(EnumState state, EnumSet<?> set) {
+  public EnumSet<?> addNewAssociation(E state, EnumSet<?> set) {
     return statemap.put(state, set);
   }
 
@@ -95,7 +93,7 @@ public class MachineState<EnumState> {
    *
    * @return the previous association if any
    */
-  public EnumSet<?> addNewAssociation(Transition<EnumState> elt) {
+  public EnumSet<?> addNewAssociation(Transition<E> elt) {
     return statemap.put(elt.getState(), elt.getSet());
   }
 
@@ -106,7 +104,7 @@ public class MachineState<EnumState> {
    *
    * @return the previous association if any
    */
-  public EnumSet<?> removeAssociation(EnumState state) {
+  public EnumSet<?> removeAssociation(E state) {
     return statemap.remove(state);
   }
 
@@ -115,7 +113,7 @@ public class MachineState<EnumState> {
    *
    * @return the current State
    */
-  public EnumState getCurrent() {
+  public E getCurrent() {
     return currentState;
   }
 
@@ -128,8 +126,7 @@ public class MachineState<EnumState> {
    *
    * @throws IllegalFiniteStateException if the state is not allowed
    */
-  public EnumState setCurrent(EnumState desiredState)
-      throws IllegalFiniteStateException {
+  public E setCurrent(E desiredState) throws IllegalFiniteStateException {
     if (!isReachable(desiredState)) {
       logger.debug(
           "State " + desiredState + " not reachable from: " + currentState);
@@ -146,7 +143,7 @@ public class MachineState<EnumState> {
    *
    * @return the requested state, even if it was not reachable
    */
-  public EnumState setDryCurrent(EnumState desiredState) {
+  public E setDryCurrent(E desiredState) {
     return setAsFinal(desiredState);
   }
 
@@ -157,7 +154,7 @@ public class MachineState<EnumState> {
    *
    * @return True if the desiredState is valid from currentState
    */
-  private boolean isReachable(EnumState desiredState) {
+  private boolean isReachable(E desiredState) {
     if (currentState == null || statemap == null) {
       return false;
     }
@@ -175,7 +172,7 @@ public class MachineState<EnumState> {
    *
    * @return the requested state
    */
-  private EnumState setAsFinal(EnumState desiredState) {
+  private E setAsFinal(E desiredState) {
     logger.debug("New State: " + desiredState + " from " + currentState);
     currentState = desiredState;
     return currentState;

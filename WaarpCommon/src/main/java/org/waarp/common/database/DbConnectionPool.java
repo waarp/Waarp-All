@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland<br>
  *     Multi-licensed: EPL/LGPL/MPL.
- *  <br>
+ *     <br>
  *     Add TimerTask support to close after some "delay" any still connected
  *     sessions
  */
@@ -55,9 +55,8 @@ public class DbConnectionPool {
 
   private final int timeout;
 
-  private final long timeOutForceClose = 300000; // 5 minutes
+  private static final long timeOutForceClose = 300000; // 5 minutes
 
-  // private PrintWriter logWriter;
   private Semaphore semaphore;
 
   private final Queue<Con> recycledConnections;
@@ -68,12 +67,12 @@ public class DbConnectionPool {
 
   private boolean isDisposed;
 
-  static class Con {
+  private static class Con {
     final PooledConnection pooledCon;
 
-    long lastRecyle;
+    final long lastRecyle;
 
-    Con(PooledConnection pooledCon) {
+    private Con(PooledConnection pooledCon) {
       this.pooledCon = pooledCon;
       lastRecyle = System.currentTimeMillis();
     }
@@ -83,7 +82,7 @@ public class DbConnectionPool {
       if (this == o) {
         return true;
       }
-      if (o == null || !(o instanceof Con)) {
+      if (!(o instanceof Con)) {
         return false;
       }
 
@@ -100,8 +99,6 @@ public class DbConnectionPool {
 
   /**
    * Class to check validity of connections in the pool
-   *
-   *
    */
   private static class TimerTaskCheckConnections extends TimerTask {
     DbConnectionPool pool;
@@ -168,9 +165,9 @@ public class DbConnectionPool {
 
   /**
    * Thrown in when no free connection becomes available within
-   * <code>timeout</code> seconds.
+   * {@code timeout} seconds.
    */
-  public static class TimeoutException extends RuntimeException {
+  private static class TimeoutException extends RuntimeException {
     private static final long serialVersionUID = 1;
 
     public TimeoutException() {
@@ -234,8 +231,6 @@ public class DbConnectionPool {
     this.maxConnections = maxConnections;
     this.timeout = timeout;
     if (maxConnections != 0) {
-      // if (maxConnections < 1) throw new
-      // IllegalArgumentException("Invalid maxConnections value.");
       if (timeout <= 0) {
         throw new IllegalArgumentException("Invalid timeout value.");
       }
@@ -299,9 +294,9 @@ public class DbConnectionPool {
 
   /**
    * Retrieves a connection from the connection pool. If
-   * <code>maxConnections</code> connections are already in
+   * {@code maxConnections} connections are already in
    * use, the method waits until a connection becomes available or
-   * <code>timeout</code> seconds elapsed. When
+   * {@code timeout} seconds elapsed. When
    * the application is finished using the connection, it must close it in
    * order
    * to return it to the pool.
@@ -310,7 +305,7 @@ public class DbConnectionPool {
    *
    * @throws TimeoutException when no connection becomes available
    *     within
-   *     <code>timeout</code> seconds.
+   *     {@code timeout} seconds.
    * @throws SQLException //
    */
   public Connection getConnection() throws SQLException {
@@ -337,10 +332,8 @@ public class DbConnectionPool {
       ok = true;
       return conn;
     } finally {
-      if (semaphore != null) {
-        if (!ok) {
-          semaphore.release();
-        }
+      if (semaphore != null && !ok) {
+        semaphore.release();
       }
     }
   }
@@ -453,9 +446,9 @@ public class DbConnectionPool {
 
   /**
    * Returns the number of active (open) connections of this pool. This is the
-   * number of <code>Connection</code>
+   * number of {@code Connection}
    * objects that have been issued by {@link #getConnection()} for which
-   * <code>Connection.close()</code> has not
+   * {@code Connection.close()} has not
    * yet been called.
    *
    * @return the number of active connections.

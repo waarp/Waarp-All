@@ -30,8 +30,6 @@ import org.waarp.ftp.core.file.FtpFile;
 
 /**
  * RNTO command
- *
- *
  */
 public class RNTO extends AbstractCommand {
   @Override
@@ -45,16 +43,18 @@ public class RNTO extends AbstractCommand {
     try {
       file = getSession().getDataConn().getFtpTransferControl()
                          .getExecutingFtpTransfer().getFtpFile();
-    } catch (final FtpNoFileException e) {
-    } catch (final FtpNoTransferException e) {
+    } catch (final FtpNoFileException ignored) {
+      // nothing
+    } catch (final FtpNoTransferException ignored) {
+      // nothing
     }
     if (file != null) {
       final String previousName = file.getFile();
       if (file.renameTo(filename)) {
         getSession()
             .setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                          "\"" + filename + "\" as new file name for \"" +
-                          previousName + "\"");
+                          '"' + filename + "\" as new file name for \"" +
+                          previousName + '"');
         return;
       }
     }

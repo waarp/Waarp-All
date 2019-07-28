@@ -30,8 +30,6 @@ import org.waarp.openr66.protocol.utils.FileUtils;
  * Data packet
  * <p>
  * header = packetRank middle = data end = key
- *
- *
  */
 public class DataPacket extends AbstractLocalPacket {
   private final int packetRank;
@@ -112,7 +110,7 @@ public class DataPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "DataPacket: " + packetRank + ":" + lengthPacket;
+    return "DataPacket: " + packetRank + ':' + lengthPacket;
   }
 
   /**
@@ -159,15 +157,11 @@ public class DataPacket extends AbstractLocalPacket {
   @Override
   public void clear() {
     super.clear();
-    if (data != null) {
-      if (data.release()) {
-        data = null;
-      }
+    if (data != null && data.release()) {
+      data = null;
     }
-    if (key != null) {
-      if (key.release()) {
-        key = null;
-      }
+    if (key != null && key.release()) {
+      key = null;
     }
   }
 }

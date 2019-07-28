@@ -30,8 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Example of usage for MachineState based on ExampleEnumState enum class
- *
- *
  */
 public class ExampleUsageMachineState {
   /**

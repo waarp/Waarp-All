@@ -29,8 +29,6 @@ import org.waarp.ftp.core.session.FtpSession;
 
 /**
  * APPE command
- *
- *
  */
 public class APPE extends AbstractCommand {
   @Override

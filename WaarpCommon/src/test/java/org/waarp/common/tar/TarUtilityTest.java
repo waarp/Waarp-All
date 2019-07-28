@@ -26,6 +26,7 @@ import org.waarp.common.file.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -46,9 +47,9 @@ public class TarUtilityTest {
     FileUtils.forceDeleteRecursiveDir(dir);
 
     final List<String> list = TarUtility.unTar(zip, dir);
-    assertTrue(list.size() == 2);
+    assertEquals(2, list.size());
     final File[] arrayFile = FileUtils.getFiles(dir);
-    assertTrue(arrayFile.length == 2);
+    assertEquals(2, arrayFile.length);
     int cpt = 0;
     for (final File file : arrayFile) {
       for (final String name : list) {
@@ -58,7 +59,7 @@ public class TarUtilityTest {
         }
       }
     }
-    assertTrue(cpt == 2);
+    assertEquals(2, cpt);
     FileUtils.forceDeleteRecursiveDir(dir);
     FileUtils.deleteDir(dir);
     FileUtils.delete(zip);
@@ -74,17 +75,15 @@ public class TarUtilityTest {
     test2.createNewFile();
     File[] arrayFile = dir.listFiles();
     final List<File> listFile = new ArrayList<File>();
-    for (final File file : arrayFile) {
-      listFile.add(file);
-    }
+    Collections.addAll(listFile, arrayFile);
     final File zip = new File(dir.getParentFile(), "testzip.zip");
     assertTrue(TarUtility.createTarFromFiles(listFile, zip.getAbsolutePath()));
     FileUtils.forceDeleteRecursiveDir(dir);
 
     List<String> list = TarUtility.unTar(zip, dir);
-    assertTrue(list.size() == 2);
+    assertEquals(2, list.size());
     arrayFile = FileUtils.getFiles(dir);
-    assertTrue(arrayFile.length == 2);
+    assertEquals(2, arrayFile.length);
     int cpt = 0;
     for (final File file : arrayFile) {
       for (final String name : list) {
@@ -94,15 +93,15 @@ public class TarUtilityTest {
         }
       }
     }
-    assertTrue(cpt == 2);
+    assertEquals(2, cpt);
     FileUtils.delete(zip);
     assertTrue(TarUtility.createTarFromFiles(arrayFile, zip.getAbsolutePath()));
     FileUtils.forceDeleteRecursiveDir(dir);
 
     list = TarUtility.unTar(zip, dir);
-    assertTrue(list.size() == 2);
+    assertEquals(2, list.size());
     final File[] arrayFiles2 = arrayFile = FileUtils.getFiles(dir);
-    assertTrue(arrayFiles2.length == 2);
+    assertEquals(2, arrayFiles2.length);
     cpt = 0;
     for (final File file : arrayFile) {
       for (final File file2 : arrayFiles2) {
@@ -112,7 +111,7 @@ public class TarUtilityTest {
         }
       }
     }
-    assertTrue(cpt == 2);
+    assertEquals(2, cpt);
 
     FileUtils.forceDeleteRecursiveDir(dir);
     FileUtils.deleteDir(dir);

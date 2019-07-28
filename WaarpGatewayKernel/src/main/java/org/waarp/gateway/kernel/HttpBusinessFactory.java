@@ -30,6 +30,7 @@ import org.waarp.gateway.kernel.HttpPage.PageRole;
 
 import java.net.SocketAddress;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
@@ -37,15 +38,9 @@ import java.util.LinkedHashMap;
 public abstract class HttpBusinessFactory {
   public static final HttpDataFactory factory =
       new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
-  // Disk if
-  // size
-  // exceed
-  // MINSIZE =
-  // 16K
   // Disk if size exceed MINSIZE = 16K, but for FileUpload from Ark directly
   // XXX FIXME TODO to setup outside !
   public static String TempPath = "J:/GG/ARK/TMP";
-  // "C:/Temp/Java/GG/ARK/TMP";
 
   /**
    * Initialize the Disk support
@@ -77,8 +72,8 @@ public abstract class HttpBusinessFactory {
    * @return the AbstractHttpBusinessRequest to use during a new request
    */
   public abstract AbstractHttpBusinessRequest getNewHttpBusinessRequest(
-      SocketAddress remoteAddress,
-      LinkedHashMap<String, AbstractHttpField> fields, HttpPage page);
+      SocketAddress remoteAddress, Map<String, AbstractHttpField> fields,
+      HttpPage page);
 
   /**
    * @param pages
@@ -89,13 +84,25 @@ public abstract class HttpBusinessFactory {
    */
   public static boolean addDefaultErrorPages(HttpPageHandler pages,
                                              String title, Class<?> clasz) {
-    String pagename, header, footer, beginform, endform, nextinform, uri,
-        errorpage, classname;
+    String pagename;
+    String header;
+    String footer;
+    String beginform;
+    String endform;
+    String nextinform;
+    String uri;
+    String errorpage;
+    String classname;
     PageRole pageRole;
     LinkedHashMap<String, AbstractHttpField> linkedHashMap;
-    String fieldname, fieldinfo, fieldvalue;
+    String fieldname;
+    String fieldinfo;
+    String fieldvalue;
     FieldRole fieldRole;
-    boolean fieldvisibility, fieldmandatory, fieldcookieset, fieldtovalidate;
+    boolean fieldvisibility;
+    boolean fieldmandatory;
+    boolean fieldcookieset;
+    boolean fieldtovalidate;
     int fieldrank;
 
     // Need as default error pages: 400, 401, 403, 404, 406, 500
@@ -207,9 +214,12 @@ public abstract class HttpBusinessFactory {
                                                uri, pageRole, errorpage,
                                                classname, linkedHashMap));
       return true;
-    } catch (final ClassNotFoundException e) {
-    } catch (final InstantiationException e) {
-    } catch (final IllegalAccessException e) {
+    } catch (final ClassNotFoundException ignored) {
+      // nothing
+    } catch (final InstantiationException ignored) {
+      // nothing
+    } catch (final IllegalAccessException ignored) {
+      // nothing
     }
     return false;
   }

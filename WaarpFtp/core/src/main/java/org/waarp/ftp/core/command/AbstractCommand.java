@@ -25,12 +25,13 @@ import org.waarp.common.file.SessionInterface;
 import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.session.FtpSession;
 
+import java.util.regex.Pattern;
+
 /**
  * Abstract definition of an FTP Command
- *
- *
  */
 public abstract class AbstractCommand implements CommandInterface {
+  private static final Pattern COMPILE_BLANK = Pattern.compile(" ");
   /**
    * Code of Command
    */
@@ -134,12 +135,12 @@ public abstract class AbstractCommand implements CommandInterface {
 
   @Override
   public String[] getArgs() {
-    return arg.split(" ");
+    return COMPILE_BLANK.split(arg);
   }
 
   @Override
   public int getValue(String argx) throws InvalidArgumentException {
-    int i = 0;
+    int i;
     try {
       i = Integer.parseInt(argx);
     } catch (final NumberFormatException e) {

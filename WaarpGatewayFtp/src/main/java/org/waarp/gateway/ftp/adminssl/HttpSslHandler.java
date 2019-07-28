@@ -53,12 +53,13 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ThreadLocalRandom;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.core.session.FtpSession;
 import org.waarp.ftp.core.utils.FtpChannelUtils;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.FtpConstraintLimitHandler;
-import org.waarp.gateway.ftp.database.DbConstant;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
 import org.waarp.gateway.ftp.database.data.DbTransferLog;
 import org.waarp.gateway.ftp.file.FileBasedAuth;
 import org.waarp.gateway.ftp.utils.Version;
@@ -69,7 +70,6 @@ import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,6 +78,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class HttpSslHandler
     extends SimpleChannelInboundHandler<FullHttpRequest> {
+  private static final String XXXFILEXXX = "XXXFILEXXX";
+  private static final String ACTION2 = "ACTION";
+  private static final String XXXRESULTXXX = "XXXRESULTXXX";
   /**
    * Internal Logger
    */
@@ -90,7 +93,7 @@ public class HttpSslHandler
       new ConcurrentHashMap<String, FileBasedAuth>();
   private static final ConcurrentHashMap<String, DbSession> dbSessions =
       new ConcurrentHashMap<String, DbSession>();
-  private static final Random random = new Random();
+  private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
   private final FtpSession ftpSession =
       new FtpSession(FileBasedConfiguration.fileBasedConfiguration, null);
@@ -106,7 +109,7 @@ public class HttpSslHandler
   private volatile boolean forceClose;
   private volatile boolean shutdown;
 
-  private static final String FTPSESSION = "FTPSESSION";
+  private static final String FTPSESSIONString = "FTPSESSION";
 
   private enum REQUEST {
     Logon("Logon.html"), index("index.html"), error("error.html"),
@@ -148,22 +151,26 @@ public class HttpSslHandler
      */
     public String readFileUnique() {
       return WaarpStringUtils.readFile(
-          FileBasedConfiguration.fileBasedConfiguration.httpBasePath + header);
+          FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
+          header);
     }
 
     public String readHeader() {
       return WaarpStringUtils.readFile(
-          FileBasedConfiguration.fileBasedConfiguration.httpBasePath + header);
+          FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
+          header);
     }
 
     public String readBody() {
       return WaarpStringUtils.readFile(
-          FileBasedConfiguration.fileBasedConfiguration.httpBasePath + body);
+          FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
+          body);
     }
 
     public String readEnd() {
       return WaarpStringUtils.readFile(
-          FileBasedConfiguration.fileBasedConfiguration.httpBasePath + end);
+          FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
+          end);
     }
   }
 
@@ -208,7 +215,8 @@ public class HttpSslHandler
                                                              .lastWriteThroughput() /
                                                          131072 + "Mbits");
     WaarpStringUtils.replaceAll(builder, "XXXHOSTIDXXX",
-                                FileBasedConfiguration.fileBasedConfiguration.HOST_ID);
+                                FileBasedConfiguration.fileBasedConfiguration
+                                    .getHostId());
     WaarpStringUtils
         .replaceAll(builder, "XXXADMINXXX", "Administrator Connected");
     WaarpStringUtils.replace(builder, "XXXVERSIONXXX", Version.ID);
@@ -217,17 +225,18 @@ public class HttpSslHandler
 
   private String error(String mesg) {
     final String index = REQUEST.error.readFileUnique();
-    return index.replaceAll("XXXERRORMESGXXX", mesg);
+    return index.replace("XXXERRORMESGXXX", mesg);
   }
 
-  private String Logon() {
+  private String logon() {
     return REQUEST.Logon.readFileUnique();
   }
 
-  private String System() {
+  private String system() {
     getParams();
     final FtpConstraintLimitHandler handler =
-        FileBasedConfiguration.fileBasedConfiguration.constraintLimitHandler;
+        FileBasedConfiguration.fileBasedConfiguration
+            .getConstraintLimitHandler();
     if (params == null) {
       final String system = REQUEST.System.readFileUnique();
       final StringBuilder builder = new StringBuilder(system);
@@ -238,27 +247,27 @@ public class HttpSslHandler
                                Double.toString(handler.getCpuLimit()));
       WaarpStringUtils.replace(builder, "XXXXCONLXXX",
                                Integer.toString(handler.getChannelLimit()));
-      WaarpStringUtils.replace(builder, "XXXRESULTXXX", "");
+      WaarpStringUtils.replace(builder, XXXRESULTXXX, "");
       return builder.toString();
     }
     String extraInformation = null;
-    if (params.containsKey("ACTION")) {
-      final List<String> action = params.get("ACTION");
+    if (params.containsKey(ACTION2)) {
+      final List<String> action = params.get(ACTION2);
       for (final String act : action) {
-        if (act.equalsIgnoreCase("Disconnect")) {
-          final String logon = Logon();
+        if ("Disconnect".equalsIgnoreCase(act)) {
+          final String logon = logon();
           newSession = true;
           clearSession();
           forceClose = true;
           return logon;
-        } else if (act.equalsIgnoreCase("Shutdown")) {
+        } else if ("Shutdown".equalsIgnoreCase(act)) {
           final String error = error("Shutdown in progress");
           newSession = true;
           clearSession();
           forceClose = true;
           shutdown = true;
           return error;
-        } else if (act.equalsIgnoreCase("Validate")) {
+        } else if ("Validate".equalsIgnoreCase(act)) {
           String bglobalr = getTrimValue("BGLOBR");
           long lglobal = FileBasedConfiguration.fileBasedConfiguration
               .getServerGlobalReadLimit();
@@ -293,60 +302,60 @@ public class HttpSslHandler
     WaarpStringUtils.replace(builder, "XXXXCONLXXX",
                              Integer.toString(handler.getChannelLimit()));
     if (extraInformation != null) {
-      WaarpStringUtils.replace(builder, "XXXRESULTXXX", extraInformation);
+      WaarpStringUtils.replace(builder, XXXRESULTXXX, extraInformation);
     } else {
-      WaarpStringUtils.replace(builder, "XXXRESULTXXX", "");
+      WaarpStringUtils.replace(builder, XXXRESULTXXX, "");
     }
     return builder.toString();
   }
 
-  private String Rule() {
+  private String rule() {
     getParams();
     if (params == null) {
       final String system = REQUEST.Rule.readFileUnique();
       final StringBuilder builder = new StringBuilder(system);
       final CommandExecutor exec = AbstractExecutor.getCommandExecutor();
       WaarpStringUtils.replace(builder, "XXXSTCXXX",
-                               exec.getStorType() + " " + exec.pstorCMD);
+                               exec.getStorType() + ' ' + exec.pstorCMD);
       WaarpStringUtils
-          .replace(builder, "XXXSTDXXX", Long.toString(exec.pstorDelay));
+          .replace(builder, "XXXSTDXXX", Long.toString(exec.getPstorDelay()));
       WaarpStringUtils.replace(builder, "XXXRTCXXX",
-                               exec.getRetrType() + " " + exec.pretrCMD);
+                               exec.getRetrType() + ' ' + exec.pretrCMD);
       WaarpStringUtils
-          .replace(builder, "XXXRTDXXX", Long.toString(exec.pretrDelay));
-      WaarpStringUtils.replace(builder, "XXXRESULTXXX", "");
+          .replace(builder, "XXXRTDXXX", Long.toString(exec.getPretrDelay()));
+      WaarpStringUtils.replace(builder, XXXRESULTXXX, "");
       return builder.toString();
     }
     String extraInformation = null;
-    if (params.containsKey("ACTION")) {
-      final List<String> action = params.get("ACTION");
+    if (params.containsKey(ACTION2)) {
+      final List<String> action = params.get(ACTION2);
       for (final String act : action) {
-        if (act.equalsIgnoreCase("Update")) {
+        if ("Update".equalsIgnoreCase(act)) {
           final CommandExecutor exec = AbstractExecutor.getCommandExecutor();
           String bglobalr = getTrimValue("std");
-          long lglobal = exec.pstorDelay;
+          long lglobal = exec.getPstorDelay();
           if (bglobalr != null) {
             lglobal = Long.parseLong(bglobalr);
           }
-          exec.pstorDelay = lglobal;
+          exec.setPstorDelay(lglobal);
           bglobalr = getTrimValue("rtd");
-          lglobal = exec.pretrDelay;
+          lglobal = exec.getPretrDelay();
           if (bglobalr != null) {
             lglobal = Long.parseLong(bglobalr);
           }
-          exec.pretrDelay = lglobal;
+          exec.setPretrDelay(lglobal);
           bglobalr = getTrimValue("stc");
-          String store = exec.getStorType() + " " + exec.pstorCMD;
+          String store = exec.getStorType() + ' ' + exec.pstorCMD;
           if (bglobalr != null) {
             store = bglobalr;
           }
           bglobalr = getTrimValue("rtc");
-          String retr = exec.getRetrType() + " " + exec.pretrCMD;
+          String retr = exec.getRetrType() + ' ' + exec.pretrCMD;
           if (bglobalr != null) {
             retr = bglobalr;
           }
-          AbstractExecutor.initializeExecutor(retr, exec.pretrDelay, store,
-                                              exec.pstorDelay);
+          AbstractExecutor.initializeExecutor(retr, exec.getPretrDelay(), store,
+                                              exec.getPstorDelay());
           extraInformation = "Configuration Saved";
         }
       }
@@ -355,34 +364,34 @@ public class HttpSslHandler
     final StringBuilder builder = new StringBuilder(system);
     final CommandExecutor exec = AbstractExecutor.getCommandExecutor();
     WaarpStringUtils.replace(builder, "XXXSTCXXX",
-                             exec.getStorType() + " " + exec.pstorCMD);
+                             exec.getStorType() + ' ' + exec.pstorCMD);
     WaarpStringUtils
-        .replace(builder, "XXXSTDXXX", Long.toString(exec.pstorDelay));
+        .replace(builder, "XXXSTDXXX", Long.toString(exec.getPstorDelay()));
     WaarpStringUtils.replace(builder, "XXXRTCXXX",
-                             exec.getRetrType() + " " + exec.pretrCMD);
+                             exec.getRetrType() + ' ' + exec.pretrCMD);
     WaarpStringUtils
-        .replace(builder, "XXXRTDXXX", Long.toString(exec.pretrDelay));
+        .replace(builder, "XXXRTDXXX", Long.toString(exec.getPretrDelay()));
     if (extraInformation != null) {
-      WaarpStringUtils.replace(builder, "XXXRESULTXXX", extraInformation);
+      WaarpStringUtils.replace(builder, XXXRESULTXXX, extraInformation);
     } else {
-      WaarpStringUtils.replace(builder, "XXXRESULTXXX", "");
+      WaarpStringUtils.replace(builder, XXXRESULTXXX, "");
     }
     return builder.toString();
   }
 
-  private String Transfer() {
+  private String transfer() {
     getParams();
     final String head = REQUEST.Transfer.readHeader();
     String end = REQUEST.Transfer.readEnd();
     String body = REQUEST.Transfer.readBody();
     if (params == null) {
-      end = end.replace("XXXRESULTXXX", "");
+      end = end.replace(XXXRESULTXXX, "");
       body = FileBasedConfiguration.fileBasedConfiguration
           .getHtmlTransfer(body, LIMITROW);
       return head + body + end;
     }
     String message = "";
-    final List<String> parms = params.get("ACTION");
+    final List<String> parms = params.get(ACTION2);
     if (parms != null) {
       final String parm = parms.get(0);
       boolean purgeAll = false;
@@ -418,8 +427,9 @@ public class HttpSslHandler
                 FileBasedConfiguration.fileBasedConfiguration;
             final String filename =
                 config.getBaseDirectory() + DirInterface.SEPARATOR +
-                config.ADMINNAME + DirInterface.SEPARATOR + config.HOST_ID +
-                "_logs_" + System.currentTimeMillis() + ".xml";
+                config.getAdminName() + DirInterface.SEPARATOR +
+                config.getHostId() + "_logs_" + System.currentTimeMillis() +
+                ".xml";
             message = DbTransferLog
                 .saveDbTransferLogFile(preparedStatement, filename);
           } finally {
@@ -438,8 +448,9 @@ public class HttpSslHandler
               FileBasedConfiguration.fileBasedConfiguration;
           final String filename =
               config.getBaseDirectory() + DirInterface.SEPARATOR +
-              config.ADMINNAME + DirInterface.SEPARATOR + config.HOST_ID +
-              "_log_" + System.currentTimeMillis() + ".xml";
+              config.getAdminName() + DirInterface.SEPARATOR +
+              config.getHostId() + "_log_" + System.currentTimeMillis() +
+              ".xml";
           message = log.saveDbTransferLog(filename);
         } catch (final WaarpDatabaseException e) {
           message = "Error during delete 1 Log";
@@ -447,15 +458,15 @@ public class HttpSslHandler
       } else {
         message = "No Action";
       }
-      end = end.replace("XXXRESULTXXX", message);
+      end = end.replace(XXXRESULTXXX, message);
     }
-    end = end.replace("XXXRESULTXXX", "");
+    end = end.replace(XXXRESULTXXX, "");
     body = FileBasedConfiguration.fileBasedConfiguration
         .getHtmlTransfer(body, LIMITROW);
     return head + body + end;
   }
 
-  private String User() {
+  private String user() {
     getParams();
     final String head = REQUEST.User.readHeader();
     String end = REQUEST.User.readEnd();
@@ -463,30 +474,30 @@ public class HttpSslHandler
     final FileBasedConfiguration config =
         FileBasedConfiguration.fileBasedConfiguration;
     final String filedefault =
-        config.getBaseDirectory() + DirInterface.SEPARATOR + config.ADMINNAME +
-        DirInterface.SEPARATOR + "authentication.xml";
+        config.getBaseDirectory() + DirInterface.SEPARATOR +
+        config.getAdminName() + DirInterface.SEPARATOR + "authentication.xml";
     if (params == null) {
-      end = end.replace("XXXRESULTXXX", "");
-      end = end.replace("XXXFILEXXX", filedefault);
+      end = end.replace(XXXRESULTXXX, "");
+      end = end.replace(XXXFILEXXX, filedefault);
       body = FileBasedConfiguration.fileBasedConfiguration.getHtmlAuth(body);
       return head + body + end;
     }
-    final List<String> parms = params.get("ACTION");
+    final List<String> parms = params.get(ACTION2);
     if (parms != null) {
       final String parm = parms.get(0);
       if ("ImportExport".equalsIgnoreCase(parm)) {
         String file = getTrimValue("file");
         final String exportImport = getTrimValue("export");
         String message = "";
-        boolean purge = false;
+        boolean purge;
         purge = params.containsKey("purge");
-        boolean replace = false;
+        boolean replace;
         replace = params.containsKey("replace");
         if (file == null) {
           file = filedefault;
         }
-        end = end.replace("XXXFILEXXX", file);
-        if (exportImport.equalsIgnoreCase("import")) {
+        end = end.replace(XXXFILEXXX, file);
+        if ("import".equalsIgnoreCase(exportImport)) {
           if (!config.initializeAuthent(file, purge)) {
             message += "Cannot initialize Authentication from " + file;
           } else {
@@ -508,12 +519,12 @@ public class HttpSslHandler
             message += "Authentications saved into " + file;
           }
         }
-        end = end.replace("XXXRESULTXXX", message);
+        end = end.replace(XXXRESULTXXX, message);
       } else {
-        end = end.replace("XXXFILEXXX", filedefault);
+        end = end.replace(XXXFILEXXX, filedefault);
       }
     }
-    end = end.replace("XXXRESULTXXX", "");
+    end = end.replace(XXXRESULTXXX, "");
     body = FileBasedConfiguration.fileBasedConfiguration.getHtmlAuth(body);
     return head + body + end;
   }
@@ -552,7 +563,7 @@ public class HttpSslHandler
   private void checkAuthent(ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
-      final String logon = Logon();
+      final String logon = logon();
       responseContent.append(logon);
       clearSession();
       writeResponse(ctx);
@@ -560,7 +571,7 @@ public class HttpSslHandler
     } else if (request.method() == HttpMethod.POST) {
       getParams();
       if (params == null) {
-        final String logon = Logon();
+        final String logon = logon();
         responseContent.append(logon);
         clearSession();
         writeResponse(ctx);
@@ -569,8 +580,9 @@ public class HttpSslHandler
     }
     boolean getMenu = false;
     if (params.containsKey("Logon")) {
-      String name = null, password = null;
-      List<String> values = null;
+      String name = null;
+      String password = null;
+      List<String> values;
       if (!params.isEmpty()) {
         // get values
         if (params.containsKey("name")) {
@@ -601,16 +613,16 @@ public class HttpSslHandler
       }
       if (!getMenu) {
         logger.debug("Name=" + name + " vs " + name.equals(
-            FileBasedConfiguration.fileBasedConfiguration.ADMINNAME) +
+            FileBasedConfiguration.fileBasedConfiguration.getAdminName()) +
                      " Passwd=" + password + " vs " +
                      FileBasedConfiguration.fileBasedConfiguration
                          .checkPassword(password));
         if (name.equals(
-            FileBasedConfiguration.fileBasedConfiguration.ADMINNAME) &&
+            FileBasedConfiguration.fileBasedConfiguration.getAdminName()) &&
             FileBasedConfiguration.fileBasedConfiguration
                 .checkPassword(password)) {
           authentHttp.specialNoSessionAuth(
-              FileBasedConfiguration.fileBasedConfiguration.HOST_ID);
+              FileBasedConfiguration.fileBasedConfiguration.getHostId());
         } else {
           getMenu = true;
         }
@@ -621,13 +633,13 @@ public class HttpSslHandler
         // load DbSession
         if (dbSession == null) {
           try {
-            dbSession = new DbSession(DbConstant.gatewayAdmin, false);
+            dbSession = new DbSession(DbConstantFtp.gatewayAdmin, false);
             DbAdmin.incHttpSession();
             isPrivateDbSession = true;
           } catch (final WaarpDatabaseNoConnectionException e1) {
             // Cannot connect so use default connection
             logger.warn("Use default database connection");
-            dbSession = DbConstant.gatewayAdmin.getSession();
+            dbSession = DbConstantFtp.gatewayAdmin.getSession();
           }
         }
       }
@@ -635,24 +647,24 @@ public class HttpSslHandler
       getMenu = true;
     }
     if (getMenu) {
-      final String logon = Logon();
+      final String logon = logon();
       responseContent.append(logon);
       clearSession();
-      writeResponse(ctx);
     } else {
       final String index = index();
       responseContent.append(index);
       clearSession();
-      admin = new DefaultCookie(FTPSESSION,
-                                FileBasedConfiguration.fileBasedConfiguration.HOST_ID +
-                                Long.toHexString(random.nextLong()));
+      admin = new DefaultCookie(FTPSESSIONString,
+                                FileBasedConfiguration.fileBasedConfiguration
+                                    .getHostId() +
+                                Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       if (isPrivateDbSession) {
         dbSessions.put(admin.value(), dbSession);
       }
       logger.debug("CreateSession: " + uriRequest + ":{}", admin);
-      writeResponse(ctx);
     }
+    writeResponse(ctx);
   }
 
   @Override
@@ -664,8 +676,9 @@ public class HttpSslHandler
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/")) {
       HttpWriteCacheEnable.writeFile(request, ctx,
-                                     FileBasedConfiguration.fileBasedConfiguration.httpBasePath +
-                                     uriRequest, FTPSESSION);
+                                     FileBasedConfiguration.fileBasedConfiguration
+                                         .getHttpBasePath() + uriRequest,
+                                     FTPSESSIONString);
       return;
     }
     checkSession(ctx.channel());
@@ -678,32 +691,26 @@ public class HttpSslHandler
     if (uriRequest.charAt(0) == '/') {
       find = uriRequest.substring(1);
     }
-    find = find.substring(0, find.indexOf("."));
+    find = find.substring(0, find.indexOf('.'));
     REQUEST req = REQUEST.index;
     try {
       req = REQUEST.valueOf(find);
     } catch (final IllegalArgumentException e1) {
       req = REQUEST.index;
-      logger.debug("NotFound: " + find + ":" + uriRequest);
+      logger.debug("NotFound: " + find + ':' + uriRequest);
     }
     switch (req) {
-      case index:
-        responseContent.append(index());
-        break;
-      case Logon:
-        responseContent.append(index());
-        break;
       case System:
-        responseContent.append(System());
+        responseContent.append(system());
         break;
       case Rule:
-        responseContent.append(Rule());
+        responseContent.append(rule());
         break;
       case User:
-        responseContent.append(User());
+        responseContent.append(user());
         break;
       case Transfer:
-        responseContent.append(Transfer());
+        responseContent.append(transfer());
         break;
       default:
         responseContent.append(index());
@@ -718,7 +725,7 @@ public class HttpSslHandler
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
       if (!cookies.isEmpty()) {
         for (final Cookie elt : cookies) {
-          if (elt.name().equalsIgnoreCase(FTPSESSION)) {
+          if (elt.name().equalsIgnoreCase(FTPSESSIONString)) {
             admin = elt;
             break;
           }
@@ -730,9 +737,9 @@ public class HttpSslHandler
       if (auth != null) {
         authentHttp = auth;
       }
-      final DbSession dbSession = dbSessions.get(admin.value());
-      if (dbSession != null) {
-        this.dbSession = dbSession;
+      final DbSession dbSessionNew = dbSessions.get(admin.value());
+      if (dbSessionNew != null) {
+        this.dbSession = dbSessionNew;
       }
     } else {
       logger.debug("NoSession: " + uriRequest + ":{}", admin);
@@ -747,7 +754,7 @@ public class HttpSslHandler
         // Reset the sessions if necessary.
         boolean findSession = false;
         for (final Cookie cookie : cookies) {
-          if (cookie.name().equalsIgnoreCase(FTPSESSION)) {
+          if (cookie.name().equalsIgnoreCase(FTPSESSIONString)) {
             if (newSession) {
               findSession = false;
             } else {
@@ -761,12 +768,10 @@ public class HttpSslHandler
           }
         }
         newSession = false;
-        if (!findSession) {
-          if (admin != null) {
-            response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX.encode(admin));
-            logger.debug("AddSession: " + uriRequest + ":{}", admin);
-          }
+        if (!findSession && admin != null) {
+          response.headers().add(HttpHeaderNames.SET_COOKIE,
+                                 ServerCookieEncoder.LAX.encode(admin));
+          logger.debug("AddSession: " + uriRequest + ":{}", admin);
         }
       }
     } else if (admin != null) {
@@ -820,10 +825,6 @@ public class HttpSslHandler
       future.addListener(WaarpSslUtility.SSLCLOSE);
     }
     if (shutdown) {
-      /*
-       * Thread thread = new Thread( new FtpChannelUtils( FileBasedConfiguration.fileBasedConfiguration));
-       * thread.setDaemon(true); thread.setName("Shutdown Thread"); thread.start();
-       */
       FtpChannelUtils
           .teminateServer(FileBasedConfiguration.fileBasedConfiguration);
       if (!close) {
@@ -855,13 +856,12 @@ public class HttpSslHandler
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
       throws Exception {
-    final Throwable e1 = cause;
-    if (!(e1 instanceof CommandAbstractException)) {
-      if (e1 instanceof IOException) {
+    if (!(cause instanceof CommandAbstractException)) {
+      if (cause instanceof IOException) {
         // Nothing to do
         return;
       }
-      logger.warn("Exception in HttpSslHandler", e1);
+      logger.warn("Exception in HttpSslHandler", cause);
     }
     if (ctx.channel().isActive()) {
       sendError(ctx, HttpResponseStatus.BAD_REQUEST);

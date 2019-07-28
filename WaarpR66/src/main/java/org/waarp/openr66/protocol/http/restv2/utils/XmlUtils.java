@@ -20,10 +20,14 @@
 
 package org.waarp.openr66.protocol.http.restv2.utils;
 
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrors;
 
 import javax.ws.rs.InternalServerErrorException;
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -56,7 +60,7 @@ public final class XmlUtils {
    */
   private XmlUtils() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ######################### PUBLIC METHODS #################################
@@ -99,6 +103,11 @@ public final class XmlUtils {
   public static <T extends XmlSerializable> T xmlToObject(String xml,
                                                           Class<T> clazz) {
     try {
+      ParametersChecker.checkSanityString(xml);
+    } catch (InvalidArgumentException e) {
+      throw new InternalServerErrorException(e);
+    }
+    try {
       final StringReader reader = new StringReader(xml);
       final StreamSource source = new StreamSource(reader);
       final JAXBContext context = JAXBContext.newInstance(clazz);
@@ -121,13 +130,20 @@ public final class XmlUtils {
    */
   public static void saveXML(String xml, String filePath) {
     try {
-      final FileWriter fileWriter = new FileWriter(filePath, false);
+      ParametersChecker.checkSanityString(xml);
+    } catch (InvalidArgumentException e) {
+      throw new InternalServerErrorException(e);
+    }
+    FileWriter fileWriter = null;
+    try {
+      fileWriter = new FileWriter(filePath, false);
       final String formattedXML = pretty(xml);
       fileWriter.write(formattedXML);
       fileWriter.flush();
-      fileWriter.close();
     } catch (final IOException e) {
       throw new InternalServerErrorException(e);
+    } finally {
+      FileUtils.close(fileWriter);
     }
   }
 
@@ -142,8 +158,11 @@ public final class XmlUtils {
    *     occurred
    */
   public static String loadXML(String filePath) {
+    FileReader fr = null;
+    BufferedReader buff = null;
     try {
-      final BufferedReader buff = new BufferedReader(new FileReader(filePath));
+      fr = new FileReader(filePath);
+      buff = new BufferedReader(fr);
       final StringBuilder stringBuilder = new StringBuilder();
       String line;
       while ((line = buff.readLine()) != null) {
@@ -154,6 +173,9 @@ public final class XmlUtils {
       throw new RestErrorException(RestErrors.FILE_NOT_FOUND(filePath));
     } catch (final IOException e) {
       throw new InternalServerErrorException(e);
+    } finally {
+      FileUtils.close(buff);
+      FileUtils.close(fr);
     }
   }
 
@@ -207,10 +229,11 @@ public final class XmlUtils {
       final Source xmlInput = new StreamSource(new StringReader(input));
       final StringWriter stringWriter = new StringWriter();
       final StreamResult xmlOutput = new StreamResult(stringWriter);
-      final TransformerFactory transformerFactory =
-          TransformerFactory.newInstance();
-      transformerFactory.setAttribute(INDENT_NUMBER, 2);
-      final Transformer transformer = transformerFactory.newTransformer();
+      final TransformerFactory factory =//NOSONAR
+          TransformerFactory.newInstance();//NOSONAR
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      factory.setAttribute(INDENT_NUMBER, 2);
+      final Transformer transformer = factory.newTransformer();
       transformer.setOutputProperty(INDENT, "yes");
       transformer.setOutputProperty(OMIT_XML_DECLARATION, "yes");
 

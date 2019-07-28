@@ -24,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.configuration.ExtensionFilter;
@@ -51,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.waarp.openr66.dao.DAOFactory.*;
 
 public class XMLRuleDAO implements RuleDAO {
 
@@ -81,6 +84,7 @@ public class XMLRuleDAO implements RuleDAO {
   public static final String SERROR_TASKS_FIELD = "serrortasks";
 
   private static final String XML_GET_ALL = "//rule";
+  private static final File[] FILE_0_LENGTH = new File[0];
 
   private final File file;
 
@@ -90,6 +94,7 @@ public class XMLRuleDAO implements RuleDAO {
 
   @Override
   public void close() {
+    // ignore
   }
 
   public static final String EXT_RULE = ".rule.xml";
@@ -106,7 +111,7 @@ public class XMLRuleDAO implements RuleDAO {
       res.addAll(
           Arrays.asList(ruleDir.listFiles(new ExtensionFilter(EXT_RULES))));
     }
-    return res.toArray(new File[0]);
+    return res.toArray(FILE_0_LENGTH);
   }
 
   @Override
@@ -126,7 +131,7 @@ public class XMLRuleDAO implements RuleDAO {
     final File[] files = getRuleFiles();
     for (final File ruleFile : files) {
       try {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
         final Document document = dbf.newDocumentBuilder().parse(ruleFile);
         // Setup XPath query
         final XPath xPath = XPathFactory.newInstance().newXPath();
@@ -225,15 +230,15 @@ public class XMLRuleDAO implements RuleDAO {
   private List<String> retrieveHostids(String xml)
       throws DAOConnectionException {
     final ArrayList<String> res = new ArrayList<String>();
-    if ((xml == null) || xml.equals("")) {
+    if (xml == null || xml.isEmpty()) {
       return res;
     }
-    Document document = null;
+    Document document;
     InputStream stream = null;
     try {
       stream = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-      document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                                       .parse(stream);
+      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
+      document = dbf.newDocumentBuilder().parse(stream);
     } catch (final IOException e) {
       throw new DAOConnectionException(e);
     } catch (final ParserConfigurationException e) {
@@ -242,11 +247,7 @@ public class XMLRuleDAO implements RuleDAO {
       throw new DAOConnectionException(e);
     } finally {
       if (stream != null) {
-        try {
-          stream.close();
-        } catch (final IOException e) {
-          logger.warn("Cannot properly close input stream", e);
-        }
+        FileUtils.close(stream);
       }
     }
     document.getDocumentElement().normalize();

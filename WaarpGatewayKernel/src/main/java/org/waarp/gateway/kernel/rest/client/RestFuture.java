@@ -24,8 +24,6 @@ import org.waarp.gateway.kernel.rest.RestArgument;
 
 /**
  * WaarpFuture for Rest interface
- *
- *
  */
 public class RestFuture extends WaarpFuture {
 

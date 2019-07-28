@@ -21,8 +21,6 @@ package org.waarp.common.cpu;
 
 /**
  * Interface to get LoadAverage
- *
- *
  */
 public interface CpuManagementInterface {
   /**

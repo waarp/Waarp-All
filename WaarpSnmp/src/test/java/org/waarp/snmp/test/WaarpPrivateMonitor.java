@@ -26,8 +26,6 @@ import org.waarp.snmp.interf.WaarpInterfaceMonitor;
 
 /**
  * This implementation show how to support SNMP.
- *
- *
  */
 public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
   /**
@@ -36,6 +34,7 @@ public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
   private static WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpPrivateMonitor.class);
 
+  private static final Object object = new Object();
   public WaarpSnmpAgent agent;
 
   /**
@@ -68,19 +67,19 @@ public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
    *
    */
   public void generalValuesUpdate() {
-    synchronized (agent) {
+    synchronized (object) {
       logger.warn("Call");
     }
   }
 
   public void detailedValuesUpdate() {
-    synchronized (agent) {
+    synchronized (object) {
       logger.warn("Call");
     }
   }
 
   public void errorValuesUpdate() {
-    synchronized (agent) {
+    synchronized (object) {
       logger.warn("Call");
     }
   }

@@ -43,6 +43,7 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.LocalServerHandler;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 
 import java.sql.Timestamp;
@@ -50,15 +51,16 @@ import java.util.Map;
 
 /**
  * Utility class for transfers
- *
- *
  */
-public class TransferUtils {
+public final class TransferUtils {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(TransferUtils.class);
+
+  private TransferUtils() {
+  }
 
   /**
    * Try to restart one Transfer Runner Task
@@ -80,10 +82,6 @@ public class TransferUtils {
     } else {
       if (taskRunner.isSendThrough()) {
         // XXX FIXME TODO cannot be restarted... Really?
-        /*
-         * if (false) { finalResult.code = ErrorCode.PassThroughMode; finalResult.other =
-         * "Transfer cannot be restarted since it is in PassThrough mode"; return finalResult; }
-         */
       }
       // Transfer is not running
       // but maybe need action on database
@@ -95,10 +93,10 @@ public class TransferUtils {
               .setOther(Messages.getString("TransferUtils.1")); //$NON-NLS-1$
         } else {
           if (taskRunner.isSelfRequested() &&
-              (taskRunner.getGloballaststep() < TASKSTEP.POSTTASK.ordinal())) {
+              taskRunner.getGloballaststep() < TASKSTEP.POSTTASK.ordinal()) {
             // send a VALID packet with VALID code to the requester except if client
-            final DbHostAuth host = R66Auth
-                .getServerAuth(taskRunner.getRequester());
+            final DbHostAuth host =
+                R66Auth.getServerAuth(taskRunner.getRequester());
             if (host == null || host.isClient()) {
               // cannot be relaunch from there
               finalResult.setCode(ErrorCode.ConnectionImpossible);
@@ -118,7 +116,7 @@ public class TransferUtils {
                                           .getNetworkTransaction());
               requestTransfer.run();
               result.awaitOrInterruptible();
-              if (! result.isDone()) {
+              if (!result.isDone()) {
                 finalResult.setCode(ErrorCode.Internal);
                 finalResult.setOther(
                     Messages.getString("TransferUtils.10")); //$NON-NLS-1$
@@ -145,8 +143,9 @@ public class TransferUtils {
                     finalResult.setOther(
                         Messages.getString("TransferUtils.8")); //$NON-NLS-1$
                     taskRunner.setPostTask();
-                    TransferUtils.finalizeTaskWithNoSession(taskRunner, lcr);
-                    taskRunner.setErrorExecutionStatus(ErrorCode.QueryAlreadyFinished);
+                    finalizeTaskWithNoSession(taskRunner, lcr);
+                    taskRunner.setErrorExecutionStatus(
+                        ErrorCode.QueryAlreadyFinished);
                     taskRunner.forceSaveStatus();
                     break;
                   case RemoteError:
@@ -167,7 +166,7 @@ public class TransferUtils {
             finalResult
                 .setOther(Messages.getString("TransferUtils.11")); //$NON-NLS-1$
             taskRunner.setPostTask();
-            TransferUtils.finalizeTaskWithNoSession(taskRunner, lcr);
+            finalizeTaskWithNoSession(taskRunner, lcr);
             taskRunner.setErrorExecutionStatus(ErrorCode.QueryAlreadyFinished);
             taskRunner.forceSaveStatus();
           }
@@ -227,7 +226,8 @@ public class TransferUtils {
       taskRunner.setErrorExecutionStatus(ErrorCode.FileNotFound);
       try {
         taskRunner.update();
-      } catch (final WaarpDatabaseException e1) {
+      } catch (final WaarpDatabaseException ignored) {
+        // nothing
       }
       throw new OpenR66RunnerErrorException(
           Messages.getString("TransferUtils.28"), e); //$NON-NLS-1$
@@ -248,7 +248,8 @@ public class TransferUtils {
       taskRunner.setErrorExecutionStatus(ErrorCode.Internal);
       try {
         taskRunner.update();
-      } catch (final WaarpDatabaseException e1) {
+      } catch (final WaarpDatabaseException ignored) {
+        // nothing
       }
       throw new OpenR66RunnerErrorException(
           Messages.getString("TransferUtils.30"), e); //$NON-NLS-1$
@@ -271,9 +272,8 @@ public class TransferUtils {
                           //$NON-NLS-1$
                           code.getCode(), ErrorPacket.FORWARDCLOSECODE);
       try {
-        // XXX ChannelUtils.writeAbstractLocalPacket(lcr, perror);
         // inform local instead of remote
-        ChannelUtils.writeAbstractLocalPacketToLocal(lcr, perror);
+        LocalServerHandler.channelRead0(lcr, perror);
       } catch (final Exception e) {
         logger.warn("Write local packet error", e);
       }
@@ -286,10 +286,8 @@ public class TransferUtils {
       } else {
         // the database saying it is not stopped
         result = ErrorCode.TransferError;
-        if (taskRunner != null) {
-          if (taskRunner.stopOrCancelRunner(code)) {
-            result = ErrorCode.StoppedTransfer;
-          }
+        if (taskRunner != null && taskRunner.stopOrCancelRunner(code)) {
+          result = ErrorCode.StoppedTransfer;
         }
       }
     }
@@ -318,7 +316,6 @@ public class TransferUtils {
    *
    * @param dbSession
    * @param limit
-   * @param builder
    * @param session
    * @param body
    * @param startid
@@ -380,14 +377,12 @@ public class TransferUtils {
         stopOneTransfer(taskRunner, map, session, body);
       }
       preparedStatement.realClose();
-      return;
     } catch (final WaarpDatabaseException e) {
       if (preparedStatement != null) {
         preparedStatement.realClose();
       }
       logger.error(Messages.getString("TransferUtils.14"),
                    e.getMessage()); //$NON-NLS-1$
-      return;
     }
   }
 
@@ -395,7 +390,7 @@ public class TransferUtils {
    * Method to delete the temporary file
    *
    * @param taskRunner
-   * @param builder
+   * @param map
    * @param session
    * @param body
    */
@@ -432,7 +427,8 @@ public class TransferUtils {
       } catch (final CommandAbstractException e1) {
         logger.warn(Messages.getString("TransferUtils.19") + name,
                     e1); //$NON-NLS-1$
-      } catch (final WaarpDatabaseException e) {
+      } catch (final WaarpDatabaseException ignored) {
+        // nothing
       }
     }
     if (map != null) {
@@ -460,7 +456,7 @@ public class TransferUtils {
    *
    * @param dbSession
    * @param limit
-   * @param builder
+   * @param map
    * @param session
    * @param body
    * @param startid
@@ -524,14 +520,12 @@ public class TransferUtils {
         cleanOneTransfer(taskRunner, map, session, body);
       }
       preparedStatement.realClose();
-      return;
     } catch (final WaarpDatabaseException e) {
       if (preparedStatement != null) {
         preparedStatement.realClose();
       }
       logger.error(Messages.getString("TransferUtils.14"),
                    e.getMessage()); //$NON-NLS-1$
-      return;
     }
   }
 

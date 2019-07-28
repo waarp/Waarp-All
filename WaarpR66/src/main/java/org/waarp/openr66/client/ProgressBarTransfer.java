@@ -21,6 +21,7 @@ package org.waarp.openr66.client;
 
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
@@ -39,24 +40,22 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * Through API Transfer from a client with or without database connection, and
  * enabling access to statistic of
  * the transfer (unblocking transfer)
- *
- *
  */
 public abstract class ProgressBarTransfer extends AbstractTransfer {
   protected final NetworkTransaction networkTransaction;
-  protected long INTERVALCALLBACK = 100;
-  protected long filesize = 0;
+  protected long intervalCallback = 100;
+  protected long filesize;
 
-  public ProgressBarTransfer(R66Future future, String remoteHost,
-                             String filename, String rulename, String fileinfo,
-                             boolean isMD5, int blocksize, long id,
-                             NetworkTransaction networkTransaction,
-                             long callbackdelay) {
+  protected ProgressBarTransfer(R66Future future, String remoteHost,
+                                String filename, String rulename,
+                                String fileinfo, boolean isMD5, int blocksize,
+                                long id, NetworkTransaction networkTransaction,
+                                long callbackdelay) {
     // no delay so starttime = null
     super(ProgressBarTransfer.class, future, filename, rulename, fileinfo,
           isMD5, remoteHost, blocksize, id, null);
     this.networkTransaction = networkTransaction;
-    INTERVALCALLBACK = callbackdelay;
+    intervalCallback = callbackdelay;
   }
 
   /**
@@ -67,7 +66,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
    * @param currentBlock the current block rank (from 0 to n-1)
    * @param blocksize blocksize of 1 block
    */
-  abstract public void callBack(int currentBlock, int blocksize);
+  public abstract void callBack(int currentBlock, int blocksize);
 
   /**
    * This function will be called only once when the transfer is over
@@ -76,7 +75,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
    * @param currentBlock
    * @param blocksize
    */
-  abstract public void lastCallBack(boolean success, int currentBlock,
+  public abstract void lastCallBack(boolean success, int currentBlock,
                                     int blocksize);
 
   /**
@@ -103,12 +102,11 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
         logger.debug("starting connection done on progressBarTransfer");
         final LocalChannelReference localChannelReference =
             runner.initRequest();
-        localChannelReference.getFutureValidRequest()
-                             .awaitOrInterruptible();
-        if ((!localChannelReference.getFutureValidRequest().isSuccess()) &&
-            (localChannelReference.getFutureValidRequest() != null &&
-             localChannelReference.getFutureValidRequest().getResult()
-                                  .getCode() == ErrorCode.ServerOverloaded)) {
+        localChannelReference.getFutureValidRequest().awaitOrInterruptible();
+        if (!localChannelReference.getFutureValidRequest().isSuccess() &&
+            localChannelReference.getFutureValidRequest() != null &&
+            localChannelReference.getFutureValidRequest().getResult()
+                                 .getCode() == ErrorCode.ServerOverloaded) {
           switch (taskRunner.getUpdatedInfo()) {
             case DONE:
             case INERROR:
@@ -126,6 +124,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
                   Configuration.configuration.getConstraintLimitHandler()
                                              .getSleepTime());
             } catch (final InterruptedException e) {
+              SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             }
             i--;
             continue;
@@ -136,7 +135,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
         }
         logger.debug("connection done on progressBarTransfer");
         filesize = future.getFilesize();
-        while (!future.awaitOrInterruptible(INTERVALCALLBACK)) {
+        while (!future.awaitOrInterruptible(intervalCallback)) {
           if (future.isDone()) {
             break;
           }
@@ -167,7 +166,8 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
         if (nolog || taskRunner.shallIgnoreSave()) {
           try {
             taskRunner.delete();
-          } catch (final WaarpDatabaseException e1) {
+          } catch (final WaarpDatabaseException ignored) {
+            // nothing
           }
         }
         future.setFailure(e);
@@ -183,7 +183,6 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
       } catch (final OpenR66ProtocolNotYetConnectionException e) {
         logger.debug("Not Yet Connected", e);
         exc = e;
-        continue;
       }
     }
     if (exc != null) {
@@ -197,11 +196,11 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
       if (nolog || taskRunner.shallIgnoreSave()) {
         try {
           taskRunner.delete();
-        } catch (final WaarpDatabaseException e1) {
+        } catch (final WaarpDatabaseException ignored) {
+          // nothing
         }
       }
       future.setFailure(exc);
-      return;
     }
   }
 }

@@ -42,11 +42,19 @@ import java.util.List;
  *
  */
 public class HttpJsonDefinition {
+  private static final String CANNOT_WRITE_FILE = "Cannot write file: ";
+  private static final String UNABLE_TO_READ_JSON_FILE =
+      "Unable to read JSON file: ";
+  private static final String UNABLE_TO_READ_THE_JSON_CONFIG_FILE =
+      "Unable to read the JSON Config file: ";
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpJsonDefinition.class);
+
+  private HttpJsonDefinition() {
+  }
 
   /*
    * pagename, fileform, header, footer, beginform, endform, nextinform, uri, pagerole, errorpage, classname,
@@ -155,17 +163,17 @@ public class HttpJsonDefinition {
     try {
       cpages = JsonHandler.mapper.readValue(file, ConfigHttpPages.class);
     } catch (final JsonParseException e) {
-      logger.error("Unable to read the JSON Config file: " + filename, e);
-      throw new InvalidArgumentException(
-          "Unable to read JSON file: " + filename, e);
+      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);
+      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,
+                                         e);
     } catch (final JsonMappingException e) {
-      logger.error("Unable to read the JSON Config file: " + filename, e);
-      throw new InvalidArgumentException(
-          "Unable to read JSON file: " + filename, e);
+      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);
+      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,
+                                         e);
     } catch (final IOException e) {
-      logger.error("Unable to read the JSON Config file: " + filename, e);
-      throw new InvalidArgumentException(
-          "Unable to read JSON file: " + filename, e);
+      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);
+      throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,
+                                         e);
     }
     final HashMap<String, HttpPage> pages =
         new HashMap<String, HttpPage>(cpages.PAGE.size());
@@ -228,14 +236,11 @@ public class HttpJsonDefinition {
       JsonHandler.mapper.writerWithDefaultPrettyPrinter()
                         .writeValue(file, cpages);
     } catch (final JsonGenerationException e) {
-      throw new HttpIncorrectRequestException("Cannot write file: " + filename,
-                                              e);
+      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);
     } catch (final JsonMappingException e) {
-      throw new HttpIncorrectRequestException("Cannot write file: " + filename,
-                                              e);
+      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);
     } catch (final IOException e) {
-      throw new HttpIncorrectRequestException("Cannot write file: " + filename,
-                                              e);
+      throw new HttpIncorrectRequestException(CANNOT_WRITE_FILE + filename, e);
     }
   }
 }

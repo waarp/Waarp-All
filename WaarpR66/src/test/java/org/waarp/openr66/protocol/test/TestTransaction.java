@@ -40,8 +40,6 @@ import java.util.concurrent.Executors;
 
 /**
  * Test class for internal ping pong test
- *
- *
  */
 public class TestTransaction implements Runnable {
   /**
@@ -49,13 +47,13 @@ public class TestTransaction implements Runnable {
    */
   private static WaarpLogger logger;
 
-  final private NetworkTransaction networkTransaction;
+  private final NetworkTransaction networkTransaction;
 
-  final private R66Future future;
+  private final R66Future future;
 
   private final SocketAddress socketAddress;
 
-  final private TestPacket testPacket;
+  private final TestPacket testPacket;
 
   public TestTransaction(NetworkTransaction networkTransaction,
                          R66Future future, SocketAddress socketAddress,
@@ -84,7 +82,7 @@ public class TestTransaction implements Runnable {
       logger.error("Needs a correct configuration file as first argument");
       return;
     }
-    final DbHostAuth host = Configuration.configuration.getHOST_AUTH();
+    final DbHostAuth host = Configuration.configuration.getHostAuth();
     final SocketAddress socketServerAddress;
     try {
       socketServerAddress = host.getSocketAddress();
@@ -105,7 +103,7 @@ public class TestTransaction implements Runnable {
     final long time1 = System.currentTimeMillis();
     for (int i = 0; i < nb; i++) {
       arrayFuture[i] = new R66Future(true);
-      final TestPacket packet = new TestPacket("Test", "" + i, 0);
+      final TestPacket packet = new TestPacket("Test", String.valueOf(i), 0);
       final TestTransaction transaction =
           new TestTransaction(networkTransaction, arrayFuture[i],
                               socketServerAddress, packet);
@@ -123,7 +121,7 @@ public class TestTransaction implements Runnable {
     }
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * TestPacket.pingpong * 1000 / (time2 - time1));
+                success * TestPacket.PINGPONG * 1000 / (time2 - time1));
     executorService.shutdown();
     networkTransaction.closeAll();
   }
@@ -145,8 +143,7 @@ public class TestTransaction implements Runnable {
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);
-      localChannelReference.getLocalChannel().close();
-      return;
+      localChannelReference.close();
     }
   }
 

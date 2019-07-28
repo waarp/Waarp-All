@@ -26,9 +26,9 @@ import com.jezhumble.javasysmon.JavaSysMon;
  *
  */
 class CpuManagementSysmon implements CpuManagementInterface {
-  public static long delay = 1000;
+  public static final long DELAY = 1000;
 
-  JavaSysMon sysMon;
+  final JavaSysMon sysMon;
 
   CpuTimes cpuTimesOld;
   CpuTimes cpuTimesOldNext;
@@ -55,8 +55,8 @@ class CpuManagementSysmon implements CpuManagementInterface {
     final CpuTimes cpuTimes = sysMon.cpuTimes();
     final double rate = cpuTimes.getCpuUsage(cpuTimesOld);
     final long delta = newTime - time;
-    if (delta > delay) {
-      if (delta > 10 * delay) {
+    if (delta > DELAY) {
+      if (delta > 10 * DELAY) {
         time = newTime;
         cpuTimesOldNext = cpuTimes;
         cpuTimesOld = cpuTimes;

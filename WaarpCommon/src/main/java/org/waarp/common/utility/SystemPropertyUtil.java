@@ -27,6 +27,8 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import static org.waarp.common.digest.WaarpBC.*;
+
 /**
  * A collection of utility methods to retrieve and parse the values of the Java
  * system properties.
@@ -34,19 +36,23 @@ import java.util.Properties;
 public final class SystemPropertyUtil {
   // Since logger could be not available yet, one must not declare there a Logger
 
-  private static final String USING_THE_DEFAULT_VALUE =
+  private static final String USING_THE_DEFAULT_VALUE2 =
       "using the default value: ";
+  private static final String FIND_0_9 = "-?[0-9]+";
+  private static final String USING_THE_DEFAULT_VALUE =
+      USING_THE_DEFAULT_VALUE2;
   public static final String FILE_ENCODING = "file.encoding";
 
   private static final Properties PROPS = new Properties();
   private static final String INVALID_PROPERTY = "Invalid property ";
-  private static Platform m_os;
+  private static Platform mOs;
 
   // Retrieve all system properties at once so that there's no need to deal with
   // security exceptions from next time. Otherwise, we might end up with logging every
   // security exceptions on every system property access or introducing more complexity
   // just because of less verbose logging.
   static {
+    initializedTlsContext();
     refresh();
   }
 
@@ -55,7 +61,7 @@ public final class SystemPropertyUtil {
    * updates are retrieved.
    */
   public static void refresh() {
-    Properties newProps = null;
+    Properties newProps;
     try {
       newProps = System.getProperties();
     } catch (final SecurityException e) {
@@ -71,10 +77,8 @@ public final class SystemPropertyUtil {
       PROPS.putAll(newProps);
     }
     if (!contains(FILE_ENCODING) ||
-        !get(FILE_ENCODING).equalsIgnoreCase(WaarpStringUtils.UTF_8)) {
+        !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {
       try {
-        // logger.info("Try to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument
-        // to ensure correctness");
         System.setProperty(FILE_ENCODING, WaarpStringUtils.UTF_8);
         final Field charset = Charset.class.getDeclaredField("defaultCharset");
         charset.setAccessible(true);
@@ -100,7 +104,7 @@ public final class SystemPropertyUtil {
    */
   public static boolean isFileEncodingCorrect() {
     return contains(FILE_ENCODING) &&
-           get(FILE_ENCODING).equalsIgnoreCase(WaarpStringUtils.UTF_8);
+           WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING));
   }
 
   /**
@@ -108,7 +112,7 @@ public final class SystemPropertyUtil {
    * specified
    * {@code key} exists.
    */
-  public static final boolean contains(String key) {
+  public static boolean contains(String key) {
     ParametersChecker.checkParameter("Key", key);
     return PROPS.containsKey(key);
   }
@@ -120,7 +124,7 @@ public final class SystemPropertyUtil {
    *
    * @return the property value or {@code null}
    */
-  public static final String get(String key) {
+  public static String get(String key) {
     return get(key, null);
   }
 
@@ -138,7 +142,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static final String get(final String key, final String def) {
+  public static String get(final String key, final String def) {
     ParametersChecker.checkParameter("Key", key);
     String value = PROPS.getProperty(key);
     if (value == null) {
@@ -146,7 +150,7 @@ public final class SystemPropertyUtil {
     }
 
     try {
-      value = StringUtils.checkSanityString(value);
+      value = ParametersChecker.checkSanityString(value);
     } catch (InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
@@ -189,7 +193,7 @@ public final class SystemPropertyUtil {
       return false;
     }
     try {
-      StringUtils.checkSanityString(value);
+      ParametersChecker.checkSanityString(value);
     } catch (InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
@@ -223,7 +227,7 @@ public final class SystemPropertyUtil {
     }
 
     value = value.trim().toLowerCase();
-    if (value.matches("-?[0-9]+")) {
+    if (value.matches(FIND_0_9)) {
       try {
         return Integer.parseInt(value);
       } catch (final Exception e) {
@@ -233,7 +237,7 @@ public final class SystemPropertyUtil {
       }
     }
     try {
-      StringUtils.checkSanityString(value);
+      ParametersChecker.checkSanityString(value);
     } catch (InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
@@ -267,7 +271,7 @@ public final class SystemPropertyUtil {
     }
 
     value = value.trim().toLowerCase();
-    if (value.matches("-?[0-9]+")) {
+    if (value.matches(FIND_0_9)) {
       try {
         return Long.parseLong(value);
       } catch (final Exception e) {
@@ -277,7 +281,7 @@ public final class SystemPropertyUtil {
       }
     }
     try {
-      StringUtils.checkSanityString(value);
+      ParametersChecker.checkSanityString(value);
     } catch (InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
@@ -312,17 +316,17 @@ public final class SystemPropertyUtil {
       return true;
     }
 
-    if (value.equals("true") || value.equals("yes") || value.equals("1")) {
+    if ("true".equals(value) || "yes".equals(value) || "1".equals(value)) {
       return true;
     }
 
-    if (value.equals("false") || value.equals("no") || value.equals("0")) {
+    if ("false".equals(value) || "no".equals(value) || "0".equals(value)) {
       return false;
     }
 
-    System.err.println(
+    SysErrLogger.FAKE_LOGGER.syserr(
         "Unable to parse the boolean system property '" + key + "':" + value +
-        " - " + "using the default value: " + def);
+        " - " + USING_THE_DEFAULT_VALUE2 + def);
 
     return def;
   }
@@ -345,7 +349,7 @@ public final class SystemPropertyUtil {
     }
 
     value = value.trim().toLowerCase();
-    if (value.matches("-?[0-9]+")) {
+    if (value.matches(FIND_0_9)) {
       try {
         return Integer.parseInt(value);
       } catch (final Exception e) {
@@ -353,9 +357,9 @@ public final class SystemPropertyUtil {
       }
     }
 
-    System.err.println(
+    SysErrLogger.FAKE_LOGGER.syserr(
         "Unable to parse the integer system property '" + key + "':" + value +
-        " - " + "using the default value: " + def);
+        " - " + USING_THE_DEFAULT_VALUE2 + def);
 
     return def;
   }
@@ -378,7 +382,7 @@ public final class SystemPropertyUtil {
     }
 
     value = value.trim().toLowerCase();
-    if (value.matches("-?[0-9]+")) {
+    if (value.matches(FIND_0_9)) {
       try {
         return Long.parseLong(value);
       } catch (final Exception e) {
@@ -386,9 +390,9 @@ public final class SystemPropertyUtil {
       }
     }
 
-    System.err.println(
+    SysErrLogger.FAKE_LOGGER.syserr(
         "Unable to parse the long integer system property '" + key + "':" +
-        value + " - " + "using the default value: " + def);
+        value + " - " + USING_THE_DEFAULT_VALUE2 + def);
 
     return def;
   }
@@ -641,8 +645,8 @@ public final class SystemPropertyUtil {
    * @return the Platform
    */
   public static Platform getOS() {
-    if (m_os == null) {
-      m_os = Platform.UNSUPPORTED;
+    if (mOs == null) {
+      mOs = Platform.UNSUPPORTED;
       String os = "";
       try {
         os = System.getProperty("os.name").toLowerCase();
@@ -650,28 +654,28 @@ public final class SystemPropertyUtil {
         // ignore
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
-      if (os.indexOf("win") >= 0) {
-        m_os = Platform.WINDOWS;
+      if (os.contains("win")) {
+        mOs = Platform.WINDOWS;
         // Windows
       }
-      if (os.indexOf("mac") >= 0) {
-        m_os = Platform.MAC;
+      if (os.contains("mac")) {
+        mOs = Platform.MAC;
         // Mac
       }
-      if (os.indexOf("nux") >= 0) {
-        m_os = Platform.UNIX;
+      if (os.contains("nux")) {
+        mOs = Platform.UNIX;
         // Linux
       }
-      if (os.indexOf("nix") >= 0) {
-        m_os = Platform.UNIX;
+      if (os.contains("nix")) {
+        mOs = Platform.UNIX;
         // Unix
       }
-      if (os.indexOf("sunos") >= 0) {
-        m_os = Platform.SOLARIS;
+      if (os.contains("sunos")) {
+        mOs = Platform.SOLARIS;
         // Solaris
       }
     }
-    return m_os;
+    return mOs;
   }
 
   /**
@@ -703,7 +707,7 @@ public final class SystemPropertyUtil {
   }
 
   public static void debug() {
-    PROPS.list(System.out);
+    PROPS.list(System.out);//NOSONAR
   }
 
   private SystemPropertyUtil() {

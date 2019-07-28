@@ -25,11 +25,12 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
-import org.waarp.gateway.ftp.database.DbConstant;
+import org.waarp.gateway.ftp.database.DbConstantFtp;
 import org.waarp.gateway.ftp.database.data.DbTransferLog;
 
 import java.io.FileWriter;
@@ -41,7 +42,6 @@ import java.sql.Timestamp;
 /**
  * Program to export log history from database to a file and optionally purge
  * exported entries.
- *
  */
 public class LogExport {
   /**
@@ -66,7 +66,7 @@ public class LogExport {
   /**
    * Usage for the command
    */
-  private static final String usage =
+  private static final String USAGE =
       "Need at least the configuration file as first argument then optionally\n" +
       "    -correctOnly      Only exports successful transfers\n" +
       "    -purge            Purge exported transfers\n" +
@@ -74,6 +74,9 @@ public class LogExport {
       "                      Use '-' for stdout\n" +
       "    -start timestamp  in format yyyyMMddHHmmssSSS possibly truncated and where one of ':-. ' can be separators\n" +
       "    -stop timestamp   in same format than start\n";
+
+  private LogExport() {
+  }
 
   /**
    * Verifies command line arguments and initialize internals (mainly config)
@@ -94,9 +97,9 @@ public class LogExport {
                                         new FilesystemBasedFileParameterImpl());
 
     if (!config.setConfigurationServerFromXml(args[0])) {
-      System.err.println("Bad main configuration");
-      if (DbConstant.gatewayAdmin != null) {
-        DbConstant.gatewayAdmin.close();
+      SysErrLogger.FAKE_LOGGER.syserr("Bad main configuration");
+      if (DbConstantFtp.gatewayAdmin != null) {
+        DbConstantFtp.gatewayAdmin.close();
       }
       return false;
     }
@@ -121,18 +124,19 @@ public class LogExport {
   public static boolean setDestinationWriter() {
     if (destinationPath == null) {
       destinationPath = config.getBaseDirectory() + DirInterface.SEPARATOR +
-                        config.ADMINNAME + DirInterface.SEPARATOR +
-                        config.HOST_ID + "_logs_" + System.currentTimeMillis() +
-                        ".xml";
+                        config.getAdminName() + DirInterface.SEPARATOR +
+                        config.getHostId() + "_logs_" +
+                        System.currentTimeMillis() + ".xml";
     }
 
-    if (destinationPath.equalsIgnoreCase("-")) {
+    if ("-".equalsIgnoreCase(destinationPath)) {
       destinationWriter = new OutputStreamWriter(System.out);
     } else {
       try {
         destinationWriter = new FileWriter(destinationPath);
       } catch (final IOException e) {
-        System.err.println("Cannot open out file " + destinationPath);
+        SysErrLogger.FAKE_LOGGER
+            .syserr("Cannot open out file " + destinationPath);
         return false;
       }
     }
@@ -148,36 +152,39 @@ public class LogExport {
    */
   protected static boolean getParams(String[] args) {
     if (args.length < 1) {
-      System.err.println(usage);
+      SysErrLogger.FAKE_LOGGER.syserr(USAGE);
       return false;
     }
 
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-purge")) {
+      if ("-purge".equalsIgnoreCase(args[i])) {
         purge = true;
-      } else if (args[i].equalsIgnoreCase("-correctOnly")) {
+      } else if ("-correctOnly".equalsIgnoreCase(args[i])) {
         correctOnly = true;
-      } else if (args[i].equalsIgnoreCase("-out")) {
+      } else if ("-out".equalsIgnoreCase(args[i])) {
         i++;
         if (i >= args.length ||
             args[i].charAt(0) == '-' && args[i].length() > 1) {
-          System.err.println("Error: -out needs a value.\n\n" + usage);
+          SysErrLogger.FAKE_LOGGER
+              .syserr("Error: -out needs a value.\n\n" + USAGE);
           return false;
         }
         destinationPath = args[i].trim();
-      } else if (args[i].equalsIgnoreCase("-start")) {
+      } else if ("-start".equalsIgnoreCase(args[i])) {
         i++;
         if (i >= args.length ||
             args[i].charAt(0) == '-' && args[i].length() > 1) {
-          System.err.println("Error: -start needs a value.\n\n" + usage);
+          SysErrLogger.FAKE_LOGGER
+              .syserr("Error: -start needs a value.\n\n" + USAGE);
           return false;
         }
         start = WaarpStringUtils.fixDate(args[i]);
-      } else if (args[i].equalsIgnoreCase("-stop")) {
+      } else if ("-stop".equalsIgnoreCase(args[i])) {
         i++;
         if (i >= args.length ||
             args[i].charAt(0) == '-' && args[i].length() > 1) {
-          System.err.println("Error: -stop needs a value.\n\n" + usage);
+          SysErrLogger.FAKE_LOGGER
+              .syserr("Error: -stop needs a value.\n\n" + USAGE);
           return false;
         }
         stop = WaarpStringUtils.fixDate(args[i]);
@@ -197,10 +204,10 @@ public class LogExport {
       status = ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION;
     }
 
-    DbPreparedStatement preparedStatement = null;
+    DbPreparedStatement preparedStatement;
     try {
       preparedStatement = DbTransferLog
-          .getLogPrepareStament(DbConstant.gatewayAdmin.getSession(), start,
+          .getLogPrepareStament(DbConstantFtp.gatewayAdmin.getSession(), start,
                                 stop, status);
 
     } catch (final WaarpDatabaseNoConnectionException e) {
@@ -223,21 +230,21 @@ public class LogExport {
   public static void main(String[] args) {
     try {
       if (!initialize(args)) {
-        System.exit(1);
+        System.exit(1);//NOSONAR
       }
 
       final String message = run();
 
       if (message.contains("successfully")) {
-        System.exit(0);
+        System.exit(0);//NOSONAR
       } else {
-        System.err.println(message);
-        System.exit(1);
+        SysErrLogger.FAKE_LOGGER.syserr(message);
+        System.exit(1);//NOSONAR
       }
 
     } finally {
-      if (DbConstant.gatewayAdmin != null) {
-        DbConstant.gatewayAdmin.close();
+      if (DbConstantFtp.gatewayAdmin != null) {
+        DbConstantFtp.gatewayAdmin.close();
       }
     }
   }

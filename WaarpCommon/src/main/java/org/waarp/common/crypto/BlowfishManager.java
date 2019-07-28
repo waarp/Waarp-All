@@ -21,8 +21,6 @@ package org.waarp.common.crypto;
 
 /**
  * This class implements a simple Key Manager for Blowfish class from name
- *
- *
  */
 public class BlowfishManager extends KeyManager {
   static final BlowfishManager manager = new BlowfishManager();

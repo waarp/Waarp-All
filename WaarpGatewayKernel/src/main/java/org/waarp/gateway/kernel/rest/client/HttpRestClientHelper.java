@@ -61,10 +61,12 @@ import java.util.Map.Entry;
 
 /**
  * Http Rest Client helper
- *
- *
  */
 public class HttpRestClientHelper {
+  private static final String
+      NEED_MORE_ARGUMENTS_HTTP_HOST_PORT_URI_METHOD_USER_SIGN_PATH_NOSIGN_JSON =
+      "Need more arguments: http://host:port/uri method user pwd sign=path|nosign [json]";
+
   private static WaarpLogger logger;
 
   /**
@@ -96,7 +98,7 @@ public class HttpRestClientHelper {
     // Configure the client.
     bootstrap = new Bootstrap();
     workerGroup = new NioEventLoopGroup(nbclient, new WaarpThreadFactory(
-        "Rest_" + baseUri + "_"));
+        "Rest_" + baseUri + '_'));
     WaarpNettyUtil.setBootstrap(bootstrap, workerGroup, 30000);
     // Configure the pipeline factory.
     bootstrap.handler(Initializer);
@@ -115,10 +117,10 @@ public class HttpRestClientHelper {
                 "text/html,text/plain,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8");
     // connection will not close but needed
     /*
-     * request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+     * request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE)
      */
-    // request.setHeader("Connection","keep-alive");
-    // request.setHeader("Keep-Alive","300");
+    // request.setHeader("Connection","keep-alive")
+    // request.setHeader("Keep-Alive","300")
   }
 
   /**
@@ -172,10 +174,10 @@ public class HttpRestClientHelper {
                               String user, String pwd,
                               Map<String, String> uriArgs, String json) {
     // Prepare the HTTP request.
-    logger.debug("Prepare request: " + method + ":" + addedUri + ":" + json);
+    logger.debug("Prepare request: " + method + ':' + addedUri + ':' + json);
     final RestFuture future =
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
-    QueryStringEncoder encoder = null;
+    QueryStringEncoder encoder;
     if (addedUri != null) {
       encoder = new QueryStringEncoder(baseUri + addedUri);
     } else {
@@ -187,7 +189,7 @@ public class HttpRestClientHelper {
         encoder.addParam(elt.getKey(), elt.getValue());
       }
     }
-    String[] result = null;
+    String[] result;
     try {
       result = RestArgument.getBaseAuthent(hmacSha256, encoder, user, pwd);
       logger.debug("Authent encoded");
@@ -265,10 +267,10 @@ public class HttpRestClientHelper {
                               String addedUri, String user,
                               Map<String, String> uriArgs, String json) {
     // Prepare the HTTP request.
-    logger.debug("Prepare request: " + method + ":" + addedUri + ":" + json);
+    logger.debug("Prepare request: " + method + ':' + addedUri + ':' + json);
     final RestFuture future =
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
-    QueryStringEncoder encoder = null;
+    QueryStringEncoder encoder;
     if (addedUri != null) {
       encoder = new QueryStringEncoder(baseUri + addedUri);
     } else {
@@ -339,7 +341,7 @@ public class HttpRestClientHelper {
         WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
     if (args.length < 5) {
       logger.error(
-          "Need more arguments: http://host:port/uri method user pwd sign=path|nosign [json]");
+          NEED_MORE_ARGUMENTS_HTTP_HOST_PORT_URI_METHOD_USER_SIGN_PATH_NOSIGN_JSON);
       return;
     }
     final String uri = args[0];
@@ -355,11 +357,11 @@ public class HttpRestClientHelper {
         hmacSha256.setSecretKey(new File(file));
       } catch (final CryptoException e) {
         logger.error(
-            "Need more arguments: http://host:port/uri method user pwd sign=path|nosign [json]");
+            NEED_MORE_ARGUMENTS_HTTP_HOST_PORT_URI_METHOD_USER_SIGN_PATH_NOSIGN_JSON);
         return;
       } catch (final IOException e) {
         logger.error(
-            "Need more arguments: http://host:port/uri method user pwd sign=path|nosign [json]");
+            NEED_MORE_ARGUMENTS_HTTP_HOST_PORT_URI_METHOD_USER_SIGN_PATH_NOSIGN_JSON);
         return;
       }
     }
@@ -369,8 +371,8 @@ public class HttpRestClientHelper {
     }
     final HttpMethod method = HttpMethod.valueOf(meth);
     int port = -1;
-    String host = null;
-    String path = null;
+    String host;
+    String path;
     try {
       final URI realUri = new URI(uri);
       port = realUri.getPort();
@@ -388,7 +390,7 @@ public class HttpRestClientHelper {
       logger.error("Cannot connect to " + host + " on port " + port);
       return;
     }
-    RestFuture future = null;
+    RestFuture future;
     if (sign) {
       future = client
           .sendQuery(hmacSha256, channel, method, host, null, user, pwd, null,

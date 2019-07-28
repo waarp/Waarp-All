@@ -23,8 +23,6 @@ import org.waarp.ftp.core.command.service.PWD;
 
 /**
  * XPWD command
- *
- *
  */
 public class XPWD extends PWD {
 

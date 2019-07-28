@@ -27,6 +27,7 @@ import org.waarp.ftp.client.WaarpFtp4jClient;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * FTP client compatible for Waarp Gateway Kernel as JavaExecutor<br>
@@ -78,8 +79,6 @@ import java.io.IOException;
  * ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE
  * ,MDTM,MLSD,MLST,SIZE,AUTH)<br>
  * 13) QUIT<br>
- *
- *
  */
 public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
   /**
@@ -87,14 +86,16 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(JavaExecutorWaarpFtp4jClient.class);
+  private static final Pattern BLANK = Pattern.compile(" ");
 
   boolean waitForValidation;
   boolean useLocalExec;
   int delay;
   String[] args;
-  int status = 0;
+  int status;
 
   public JavaExecutorWaarpFtp4jClient() {
+    // nothing
   }
 
   @Override
@@ -116,7 +117,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     int ssl = 0; // -1 native, 1 auth
     String cwd = null;
     int digest = 0; // 1 CRC, 2 MD5, 3 SHA1
-    String command = null;
+    String command;
     int codeCommand = 0; // -1 get, 1 put, 2 append
     String preArgs = null;
     String postArgs = null;
@@ -127,67 +128,67 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
      * (get,put,append) <br> [-post extraCommand2 with ',' as separator of arguments]" <br>
      */
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-file")) {
+      if ("-file".equalsIgnoreCase(args[i])) {
         i++;
         filepath = args[i];
         filename = new File(filepath).getName();
-      } else if (args[i].equalsIgnoreCase("-to")) {
+      } else if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         requested = args[i];
-      } else if (args[i].equalsIgnoreCase("-port")) {
+      } else if ("-port".equalsIgnoreCase(args[i])) {
         i++;
         port = Integer.parseInt(args[i]);
-      } else if (args[i].equalsIgnoreCase("-user")) {
+      } else if ("-user".equalsIgnoreCase(args[i])) {
         i++;
         user = args[i];
-      } else if (args[i].equalsIgnoreCase("-pwd")) {
+      } else if ("-pwd".equalsIgnoreCase(args[i])) {
         i++;
         pwd = args[i];
-      } else if (args[i].equalsIgnoreCase("-account")) {
+      } else if ("-account".equalsIgnoreCase(args[i])) {
         i++;
         acct = args[i];
-      } else if (args[i].equalsIgnoreCase("-mode")) {
+      } else if ("-mode".equalsIgnoreCase(args[i])) {
         i++;
-        isPassive = (args[i].equalsIgnoreCase("passive"));
-      } else if (args[i].equalsIgnoreCase("-ssl")) {
+        isPassive = "passive".equalsIgnoreCase(args[i]);
+      } else if ("-ssl".equalsIgnoreCase(args[i])) {
         i++;
-        if (args[i].equalsIgnoreCase("implicit")) {
+        if ("implicit".equalsIgnoreCase(args[i])) {
           ssl = -1;
-        } else if (args[i].equalsIgnoreCase("explicit")) {
+        } else if ("explicit".equalsIgnoreCase(args[i])) {
           ssl = 1;
         } else {
           ssl = 0;
         }
-      } else if (args[i].equalsIgnoreCase("-cwd")) {
+      } else if ("-cwd".equalsIgnoreCase(args[i])) {
         i++;
         cwd = args[i];
-      } else if (args[i].equalsIgnoreCase("-digest")) {
+      } else if ("-digest".equalsIgnoreCase(args[i])) {
         i++;
-        if (args[i].equalsIgnoreCase("crc")) {
+        if ("crc".equalsIgnoreCase(args[i])) {
           digest = 1;
-        } else if (args[i].equalsIgnoreCase("md5")) {
+        } else if ("md5".equalsIgnoreCase(args[i])) {
           digest = 2;
-        } else if (args[i].equalsIgnoreCase("sha1")) {
+        } else if ("sha1".equalsIgnoreCase(args[i])) {
           digest = 3;
         } else {
           digest = 0;
         }
-      } else if (args[i].equalsIgnoreCase("-pre")) {
+      } else if ("-pre".equalsIgnoreCase(args[i])) {
         i++;
         preArgs = args[i].replace(',', ' ');
-      } else if (args[i].equalsIgnoreCase("-post")) {
+      } else if ("-post".equalsIgnoreCase(args[i])) {
         i++;
         postArgs = args[i].replace(',', ' ');
-      } else if (args[i].equalsIgnoreCase("-command")) {
+      } else if ("-command".equalsIgnoreCase(args[i])) {
         i++;
         command = args[i];
         // get,put,append,list
         // -1 get, 1 put, 2 append
-        if (command.equalsIgnoreCase("get")) {
+        if ("get".equalsIgnoreCase(command)) {
           codeCommand = -1;
-        } else if (command.equalsIgnoreCase("put")) {
+        } else if ("put".equalsIgnoreCase(command)) {
           codeCommand = 1;
-        } else if (command.equalsIgnoreCase("append")) {
+        } else if ("append".equalsIgnoreCase(command)) {
           codeCommand = 2;
         } else {
           // error
@@ -198,10 +199,10 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     if (filepath == null || requested == null || port <= 0 || user == null ||
         pwd == null || codeCommand == 0) {
       status = -2;
-      final int code =
-          0 + (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
-          (port <= 0? 100 : 0) + (user == null? 1000 : 0) +
-          (pwd == null? 10000 : 0) + (codeCommand == 0? 100000 : 0);
+      final int code = (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
+                       (port <= 0? 100 : 0) + (user == null? 1000 : 0) +
+                       (pwd == null? 10000 : 0) +
+                       (codeCommand == 0? 100000 : 0);
       logger.error("Not enough arguments: " + code);
       return;
     }
@@ -244,8 +245,8 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
       }
       if (digest > 0) {
         // digest check
-        String params = null;
-        DigestAlgo algo = null;
+        String params;
+        DigestAlgo algo;
         switch (digest) {
           case 1: // CRC
             params = "XCRC ";
@@ -265,8 +266,8 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
         String[] values = ftpClient.executeCommand(params);
         String hashresult = null;
         if (values != null) {
-          values = values[0].split(" ");
-          hashresult = (values.length > 3? values[1] : values[0]);
+          values = BLANK.split(values[0]);
+          hashresult = values.length > 3? values[1] : values[0];
         }
         if (hashresult == null) {
           status = -5;
@@ -281,7 +282,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
         } catch (final IOException e) {
           hash = null;
         }
-        if (hash == null || (!hash.equalsIgnoreCase(hashresult))) {
+        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
           status = -6;
           logger.error("Hash not equal: " + ftpClient.getResult());
           return;

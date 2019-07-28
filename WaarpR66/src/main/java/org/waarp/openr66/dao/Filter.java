@@ -21,9 +21,9 @@
 package org.waarp.openr66.dao;
 
 public class Filter {
-  public String key;
-  public String operand;
-  public Object value;
+  public final String key;
+  public final String operand;
+  public final Object value;
 
   public Filter(String key, String operand, Object value) {
     this.key = key;

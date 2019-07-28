@@ -29,7 +29,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
-import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
 import org.waarp.openr66.context.ErrorCode;
@@ -48,7 +47,6 @@ import org.waarp.openr66.pojo.UpdatedInfo;
 import org.waarp.openr66.protocol.http.restv2.converters.ServerStatusMaker;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
-import org.waarp.openr66.protocol.http.restv2.errors.RestErrors;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
 import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Hosts;
@@ -150,7 +148,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     }
 
     final Pattern pattern =
-        Pattern.compile("(" + SERVER_HANDLER_URI + ")(\\w+)(\\?.+)?");
+        Pattern.compile('(' + SERVER_HANDLER_URI + ")(\\w+)(\\?.+)?");
     final Matcher matcher = pattern.matcher(request.uri());
     final HttpMethod method = request.method();
 
@@ -190,18 +188,16 @@ public class ServerHandler extends AbstractRestDbHandler {
   @RequiredRole(READONLY)
   public void getStatus(HttpRequest request, HttpResponder responder,
                         @QueryParam(PERIOD) @DefaultValue("P1DT0H0M0S")
-                            String period_str) {
+                            String periodStr) {
     try {
-      final Period period = Period.parse(period_str);
+      final Period period = Period.parse(periodStr);
       final ObjectNode status = ServerStatusMaker.exportAsJson(period);
       final String responseText = JsonUtils.nodeToString(status);
       responder.sendJson(OK, responseText);
     } catch (final IllegalArgumentException e) {
-      throw new RestErrorException(
-          RestErrors.ILLEGAL_PARAMETER_VALUE(PERIOD, period_str));
+      throw new RestErrorException(ILLEGAL_PARAMETER_VALUE(PERIOD, periodStr));
     } catch (final UnsupportedOperationException e) {
-      throw new RestErrorException(
-          RestErrors.ILLEGAL_PARAMETER_VALUE(PERIOD, period_str));
+      throw new RestErrorException(ILLEGAL_PARAMETER_VALUE(PERIOD, periodStr));
     }
   }
 
@@ -217,7 +213,7 @@ public class ServerHandler extends AbstractRestDbHandler {
   @Path(STATUS_URI)
   @OPTIONS
   @Consumes(WILDCARD)
-  @RequiredRole(RoleDefault.ROLE.NOACCESS)
+  @RequiredRole(NOACCESS)
   public void status_options(HttpRequest request, HttpResponder responder) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> options = new ArrayList<HttpMethod>();
@@ -290,7 +286,7 @@ public class ServerHandler extends AbstractRestDbHandler {
   @Path(SHUTDOWN_URI)
   @OPTIONS
   @Consumes(WILDCARD)
-  @RequiredRole(RoleDefault.ROLE.NOACCESS)
+  @RequiredRole(NOACCESS)
   public void shutdown_options(HttpRequest request, HttpResponder responder) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> options = new ArrayList<HttpMethod>();
@@ -324,9 +320,9 @@ public class ServerHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
    *     request
-   * @param purge_str states whether to delete exported entries or not
-   * @param clean_str states whether to fix the incoherent entries
-   * @param status_str only transfers with this status will be
+   * @param purgeStr states whether to delete exported entries or not
+   * @param cleanStr states whether to fix the incoherent entries
+   * @param statusStr only transfers with this status will be
    *     exported
    * @param rule only transfers using this rule will be exported
    * @param start lower bound for the date of the transfer
@@ -339,11 +335,9 @@ public class ServerHandler extends AbstractRestDbHandler {
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(LOGCONTROL)
   public void getLogs(HttpRequest request, HttpResponder responder,
-                      @QueryParam(PURGE) @DefaultValue("false")
-                          String purge_str,
-                      @QueryParam(CLEAN) @DefaultValue("false")
-                          String clean_str,
-                      @QueryParam(STATUS) @DefaultValue("") String status_str,
+                      @QueryParam(PURGE) @DefaultValue("false") String purgeStr,
+                      @QueryParam(CLEAN) @DefaultValue("false") String cleanStr,
+                      @QueryParam(STATUS) @DefaultValue("") String statusStr,
                       @QueryParam(RULE_NAME) @DefaultValue("") String rule,
                       @QueryParam(START) @DefaultValue("") String start,
                       @QueryParam(STOP) @DefaultValue("") String stop,
@@ -356,19 +350,20 @@ public class ServerHandler extends AbstractRestDbHandler {
     RestUtils.getLocale(request);
     final List<Filter> filters = new ArrayList<Filter>();
     final String filePath =
-        ARCH_PATH + File.separator + SERVER_NAME + "_export_" +
-        DateTime.now().toString() + ".xml";
+        ARCH_PATH + File.separator + SERVER_NAME + "_export_" + DateTime.now() +
+        ".xml";
 
-    boolean purge = false, clean = false;
+    boolean purge = false;
+    boolean clean = false;
     try {
-      purge = RestUtils.stringToBoolean(purge_str);
+      purge = RestUtils.stringToBoolean(purgeStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(PURGE, purge_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(PURGE, purgeStr));
     }
     try {
-      clean = RestUtils.stringToBoolean(clean_str);
+      clean = RestUtils.stringToBoolean(cleanStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(CLEAN, clean_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(CLEAN, cleanStr));
     }
 
     if (!start.isEmpty()) {
@@ -406,12 +401,12 @@ public class ServerHandler extends AbstractRestDbHandler {
     if (!rule.isEmpty()) {
       filters.add(new Filter(ID_RULE_FIELD, "=", rule));
     }
-    if (!status_str.isEmpty()) {
+    if (!statusStr.isEmpty()) {
       try {
-        final UpdatedInfo status = UpdatedInfo.valueOf(status_str);
+        final UpdatedInfo status = UpdatedInfo.valueOf(statusStr);
         filters.add(new Filter(UPDATED_INFO_FIELD, "=", status.ordinal()));
       } catch (final IllegalArgumentException e) {
-        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, status_str));
+        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));
       }
     }
 
@@ -475,15 +470,15 @@ public class ServerHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
    *     request
-   * @param host_str states whether to export the host database or
+   * @param hostStr states whether to export the host database or
    *     not.
-   * @param rule_str states whether to export the rules database or
+   * @param ruleStr states whether to export the rules database or
    *     not.
-   * @param business_str states whether to export the host's business
+   * @param businessStr states whether to export the host's business
    *     or not.
-   * @param alias_str states whether to export the host's aliases or
+   * @param aliasStr states whether to export the host's aliases or
    *     not.
-   * @param role_str states whether to export the host's permission
+   * @param roleStr states whether to export the host's permission
    *     database or not.
    */
   @Path(CONFIG_URI)
@@ -492,45 +487,48 @@ public class ServerHandler extends AbstractRestDbHandler {
   @RequiredRole(CONFIGADMIN)
   public void getConfig(HttpRequest request, HttpResponder responder,
                         @QueryParam(EXPORT_HOSTS) @DefaultValue("false")
-                            String host_str,
+                            String hostStr,
                         @QueryParam(EXPORT_RULES) @DefaultValue("false")
-                            String rule_str,
+                            String ruleStr,
                         @QueryParam(EXPORT_BUSINESS) @DefaultValue("false")
-                            String business_str,
+                            String businessStr,
                         @QueryParam(EXPORT_ALIASES) @DefaultValue("false")
-                            String alias_str,
+                            String aliasStr,
                         @QueryParam(EXPORT_ROLES) @DefaultValue("false")
-                            String role_str) {
+                            String roleStr) {
 
     final List<RestError> errors = new ArrayList<RestError>();
 
-    boolean host = false, rule = false, business = false, alias = false, role =
-        false;
+    boolean host = false;
+    boolean rule = false;
+    boolean business = false;
+    boolean alias = false;
+    boolean role = false;
 
     try {
-      host = RestUtils.stringToBoolean(host_str);
+      host = RestUtils.stringToBoolean(hostStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_HOSTS, host_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_HOSTS, hostStr));
     }
     try {
-      rule = RestUtils.stringToBoolean(rule_str);
+      rule = RestUtils.stringToBoolean(ruleStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_RULES, rule_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_RULES, ruleStr));
     }
     try {
-      business = RestUtils.stringToBoolean(business_str);
+      business = RestUtils.stringToBoolean(businessStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_BUSINESS, business_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_BUSINESS, businessStr));
     }
     try {
-      alias = RestUtils.stringToBoolean(alias_str);
+      alias = RestUtils.stringToBoolean(aliasStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ALIASES, alias_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ALIASES, aliasStr));
     }
     try {
-      role = RestUtils.stringToBoolean(role_str);
+      role = RestUtils.stringToBoolean(roleStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ROLES, role_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ROLES, roleStr));
     }
     if (!errors.isEmpty()) {
       throw new RestErrorException(errors);
@@ -619,15 +617,15 @@ public class ServerHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
    *     request
-   * @param purgeHost_str states if a new host database should be
+   * @param purgeHostStr states if a new host database should be
    *     imported.
-   * @param purgeRule_str states if a new transfer rule database
+   * @param purgeRuleStr states if a new transfer rule database
    *     should be imported
-   * @param purgeBusiness_str states if a new business database should
+   * @param purgeBusinessStr states if a new business database should
    *     be imported
-   * @param purgeAlias_str states if a new alias database should be
+   * @param purgeAliasStr states if a new alias database should be
    *     imported
-   * @param purgeRole_str states if a new role database should be
+   * @param purgeRoleStr states if a new role database should be
    *     imported
    * @param hostFile path to the XML file containing the host database
    *     to import
@@ -646,15 +644,15 @@ public class ServerHandler extends AbstractRestDbHandler {
   @RequiredRole(CONFIGADMIN)
   public void setConfig(HttpRequest request, HttpResponder responder,
                         @QueryParam(PURGE_HOST) @DefaultValue("false")
-                            String purgeHost_str,
+                            String purgeHostStr,
                         @QueryParam(PURGE_RULE) @DefaultValue("false")
-                            String purgeRule_str,
+                            String purgeRuleStr,
                         @QueryParam(PURGE_BUSINESS) @DefaultValue("false")
-                            String purgeBusiness_str,
+                            String purgeBusinessStr,
                         @QueryParam(PURGE_ALIASES) @DefaultValue("false")
-                            String purgeAlias_str,
+                            String purgeAliasStr,
                         @QueryParam(PURGE_ROLES) @DefaultValue("false")
-                            String purgeRole_str,
+                            String purgeRoleStr,
                         @QueryParam(HOST_FILE) @DefaultValue("")
                             String hostFile,
                         @QueryParam(RULE_FILE) @DefaultValue("")
@@ -669,33 +667,36 @@ public class ServerHandler extends AbstractRestDbHandler {
     final List<RestError> errors = new ArrayList<RestError>();
     RestUtils.getLocale(request);
 
-    boolean purgeHost = false, purgeRule = false, purgeBusiness = false,
-        purgeAlias = false, purgeRole = false;
+    boolean purgeHost = false;
+    boolean purgeRule = false;
+    boolean purgeBusiness = false;
+    boolean purgeAlias = false;
+    boolean purgeRole = false;
 
     try {
-      purgeHost = RestUtils.stringToBoolean(purgeHost_str);
+      purgeHost = RestUtils.stringToBoolean(purgeHostStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_HOSTS, purgeHost_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_HOSTS, purgeHostStr));
     }
     try {
-      purgeRule = RestUtils.stringToBoolean(purgeRule_str);
+      purgeRule = RestUtils.stringToBoolean(purgeRuleStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_RULES, purgeRule_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_RULES, purgeRuleStr));
     }
     try {
-      purgeBusiness = RestUtils.stringToBoolean(purgeBusiness_str);
+      purgeBusiness = RestUtils.stringToBoolean(purgeBusinessStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_BUSINESS, purgeBusiness_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_BUSINESS, purgeBusinessStr));
     }
     try {
-      purgeAlias = RestUtils.stringToBoolean(purgeAlias_str);
+      purgeAlias = RestUtils.stringToBoolean(purgeAliasStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ALIASES, purgeAlias_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ALIASES, purgeAliasStr));
     }
     try {
-      purgeRole = RestUtils.stringToBoolean(purgeRole_str);
+      purgeRole = RestUtils.stringToBoolean(purgeRoleStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ROLES, purgeRole_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(EXPORT_ROLES, purgeRoleStr));
     }
     if (!errors.isEmpty()) {
       throw new RestErrorException(errors);
@@ -806,7 +807,7 @@ public class ServerHandler extends AbstractRestDbHandler {
    */
   @OPTIONS
   @Consumes(WILDCARD)
-  @RequiredRole(RoleDefault.ROLE.NOACCESS)
+  @RequiredRole(NOACCESS)
   public void options(HttpRequest request, HttpResponder responder) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     allow.add(ALLOW, HttpMethod.OPTIONS);
@@ -825,7 +826,7 @@ public class ServerHandler extends AbstractRestDbHandler {
   @Path("{ep}")
   @OPTIONS
   @Consumes(WILDCARD)
-  @RequiredRole(RoleDefault.ROLE.NOACCESS)
+  @RequiredRole(NOACCESS)
   public void command_options(HttpRequest request, HttpResponder responder,
                               @PathParam("ep") String ep) {
     final HttpHeaders allow = new DefaultHttpHeaders();

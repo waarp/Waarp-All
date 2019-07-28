@@ -34,8 +34,6 @@ import java.util.concurrent.TimeUnit;
  * Command to Restart the R66 server (for instance after upgrade of jar sent by
  * administrative operations,
  * unzipped in the library directory)
- *
- *
  */
 public class RestartServerTask extends AbstractTask {
 

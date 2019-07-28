@@ -25,8 +25,6 @@ import org.waarp.common.command.ReplyCode;
  * 421 Service not available, closing control connection. This may be a reply to
  * any command if the service
  * knows it must shut down.
- *
- *
  */
 public class Reply421Exception extends CommandAbstractException {
 

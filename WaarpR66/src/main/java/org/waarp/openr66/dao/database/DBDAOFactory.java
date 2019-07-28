@@ -43,7 +43,9 @@ import java.sql.SQLException;
  */
 public class DBDAOFactory extends DAOFactory {
 
-  private static WaarpLogger logger =
+  private static final String DATA_ACCESS_ERROR = "data access error";
+
+  private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DBDAOFactory.class);
 
   private final ConnectionFactory connectionFactory;
@@ -57,7 +59,7 @@ public class DBDAOFactory extends DAOFactory {
     try {
       return new DBBusinessDAO(connectionFactory.getConnection());
     } catch (final SQLException e) {
-      throw new DAOConnectionException("data access error", e);
+      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);
     }
   }
 
@@ -66,7 +68,7 @@ public class DBDAOFactory extends DAOFactory {
     try {
       return new DBHostDAO(connectionFactory.getConnection());
     } catch (final SQLException e) {
-      throw new DAOConnectionException("data access error", e);
+      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);
     }
   }
 
@@ -75,7 +77,7 @@ public class DBDAOFactory extends DAOFactory {
     try {
       return new DBLimitDAO(connectionFactory.getConnection());
     } catch (final SQLException e) {
-      throw new DAOConnectionException("data access error", e);
+      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);
     }
   }
 
@@ -85,7 +87,7 @@ public class DBDAOFactory extends DAOFactory {
     try {
       return new DBMultipleMonitorDAO(connectionFactory.getConnection());
     } catch (final SQLException e) {
-      throw new DAOConnectionException("data access error", e);
+      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);
     }
   }
 
@@ -94,7 +96,7 @@ public class DBDAOFactory extends DAOFactory {
     try {
       return new DBRuleDAO(connectionFactory.getConnection());
     } catch (final SQLException e) {
-      throw new DAOConnectionException("data access error", e);
+      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);
     }
   }
 
@@ -116,7 +118,7 @@ public class DBDAOFactory extends DAOFactory {
         throw new DAOConnectionException("Unsupported database");
       }
     } catch (final SQLException e) {
-      throw new DAOConnectionException("data access error", e);
+      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);
     }
   }
 

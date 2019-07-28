@@ -33,10 +33,10 @@ import org.waarp.ftp.core.session.FtpSession;
 /**
  * This class is to be implemented in order to allow Business actions according
  * to FTP service
- *
- *
  */
 public abstract class BusinessHandler {
+  private static final String FILENAME = " \"filename\"";
+  private static final String[] PROPERTIES_0_LENGTH = new String[0];
   /**
    * NettyHandler that holds this BusinessHandler
    */
@@ -50,7 +50,7 @@ public abstract class BusinessHandler {
   /**
    * Constructor with no argument (mandatory)
    */
-  public BusinessHandler() {
+  protected BusinessHandler() {
     // nothing to do
   }
 
@@ -142,11 +142,10 @@ public abstract class BusinessHandler {
            .append(FtpCommandCode.ALLO.name()).append('\n')
            .append(FtpCommandCode.EPRT.name()).append('\n')
            .append(FtpCommandCode.EPSV.name()).append('\n')
-           .append(FtpCommandCode.XCRC.name()).append(" \"filename\"")
-           .append('\n').append(FtpCommandCode.XMD5.name())
-           .append(" \"filename\"").append('\n')
-           .append(FtpCommandCode.XSHA1.name()).append(" \"filename\"")
-           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')
+           .append(FtpCommandCode.XCRC.name()).append(FILENAME).append('\n')
+           .append(FtpCommandCode.XMD5.name()).append(FILENAME).append('\n')
+           .append(FtpCommandCode.XSHA1.name()).append(FILENAME).append('\n')
+           .append(FtpCommandCode.SITE.name()).append(' ')
            .append(FtpCommandCode.XCRC.name())
            // .append(" \"filename\"")
            .append('\n').append(FtpCommandCode.SITE.name()).append(' ')
@@ -157,7 +156,6 @@ public abstract class BusinessHandler {
            // .append(" \"filename\"")
            .append('\n').append("LAN EN*").append('\n')
            .append(FtpCommandCode.REST.name()).append(" STREAM\n");
-    // builder.append("UTF8");
     return builder.toString();
   }
 
@@ -191,7 +189,7 @@ public abstract class BusinessHandler {
    *     MLSx argument
    */
   protected String getMLSxOptsMessage(String[] args) {
-    String[] properties = new String[0];
+    String[] properties = PROPERTIES_0_LENGTH;
     if (args.length >= 2) {
       properties = args[1].split(";");
     }
@@ -203,17 +201,17 @@ public abstract class BusinessHandler {
     optsMLSx.setOptsSize((byte) 0);
     optsMLSx.setOptsType((byte) 0);
     for (final String propertie : properties) {
-      if (propertie.toLowerCase() == "modify") {
+      if ("modify".equalsIgnoreCase(propertie)) {
         optsMLSx.setOptsModify((byte) 1);
-      } else if (propertie.toLowerCase() == "perm") {
+      } else if ("perm".equalsIgnoreCase(propertie)) {
         optsMLSx.setOptsPerm((byte) 1);
-      } else if (propertie.toLowerCase() == "size") {
+      } else if ("size".equalsIgnoreCase(propertie)) {
         optsMLSx.setOptsSize((byte) 1);
-      } else if (propertie.toLowerCase() == "type") {
+      } else if ("type".equalsIgnoreCase(propertie)) {
         optsMLSx.setOptsType((byte) 1);
       }
     }
-    return args[0] + " " + FtpCommandCode.OPTS.name() + optsMLSx.getFeat();
+    return args[0] + ' ' + FtpCommandCode.OPTS.name() + optsMLSx.getFeat();
   }
 
   /**

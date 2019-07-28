@@ -26,13 +26,11 @@ import java.util.List;
 
 /**
  * LIST command
- *
- *
  */
 public class LIST extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
-    String path = null;
+    String path;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
     } else {

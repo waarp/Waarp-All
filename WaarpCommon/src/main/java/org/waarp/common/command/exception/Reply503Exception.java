@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 503 Bad sequence of commands.
- *
- *
  */
 public class Reply503Exception extends CommandAbstractException {
 

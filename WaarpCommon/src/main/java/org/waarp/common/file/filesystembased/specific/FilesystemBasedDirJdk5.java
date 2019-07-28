@@ -24,8 +24,6 @@ import java.io.File;
 /**
  * JDK5 version of specific functions for Filesystem.<br>
  * Note: this class depends on Apache commons Io.
- *
- *
  */
 public class FilesystemBasedDirJdk5 extends FilesystemBasedDirJdkAbstract {
   /**

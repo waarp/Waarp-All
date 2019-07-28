@@ -19,11 +19,11 @@
  */
 package org.waarp.common.guid;
 
-import org.waarp.common.utility.Base64;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.BaseXx;
 import org.waarp.common.utility.Hexa;
 import org.waarp.common.utility.StringUtils;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -37,8 +37,9 @@ import java.util.Arrays;
  * But force sequence and take care of errors and improves some performance
  * issues
  *
- *
+ * @deprecated Will be replaced by GUUID
  */
+@Deprecated
 public final class UUID implements Comparable<UUID> {
   /**
    * Native size of the UUID
@@ -66,7 +67,7 @@ public final class UUID implements Comparable<UUID> {
   /**
    * real UUID
    */
-  private final byte[] uuid;
+  private final byte[] buuid;
 
   /**
    * Constructor that generates a new UUID using the current process id, MAC
@@ -103,38 +104,38 @@ public final class UUID implements Comparable<UUID> {
       }
     }
 
-    uuid = new byte[KEYSIZE];
+    buuid = new byte[KEYSIZE];
 
     // UUID cycle default to 0
-    uuid[0] = (byte) (id & 0xFF);
+    buuid[0] = (byte) (id & 0xFF);
 
     // switch the order of the count in 4 byte segments and place into uuid
-    uuid[1] = (byte) (count & 0xFF);
-    uuid[2] = (byte) (count >> 8 & 0xFF);
-    uuid[3] = (byte) (count >> 16 & 0xFF);
+    buuid[1] = (byte) (count & 0xFF);
+    buuid[2] = (byte) (count >> 8 & 0xFF);
+    buuid[3] = (byte) (count >> 16 & 0xFF);
 
     // place UUID version (value between 0 and 3) in first 2 bits
     // copy pid to uuid
-    uuid[4] = (byte) (VERSION << 6 | (JvmProcessId.JVMPID & 0x3F0000) >> 16);
-    uuid[5] = (byte) (JvmProcessId.JVMPID >> 8);
-    uuid[6] = (byte) JvmProcessId.JVMPID;
+    buuid[4] = (byte) (VERSION << 6 | (JvmProcessId.JVMPID & 0x3F0000) >> 16);
+    buuid[5] = (byte) (JvmProcessId.JVMPID >> 8);
+    buuid[6] = (byte) JvmProcessId.JVMPID;
 
     // copy rest of mac address into uuid
-    uuid[7] = JvmProcessId.MAC[0];
-    uuid[8] = JvmProcessId.MAC[1];
-    uuid[9] = JvmProcessId.MAC[2];
-    uuid[10] = JvmProcessId.MAC[3];
-    uuid[11] = JvmProcessId.MAC[4];
-    uuid[12] = JvmProcessId.MAC[5];
+    buuid[7] = JvmProcessId.mac[0];
+    buuid[8] = JvmProcessId.mac[1];
+    buuid[9] = JvmProcessId.mac[2];
+    buuid[10] = JvmProcessId.mac[3];
+    buuid[11] = JvmProcessId.mac[4];
+    buuid[12] = JvmProcessId.mac[5];
 
     // copy timestamp into uuid (up to 56 bits so up to 2 200 000 years after Time 0)
-    uuid[13] = (byte) (time >> 48);
-    uuid[14] = (byte) (time >> 40);
-    uuid[15] = (byte) (time >> 32);
-    uuid[16] = (byte) (time >> 24);
-    uuid[17] = (byte) (time >> 16);
-    uuid[18] = (byte) (time >> 8);
-    uuid[19] = (byte) time;
+    buuid[13] = (byte) (time >> 48);
+    buuid[14] = (byte) (time >> 40);
+    buuid[15] = (byte) (time >> 32);
+    buuid[16] = (byte) (time >> 24);
+    buuid[17] = (byte) (time >> 16);
+    buuid[18] = (byte) (time >> 8);
+    buuid[19] = (byte) time;
   }
 
   /**
@@ -147,11 +148,11 @@ public final class UUID implements Comparable<UUID> {
   public UUID(boolean on128bits) {
     this();
     if (on128bits) {
-      uuid[0] = 0;
-      uuid[4] =
+      buuid[0] = 0;
+      buuid[4] =
           VERSION; // Special Version 0 for compatibility with standard UUID
-      uuid[7] = 0;
-      uuid[8] = 0;
+      buuid[7] = 0;
+      buuid[8] = 0;
     }
   }
 
@@ -162,28 +163,29 @@ public final class UUID implements Comparable<UUID> {
    * @param leastSigBits
    */
   public UUID(long mostSigBits, long leastSigBits) {
-    uuid = new byte[KEYSIZE];
-    uuid[0] = 0;
-    uuid[1] = (byte) (mostSigBits >> 56);
-    uuid[2] = (byte) (mostSigBits >> 48);
-    uuid[3] = (byte) (mostSigBits >> 40);
-    uuid[4] = VERSION; // Special Version 0 for compatibility with standard UUID
-    uuid[5] = (byte) (mostSigBits >> 32);
-    uuid[6] = (byte) (mostSigBits >> 24);
-    uuid[7] = 0;
-    uuid[8] = 0;
-    uuid[9] = (byte) (mostSigBits >> 16);
-    uuid[10] = (byte) (mostSigBits >> 8);
-    uuid[11] = (byte) mostSigBits;
+    buuid = new byte[KEYSIZE];
+    buuid[0] = 0;
+    buuid[1] = (byte) (mostSigBits >> 56);
+    buuid[2] = (byte) (mostSigBits >> 48);
+    buuid[3] = (byte) (mostSigBits >> 40);
+    buuid[4] =
+        VERSION; // Special Version 0 for compatibility with standard UUID
+    buuid[5] = (byte) (mostSigBits >> 32);
+    buuid[6] = (byte) (mostSigBits >> 24);
+    buuid[7] = 0;
+    buuid[8] = 0;
+    buuid[9] = (byte) (mostSigBits >> 16);
+    buuid[10] = (byte) (mostSigBits >> 8);
+    buuid[11] = (byte) mostSigBits;
 
-    uuid[12] = (byte) (leastSigBits >> 56);
-    uuid[13] = (byte) (leastSigBits >> 48);
-    uuid[14] = (byte) (leastSigBits >> 40);
-    uuid[15] = (byte) (leastSigBits >> 32);
-    uuid[16] = (byte) (leastSigBits >> 24);
-    uuid[17] = (byte) (leastSigBits >> 16);
-    uuid[18] = (byte) (leastSigBits >> 8);
-    uuid[19] = (byte) leastSigBits;
+    buuid[12] = (byte) (leastSigBits >> 56);
+    buuid[13] = (byte) (leastSigBits >> 48);
+    buuid[14] = (byte) (leastSigBits >> 40);
+    buuid[15] = (byte) (leastSigBits >> 32);
+    buuid[16] = (byte) (leastSigBits >> 24);
+    buuid[17] = (byte) (leastSigBits >> 16);
+    buuid[18] = (byte) (leastSigBits >> 8);
+    buuid[19] = (byte) leastSigBits;
   }
 
   /**
@@ -203,7 +205,7 @@ public final class UUID implements Comparable<UUID> {
    * @throws RuntimeException
    */
   public UUID(final byte[] bytes) throws RuntimeException {
-    uuid = new byte[KEYSIZE];
+    buuid = new byte[KEYSIZE];
     setBytes(bytes);
   }
 
@@ -216,22 +218,22 @@ public final class UUID implements Comparable<UUID> {
    *
    * @throws RuntimeException
    */
-  protected UUID setBytes(final byte[] bytes) throws RuntimeException {
+  private UUID setBytes(final byte[] bytes) throws RuntimeException {
     if (bytes.length != KEYSIZE && bytes.length != UTILUUIDKEYSIZE) {
       throw new RuntimeException(
           "Attempted to parse malformed UUID: (" + bytes.length + ") " +
           Arrays.toString(bytes));
     }
     if (bytes.length == UTILUUIDKEYSIZE) {
-      uuid[0] = 0;
-      System.arraycopy(bytes, 0, uuid, 1, 3);
-      uuid[4] = VERSION;
-      System.arraycopy(bytes, 3, uuid, 5, 2);
-      uuid[7] = 0;
-      uuid[8] = 0;
-      System.arraycopy(bytes, 5, uuid, 9, 11);
+      buuid[0] = 0;
+      System.arraycopy(bytes, 0, buuid, 1, 3);
+      buuid[4] = VERSION;
+      System.arraycopy(bytes, 3, buuid, 5, 2);
+      buuid[7] = 0;
+      buuid[8] = 0;
+      System.arraycopy(bytes, 5, buuid, 9, 11);
     } else {
-      System.arraycopy(bytes, 0, uuid, 0, KEYSIZE);
+      System.arraycopy(bytes, 0, buuid, 0, KEYSIZE);
     }
     return this;
   }
@@ -249,31 +251,22 @@ public final class UUID implements Comparable<UUID> {
     final int len = id.length();
     if (len == KEYB16SIZE) {
       // HEXA
-      uuid = Hexa.fromHex(id);
+      buuid = Hexa.fromHex(id);
     } else if (len == KEYB64SIZE || len == KEYB64SIZE + 1) {
       // BASE64
-      try {
-        uuid = Base64.decode(id, Base64.URL_SAFE | Base64.DONT_GUNZIP);
-      } catch (final IOException e) {
-        throw new RuntimeException("Attempted to parse malformed UUID: " + id,
-                                   e);
-      }
+      buuid = BaseXx.getFromBase64(id);
     } else {
       throw new RuntimeException(
           "Attempted to parse malformed UUID: (" + len + ") " + id);
     }
   }
 
-  public final String toBase64() {
-    try {
-      return Base64.encodeBytes(uuid, Base64.URL_SAFE);
-    } catch (final IOException e) {
-      return Base64.encodeBytes(uuid);
-    }
+  public String toBase64() {
+    return BaseXx.getBase64(buuid);
   }
 
-  public final String toHex() {
-    return Hexa.toHex(uuid);
+  public String toHex() {
+    return Hexa.toHex(buuid);
   }
 
   @Override
@@ -287,7 +280,7 @@ public final class UUID implements Comparable<UUID> {
    * @return raw byte array of UUID
    */
   public byte[] getBytes() {
-    return Arrays.copyOf(uuid, KEYSIZE);
+    return Arrays.copyOf(buuid, KEYSIZE);
   }
 
   /**
@@ -295,16 +288,16 @@ public final class UUID implements Comparable<UUID> {
    *
    * @return version char
    */
-  public final int getVersion() {
-    return (uuid[4] & 0xC0) >> 6;
+  public int getVersion() {
+    return (buuid[4] & 0xC0) >> 6;
   }
 
   /**
    * @return the id of the subset of UUID from which it belongs to (default
    *     being 0)
    */
-  public final int getId() {
-    return uuid[0] & 0xFF;
+  public int getId() {
+    return buuid[0] & 0xFF;
   }
 
   /**
@@ -313,21 +306,21 @@ public final class UUID implements Comparable<UUID> {
    * @return id of process that generated the UUID, or -1 for unrecognized
    *     format
    */
-  public final int getProcessId() {
+  public int getProcessId() {
     if (getVersion() != VERSION) {
       return -1;
     }
 
-    return (uuid[4] & 0x3F) << 16 | (uuid[5] & 0xFF) << 8 | uuid[6] & 0xFF;
+    return (buuid[4] & 0x3F) << 16 | (buuid[5] & 0xFF) << 8 | buuid[6] & 0xFF;
   }
 
   /**
    * @return the associated counter value
    */
-  public final int getCounter() {
-    int count = (uuid[3] & 0xFF) << 16;
-    count |= (uuid[2] & 0xFF) << 8;
-    count |= uuid[1] & 0xFF;
+  public int getCounter() {
+    int count = (buuid[3] & 0xFF) << 16;
+    count |= (buuid[2] & 0xFF) << 8;
+    count |= buuid[1] & 0xFF;
     return count;
   }
 
@@ -337,19 +330,19 @@ public final class UUID implements Comparable<UUID> {
    * @return millisecond UTC timestamp from generation of the UUID, or -1 for
    *     unrecognized format
    */
-  public final long getTimestamp() {
+  public long getTimestamp() {
     if (getVersion() != VERSION) {
       return -1;
     }
 
     long time;
-    time = ((long) uuid[13] & 0xFF) << 48;
-    time |= ((long) uuid[14] & 0xFF) << 40;
-    time |= ((long) uuid[15] & 0xFF) << 32;
-    time |= ((long) uuid[16] & 0xFF) << 24;
-    time |= ((long) uuid[17] & 0xFF) << 16;
-    time |= ((long) uuid[18] & 0xFF) << 8;
-    time |= (long) uuid[19] & 0xFF;
+    time = ((long) buuid[13] & 0xFF) << 48;
+    time |= ((long) buuid[14] & 0xFF) << 40;
+    time |= ((long) buuid[15] & 0xFF) << 32;
+    time |= ((long) buuid[16] & 0xFF) << 24;
+    time |= ((long) buuid[17] & 0xFF) << 16;
+    time |= ((long) buuid[18] & 0xFF) << 8;
+    time |= (long) buuid[19] & 0xFF;
     return time;
   }
 
@@ -361,19 +354,19 @@ public final class UUID implements Comparable<UUID> {
    *
    * @return byte array of UUID fragment, or null for unrecognized format
    */
-  public final byte[] getMacFragment() {
+  public byte[] getMacFragment() {
     if (getVersion() != VERSION) {
       return null;
     }
 
     final byte[] x = new byte[6];
 
-    x[0] = uuid[7];
-    x[1] = uuid[8];
-    x[2] = uuid[9];
-    x[3] = uuid[10];
-    x[4] = uuid[11];
-    x[5] = uuid[12];
+    x[0] = buuid[7];
+    x[1] = buuid[8];
+    x[2] = buuid[9];
+    x[3] = buuid[10];
+    x[4] = buuid[11];
+    x[5] = buuid[12];
 
     return x;
   }
@@ -383,14 +376,14 @@ public final class UUID implements Comparable<UUID> {
    */
   public long getLeastSignificantBits() {
     long least;
-    least = ((long) uuid[12] & 0xFF) << 56;
-    least |= ((long) uuid[13] & 0xFF) << 48;
-    least |= ((long) uuid[14] & 0xFF) << 40;
-    least |= ((long) uuid[15] & 0xFF) << 32;
-    least |= ((long) uuid[16] & 0xFF) << 24;
-    least |= ((long) uuid[17] & 0xFF) << 16;
-    least |= ((long) uuid[18] & 0xFF) << 8;
-    least |= (long) uuid[19] & 0xFF;
+    least = ((long) buuid[12] & 0xFF) << 56;
+    least |= ((long) buuid[13] & 0xFF) << 48;
+    least |= ((long) buuid[14] & 0xFF) << 40;
+    least |= ((long) buuid[15] & 0xFF) << 32;
+    least |= ((long) buuid[16] & 0xFF) << 24;
+    least |= ((long) buuid[17] & 0xFF) << 16;
+    least |= ((long) buuid[18] & 0xFF) << 8;
+    least |= (long) buuid[19] & 0xFF;
     return least;
   }
 
@@ -399,14 +392,14 @@ public final class UUID implements Comparable<UUID> {
    */
   public long getMostSignificantBits() {
     long most;
-    most = ((long) uuid[1] & 0xFF) << 56;
-    most |= ((long) uuid[2] & 0xFF) << 48;
-    most |= ((long) uuid[3] & 0xFF) << 40;
-    most |= ((long) uuid[5] & 0xFF) << 32;
-    most |= ((long) uuid[6] & 0xFF) << 24;
-    most |= ((long) uuid[9] & 0xFF) << 16;
-    most |= ((long) uuid[10] & 0xFF) << 8;
-    most |= (long) uuid[11] & 0xFF;
+    most = ((long) buuid[1] & 0xFF) << 56;
+    most |= ((long) buuid[2] & 0xFF) << 48;
+    most |= ((long) buuid[3] & 0xFF) << 40;
+    most |= ((long) buuid[5] & 0xFF) << 32;
+    most |= ((long) buuid[6] & 0xFF) << 24;
+    most |= ((long) buuid[9] & 0xFF) << 16;
+    most |= ((long) buuid[10] & 0xFF) << 8;
+    most |= (long) buuid[11] & 0xFF;
     return most;
   }
 
@@ -425,23 +418,23 @@ public final class UUID implements Comparable<UUID> {
    */
   public byte[] javaUuidGetBytes() {
     final byte[] newUuid = new byte[UTILUUIDKEYSIZE];
-    System.arraycopy(uuid, 1, newUuid, 0, 3);
-    System.arraycopy(uuid, 5, newUuid, 3, 2);
-    System.arraycopy(uuid, 9, newUuid, 5, 11);
+    System.arraycopy(buuid, 1, newUuid, 0, 3);
+    System.arraycopy(buuid, 5, newUuid, 3, 2);
+    System.arraycopy(buuid, 9, newUuid, 5, 11);
     return newUuid;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof UUID)) {
+    if (!(o instanceof UUID)) {
       return false;
     }
-    return this == o || Arrays.equals(uuid, ((UUID) o).uuid);
+    return this == o || Arrays.equals(buuid, ((UUID) o).buuid);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(uuid);
+    return Arrays.hashCode(buuid);
   }
 
   @Override
@@ -456,7 +449,7 @@ public final class UUID implements Comparable<UUID> {
       final int ct2 = arg0.getCounter();
       if (ct == ct2) {
         // then all must be equals, else whatever
-        return Arrays.equals(uuid, arg0.uuid)? 0 : -1;
+        return Arrays.equals(buuid, arg0.buuid)? 0 : -1;
       }
       // Cannot be equal
       return ct < ct2? -1 : 1;
@@ -477,22 +470,22 @@ public final class UUID implements Comparable<UUID> {
   public static void main(String[] args) {
     if (args.length == 0) {
       final UUID uuid = new UUID();
-      System.out.println(uuid);
-      System.exit(0);
+      SysErrLogger.FAKE_LOGGER.sysout(uuid);
+      System.exit(0);//NOSONAR
     }
     if (args[0].length() <= 3) {
       final int val = Integer.parseInt(args[0]);
       final UUID uuid = new UUID(val);
-      System.out.println(uuid);
-      System.exit(0);
+      SysErrLogger.FAKE_LOGGER.sysout(uuid);
+      System.exit(0);//NOSONAR
     }
     try {
       new UUID(args[0]);
     } catch (final RuntimeException e) {
-      System.out.println(e.getMessage());
-      System.exit(2);
+      SysErrLogger.FAKE_LOGGER.sysout(e.getMessage());
+      System.exit(2);//NOSONAR
     }
-    System.out.println("ok");
-    System.exit(0);
+    SysErrLogger.FAKE_LOGGER.sysout("ok");
+    System.exit(0);//NOSONAR
   }
 }

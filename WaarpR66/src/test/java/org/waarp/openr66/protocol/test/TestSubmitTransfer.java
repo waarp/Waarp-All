@@ -23,7 +23,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.SubmitTransfer;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.sql.Timestamp;
@@ -32,8 +32,6 @@ import java.util.concurrent.Executors;
 
 /**
  * Test class for multiple SubmitTransfer
- *
- *
  */
 public class TestSubmitTransfer extends SubmitTransfer {
   static int nb = 100;
@@ -42,7 +40,7 @@ public class TestSubmitTransfer extends SubmitTransfer {
                             String filename, String rulename, String fileinfo,
                             boolean isMD5, int blocksize, Timestamp starttime) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
-          DbConstant.ILLEGALVALUE, starttime);
+          DbConstantR66.ILLEGALVALUE, starttime);
   }
 
   public static void main(String[] args) {
@@ -52,10 +50,10 @@ public class TestSubmitTransfer extends SubmitTransfer {
     }
     if (!getParams(args, true)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (DbConstantR66.admin != null) {
+        DbConstantR66.admin.close();
       }
-      DetectionUtils.SystemExit(1);
+      DetectionUtils.systemExit(1);
       return;
     }
     getSpecialParams(args, 1);
@@ -100,10 +98,10 @@ public class TestSubmitTransfer extends SubmitTransfer {
    */
   protected static boolean getSpecialParams(String[] args, int rank) {
     for (int i = rank; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-nb")) {
+      if ("-nb".equalsIgnoreCase(args[i])) {
         i++;
         nb = Integer.parseInt(args[i]);
-      } else if (args[i].equalsIgnoreCase("-md5")) {
+      } else if ("-md5".equalsIgnoreCase(args[i])) {
       } else if (args[i].charAt(0) == '-') {
         i++;// jump one
       }

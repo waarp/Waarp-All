@@ -37,8 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Filesystem implementation of a FtpFile
- *
- *
  */
 public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
     implements FtpFile {
@@ -61,8 +59,9 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
    *
    * @throws CommandAbstractException
    */
-  public FilesystemBasedFtpFile(FtpSession session, FilesystemBasedFtpDir dir,
-                                String path, boolean append)
+  protected FilesystemBasedFtpFile(FtpSession session,
+                                   FilesystemBasedFtpDir dir, String path,
+                                   boolean append)
       throws CommandAbstractException {
     super(session, dir, path, append);
   }
@@ -99,7 +98,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
         logger.warn("DataNetworkHandler was not ready", e);
         return;
       }
-      Channel channel = null;
+      Channel channel;
       try {
         channel = ((FtpSession) session).getDataConn().getCurrentDataChannel();
       } catch (final FtpNoConnectionException e) {
@@ -116,7 +115,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
                               .setPreEndOfTransfer();
         return;
       }
-      DataBlock block = null;
+      DataBlock block;
       try {
         block = readDataBlock();
       } catch (final FileEndOfTransferException e) {

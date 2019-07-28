@@ -78,8 +78,6 @@ import java.util.Map.Entry;
 
 /**
  * Handler for HTTP Rest support
- *
- *
  */
 public abstract class HttpRestHandler
     extends SimpleChannelInboundHandler<HttpObject> {
@@ -193,7 +191,6 @@ public abstract class HttpRestHandler
   // Disk if size exceed MINSIZE = 16K
   // XXX FIXME TODO to setup outside !
   public static String TempPath = "J:/GG/ARK/TMP";
-  // "C:/Temp/Java/GG/ARK/TMP";
 
   public static ChannelGroup group;
 
@@ -219,12 +216,12 @@ public abstract class HttpRestHandler
     DiskAttribute.baseDirectory = TempPath; // system temp directory
   }
 
-  public static RestConfiguration defaultConfiguration =
+  public static final RestConfiguration defaultConfiguration =
       new RestConfiguration();
 
   public HashMap<String, RestMethodHandler> restHashMap;
   public final RestConfiguration restConfiguration;
-  protected RootOptionsRestMethodHandler rootHandler;
+  protected final RootOptionsRestMethodHandler rootHandler;
 
   protected HttpPostRequestDecoder decoder;
   protected HttpResponseStatus status = HttpResponseStatus.OK;
@@ -253,7 +250,7 @@ public abstract class HttpRestHandler
    */
   protected ByteBuf cumulativeBody;
 
-  public HttpRestHandler(RestConfiguration config) {
+  protected HttpRestHandler(RestConfiguration config) {
     restConfiguration = config;
     rootHandler = new RootOptionsRestMethodHandler(config);
   }
@@ -384,15 +381,15 @@ public abstract class HttpRestHandler
     final METHOD method = arguments.getMethod();
     final String uri = arguments.getBaseUri();
     boolean restFound = false;
-    RestMethodHandler handler = restHashMap.get(uri);
-    if (handler != null) {
-      handler.checkHandlerSessionCorrectness(this, arguments, response);
-      if (handler.isMethodIncluded(method)) {
+    RestMethodHandler handlerNew = restHashMap.get(uri);
+    if (handlerNew != null) {
+      handlerNew.checkHandlerSessionCorrectness(this, arguments, response);
+      if (handlerNew.isMethodIncluded(method)) {
         restFound = true;
       }
     }
-    if (handler == null && method == METHOD.OPTIONS) {
-      handler = rootHandler;
+    if (handlerNew == null && method == METHOD.OPTIONS) {
+      handlerNew = rootHandler;
       // use Options default handler
       restFound = true;
     }
@@ -400,7 +397,7 @@ public abstract class HttpRestHandler
       throw new HttpMethodNotAllowedRequestException(
           "No Method found for that URI: " + uri);
     }
-    return handler;
+    return handlerNew;
   }
 
   @Override
@@ -444,7 +441,6 @@ public abstract class HttpRestHandler
         if (!handler.isBodyJsonDecoded()) {
           createDecoder();
         }
-        return;
       } else {
         // New chunk is received
         if (handler != null) {
@@ -570,7 +566,7 @@ public abstract class HttpRestHandler
    * @throws HttpIncorrectRequestException
    */
   protected void readAllHttpData() throws HttpIncorrectRequestException {
-    List<InterfaceHttpData> datas = null;
+    List<InterfaceHttpData> datas;
     try {
       datas = decoder.getBodyHttpDatas();
     } catch (final NotEnoughDataDecoderException e1) {
@@ -629,11 +625,11 @@ public abstract class HttpRestHandler
       setWillClose(true);
       final String answer =
           "<html><body>Error " + status.reasonPhrase() + "</body></html>";
-      final FullHttpResponse response = getResponse(
+      final FullHttpResponse httpResponse = getResponse(
           Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8)));
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-      response.headers().set(HttpHeaderNames.REFERER, request.uri());
-      final ChannelFuture future = ctx.writeAndFlush(response);
+      httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
+      httpResponse.headers().set(HttpHeaderNames.REFERER, request.uri());
+      final ChannelFuture future = ctx.writeAndFlush(httpResponse);
       logger.debug("Will close");
       future.addListener(WaarpSslUtility.SSLCLOSE);
     }
@@ -649,18 +645,19 @@ public abstract class HttpRestHandler
   public FullHttpResponse getResponse(ByteBuf content) {
     // Decide whether to close the connection or not.
     if (request == null) {
-      FullHttpResponse response;
+      FullHttpResponse httpResponse;
       if (content == null) {
-        response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status);
+        httpResponse =
+            new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status);
       } else {
-        response =
+        httpResponse =
             new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status, content);
-        response.headers()
-                .set(HttpHeaderNames.CONTENT_LENGTH, content.array().length);
+        httpResponse.headers().set(HttpHeaderNames.CONTENT_LENGTH,
+                                   content.array().length);
       }
-      setCookies(response);
+      setCookies(httpResponse);
       setWillClose(true);
-      return response;
+      return httpResponse;
     }
     boolean keepAlive = HttpUtil.isKeepAlive(request);
     setWillClose(isWillClose() || status != HttpResponseStatus.OK ||
@@ -672,21 +669,23 @@ public abstract class HttpRestHandler
       keepAlive = false;
     }
     // Build the response object.
-    FullHttpResponse response;
+    FullHttpResponse httpResponse;
     if (content != null) {
-      response = new DefaultFullHttpResponse(request.protocolVersion(), status,
-                                             content);
-      response.headers()
-              .set(HttpHeaderNames.CONTENT_LENGTH, content.array().length);
+      httpResponse =
+          new DefaultFullHttpResponse(request.protocolVersion(), status,
+                                      content);
+      httpResponse.headers()
+                  .set(HttpHeaderNames.CONTENT_LENGTH, content.array().length);
     } else {
-      response = new DefaultFullHttpResponse(request.protocolVersion(), status);
+      httpResponse =
+          new DefaultFullHttpResponse(request.protocolVersion(), status);
     }
     if (keepAlive) {
-      response.headers()
-              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+      httpResponse.headers()
+                  .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
     }
-    setCookies(response);
-    return response;
+    setCookies(httpResponse);
+    return httpResponse;
   }
 
   /**
@@ -737,7 +736,7 @@ public abstract class HttpRestHandler
   }
 
   protected void finalizeSend(ChannelHandlerContext ctx) {
-    ChannelFuture future = null;
+    ChannelFuture future;
     if (arguments.getMethod() == METHOD.OPTIONS) {
       future = handler.sendOptionsResponse(this, ctx, response, status);
     } else {
@@ -783,7 +782,6 @@ public abstract class HttpRestHandler
       }
     } catch (final EndOfDataDecoderException e1) {
       // end
-      return;
     }
   }
 
@@ -796,9 +794,8 @@ public abstract class HttpRestHandler
       } else {
         logger.warn("Exception Received", cause);
       }
-      final Throwable thro = cause;
-      if (thro instanceof ClosedChannelException ||
-          thro instanceof IOException) {
+      if (cause instanceof ClosedChannelException ||
+          cause instanceof IOException) {
         return;
       }
       if (handler != null) {

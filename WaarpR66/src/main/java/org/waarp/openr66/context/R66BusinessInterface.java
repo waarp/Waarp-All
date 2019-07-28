@@ -32,8 +32,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAtConnection(R66Session session)
-      throws OpenR66RunnerErrorException;
+  void checkAtConnection(R66Session session) throws OpenR66RunnerErrorException;
 
   /**
    * Called once the authentication is done
@@ -42,7 +41,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAtAuthentication(R66Session session)
+  void checkAtAuthentication(R66Session session)
       throws OpenR66RunnerErrorException;
 
   /**
@@ -52,8 +51,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAtStartup(R66Session session)
-      throws OpenR66RunnerErrorException;
+  void checkAtStartup(R66Session session) throws OpenR66RunnerErrorException;
 
   /**
    * Called once the pre tasks are over in success
@@ -62,7 +60,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAfterPreCommand(R66Session session)
+  void checkAfterPreCommand(R66Session session)
       throws OpenR66RunnerErrorException;
 
   /**
@@ -72,7 +70,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAfterTransfer(R66Session session)
+  void checkAfterTransfer(R66Session session)
       throws OpenR66RunnerErrorException;
 
   /**
@@ -82,8 +80,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAfterPost(R66Session session)
-      throws OpenR66RunnerErrorException;
+  void checkAfterPost(R66Session session) throws OpenR66RunnerErrorException;
 
   /**
    * Called once any error occurs
@@ -92,7 +89,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAtError(R66Session session);
+  void checkAtError(R66Session session);
 
   /**
    * Called once after pre tasks, while filename could be changed (or not)
@@ -101,7 +98,7 @@ public interface R66BusinessInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void checkAtChangeFilename(R66Session session)
+  void checkAtChangeFilename(R66Session session)
       throws OpenR66RunnerErrorException;
 
   /**
@@ -109,7 +106,7 @@ public interface R66BusinessInterface {
    *
    * @param session
    */
-  public void releaseResources(R66Session session);
+  void releaseResources(R66Session session);
 
   /**
    * Called to get the current extra "Information" from Business side to
@@ -120,7 +117,7 @@ public interface R66BusinessInterface {
    *
    * @return the current "session" info
    */
-  public String getInfo(R66Session session);
+  String getInfo(R66Session session);
 
   /**
    * Set optional info to be set within extra information of PacketValid as
@@ -130,6 +127,6 @@ public interface R66BusinessInterface {
    * @param session
    * @param info
    */
-  public void setInfo(R66Session session, String info);
+  void setInfo(R66Session session, String info);
 
 }

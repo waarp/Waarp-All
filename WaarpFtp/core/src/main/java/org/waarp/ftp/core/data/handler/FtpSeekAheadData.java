@@ -23,8 +23,6 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * SeekAheadData Class used to optimize access to the incoming buffer
- *
- *
  */
 class FtpSeekAheadData {
   /**

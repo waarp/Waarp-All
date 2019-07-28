@@ -23,13 +23,15 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Exporting Configuration response JSON packet
- *
- *
  */
 public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
 
   protected byte command;
-  protected String filehost, filerule, filebusiness, filealias, fileroles;
+  protected String filehost;
+  protected String filerule;
+  protected String filebusiness;
+  protected String filealias;
+  protected String fileroles;
 
   /**
    * @return the command
@@ -117,6 +119,6 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.CONFEXPORTPACKET);
+    setRequestUserPacket(LocalPacketFactory.CONFEXPORTPACKET);
   }
 }

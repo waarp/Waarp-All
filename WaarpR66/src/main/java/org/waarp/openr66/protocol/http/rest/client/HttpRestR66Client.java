@@ -41,8 +41,6 @@ import java.util.Map;
 
 /**
  * Http Rest R66 client helper class
- *
- *
  */
 public class HttpRestR66Client extends HttpRestClientHelper {
 
@@ -74,13 +72,11 @@ public class HttpRestR66Client extends HttpRestClientHelper {
                               HttpMethod method, String host, String addedUri,
                               String user, String pwd,
                               Map<String, String> uriArgs, String json) {
-    if (config.REST_SIGNATURE) {
-      return super
-          .sendQuery(config.hmacSha256, channel, method, host, addedUri, user,
-                     pwd, uriArgs, json);
+    if (config.isRestSignature()) {
+      return sendQuery(config.getHmacSha256(), channel, method, host, addedUri,
+                       user, pwd, uriArgs, json);
     } else {
-      return super
-          .sendQuery(channel, method, host, addedUri, user, uriArgs, json);
+      return sendQuery(channel, method, host, addedUri, user, uriArgs, json);
     }
   }
 
@@ -88,15 +84,15 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * Prepare the future connection
    *
    * @param baseUri in general = '/'
-   * @param Initializer the associated Initializer including the REST
+   * @param initializer the associated Initializer including the REST
    *     handler for client side
    * @param client limit number of concurrent connected clients
    * @param timeout time out for network connection
    */
   public HttpRestR66Client(String baseUri,
-                           ChannelInitializer<SocketChannel> Initializer,
+                           ChannelInitializer<SocketChannel> initializer,
                            int client, long timeout) {
-    super(baseUri, client, timeout, Initializer);
+    super(baseUri, client, timeout, initializer);
   }
 
   /**
@@ -111,7 +107,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
       if (model != null && !model.isEmpty()) {
         return RESTHANDLERS.valueOf(model);
       }
-    } catch (final Exception e) {
+    } catch (final Exception ignored) {
+      // nothing
     }
     return null;
   }
@@ -146,7 +143,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
                 .get(dbdata.uri);
         return handler.getPrimaryPropertyName();
       }
-    } catch (final Exception e) {
+    } catch (final Exception ignored) {
+      // ignore
     }
     return null;
   }
@@ -178,7 +176,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
             throw new HttpIncorrectRequestException(e);
           }
         }
-      } catch (final Exception e) {
+      } catch (final Exception ignored) {
+        // ignore
       }
     }
     return null;

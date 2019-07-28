@@ -31,8 +31,6 @@ import org.waarp.ftp.core.session.FtpSession;
 /**
  * Filesystem implementation of a Restart.<br>
  * Only FILE+STREAM is supported (byte position in file).
- *
- *
  */
 public class FilesystemBasedFtpRestart extends FilesystemBasedRestartImpl {
   /**
@@ -48,7 +46,7 @@ public class FilesystemBasedFtpRestart extends FilesystemBasedRestartImpl {
     if (dataConn.getStructure() == TransferStructure.FILE &&
         dataConn.getMode() == TransferMode.STREAM &&
         dataConn.getType() != TransferType.LENGTH) {
-      long newposition = 0;
+      long newposition;
       final String[] args = marker.split(" ");
       try {
         newposition = Long.parseLong(args[0]);

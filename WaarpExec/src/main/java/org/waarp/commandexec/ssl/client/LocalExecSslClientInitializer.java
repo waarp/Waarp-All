@@ -32,8 +32,6 @@ import org.waarp.common.utility.WaarpStringUtils;
 
 /**
  * Version with SSL support
- *
- *
  */
 public class LocalExecSslClientInitializer extends LocalExecClientInitializer {
 
@@ -53,7 +51,6 @@ public class LocalExecSslClientInitializer extends LocalExecClientInitializer {
     final SslHandler sslhandler = waarpSslContextFactory.initInitializer(false,
                                                                          waarpSslContextFactory
                                                                              .needClientAuthentication());
-    // sslhandler.setIssueHandshake(true);
     pipeline.addLast("ssl", sslhandler);
     // Add the text line codec combination first,
     pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters
@@ -65,14 +62,6 @@ public class LocalExecSslClientInitializer extends LocalExecClientInitializer {
     final LocalExecSslClientHandler localExecClientHandler =
         new LocalExecSslClientHandler(this);
     pipeline.addLast("handler", localExecClientHandler);
-  }
-
-  /**
-   * Release internal resources
-   */
-  @Override
-  public void releaseResources() {
-    super.releaseResources();
   }
 
 }

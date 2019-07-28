@@ -42,11 +42,34 @@
 
   <properties>
     <!-- <root.directory>${project.parent.basedir}</root.directory> -->
-    <module.project>true</module.project>
+    <module.project>false</module.project>
+    <reuseThreadTest>true</reuseThreadTest>
 
     <waarp.directory.version>org.waarp.common</waarp.directory.version>
     <waarp.module.version>org/waarp/common</waarp.module.version>
   </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <reuseForks>true</reuseForks>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <!-- JDBC dependencies -->
@@ -100,6 +123,10 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative-boringssl-static</artifactId>
     </dependency>
 
     <!-- Waarp dependencies -->
@@ -171,6 +198,23 @@
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-smile</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-posix</artifactId>
+      <optional>true</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Testing dependencies -->

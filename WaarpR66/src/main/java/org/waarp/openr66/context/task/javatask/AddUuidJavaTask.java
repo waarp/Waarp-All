@@ -20,10 +20,13 @@
 package org.waarp.openr66.context.task.javatask;
 
 import org.waarp.common.database.exception.WaarpDatabaseException;
-import org.waarp.common.guid.UUID;
+import org.waarp.common.guid.GUID;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.task.AbstractExecJavaTask;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Add an UUID in the TransferInformation to the current Task.</br>
@@ -41,8 +44,6 @@ import org.waarp.openr66.context.task.AbstractExecJavaTask;
  * string. Default is equivalent to "-format -##UUID##". </br>
  * To be called as: <task><type>EXECJAVA</type><path>org.waarp.openr66.context.task.javatask.AddUuidJavaTask
  * [-format (-/+)##UUID##]</path></task>
- *
- *
  */
 public class AddUuidJavaTask extends AbstractExecJavaTask {
   /**
@@ -51,17 +52,19 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AddUuidJavaTask.class);
   private static final String sUUID = "#UUID#";
+  private static final Pattern UUID_COMPILE =
+      Pattern.compile(sUUID, Pattern.LITERAL);
 
   @Override
   public void run() {
     logger.debug(toString());
-    final UUID uuid = new UUID();
-    final String[] args = fullarg.split(" ");
-    String fileInfo = null;
+    final GUID uuid = new GUID();
+    final String[] args = BLANK.split(fullarg);
+    String fileInfo;
     String format = "-##UUID##";
     int way = -1;
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-format")) {
+      if ("-format".equalsIgnoreCase(args[i])) {
         format = args[i + 1];
         if (format.charAt(0) == '-') {
           way = -1;
@@ -75,11 +78,13 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
     }
     logger.debug("Replace UUID in {} way: {}", format, way);
     if (way < 0) {
-      fileInfo = format.replace(sUUID, uuid.toString()) + " " +
+      fileInfo = UUID_COMPILE.matcher(format).replaceAll(
+          Matcher.quoteReplacement(uuid.toString())) + ' ' +
                  session.getRunner().getFileInformation();
     } else {
-      fileInfo = session.getRunner().getFileInformation() + " " +
-                 format.replace(sUUID, uuid.toString());
+      fileInfo = session.getRunner().getFileInformation() + ' ' +
+                 UUID_COMPILE.matcher(format).replaceAll(
+                     Matcher.quoteReplacement(uuid.toString()));
     }
     session.getRunner().setFileInformation(fileInfo);
     try {

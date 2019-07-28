@@ -28,8 +28,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * ALLO command: test if enough space is disponible
- *
- *
  */
 public class ALLO extends AbstractCommand {
   @Override
@@ -39,7 +37,7 @@ public class ALLO extends AbstractCommand {
       throw new Reply501Exception("Need a size as argument");
     }
     final String[] args = getArgs();
-    int size = 0;
+    int size;
     try {
       size = getValue(args[0]);
     } catch (final InvalidArgumentException e) {

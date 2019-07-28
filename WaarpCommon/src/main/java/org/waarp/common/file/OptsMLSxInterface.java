@@ -21,8 +21,6 @@ package org.waarp.common.file;
 
 /**
  * Interface for Option support (mainly inspired for MLSx FTP command)
- *
- *
  */
 public interface OptsMLSxInterface {
   /**

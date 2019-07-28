@@ -40,10 +40,10 @@ import javax.crypto.Mac;
  * <li>To crypt a String in a Base64 format: String myStringCrypt =
  * key.cryptToString(myString);</li>
  * </ul>
- *
- *
  */
 public class HmacSha1 extends KeyObject {
+  private static final String CANNOT_BE_USED_FOR_HMAC_SHA1 =
+      "Cannot be used for HmacSha1";
   private static final int KEY_SIZE = 128;
   private static final String ALGO = "HmacSHA1";
   private static final String INSTANCE = ALGO;
@@ -71,7 +71,7 @@ public class HmacSha1 extends KeyObject {
 
   @Override
   public Cipher toCrypt() {
-    throw new IllegalArgumentException("Cannot be used for HmacSha1");
+    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 
   @Override
@@ -83,12 +83,12 @@ public class HmacSha1 extends KeyObject {
 
   @Override
   public Cipher toDecrypt() {
-    throw new IllegalArgumentException("Cannot be used for HmacSha1");
+    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 
   @Override
   public byte[] decrypt(byte[] ciphertext) throws Exception {
-    throw new IllegalArgumentException("Cannot be used for HmacSha1");
+    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 
 }

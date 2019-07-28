@@ -18,11 +18,10 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *
- */
 package org.waarp.openr66.protocol.junit;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
@@ -31,9 +30,10 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
- *
  *
  */
 public abstract class TestAbstractMinimal {
@@ -42,20 +42,29 @@ public abstract class TestAbstractMinimal {
    */
   protected static WaarpLogger logger;
   protected static File dir;
+  protected static File dirResources;
 
   /**
-   * @throws java.lang.Exception
+   * @throws Exception
    */
-  public static void setUpBeforeClassMinimal(String serverInit)
+  public static void setUpBeforeClassMinimal(String serverInitBaseDirectory)
       throws Exception {
     WaarpLoggerFactory
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);
     }
     final ClassLoader classLoader = TestAbstractMinimal.class.getClassLoader();
     DetectionUtils.setJunit(true);
-    final File file = new File(classLoader.getResource(serverInit).getFile());
+    final File file;
+    if (serverInitBaseDirectory.charAt(0) == '/') {
+      file = new File(
+          classLoader.getResource("Linux/config/config-XXDb.xml").getFile());
+    } else {
+      file =
+          new File(classLoader.getResource(serverInitBaseDirectory).getFile());
+    }
     if (file.exists()) {
       dir = file.getParentFile();
       final File tmp = new File("/tmp/R66");
@@ -69,12 +78,12 @@ public abstract class TestAbstractMinimal {
       conf.mkdir();
       final File[] copied = FileUtils.copyRecursive(dir, conf, false);
       for (final File fileCopied : copied) {
-        System.out.print(fileCopied.getAbsolutePath() + " ");
+        System.out.print(fileCopied.getAbsolutePath() + ' ');
       }
       System.out.println(" Done");
     } else {
-      System.err
-          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+      System.err.println("Cannot find serverInitBaseDirectory file: " +
+                         file.getAbsolutePath());
     }
   }
 
@@ -87,4 +96,14 @@ public abstract class TestAbstractMinimal {
     FileUtils.forceDeleteRecursiveDir(tmp);
   }
 
+  static File generateOutFile(String name, int size) throws IOException {
+    final File file = new File(name);
+    final FileWriter fileWriterBig = new FileWriter(file);
+    for (int i = 0; i < size / 10; i++) {
+      fileWriterBig.write("0123456789");
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    return file;
+  }
 }

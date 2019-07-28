@@ -26,7 +26,7 @@ import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.ProgressBarTransfer;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
@@ -65,11 +65,14 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (DbConstantR66.admin != null) {
+        DbConstantR66.admin.close();
+      }
+      if (DetectionUtils.isJunit()) {
+        return;
       }
       ChannelUtils.stopLogger();
-      DetectionUtils.SystemExit(2);
+      DetectionUtils.systemExit(2);
       return;
     }
     final long time1 = System.currentTimeMillis();
@@ -94,15 +97,15 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
                       result.getRunner().toShortString() + "     <REMOTE>" +
                       rhost + "</REMOTE>" + "     <FILEFINAL>" +
                       (result.getFile() != null?
-                          result.getFile().toString() + "</FILEFINAL>" :
-                          "no file") + "     delay: " + delay);
+                          result.getFile() + "</FILEFINAL>" : "no file") +
+                      "     delay: " + delay);
         } else {
           logger.info("Transfer in status: SUCCESS     " +
                       result.getRunner().toShortString() + "     <REMOTE>" +
                       rhost + "</REMOTE>" + "     <FILEFINAL>" +
                       (result.getFile() != null?
-                          result.getFile().toString() + "</FILEFINAL>" :
-                          "no file") + "     delay: " + delay);
+                          result.getFile() + "</FILEFINAL>" : "no file") +
+                      "     delay: " + delay);
         }
         if (nolog || result.getRunner().shallIgnoreSave()) {
           // In case of success, delete the runner
@@ -117,7 +120,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
         if (result == null || result.getRunner() == null) {
           logger.error("Transfer in     FAILURE with no Id", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(ErrorCode.Unknown.ordinal());
+          DetectionUtils.systemExit(ErrorCode.Unknown.ordinal());
           return;
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
@@ -125,22 +128,22 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
                       result.getRunner().toShortString() + "     <REMOTE>" +
                       rhost + "</REMOTE>", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(result.getCode().ordinal());
+          DetectionUtils.systemExit(result.getCode().ordinal());
         } else {
           logger.error("Transfer in     FAILURE     " +
                        result.getRunner().toShortString() + "     <REMOTE>" +
                        rhost + "</REMOTE>", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.SystemExit(result.getCode().ordinal());
+          DetectionUtils.systemExit(result.getCode().ordinal());
         }
       }
     } finally {
       networkTransaction.closeAll();
       // In case something wrong append
       if (future.isDone() && future.isSuccess()) {
-        DetectionUtils.SystemExit(0);
+        DetectionUtils.systemExit(0);
       } else {
-        DetectionUtils.SystemExit(66);
+        DetectionUtils.systemExit(66);
       }
     }
   }
@@ -152,7 +155,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
     } else {
       System.err.println(
           "Block: " + currentBlock + " BSize: " + blocksize + " on " +
-          (int) (Math.ceil(((double) filesize / (double) blocksize))));
+          (int) Math.ceil((double) filesize / (double) blocksize));
     }
   }
 

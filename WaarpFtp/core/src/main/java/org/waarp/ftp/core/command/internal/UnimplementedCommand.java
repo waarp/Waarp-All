@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * Unimplemented command
- *
- *
  */
 public abstract class UnimplementedCommand extends AbstractCommand {
   /**

@@ -30,7 +30,7 @@ import java.sql.SQLException;
 
 public class H2TransferDAO extends DBTransferDAO {
 
-  protected static String SQL_GET_ID = "SELECT NEXTVAL('RUNSEQ')";
+  protected static final String SQL_GET_ID = "SELECT NEXTVAL('RUNSEQ')";
 
   public H2TransferDAO(Connection con) throws DAOConnectionException {
     super(con);
@@ -39,9 +39,10 @@ public class H2TransferDAO extends DBTransferDAO {
   @Override
   protected long getNextId() throws DAOConnectionException {
     PreparedStatement ps = null;
+    ResultSet rs = null;
     try {
       ps = connection.prepareStatement(SQL_GET_ID);
-      final ResultSet rs = ps.executeQuery();
+      rs = ps.executeQuery();
       if (rs.next()) {
         return rs.getLong(1);
       } else {
@@ -51,6 +52,13 @@ public class H2TransferDAO extends DBTransferDAO {
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+      } catch (SQLException e) {
+        // ignore
+      }
       closeStatement(ps);
     }
   }

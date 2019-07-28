@@ -23,8 +23,6 @@ import org.waarp.administrator.AdminGui;
 
 /**
  * R66 Simple client GUI
- *
- *
  */
 public class AdminSimpleR66ClientGui extends R66ClientGui {
 
@@ -32,7 +30,6 @@ public class AdminSimpleR66ClientGui extends R66ClientGui {
    * Create the application.
    */
   public AdminSimpleR66ClientGui() {
-    super();
     getEnvironment().networkTransaction =
         AdminGui.getEnvironnement().networkTransaction;
     extended = true;

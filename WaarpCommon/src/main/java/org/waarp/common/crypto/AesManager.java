@@ -21,8 +21,6 @@ package org.waarp.common.crypto;
 
 /**
  * This class implements a simple Key Manager for AES class from name
- *
- *
  */
 public class AesManager extends KeyManager {
   static final AesManager manager = new AesManager();

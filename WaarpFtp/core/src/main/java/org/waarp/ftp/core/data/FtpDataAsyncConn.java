@@ -40,8 +40,6 @@ import java.net.InetSocketAddress;
 /**
  * Main class that handles Data connection using asynchronous connection with
  * Netty
- *
- *
  */
 public class FtpDataAsyncConn {
   /**
@@ -361,7 +359,8 @@ public class FtpDataAsyncConn {
   private void setCorrectCodec() {
     try {
       getDataNetworkHandler().setCorrectCodec();
-    } catch (final FtpNoConnectionException e) {
+    } catch (final FtpNoConnectionException ignored) {
+      // nothing
     }
   }
 
@@ -493,7 +492,7 @@ public class FtpDataAsyncConn {
       throws InterruptedException, Reply425Exception {
     this.dataChannel = dataChannel;
     if (dataChannel == null) {
-      String curmode = null;
+      String curmode;
       if (isPassiveMode()) {
         curmode = "passive";
       } else {

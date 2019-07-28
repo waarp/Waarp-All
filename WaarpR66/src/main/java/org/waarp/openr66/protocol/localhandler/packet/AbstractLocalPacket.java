@@ -32,8 +32,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * (4 bytes), End length field (4 bytes), type field (1 byte), ...<br>
  * Middle: (Middle length field bytes)<br>
  * End: (End length field bytes) = code status field (4 bytes), ...<br>
- *
- *
  */
 public abstract class AbstractLocalPacket {
   protected ByteBuf header;
@@ -42,13 +40,13 @@ public abstract class AbstractLocalPacket {
 
   protected ByteBuf end;
 
-  public AbstractLocalPacket(ByteBuf header, ByteBuf middle, ByteBuf end) {
+  protected AbstractLocalPacket(ByteBuf header, ByteBuf middle, ByteBuf end) {
     this.header = header;
     this.middle = middle;
     this.end = end;
   }
 
-  public AbstractLocalPacket() {
+  protected AbstractLocalPacket() {
     header = null;
     middle = null;
     end = null;
@@ -116,25 +114,18 @@ public abstract class AbstractLocalPacket {
     buf.writeInt(middleLength);
     buf.writeInt(endLength);
     buf.writeByte(getType());
-    return
-        Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);
+    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);
   }
 
   public void clear() {
-    if (header != null) {
-      if (header.release()) {
-        header = null;
-      }
+    if (header != null && header.release()) {
+      header = null;
     }
-    if (middle != null) {
-      if (middle.release()) {
-        middle = null;
-      }
+    if (middle != null && middle.release()) {
+      middle = null;
     }
-    if (end != null) {
-      if (end.release()) {
-        end = null;
-      }
+    if (end != null && end.release()) {
+      end = null;
     }
   }
 

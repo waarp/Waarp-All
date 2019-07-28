@@ -106,7 +106,7 @@ public class ClientExample implements Runnable {
     executorService.shutdown();
     try {
       executorService.awaitTermination(1000000, TimeUnit.SECONDS);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException ignored) {
     }
     final long end = System.currentTimeMillis();
     System.out.println("Global Delay: " + (end - start) + " : " +

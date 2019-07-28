@@ -28,8 +28,6 @@ import java.io.File;
 
 /**
  * FTP Client using FTP4J with the test scenario
- *
- *
  */
 public class Ftp4JClientTransactionTest extends WaarpFtp4jClient {
   /**
@@ -48,7 +46,7 @@ public class Ftp4JClientTransactionTest extends WaarpFtp4jClient {
   public Ftp4JClientTransactionTest(String server, int port, String username,
                                     String passwd, String account, int isSsl) {
     super(server, port, username, passwd, account, false, isSsl, 0, 10000);
-    final File dir = new File("/tmp/GGFTP/" + username + "/" + account);
+    final File dir = new File("/tmp/GGFTP/" + username + '/' + account);
     dir.mkdirs();
   }
 

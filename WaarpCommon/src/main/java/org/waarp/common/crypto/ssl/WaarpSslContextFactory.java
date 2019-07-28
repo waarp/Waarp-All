@@ -22,15 +22,17 @@ package org.waarp.common.crypto.ssl;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSessionContext;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+
+import static org.waarp.common.digest.WaarpBC.*;
 
 /**
  * SSL ContextFactory for Netty.
- *
- *
  */
 public class WaarpSslContextFactory {
   protected static final int DEFAULT_SESSIONCACHE_TIMEOUTSEC = 60;
@@ -43,20 +45,19 @@ public class WaarpSslContextFactory {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpSslContextFactory.class);
 
-  /**
-   *
-   */
-  private static final String PROTOCOL = "TLS";
+  static {
+    initializedTlsContext();
+  }
 
   /**
    *
    */
-  private final SSLContext SERVER_CONTEXT;
+  private final SSLContext serverContext;
 
   /**
    *
    */
-  private final SSLContext CLIENT_CONTEXT;
+  private final SSLContext clientContext;
 
   private boolean needClientAuthentication;
 
@@ -67,8 +68,8 @@ public class WaarpSslContextFactory {
    */
   public WaarpSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore) {
     // Both construct Client and Server mode
-    SERVER_CONTEXT = initSslContextFactory(ggSecureKeyStore, true);
-    CLIENT_CONTEXT = initSslContextFactory(ggSecureKeyStore, false);
+    serverContext = initSslContextFactory(ggSecureKeyStore, true);
+    clientContext = initSslContextFactory(ggSecureKeyStore, false);
   }
 
   /**
@@ -80,11 +81,11 @@ public class WaarpSslContextFactory {
   public WaarpSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore,
                                 boolean serverMode) {
     if (serverMode) {
-      SERVER_CONTEXT = initSslContextFactory(ggSecureKeyStore, serverMode);
-      CLIENT_CONTEXT = null;
+      serverContext = initSslContextFactory(ggSecureKeyStore, serverMode);
+      clientContext = null;
     } else {
-      CLIENT_CONTEXT = initSslContextFactory(ggSecureKeyStore, serverMode);
-      SERVER_CONTEXT = null;
+      clientContext = initSslContextFactory(ggSecureKeyStore, serverMode);
+      serverContext = null;
     }
   }
 
@@ -93,9 +94,9 @@ public class WaarpSslContextFactory {
    * @param timeOutInSeconds default being 60s
    */
   public void setSessionCacheTime(int cacheSize, int timeOutInSeconds) {
-    if (SERVER_CONTEXT != null) {
+    if (serverContext != null) {
       final SSLSessionContext sslSessionContext =
-          SERVER_CONTEXT.getServerSessionContext();
+          serverContext.getServerSessionContext();
       if (sslSessionContext != null) {
         sslSessionContext.setSessionCacheSize(cacheSize);
         sslSessionContext.setSessionTimeout(timeOutInSeconds);
@@ -113,66 +114,75 @@ public class WaarpSslContextFactory {
                                            boolean serverMode) {
     String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
     if (algorithm == null) {
-      algorithm = "SunX509";
+      algorithm = "“X509";
+      try {
+        if (KeyManagerFactory.getInstance(algorithm) == null) {
+          algorithm = "SunX509";
+        }
+      } catch (NoSuchAlgorithmException e) {
+        algorithm = "SunX509";
+      }
     }
 
-    SSLContext serverContext = null;
-    SSLContext clientContext = null;
+    SSLContext serverContextNew;
+    SSLContext clientContextNew;
     if (serverMode) {
       try {
         // Initialize the SSLContext to work with our key managers.
-        serverContext = SSLContext.getInstance(PROTOCOL);
+        serverContextNew = getInstance();
         final WaarpSecureTrustManagerFactory secureTrustManagerFactory =
             ggSecureKeyStore.getSecureTrustManagerFactory();
         needClientAuthentication =
             secureTrustManagerFactory.needAuthentication();
         if (secureTrustManagerFactory.hasTrustStore()) {
           logger.debug("Has TrustManager");
-          serverContext
+          serverContextNew
               .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),
-                    secureTrustManagerFactory.getTrustManagers(), null);
+                    secureTrustManagerFactory.getTrustManagers(),
+                    getSecureRandom());
         } else {
           logger.debug("No TrustManager");
-          serverContext
+          serverContextNew
               .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),
-                    null, null);
+                    null, getSecureRandom());
         }
         final SSLSessionContext sslSessionContext =
-            serverContext.getServerSessionContext();
+            serverContextNew.getServerSessionContext();
         if (sslSessionContext != null) {
           sslSessionContext.setSessionCacheSize(DEFAULT_SESSIONCACHE_SIZE);
           sslSessionContext.setSessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);
         }
-        return serverContext;
+        return serverContextNew;
       } catch (final Throwable e) {
         logger.error("Failed to initialize the server-side SSLContext", e);
         throw new Error("Failed to initialize the server-side SSLContext", e);
       }
     } else {
       try {
-        clientContext = SSLContext.getInstance(PROTOCOL);
+        clientContextNew = getInstance();
         final WaarpSecureTrustManagerFactory secureTrustManagerFactory =
             ggSecureKeyStore.getSecureTrustManagerFactory();
         needClientAuthentication =
             secureTrustManagerFactory.needAuthentication();
         if (secureTrustManagerFactory.hasTrustStore()) {
           logger.debug("Has TrustManager");
-          clientContext
+          clientContextNew
               .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),
-                    secureTrustManagerFactory.getTrustManagers(), null);
+                    secureTrustManagerFactory.getTrustManagers(),
+                    getSecureRandom());
         } else {
           logger.debug("No TrustManager");
-          clientContext
+          clientContextNew
               .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),
-                    null, null);
+                    null, getSecureRandom());
         }
         final SSLSessionContext sslSessionContext =
-            clientContext.getServerSessionContext();
+            clientContextNew.getServerSessionContext();
         if (sslSessionContext != null) {
           sslSessionContext.setSessionCacheSize(DEFAULT_SESSIONCACHE_SIZE);
           sslSessionContext.setSessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);
         }
-        return clientContext;
+        return clientContextNew;
       } catch (final Throwable e) {
         logger.error("Failed to initialize the client-side SSLContext", e);
         throw new Error("Failed to initialize the client-side SSLContext", e);
@@ -184,14 +194,14 @@ public class WaarpSslContextFactory {
    * @return the Server Context
    */
   public SSLContext getServerContext() {
-    return SERVER_CONTEXT;
+    return serverContext;
   }
 
   /**
    * @return the Client Context
    */
   public SSLContext getClientContext() {
-    return CLIENT_CONTEXT;
+    return clientContext;
   }
 
   /**
@@ -220,8 +230,7 @@ public class WaarpSslContextFactory {
       engine = getClientContext().createSSLEngine();
       engine.setUseClientMode(true);
     }
-    final WaarpSslHandler handler = new WaarpSslHandler(engine);
-    return handler;
+    return new WaarpSslHandler(engine);
   }
 
   /**
@@ -254,8 +263,7 @@ public class WaarpSslContextFactory {
       engine = getClientContext().createSSLEngine(host, port);
       engine.setUseClientMode(true);
     }
-    final WaarpSslHandler handler = new WaarpSslHandler(engine);
-    return handler;
+    return new WaarpSslHandler(engine);
   }
 
   /**

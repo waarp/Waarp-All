@@ -262,7 +262,7 @@ public final class HttpResourceHandler implements HttpHandler {
                     request.uri()));
           }
         }
-      } else if (routableDestinations.size() > 0) {
+      } else if (!routableDestinations.isEmpty()) {
         // Found a matching resource but could not find the right HttpMethod so return 405
         responder.sendString(HttpResponseStatus.METHOD_NOT_ALLOWED, String
             .format("Problem accessing: %s. Reason: Method Not Allowed",
@@ -348,7 +348,7 @@ public final class HttpResourceHandler implements HttpHandler {
           return httpResourceModel.handle(request, responder, matchedDestination
               .getGroupNameValues());
         }
-      } else if (routableDestinations.size() > 0) {
+      } else if (!routableDestinations.isEmpty()) {
         // Found a matching resource but could not find the right HttpMethod so return 405
         throw new HandlerException(HttpResponseStatus.METHOD_NOT_ALLOWED,
                                    request.uri());
@@ -527,9 +527,9 @@ public final class HttpResourceHandler implements HttpHandler {
           @Override
           public String next() {
             if (hasNext()) {
-              final String next = this.next;
+              final String nextNew = this.next;
               this.next = null;
-              return next;
+              return nextNew;
             }
             throw new NoSuchElementException("No more element");
           }

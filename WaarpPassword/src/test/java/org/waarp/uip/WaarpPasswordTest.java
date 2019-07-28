@@ -20,13 +20,12 @@
 
 package org.waarp.uip;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
-
-import static junit.framework.TestCase.*;
 
 public class WaarpPasswordTest {
 
@@ -47,7 +46,7 @@ public class WaarpPasswordTest {
     {
       final String[] args = { "-clear", "-des", "-ko", "/tmp/out.ggp" };
       WaarpPassword.main(args);
-      assertTrue(keyFile.exists());
+      Assert.assertTrue(keyFile.exists());
     }
     Thread.sleep(5);
     System.out.println("Step " + step++);
@@ -64,7 +63,7 @@ public class WaarpPasswordTest {
           "-clear", "-ki", "/tmp/out.ggp", "-po", "/tmp/pwd.ggp", "-pwd", "pwd"
       };
       WaarpPassword.main(args);
-      assertTrue(pwd.exists());
+      Assert.assertTrue(pwd.exists());
     }
     Thread.sleep(5);
     System.out.println("Step " + step++);
@@ -81,7 +80,7 @@ public class WaarpPasswordTest {
           "-clear", "-ki", "/tmp/out.ggp", "-po", "/tmp/pwd.ggp", "-cpwd", cpwd
       };
       WaarpPassword.main(args);
-      assertTrue(pwd.exists());
+      Assert.assertTrue(pwd.exists());
     }
     // Using BlowFish
     keyFile.delete();
@@ -92,7 +91,7 @@ public class WaarpPasswordTest {
     {
       final String[] args = { "-clear", "-blf", "-ko", "/tmp/out.ggp" };
       WaarpPassword.main(args);
-      assertTrue(keyFile.exists());
+      Assert.assertTrue(keyFile.exists());
     }
     Thread.sleep(5);
     System.out.println("Step " + step++);
@@ -108,7 +107,7 @@ public class WaarpPasswordTest {
           "-pwd", "pwd"
       };
       WaarpPassword.main(args);
-      assertTrue(pwd.exists());
+      Assert.assertTrue(pwd.exists());
     }
     Thread.sleep(5);
     System.out.println("Step " + step++);
@@ -127,7 +126,7 @@ public class WaarpPasswordTest {
           "-cpwd", cpwd
       };
       WaarpPassword.main(args);
-      assertTrue(pwd.exists());
+      Assert.assertTrue(pwd.exists());
     }
     pwd.delete();
     keyFile.delete();

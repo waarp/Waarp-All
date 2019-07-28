@@ -33,7 +33,7 @@ import org.waarp.openr66.protocol.configuration.Configuration;
  *
  */
 public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
-  private boolean useHttpCompression = false;
+  private final boolean useHttpCompression;
 
   public HttpSslInitializer(boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;

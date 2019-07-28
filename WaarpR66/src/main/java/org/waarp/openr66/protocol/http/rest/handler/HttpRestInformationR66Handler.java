@@ -48,8 +48,6 @@ import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
 
 /**
  * Info Http REST interface: http://host/info?... + InformationJsonPacket as GET
- *
- *
  */
 public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
 
@@ -94,7 +92,7 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
         } else {
           result.setCommand(ACTIONS_TYPE.GetInformation.name());
         }
-        ValidPacket validPacket = null;
+        ValidPacket validPacket;
         if (node.isIdRequest()) {
           validPacket = serverHandler
               .informationRequest(node.getId(), node.isTo(), node.getRulename(),
@@ -158,7 +156,8 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
                                                    .name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
 
       node3 = new InformationJsonPacket(Long.MIN_VALUE, false, "remoteHost");
@@ -177,7 +176,8 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
                                                    .name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
-      } catch (final OpenR66ProtocolPacketException e1) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
       }
     }
 

@@ -24,7 +24,6 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpThreadFactory;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
@@ -36,6 +35,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * This class launch and control the Commander and enable TaskRunner job
@@ -50,7 +51,7 @@ public class InternalRunner {
 
   private final ScheduledExecutorService scheduledExecutorService;
   private ScheduledFuture<?> scheduledFuture;
-  private CommanderInterface commander = null;
+  private CommanderInterface commander;
   private volatile boolean isRunning = true;
   private final ThreadPoolExecutor threadPoolExecutor;
   private final NetworkTransaction networkTransaction;
@@ -64,7 +65,7 @@ public class InternalRunner {
   public InternalRunner()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     // FIXME always true since change for DbAdmin
-    if (DbConstant.admin.isActive()) {
+    if (admin.isActive()) {
       commander = new Commander(this, true);
     } else {
       commander = new CommanderNoDb(this, true);
@@ -75,7 +76,7 @@ public class InternalRunner {
     final BlockingQueue<Runnable> workQueue =
         new LinkedBlockingQueue<Runnable>();
     threadPoolExecutor = new ThreadPoolExecutor(10, Configuration.configuration
-                                                        .getRUNNER_THREAD() * 3,
+                                                        .getRunnerThread() * 3,
                                                 1000, TimeUnit.MILLISECONDS,
                                                 workQueue,
                                                 new WaarpThreadFactory(
@@ -101,7 +102,7 @@ public class InternalRunner {
   public void submitTaskRunner(DbTaskRunner taskRunner) {
     if (isRunning || !Configuration.configuration.isShutdown()) {
       if (threadPoolExecutor.getActiveCount() <
-          Configuration.configuration.getRUNNER_THREAD()) {
+          Configuration.configuration.getRunnerThread()) {
         logger.debug("Will run {}", taskRunner);
         final ClientRunner runner =
             new ClientRunner(networkTransaction, taskRunner, null);
@@ -127,7 +128,7 @@ public class InternalRunner {
     isRunning = false;
     scheduledFuture.cancel(false);
     if (commander != null) {
-      commander.finalize();
+      commander.finalizeCommander();
     }
     scheduledExecutorService.shutdown();
     threadPoolExecutor.shutdown();
@@ -142,7 +143,7 @@ public class InternalRunner {
     logger.info("Stopping Commander and Runner Tasks");
     scheduledFuture.cancel(true);
     if (commander != null) {
-      commander.finalize();
+      commander.finalizeCommander();
     }
     scheduledExecutorService.shutdownNow();
     threadPoolExecutor.shutdownNow();
@@ -157,10 +158,10 @@ public class InternalRunner {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     scheduledFuture.cancel(false);
     if (commander != null) {
-      commander.finalize();
+      commander.finalizeCommander();
     }
     // FIXME always true since change for DbAdmin
-    if (DbConstant.admin.isActive()) {
+    if (admin.isActive()) {
       commander = new Commander(this);
     } else {
       commander = new CommanderNoDb(this);

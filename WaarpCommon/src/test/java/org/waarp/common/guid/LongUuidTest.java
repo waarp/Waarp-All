@@ -139,9 +139,9 @@ public class LongUuidTest {
     if (largest == 0) {
       largest = n;
     }
-    System.out.println(uuidArray[0] + "(" + uuidArray[0].getTimestamp() + ":" +
+    System.out.println(uuidArray[0] + "(" + uuidArray[0].getTimestamp() + ':' +
                        uuidArray[0].getLong() + ") - " + uuidArray[n - 1] +
-                       "(" + uuidArray[n - 1].getTimestamp() + ":" +
+                       '(' + uuidArray[n - 1].getTimestamp() + ':' +
                        uuidArray[n - 1].getLong() + ") = " +
                        (uuidArray[n - 1].getLong() - uuidArray[0].getLong() +
                         1));
@@ -172,9 +172,7 @@ public class LongUuidTest {
     final Set<LongUuid> uuidSet = new HashSet<LongUuid>();
 
     final int effectiveN = n / numThreads * numThreads;
-    for (int i = 0; i < effectiveN; i++) {
-      uuidSet.add(uuids[i]);
-    }
+    uuidSet.addAll(Arrays.asList(uuids).subList(0, effectiveN));
 
     assertEquals(effectiveN, uuidSet.size());
   }

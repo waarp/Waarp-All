@@ -36,11 +36,10 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 /**
  * Abstract implementation of task
- *
- *
  */
 public abstract class AbstractTask implements Runnable {
   /**
@@ -48,7 +47,7 @@ public abstract class AbstractTask implements Runnable {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractTask.class);
-
+  protected static final Pattern BLANK = Pattern.compile(" ");
   /**
    * Current full path of current FILENAME
    */
@@ -223,14 +222,15 @@ public abstract class AbstractTask implements Runnable {
   /**
    * Do we need to use LocalExec for an Exec Task ? Default = False
    */
-  boolean useLocalExec = false;
+  boolean useLocalExec;
 
   /**
    * Constructor
    *
    * @param type
    * @param delay
-   * @param arg
+   * @param argRule
+   * @param argTransfer
    * @param session
    */
   AbstractTask(TaskType type, int delay, String argRule, String argTransfer,
@@ -254,7 +254,7 @@ public abstract class AbstractTask implements Runnable {
    * This is the only interface to execute an operator.
    */
   @Override
-  abstract public void run();
+  public abstract void run();
 
   /**
    * @return True if the operation is in success status
@@ -334,7 +334,7 @@ public abstract class AbstractTask implements Runnable {
       } catch (final OpenR66ProtocolNoSslException e) {
         // replace by standard name
         WaarpStringUtils.replaceAll(builder, LOCALHOST,
-                                    Configuration.configuration.getHOST_ID());
+                                    Configuration.configuration.getHostId());
       }
     }
     if (session.getRemoteAddress() != null) {
@@ -355,7 +355,7 @@ public abstract class AbstractTask implements Runnable {
       WaarpStringUtils.replaceAll(builder, REQUESTEDHOST, requested);
       WaarpStringUtils.replaceAll(builder, FULLTRANSFERID,
                                   runner.getSpecialId() + "_" + requester +
-                                  "_" + requested);
+                                  '_' + requested);
       WaarpStringUtils.replaceAll(builder, RANKTRANSFER,
                                   Integer.toString(runner.getRank()));
     }
@@ -367,74 +367,86 @@ public abstract class AbstractTask implements Runnable {
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());
           WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getSendPath());
           WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());
           WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());
           WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
       } else {
         try {
           dir.changeDirectory(runner.getRule().getRecvPath());
           WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectory(runner.getRule().getSendPath());
           WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectory(runner.getRule().getWorkPath());
           WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectory(runner.getRule().getArchivePath());
           WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
       }
     } else {
       try {
         dir.changeDirectory(Configuration.configuration.getInPath());
         WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       dir = new R66Dir(session);
       try {
         dir.changeDirectory(Configuration.configuration.getOutPath());
         WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       dir = new R66Dir(session);
       try {
         dir.changeDirectory(Configuration.configuration.getWorkingPath());
         WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       dir = new R66Dir(session);
       try {
         dir.changeDirectory(Configuration.configuration.getArchivePath());
         WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
     }
     WaarpStringUtils.replaceAll(builder, HOMEPATH,
@@ -474,8 +486,7 @@ public abstract class AbstractTask implements Runnable {
         return String.format(builder.toString(), argFormat);
       } catch (final Exception e) {
         // ignored error since bad argument in static rule info
-        logger.error("Bad format in Rule: {" + builder.toString() + "} " +
-                     e.getMessage());
+        logger.error("Bad format in Rule: {" + builder + "} " + e.getMessage());
       }
     }
     return builder.toString();

@@ -94,7 +94,7 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
   }
 
   @Override
-  public ByteBuf readChunk(ByteBufAllocator arg0) throws Exception {
+  public ByteBuf readChunk(ByteBufAllocator byteBufAllocator) throws Exception {
     // Document
     DataBlock block;
     try {

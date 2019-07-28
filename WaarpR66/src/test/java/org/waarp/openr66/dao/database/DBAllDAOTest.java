@@ -21,9 +21,17 @@
 package org.waarp.openr66.dao.database;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
@@ -34,6 +42,7 @@ import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.pojo.Limit;
@@ -41,9 +50,21 @@ import org.waarp.openr66.pojo.MultipleMonitor;
 import org.waarp.openr66.pojo.Rule;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.junit.TestAbstract;
+import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
+import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.json.ShutdownOrBlockJsonPacket;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -53,10 +74,12 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
-public abstract class DBAllDAOTest {
+public abstract class DBAllDAOTest extends TestAbstract {
 
+  private static final String TMP_CONFIG_XML = "/tmp/config.xml";
   private Connection con;
   private final DAOFactoryTest factoryTest = new DAOFactoryTest();
+  protected File configFile = null;
 
   public DAOFactory getDaoFactory() {
     return factoryTest;
@@ -165,6 +188,131 @@ public abstract class DBAllDAOTest {
 
   public abstract void cleanDB() throws SQLException;
 
+  public abstract JdbcDatabaseContainer getJDC();
+
+  public String getServerConfigFile() {
+    if (configFile != null) {
+      return configFile.getAbsolutePath();
+    }
+    ClassLoader classLoader = DBAllDAOTest.class.getClassLoader();
+    File file = new File(
+        classLoader.getResource("Linux/config/config-XXDb.xml").getFile());
+    if (!file.exists()) {
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Cannot find in  " + file.getAbsolutePath());
+      fail("Cannot find " + file.getAbsolutePath());
+    }
+    String content = WaarpStringUtils.readFile(file.getAbsolutePath());
+    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getJdbcUrl());
+    String driver = getJDC().getDriverClassName();
+    String target = "notfound";
+    String jdbcUrl = getJDC().getJdbcUrl();
+    if (driver.equalsIgnoreCase("org.mariadb.jdbc.Driver")) {
+      target = "mariadb";
+    } else if (driver.equalsIgnoreCase("org.h2.Driver")) {
+      target = "h2";
+    } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
+      target = "oracle";
+      jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
+      SysErrLogger.FAKE_LOGGER
+          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      throw new UnsupportedOperationException(
+          "Unsupported Test for Oracle since wrong JDBC driver");
+    } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
+      target = "postgresql";
+    } else if (driver.equalsIgnoreCase("com.mysql.jdbc.Driver")) {
+      target = "mysql";
+    } else {
+      SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
+    }
+    content = content.replace("XXXJDBCXXX", jdbcUrl);
+    content = content.replace("XXXDRIVERXXX", target);
+    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.syserr(target);
+    File fileTo = new File(TMP_R_66_CONF_CONFIG_XML);
+    fileTo.getParentFile().mkdirs();
+    FileWriter writer = null;
+    try {
+      writer = new FileWriter(fileTo);
+      writer.write(content);
+      writer.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (writer != null) {
+        FileUtils.close(writer);
+      }
+    }
+    configFile = fileTo;
+    File copy = new File(TMP_CONFIG_XML);
+    try {
+      FileUtils.copy(configFile, copy, false, false);
+    } catch (Reply550Exception e) {
+      e.printStackTrace();
+    }
+    return TMP_R_66_CONF_CONFIG_XML;
+  }
+
+  @Test
+  public void startStopServerR66() throws Exception {
+    String fileconf = null;
+    try {
+      fileconf = getServerConfigFile();
+    } catch (UnsupportedOperationException e) {
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Database not supported by this test Start Stop R66", e);
+      Assume.assumeNoException(e);
+      return;
+    }
+    setUpBeforeClassMinimal(fileconf);
+    File copy = new File(TMP_CONFIG_XML);
+    if (copy.exists() && configFile != null && !configFile.exists()) {
+      try {
+        FileUtils.copy(copy, configFile, false, false);
+      } catch (Reply550Exception e) {
+        //e.printStackTrace();
+      }
+    }
+    String fileserver = fileconf;
+    if (!fileconf.startsWith("/")) {
+      int pos = fileconf.lastIndexOf('/');
+      if (pos >= 0) {
+        fileserver = fileconf.substring(pos + 1);
+      }
+    }
+    setUpBeforeClassServer(fileconf, fileserver, true);
+    setUpBeforeClassClient(fileserver);
+    Configuration.configuration.setTimeoutCon(100);
+    final DbHostAuth host = new DbHostAuth("hostas");
+    final SocketAddress socketServerAddress;
+    try {
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
+    }
+    final byte scode = -1;
+
+    // Shutdown server
+    logger.warn("Shutdown Server");
+    Configuration.configuration.setTimeoutCon(100);
+    final R66Future future = new R66Future(true);
+    final ShutdownOrBlockJsonPacket node8 = new ShutdownOrBlockJsonPacket();
+    node8.setRestartOrBlock(false);
+    node8.setShutdownOrBlock(true);
+    node8.setKey(FilesystemBasedDigest.passwdCrypt(
+        Configuration.configuration.getServerAdminKey()));
+    final AbstractLocalPacket valid =
+        new JsonCommandPacket(node8, LocalPacketFactory.BLOCKREQUESTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, false,
+                    R66FiniteDualStates.SHUTDOWN, true);
+    Thread.sleep(200);
+
+    tearDownAfterClassClient();
+    tearDownAfterClassMinimal();
+    ChannelUtils.exit();
+  }
+
   /*******************
    * BUSINESS
    *******************/
@@ -176,7 +324,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res =
           con.createStatement().executeQuery("SELECT * FROM hostconfig");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -190,7 +338,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM hostconfig where hostid = 'server1'");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -233,8 +381,8 @@ public abstract class DBAllDAOTest {
   public void testExistBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
-      assertEquals(true, dao.exist("server1"));
-      assertEquals(false, dao.exist("ghost"));
+      assertTrue(dao.exist("server1"));
+      assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -311,7 +459,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res =
           con.createStatement().executeQuery("SELECT * FROM hosts");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -325,7 +473,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM hosts where hostid = 'server1'");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -351,11 +499,11 @@ public abstract class DBAllDAOTest {
       assertEquals("127.0.0.1", host.getAddress());
       assertEquals(6666, host.getPort());
       // HostKey is tested in Insert and Update
-      assertEquals(true, host.isSSL());
-      assertEquals(true, host.isClient());
-      assertEquals(true, host.isProxified());
-      assertEquals(false, host.isAdmin());
-      assertEquals(false, host.isActive());
+      assertTrue(host.isSSL());
+      assertTrue(host.isClient());
+      assertTrue(host.isProxified());
+      assertFalse(host.isAdmin());
+      assertFalse(host.isActive());
       assertEquals(UpdatedInfo.TOSUBMIT, host.getUpdatedInfo());
 
       try {
@@ -373,8 +521,8 @@ public abstract class DBAllDAOTest {
   public void testExistHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
-      assertEquals(true, dao.exist("server1"));
-      assertEquals(false, dao.exist("ghost"));
+      assertTrue(dao.exist("server1"));
+      assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -400,11 +548,11 @@ public abstract class DBAllDAOTest {
       assertEquals("address", res2.getString("address"));
       assertEquals(666, res2.getInt("port"));
       assertArrayEquals("aaa".getBytes("utf-8"), res2.getBytes("hostkey"));
-      assertEquals(false, res2.getBoolean("isssl"));
-      assertEquals(false, res2.getBoolean("isclient"));
-      assertEquals(false, res2.getBoolean("isproxified"));
-      assertEquals(true, res2.getBoolean("adminrole"));
-      assertEquals(true, res2.getBoolean("isactive"));
+      assertFalse(res2.getBoolean("isssl"));
+      assertFalse(res2.getBoolean("isclient"));
+      assertFalse(res2.getBoolean("isproxified"));
+      assertTrue(res2.getBoolean("adminrole"));
+      assertTrue(res2.getBoolean("isactive"));
       assertEquals(0, res2.getInt("updatedinfo"));
     } catch (final Exception e) {
       fail(e.getMessage());
@@ -426,11 +574,11 @@ public abstract class DBAllDAOTest {
       assertEquals("address", res.getString("address"));
       assertEquals(666, res.getInt("port"));
       assertArrayEquals("password".getBytes("utf-8"), res.getBytes("hostkey"));
-      assertEquals(false, res.getBoolean("isssl"));
-      assertEquals(false, res.getBoolean("isclient"));
-      assertEquals(false, res.getBoolean("isproxified"));
-      assertEquals(true, res.getBoolean("adminrole"));
-      assertEquals(true, res.getBoolean("isactive"));
+      assertFalse(res.getBoolean("isssl"));
+      assertFalse(res.getBoolean("isclient"));
+      assertFalse(res.getBoolean("isproxified"));
+      assertTrue(res.getBoolean("adminrole"));
+      assertTrue(res.getBoolean("isactive"));
       assertEquals(0, res.getInt("updatedinfo"));
     } catch (final Exception e) {
       fail(e.getMessage());
@@ -462,7 +610,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res =
           con.createStatement().executeQuery("SELECT * FROM configuration");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -472,11 +620,11 @@ public abstract class DBAllDAOTest {
   public void testDeleteLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
-      dao.delete(new Limit("server1", 0l));
+      dao.delete(new Limit("server1", 0L));
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM configuration where hostid = 'server1'");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -521,8 +669,8 @@ public abstract class DBAllDAOTest {
   public void testExistLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
-      assertEquals(true, dao.exist("server1"));
-      assertEquals(false, dao.exist("ghost"));
+      assertTrue(dao.exist("server1"));
+      assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -533,7 +681,7 @@ public abstract class DBAllDAOTest {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.insert(
-          new Limit("chacha", 4l, 1l, 5l, 13l, 12, UpdatedInfo.TOSUBMIT));
+          new Limit("chacha", 4L, 1L, 5L, 13L, 12, UpdatedInfo.TOSUBMIT));
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT COUNT(1) as count FROM configuration");
@@ -560,7 +708,7 @@ public abstract class DBAllDAOTest {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.update(
-          new Limit("server2", 4l, 1l, 5l, 13l, 12l, UpdatedInfo.RUNNING));
+          new Limit("server2", 4L, 1L, 5L, 13L, 12L, UpdatedInfo.RUNNING));
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM configuration WHERE hostid = 'server2'");
@@ -605,7 +753,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res =
           con.createStatement().executeQuery("SELECT * FROM multiplemonitor");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -623,7 +771,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM multiplemonitor where hostid = 'server1'");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -676,8 +824,8 @@ public abstract class DBAllDAOTest {
         // ignore since XML
         return;
       }
-      assertEquals(true, dao.exist("server1"));
-      assertEquals(false, dao.exist("ghost"));
+      assertTrue(dao.exist("server1"));
+      assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -760,7 +908,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res =
           con.createStatement().executeQuery("SELECT * FROM rules");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -774,7 +922,7 @@ public abstract class DBAllDAOTest {
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM rules where idrule = 'default'");
-      assertEquals(false, res.next());
+      assertFalse(res.next());
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -825,8 +973,8 @@ public abstract class DBAllDAOTest {
   public void testExistRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
-      assertEquals(true, dao.exist("dummy"));
-      assertEquals(false, dao.exist("ghost"));
+      assertTrue(dao.exist("dummy"));
+      assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
       fail(e.getMessage());
     }
@@ -924,7 +1072,7 @@ public abstract class DBAllDAOTest {
 
     final ResultSet res =
         con.createStatement().executeQuery("SELECT * FROM runner");
-    assertEquals(false, res.next());
+    assertFalse(res.next());
   }
 
   public abstract TransferDAO getDAO(Connection con)
@@ -933,14 +1081,14 @@ public abstract class DBAllDAOTest {
   @Test
   public void testDeleteTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
-    dao.delete(new Transfer(0l, "", 1, "", "", "", false, 0, false, "server1",
+    dao.delete(new Transfer(0L, "", 1, "", "", "", false, 0, false, "server1",
                             "server1", "server2", "", Transfer.TASKSTEP.NOTASK,
                             Transfer.TASKSTEP.NOTASK, 0, ErrorCode.Unknown,
                             ErrorCode.Unknown, 0, null, null));
 
     final ResultSet res = con.createStatement().executeQuery(
         "SELECT * FROM runner where specialid = 0");
-    assertEquals(false, res.next());
+    assertFalse(res.next());
   }
 
   @Test
@@ -952,11 +1100,11 @@ public abstract class DBAllDAOTest {
   @Test
   public void testSelectTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
-    final Transfer transfer = dao.select(0l, "server1", "server2", "server1");
+    final Transfer transfer = dao.select(0L, "server1", "server2", "server1");
 
     assertEquals(0, transfer.getId());
     try {
-      dao.select(1l, "server1", "server2", "server1");
+      dao.select(1L, "server1", "server2", "server1");
       fail("Should raised an exception");
     } catch (final DAONoDataException e) {
       // Ignore since OK
@@ -966,8 +1114,8 @@ public abstract class DBAllDAOTest {
   @Test
   public void testExistTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
-    assertEquals(true, dao.exist(0l, "server1", "server2", "server1"));
-    assertEquals(false, dao.exist(1l, "server1", "server2", "server1"));
+    assertTrue(dao.exist(0L, "server1", "server2", "server1"));
+    assertFalse(dao.exist(1L, "server1", "server2", "server1"));
   }
 
   @Test
@@ -978,8 +1126,8 @@ public abstract class DBAllDAOTest {
     // Requester and requested are setup manualy
     transfer.setRequester("dummy");
     transfer.setOwnerRequest("dummy");
-    transfer.setStart(new Timestamp(1112242l));
-    transfer.setStop(new Timestamp(122l));
+    transfer.setStart(new Timestamp(1112242L));
+    transfer.setStop(new Timestamp(122L));
     transfer.setTransferInfo("transfer info");
     dao.insert(transfer);
 
@@ -996,7 +1144,7 @@ public abstract class DBAllDAOTest {
     assertEquals("file", res2.getString("filename"));
     assertEquals("file", res2.getString("originalname"));
     assertEquals("info", res2.getString("fileinfo"));
-    assertEquals(false, res2.getBoolean("ismoved"));
+    assertFalse(res2.getBoolean("ismoved"));
     assertEquals(3, res2.getInt("blocksz"));
   }
 
@@ -1005,12 +1153,12 @@ public abstract class DBAllDAOTest {
     final TransferDAO dao = getDAO(getConnection());
 
     dao.update(
-        new Transfer(0l, "rule", 13, "test", "testOrig", "testInfo", true, 42,
+        new Transfer(0L, "rule", 13, "test", "testOrig", "testInfo", true, 42,
                      true, "server1", "server1", "server2", "transferInfo",
                      Transfer.TASKSTEP.ERRORTASK,
                      Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
-                     ErrorCode.Unknown, 64, new Timestamp(192l),
-                     new Timestamp(1511l), UpdatedInfo.TOSUBMIT));
+                     ErrorCode.Unknown, 64, new Timestamp(192L),
+                     new Timestamp(1511L), UpdatedInfo.TOSUBMIT));
 
     final ResultSet res = con.createStatement().executeQuery(
         "SELECT * FROM runner WHERE specialid=0 and " +
@@ -1025,9 +1173,9 @@ public abstract class DBAllDAOTest {
     assertEquals("test", res.getString("filename"));
     assertEquals("testOrig", res.getString("originalname"));
     assertEquals("testInfo", res.getString("fileinfo"));
-    assertEquals(true, res.getBoolean("ismoved"));
+    assertTrue(res.getBoolean("ismoved"));
     assertEquals(42, res.getInt("blocksz"));
-    assertEquals(true, res.getBoolean("retrievemode"));
+    assertTrue(res.getBoolean("retrievemode"));
     assertEquals("server1", res.getString("ownerreq"));
     assertEquals("server1", res.getString("requester"));
     assertEquals("server2", res.getString("requested"));
@@ -1040,8 +1188,8 @@ public abstract class DBAllDAOTest {
                  res.getString("stepstatus").charAt(0));
     assertEquals(ErrorCode.Unknown.code, res.getString("infostatus").charAt(0));
     assertEquals(64, res.getInt("rank"));
-    assertEquals(new Timestamp(192l), res.getTimestamp("starttrans"));
-    assertEquals(new Timestamp(1511l), res.getTimestamp("stoptrans"));
+    assertEquals(new Timestamp(192L), res.getTimestamp("starttrans"));
+    assertEquals(new Timestamp(1511L), res.getTimestamp("stoptrans"));
     assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res.getInt("updatedInfo"));
   }
 

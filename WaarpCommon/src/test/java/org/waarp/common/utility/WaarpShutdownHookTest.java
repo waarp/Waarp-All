@@ -38,7 +38,7 @@ public class WaarpShutdownHookTest {
     }
 
     @Override
-    protected void exit() {
+    protected void exitService() {
       // Do nothing
     }
   }

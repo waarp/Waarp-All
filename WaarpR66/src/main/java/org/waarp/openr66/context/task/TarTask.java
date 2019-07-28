@@ -32,8 +32,6 @@ import java.util.List;
 
 /**
  * TAR task
- *
- *
  */
 public class TarTask extends AbstractTask {
   /**
@@ -56,11 +54,11 @@ public class TarTask extends AbstractTask {
   @Override
   public void run() {
     logger.info(
-        "TAR with " + argRule + ":" + argTransfer + ":" + delay + " and {}",
+        "TAR with " + argRule + ':' + argTransfer + ':' + delay + " and {}",
         session);
     String finalname = argRule;
     finalname = getReplacedValue(finalname, argTransfer.split(" "));
-    boolean tar = false;
+    boolean tar;
     switch (delay) {
       case 2: {
         // directory: tar finalname where finalname="target directory"
@@ -95,7 +93,7 @@ public class TarTask extends AbstractTask {
     }
     if (!tar) {
       logger.error(
-          "Tar error with " + argRule + ":" + argTransfer + ":" + delay +
+          "Tar error with " + argRule + ':' + argTransfer + ':' + delay +
           " and " + session);
       futureCompletion
           .setFailure(new OpenR66ProtocolSystemException("Tar error"));

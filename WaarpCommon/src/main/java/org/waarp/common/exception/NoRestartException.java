@@ -21,8 +21,6 @@ package org.waarp.common.exception;
 
 /**
  * No restart exception
- *
- *
  */
 public class NoRestartException extends Exception {
 

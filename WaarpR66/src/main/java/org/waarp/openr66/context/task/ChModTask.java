@@ -26,6 +26,7 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 /**
  * This task allows to change the mode of the file (as in Unix CHMOD command)
@@ -56,8 +57,6 @@ import java.io.File;
  * results, step by step.<br>
  * "a=r a+w a-r" will result in a=w (first step is r--, second step is rw-,
  * third step is -w-)
- *
- *
  */
 public class ChModTask extends AbstractTask {
   /**
@@ -65,6 +64,7 @@ public class ChModTask extends AbstractTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(ChModTask.class);
+  private static final Pattern BLANK = Pattern.compile(" ");
 
   /**
    * @param argRule
@@ -81,27 +81,34 @@ public class ChModTask extends AbstractTask {
   public void run() {
     String finalname = argRule;
     finalname = AbstractDir
-        .normalizePath(getReplacedValue(finalname, argTransfer.split(" ")))
+        .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)))
         .trim().toLowerCase();
     logger.info("ChMod with arg " + finalname + " from {}", session);
     final File file = session.getFile().getTrueFile();
-    boolean user = false, all = false, isall = false;
-    boolean ur, uw, ux, ar = false, aw = false, ax = false;
+    boolean user;
+    boolean all;
+    boolean isall = false;
+    boolean ur;
+    boolean uw;
+    boolean ux;
+    boolean ar = false;
+    boolean aw = false;
+    boolean ax = false;
     ur = file.canRead();
     uw = file.canWrite();
     ux = file.canExecute();
-    final String[] chmods = finalname.split(" ");
+    final String[] chmods = BLANK.split(finalname);
     for (final String chmod : chmods) {
-      user = false;
-      all = false;
-      user = (chmod.indexOf('u') >= 0);
-      all = (chmod.indexOf('a') >= 0);
+      user = chmod.indexOf('u') >= 0;
+      all = chmod.indexOf('a') >= 0;
       if (!user && !all) {
         // ignore
         continue;
       }
       isall |= all;
-      boolean isp = false, ism = false, ise = false;
+      boolean isp = false;
+      boolean ism = false;
+      boolean ise = false;
       if (chmod.indexOf('=') >= 0) {
         ise = true;
       } else if (chmod.indexOf('+') >= 0) {
@@ -112,23 +119,23 @@ public class ChModTask extends AbstractTask {
         // ignore
         continue;
       }
-      boolean isr = false, isw = false, isx = false;
-      isr = (chmod.indexOf('r') >= 0);
-      isw = (chmod.indexOf('w') >= 0);
-      isx = (chmod.indexOf('x') >= 0);
+      boolean isr, isw, isx;
+      isr = chmod.indexOf('r') >= 0;
+      isw = chmod.indexOf('w') >= 0;
+      isx = chmod.indexOf('x') >= 0;
       if (!isr && !isw && !isx) {
         // ignore
         continue;
       }
       if (user) {
-        ur = (ise && isr) || (isp && (isr || ur)) || (ism && (!isr && ur));
-        uw = (ise && isw) || (isp && (isw || uw)) || (ism && (!isw && uw));
-        ux = (ise && isx) || (isp && (isx || ux)) || (ism && (!isx && ux));
+        ur = ise && isr || isp && (isr || ur) || ism && !isr && ur;
+        uw = ise && isw || isp && (isw || uw) || ism && !isw && uw;
+        ux = ise && isx || isp && (isx || ux) || ism && !isx && ux;
       }
       if (all) {
-        ar = (ise && isr) || (isp && (isr || ar)) || (ism && (!isr && ar));
-        aw = (ise && isw) || (isp && (isw || aw)) || (ism && (!isw && aw));
-        ax = (ise && isx) || (isp && (isx || ax)) || (ism && (!isx && ax));
+        ar = ise && isr || isp && (isr || ar) || ism && !isr && ar;
+        aw = ise && isw || isp && (isw || aw) || ism && !isw && aw;
+        ax = ise && isx || isp && (isx || ax) || ism && !isx && ax;
       }
     }
     boolean result = true;
@@ -142,10 +149,9 @@ public class ChModTask extends AbstractTask {
     result &= file.setExecutable(ux, true);
     if (result) {
       futureCompletion.setSuccess();
-      return;
     } else {
-      logger.error("ChMod " + finalname + " on file : " + file + "     " +
-                   session.toString());
+      logger.error(
+          "ChMod " + finalname + " on file : " + file + "     " + session);
       futureCompletion.setFailure(
           new OpenR66RunnerException("Chmod not fully applied on File"));
     }

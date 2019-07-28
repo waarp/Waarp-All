@@ -29,24 +29,26 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
  * <p>
  * If a new task type is to be created, this is the place where it should be
  * referenced.
- *
- *
  */
 public enum TaskType {
   LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,
   VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,
   SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE;
 
-  int type;
+  private static final String UNVALID_TASK = "Unvalid Task: ";
 
-  String name;
+  private static final String NAME_UNKNOWN = "name unknown: ";
+
+  final int type;
+
+  final String name;
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(TaskType.class);
 
-  private TaskType() {
+  TaskType() {
     type = ordinal();
     name = name();
   }
@@ -154,8 +156,8 @@ public enum TaskType {
                                  session.getRunner().getFileInformation(),
                                  session);
       default:
-        logger.error("name unknown: " + type.name);
-        throw new OpenR66RunnerErrorException("Unvalid Task: " + type.name);
+        logger.error(NAME_UNKNOWN + type.name);
+        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);
     }
   }
 
@@ -177,10 +179,10 @@ public enum TaskType {
       type = valueOf(name);
     } catch (final NullPointerException e) {
       logger.error("name empty " + name);
-      throw new OpenR66RunnerErrorException("Unvalid Task: " + name);
+      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);
     } catch (final IllegalArgumentException e) {
-      logger.error("name unknown: " + name);
-      throw new OpenR66RunnerErrorException("Unvalid Task: " + name);
+      logger.error(NAME_UNKNOWN + name);
+      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);
     }
     return getTaskFromId(type, argRule, delay, session);
   }
@@ -206,10 +208,10 @@ public enum TaskType {
       type = valueOf(name);
     } catch (final NullPointerException e) {
       logger.error("name empty " + name);
-      throw new OpenR66RunnerErrorException("Unvalid Task: " + name);
+      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);
     } catch (final IllegalArgumentException e) {
-      logger.error("name unknown: " + name);
-      throw new OpenR66RunnerErrorException("Unvalid Task: " + name);
+      logger.error(NAME_UNKNOWN + name);
+      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);
     }
     switch (type) {
       case LOG:
@@ -250,10 +252,10 @@ public enum TaskType {
       case UNZEROED:
       case CHMOD:
       case CHKFILE:
-        throw new OpenR66RunnerErrorException("Unvalid Task: " + type.name);
+        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);
       default:
-        logger.error("name unknown: " + type.name);
-        throw new OpenR66RunnerErrorException("Unvalid Task: " + type.name);
+        logger.error(NAME_UNKNOWN + type.name);
+        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);
     }
   }
 }

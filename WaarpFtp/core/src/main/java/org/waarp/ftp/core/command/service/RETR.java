@@ -30,8 +30,6 @@ import org.waarp.ftp.core.file.FtpFile;
 
 /**
  * RETR command
- *
- *
  */
 public class RETR extends AbstractCommand {
   private static final WaarpLogger logger =

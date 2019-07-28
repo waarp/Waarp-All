@@ -23,14 +23,18 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,6 +43,11 @@ import java.util.List;
 public class HttpRestHandlerTest extends HttpRestHandler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestHandlerTest.class);
+  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];
+  static final int PORT = 8088;
+  static final String HOST = "127.0.0.1";
+  static final NioEventLoopGroup loopGroup =
+      new NioEventLoopGroup(10, new WaarpThreadFactory("Rest"));
 
   public enum RESTHANDLERS {
     DbTransferLog(DbTransferLogDataModelRestMethodHandler.BASEURI,
@@ -70,13 +79,10 @@ public class HttpRestHandlerTest extends HttpRestHandler {
   public static void defaultHandlers() {
     synchronized (defaultConfiguration) {
       if (defaultConfiguration.restHashMap.isEmpty()) {
-        defaultConfiguration.REST_AUTHENTICATED = false;
-        defaultConfiguration.RESTHANDLERS_CRUD =
-            new byte[RESTHANDLERS.values().length];
-        for (int i = 0; i < defaultConfiguration.RESTHANDLERS_CRUD.length;
-             i++) {
-          defaultConfiguration.RESTHANDLERS_CRUD[i] = 0x0F;
-        }
+        defaultConfiguration.setRestAuthenticated(false);
+        defaultConfiguration
+            .setResthandlersCrud(new byte[RESTHANDLERS.values().length]);
+        Arrays.fill(defaultConfiguration.getResthandlersCrud(), (byte) 0x0F);
         final METHOD[] methods = METHOD.values();
         defaultConfiguration.restHashMap.put(RESTHANDLERS.DbTransferLog.uri,
                                              new DbTransferLogDataModelRestMethodHandler(
@@ -105,13 +111,13 @@ public class HttpRestHandlerTest extends HttpRestHandler {
     if (RestConfiguration.CRUD.DELETE.isValid(check)) {
       methods.add(METHOD.DELETE);
     }
-    return methods.toArray(new METHOD[0]);
+    return methods.toArray(METHOD_0_LENGTH);
   }
 
   public static void instantiateHandlers(RestConfiguration restConfiguration) {
     defaultHandlers();
     final byte check =
-        restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.DbTransferLog
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTransferLog
             .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
@@ -136,24 +142,27 @@ public class HttpRestHandlerTest extends HttpRestHandler {
    */
   public static void initializeService(RestConfiguration restConfiguration) {
     instantiateHandlers(restConfiguration);
+    if (group == null) {
+      group = new DefaultChannelGroup("RestGroup", loopGroup.next());
+    }
+
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(httpBootstrap, workerGroup, 30000);
 
     // Configure the pipeline factory.
     httpBootstrap.childHandler(new HttpRestInitializer(restConfiguration));
     // Bind and start to accept incoming connections.
     ChannelFuture future = null;
     if (restConfiguration != null &&
-        !restConfiguration.REST_ADDRESS.isEmpty()) {
+        !restConfiguration.getRestAddress().isEmpty()) {
       future = httpBootstrap.bind(
-          new InetSocketAddress(restConfiguration.REST_ADDRESS,
-                                restConfiguration.REST_PORT));
+          new InetSocketAddress(restConfiguration.getRestAddress(),
+                                restConfiguration.getRestPort()));
     } else {
       future = httpBootstrap
-          .bind(new InetSocketAddress(restConfiguration.REST_PORT));
+          .bind(new InetSocketAddress(restConfiguration.getRestPort()));
     }
     try {
       future.await();
@@ -162,5 +171,19 @@ public class HttpRestHandlerTest extends HttpRestHandler {
       e.printStackTrace();
     }
   }
+
+  public static RestConfiguration getTestConfiguration() {
+    final RestConfiguration configuration = new RestConfiguration();
+    configuration.setRestPort(PORT);
+    configuration.setRestSsl(false);
+    configuration.setResthandlersCrud(new byte[RESTHANDLERS.values().length]);
+    Arrays.fill(configuration.getResthandlersCrud(), CRUD.ALL.mask);
+    configuration.setRestAuthenticated(true);
+    configuration.setRestTimeLimit(10000);
+    configuration.setRestSignature(true);
+    configuration.setRestAddress(HOST);
+    return configuration;
+  }
+
 
 }

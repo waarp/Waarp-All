@@ -20,9 +20,8 @@
 package org.waarp.openr66.protocol.networkhandler;
 
 import io.netty.channel.Channel;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import org.waarp.common.future.WaarpLock;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
@@ -42,8 +41,6 @@ import java.util.Set;
 /**
  * NetworkChannelReference object to keep Network channel open while some local
  * channels are attached to it.
- *
- *
  */
 public class NetworkChannelReference {
   /**
@@ -51,20 +48,18 @@ public class NetworkChannelReference {
    */
   protected static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(NetworkChannelReference.class);
+  private static final LocalChannelReference[] LCR_0_LENGTH =
+      new LocalChannelReference[0];
 
   /**
    * Does this Network Channel is in shutdown
    */
-  protected volatile boolean isShuttingDown = false;
+  protected volatile boolean isShuttingDown;
   /**
    * Associated LocalChannelReference
    */
   private final Set<LocalChannelReference> localChannelReferences =
       ConcurrentUtility.newConcurrentSet();
-  /**
-   * Group for all Local Channels
-   */
-  private final ChannelGroup localChannels;
   /**
    * Network Channel
    */
@@ -93,25 +88,33 @@ public class NetworkChannelReference {
    * Last Time in ms this channel was used by a LocalChannel
    */
   private long lastTimeUsed = System.currentTimeMillis();
+  /**
+   * Is this channel multiplexed using Ssl
+   */
+  private final boolean isSSL;
 
-  public NetworkChannelReference(Channel networkChannel, WaarpLock lock) {
+  public NetworkChannelReference(Channel networkChannel, WaarpLock lock,
+                                 boolean isSSL) {
     channel = networkChannel;
     networkAddress = channel.remoteAddress();
     hostAddress =
         ((InetSocketAddress) networkAddress).getAddress().getHostAddress();
     this.lock = lock;
-    localChannels = new DefaultChannelGroup(
-        Configuration.configuration.getSubTaskGroup().next());
+    this.isSSL = isSSL;
   }
 
-  public NetworkChannelReference(SocketAddress address, WaarpLock lock) {
+  public NetworkChannelReference(SocketAddress address, WaarpLock lock,
+                                 boolean isSSL) {
     channel = null;
     networkAddress = address;
     hostAddress =
         ((InetSocketAddress) networkAddress).getAddress().getHostAddress();
     this.lock = lock;
-    localChannels = new DefaultChannelGroup(
-        Configuration.configuration.getSubTaskGroup().next());
+    this.isSSL = isSSL;
+  }
+
+  public boolean isSSL() {
+    return isSSL;
   }
 
   public void add(LocalChannelReference localChannel)
@@ -123,7 +126,6 @@ public class NetworkChannelReference {
     }
     use();
     localChannelReferences.add(localChannel);
-    localChannels.add(localChannel.getLocalChannel());
   }
 
   /**
@@ -154,11 +156,11 @@ public class NetworkChannelReference {
    * @param localChannel
    */
   public void remove(LocalChannelReference localChannel) {
-    if (localChannel.getLocalChannel().isActive()) {
-      localChannel.getLocalChannel().close();
+    if (!localChannel.getFutureRequest().isDone()) {
+      localChannel.close();
     }
     localChannelReferences.remove(localChannel);
-    // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis();
+    // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis()
   }
 
   /**
@@ -167,11 +169,15 @@ public class NetworkChannelReference {
   public void shutdownAllLocalChannels() {
     isShuttingDown = true;
     final LocalChannelReference[] localChannelReferenceArray =
-        localChannelReferences.toArray(new LocalChannelReference[0]);
+        localChannelReferences.toArray(LCR_0_LENGTH);
     final ArrayList<LocalChannelReference> toCloseLater =
         new ArrayList<LocalChannelReference>();
     for (final LocalChannelReference localChannelReference : localChannelReferenceArray) {
+      localChannelReference.getFutureRequest().awaitOrInterruptible(
+          Configuration.configuration.getTimeoutCon() / 3);
       if (!localChannelReference.getFutureRequest().isDone()) {
+        localChannelReference.getFutureValidRequest().awaitOrInterruptible(
+            Configuration.configuration.getTimeoutCon() / 3);
         if (localChannelReference.getFutureValidRequest().isDone() &&
             localChannelReference.getFutureValidRequest().isFailed()) {
           toCloseLater.add(localChannelReference);
@@ -183,20 +189,25 @@ public class NetworkChannelReference {
           if (localChannelReference.getSession() != null) {
             try {
               localChannelReference.getSession().tryFinalizeRequest(finalValue);
-            } catch (final OpenR66RunnerErrorException e) {
-            } catch (final OpenR66ProtocolSystemException e) {
+            } catch (final OpenR66RunnerErrorException ignored) {
+              // nothing
+            } catch (final OpenR66ProtocolSystemException ignored) {
+              // nothing
             }
           }
         }
       }
-      localChannelReference.getLocalChannel().close();
+      localChannelReference.close();
     }
     try {
       Thread.sleep(Configuration.WAITFORNETOP);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     for (final LocalChannelReference localChannelReference : toCloseLater) {
-      localChannelReference.getLocalChannel().close();
+      localChannelReference.getFutureRequest().awaitOrInterruptible(
+          Configuration.configuration.getTimeoutCon() / 3);
+      localChannelReference.close();
     }
     toCloseLater.clear();
   }
@@ -207,9 +218,8 @@ public class NetworkChannelReference {
 
   @Override
   public String toString() {
-    return "NC: " + hostId + ":" +
-           (channel != null? channel.isActive() : false) + " " +
-           networkAddress + " Count: " + localChannelReferences.size();
+    return "NC: " + hostId + ':' + (channel != null && channel.isActive()) +
+           ' ' + networkAddress + " Count: " + localChannelReferences.size();
   }
 
   @Override
@@ -219,7 +229,7 @@ public class NetworkChannelReference {
       if (obj2.channel == null || channel == null) {
         return false;
       }
-      return (obj2.channel.id().compareTo(channel.id()) == 0);
+      return obj2.channel.id().compareTo(channel.id()) == 0;
     }
     return false;
   }
@@ -259,7 +269,7 @@ public class NetworkChannelReference {
    *     in ms)
    */
   public long checkLastTime(long delay) {
-    return (lastTimeUsed + delay - System.currentTimeMillis());
+    return lastTimeUsed + delay - System.currentTimeMillis();
   }
 
   /**

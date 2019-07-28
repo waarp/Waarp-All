@@ -62,7 +62,7 @@ public class FtpServer {
         logger.error("Bad configuration");
         return;
       }
-      configuration.setTIMEOUTCON(1000);
+      configuration.setTimeoutCon(1000);
       // Start server.
       try {
         configuration.serverStartup();

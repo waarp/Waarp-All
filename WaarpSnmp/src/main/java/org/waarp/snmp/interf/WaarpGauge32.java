@@ -23,10 +23,7 @@ import org.snmp4j.smi.Gauge32;
 
 /**
  * Generic Gauge32 with update possibility for GoldenGate
- *
- *
  */
-@SuppressWarnings("serial")
 public abstract class WaarpGauge32 extends Gauge32 {
   /**
    *
@@ -45,11 +42,11 @@ public abstract class WaarpGauge32 extends Gauge32 {
    */
   protected abstract void setInternalValue(long value);
 
-  public WaarpGauge32() {
+  protected WaarpGauge32() {
     setInternalValue();
   }
 
-  public WaarpGauge32(long value) {
+  protected WaarpGauge32(long value) {
     setInternalValue(value);
   }
 

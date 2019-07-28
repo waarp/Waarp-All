@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 451 Requested action aborted: local error in processing.
- *
- *
  */
 public class Reply451Exception extends CommandAbstractException {
 

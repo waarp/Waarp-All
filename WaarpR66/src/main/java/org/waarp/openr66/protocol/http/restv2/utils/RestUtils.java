@@ -40,7 +40,7 @@ public final class RestUtils {
    */
   private RestUtils() throws InstantiationException {
     throw new InstantiationException(
-        this.getClass().getName() + " cannot be instantiated.");
+        getClass().getName() + " cannot be instantiated.");
   }
 
   // ######################### PUBLIC METHODS #################################

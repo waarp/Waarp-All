@@ -47,7 +47,7 @@ public final class SingletonUtils {
    *
    * @return a Byte Array Singleton
    */
-  public static final byte[] getSingletonByteArray() {
+  public static byte[] getSingletonByteArray() {
     return SINGLETON_BYTE_ARRAY;
   }
 
@@ -56,7 +56,7 @@ public final class SingletonUtils {
    *
    * @return an immutable empty List
    */
-  public static final <E> List<E> singletonList() {
+  public static <E> List<E> singletonList() {
     return Collections.emptyList();
   }
 
@@ -65,7 +65,7 @@ public final class SingletonUtils {
    *
    * @return an immutable empty Set
    */
-  public static final <E> Set<E> singletonSet() {
+  public static <E> Set<E> singletonSet() {
     return Collections.emptySet();
   }
 
@@ -74,7 +74,7 @@ public final class SingletonUtils {
    *
    * @return an immutable empty Map
    */
-  public static final <E, V> Map<E, V> singletonMap() {
+  public static <E, V> Map<E, V> singletonMap() {
     return Collections.emptyMap();
   }
 
@@ -98,7 +98,7 @@ public final class SingletonUtils {
     }
 
     @Override
-    public void mark(int arg0) {
+    public void mark(int arg0) {//NOSONAR
       // Empty
     }
 
@@ -118,7 +118,7 @@ public final class SingletonUtils {
     }
 
     @Override
-    public void reset() {
+    public void reset() {//NOSONAR
       // Empty
     }
 
@@ -133,7 +133,7 @@ public final class SingletonUtils {
    *
    * @return an immutable empty InputStream
    */
-  public static final InputStream singletonInputStream() {
+  public static InputStream singletonInputStream() {
     return SINGLETON_INPUTSTREAM;
   }
 
@@ -173,7 +173,7 @@ public final class SingletonUtils {
    *
    * @return an immutable empty OutputStream
    */
-  public static final OutputStream singletonOutputStream() {
+  public static OutputStream singletonOutputStream() {
     return SINGLETON_OUTPUTSTREAM;
   }
 

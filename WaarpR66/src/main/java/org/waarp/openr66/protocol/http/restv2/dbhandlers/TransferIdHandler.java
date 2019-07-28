@@ -26,11 +26,11 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import org.apache.commons.codec.Charsets;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Transfer;
-import org.waarp.openr66.protocol.http.restv2.RestConstants.*;
 import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 import org.waarp.openr66.protocol.localhandler.ServerActions;
@@ -155,7 +155,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                               @PathParam(URI_ID) String uri)
       throws UnsupportedEncodingException {
 
-    final String key = URLDecoder.decode(uri, Charset.forName("UTF-8").name());
+    final String key = URLDecoder.decode(uri, Charsets.UTF_8.name());
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
     if (!matcher.find()) {
@@ -351,9 +351,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void sub_options(HttpRequest request, HttpResponder responder,
-                          @PathParam(URI_ID) String uri,
-                          @PathParam("ep") String ep) {
+  public void subOptions(HttpRequest request, HttpResponder responder,
+                         @PathParam(URI_ID) String uri,
+                         @PathParam("ep") String ep) {
 
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> methods = new ArrayList<HttpMethod>();

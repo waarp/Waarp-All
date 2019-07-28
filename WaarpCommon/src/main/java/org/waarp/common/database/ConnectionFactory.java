@@ -72,9 +72,9 @@ public class ConnectionFactory {
    */
   private final String password;
 
-  private final boolean autocommit = true;
+  private static final boolean AUTOCOMMIT = true;
 
-  private final boolean readonly = false;
+  private static final boolean READONLY = false;
 
   private int maxconnections = 50;
 
@@ -141,20 +141,19 @@ public class ConnectionFactory {
    *     database
    */
   public Connection getConnection() throws SQLException {
-    logger.trace("Active: {}, Idle: {}", ds.getNumActive(), ds.getNumIdle());
     if (ds == null) {
       throw new SQLException("ConnectionFactory is not inialized.");
     }
+    logger.trace("Active: {}, Idle: {}", ds.getNumActive(), ds.getNumIdle());
     try {
-      final Connection con = ds.getConnection();
-      return con;
+      return ds.getConnection();
     } catch (final SQLException e) {
       throw new SQLException("Cannot access database", e);
     }
   }
 
   /**
-   * @param model
+   * @param properties
    * @param server
    * @param user
    * @param password
@@ -168,13 +167,13 @@ public class ConnectionFactory {
 
     ds = new BasicDataSource();
 
-    // Initialise DataSource
+    // Initialize DataSource
     ds.setDriverClassName(this.properties.getDriverName());
     ds.setUrl(this.server);
     ds.setUsername(this.user);
     ds.setPassword(this.password);
-    ds.setDefaultAutoCommit(autocommit);
-    ds.setDefaultReadOnly(readonly);
+    ds.setDefaultAutoCommit(AUTOCOMMIT);
+    ds.setDefaultReadOnly(READONLY);
     ds.setValidationQuery(this.properties.getValidationQuery());
 
     // Get maximum connections
@@ -185,7 +184,9 @@ public class ConnectionFactory {
     } catch (final SQLException e) {
       logger.warn("Cannot fetch maximum connection allowed from database", e);
     } finally {
-      con.close();
+      if (con != null) {
+        con.close();
+      }
     }
     ds.setMaxActive(maxconnections);
     ds.setMaxIdle(maxconnections);
@@ -240,9 +241,9 @@ public class ConnectionFactory {
     sb.append(", with user:");
     sb.append(user);
     sb.append(", AutoCommit:");
-    sb.append(autocommit);
+    sb.append(AUTOCOMMIT);
     sb.append(", DefaultReadOnly:");
-    sb.append(readonly);
+    sb.append(READONLY);
     sb.append(", max connecions:");
     sb.append(maxconnections);
 

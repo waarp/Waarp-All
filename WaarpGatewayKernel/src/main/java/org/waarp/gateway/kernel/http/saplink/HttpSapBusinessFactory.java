@@ -19,6 +19,7 @@
  */
 package org.waarp.gateway.kernel.http.saplink;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.gateway.kernel.AbstractHttpField;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldRole;
@@ -36,7 +37,7 @@ import java.util.LinkedHashMap;
  */
 public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
 
-  public static String sapUrl = "/saplink";
+  public static final String SAPLINK = "/saplink";
 
   /**
    * All functions for SapArg: some could be not implemented. Note that create
@@ -68,7 +69,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
     /**
      * True String as Field
      */
-    public String value;
+    public final String value;
 
     SapField(String value) {
       this.value = value;
@@ -195,14 +196,21 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       },
   };
 
-  public HttpSapBusinessFactory() {
+  protected HttpSapBusinessFactory() {
   }
 
   public static HttpPageHandler initializeHttpPageHandler() {
     // manual creation
     final HashMap<String, HttpPage> pages = new HashMap<String, HttpPage>();
-    String pagename, header, footer, beginform, endform, nextinform, uri,
-        errorpage, classname;
+    String pagename;
+    String header;
+    String footer;
+    String beginform;
+    String endform;
+    String nextinform;
+    String uri;
+    String errorpage;
+    String classname;
     PageRole pageRole;
     LinkedHashMap<String, AbstractHttpField> linkedHashMap;
 
@@ -219,7 +227,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // info
       pageRole = PageRole.GETDOWNLOAD;
       pagename = SapFunction.info.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -235,7 +243,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // get
       pageRole = PageRole.GETDOWNLOAD;
       pagename = SapFunction.get.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -251,7 +259,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // docGet
       pageRole = PageRole.GETDOWNLOAD;
       pagename = SapFunction.docGet.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -267,7 +275,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // createPost
       pageRole = PageRole.POSTUPLOAD;
       pagename = SapFunction.createPost.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -284,7 +292,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // createPut
       pageRole = PageRole.PUT;
       pagename = SapFunction.createPut.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -301,7 +309,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // mCreate
       pageRole = PageRole.POSTUPLOAD;
       pagename = SapFunction.mCreate.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -317,7 +325,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // append
       pageRole = PageRole.PUT;
       pagename = SapFunction.append.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -333,7 +341,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // updatePost
       pageRole = PageRole.POSTUPLOAD;
       pagename = SapFunction.updatePost.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -350,7 +358,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // updatePut
       pageRole = PageRole.PUT;
       pagename = SapFunction.updatePut.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -367,7 +375,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       // delete
       pageRole = PageRole.DELETE;
       pagename = SapFunction.delete.name();
-      uri = sapUrl;
+      uri = SAPLINK;
       header = null;
       footer = null;
       beginform = null;
@@ -381,14 +389,11 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
                              nextinform, uri, pageRole, errorpage, classname,
                              linkedHashMap));
     } catch (final ClassNotFoundException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     } catch (final InstantiationException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     } catch (final IllegalAccessException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
     return new HttpPageHandler(pages);
   }
@@ -396,9 +401,13 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
   private static void addDefaultFields(
       LinkedHashMap<String, AbstractHttpField> linkedHashMap,
       SapField[][] fields) {
-    String fieldname, fieldinfo, fieldvalue;
+    String fieldname;
+    String fieldinfo;
+    String fieldvalue;
     FieldRole fieldRole;
-    boolean fieldvisibility, fieldmandatory, fieldcookieset;
+    boolean fieldvisibility;
+    boolean fieldmandatory;
+    boolean fieldcookieset;
     int fieldrank;
     /*
      * UrlMandatory, UrlOptional, HeaderMandatory, HeaderOptional,BodyMandatory, BodyOptional, SecurityOptional.

@@ -32,28 +32,28 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
  * If the connection is not in autocommit, one could use this implementation to
  * implicitly commit when needed
  * automatically as should do an autocommit connection.
- *
- *
  */
 public abstract class AbstractDbDataWithCommit extends AbstractDbData {
   /**
    * To be implemented
    */
-  // public static String table;
-  // public static final int NBPRKEY;
-  // protected static String selectAllFields;
-  // protected static String updateAllFields;
-  // protected static String insertAllValues;
-  // protected DbValue[] primaryKey;
-  // protected DbValue[] otherFields;
-  // protected DbValue[] allFields;
+  // public static String table
+  // public static final int NBPRKEY
+  // protected static String selectAllFields
+  // protected static String updateAllFields
+  // protected static String insertAllValues
+  // protected DbValue[] primaryKey
+  // protected DbValue[] otherFields
+  // protected DbValue[] allFields
+
+  private static final String NO_ROW_FOUND = "No row found";
 
   /**
    * Abstract constructor to set the DbSession to use
    *
    * @param dbSession
    */
-  public AbstractDbDataWithCommit(DbSession dbSession) {
+  protected AbstractDbDataWithCommit(DbSession dbSession) {
     super(dbSession);
     initObject();
   }
@@ -82,7 +82,7 @@ public abstract class AbstractDbDataWithCommit extends AbstractDbData {
       setValues(preparedStatement, allFields);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       dbSession.commit();
       isSaved = true;
@@ -115,7 +115,7 @@ public abstract class AbstractDbDataWithCommit extends AbstractDbData {
       setValues(preparedStatement, allFields);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       dbSession.commit();
       isSaved = true;
@@ -143,7 +143,7 @@ public abstract class AbstractDbDataWithCommit extends AbstractDbData {
       setValues(preparedStatement, primaryKey);
       final int count = preparedStatement.executeUpdate();
       if (count <= 0) {
-        throw new WaarpDatabaseNoDataException("No row found");
+        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);
       }
       dbSession.commit();
       isSaved = false;

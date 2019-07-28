@@ -64,16 +64,16 @@ public class FHistoryButton extends JComponent
    *
    */
   private static final long serialVersionUID = -5176285056068997723L;
-  JToggleButton leftButton = new JToggleButton();
-  Btn rightButton = new Btn();
-  JPopupMenu popupMenu = new JPopupMenu();
-  ArrayList items = new ArrayList();
-  ArrayList itemListeners = new ArrayList(1);
-  ArrayList actionListeners = new ArrayList(1);
+  final JToggleButton leftButton = new JToggleButton();
+  final Btn rightButton = new Btn();
+  final JPopupMenu popupMenu = new JPopupMenu();
+  final ArrayList<History> items = new ArrayList<History>();
+  final ArrayList<ItemListener> itemListeners = new ArrayList<ItemListener>(1);
+  final ArrayList<ActionListener> actionListeners =
+      new ArrayList<ActionListener>(1);
 
   public FHistoryButton(ImageIcon icon, String leftTipText,
                         String rightTipText) {
-    super();
     leftButton.setFocusPainted(false);
     setIcon(icon);
     final ImageIcon icoArrow = FLoader.getIcon(this, "DropDown.gif");
@@ -100,12 +100,12 @@ public class FHistoryButton extends JComponent
     }
   }
 
-  public void setItems(List items) {
+  public void setItems(List<History> items) {
     popupMenu.removeAll();
     this.items.clear();
     if (items != null) {
       for (int i = 0; i < items.size(); i++) {
-        final Object item = items.get(i);
+        final History item = items.get(i);
         if (item == null) {
           continue;
         }
@@ -115,11 +115,10 @@ public class FHistoryButton extends JComponent
         popupMenu.add(mi);
       }
     }
-    if (this.items.size() == 0) {
+    if (this.items.isEmpty()) {
       final JMenuItem mi = new JMenuItem("< Empty >");
       mi.setEnabled(false);
       popupMenu.add(mi);
-      return;
     }
   }
 
@@ -136,7 +135,7 @@ public class FHistoryButton extends JComponent
         final ItemEvent ie =
             new ItemEvent(this, index, items.get(index), ItemEvent.SELECTED);
         for (int i = 0; i < itemListeners.size(); i++) {
-          final ItemListener l = (ItemListener) itemListeners.get(i);
+          final ItemListener l = itemListeners.get(i);
           l.itemStateChanged(ie);
         }
       }
@@ -144,7 +143,7 @@ public class FHistoryButton extends JComponent
       leftButton.setSelected(false);
 
       for (int i = 0; i < actionListeners.size(); i++) {
-        final ActionListener l = (ActionListener) actionListeners.get(i);
+        final ActionListener l = actionListeners.get(i);
         final ActionEvent ae =
             new ActionEvent(this, e.getID(), e.getActionCommand());
         l.actionPerformed(ae);
@@ -197,10 +196,9 @@ public class FHistoryButton extends JComponent
      *
      */
     private static final long serialVersionUID = -1272417382610945574L;
-    boolean b = false;
+    boolean b;
 
-    public Btn() {
-      super();
+    Btn() {
       setFocusPainted(false);
       addMouseListener(this);
     }
@@ -219,6 +217,7 @@ public class FHistoryButton extends JComponent
 
     @Override
     public void mouseClicked(MouseEvent e) {
+      // nothing
     }
 
     @Override
@@ -236,18 +235,22 @@ public class FHistoryButton extends JComponent
 
     @Override
     public void mouseReleased(MouseEvent e) {
+      // nothing
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
+      // nothing
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
+      // nothing
     }
 
     @Override
     public void popupMenuCanceled(PopupMenuEvent e) {
+      // nothing
     }
 
     @Override
@@ -261,6 +264,7 @@ public class FHistoryButton extends JComponent
 
     @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+      // nothing
     }
   }
 }

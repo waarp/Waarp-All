@@ -29,6 +29,7 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -37,7 +38,7 @@ import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.R66Session;
-import org.waarp.openr66.database.DbConstant;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.rest.handler.DbConfigurationR66RestMethodHandler;
@@ -56,13 +57,12 @@ import org.waarp.openr66.protocol.localhandler.ServerActions;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 /**
  * Handler for Rest HTTP support for R66
- *
- *
  */
 public class HttpRestR66Handler extends HttpRestHandler {
 
@@ -71,11 +71,12 @@ public class HttpRestR66Handler extends HttpRestHandler {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestR66Handler.class);
+  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];
 
-  private static HashMap<String, DbSession> dbSessionFromUser =
+  private static final HashMap<String, DbSession> dbSessionFromUser =
       new HashMap<String, DbSession>();
 
-  public static enum RESTHANDLERS {
+  public enum RESTHANDLERS {
     DbHostAuth(DbHostAuthR66RestMethodHandler.BASEURI,
                org.waarp.openr66.database.data.DbHostAuth.class),
     DbRule(DbRuleR66RestMethodHandler.BASEURI,
@@ -94,9 +95,9 @@ public class HttpRestR66Handler extends HttpRestHandler {
     Server(HttpRestServerR66Handler.BASEURI, null),
     Control(HttpRestControlR66Handler.BASEURI, null);
 
-    public String uri;
+    public final String uri;
     @SuppressWarnings("rawtypes")
-    public Class clasz;
+    public final Class clasz;
 
     @SuppressWarnings("rawtypes")
     RESTHANDLERS(String uri, Class clasz) {
@@ -120,13 +121,10 @@ public class HttpRestR66Handler extends HttpRestHandler {
   public static void defaultHandlers() {
     synchronized (defaultConfiguration) {
       if (defaultConfiguration.restHashMap.isEmpty()) {
-        defaultConfiguration.REST_AUTHENTICATED = true;
-        defaultConfiguration.RESTHANDLERS_CRUD =
-            new byte[RESTHANDLERS.values().length];
-        for (int i = 0; i < defaultConfiguration.RESTHANDLERS_CRUD.length;
-             i++) {
-          defaultConfiguration.RESTHANDLERS_CRUD[i] = 0x0F;
-        }
+        defaultConfiguration.setRestAuthenticated(true);
+        defaultConfiguration
+            .setResthandlersCrud(new byte[RESTHANDLERS.values().length]);
+        Arrays.fill(defaultConfiguration.getResthandlersCrud(), (byte) 0x0F);
         final METHOD[] methods = METHOD.values();
         defaultConfiguration.restHashMap.put(RESTHANDLERS.DbTaskRunner.uri,
                                              new DbTaskRunnerR66RestMethodHandler(
@@ -199,43 +197,46 @@ public class HttpRestR66Handler extends HttpRestHandler {
     if (RestConfiguration.CRUD.DELETE.isValid(check)) {
       methods.add(METHOD.DELETE);
     }
-    return methods.toArray(new METHOD[0]);
+    return methods.toArray(METHOD_0_LENGTH);
   }
 
   public static void instantiateHandlers(RestConfiguration restConfiguration) {
     defaultHandlers();
-    byte check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.DbTaskRunner
-        .ordinal()];
+    byte check =
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTaskRunner
+            .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.DbTaskRunner.uri,
                                         new DbTaskRunnerR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-    check =
-        restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.DbHostAuth.ordinal()];
+    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbHostAuth
+        .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.DbHostAuth.uri,
                                         new DbHostAuthR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.DbRule.ordinal()];
+    check =
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbRule.ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.DbRule.uri,
                                         new DbRuleR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.DbHostConfiguration
-        .ordinal()];
+    check =
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbHostConfiguration
+            .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.DbHostConfiguration.uri,
                                         new DbHostConfigurationR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.DbConfiguration
+    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbConfiguration
         .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
@@ -243,52 +244,55 @@ public class HttpRestR66Handler extends HttpRestHandler {
                                         new DbConfigurationR66RestMethodHandler(
                                             restConfiguration, methods));
     }
-    check =
-        restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Bandwidth.ordinal()];
+    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Bandwidth
+        .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Bandwidth.uri,
                                         new HttpRestBandwidthR66Handler(
                                             restConfiguration, methods));
     }
-    check =
-        restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Business.ordinal()];
+    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Business
+        .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Business.uri,
                                         new HttpRestBusinessR66Handler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Config.ordinal()];
+    check =
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Config.ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Config.uri,
                                         new HttpRestConfigR66Handler(
                                             restConfiguration, methods));
     }
-    check =
-        restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Information.ordinal()];
+    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Information
+        .ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Information.uri,
                                         new HttpRestInformationR66Handler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Log.ordinal()];
+    check = restConfiguration.getResthandlersCrud()[RESTHANDLERS.Log.ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Log.uri,
                                         new HttpRestLogR66Handler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Server.ordinal()];
+    check =
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Server.ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Server.uri,
                                         new HttpRestServerR66Handler(
                                             restConfiguration, methods));
     }
-    check = restConfiguration.RESTHANDLERS_CRUD[RESTHANDLERS.Control.ordinal()];
+    check =
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.Control.ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.Control.uri,
@@ -307,9 +311,9 @@ public class HttpRestR66Handler extends HttpRestHandler {
   protected void checkConnection(ChannelHandlerContext ctx)
       throws HttpInvalidAuthenticationException {
     logger.debug("Request: {} ### {}", arguments, response);
-    String user = null;
+    String user;
     String key = null;
-    if (restConfiguration.REST_AUTHENTICATED) {
+    if (restConfiguration.isRestAuthenticated()) {
       user = arguments.getXAuthUser();
       if (user == null || user.isEmpty()) {
         status = HttpResponseStatus.UNAUTHORIZED;
@@ -321,8 +325,8 @@ public class HttpRestR66Handler extends HttpRestHandler {
         key = new String(host.getHostkey(), WaarpStringUtils.UTF8);
       } catch (final WaarpDatabaseException e) {
         // might be global Admin
-        if (user.equals(Configuration.configuration.getADMINNAME())) {
-          key = new String(Configuration.configuration.getSERVERADMINKEY(),
+        if (user.equals(Configuration.configuration.getAdminName())) {
+          key = new String(Configuration.configuration.getServerAdminKey(),
                            WaarpStringUtils.UTF8);
         }
       }
@@ -330,36 +334,37 @@ public class HttpRestR66Handler extends HttpRestHandler {
         status = HttpResponseStatus.UNAUTHORIZED;
         throw new HttpInvalidAuthenticationException("Wrong Authentication");
       }
-      if (restConfiguration.REST_SIGNATURE) {
-        arguments.checkBaseAuthent(restConfiguration.hmacSha256, key,
-                                   restConfiguration.REST_TIME_LIMIT);
+      if (restConfiguration.isRestSignature()) {
+        arguments.checkBaseAuthent(restConfiguration.getHmacSha256(), key,
+                                   restConfiguration.getRestTimeLimit());
       } else {
-        arguments.checkTime(restConfiguration.REST_TIME_LIMIT);
+        arguments.checkTime(restConfiguration.getRestTimeLimit());
       }
     } else {
       // User set only for right access, not for signature check
-      user = Configuration.configuration.getADMINNAME();
-      if (restConfiguration.REST_SIGNATURE) {
-        arguments.checkBaseAuthent(restConfiguration.hmacSha256, null,
-                                   restConfiguration.REST_TIME_LIMIT);
+      user = Configuration.configuration.getAdminName();
+      if (restConfiguration.isRestSignature()) {
+        arguments.checkBaseAuthent(restConfiguration.getHmacSha256(), null,
+                                   restConfiguration.getRestTimeLimit());
       } else {
-        arguments.checkTime(restConfiguration.REST_TIME_LIMIT);
+        arguments.checkTime(restConfiguration.getRestTimeLimit());
       }
     }
     getServerHandler().newSession();
     final R66Session session = getServerHandler().getSession();
-    if (!restConfiguration.REST_AUTHENTICATED) {
+    if (!restConfiguration.isRestAuthenticated()) {
       // Default is Admin
       session.getAuth().specialNoSessionAuth(true, Configuration.configuration
-          .getHOST_SSLID());
+          .getHostSslId());
     } else {
       // we have one DbSession per connection, only after authentication
       DbSession temp = getDbSessionFromUser().get(user);
       if (temp == null) {
         try {
-          temp = new DbSession(DbConstant.admin, false);
+          temp = new DbSession(DbConstantR66.admin, false);
           getDbSessionFromUser().put(user, temp);
-        } catch (final WaarpDatabaseNoConnectionException e) {
+        } catch (final WaarpDatabaseNoConnectionException ignored) {
+          // nothing
         }
       }
       if (temp != null) {
@@ -367,10 +372,8 @@ public class HttpRestR66Handler extends HttpRestHandler {
         dbSession = temp;
       }
       try {
-        session.getAuth().connectionHttps(getDbSession(), user,
-                                          FilesystemBasedDigest.passwdCrypt(
-                                              key.getBytes(
-                                                  WaarpStringUtils.UTF8)));
+        session.getAuth().connectionHttps(user, FilesystemBasedDigest
+            .passwdCrypt(key.getBytes(WaarpStringUtils.UTF8)));
       } catch (final Reply530Exception e) {
         status = HttpResponseStatus.UNAUTHORIZED;
         throw new HttpInvalidAuthenticationException("Wrong Authentication", e);
@@ -387,7 +390,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
-    getServerHandler().channelClosed(ctx);
+    getServerHandler().channelClosed();
   }
 
   /**
@@ -412,11 +415,11 @@ public class HttpRestR66Handler extends HttpRestHandler {
     }
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration.getHttpWorkerGroup(),
-                                      (int) Configuration.configuration
-                                          .getTIMEOUTCON());
+    WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration
+        .getHttpWorkerGroup(), (int) Configuration.configuration
+        .getTimeoutCon());
     // Set up the event pipeline factory.
-    if (restConfiguration.REST_SSL) {
+    if (restConfiguration.isRestSsl()) {
       httpBootstrap.childHandler(new HttpRestR66Initializer(false, Configuration
           .getWaarpSslContextFactory(), restConfiguration));
     } else {
@@ -425,18 +428,20 @@ public class HttpRestR66Handler extends HttpRestHandler {
     }
     // Bind and start to accept incoming connections.
     ChannelFuture future;
-    if (restConfiguration != null && restConfiguration.REST_ADDRESS != null &&
-        !restConfiguration.REST_ADDRESS.isEmpty()) {
+    if (restConfiguration != null &&
+        restConfiguration.getRestAddress() != null &&
+        !restConfiguration.getRestAddress().isEmpty()) {
       future = httpBootstrap.bind(
-          new InetSocketAddress(restConfiguration.REST_ADDRESS,
-                                restConfiguration.REST_PORT));
+          new InetSocketAddress(restConfiguration.getRestAddress(),
+                                restConfiguration.getRestPort()));
     } else {
       future = httpBootstrap
-          .bind(new InetSocketAddress(restConfiguration.REST_PORT));
+          .bind(new InetSocketAddress(restConfiguration.getRestPort()));
     }
     try {
       future.await();
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (future.isSuccess()) {
       group.add(future.channel());

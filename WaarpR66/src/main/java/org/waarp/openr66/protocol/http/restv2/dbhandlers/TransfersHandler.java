@@ -47,7 +47,6 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,15 +100,15 @@ public class TransfersHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
    *     request
-   * @param limit_str maximum number of entries allowed in the
+   * @param limitStr maximum number of entries allowed in the
    *     response
-   * @param offset_str index of the first accepted entry in the list
+   * @param offsetStr index of the first accepted entry in the list
    *     of all valid answers
-   * @param order_str the criteria used to sort the entries and the
+   * @param orderStr the criteria used to sort the entries and the
    *     way of ordering
    * @param ruleID filter transfers that use this rule
    * @param partner filter transfers that have this partner
-   * @param status_str filter transfers currently in one of these
+   * @param statusStr filter transfers currently in one of these
    *     statuses
    * @param filename filter transfers of a particular file
    * @param startTrans lower bound for the transfers' starting date
@@ -120,17 +119,17 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @RequiredRole(ROLE.READONLY)
   public void filterTransfer(HttpRequest request, HttpResponder responder,
                              @QueryParam(LIMIT) @DefaultValue("20")
-                                 String limit_str,
+                                 String limitStr,
                              @QueryParam(OFFSET) @DefaultValue("0")
-                                 String offset_str,
+                                 String offsetStr,
                              @QueryParam(ORDER) @DefaultValue("ascId")
-                                 String order_str,
+                                 String orderStr,
                              @QueryParam(RULE_ID) @DefaultValue("")
                                  String ruleID,
                              @QueryParam(PARTNER) @DefaultValue("")
                                  String partner,
                              @QueryParam(STATUS) @DefaultValue("")
-                                 String status_str,
+                                 String statusStr,
                              @QueryParam(FILENAME) @DefaultValue("")
                                  String filename,
                              @QueryParam(START_TRANS) @DefaultValue("")
@@ -142,21 +141,21 @@ public class TransfersHandler extends AbstractRestDbHandler {
 
     int limit = 20;
     try {
-      limit = Integer.parseInt(limit_str);
+      limit = Integer.parseInt(limitStr);
     } catch (final NumberFormatException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));
     }
     int offset = 0;
     try {
-      offset = Integer.parseInt(offset_str);
+      offset = Integer.parseInt(offsetStr);
     } catch (final NumberFormatException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));
     }
     TransferConverter.Order order = TransferConverter.Order.ascId;
     try {
-      order = TransferConverter.Order.valueOf(order_str);
+      order = TransferConverter.Order.valueOf(orderStr);
     } catch (final IllegalArgumentException e) {
-      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, order_str));
+      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, orderStr));
     }
 
     final List<Filter> filters = new ArrayList<Filter>();
@@ -185,13 +184,13 @@ public class TransfersHandler extends AbstractRestDbHandler {
     if (!filename.isEmpty()) {
       filters.add(new Filter(FILENAME_FIELD, "=", filename));
     }
-    if (!status_str.isEmpty()) {
+    if (!statusStr.isEmpty()) {
       try {
         final int status_nbr =
-            AbstractDbData.UpdatedInfo.valueOf(status_str).ordinal();
+            AbstractDbData.UpdatedInfo.valueOf(statusStr).ordinal();
         filters.add(new Filter(UPDATED_INFO_FIELD, "=", status_nbr));
       } catch (final IllegalArgumentException e) {
-        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, status_str));
+        errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));
       }
     }
 
@@ -258,8 +257,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
         TransferConverter.transferToNode(transfer);
     final String responseText = JsonUtils.nodeToString(responseObject);
     final DefaultHttpHeaders headers = new DefaultHttpHeaders();
-    headers.add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON);
-    headers.add("transfer-uri", TRANSFERS_HANDLER_URI + transfer.getId() + "_" +
+    headers.add(CONTENT_TYPE, APPLICATION_JSON);
+    headers.add("transfer-uri", TRANSFERS_HANDLER_URI + transfer.getId() + '_' +
                                 transfer.getRequested());
 
     responder.sendString(CREATED, responseText, headers);

@@ -91,17 +91,17 @@ public abstract class HttpRequestHandler
 
   private static final Random random = new Random(System.currentTimeMillis());
 
-  protected String baseStaticPath;
-  protected String cookieSession;
-  protected HttpPageHandler httpPageHandler;
+  protected final String baseStaticPath;
+  protected final String cookieSession;
+  protected final HttpPageHandler httpPageHandler;
 
   /**
    * @param baseStaticPath
    * @param cookieSession
    * @param httpPageHandler
    */
-  public HttpRequestHandler(String baseStaticPath, String cookieSession,
-                            HttpPageHandler httpPageHandler) {
+  protected HttpRequestHandler(String baseStaticPath, String cookieSession,
+                               HttpPageHandler httpPageHandler) {
     this.baseStaticPath = baseStaticPath;
     this.cookieSession = cookieSession;
     this.httpPageHandler = httpPageHandler;
@@ -173,20 +173,12 @@ public abstract class HttpRequestHandler
         } else if (values.size() > 1) {
           // more than one element is not allowed
           values.clear();
-          values = null;
-          attributes = null;
-          uriAttributes = null;
-          decoderQuery = null;
           throw new HttpIncorrectRequestException(
               "Too many values for " + name);
         }
         values.clear();
       }
-      values = null;
     }
-    attributes = null;
-    uriAttributes = null;
-    decoderQuery = null;
   }
 
   /**
@@ -206,16 +198,12 @@ public abstract class HttpRequestHandler
         } else if (values.size() > 1) {
           // more than one element is not allowed
           values.clear();
-          values = null;
-          headerNames = null;
           throw new HttpIncorrectRequestException(
               "Too many values for " + name);
         }
         values.clear();
       }
-      values = null;
     }
-    headerNames = null;
   }
 
   /**
@@ -240,7 +228,6 @@ public abstract class HttpRequestHandler
       }
     }
     cookies.clear();
-    cookies = null;
   }
 
   /**
@@ -290,14 +277,13 @@ public abstract class HttpRequestHandler
             HttpWriteCacheEnable
                 .writeFile(request, ctx, baseStaticPath + uriRequest,
                            cookieSession);
-            return;
             // end of task
           } else {
             // real error => 404
             status = HttpResponseStatus.NOT_FOUND;
             writeErrorPage(ctx);
-            return;
           }
+          return;
         }
         httpPage = httpPageTemp;
         session.setCurrentCommand(httpPage.getPagerole());
@@ -347,7 +333,6 @@ public abstract class HttpRequestHandler
             // real error => 400
             status = HttpResponseStatus.BAD_REQUEST;
             writeErrorPage(ctx);
-            return;
         }
       } else {
         // New chunk is received: only for Put, Post or PostMulti!
@@ -474,7 +459,7 @@ public abstract class HttpRequestHandler
       }
     }
     final String answer = httpPage.getHtmlPage(businessRequest);
-    int length = 0;
+    int length;
     // Convert the response content to a ByteBuf.
     final ByteBuf buf =
         Unpooled.wrappedBuffer(answer.getBytes(CharsetUtil.UTF_8));
@@ -564,7 +549,6 @@ public abstract class HttpRequestHandler
     }
     addBusinessCookie(response, cookiesName);
     cookiesName.clear();
-    cookiesName = null;
   }
 
   /**
@@ -574,7 +558,7 @@ public abstract class HttpRequestHandler
    */
   protected FullHttpResponse getResponse(ByteBuf buf) {
     // Decide whether to close the connection or not.
-    FullHttpResponse response = null;
+    FullHttpResponse response;
     if (request == null) {
       if (buf != null) {
         response =
@@ -589,11 +573,11 @@ public abstract class HttpRequestHandler
       return response;
     }
     boolean keepAlive = HttpUtil.isKeepAlive(request);
-    willClose = willClose || status != HttpResponseStatus.OK ||
-                HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(
-                    request.headers().get(HttpHeaderNames.CONNECTION)) ||
-                request.protocolVersion().equals(HttpVersion.HTTP_1_0) &&
-                !keepAlive;
+    willClose |= status != HttpResponseStatus.OK || HttpHeaderValues.CLOSE
+        .contentEqualsIgnoreCase(
+            request.headers().get(HttpHeaderNames.CONNECTION)) ||
+                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &&
+                 !keepAlive;
     if (willClose) {
       keepAlive = false;
     }
@@ -863,7 +847,7 @@ public abstract class HttpRequestHandler
    */
   protected void readHttpDataAllReceive(ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
-    List<InterfaceHttpData> datas = null;
+    List<InterfaceHttpData> datas;
     try {
       datas = decoder.getBodyHttpDatas();
     } catch (final NotEnoughDataDecoderException e1) {
@@ -896,7 +880,6 @@ public abstract class HttpRequestHandler
       }
     } catch (final EndOfDataDecoderException e1) {
       // end
-      return;
     }
   }
 

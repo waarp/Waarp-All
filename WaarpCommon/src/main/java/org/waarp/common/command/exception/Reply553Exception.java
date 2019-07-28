@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 553 Requested action not taken. File name not allowed.
- *
- *
  */
 public class Reply553Exception extends CommandAbstractException {
 

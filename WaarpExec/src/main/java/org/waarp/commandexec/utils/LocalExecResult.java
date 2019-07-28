@@ -21,8 +21,6 @@ package org.waarp.commandexec.utils;
 
 /**
  * Message Result for an Execution
- *
- *
  */
 public class LocalExecResult {
   private int status;

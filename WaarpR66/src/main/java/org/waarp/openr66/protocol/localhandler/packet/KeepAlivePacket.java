@@ -28,8 +28,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * Keep Alive class
  * <p>
  * header = empty middle = way end = empty
- *
- *
  */
 public class KeepAlivePacket extends AbstractLocalPacket {
   private static final byte ASKVALIDATE = 0;

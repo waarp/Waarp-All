@@ -22,13 +22,13 @@ package org.waarp.common.file.filesystembased;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.command.exception.CommandAbstractException;
-import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.exception.FileEndOfTransferException;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.AbstractFile;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.SessionInterface;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -40,15 +40,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 
 /**
  * File implementation for Filesystem Based
- *
- *
  */
 public abstract class FilesystemBasedFileImpl extends AbstractFile {
+  private static final String ERROR_DURING_GET = "Error during get:";
+
+  private static final String INTERNAL_ERROR_FILE_IS_NOT_READY =
+      "Internal error, file is not ready";
+
+  private static final String NO_FILE_IS_READY = "No file is ready";
+
   /**
    * Internal Logger
    */
@@ -90,9 +94,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws CommandAbstractException
    */
-  public FilesystemBasedFileImpl(SessionInterface session,
-                                 FilesystemBasedDirImpl dir, String path,
-                                 boolean append)
+  protected FilesystemBasedFileImpl(SessionInterface session,
+                                    FilesystemBasedDirImpl dir, String path,
+                                    boolean append)
       throws CommandAbstractException {
     this.session = session;
     auth = (FilesystemBasedAuthImpl) session.getAuth();
@@ -110,7 +114,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     } else {
       try {
         setPosition(0);
-      } catch (final IOException e) {
+      } catch (final IOException ignored) {
+        // nothing
       }
     }
     isReady = true;
@@ -123,8 +128,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @param dir It is not necessary the directory that owns this file.
    * @param path
    */
-  public FilesystemBasedFileImpl(SessionInterface session,
-                                 FilesystemBasedDirImpl dir, String path) {
+  protected FilesystemBasedFileImpl(SessionInterface session,
+                                    FilesystemBasedDirImpl dir, String path) {
     this.session = session;
     auth = (FilesystemBasedAuthImpl) session.getAuth();
     this.dir = dir;
@@ -205,25 +210,12 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   @Override
   public boolean closeFile() throws CommandAbstractException {
     if (bfileChannelIn != null) {
-      try {
-        bfileChannelIn.close();
-      } catch (final IOException e) {
-      }
+      FileUtils.close(bfileChannelIn);
       bfileChannelIn = null;
       bbyteBuffer = null;
     }
     if (fileOutputStream != null) {
-      /*
-       * try { rafOut.getFD().sync(); } catch (SyncFailedException e1) { } catch (IOException e1) { }
-       */
-      try {
-        fileOutputStream.flush();
-        fileOutputStream.close();
-      } catch (final ClosedChannelException e) {
-        // ignore
-      } catch (final IOException e) {
-        throw new Reply550Exception("Close in error");
-      }
+      FileUtils.close(fileOutputStream);
       fileOutputStream = null;
     }
     position = 0;
@@ -335,32 +327,24 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       if (newFile.getParentFile().canWrite()) {
         if (!file.renameTo(newFile)) {
-          FileOutputStream fileOutputStream = null;
+          FileOutputStream fileOutputStreamNew = null;
           try {
             try {
-              fileOutputStream = new FileOutputStream(newFile);
+              fileOutputStreamNew = new FileOutputStream(newFile);
             } catch (final FileNotFoundException e) {
               logger.warn("Cannot find file: " + newFile.getName(), e);
               return false;
             }
-            final FileChannel fileChannelOut = fileOutputStream.getChannel();
+            final FileChannel fileChannelOut = fileOutputStreamNew.getChannel();
             if (get(fileChannelOut)) {
               delete();
             } else {
-              try {
-                fileChannelOut.close();
-              } catch (final IOException e) {
-              }
+              FileUtils.close(fileChannelOut);
               logger.warn("Cannot write file: {}", newFile);
               return false;
             }
           } finally {
-            try {
-              if (fileOutputStream != null) {
-                fileOutputStream.close();
-              }
-            } catch (final IOException e) {
-            }
+            FileUtils.close(fileOutputStreamNew);
           }
         }
         currentFile = getRelativePath(newFile);
@@ -382,7 +366,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       final DataBlock dataBlock = new DataBlock();
-      ByteBuf buffer = null;
+      ByteBuf buffer;
       buffer = getBlock(getSession().getBlockSize());
       if (buffer != null) {
         dataBlock.setBlock(buffer);
@@ -392,7 +376,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         return dataBlock;
       }
     }
-    throw new FileTransferException("No file is ready");
+    throw new FileTransferException(NO_FILE_IS_READY);
   }
 
   @Override
@@ -452,12 +436,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (bfileChannelIn != null) {
       bfileChannelIn = bfileChannelIn.position(position);
     }
-    /*
-     * if (rafOut != null) { rafOut.seek(position); }
-     */
     if (fileOutputStream != null) {
-      fileOutputStream.flush();
-      fileOutputStream.close();
+      FileUtils.close(fileOutputStream);
       fileOutputStream = getFileOutputStream(true);
       if (fileOutputStream == null) {
         throw new IOException("File cannot changed of Position");
@@ -482,18 +462,17 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    */
   private void writeBlock(ByteBuf buffer) throws FileTransferException {
     if (!isReady) {
-      throw new FileTransferException("No file is ready");
+      throw new FileTransferException(NO_FILE_IS_READY);
     }
     // An empty buffer is allowed
     if (buffer == null) {
       return;// could do FileEndOfTransfer ?
     }
     if (fileOutputStream == null) {
-      // rafOut = getRandomFile();
       fileOutputStream = getFileOutputStream(position > 0);
     }
     if (fileOutputStream == null) {
-      throw new FileTransferException("Internal error, file is not ready");
+      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
     }
     final int bufferSize = buffer.readableBytes();
     int start = 0;
@@ -515,11 +494,12 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       logger.error("Error during write:", e2);
       try {
         closeFile();
-      } catch (final CommandAbstractException e1) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       // NO this.realFile.delete(); NO DELETE SINCE BY BLOCK IT CAN BE
       // REDO
-      throw new FileTransferException("Internal error, file is not ready");
+      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
     }
     position += bufferSize;
   }
@@ -562,7 +542,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   private ByteBuf getBlock(int sizeblock)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
-      throw new FileTransferException("No file is ready");
+      throw new FileTransferException(NO_FILE_IS_READY);
     }
     if (bfileChannelIn == null) {
       bfileChannelIn = getFileChannel();
@@ -578,7 +558,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
     }
     if (bfileChannelIn == null) {
-      throw new FileTransferException("Internal error, file is not ready");
+      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
     }
     int sizeout = 0;
     while (sizeout < sizeblock) {
@@ -589,18 +569,20 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         }
         sizeout += sizeread;
       } catch (final IOException e) {
-        logger.error("Error during get:", e);
+        logger.error(ERROR_DURING_GET, e);
         try {
           closeFile();
-        } catch (final CommandAbstractException e1) {
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
-        throw new FileTransferException("Internal error, file is not ready");
+        throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
       }
     }
     if (sizeout <= 0) {
       try {
         closeFile();
-      } catch (final CommandAbstractException e1) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       isReady = false;
       throw new FileEndOfTransferException("End of file");
@@ -612,7 +594,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (sizeout < sizeblock) {// last block
       try {
         closeFile();
-      } catch (final CommandAbstractException e1) {
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       isReady = false;
     }
@@ -639,7 +622,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (fileChannelIn == null) {
       return false;
     }
-    long size = 0;
+    long size;
     long transfert = 0;
     try {
       size = fileChannelIn.size();
@@ -647,7 +630,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         try {
           size = length();
         } catch (final CommandAbstractException e) {
-          logger.error("Error during get:", e);
+          logger.error(ERROR_DURING_GET, e);
           return false;
         }
         if (size < 0) {
@@ -655,7 +638,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
           return false;
         }
       }
-      long chunkSize = size;
+      long chunkSize;
       while (transfert < size) {
         chunkSize = size - transfert;
         transfert +=
@@ -663,17 +646,11 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       fileChannelOut.force(true);
     } catch (final IOException e) {
-      logger.error("Error during get:", e);
+      logger.error(ERROR_DURING_GET, e);
       return false;
     } finally {
-      try {
-        fileChannelOut.close();
-      } catch (final IOException e) {
-      }
-      try {
-        fileChannelIn.close();
-      } catch (final IOException e) {
-      }
+      FileUtils.close(fileChannelOut);
+      FileUtils.close(fileChannelIn);
       fileChannelIn = null;
     }
     if (transfert == size) {
@@ -700,7 +677,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     FileChannel fileChannel = null;
     try {
       @SuppressWarnings("resource")
-      final FileInputStream fileInputStream = new FileInputStream(trueFile);
+      final FileInputStream fileInputStream =//NOSONAR
+          new FileInputStream(trueFile);//NOSONAR
       fileChannel = fileInputStream.getChannel();
       if (position != 0) {
         fileChannel = fileChannel.position(position);
@@ -709,12 +687,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       logger.error("File not found in getFileChannel:", e);
       return null;
     } catch (final IOException e) {
-      if (fileChannel != null) {
-        try {
-          fileChannel.close();
-        } catch (final IOException e1) {
-        }
-      }
+      FileUtils.close(fileChannel);
       logger.error("Change position in getFileChannel:", e);
       return null;
     }
@@ -737,9 +710,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     } catch (final CommandAbstractException e1) {
       return null;
     }
-    RandomAccessFile raf = null;
+    RandomAccessFile raf;
     try {
-      raf = new RandomAccessFile(trueFile, "rw");
+      raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
       raf.seek(position);
     } catch (final FileNotFoundException e) {
       logger.error("File not found in getRandomFile:", e);
@@ -779,14 +752,14 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       final RandomAccessFile raf = getRandomFile();
       try {
         raf.setLength(position);
-        raf.close();
+        FileUtils.close(raf);
       } catch (final IOException e) {
         logger.error("Change position in getFileOutputStream:", e);
         return null;
       }
       logger.debug("New size: " + trueFile.length() + " : " + position);
     }
-    FileOutputStream fos = null;
+    FileOutputStream fos;
     try {
       fos = new FileOutputStream(trueFile, append);
     } catch (final FileNotFoundException e) {

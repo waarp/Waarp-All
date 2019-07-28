@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * MDTM command
- *
- *
  */
 public class MDTM extends AbstractCommand {
   @Override

@@ -47,15 +47,12 @@ import org.waarp.common.xml.XmlValue;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * SnmpConfiguration class from XML file
- *
- *
  */
-public class SnmpConfiguration {
+public final class SnmpConfiguration {
   /**
    * Internal Logger
    */
@@ -162,41 +159,39 @@ public class SnmpConfiguration {
   private static final String SNMP_SECURITY_AUTH_PROTOCOL =
       "securityauthprotocol";
 
-  private static final String SNMP_SECURITY_AUTH_PASSPHRASE =
-      "securityauthpass";
+  private static final String SNMP_SECURITY_AUTH_PSSPHRASE = "securityauthpass";
 
   private static final String SNMP_SECURITY_PRIV_PROTOCOL =
       "securityprivprotocol";
 
-  private static final String SNMP_SECURITY_PRIV_PASSPHRASE =
-      "securityprivpass";
+  private static final String SNMP_SECURITY_PRIV_PSSPHRASE = "securityprivpass";
 
   private static final XmlDecl[] configSecurityDecls = {
       new XmlDecl(XmlType.STRING, SNMP_SECURITY_NAME),
       new XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PROTOCOL),
-      new XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PASSPHRASE),
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PSSPHRASE),
       new XmlDecl(XmlType.STRING, SNMP_SECURITY_PRIV_PROTOCOL),
-      new XmlDecl(XmlType.STRING, SNMP_SECURITY_PRIV_PASSPHRASE)
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_PRIV_PSSPHRASE)
   };
 
   private static final XmlDecl[] configSNMP = {
       new XmlDecl(SNMP_CONFIG, XmlType.XVAL, SNMP_ROOT + SNMP_CONFIG,
                   configConfigDecls, false),
       new XmlDecl(SNMP_SECURITY, XmlType.XVAL,
-                  SNMP_ROOT + SNMP_SECURITIES + "/" + SNMP_SECURITY,
+                  SNMP_ROOT + SNMP_SECURITIES + '/' + SNMP_SECURITY,
                   configSecurityDecls, true),
       new XmlDecl(SNMP_TARGET, XmlType.XVAL,
-                  SNMP_ROOT + SNMP_TARGETS + "/" + SNMP_TARGET,
+                  SNMP_ROOT + SNMP_TARGETS + '/' + SNMP_TARGET,
                   configTargetDecls, true)
   };
 
-  private static XmlValue[] configuration = null;
+  private static XmlValue[] configuration;
 
-  private static XmlHash hashConfig = null;
+  private static XmlHash hashConfig;
   /**
    * Address from the configuration for the SNMP Agent listening port
    */
-  static String[] address = null;
+  static String[] address;
   /**
    * Number of threads to use in SNMP agent
    */
@@ -204,7 +199,7 @@ public class SnmpConfiguration {
   /**
    * Do we filter on Targets for SNMP requests
    */
-  static boolean isFilterAccessEnabled = false;
+  static boolean isFilterAccessEnabled;
   /**
    * Do we are using Trap or Inform
    */
@@ -212,11 +207,14 @@ public class SnmpConfiguration {
   /**
    * Level for Trap/Inform from 0 to 4
    */
-  static int trapLevel = 0;
+  static int trapLevel;
   /**
    * Default address: all in UDP port 161
    */
   public static final String DEFAULTADDRESS = "udp:0.0.0.0/161";
+
+  private SnmpConfiguration() {
+  }
 
   /**
    * @return True if the configuration successfully load
@@ -234,7 +232,7 @@ public class SnmpConfiguration {
       address = values.toArray(address);
       final String[] tmp = new String[length];
       for (int j = 0; j < length; j++) {
-        if (address[j] != null && (!address[j].trim().isEmpty())) {
+        if (address[j] != null && !address[j].trim().isEmpty()) {
           tmp[nb] = address[j];
           nb++;
         }
@@ -245,28 +243,25 @@ public class SnmpConfiguration {
         // less addresses than intended
         address = new String[nb];
         System.arraycopy(tmp, 0, address, 0, nb);
-        /*
-         * for (int i = 0; i < nb; i ++) { address[i] = tmp[i]; }
-         */
       }
     }
     value = hashConfig.get(SNMP_NBTHREAD);
-    if (value != null && (!value.isEmpty())) {
+    if (value != null && !value.isEmpty()) {
       nbThread = value.getInteger();
       if (nbThread <= 0) {
         nbThread = 4;
       }
     }
     value = hashConfig.get(SNMP_FILTERED);
-    if (value != null && (!value.isEmpty())) {
+    if (value != null && !value.isEmpty()) {
       isFilterAccessEnabled = value.getBoolean();
     }
     value = hashConfig.get(SNMP_USETRAP);
-    if (value != null && (!value.isEmpty())) {
+    if (value != null && !value.isEmpty()) {
       isUsingTrap = value.getBoolean();
     }
     value = hashConfig.get(SNMP_TRAPLEVEL);
-    if (value != null && (!value.isEmpty())) {
+    if (value != null && !value.isEmpty()) {
       trapLevel = value.getInteger();
     }
     return true;
@@ -279,31 +274,27 @@ public class SnmpConfiguration {
 
   /**
    * Protocols for Security
-   *
-   *
    */
-  public static enum SecurityProtocolList {
+  public enum SecurityProtocolList {
     SHA(AuthSHA.ID), MD5(AuthMD5.ID);
 
-    public OID oid;
+    public final OID oid;
 
-    private SecurityProtocolList(OID oid) {
+    SecurityProtocolList(OID oid) {
       this.oid = oid;
     }
   }
 
   /**
    * Protocol for Privacy
-   *
-   *
    */
-  public static enum PrivacyProtocolList {
+  public enum PrivacyProtocolList {
     P3DES(Priv3DES.ID), PAES128(PrivAES128.ID), PAES192(PrivAES192.ID),
     PAES256(PrivAES256.ID), PDES(PrivDES.ID);
 
-    public OID oid;
+    public final OID oid;
 
-    private PrivacyProtocolList(OID oid) {
+    PrivacyProtocolList(OID oid) {
       this.oid = oid;
     }
   }
@@ -319,32 +310,27 @@ public class SnmpConfiguration {
    * @return True if load successfully
    */
   private static boolean loadSecurity() {
-    String securityName = null;
-    String securityProtocol = null;
-    String securityPassphrase = null;
-    String securityPrivProtocol = null;
-    String securityPrivPassphrase = null;
+    String securityName;
+    String securityProtocol;
+    String securityPassphrase;
+    String securityPrivProtocol;
+    String securityPrivPassphrase;
     XmlValue value = hashConfig.get(SNMP_SECURITY);
     @SuppressWarnings("unchecked")
     final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
-    final Iterator<XmlValue[]> iterator = list.iterator();
-    while (iterator.hasNext()) {
-      securityName = null;
-      securityProtocol = null;
+    for (final XmlValue[] xmlValues : list) {
       securityPassphrase = null;
-      securityPrivProtocol = null;
       securityPrivPassphrase = null;
-      final XmlValue[] subvalues = iterator.next();
-      final XmlHash subHash = new XmlHash(subvalues);
+      final XmlHash subHash = new XmlHash(xmlValues);
       value = subHash.get(SNMP_SECURITY_NAME);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         logger.warn("No Security Name found");
         continue;
       }
       securityName = value.getString();
       value = subHash.get(SNMP_SECURITY_AUTH_PROTOCOL);
       SecurityProtocolList secprot = null;
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         securityProtocol = value.getString();
         try {
           secprot = SecurityProtocolList.valueOf(securityProtocol);
@@ -352,8 +338,8 @@ public class SnmpConfiguration {
           logger.warn("No Security Protocol found for " + securityName);
           continue;
         }
-        value = subHash.get(SNMP_SECURITY_AUTH_PASSPHRASE);
-        if (value == null || (value.isEmpty())) {
+        value = subHash.get(SNMP_SECURITY_AUTH_PSSPHRASE);
+        if (value == null || value.isEmpty()) {
           // not allowed
           securityProtocol = null;
         } else {
@@ -362,7 +348,7 @@ public class SnmpConfiguration {
       }
       value = subHash.get(SNMP_SECURITY_PRIV_PROTOCOL);
       PrivacyProtocolList privprot = null;
-      if (value != null && (!value.isEmpty())) {
+      if (value != null && !value.isEmpty()) {
         securityPrivProtocol = value.getString();
         try {
           privprot = PrivacyProtocolList.valueOf(securityPrivProtocol);
@@ -370,8 +356,8 @@ public class SnmpConfiguration {
           logger.warn("No Security Private Protocol found for " + securityName);
           continue;
         }
-        value = subHash.get(SNMP_SECURITY_PRIV_PASSPHRASE);
-        if (value == null || (value.isEmpty())) {
+        value = subHash.get(SNMP_SECURITY_PRIV_PSSPHRASE);
+        if (value == null || value.isEmpty()) {
           // not allowed
           securityPrivProtocol = null;
         } else {
@@ -390,7 +376,7 @@ public class SnmpConfiguration {
     return true;
   }
 
-  private static enum TransportDomain {
+  private enum TransportDomain {
     UdpIpv4(TransportDomains.transportDomainUdpIpv4),
     UdpIpv6(TransportDomains.transportDomainUdpIpv6),
     UdpIpv4z(TransportDomains.transportDomainUdpIpv4z),
@@ -400,34 +386,32 @@ public class SnmpConfiguration {
     TcpIpv4z(TransportDomains.transportDomainTcpIpv4z),
     TcpIpv6z(TransportDomains.transportDomainTcpIpv6z);
 
-    public OID oid;
+    public final OID oid;
 
-    private TransportDomain(OID oid) {
+    TransportDomain(OID oid) {
       this.oid = oid;
     }
   }
 
   /**
    * Target entry
-   *
-   *
    */
   public static class TargetElement {
-    public OctetString name;
+    public final OctetString name;
 
-    public OID transportDomain;
+    public final OID transportDomain;
 
-    public OctetString address;
+    public final OctetString address;
 
-    public int timeout;
+    public final int timeout;
 
-    public int retries;
+    public final int retries;
 
-    public OctetString tagList;
+    public final OctetString tagList;
 
-    public OctetString params;
+    public final OctetString params;
 
-    public int storageType;
+    public final int storageType;
 
     /**
      * @param name
@@ -465,15 +449,15 @@ public class SnmpConfiguration {
    * List of Target Element
    */
   static final List<TargetElement> listTargetElements =
-      new ArrayList<SnmpConfiguration.TargetElement>();
+      new ArrayList<TargetElement>();
   /**
    * Do we use SNMP V2c
    */
-  static boolean hasV2 = false;
+  static boolean hasV2;
   /**
    * Do we use SNMP V3
    */
-  static boolean hasV3 = false;
+  static boolean hasV3;
 
   /**
    * new XmlDecl(XmlType.STRING, SNMP_TARGET_NAME), free name new
@@ -511,30 +495,21 @@ public class SnmpConfiguration {
     XmlValue value = hashConfig.get(SNMP_TARGET);
     @SuppressWarnings("unchecked")
     final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
-    final Iterator<XmlValue[]> iterator = list.iterator();
-    while (iterator.hasNext()) {
-      targetName = null;
-      targetDomain = null;
-      oTargetDomain = null;
-      targetAddress = null;
-      targetTimeout = 0;
-      targetRetries = 0;
-      targetParams = null;
-      final XmlValue[] subvalues = iterator.next();
-      final XmlHash subHash = new XmlHash(subvalues);
+    for (final XmlValue[] xmlValues : list) {
+      final XmlHash subHash = new XmlHash(xmlValues);
       value = subHash.get(SNMP_TARGET_NAME);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         logger.warn("No Target Name found");
         continue;
       }
       targetName = value.getString();
       value = subHash.get(SNMP_TARGET_DOMAIN);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         logger.warn("No Target Domain found for " + targetName);
         continue;
       }
       targetDomain = value.getString();
-      TransportDomain domain = null;
+      TransportDomain domain;
       try {
         domain = TransportDomain.valueOf(targetDomain);
         oTargetDomain = domain.oid;
@@ -543,7 +518,7 @@ public class SnmpConfiguration {
         continue;
       }
       value = subHash.get(SNMP_TARGET_ADDRESS);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         logger.warn("No Target Address found for " + targetName);
         continue;
       }
@@ -568,9 +543,11 @@ public class SnmpConfiguration {
         logger.warn("No Correct Target Address found for " + targetName);
         continue;
       }
-      logger.debug("Addr: {} {}", address.getClass(), targetAddress);
+      if (address != null) {
+        logger.debug("Addr: {} {}", address.getClass(), targetAddress);
+      }
       value = subHash.get(SNMP_TARGET_TIMEOUT);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         targetTimeout = 200;
       } else {
         targetTimeout = value.getInteger();
@@ -579,7 +556,7 @@ public class SnmpConfiguration {
         targetTimeout = 100;
       }
       value = subHash.get(SNMP_TARGET_RETRIES);
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         targetRetries = 1;
       } else {
         targetRetries = value.getInteger();
@@ -589,7 +566,7 @@ public class SnmpConfiguration {
       }
       value = subHash.get(SNMP_TARGET_ISV2);
       boolean isV2 = true;
-      if (value == null || (value.isEmpty())) {
+      if (value == null || value.isEmpty()) {
         isV2 = true;
       } else {
         isV2 = value.getBoolean();
@@ -620,7 +597,7 @@ public class SnmpConfiguration {
    * @return True if OK
    */
   public static boolean setConfigurationFromXml(File file) {
-    Document document = null;
+    Document document;
     // Open config file
     try {
       document = new SAXReader().read(file);

@@ -27,8 +27,6 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 /**
  * Rename the current file (no move, move or creation should be done elsewhere)
- *
- *
  */
 public class RenameTask extends AbstractTask {
   /**
@@ -50,21 +48,21 @@ public class RenameTask extends AbstractTask {
 
   @Override
   public void run() {
-    boolean success = false;
+    boolean success;
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" ")).trim()
-                                                                   .replace(
-                                                                       '\\',
-                                                                       '/');
+    finalname = getReplacedValue(finalname, BLANK.split(argTransfer)).trim()
+                                                                     .replace(
+                                                                         '\\',
+                                                                         '/');
     logger.debug(
-        "Rename to " + finalname + " with " + argRule + ":" + argTransfer +
+        "Rename to " + finalname + " with " + argRule + ':' + argTransfer +
         " and {}", session);
     try {
       session.getFile().replaceFilename(finalname, true);
       success = true;
     } catch (final CommandAbstractException e) {
       logger.error(
-          "Rename to " + finalname + " with " + argRule + ":" + argTransfer +
+          "Rename to " + finalname + " with " + argRule + ':' + argTransfer +
           " and " + session, e);
       futureCompletion.setFailure(new OpenR66ProtocolSystemException(e));
       return;
@@ -74,7 +72,7 @@ public class RenameTask extends AbstractTask {
       futureCompletion.setSuccess();
     } else {
       logger.error(
-          "Cannot Move and Rename to " + finalname + " with " + argRule + ":" +
+          "Cannot Move and Rename to " + finalname + " with " + argRule + ':' +
           argTransfer + " and " + session);
       futureCompletion
           .setFailure(new OpenR66ProtocolSystemException("Cannot move file"));

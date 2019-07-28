@@ -20,6 +20,7 @@
 package org.waarp.common.crypto;
 
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.file.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,13 +35,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class implements a simple Key Manager from name
- *
- *
  */
 public abstract class KeyManager {
-  ConcurrentHashMap<String, KeyObject> keysConcurrentHashMap =
+  final ConcurrentHashMap<String, KeyObject> keysConcurrentHashMap =
       new ConcurrentHashMap<String, KeyObject>();
-  AtomicBoolean isInitialized = new AtomicBoolean(false);
+  final AtomicBoolean isInitialized = new AtomicBoolean(false);
 
   public abstract KeyObject createKeyObject();
 
@@ -68,7 +67,7 @@ public abstract class KeyManager {
         final String firstname = basename.substring(0, lastpos);
         int len = (int) file.length();
         final byte[] key = new byte[len];
-        FileInputStream inputStream = null;
+        FileInputStream inputStream;
         try {
           inputStream = new FileInputStream(file);
         } catch (final FileNotFoundException e) {
@@ -76,7 +75,7 @@ public abstract class KeyManager {
           wrong.add(filename);
           continue;
         }
-        int read = 0;
+        int read = 1;
         int offset = 0;
         while (read > 0) {
           try {
@@ -93,10 +92,7 @@ public abstract class KeyManager {
             break;
           }
         }
-        try {
-          inputStream.close();
-        } catch (final IOException e) {
-        }
+        FileUtils.close(inputStream);
         if (read < -1) {
           // wrong
           continue;
@@ -117,7 +113,7 @@ public abstract class KeyManager {
     while (names.hasMoreElements()) {
       final String name = names.nextElement();
       final KeyObject key = keysConcurrentHashMap.get(name);
-      key.saveSecretKey(new File(name + "." + key.getFileExtension()));
+      key.saveSecretKey(new File(name + '.' + key.getFileExtension()));
     }
   }
 

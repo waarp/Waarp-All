@@ -23,8 +23,6 @@ import org.waarp.ftp.core.command.service.MKD;
 
 /**
  * XMKD command
- *
- *
  */
 public class XMKD extends MKD {
 

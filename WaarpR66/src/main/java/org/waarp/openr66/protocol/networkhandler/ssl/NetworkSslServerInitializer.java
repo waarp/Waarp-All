@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class NetworkSslServerInitializer
     extends ChannelInitializer<SocketChannel> {
+  public static final String SSL_HANDLER = "ssl";
   protected final boolean isClient;
   private static WaarpSslContextFactory waarpSslContextFactory;
   private static WaarpSecureKeyStore waarpSecureKeyStore;
@@ -48,7 +49,6 @@ public class NetworkSslServerInitializer
    * @param isClient True if this Factory is to be used in Client mode
    */
   public NetworkSslServerInitializer(boolean isClient) {
-    super();
     this.isClient = isClient;
   }
 
@@ -56,7 +56,7 @@ public class NetworkSslServerInitializer
   protected void initChannel(SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
-    SslHandler sslHandler = null;
+    SslHandler sslHandler;
     if (isClient) {
       // Not server: no clientAuthent, no renegotiation
       sslHandler = getWaarpSslContextFactory().initInitializer(false, false);
@@ -66,11 +66,11 @@ public class NetworkSslServerInitializer
                                                                getWaarpSslContextFactory()
                                                                    .needClientAuthentication());
     }
-    pipeline.addLast("ssl", sslHandler);
+    pipeline.addLast(SSL_HANDLER, sslHandler);
 
     pipeline.addLast(NetworkServerInitializer.TIMEOUT,
                      new IdleStateHandler(0, 0, Configuration.configuration
-                         .getTIMEOUTCON(), TimeUnit.MILLISECONDS));
+                         .getTimeoutCon(), TimeUnit.MILLISECONDS));
 
     // Global limitation
     final GlobalTrafficShapingHandler handler =
@@ -89,9 +89,10 @@ public class NetworkSslServerInitializer
                          Configuration.configuration
                              .getServerChannelReadLimit(),
                          Configuration.configuration.getDelayLimit(),
-                         Configuration.configuration.getTIMEOUTCON()));
+                         Configuration.configuration.getTimeoutCon()));
 
-    pipeline.addLast(NetworkServerInitializer.NETWORK_CODEC, new NetworkPacketCodec());
+    pipeline.addLast(NetworkServerInitializer.NETWORK_CODEC,
+                     new NetworkPacketCodec());
     pipeline.addLast(Configuration.configuration.getHandlerGroup(),
                      NetworkServerInitializer.NETWORK_HANDLER,
                      new NetworkSslServerHandler(!isClient));

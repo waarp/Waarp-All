@@ -24,8 +24,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * FEAT command
- *
- *
  */
 public class FEAT extends AbstractCommand {
   @Override

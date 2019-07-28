@@ -25,8 +25,6 @@ import java.util.EnumSet;
 
 /**
  * Example of EnumState enum class
- *
- *
  */
 public enum ExampleEnumState {
   RUNNING, PAUSED, CONFIGURING, RESET, ENDED;
@@ -38,7 +36,7 @@ public enum ExampleEnumState {
     tCONFIGURING(CONFIGURING, EnumSet.of(PAUSED)),
     tRESET(RESET, EnumSet.of(PAUSED, RESET));
 
-    public Transition<ExampleEnumState> elt;
+    public final Transition<ExampleEnumState> elt;
 
     ExampleTransition(ExampleEnumState state, EnumSet<ExampleEnumState> set) {
       elt = new Transition<ExampleEnumState>(state, set);

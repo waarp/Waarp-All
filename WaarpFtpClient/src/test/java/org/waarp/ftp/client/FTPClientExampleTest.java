@@ -104,56 +104,56 @@ public final class FTPClientExampleTest {
 
     int base = 0;
     for (base = 0; base < args.length; base++) {
-      if (args[base].equals("-s")) {
+      if ("-s".equals(args[base])) {
         storeFile = true;
-      } else if (args[base].equals("-a")) {
+      } else if ("-a".equals(args[base])) {
         localActive = true;
-      } else if (args[base].equals("-b")) {
+      } else if ("-b".equals(args[base])) {
         binaryTransfer = true;
-      } else if (args[base].equals("-c")) {
+      } else if ("-c".equals(args[base])) {
         doCommand = args[++base];
         minParams = 3;
-      } else if (args[base].equals("-d")) {
+      } else if ("-d".equals(args[base])) {
         mlsd = true;
         minParams = 3;
-      } else if (args[base].equals("-e")) {
+      } else if ("-e".equals(args[base])) {
         useEpsvWithIPv4 = true;
-      } else if (args[base].equals("-f")) {
+      } else if ("-f".equals(args[base])) {
         feat = true;
         minParams = 3;
-      } else if (args[base].equals("-h")) {
+      } else if ("-h".equals(args[base])) {
         hidden = true;
-      } else if (args[base].equals("-k")) {
+      } else if ("-k".equals(args[base])) {
         keepAliveTimeout = Long.parseLong(args[++base]);
-      } else if (args[base].equals("-l")) {
+      } else if ("-l".equals(args[base])) {
         listFiles = true;
         minParams = 3;
-      } else if (args[base].equals("-L")) {
+      } else if ("-L".equals(args[base])) {
         lenient = true;
-      } else if (args[base].equals("-n")) {
+      } else if ("-n".equals(args[base])) {
         listNames = true;
         minParams = 3;
-      } else if (args[base].equals("-p")) {
+      } else if ("-p".equals(args[base])) {
         protocol = args[++base];
-      } else if (args[base].equals("-t")) {
+      } else if ("-t".equals(args[base])) {
         mlst = true;
         minParams = 3;
-      } else if (args[base].equals("-w")) {
+      } else if ("-w".equals(args[base])) {
         controlKeepAliveReplyTimeout = Integer.parseInt(args[++base]);
-      } else if (args[base].equals("-T")) {
+      } else if ("-T".equals(args[base])) {
         trustmgr = args[++base];
-      } else if (args[base].equals("-PrH")) {
+      } else if ("-PrH".equals(args[base])) {
         proxyHost = args[++base];
         final String[] parts = proxyHost.split(":");
         if (parts.length == 2) {
           proxyHost = parts[0];
           proxyPort = Integer.parseInt(parts[1]);
         }
-      } else if (args[base].equals("-PrU")) {
+      } else if ("-PrU".equals(args[base])) {
         proxyUser = args[++base];
-      } else if (args[base].equals("-PrP")) {
+      } else if ("-PrP".equals(args[base])) {
         proxyPassword = args[++base];
-      } else if (args[base].equals("-#")) {
+      } else if ("-#".equals(args[base])) {
         printHash = true;
       } else {
         break;
@@ -164,7 +164,7 @@ public final class FTPClientExampleTest {
     if (remain < minParams) // server, user, pass, remote, local [protocol]
     {
       System.err.println(USAGE);
-      DetectionUtils.SystemExit(1);
+      DetectionUtils.systemExit(1);
       return;
     }
 
@@ -200,10 +200,10 @@ public final class FTPClientExampleTest {
       }
     } else {
       FTPSClient ftps;
-      if (protocol.equals("true")) {
+      if ("true".equals(protocol)) {
         System.out.println("Implicit FTPS");
         ftps = new FTPSClient(true);
-      } else if (protocol.equals("false")) {
+      } else if ("false".equals(protocol)) {
         System.out.println("Explicit FTPS");
         ftps = new FTPSClient(false);
         mustCallProtP = true;
@@ -264,7 +264,7 @@ public final class FTPClientExampleTest {
       if (!FTPReply.isPositiveCompletion(reply)) {
         ftp.disconnect();
         System.err.println("FTP server refused connection.");
-        DetectionUtils.SystemExit(1);
+        DetectionUtils.systemExit(1);
         return;
       }
     } catch (final IOException e) {
@@ -278,7 +278,7 @@ public final class FTPClientExampleTest {
       }
       System.err.println("Could not connect to server.");
       e.printStackTrace();
-      DetectionUtils.SystemExit(1);
+      DetectionUtils.systemExit(1);
       return;
     }
 
@@ -368,7 +368,7 @@ public final class FTPClientExampleTest {
           final String[] features = ftp.featureValues(remote);
           if (features != null) {
             for (final String f : features) {
-              System.out.println("FEAT " + remote + "=" + f + ".");
+              System.out.println("FEAT " + remote + '=' + f + '.');
             }
           } else {
             if (FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
@@ -424,7 +424,7 @@ public final class FTPClientExampleTest {
       }
     }
 
-    DetectionUtils.SystemExit(error? 1 : 0);
+    DetectionUtils.systemExit(error? 1 : 0);
   } // end main
 
   private static CopyStreamListener createListener() {

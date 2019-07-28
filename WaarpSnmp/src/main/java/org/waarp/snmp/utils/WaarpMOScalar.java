@@ -28,11 +28,9 @@ import org.snmp4j.smi.Variable;
 
 /**
  * GoldenGate MOScalar implementation
- *
- *
  */
 public class WaarpMOScalar extends MOScalar<Variable> {
-  WaarpMORow row;
+  final WaarpMORow row;
 
   /**
    * @param id
@@ -52,7 +50,7 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * function can be override to
    * host update check.
    *
-   * @see org.snmp4j.agent.mo.MOScalar#get(org.snmp4j.agent.request.SubRequest)
+   * @see MOScalar#get(SubRequest)
    */
   @Override
   public void get(SubRequest request) {
@@ -65,7 +63,7 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * following. Therefore this function
    * can be override to host update check.
    *
-   * @see org.snmp4j.agent.mo.MOScalar#find(org.snmp4j.agent.MOScope)
+   * @see MOScalar#find(MOScope)
    */
   @Override
   public OID find(MOScope range) {

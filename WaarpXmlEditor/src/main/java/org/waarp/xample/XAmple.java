@@ -32,6 +32,8 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.xample.custnodes.FFileDialog;
 
 import javax.swing.ButtonGroup;
@@ -51,6 +53,8 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.FontUIResource;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -82,7 +86,7 @@ import java.util.Properties;
 /**
  * A simple application demonstrates usage of the Swing-based XML editing
  * component
- * {@link com.fg.xmleditor.FXDoubleView}. The component generates
+ * {@link FXDoubleView}. The component generates
  * document-specific GUI for each particular
  * type of the XML document, specified by the XML Schema. A User-Manual
  * document, which is included into
@@ -93,16 +97,15 @@ import java.util.Properties;
  * node-specific messages, etc.
  * <p>
  * </p>
- * The application creares an instance of the {@link org.waarp.xample.custnodes.FFileDialog}
+ * The application creares an instance of the {@link FFileDialog}
  * and registers it
- * with the {@link com.fg.xmleditor.FXDoubleView} under "FileDialog" id, so it
+ * with the {@link FXDoubleView} under "FileDialog" id, so it
  * can be used as a global field
  * editor. (Actually there is no particular sense in doing it since the dialog
  * is not initialized with any
  * specific data. It is just an example).
  *
  * @author Felix Golubov
- *
  * @version 2.0
  */
 
@@ -112,48 +115,49 @@ public class XAmple extends JFrame
    *
    */
   private static final long serialVersionUID = 119665832924793058L;
-  public static String FILE_GUI = "gui.properties";
-  public static String FONT_NAME = "FONT_NAME";
-  public static String FONT_SIZE = "FONT_SIZE";
-  public static String FILE_RUNTIME = "runtime.properties";
-  public static String LOOK_AND_FEEL = "LOOK_AND_FEEL";
-  public static String BOUNDS_LEFT = "BOUNDS_LEFT";
-  public static String BOUNDS_TOP = "BOUNDS_TOP";
-  public static String BOUNDS_WIDTH = "BOUNDS_WIDTH";
-  public static String BOUNDS_HEIGHT = "BOUNDS_HEIGHT";
+  public static final String FILE_GUI = "gui.properties";
+  public static final String FONT_NAME = "FONT_NAME";
+  public static final String FONT_SIZE = "FONT_SIZE";
+  public static final String FILE_RUNTIME = "runtime.properties";
+  public static final String LOOK_AND_FEEL = "LOOK_AND_FEEL";
+  public static final String BOUNDS_LEFT = "BOUNDS_LEFT";
+  public static final String BOUNDS_TOP = "BOUNDS_TOP";
+  public static final String BOUNDS_WIDTH = "BOUNDS_WIDTH";
+  public static final String BOUNDS_HEIGHT = "BOUNDS_HEIGHT";
 
-  History history = new History("");
+  final History history = new History("");
 
-  FHistoryButton btnOpenXSD;
-  FHistoryButton btnOpenXML;
-  JButton btnNewXML;
-  JButton btnSaveXML;
-  JToggleButton btnHorizSplit;
-  JToggleButton btnVertSplit;
-  ButtonGroup splitGroup = new ButtonGroup();
-  JToggleButton btnSync;
+  final FHistoryButton btnOpenXSD;
+  final FHistoryButton btnOpenXML;
+  final JButton btnNewXML;
+  final JButton btnSaveXML;
+  final JToggleButton btnHorizSplit;
+  final JToggleButton btnVertSplit;
+  final ButtonGroup splitGroup = new ButtonGroup();
+  final JToggleButton btnSync;
 
-  JMenuBar menuBar = new JMenuBar();
-  JMenu menuFile = new JMenu("File");
-  JMenuItem mOpenXSD = new JMenuItem("Open XML Configuration Schema");
-  JMenuItem mOpenXML = new JMenuItem("Open XML Configuration Document");
-  JMenuItem mNewXML = new JMenuItem("New XML Configuration Document");
-  JMenuItem mSaveXML = new JMenuItem("Save XML Configuration Document");
-  JMenuItem mExit = new JMenuItem("Exit");
+  final JMenuBar jMenuBar = new JMenuBar();
+  final JMenu menuFile = new JMenu("File");
+  final JMenuItem mOpenXSD = new JMenuItem("Open XML Configuration Schema");
+  final JMenuItem mOpenXML = new JMenuItem("Open XML Configuration Document");
+  final JMenuItem mNewXML = new JMenuItem("New XML Configuration Document");
+  final JMenuItem mSaveXML = new JMenuItem("Save XML Configuration Document");
+  final JMenuItem mExit = new JMenuItem("Exit");
 
-  JMenu menuLF = new JMenu("Look & Feel");
+  final JMenu menuLF = new JMenu("Look & Feel");
 
-  JMenu menuHelp = new JMenu("Help");
-  JMenuItem mAbout = new JMenuItem("About...");
+  final JMenu menuHelp = new JMenu("Help");
+  final JMenuItem mAbout = new JMenuItem("About...");
 
-  FXDoubleView dblView;
-  FXDocumentModel model;
+  final FXDoubleView dblView;
+  final FXDocumentModel model;
 
-  JFileChooser fileDlg;
-  TheFileFilter xsdFilter = new TheFileFilter("xsd", "XML Schema files *.xsd");
-  TheFileFilter xmlFilter = new TheFileFilter("xml", "XML files *.xml");
+  final JFileChooser fileDlg;
+  final TheFileFilter xsdFilter =
+      new TheFileFilter("xsd", "XML Schema files *.xsd");
+  final TheFileFilter xmlFilter = new TheFileFilter("xml", "XML files *.xml");
 
-  FFileDialog fFileDialog = new FFileDialog();
+  final FFileDialog fFileDialog = new FFileDialog();
 
   String xsdFileName = "";
   String xmlFileName = "";
@@ -242,10 +246,10 @@ public class XAmple extends JFrame
     mAbout.addActionListener(this);
     menuHelp.add(mAbout);
 
-    menuBar.add(menuFile);
-    menuBar.add(menuLF);
-    menuBar.add(menuHelp);
-    setJMenuBar(menuBar);
+    jMenuBar.add(menuFile);
+    jMenuBar.add(menuLF);
+    jMenuBar.add(menuHelp);
+    setJMenuBar(jMenuBar);
 
     getContentPane().add(toolBar, BorderLayout.NORTH);
     model = new FXDocumentModelImpl();
@@ -288,15 +292,10 @@ public class XAmple extends JFrame
         UIManager
             .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
       } catch (final Exception ex1) {
-        ex1.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(ex1);
       }
     } finally {
-      try {
-        if (in != null) {
-          in.close();
-        }
-      } catch (final Exception ignore) {
-      }
+      FileUtils.close(in);
     }
     final XAmple frame = new XAmple();
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -338,7 +337,7 @@ public class XAmple extends JFrame
   static void assignDefaultFont() {
     final Properties props = new Properties();
     InputStream in = null;
-    String fontName = null;
+    String fontName;
     int fontSize = 12;
     try {
       final File file = new File(FILE_GUI);
@@ -354,22 +353,20 @@ public class XAmple extends JFrame
       try {
         fontSize = Integer.parseInt(props.getProperty(FONT_SIZE, "12"));
       } catch (final Exception ignore) {
+        // nothing
       }
     } catch (final Exception ex) {
-      ex.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(ex);
       return;
     } finally {
-      try {
-        in.close();
-      } catch (final Exception ignore) {
-      }
+      FileUtils.close(in);
     }
     final Font font = new Font(fontName, Font.PLAIN, fontSize);
     final Enumeration<Object> keys = UIManager.getDefaults().keys();
     while (keys.hasMoreElements()) {
       final Object key = keys.nextElement();
       final Object value = UIManager.get(key);
-      if (value instanceof javax.swing.plaf.FontUIResource) {
+      if (value instanceof FontUIResource) {
         UIManager.put(key, font);
       }
     }
@@ -380,7 +377,7 @@ public class XAmple extends JFrame
     if (e.getID() == WindowEvent.WINDOW_CLOSING) {
       if (confirmation()) {
         saveRuntimeProperties();
-        System.exit(0);
+        System.exit(0);//NOSONAR
       }
     }
   }
@@ -411,10 +408,10 @@ public class XAmple extends JFrame
       props.setProperty(LOOK_AND_FEEL, lf.getName());
     }
     final Rectangle r = getBounds();
-    props.setProperty(BOUNDS_LEFT, "" + r.x);
-    props.setProperty(BOUNDS_TOP, "" + r.y);
-    props.setProperty(BOUNDS_WIDTH, "" + r.width);
-    props.setProperty(BOUNDS_HEIGHT, "" + r.height);
+    props.setProperty(BOUNDS_LEFT, String.valueOf(r.x));
+    props.setProperty(BOUNDS_TOP, String.valueOf(r.y));
+    props.setProperty(BOUNDS_WIDTH, String.valueOf(r.width));
+    props.setProperty(BOUNDS_HEIGHT, String.valueOf(r.height));
     OutputStream out = null;
     try {
       final File file = new File(FILE_RUNTIME);
@@ -422,12 +419,9 @@ public class XAmple extends JFrame
       out = new FileOutputStream(file);
       props.store(out, "XAmple-Waarp XML Editor runtime properties");
     } catch (final Exception ex) {
-      ex.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(ex);
     } finally {
-      try {
-        out.close();
-      } catch (final Exception ignore) {
-      }
+      FileUtils.close(out);
     }
     HistoryIO.save(history);
   }
@@ -443,7 +437,7 @@ public class XAmple extends JFrame
       if (file == null) {
         return false;
       }
-      if (file.getName().indexOf(".") < 0) {
+      if (file.getName().indexOf('.') < 0) {
         file = new File(file.getAbsolutePath() + ".xml");
       }
       FileOutputStream out = null;
@@ -469,14 +463,8 @@ public class XAmple extends JFrame
         dblView.showErrorMessage("Error: " + ex.getMessage());
         return false;
       } finally {
-        try {
-          out.close();
-        } catch (final Exception ignore) {
-        }
-        try {
-          writer.close();
-        } catch (final Exception ignore) {
-        }
+        FileUtils.close(writer);
+        FileUtils.close(out);
       }
     } else {
       return false;
@@ -519,7 +507,7 @@ public class XAmple extends JFrame
       history.remove(file.getAbsolutePath());
       btnOpenXSD.setItems(history.items);
       btnOpenXML.setItems(null);
-      dblView.showErrorMessage("Error: " + ex.toString());
+      dblView.showErrorMessage("Error: " + ex);
       setSchemaEnabled(false);
       JOptionPane
           .showMessageDialog(this, "Can't load the XML Configuration Schema",
@@ -533,20 +521,20 @@ public class XAmple extends JFrame
     final History childHistory = history.getFirstChild();
     try {
       final URL url = file.toURI().toURL();
-      final List<?> lostElements = model.openDocument(model.getSchemaURL(),
-                                                      url);
+      final List<?> lostElements =
+          model.openDocument(model.getSchemaURL(), url);
       if (lostElements != null) {
-        final StringBuffer sb = new StringBuffer(
+        final StringBuilder sb = new StringBuilder(
             "Error: The source XML Configuration document is invalid.\n" +
             "The following elements have not been loaded:");
         for (int i = 0; i < lostElements.size(); i++) {
-          sb.append("\n");
+          sb.append('\n');
           final int k = sb.length();
           final Node element = (Node) lostElements.get(i);
           sb.append(element.getNodeName());
           Node node = element.getParentNode();
           while (node != null && !(node instanceof Document)) {
-            sb.insert(k, node.getNodeName() + "/");
+            sb.insert(k, node.getNodeName() + '/');
             node = node.getParentNode();
           }
         }
@@ -563,7 +551,7 @@ public class XAmple extends JFrame
     } catch (final Exception ex) {
       childHistory.remove(file.getAbsolutePath());
       btnOpenXML.setItems(childHistory.items);
-      // dblView.clear();
+      // dblView.clear()
       setXMLEnabled(false);
       dblView.showErrorMessage("Error: " + ex.getMessage());
       JOptionPane
@@ -627,11 +615,10 @@ public class XAmple extends JFrame
     for (final LookAndFeelInfo element : lfi) {
       if (element.getName().equals(lfName)) {
         try {
-          // dblView.stopEditing();
+          // dblView.stopEditing()
           UIManager.setLookAndFeel(element.getClassName());
           SwingUtilities.updateComponentTreeUI(this);
-          final javax.swing.filechooser.FileFilter currFilter =
-              fileDlg.getFileFilter();
+          final FileFilter currFilter = fileDlg.getFileFilter();
           fileDlg.setAcceptAllFileFilterUsed(
               fileDlg.getAcceptAllFileFilter() == null);
           SwingUtilities.updateComponentTreeUI(fileDlg);
@@ -640,6 +627,7 @@ public class XAmple extends JFrame
           SwingUtilities.updateComponentTreeUI(fFileDialog);
           return;
         } catch (final Exception ignore) {
+          // nothing
         }
       }
     }
@@ -703,7 +691,7 @@ public class XAmple extends JFrame
                         dlg.getRootElementName());
       setXMLEnabled(true);
     } catch (final Exception ex) {
-      ex.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(ex);
       setXMLEnabled(false);
       dblView.showErrorMessage("Error: " + ex.getMessage());
       JOptionPane
@@ -718,7 +706,7 @@ public class XAmple extends JFrame
       return;
     }
     saveRuntimeProperties();
-    System.exit(0);
+    System.exit(0);//NOSONAR
   }
 
   @Override
@@ -729,11 +717,11 @@ public class XAmple extends JFrame
   public void docValidityStatusChanged(FXStatusEvent e) {
   }
 
-  class TheFileFilter extends javax.swing.filechooser.FileFilter {
-    String extension;
-    String description;
+  class TheFileFilter extends FileFilter {
+    final String extension;
+    final String description;
 
-    public TheFileFilter(String extension, String description) {
+    TheFileFilter(String extension, String description) {
       this.extension = extension;
       this.description = description;
     }
@@ -743,7 +731,7 @@ public class XAmple extends JFrame
       if (f.isDirectory()) {
         return true;
       }
-      String ext = null;
+      String ext;
       final String name = f.getName();
       final int i = name.lastIndexOf('.');
       if (i > 0 && i < name.length() - 1) {
@@ -766,7 +754,7 @@ public class XAmple extends JFrame
      */
     private static final long serialVersionUID = 2143658918908443792L;
 
-    public Btn(ImageIcon icon, String toolTipText) {
+    Btn(ImageIcon icon, String toolTipText) {
       super(icon);
       setFocusPainted(false);
       setDisabledIcon(FadingFilter.fade(icon));
@@ -785,7 +773,7 @@ public class XAmple extends JFrame
      */
     private static final long serialVersionUID = 4742196038942810167L;
 
-    public ToggleBtn(ImageIcon icon, String toolTipText) {
+    ToggleBtn(ImageIcon icon, String toolTipText) {
       super(icon);
       setFocusPainted(false);
       setDisabledIcon(FadingFilter.fade(icon));

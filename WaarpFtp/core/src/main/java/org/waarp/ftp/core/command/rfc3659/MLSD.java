@@ -26,13 +26,11 @@ import java.util.List;
 
 /**
  * MLSD command
- *
- *
  */
 public class MLSD extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
-    String path = null;
+    String path;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
     } else {

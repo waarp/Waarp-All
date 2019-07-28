@@ -23,8 +23,6 @@ import org.waarp.openr66.protocol.exception.OpenR66Exception;
 
 /**
  * Runner exception
- *
- *
  */
 public class OpenR66RunnerException extends OpenR66Exception {
 
@@ -37,7 +35,6 @@ public class OpenR66RunnerException extends OpenR66Exception {
    *
    */
   public OpenR66RunnerException() {
-    super();
   }
 
   /**

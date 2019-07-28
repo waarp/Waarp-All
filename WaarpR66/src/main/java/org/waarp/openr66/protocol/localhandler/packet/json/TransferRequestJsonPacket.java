@@ -30,8 +30,6 @@ import java.util.Date;
 
 /**
  * Transfer request JSON packet
- *
- *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.NONE, getterVisibility = Visibility.ANY, setterVisibility = Visibility.ANY)
 public class TransferRequestJsonPacket extends JsonPacket {
@@ -296,6 +294,6 @@ public class TransferRequestJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.REQUESTPACKET);
+    setRequestUserPacket(LocalPacketFactory.REQUESTPACKET);
   }
 }

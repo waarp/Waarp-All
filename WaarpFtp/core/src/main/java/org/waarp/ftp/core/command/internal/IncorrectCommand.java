@@ -29,8 +29,6 @@ import org.waarp.ftp.core.command.info.NOOP;
 
 /**
  * Incorrect command
- *
- *
  */
 public class IncorrectCommand extends AbstractCommand {
   /**

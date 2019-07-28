@@ -18,30 +18,6 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright 2009, Frederic Bregier, and individual contributors by the @author
- * tags. See the
- * COPYRIGHT.txt in the distribution for a full listing of individual
- * contributors.
- * <p>
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation; either
- * version 3.0 of the
- * License, or (at your option) any later version.
- * <p>
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this
- * software; if not, write to the Free Software Foundation, Inc., 51 Franklin
- * St, Fifth Floor,
- * Boston, MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.waarp.gateway.kernel.exec;
 
 import io.netty.bootstrap.Bootstrap;
@@ -54,6 +30,7 @@ import org.waarp.commandexec.client.LocalExecClientInitializer;
 import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -74,23 +51,23 @@ public class LocalExecClient {
 
   private static InetSocketAddress address;
   // Configure the client.
-  static private Bootstrap bootstrapLocalExec;
+  private static Bootstrap bootstrapLocalExec;
   // Configure the pipeline factory.
-  static private LocalExecClientInitializer localExecClientInitializer;
-  static private EventLoopGroup localPipelineExecutor;
+  private static LocalExecClientInitializer localExecClientInitializer;
+  private static EventLoopGroup localPipelineExecutor;
 
   /**
    * Initialize the LocalExec Client context
    */
-  public static void initialize(int CLIENT_THREAD, long maxGlobalMemory) {
-    localPipelineExecutor = new NioEventLoopGroup(CLIENT_THREAD * 100,
+  public static void initialize(int clientThread, long maxGlobalMemory) {
+    localPipelineExecutor = new NioEventLoopGroup(clientThread * 2,
                                                   new WaarpThreadFactory(
                                                       "LocalExecutor"));
     // Configure the client.
     bootstrapLocalExec = new Bootstrap();
     WaarpNettyUtil.setBootstrap(bootstrapLocalExec, localPipelineExecutor,
                                 (int) Configuration.configuration
-                                    .getTIMEOUTCON());
+                                    .getTimeoutCon());
     // Configure the pipeline factory.
     localExecClientInitializer = new LocalExecClientInitializer();
     bootstrapLocalExec.handler(localExecClientInitializer);
@@ -104,7 +81,7 @@ public class LocalExecClient {
       return;
     }
     // Shut down all thread pools to exit.
-    bootstrapLocalExec.group().shutdownGracefully();
+    bootstrapLocalExec.config().group().shutdownGracefully();
     localExecClientInitializer.releaseResources();
   }
 
@@ -112,7 +89,7 @@ public class LocalExecClient {
   private LocalExecResult result;
 
   public LocalExecClient() {
-
+    // nothing
   }
 
   public LocalExecResult getLocalExecResult() {
@@ -137,8 +114,7 @@ public class LocalExecClient {
     // Command to execute
     clientHandler.initExecClient(delay, command);
     // Wait for the end of the exec command
-    final LocalExecResult localExecResult = clientHandler.waitFor(delay * 2);
-    result = localExecResult;
+    result = clientHandler.waitFor(delay * 2);
     if (futureCompletion == null) {
       return;
     }
@@ -151,7 +127,7 @@ public class LocalExecClient {
     } else {
       logger.error(
           "Status: " + result.getStatus() + " Exec in error with " + command +
-          "\n" + result.getResult());
+          '\n' + result.getResult());
       futureCompletion.cancel();
     }
   }
@@ -167,6 +143,7 @@ public class LocalExecClient {
     try {
       channel = future.await().sync().channel();
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (!future.isSuccess()) {
       logger.error("Client Not Connected", future.cause());

@@ -81,8 +81,6 @@ import java.io.IOException;
  * standard commands from FTP like
  * ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE,MDTM,MLSD,MLST,SIZE,AUTH)<br>
  * 13) QUIT<br>
- *
- *
  */
 public class FtpTransferTask extends AbstractTask {
   /**
@@ -104,10 +102,10 @@ public class FtpTransferTask extends AbstractTask {
 
   @Override
   public void run() {
-    logger.info("FtpTransfer with " + argRule + ":" + argTransfer + " and {}",
+    logger.info("FtpTransfer with " + argRule + ':' + argTransfer + " and {}",
                 session);
     String finalname = argRule;
-    final Object[] argFormat = argTransfer.split(" ");
+    final Object[] argFormat = BLANK.split(argTransfer);
     if (argFormat != null && argFormat.length > 0) {
       try {
         finalname = String.format(finalname, argFormat);
@@ -144,7 +142,7 @@ public class FtpTransferTask extends AbstractTask {
     int ssl = 0; // -1 native, 1 auth
     String cwd = null;
     int digest = 0; // 1 CRC, 2 MD5, 3 SHA1
-    String command = null;
+    String command;
     int codeCommand = 0; // -1 get, 1 put, 2 append
     String preArgs = null;
     String postArgs = null;
@@ -158,67 +156,67 @@ public class FtpTransferTask extends AbstractTask {
       args[i] = getReplacedValue(args[i], null);
     }
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-file")) {
+      if ("-file".equalsIgnoreCase(args[i])) {
         i++;
         filepath = args[i];
         filename = new File(filepath).getName();
-      } else if (args[i].equalsIgnoreCase("-to")) {
+      } else if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         requested = args[i];
-      } else if (args[i].equalsIgnoreCase("-port")) {
+      } else if ("-port".equalsIgnoreCase(args[i])) {
         i++;
         port = Integer.parseInt(args[i]);
-      } else if (args[i].equalsIgnoreCase("-user")) {
+      } else if ("-user".equalsIgnoreCase(args[i])) {
         i++;
         user = args[i];
-      } else if (args[i].equalsIgnoreCase("-pwd")) {
+      } else if ("-pwd".equalsIgnoreCase(args[i])) {
         i++;
         pwd = args[i];
-      } else if (args[i].equalsIgnoreCase("-account")) {
+      } else if ("-account".equalsIgnoreCase(args[i])) {
         i++;
         acct = args[i];
-      } else if (args[i].equalsIgnoreCase("-mode")) {
+      } else if ("-mode".equalsIgnoreCase(args[i])) {
         i++;
-        isPassive = (args[i].equalsIgnoreCase("passive"));
-      } else if (args[i].equalsIgnoreCase("-ssl")) {
+        isPassive = "passive".equalsIgnoreCase(args[i]);
+      } else if ("-ssl".equalsIgnoreCase(args[i])) {
         i++;
-        if (args[i].equalsIgnoreCase("implicit")) {
+        if ("implicit".equalsIgnoreCase(args[i])) {
           ssl = -1;
-        } else if (args[i].equalsIgnoreCase("explicit")) {
+        } else if ("explicit".equalsIgnoreCase(args[i])) {
           ssl = 1;
         } else {
           ssl = 0;
         }
-      } else if (args[i].equalsIgnoreCase("-cwd")) {
+      } else if ("-cwd".equalsIgnoreCase(args[i])) {
         i++;
         cwd = args[i];
-      } else if (args[i].equalsIgnoreCase("-digest")) {
+      } else if ("-digest".equalsIgnoreCase(args[i])) {
         i++;
-        if (args[i].equalsIgnoreCase("crc")) {
+        if ("crc".equalsIgnoreCase(args[i])) {
           digest = 1;
-        } else if (args[i].equalsIgnoreCase("md5")) {
+        } else if ("md5".equalsIgnoreCase(args[i])) {
           digest = 2;
-        } else if (args[i].equalsIgnoreCase("sha1")) {
+        } else if ("sha1".equalsIgnoreCase(args[i])) {
           digest = 3;
         } else {
           digest = 0;
         }
-      } else if (args[i].equalsIgnoreCase("-pre")) {
+      } else if ("-pre".equalsIgnoreCase(args[i])) {
         i++;
         preArgs = args[i].replace(',', ' ');
-      } else if (args[i].equalsIgnoreCase("-post")) {
+      } else if ("-post".equalsIgnoreCase(args[i])) {
         i++;
         postArgs = args[i].replace(',', ' ');
-      } else if (args[i].equalsIgnoreCase("-command")) {
+      } else if ("-command".equalsIgnoreCase(args[i])) {
         i++;
         command = args[i];
         // get,put,append,list
         // -1 get, 1 put, 2 append
-        if (command.equalsIgnoreCase("get")) {
+        if ("get".equalsIgnoreCase(command)) {
           codeCommand = -1;
-        } else if (command.equalsIgnoreCase("put")) {
+        } else if ("put".equalsIgnoreCase(command)) {
           codeCommand = 1;
-        } else if (command.equalsIgnoreCase("append")) {
+        } else if ("append".equalsIgnoreCase(command)) {
           codeCommand = 2;
         } else {
           // error
@@ -233,10 +231,10 @@ public class FtpTransferTask extends AbstractTask {
       final R66Result result =
           new R66Result(exception, session, false, ErrorCode.CommandNotFound,
                         session.getRunner());
-      final int code =
-          0 + (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
-          (port <= 0? 100 : 0) + (user == null? 1000 : 0) +
-          (pwd == null? 10000 : 0) + (codeCommand == 0? 100000 : 0);
+      final int code = (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
+                       (port <= 0? 100 : 0) + (user == null? 1000 : 0) +
+                       (pwd == null? 10000 : 0) +
+                       (codeCommand == 0? 100000 : 0);
       logger.error("Not enough arguments: " + code);
       futureCompletion.setResult(result);
       futureCompletion.setFailure(exception);
@@ -245,7 +243,7 @@ public class FtpTransferTask extends AbstractTask {
     final WaarpFtp4jClient ftpClient =
         new WaarpFtp4jClient(requested, port, user, pwd, acct, isPassive, ssl,
                              5000,
-                             (int) Configuration.configuration.getTIMEOUTCON());
+                             (int) Configuration.configuration.getTimeoutCon());
     boolean status = false;
     for (int i = 0; i < Configuration.RETRYNB; i++) {
       if (ftpClient.connect()) {
@@ -291,8 +289,8 @@ public class FtpTransferTask extends AbstractTask {
       }
       if (digest > 0) {
         // digest check
-        String params = null;
-        DigestAlgo algo = null;
+        String params;
+        DigestAlgo algo;
         switch (digest) {
           case 1: // CRC
             params = "XCRC ";
@@ -312,8 +310,8 @@ public class FtpTransferTask extends AbstractTask {
         String[] values = ftpClient.executeCommand(params);
         String hashresult = null;
         if (values != null) {
-          values = values[0].split(" ");
-          hashresult = (values.length > 3? values[1] : values[0]);
+          values = BLANK.split(values[0]);
+          hashresult = values.length > 3? values[1] : values[0];
         }
         if (hashresult == null) {
           final OpenR66RunnerErrorException exception =
@@ -335,7 +333,7 @@ public class FtpTransferTask extends AbstractTask {
         } catch (final IOException e) {
           hash = null;
         }
-        if (hash == null || (!hash.equalsIgnoreCase(hashresult))) {
+        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
           final OpenR66RunnerErrorException exception =
               new OpenR66RunnerErrorException(
                   "Hash not equal while FTP transfer is done");

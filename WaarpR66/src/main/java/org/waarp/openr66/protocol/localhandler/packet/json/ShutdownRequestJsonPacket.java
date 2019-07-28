@@ -23,8 +23,6 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Shutdown current request JSON packet
- *
- *
  */
 public class ShutdownRequestJsonPacket extends JsonPacket {
 
@@ -46,6 +44,6 @@ public class ShutdownRequestJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.SHUTDOWNPACKET);
+    setRequestUserPacket(LocalPacketFactory.SHUTDOWNPACKET);
   }
 }

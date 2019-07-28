@@ -24,25 +24,23 @@ import org.waarp.snmp.interf.WaarpGauge32;
 
 /**
  * R66 Gauge32 SNMP implementation
- *
- *
  */
 class R66Gauge32 extends WaarpGauge32 {
 
   private int type = 1;
-  private int entry = 0;
+  private final int entry;
   /**
    *
    */
   private static final long serialVersionUID = -5850987508703222927L;
 
-  public R66Gauge32(int type, int entry) {
+  R66Gauge32(int type, int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  public R66Gauge32(int type, int entry, long value) {
+  R66Gauge32(int type, int entry, long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);

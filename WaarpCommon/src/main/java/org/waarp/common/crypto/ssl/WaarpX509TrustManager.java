@@ -29,10 +29,10 @@ import java.security.cert.X509Certificate;
 
 /**
  * Waarp X509 Trust Manager implementation
- *
- *
  */
 public class WaarpX509TrustManager implements X509TrustManager {
+  private static final X509Certificate[] X_509_CERTIFICATES_0_LENGTH =
+      new X509Certificate[0];
   /**
    * First using default X509TrustManager returned by the global TrustManager.
    * Then delegate decisions to it,
@@ -92,7 +92,7 @@ public class WaarpX509TrustManager implements X509TrustManager {
   @Override
   public X509Certificate[] getAcceptedIssuers() {
     if (defaultX509TrustManager == null) {
-      return new X509Certificate[0]; // none valid
+      return X_509_CERTIFICATES_0_LENGTH; // none valid
     }
     return defaultX509TrustManager.getAcceptedIssuers();
   }

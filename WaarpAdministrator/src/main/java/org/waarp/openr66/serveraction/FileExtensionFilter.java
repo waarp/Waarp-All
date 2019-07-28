@@ -24,12 +24,10 @@ import java.io.File;
 
 /**
  * File extension filter
- *
- *
  */
 public class FileExtensionFilter extends FileFilter {
   private String description = "All Files";
-  private String extension = "";
+  private String extension;
 
   public FileExtensionFilter(String extension, String description) {
     this.description = description;
@@ -41,13 +39,9 @@ public class FileExtensionFilter extends FileFilter {
     if (f.isDirectory()) {
       return true;
     }
-    final String extension = FileExtensionFilter.getExtension(f);
-    if (extension != null) {
-      if (this.extension.equalsIgnoreCase(extension)) {
-        return true;
-      } else {
-        return false;
-      }
+    final String extensionNew = getExtension(f);
+    if (extensionNew != null) {
+      return this.extension.equalsIgnoreCase(extensionNew);
     }
     return false;
   }

@@ -26,11 +26,12 @@ import io.netty.util.TimerTask;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.utility.WaarpNettyUtil;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.localhandler.ConnectionActions;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * TimerTask to Close a Channel in the future
@@ -38,9 +39,9 @@ import java.util.concurrent.TimeUnit;
 public class ChannelCloseTimer implements TimerTask {
 
   private Channel channel;
-  private ChannelFuture future = null;
-  private ConnectionActions connectionActions = null;
-  private DbSession noconcurrencyDbSession = null;
+  private ChannelFuture future;
+  private ConnectionActions connectionActions;
+  private DbSession noconcurrencyDbSession;
 
   public ChannelCloseTimer(Channel channel) {
     this.channel = channel;
@@ -57,21 +58,21 @@ public class ChannelCloseTimer implements TimerTask {
 
   @Override
   public void run(Timeout timeout) throws Exception {
-    if (this.future != null) {
+    if (future != null) {
       WaarpNettyUtil.awaitOrInterrupted(future);
     }
     if (channel != null) {
       WaarpSslUtility.closingSslChannel(channel);
     } else if (connectionActions != null) {
-      // TODO connectionActions.channelClosed();
-      if (noconcurrencyDbSession != null && DbConstant.admin != null &&
-          DbConstant.admin.getSession() != null
-          && !noconcurrencyDbSession.equals(DbConstant.admin.getSession())) {
+      if (noconcurrencyDbSession != null && admin != null &&
+          admin.getSession() != null &&
+          !noconcurrencyDbSession.equals(admin.getSession())) {
         noconcurrencyDbSession.forceDisconnect();
         noconcurrencyDbSession = null;
       }
     }
   }
+
   /**
    * Close in the future this transaction (may need more than 1 WAITFORNETOP)
    *
@@ -104,7 +105,7 @@ public class ChannelCloseTimer implements TimerTask {
   }
 
   public void setDbSession(DbSession dbSession) {
-    this.noconcurrencyDbSession = dbSession;
+    noconcurrencyDbSession = dbSession;
   }
 
   /**
@@ -130,8 +131,8 @@ public class ChannelCloseTimer implements TimerTask {
   public static void closeFutureChannel(Channel channel, ChannelFuture future) {
     if (Configuration.configuration.isTimerCloseReady()) {
       Configuration.configuration.getTimerClose().newTimeout(
-          new ChannelCloseTimer(channel, future),
-          Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
+          new ChannelCloseTimer(channel, future), Configuration.WAITFORNETOP,
+          TimeUnit.MILLISECONDS);
     }
   }
 }

@@ -55,9 +55,9 @@ public enum UpdatedInfo {
    */
   DONE(6);
 
-  private int id;
+  private final int id;
 
-  private static Map<Integer, UpdatedInfo> map =
+  private static final Map<Integer, UpdatedInfo> map =
       new HashMap<Integer, UpdatedInfo>();
 
   static {

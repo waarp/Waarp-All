@@ -24,8 +24,6 @@ import org.waarp.common.command.ReplyCode;
 /**
  * 500 Syntax error, command unrecognized. This may include errors such as
  * command line too long.
- *
- *
  */
 public class Reply500Exception extends CommandAbstractException {
 

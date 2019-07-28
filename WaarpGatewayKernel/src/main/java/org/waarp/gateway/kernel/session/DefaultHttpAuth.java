@@ -31,8 +31,6 @@ import org.waarp.common.file.SessionInterface;
  * If an authentication is needed, then it will have to use an implementation
  * compatible with the Security of
  * the IT that needs it.
- *
- *
  */
 public class DefaultHttpAuth implements HttpAuthInterface {
   /**
@@ -43,7 +41,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   /**
    * Password
    */
-  protected String password = "password";
+  protected String password = "password"; // NOSONAR
 
   /**
    * Account name
@@ -53,7 +51,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   /**
    * Is Identified
    */
-  protected boolean isIdentified;
+  protected final boolean isIdentified;
 
   /**
    * SessionInterface
@@ -124,6 +122,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
 
   @Override
   public void clear() {
+    // nothing
   }
 
   @Override

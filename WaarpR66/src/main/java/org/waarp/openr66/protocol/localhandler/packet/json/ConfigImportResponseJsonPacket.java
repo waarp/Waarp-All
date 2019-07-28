@@ -23,16 +23,20 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Import Configuration response JSON packet
- *
- *
  */
 public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
 
   protected byte command;
-  protected boolean purgedhost, purgedrule, purgedbusiness, purgedalias,
-      purgedroles;
-  protected boolean importedhost, importedrule, importedbusiness, importedalias,
-      importedroles;
+  protected boolean purgedhost;
+  protected boolean purgedrule;
+  protected boolean purgedbusiness;
+  protected boolean purgedalias;
+  protected boolean purgedroles;
+  protected boolean importedhost;
+  protected boolean importedrule;
+  protected boolean importedbusiness;
+  protected boolean importedalias;
+  protected boolean importedroles;
 
   /**
    * @return the command
@@ -190,6 +194,6 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.CONFIMPORTPACKET);
+    setRequestUserPacket(LocalPacketFactory.CONFIMPORTPACKET);
   }
 }

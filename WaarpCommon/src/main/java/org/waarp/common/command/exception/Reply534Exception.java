@@ -23,8 +23,6 @@ import org.waarp.common.command.ReplyCode;
 
 /**
  * 534 Request denied for policy reasons.
- *
- *
  */
 public class Reply534Exception extends CommandAbstractException {
 

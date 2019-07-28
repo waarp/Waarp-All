@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol exception on Business part
- *
- *
  */
 public class OpenR66ProtocolBusinessCancelException
     extends OpenR66ProtocolBusinessException {
@@ -36,7 +34,6 @@ public class OpenR66ProtocolBusinessCancelException
    *
    */
   public OpenR66ProtocolBusinessCancelException() {
-    super();
   }
 
   /**

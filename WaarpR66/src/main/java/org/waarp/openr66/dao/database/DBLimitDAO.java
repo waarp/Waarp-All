@@ -43,7 +43,7 @@ import java.util.List;
 public class DBLimitDAO extends StatementExecutor implements LimitDAO {
 
   private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(LimitDAO.class);
+      WaarpLoggerFactory.getLogger(DBLimitDAO.class);
 
   protected static final String TABLE = "configuration";
 
@@ -77,7 +77,7 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
       " = ?, " + DELAY_LIMIT_FIELD + " = ?, " + UPDATED_INFO_FIELD +
       " = ? WHERE " + HOSTID_FIELD + " = ?";
 
-  protected Connection connection;
+  protected final Connection connection;
 
   public DBLimitDAO(Connection con) {
     connection = con;
@@ -159,7 +159,7 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + " " + filter.operand + " ?");
+      query.append(filter.key + ' ' + filter.operand + " ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -212,7 +212,7 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
       if (res.next()) {
         return getFromResultSet(res);
       } else {
-        throw new DAONoDataException(("No " + getClass().getName() + " found"));
+        throw new DAONoDataException("No " + getClass().getName() + " found");
       }
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
@@ -276,6 +276,6 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
                      set.getLong(WRITE_GLOBAL_LIMIT_FIELD),
                      set.getLong(READ_SESSION_LIMIT_FIELD),
                      set.getLong(WRITE_SESSION_LIMIT_FIELD),
-                     UpdatedInfo.valueOf((set.getInt(UPDATED_INFO_FIELD))));
+                     UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
   }
 }

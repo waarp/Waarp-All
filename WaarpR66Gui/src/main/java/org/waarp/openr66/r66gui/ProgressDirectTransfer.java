@@ -35,7 +35,7 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
   private boolean firstCall = true;
   private int nbBlock = 1;
   private long lastTime = System.currentTimeMillis();
-  private int lastRank = 0;
+  private int lastRank;
 
   /**
    * @param future
@@ -70,23 +70,23 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
     if (firstCall) {
       if (filesize != 0) {
         progressBar.setIndeterminate(false);
-        nbBlock = (int) (Math.ceil(((double) filesize / (double) blocksize)));
+        nbBlock = (int) Math.ceil((double) filesize / (double) blocksize);
       }
       firstCall = false;
     }
     final long newtime = System.currentTimeMillis() + 1;
-    final int sendsize = ((currentBlock - lastRank) * blocksize);
-    final long time = ((newtime - lastTime) * 1024) / 1000;
+    final int sendsize = (currentBlock - lastRank) * blocksize;
+    final long time = (newtime - lastTime) * 1024 / 1000;
     final long speedKB = sendsize / time;
     if (filesize == 0) {
       textFieldStatus.setText(
-          "Bytes transmitted: " + (currentBlock * blocksize) + " at " +
-          speedKB + " KB/s");
+          "Bytes transmitted: " + currentBlock * blocksize + " at " + speedKB +
+          " KB/s");
     } else {
       progressBar.setValue(currentBlock * 100 / nbBlock);
       textFieldStatus.setText(
-          "Bytes transmitted: " + (currentBlock * blocksize) + " on " +
-          filesize + " at " + speedKB + " KB/s");
+          "Bytes transmitted: " + currentBlock * blocksize + " on " + filesize +
+          " at " + speedKB + " KB/s");
     }
     lastTime = newtime - 1;
     lastRank = currentBlock;
@@ -95,15 +95,11 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
   @Override
   public void lastCallBack(boolean success, int currentBlock, int blocksize) {
     progressBar.setIndeterminate(false);
-    if (filesize == 0) {
-      textFieldStatus.setText(
-          "Finally Bytes transmitted: " + (currentBlock * blocksize) +
-          " with Status: " + success);
-    } else {
+    if (filesize != 0) {
       progressBar.setValue(100);
-      textFieldStatus.setText(
-          "Finally Bytes transmitted: " + (currentBlock * blocksize) +
-          " with Status: " + success);
     }
+    textFieldStatus.setText(
+        "Finally Bytes transmitted: " + currentBlock * blocksize +
+        " with Status: " + success);
   }
 }

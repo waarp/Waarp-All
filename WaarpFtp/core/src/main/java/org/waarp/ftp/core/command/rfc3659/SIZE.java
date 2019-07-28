@@ -28,8 +28,6 @@ import org.waarp.ftp.core.file.FtpFile;
 
 /**
  * SIZE command
- *
- *
  */
 public class SIZE extends AbstractCommand {
   @Override
@@ -44,7 +42,8 @@ public class SIZE extends AbstractCommand {
     }
     final FtpFile file = getSession().getDir().setFile(arg, false);
     final long length = file.length();
-    getSession().setReplyCode(ReplyCode.REPLY_213_FILE_STATUS, "" + length);
+    getSession()
+        .setReplyCode(ReplyCode.REPLY_213_FILE_STATUS, String.valueOf(length));
   }
 
 }

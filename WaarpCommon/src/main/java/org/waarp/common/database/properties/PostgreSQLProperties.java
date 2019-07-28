@@ -28,14 +28,15 @@ import java.sql.Statement;
 /**
  * PostgreSQL Database Model
  */
-public class PostgreSQLProperties extends DbProperties {
+public class PostgreSQLProperties implements DbProperties {
   public static final String PROTOCOL = "postgres";
 
-  private final String DRIVER_NAME = "org.postgresql.Driver";
-  private final String VALIDATION_QUERY = "select 1";
-  private final String MAX_CONNECTION_QUERY = "SHOW max_connections";
+  private static final String DRIVER_NAME = "org.postgresql.Driver";
+  private static final String VALIDATION_QUERY = "select 1";
+  private static final String MAX_CONNECTION_QUERY = "SHOW max_connections";
 
   public PostgreSQLProperties() {
+    // nothing
   }
 
   public static String getProtocolID() {
@@ -65,10 +66,18 @@ public class PostgreSQLProperties extends DbProperties {
       return rs.getInt(1);
     } finally {
       if (rs != null) {
-        rs.close();
+        try {
+          rs.close();
+        } catch (SQLException ignored) {
+          // nothing
+        }
       }
       if (stm != null) {
-        stm.close();
+        try {
+          stm.close();
+        } catch (SQLException ignored) {
+          // nothing
+        }
       }
     }
   }

@@ -19,7 +19,9 @@
  */
 package org.waarp.openr66.client.spooledService;
 
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.service.EngineAbstract;
@@ -38,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Engine used to start and stop the SpooledDirectory service
- *
- *
  */
 public class SpooledEngine extends EngineAbstract {
   /**
@@ -49,6 +49,7 @@ public class SpooledEngine extends EngineAbstract {
       WaarpLoggerFactory.getLogger(SpooledEngine.class);
 
   static final WaarpFuture closeFuture = new WaarpFuture(true);
+  private static final String[] STRING_0_LENGTH = {};
 
   @Override
   public void run() {
@@ -72,25 +73,25 @@ public class SpooledEngine extends EngineAbstract {
         for (final Object okey : prop.keySet()) {
           final String key = (String) okey;
           final String val = prop.getProperty(key);
-          if (key.equals("xmlfile")) {
+          if ("xmlfile".equals(key)) {
             if (val != null && !val.trim().isEmpty()) {
               array.add(0, val);
             } else {
               throw new Exception("Initialization in error: missing xmlfile");
             }
           } else {
-            array.add("-" + key);
+            array.add('-' + key);
             if (val != null && !val.trim().isEmpty()) {
               array.add(val);
             }
           }
         }
         if (!SpooledDirectoryTransfer
-            .initialize(array.toArray(new String[] {}), false)) {
+            .initialize(array.toArray(STRING_0_LENGTH), false)) {
           throw new Exception("Initialization in error");
         }
       } finally {
-        in.close();
+        FileUtils.close(in);
       }
     } catch (final Throwable e) {
       logger.error("Cannot start SpooledDirectory", e);
@@ -109,14 +110,15 @@ public class SpooledEngine extends EngineAbstract {
       spooled.stop();
     }
     Configuration.configuration
-        .setTIMEOUTCON(Configuration.configuration.getTIMEOUTCON() / 10);
+        .setTimeoutCon(Configuration.configuration.getTimeoutCon() / 10);
     try {
       while (!SpooledDirectoryTransfer.executorService
-          .awaitTermination(Configuration.configuration.getTIMEOUTCON(),
+          .awaitTermination(Configuration.configuration.getTimeoutCon(),
                             TimeUnit.MILLISECONDS)) {
-        Thread.sleep(Configuration.configuration.getTIMEOUTCON());
+        Thread.sleep(Configuration.configuration.getTimeoutCon());
       }
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     for (final SpooledDirectoryTransfer spooledDirectoryTransfer : SpooledDirectoryTransfer.list) {
       logger.warn(Messages.getString("SpooledDirectoryTransfer.58") +

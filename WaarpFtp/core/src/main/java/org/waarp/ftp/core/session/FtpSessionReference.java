@@ -36,8 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * reverse for Active connections. This is particularly useful for Passive mode
  * connection since there is no
  * way to pass the session to the connected channel without this reference.
- *
- *
  */
 public class FtpSessionReference {
   /**
@@ -48,19 +46,17 @@ public class FtpSessionReference {
 
   /**
    * Index of FtpSession References
-   *
-   *
    */
   public static class P2PAddress {
     /**
      * Remote Inet Address (no port)
      */
-    public InetAddress ipOnly;
+    public final InetAddress ipOnly;
 
     /**
      * Local Inet Socket Address (with port)
      */
-    public InetSocketAddress fullIp;
+    public final InetSocketAddress fullIp;
 
     /**
      * Constructor from Channel
@@ -92,12 +88,12 @@ public class FtpSessionReference {
     }
 
     @Override
-    public boolean equals(Object arg0) {
-      if (arg0 == null) {
+    public boolean equals(Object o) {
+      if (o == null) {
         return false;
       }
-      if (arg0 instanceof P2PAddress) {
-        final P2PAddress p2paddress = (P2PAddress) arg0;
+      if (o instanceof P2PAddress) {
+        final P2PAddress p2paddress = (P2PAddress) o;
         if (p2paddress.isValid() && isValid()) {
           return p2paddress.fullIp.equals(fullIp) &&
                  p2paddress.ipOnly.equals(ipOnly);
@@ -123,6 +119,7 @@ public class FtpSessionReference {
    * Constructor
    */
   public FtpSessionReference() {
+    // nothing
   }
 
   /**
@@ -141,7 +138,7 @@ public class FtpSessionReference {
       return;
     }
     hashMap.put(pAddress, session);
-    // logger.debug("Add: {} {}", ipOnly, fullIp);
+    // logger.debug("Add: {} {}", ipOnly, fullIp)
   }
 
   /**
@@ -161,7 +158,7 @@ public class FtpSessionReference {
                    channel.localAddress() + channel.remoteAddress());
       return null;
     }
-    // logger.debug("Get: {} {}", pAddress.ipOnly, pAddress.fullIp);
+    // logger.debug("Get: {} {}", pAddress.ipOnly, pAddress.fullIp)
     if (remove) {
       return hashMap.remove(pAddress);
     } else {
@@ -183,7 +180,7 @@ public class FtpSessionReference {
       logger.error("Couple invalid in getPassiveFtpSession: " + channel);
       return null;
     }
-    // logger.debug("Get: {} {}", pAddress.ipOnly, pAddress.fullIp);
+    // logger.debug("Get: {} {}", pAddress.ipOnly, pAddress.fullIp)
     if (remove) {
       return hashMap.remove(pAddress);
     } else {
@@ -204,7 +201,7 @@ public class FtpSessionReference {
           .error("Couple invalid in delFtpSession: " + ipOnly + " : " + fullIp);
       return;
     }
-    // logger.debug("Del: {} {}", pAddress.ipOnly, pAddress.fullIp);
+    // logger.debug("Del: {} {}", pAddress.ipOnly, pAddress.fullIp)
     hashMap.remove(pAddress);
   }
 
@@ -223,7 +220,7 @@ public class FtpSessionReference {
       logger.error("Couple invalid in contains: " + ipOnly + " : " + fullIp);
       return false;
     }
-    // logger.debug("Contains: {} {}", pAddress.ipOnly, pAddress.fullIp);
+    // logger.debug("Contains: {} {}", pAddress.ipOnly, pAddress.fullIp)
     return hashMap.containsKey(pAddress);
   }
 

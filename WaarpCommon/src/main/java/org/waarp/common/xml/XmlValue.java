@@ -28,14 +28,20 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * XmlValue base element
- *
- *
  */
 public class XmlValue {
+
+  private static final String CAN_NOT_CONVERT_VALUE = "Can not convert value ";
+
+  private static final String TO_TYPE = " to type ";
+
+  private static final String CAN_NOT_CONVERT_VALUE_FROM =
+      "Can not convert value from ";
 
   private final XmlDecl decl;
 
@@ -68,42 +74,20 @@ public class XmlValue {
       value = null;
       switch (getType()) {
         case BOOLEAN:
+        case STRING:
+        case TIMESTAMP:
+        case SQLDATE:
+        case SHORT:
+        case DOUBLE:
+        case LONG:
+        case BYTE:
+        case CHARACTER:
+        case FLOAT:
+        case INTEGER:
           values = new ArrayList<Boolean>();
           break;
-        case INTEGER:
-          values = new ArrayList<Integer>();
-          break;
-        case FLOAT:
-          values = new ArrayList<Float>();
-          break;
-        case CHARACTER:
-          values = new ArrayList<Character>();
-          break;
-        case BYTE:
-          values = new ArrayList<Byte>();
-          break;
-        case LONG:
-          values = new ArrayList<Long>();
-          break;
-        case DOUBLE:
-          values = new ArrayList<Double>();
-          break;
-        case SHORT:
-          values = new ArrayList<Short>();
-          break;
-        case SQLDATE:
-          values = new ArrayList<Date>();
-          break;
-        case TIMESTAMP:
-          values = new ArrayList<Timestamp>();
-          break;
-        case STRING:
-          values = new ArrayList<String>();
-          break;
-        case EMPTY:
-          break;
         case XVAL:
-          break;
+        case EMPTY:
         default:
           break;
       }
@@ -121,7 +105,7 @@ public class XmlValue {
           for (int i = 0; i < xmlValues.length; i++) {
             newValues[i] = new XmlValue(xmlValues[i]);
           }
-          ((List<XmlValue[]>) values).add(newValues);
+          ((Collection<XmlValue[]>) values).add(newValues);
         }
       } else {
         for (int i = 0; i < from.subXml.length; i++) {
@@ -134,7 +118,7 @@ public class XmlValue {
         try {
           addValue(getCloneValue(getType(), object));
         } catch (final InvalidObjectException e) {
-          continue;
+          // nothing
         }
       }
     } else {
@@ -227,47 +211,56 @@ public class XmlValue {
   @SuppressWarnings("unchecked")
   public void addFromString(String valueOrig)
       throws InvalidObjectException, InvalidArgumentException {
-    final String value = XmlUtil.getExtraTrimed(valueOrig);
+    final String valueNew = XmlUtil.getExtraTrimed(valueOrig);
     switch (getType()) {
       case BOOLEAN:
-        ((List<Boolean>) values).add((Boolean) convert(getClassType(), value));
+        ((Collection<Boolean>) values)
+            .add((Boolean) convert(getClassType(), valueNew));
         break;
       case INTEGER:
-        ((List<Integer>) values).add((Integer) convert(getClassType(), value));
+        ((Collection<Integer>) values)
+            .add((Integer) convert(getClassType(), valueNew));
         break;
       case FLOAT:
-        ((List<Float>) values).add((Float) convert(getClassType(), value));
+        ((Collection<Float>) values)
+            .add((Float) convert(getClassType(), valueNew));
         break;
       case CHARACTER:
-        ((List<Character>) values)
-            .add((Character) convert(getClassType(), value));
+        ((Collection<Character>) values)
+            .add((Character) convert(getClassType(), valueNew));
         break;
       case BYTE:
-        ((List<Byte>) values).add((Byte) convert(getClassType(), value));
+        ((Collection<Byte>) values)
+            .add((Byte) convert(getClassType(), valueNew));
         break;
       case LONG:
-        ((List<Long>) values).add((Long) convert(getClassType(), value));
+        ((Collection<Long>) values)
+            .add((Long) convert(getClassType(), valueNew));
         break;
       case DOUBLE:
-        ((List<Double>) values).add((Double) convert(getClassType(), value));
+        ((Collection<Double>) values)
+            .add((Double) convert(getClassType(), valueNew));
         break;
       case SHORT:
-        ((List<Short>) values).add((Short) convert(getClassType(), value));
+        ((Collection<Short>) values)
+            .add((Short) convert(getClassType(), valueNew));
         break;
       case SQLDATE:
-        ((List<Date>) values).add((Date) convert(getClassType(), value));
+        ((Collection<Date>) values)
+            .add((Date) convert(getClassType(), valueNew));
         break;
       case TIMESTAMP:
-        ((List<Timestamp>) values)
-            .add((Timestamp) convert(getClassType(), value));
+        ((Collection<Timestamp>) values)
+            .add((Timestamp) convert(getClassType(), valueNew));
         break;
       case STRING:
-        ((List<String>) values).add((String) convert(getClassType(), value));
+        ((Collection<String>) values)
+            .add((String) convert(getClassType(), valueNew));
         break;
       case XVAL:
         throw new InvalidObjectException(
             "XVAL cannot be assigned from String directly");
-        // ((List<XmlValue>) this.values).add((XmlValue) value);
+        // ((List<XmlValue>) this.values).add((XmlValue) value)
       case EMPTY:
         throw new InvalidObjectException("EMPTY cannot be assigned");
     }
@@ -285,54 +278,55 @@ public class XmlValue {
     if (getType().isNativelyCompatible(value)) {
       switch (getType()) {
         case BOOLEAN:
-          ((List<Boolean>) values).add((Boolean) value);
+          ((Collection<Boolean>) values).add((Boolean) value);
           break;
         case INTEGER:
-          ((List<Integer>) values).add((Integer) value);
+          ((Collection<Integer>) values).add((Integer) value);
           break;
         case FLOAT:
-          ((List<Float>) values).add((Float) value);
+          ((Collection<Float>) values).add((Float) value);
           break;
         case CHARACTER:
-          ((List<Character>) values).add((Character) value);
+          ((Collection<Character>) values).add((Character) value);
           break;
         case BYTE:
-          ((List<Byte>) values).add((Byte) value);
+          ((Collection<Byte>) values).add((Byte) value);
           break;
         case LONG:
-          ((List<Long>) values).add((Long) value);
+          ((Collection<Long>) values).add((Long) value);
           break;
         case DOUBLE:
-          ((List<Double>) values).add((Double) value);
+          ((Collection<Double>) values).add((Double) value);
           break;
         case SHORT:
-          ((List<Short>) values).add((Short) value);
+          ((Collection<Short>) values).add((Short) value);
           break;
         case SQLDATE:
           if (Date.class.isAssignableFrom(value.getClass())) {
-            ((List<Date>) values).add((Date) value);
+            ((Collection<Date>) values).add((Date) value);
           } else if (java.util.Date.class.isAssignableFrom(value.getClass())) {
-            ((List<Date>) values)
+            ((Collection<Date>) values)
                 .add(new Date(((java.util.Date) value).getTime()));
           }
           break;
         case TIMESTAMP:
-          ((List<Timestamp>) values).add((Timestamp) value);
+          ((Collection<Timestamp>) values).add((Timestamp) value);
           break;
         case STRING:
-          ((List<String>) values).add(XmlUtil.getExtraTrimed((String) value));
+          ((Collection<String>) values)
+              .add(XmlUtil.getExtraTrimed((String) value));
           break;
         case XVAL:
-          ((List<XmlValue[]>) values).add((XmlValue[]) value);
+          ((Collection<XmlValue[]>) values).add((XmlValue[]) value);
           break;
         default:
           throw new InvalidObjectException(
-              "Can not convert value from " + value.getClass() + " to type " +
+              CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +
               getClassType());
       }
     } else {
       throw new InvalidObjectException(
-          "Can not convert value from " + value.getClass() + " to type " +
+          CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +
           getClassType());
     }
   }
@@ -388,7 +382,7 @@ public class XmlValue {
       case EMPTY:
       default:
         throw new InvalidObjectException(
-            "Can not convert value from " + value.getClass() + " to type " +
+            CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +
             type.classType);
     }
   }
@@ -413,8 +407,7 @@ public class XmlValue {
       return XmlUtil.getExtraTrimed((String) value);
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() +
-        " to type String");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type String");
   }
 
   /**
@@ -425,8 +418,7 @@ public class XmlValue {
       return (Integer) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() +
-        " to type Integer");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Integer");
   }
 
   /**
@@ -437,8 +429,7 @@ public class XmlValue {
       return (Boolean) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() +
-        " to type Boolean");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Boolean");
   }
 
   /**
@@ -449,7 +440,7 @@ public class XmlValue {
       return (Long) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() + " to type Long");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Long");
   }
 
   /**
@@ -460,7 +451,7 @@ public class XmlValue {
       return (Float) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() + " to type Float");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Float");
   }
 
   /**
@@ -471,7 +462,7 @@ public class XmlValue {
       return (Character) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() +
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() +
         " to type Character");
   }
 
@@ -483,7 +474,7 @@ public class XmlValue {
       return (Byte) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() + " to type Byte");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Byte");
   }
 
   /**
@@ -494,8 +485,7 @@ public class XmlValue {
       return (Double) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() +
-        " to type Double");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Double");
   }
 
   /**
@@ -506,7 +496,7 @@ public class XmlValue {
       return (Short) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() + " to type Short");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Short");
   }
 
   /**
@@ -517,7 +507,7 @@ public class XmlValue {
       return (Date) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() + " to type Date");
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() + " to type Date");
   }
 
   /**
@@ -528,7 +518,7 @@ public class XmlValue {
       return (Timestamp) value;
     }
     throw new IllegalArgumentException(
-        "Can not convert value from " + decl.getClassType() +
+        CAN_NOT_CONVERT_VALUE_FROM + decl.getClassType() +
         " to type Timestamp");
   }
 
@@ -594,27 +584,14 @@ public class XmlValue {
     if (getType().isNativelyCompatible(value)) {
       switch (getType()) {
         case BOOLEAN:
-          this.value = value;
-          break;
-        case INTEGER:
-          this.value = value;
-          break;
-        case FLOAT:
-          this.value = value;
-          break;
-        case CHARACTER:
-          this.value = value;
-          break;
-        case BYTE:
-          this.value = value;
-          break;
-        case LONG:
-          this.value = value;
-          break;
-        case DOUBLE:
-          this.value = value;
-          break;
+        case TIMESTAMP:
         case SHORT:
+        case DOUBLE:
+        case LONG:
+        case BYTE:
+        case CHARACTER:
+        case FLOAT:
+        case INTEGER:
           this.value = value;
           break;
         case SQLDATE:
@@ -623,9 +600,6 @@ public class XmlValue {
           } else if (java.util.Date.class.isAssignableFrom(value.getClass())) {
             this.value = new Date(((java.util.Date) value).getTime());
           }
-          break;
-        case TIMESTAMP:
-          this.value = value;
           break;
         case STRING:
           this.value = XmlUtil.getExtraTrimed((String) value);
@@ -638,7 +612,7 @@ public class XmlValue {
             if (decl.getSubXmlSize() != newValue.length) {
               throw new InvalidObjectException(
                   "XmlDecl are not compatible from Array of XmlValue" +
-                  " to type " + getClassType());
+                  TO_TYPE + getClassType());
             }
             if (isMultiple()) {
               ((List<XmlValue[]>) values).add(newValue);
@@ -647,18 +621,18 @@ public class XmlValue {
             }
           } else {
             throw new InvalidObjectException(
-                "Can not convert value from Array of XmlValue" + " to type " +
+                "Can not convert value from Array of XmlValue" + TO_TYPE +
                 getClassType());
           }
           break;
         default:
           throw new InvalidObjectException(
-              "Can not convert value from " + value.getClass() + " to type " +
+              CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +
               getClassType());
       }
     } else {
       throw new InvalidObjectException(
-          "Can not convert value from " + value.getClass() + " to type " +
+          CAN_NOT_CONVERT_VALUE_FROM + value.getClass() + TO_TYPE +
           getClassType());
     }
   }
@@ -681,7 +655,7 @@ public class XmlValue {
       // primitives
       //
       else if (type.equals(Boolean.TYPE)) {
-        if (value.equals("1")) {
+        if ("1".equals(value)) {
           return Boolean.TRUE;
         }
         return Boolean.valueOf(value);
@@ -713,7 +687,7 @@ public class XmlValue {
           return Character.valueOf(value.charAt(0));
         } else {
           throw new IllegalArgumentException(
-              "Can not convert value " + value + " to type " + type);
+              CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
         }
       } else if (Number.class.isAssignableFrom(type)) {
         if (Double.class.isAssignableFrom(type)) {
@@ -735,7 +709,7 @@ public class XmlValue {
           throw new IllegalArgumentException("Can not use type " + type);
         } else {
           throw new IllegalArgumentException(
-              "Can not convert value " + value + " to type " + type);
+              CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
         }
       }
       //
@@ -751,7 +725,7 @@ public class XmlValue {
         final int spaceIndex = value.indexOf(' ', dotIndex);
         if (dotIndex < 0 || spaceIndex < 0) {
           throw new IllegalArgumentException(
-              "Can not convert value " + value + " to type " + type);
+              CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
         }
         final Timestamp ts = new Timestamp(
             XmlStaticShared.timestampFormat.parse(value.substring(0, dotIndex))
@@ -766,17 +740,17 @@ public class XmlValue {
         return new Date(XmlStaticShared.timeFormat.parse(value).getTime());
       } else {
         throw new IllegalArgumentException(
-            "Can not convert value " + value + " to type " + type);
+            CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
       }
     } catch (final NumberFormatException e) {
       throw new InvalidArgumentException(
-          "Can not convert value " + value + " to type " + type);
+          CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
     } catch (final IllegalArgumentException e) {
       throw new InvalidArgumentException(
-          "Can not convert value " + value + " to type " + type, e);
+          CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type, e);
     } catch (final ParseException e) {
       throw new InvalidArgumentException(
-          "Can not convert value " + value + " to type " + type);
+          CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
     }
   }
 
@@ -784,36 +758,36 @@ public class XmlValue {
   public String toString() {
     return "Val: " + (isMultiple()? values.size() + " elements" :
         value != null? value.toString() :
-            subXml != null? "subXml" : "no value") + " " + decl;
+            subXml != null? "subXml" : "no value") + ' ' + decl;
   }
 
   public String toFullString() {
-    String detail = "Val: " + (isMultiple()? values.size() + " elements" :
-        value != null? value.toString() :
-            subXml != null? "subXml" : "no value") + " " + decl;
+    StringBuilder detail = new StringBuilder("Val: " + (isMultiple()?
+        values.size() + " elements" : value != null? value.toString() :
+        subXml != null? "subXml" : "no value") + ' ' + decl);
     if (decl.isSubXml()) {
       if (isMultiple()) {
-        detail += "[";
+        detail.append('[');
         for (final Object obj : values) {
           if (obj instanceof XmlValue) {
-            detail += ((XmlValue) obj).toFullString() + ", ";
+            detail.append(((XmlValue) obj).toFullString()).append(", ");
           } else {
-            detail += "[";
+            detail.append('[');
             for (final XmlValue obj2 : (XmlValue[]) obj) {
-              detail += obj2.toFullString() + ", ";
+              detail.append(obj2.toFullString()).append(", ");
             }
-            detail += "], ";
+            detail.append("], ");
           }
         }
-        detail += "]";
+        detail.append(']');
       } else {
-        detail += "[";
+        detail.append('[');
         for (final XmlValue obj : subXml) {
-          detail += obj.toFullString() + ", ";
+          detail.append(obj.toFullString()).append(", ");
         }
-        detail += "]";
+        detail.append(']');
       }
     }
-    return detail;
+    return detail.toString();
   }
 }

@@ -39,20 +39,21 @@ import org.waarp.snmp.utils.WaarpMOScalar;
 
 /**
  * This class creates and returns ManagedObjects
- *
- *
  */
-public class WaarpMOFactory {
+public final class WaarpMOFactory {
   /**
    * To be setup to default Factory to be used or kept as null for default one
    */
-  private static WaarpInterfaceVariableFactory factory = null;
+  private static WaarpInterfaceVariableFactory factory;
 
   /**
    * Default one
    */
-  private static WaarpInterfaceVariableFactory defaultFactory =
+  private static final WaarpInterfaceVariableFactory defaultFactory =
       new WaarpDefaultVariableFactory();
+
+  private WaarpMOFactory() {
+  }
 
   /**
    * @param oid
@@ -98,7 +99,7 @@ public class WaarpMOFactory {
    */
   public static Variable getVariable(OID oid, Object value, int type,
                                      int mibLevel, int entry) {
-    Variable var = null;
+    Variable var;
     WaarpInterfaceVariableFactory vf;
     if (getFactory() == null) {
       vf = defaultFactory;

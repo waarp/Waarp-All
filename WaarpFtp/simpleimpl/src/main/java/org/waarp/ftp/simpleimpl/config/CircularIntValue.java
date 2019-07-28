@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Circular Value used by passive connections to find the next valid port to
  * propose to the client.
- *
- *
  */
 class CircularIntValue {
   /**
@@ -49,7 +47,7 @@ class CircularIntValue {
    * @param min
    * @param max
    */
-  public CircularIntValue(int min, int max) {
+  CircularIntValue(int min, int max) {
     this.min = min;
     this.max = max;
     current = new AtomicInteger(this.min - 1);

@@ -26,8 +26,6 @@ import org.waarp.openr66.context.R66Session;
 
 /**
  * Restart implementation
- *
- *
  */
 public class R66Restart extends FilesystemBasedRestartImpl {
 
@@ -40,7 +38,7 @@ public class R66Restart extends FilesystemBasedRestartImpl {
 
   @Override
   public boolean restartMarker(String marker) throws CommandAbstractException {
-    long newposition = 0;
+    long newposition;
     try {
       newposition = Long.parseLong(marker);
     } catch (final NumberFormatException e) {

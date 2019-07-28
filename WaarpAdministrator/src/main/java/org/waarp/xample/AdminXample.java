@@ -19,6 +19,9 @@
  */
 package org.waarp.xample;
 
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
+
 import javax.swing.UIManager;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -32,18 +35,15 @@ import java.util.Properties;
 
 /**
  * XML configuration edition GUI helper
- *
- *
  */
 public class AdminXample extends XAmple {
 
   private static final long serialVersionUID = 6020872788819087355L;
 
-  private boolean stillLaunched = false;
+  private boolean stillLaunched;
   private final List<AdminXample> list;
 
   public AdminXample(List<AdminXample> list) {
-    super();
     this.list = list;
     setStillLaunched(true);
     this.list.add(this);
@@ -62,13 +62,11 @@ public class AdminXample extends XAmple {
 
   @Override
   protected void processWindowEvent(WindowEvent e) {
-    if (e.getID() == WindowEvent.WINDOW_CLOSING) {
-      if (confirmation()) {
-        saveRuntimeProperties();
-        setStillLaunched(false);
-        list.remove(this);
-        dispose();
-      }
+    if (e.getID() == WindowEvent.WINDOW_CLOSING && confirmation()) {
+      saveRuntimeProperties();
+      setStillLaunched(false);
+      list.remove(this);
+      dispose();
     }
   }
 
@@ -102,15 +100,10 @@ public class AdminXample extends XAmple {
         UIManager
             .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
       } catch (final Exception ex1) {
-        ex1.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(ex1);
       }
     } finally {
-      try {
-        if (in != null) {
-          in.close();
-        }
-      } catch (final Exception ignore) {
-      }
+      FileUtils.close(in);
     }
     final AdminXample frame = new AdminXample(list);
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

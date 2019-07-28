@@ -30,8 +30,6 @@ import java.io.File;
 
 /**
  * Copy and Rename task
- *
- *
  */
 public class CopyRenameTask extends AbstractTask {
   /**
@@ -58,7 +56,7 @@ public class CopyRenameTask extends AbstractTask {
                                                                    .replace(
                                                                        '\\',
                                                                        '/');
-    logger.info("Copy and Rename to " + finalname + " with " + argRule + ":" +
+    logger.info("Copy and Rename to " + finalname + " with " + argRule + ':' +
                 argTransfer + " and {}", session);
     final File from = session.getFile().getTrueFile();
     final File to = new File(finalname);
@@ -66,7 +64,7 @@ public class CopyRenameTask extends AbstractTask {
       FileUtils.copy(from, to, false, false);
     } catch (final Reply550Exception e1) {
       logger.error(
-          "Copy and Rename to " + finalname + " with " + argRule + ":" +
+          "Copy and Rename to " + finalname + " with " + argRule + ':' +
           argTransfer + " and " + session, e1);
       futureCompletion.setFailure(new OpenR66ProtocolSystemException(e1));
       return;

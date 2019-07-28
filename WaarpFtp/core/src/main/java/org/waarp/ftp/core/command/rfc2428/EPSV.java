@@ -34,8 +34,6 @@ import java.net.InetSocketAddress;
 
 /**
  * EPSV command
- *
- *
  */
 public class EPSV extends AbstractCommand {
   /**
@@ -83,7 +81,7 @@ public class EPSV extends AbstractCommand {
     final InetSocketAddress local =
         getSession().getDataConn().getLocalAddress();
     final String slocal = "Entering Extended Passive Mode (" +
-                          FtpChannelUtils.get2428Address(local) + ")";
+                          FtpChannelUtils.get2428Address(local) + ')';
     final InetAddress remote =
         getSession().getDataConn().getRemoteAddress().getAddress();
     // Add the current FtpSession into the reference of session since the
@@ -94,7 +92,7 @@ public class EPSV extends AbstractCommand {
                               "|)");
     logger.info("EPSV: answer ready on {}", slocal);
     /*
-     * Could be:this.getFtpSession().setReplyCode(ReplyCode. REPLY_229_ENTERING_PASSIVE_MODE, slocal);
+     * Could be:this.getFtpSession().setReplyCode(ReplyCode. REPLY_229_ENTERING_PASSIVE_MODE, slocal)
      */
   }
 

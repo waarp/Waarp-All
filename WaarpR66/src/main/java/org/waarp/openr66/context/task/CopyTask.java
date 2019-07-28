@@ -30,8 +30,6 @@ import java.io.File;
 
 /**
  * Copy task
- *
- *
  */
 public class CopyTask extends AbstractTask {
   /**
@@ -54,7 +52,7 @@ public class CopyTask extends AbstractTask {
   @Override
   public void run() {
     logger
-        .info("Copy with " + argRule + ":" + argTransfer + " and {}", session);
+        .info("Copy with " + argRule + ':' + argTransfer + " and {}", session);
     final File from = session.getFile().getTrueFile();
     final String directory = argRule.replace('\\', '/');
     final File to = new File(directory, session.getFile().getBasename());
@@ -62,7 +60,7 @@ public class CopyTask extends AbstractTask {
       FileUtils.copy(from, to, false, false);
     } catch (final Reply550Exception e1) {
       logger
-          .error("Copy with " + argRule + ":" + argTransfer + " and " + session,
+          .error("Copy with " + argRule + ':' + argTransfer + " and " + session,
                  e1);
       futureCompletion.setFailure(new OpenR66ProtocolSystemException(e1));
       return;

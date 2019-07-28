@@ -23,10 +23,7 @@ import org.waarp.snmp.interf.WaarpGauge32;
 
 /**
  * Specific Value for Gauge32 for Memory usage
- *
- *
  */
-@SuppressWarnings("serial")
 public class MemoryGauge32 extends WaarpGauge32 {
   /**
    *
@@ -35,8 +32,6 @@ public class MemoryGauge32 extends WaarpGauge32 {
 
   /**
    * The different Type of Memory Gauge32 elements
-   *
-   *
    */
   public static enum MemoryType {
     TotalMemory, FreeMemory, UsedMemory
@@ -45,11 +40,11 @@ public class MemoryGauge32 extends WaarpGauge32 {
   /**
    * Runtime for Memory
    */
-  protected Runtime runtime = Runtime.getRuntime();
+  protected final Runtime runtime = Runtime.getRuntime();
   /**
    * Type of MemoryType used
    */
-  protected MemoryType type = null;
+  protected MemoryType type;
 
   @Override
   protected void setInternalValue() {
@@ -69,7 +64,6 @@ public class MemoryGauge32 extends WaarpGauge32 {
       case UsedMemory:
         mem = runtime.totalMemory() - runtime.freeMemory();
         setValue(mem >> 10);
-        return;
     }
   }
 

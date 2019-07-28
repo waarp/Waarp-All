@@ -32,8 +32,6 @@ import java.util.regex.Pattern;
 
 /**
  * Authentication implementation for Filesystem Based
- *
- *
  */
 public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   /**
@@ -68,7 +66,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   /**
    * @param session
    */
-  public FilesystemBasedAuthImpl(SessionInterface session) {
+  protected FilesystemBasedAuthImpl(SessionInterface session) {
     this.session = session;
     isIdentified = false;
   }
@@ -218,7 +216,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *
    * @throws Reply421Exception if the business root is not available
    */
-  private void setRootFromAuth() throws Reply421Exception {
+  protected void setRootFromAuth() throws Reply421Exception {
     rootFromAuth = setBusinessRootFromAuth();
     if (rootFromAuth == null) {
       rootFromAuth = DirInterface.SEPARATOR + user;

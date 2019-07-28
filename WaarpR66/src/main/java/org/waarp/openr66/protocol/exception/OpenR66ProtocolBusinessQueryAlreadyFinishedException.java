@@ -21,8 +21,6 @@ package org.waarp.openr66.protocol.exception;
 
 /**
  * Protocol exception on Business part due to Query is already finished
- *
- *
  */
 public class OpenR66ProtocolBusinessQueryAlreadyFinishedException
     extends OpenR66ProtocolBusinessException {
@@ -35,7 +33,6 @@ public class OpenR66ProtocolBusinessQueryAlreadyFinishedException
    *
    */
   public OpenR66ProtocolBusinessQueryAlreadyFinishedException() {
-    super();
   }
 
   /**

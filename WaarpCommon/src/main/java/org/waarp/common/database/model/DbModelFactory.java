@@ -29,8 +29,6 @@ import java.util.Set;
 
 /**
  * Factory to store the Database Model object
- *
- *
  */
 public class DbModelFactory {
 
@@ -63,19 +61,19 @@ public class DbModelFactory {
     final DbModel dbModel = null;
     switch (type) {
       case H2:
-        // dbModel = new DbModelH2(dbserver, dbuser, dbpasswd);
+        // dbModel = new DbModelH2(dbserver, dbuser, dbpasswd)
         break;
       case Oracle:
-        // dbModel = new DbModelOracle(dbserver, dbuser, dbpasswd);
+        // dbModel = new DbModelOracle(dbserver, dbuser, dbpasswd)
         break;
       case PostGreSQL:
-        // dbModel = new DbModelPostgresql();
+        // dbModel = new DbModelPostgresql()
         break;
       case MySQL:
-        // dbModel = new DbModelMysql(dbserver, dbuser, dbpasswd);
+        // dbModel = new DbModelMysql(dbserver, dbuser, dbpasswd)
         break;
       case MariaDB:
-        // dbModel = new DbModelMariadb(dbserver, dbuser, dbpasswd);
+        // dbModel = new DbModelMariadb(dbserver, dbuser, dbpasswd)
         break;
       default:
         throw new WaarpDatabaseNoConnectionException(

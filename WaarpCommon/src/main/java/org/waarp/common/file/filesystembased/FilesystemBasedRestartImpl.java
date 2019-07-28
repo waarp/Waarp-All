@@ -25,8 +25,6 @@ import org.waarp.common.file.SessionInterface;
 
 /**
  * Restart implementation for Filesystem Based
- *
- *
  */
 public abstract class FilesystemBasedRestartImpl extends Restart {
   /**
@@ -38,7 +36,7 @@ public abstract class FilesystemBasedRestartImpl extends Restart {
   /**
    * @param session
    */
-  public FilesystemBasedRestartImpl(SessionInterface session) {
+  protected FilesystemBasedRestartImpl(SessionInterface session) {
     super(session);
   }
 

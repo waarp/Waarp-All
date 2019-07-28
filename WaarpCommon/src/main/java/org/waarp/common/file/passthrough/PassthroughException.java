@@ -21,8 +21,6 @@ package org.waarp.common.file.passthrough;
 
 /**
  * Passthrough exception
- *
- *
  */
 public class PassthroughException extends Exception {
 

@@ -30,25 +30,25 @@ public class HttpIncorrectRequestException extends Exception {
   private static final long serialVersionUID = -6357523132449299675L;
 
   /**
-   * @param arg0
+   * @param s
    */
-  public HttpIncorrectRequestException(String arg0) {
-    super(arg0);
+  public HttpIncorrectRequestException(String s) {
+    super(s);
   }
 
   /**
-   * @param arg0
+   * @param throwable
    */
-  public HttpIncorrectRequestException(Throwable arg0) {
-    super(arg0);
+  public HttpIncorrectRequestException(Throwable throwable) {
+    super(throwable);
   }
 
   /**
-   * @param arg0
-   * @param arg1
+   * @param s
+   * @param throwable
    */
-  public HttpIncorrectRequestException(String arg0, Throwable arg1) {
-    super(arg0, arg1);
+  public HttpIncorrectRequestException(String s, Throwable throwable) {
+    super(s, throwable);
   }
 
 }

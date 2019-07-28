@@ -19,6 +19,7 @@
  */
 package org.waarp.gateway.kernel.http.saplink;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.gateway.kernel.HttpJsonDefinition;
 import org.waarp.gateway.kernel.HttpPageHandler;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
@@ -26,23 +27,23 @@ import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 /**
  *
  */
-public class HttpGerenateJsonConfiguration {
+public final class HttpGerenateJsonConfiguration {
 
   /**
    * @param args
    */
   public static void main(String[] args) {
     if (args.length < 1) {
-      System.err.println("Not enough argument: filepath for output");
-      System.exit(1);
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Not enough argument: filepath for output");
+      System.exit(1);//NOSONAR
     }
     final HttpPageHandler httpPageHandler =
         HttpSapBusinessFactory.initializeHttpPageHandler();
     try {
       HttpJsonDefinition.exportConfiguration(httpPageHandler, args[0]);
     } catch (final HttpIncorrectRequestException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
   }
 

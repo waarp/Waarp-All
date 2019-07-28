@@ -35,7 +35,10 @@ import java.io.IOException;
 /**
  * File Utils
  */
-public class FileUtils {
+public final class FileUtils {
+
+  private FileUtils() {
+  }
 
   /**
    * Change or create the R66File associated with the context
@@ -52,7 +55,7 @@ public class FileUtils {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public final static R66File getFile(WaarpLogger logger, R66Session session,
+  public static final R66File getFile(WaarpLogger logger, R66Session session,
                                       String filenameSrc, boolean isPreStart,
                                       boolean isSender, boolean isThrough,
                                       R66File file)
@@ -112,7 +115,7 @@ public class FileUtils {
    *
    * @return the hash from the given Buffer
    */
-  public final static ByteBuf getHash(ByteBuf buffer, DigestAlgo algo) {
+  public static final ByteBuf getHash(ByteBuf buffer, DigestAlgo algo) {
     byte[] newkey;
     try {
       newkey = FilesystemBasedDigest.getHash(buffer, algo);

@@ -34,11 +34,13 @@ import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.waarp.common.crypto.HmacSha256;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
@@ -66,8 +68,6 @@ import java.util.TreeMap;
  * - ARG_COOKIE: cookie elements</br>
  * - ARGS_BODY: body elements (query only)</br>
  * - ARGS_ANSWER: answer part (answer only)</br>
- *
- *
  */
 public class RestArgument {
   /**
@@ -98,7 +98,7 @@ public class RestArgument {
      */
     ARGS_ANSWER("answer");
 
-    public String group;
+    public final String group;
 
     REST_GROUP(String group) {
       this.group = group;
@@ -154,7 +154,7 @@ public class RestArgument {
     JSON_STATUSMESSAGE("message"), JSON_COMMAND("command"),
     JSON_DETAIL("detail");
 
-    public String field;
+    public final String field;
 
     REST_ROOT_FIELD(String field) {
       this.field = field;
@@ -166,7 +166,7 @@ public class RestArgument {
     X_DETAILED_ALLOW("DetailedAllow"), X_ALLOW_URIS("UriAllowed"),
     JSON_ID("_id");
 
-    public String field;
+    public final String field;
 
     REST_FIELD(String field) {
       this.field = field;
@@ -177,14 +177,14 @@ public class RestArgument {
     JSON_COUNT("count"), JSON_RESULTS("results"), JSON_FILTER("filter"),
     JSON_LIMIT("limit");
 
-    public String field;
+    public final String field;
 
     DATAMODEL(String field) {
       this.field = field;
     }
   }
 
-  ObjectNode arguments;
+  final ObjectNode arguments;
 
   /**
    * Create a RestArgument
@@ -275,33 +275,41 @@ public class RestArgument {
     }
     final Map<String, List<String>> map = decoderQuery.parameters();
     final ObjectNode node = arguments.putObject(REST_GROUP.ARGS_URI.group);
-    for (final String key : map.keySet()) {
-      if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
-        arguments
-            .put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field, map.get(key).get(0));
-        continue;
-      }
-      if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
-        arguments
-            .put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field, map.get(key).get(0));
-        continue;
-      }
-      if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
-        arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
-                      map.get(key).get(0));
-        continue;
-      }
-      final List<String> list = map.get(key);
-      if (list.size() > 1) {
-        final ArrayNode array = node.putArray(key);
-        for (final String val : map.get(key)) {
-          array.add(val);
+    for (final Entry<String, List<String>> entry : map.entrySet()) {
+      final String key = entry.getKey();
+      try {
+        ParametersChecker.checkSanityString(
+            entry.getValue().toArray(ParametersChecker.ZERO_ARRAY_STRING));
+        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
+          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field,
+                        entry.getValue().get(0));
+          continue;
         }
-      } else if (list.isEmpty()) {
-        node.putNull(key);
-      } else {
-        // 1
-        node.put(key, list.get(0));
+        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
+          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
+                        entry.getValue().get(0));
+          continue;
+        }
+        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
+          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
+                        entry.getValue().get(0));
+          continue;
+        }
+        final List<String> list = entry.getValue();
+        if (list.size() > 1) {
+          final ArrayNode array = node.putArray(key);
+          for (final String val : entry.getValue()) {
+            array.add(val);
+          }
+        } else if (list.isEmpty()) {
+          node.putNull(key);
+        } else {
+          // 1
+          node.put(key, list.get(0));
+        }
+      } catch (InvalidArgumentException e) {
+        logger.error("Arguments incompatible with Security: " + entry.getKey(),
+                     e);
       }
     }
   }
@@ -459,23 +467,31 @@ public class RestArgument {
       node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);
     }
     for (final Entry<String, String> entry : list) {
-      final String key = entry.getKey();
-      if (!key.equals(HttpHeaderNames.COOKIE)) {
-        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
-          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field, entry.getValue());
-          continue;
+      try {
+        ParametersChecker.checkSanityString(entry.getValue());
+        final String key = entry.getKey();
+        if (!key.equals(HttpHeaderNames.COOKIE.toString())) {
+          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
+            arguments
+                .put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field, entry.getValue());
+            continue;
+          }
+          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
+            arguments
+                .put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field, entry.getValue());
+            continue;
+          }
+          if (key
+              .equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
+            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
+                          entry.getValue());
+            continue;
+          }
+          node.put(key, entry.getValue());
         }
-        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
-          arguments
-              .put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field, entry.getValue());
-          continue;
-        }
-        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
-          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
-                        entry.getValue());
-          continue;
-        }
-        node.put(key, entry.getValue());
+      } catch (InvalidArgumentException e) {
+        logger.error("Arguments incompatible with Security: " + entry.getKey(),
+                     e);
       }
     }
   }
@@ -493,24 +509,31 @@ public class RestArgument {
     }
     while (iterator.hasNext()) {
       final Entry<CharSequence, CharSequence> entry = iterator.next();
-      final String key = entry.getKey().toString();
-      if (!key.equals(HttpHeaderNames.COOKIE)) {
-        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
-          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field,
-                        entry.getValue().toString());
-          continue;
+      try {
+        ParametersChecker.checkSanityString(entry.getValue().toString());
+        final String key = entry.getKey().toString();
+        if (!key.equals(HttpHeaderNames.COOKIE.toString())) {
+          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
+            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field,
+                          entry.getValue().toString());
+            continue;
+          }
+          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
+            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
+                          entry.getValue().toString());
+            continue;
+          }
+          if (key
+              .equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
+            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
+                          entry.getValue().toString());
+            continue;
+          }
+          node.put(key, entry.getValue().toString());
         }
-        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
-          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
-                        entry.getValue().toString());
-          continue;
-        }
-        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
-          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
-                        entry.getValue().toString());
-          continue;
-        }
-        node.put(key, entry.getValue().toString());
+      } catch (InvalidArgumentException e) {
+        logger.error("Arguments incompatible with Security: " + entry.getKey(),
+                     e);
       }
     }
   }
@@ -563,7 +586,13 @@ public class RestArgument {
     if (!cookies.isEmpty()) {
       final ObjectNode node = arguments.putObject(REST_GROUP.ARGS_COOKIE.group);
       for (final Cookie cookie : cookies) {
-        node.put(cookie.name(), cookie.value());
+        try {
+          ParametersChecker.checkSanityString(cookie.value());
+          node.put(cookie.name(), cookie.value());
+        } catch (InvalidArgumentException e) {
+          logger.error("Arguments incompatible with Security: " + cookie.name(),
+                       e);
+        }
       }
     }
   }
@@ -803,12 +832,7 @@ public class RestArgument {
     try {
       final String key =
           computeKey(hmacSha256, extraKey, treeMap, decoderQuery.path());
-      final String[] result = { date.toString(), key };
-      return result;
-      /*
-       * encoder.addParam(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field, date.toString());
-       * encoder.addParam(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field, key);
-       */
+      return new String[] { date.toString(), key };
     } catch (final Exception e) {
       throw new HttpInvalidAuthenticationException(e);
     }
@@ -887,7 +911,7 @@ public class RestArgument {
       }
       final String keylower = key.toLowerCase();
       if (values != null) {
-        String val = null;
+        String val;
         if (values.isArray()) {
           final JsonNode jsonNode = values.get(values.size() - 1);
           val = jsonNode.asText();
@@ -953,9 +977,9 @@ public class RestArgument {
     }
     if (extraKey != null) {
       if (!keys.isEmpty()) {
-        builder.append("&");
+        builder.append('&');
       }
-      builder.append(REST_ROOT_FIELD.ARG_X_AUTH_INTERNALKEY.field).append("=")
+      builder.append(REST_ROOT_FIELD.ARG_X_AUTH_INTERNALKEY.field).append('=')
              .append(extraKey);
     }
     try {
@@ -979,7 +1003,7 @@ public class RestArgument {
                                              JsonNode result) {
     final ObjectNode node = JsonHandler.createObjectNode();
     final ObjectNode node2 = node.putObject(method.name());
-    node2.put(REST_FIELD.JSON_PATH.field, "/" + path);
+    node2.put(REST_FIELD.JSON_PATH.field, '/' + path);
     node2.put(REST_ROOT_FIELD.JSON_COMMAND.field, command);
     if (body != null) {
       node2.set(REST_FIELD.JSON_JSON.field, body);

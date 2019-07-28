@@ -43,8 +43,6 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * header = "{rule:rulename, mode:MODETRANS}" middle = way{filename:FILENAME,
  * block:BLOCKSIZE, rank:RANK,
  * id:specialId, code:code, length:length}" end = "fileInformation"
- *
- *
  */
 public class RequestPacket extends AbstractLocalPacket {
   /**
@@ -52,13 +50,14 @@ public class RequestPacket extends AbstractLocalPacket {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(RequestPacket.class);
+  private static final String NOT_ENOUGH_DATA = "Not enough data";
 
-  public static enum TRANSFERMODE {
+  public enum TRANSFERMODE {
     UNKNOWNMODE, SENDMODE, RECVMODE, SENDMD5MODE, RECVMD5MODE, SENDTHROUGHMODE,
-    RECVTHROUGHMODE, SENDMD5THROUGHMODE, RECVMD5THROUGHMODE;
+    RECVTHROUGHMODE, SENDMD5THROUGHMODE, RECVMD5THROUGHMODE
   }
 
-  protected static enum FIELDS {
+  protected enum FIELDS {
     rule, mode, filename, block, rank, id, code, length, limit
   }
 
@@ -84,7 +83,7 @@ public class RequestPacket extends AbstractLocalPacket {
 
   protected long originalSize;
 
-  protected long limit = 0;
+  protected long limit;
 
   protected final String fileInformation;
 
@@ -95,7 +94,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return the same mode (RECV or SEND) in MD5 version
    */
-  public final static int getModeMD5(int mode) {
+  public static final int getModeMD5(int mode) {
     switch (mode) {
       case 1:
       case 2:
@@ -111,11 +110,11 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if this mode is a RECV(MD5) mode
    */
-  public final static boolean isRecvMode(int mode) {
-    return (mode == TRANSFERMODE.RECVMODE.ordinal() ||
-            mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
-            mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
-            mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal());
+  public static final boolean isRecvMode(int mode) {
+    return mode == TRANSFERMODE.RECVMODE.ordinal() ||
+           mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
+           mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
+           mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
 
   /**
@@ -124,9 +123,9 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH (MD5) mode
    */
-  public final static boolean isSendThroughMode(int mode, boolean isRequested) {
-    return ((!isRequested && isSendThroughMode(mode)) ||
-            (isRequested && isRecvThroughMode(mode)));
+  public static final boolean isSendThroughMode(int mode, boolean isRequested) {
+    return !isRequested && isSendThroughMode(mode) ||
+           isRequested && isRecvThroughMode(mode);
   }
 
   /**
@@ -134,9 +133,9 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a SEND THROUGH (MD5) mode
    */
-  public final static boolean isSendThroughMode(int mode) {
-    return (mode == TRANSFERMODE.SENDTHROUGHMODE.ordinal() ||
-            mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal());
+  public static final boolean isSendThroughMode(int mode) {
+    return mode == TRANSFERMODE.SENDTHROUGHMODE.ordinal() ||
+           mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal();
   }
 
   /**
@@ -145,9 +144,9 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH (MD5) mode
    */
-  public final static boolean isRecvThroughMode(int mode, boolean isRequested) {
-    return ((!isRequested && isRecvThroughMode(mode)) ||
-            (isRequested && isSendThroughMode(mode)));
+  public static final boolean isRecvThroughMode(int mode, boolean isRequested) {
+    return !isRequested && isRecvThroughMode(mode) ||
+           isRequested && isSendThroughMode(mode);
   }
 
   /**
@@ -155,12 +154,12 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a RECV THROUGH (MD5) mode
    */
-  public final static boolean isRecvThroughMode(int mode) {
-    return (mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
-            mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal());
+  public static final boolean isRecvThroughMode(int mode) {
+    return mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
+           mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
 
-  public final static boolean isSendMode(int mode) {
+  public static final boolean isSendMode(int mode) {
     return !isRecvMode(mode);
   }
 
@@ -169,7 +168,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH mode (with or without MD5)
    */
-  public final static boolean isThroughMode(int mode) {
+  public static final boolean isThroughMode(int mode) {
     return mode >= TRANSFERMODE.SENDTHROUGHMODE.ordinal() &&
            mode <= TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
@@ -179,11 +178,11 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if this mode is a MD5 mode
    */
-  public final static boolean isMD5Mode(int mode) {
-    return (mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
-            mode == TRANSFERMODE.SENDMD5MODE.ordinal() ||
-            mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal() ||
-            mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal());
+  public static final boolean isMD5Mode(int mode) {
+    return mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
+           mode == TRANSFERMODE.SENDMD5MODE.ordinal() ||
+           mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal() ||
+           mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
 
   /**
@@ -192,11 +191,9 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if both modes are compatible (both send, or both recv)
    */
-  public final static boolean isCompatibleMode(int mode1, int mode2) {
-    return (
-        (RequestPacket.isRecvMode(mode1) && RequestPacket.isRecvMode(mode2)) ||
-        ((!RequestPacket.isRecvMode(mode1)) &&
-         (!RequestPacket.isRecvMode(mode2))));
+  public static final boolean isCompatibleMode(int mode1, int mode2) {
+    return isRecvMode(mode1) && isRecvMode(mode2) ||
+           !isRecvMode(mode1) && !isRecvMode(mode2);
   }
 
   /**
@@ -214,10 +211,10 @@ public class RequestPacket extends AbstractLocalPacket {
                                                ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     if (middleLength <= 1) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength - 1];// valid is not in bmiddle
@@ -259,7 +256,7 @@ public class RequestPacket extends AbstractLocalPacket {
     final String[] aheader =
         sheader.split(PartnerConfiguration.BLANK_SEPARATOR_FIELD);
     if (aheader.length != 2) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     // FIX to check both ' ' and SEPARATOR_FIELD
     String[] amiddle = smiddle.split(PartnerConfiguration.BAR_SEPARATOR_FIELD);
@@ -268,12 +265,12 @@ public class RequestPacket extends AbstractLocalPacket {
       amiddle = smiddle.split(PartnerConfiguration.BLANK_SEPARATOR_FIELD);
       sep = PartnerConfiguration.BLANK_SEPARATOR_FIELD;
       if (amiddle.length < 5) {
-        throw new OpenR66ProtocolPacketException("Not enough data");
+        throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
       }
     }
     int blocksize = Integer.parseInt(amiddle[1]);
     if (blocksize < 100) {
-      blocksize = Configuration.configuration.getBLOCKSIZE();
+      blocksize = Configuration.configuration.getBlockSize();
     }
     final int rank = Integer.parseInt(amiddle[2]);
     final long specialId = Long.parseLong(amiddle[3]);
@@ -307,7 +304,7 @@ public class RequestPacket extends AbstractLocalPacket {
     this.mode = mode;
     this.filename = filename;
     if (blocksize < 100) {
-      this.blocksize = Configuration.configuration.getBLOCKSIZE();
+      this.blocksize = Configuration.configuration.getBlockSize();
     } else {
       this.blocksize = blocksize;
     }
@@ -361,10 +358,10 @@ public class RequestPacket extends AbstractLocalPacket {
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (rulename == null || mode <= 0) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     if (lcr.getPartner() != null && lcr.getPartner().useJson()) {
-      logger.debug("Request will use JSON " + lcr.getPartner().toString());
+      logger.debug("Request will use JSON " + lcr.getPartner());
       final ObjectNode node = JsonHandler.createObjectNode();
       JsonHandler.setValue(node, FIELDS.rule, rulename);
       JsonHandler.setValue(node, FIELDS.mode, mode);
@@ -382,12 +379,12 @@ public class RequestPacket extends AbstractLocalPacket {
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (filename == null) {
-      throw new OpenR66ProtocolPacketException("Not enough data");
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     final byte[] away = new byte[1];
     away[0] = way;
     if (lcr.getPartner() != null && lcr.getPartner().useJson()) {
-      logger.debug("Request will use JSON " + lcr.getPartner().toString());
+      logger.debug("Request will use JSON " + lcr.getPartner());
       final ObjectNode node = JsonHandler.createObjectNode();
       JsonHandler.setValue(node, FIELDS.filename, filename);
       JsonHandler.setValue(node, FIELDS.block, blocksize);

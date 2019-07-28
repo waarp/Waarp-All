@@ -21,8 +21,6 @@ package org.waarp.ftp.core.exception;
 
 /**
  * No transfer exception
- *
- *
  */
 public class FtpNoTransferException extends Exception {
 

@@ -58,6 +58,7 @@ public class FileConvertTest {
     CharsetsUtil.printOutCharsetsAvailable(0);
     CharsetsUtil.printOutCharsetsAvailable(1);
     CharsetsUtil.printOutCharsetsAvailable(2);
+    assertTrue(true);
   }
 
   @Test

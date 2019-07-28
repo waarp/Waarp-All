@@ -29,8 +29,6 @@ import org.waarp.ftp.core.file.FtpFile;
 
 /**
  * DELE command
- *
- *
  */
 public class DELE extends AbstractCommand {
   @Override
@@ -45,7 +43,7 @@ public class DELE extends AbstractCommand {
       if (file.delete()) {
         getSession()
             .setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                          "\"" + file.getFile() + "\" FtpFile is deleted");
+                          '"' + file.getFile() + "\" FtpFile is deleted");
         return;
       }
       throw new Reply450Exception("Delete operation not allowed");

@@ -30,25 +30,25 @@ public class HttpForbiddenRequestException extends Exception {
   private static final long serialVersionUID = -6357523132449299675L;
 
   /**
-   * @param arg0
+   * @param s
    */
-  public HttpForbiddenRequestException(String arg0) {
-    super(arg0);
+  public HttpForbiddenRequestException(String s) {
+    super(s);
   }
 
   /**
-   * @param arg0
+   * @param throwable
    */
-  public HttpForbiddenRequestException(Throwable arg0) {
-    super(arg0);
+  public HttpForbiddenRequestException(Throwable throwable) {
+    super(throwable);
   }
 
   /**
-   * @param arg0
-   * @param arg1
+   * @param s
+   * @param throwable
    */
-  public HttpForbiddenRequestException(String arg0, Throwable arg1) {
-    super(arg0, arg1);
+  public HttpForbiddenRequestException(String s, Throwable throwable) {
+    super(s, throwable);
   }
 
 }

@@ -38,8 +38,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
  * 502, 504, 534*, 431* 500, 501, 421<br>
  * <br>
  * AUTH TLS -> 234 -> USER or ([PBSZ 0] PROT P then USER) -> 2xy
- *
- *
  */
 public class AUTH extends AbstractCommand {
   /**
@@ -64,7 +62,7 @@ public class AUTH extends AbstractCommand {
       throw new Reply501Exception("Missing Parameter: TLS or SSL");
     }
     final String[] types = getArgs();
-    if (types[0].equalsIgnoreCase("TLS")) {
+    if ("TLS".equalsIgnoreCase(types[0])) {
       // Only Command will have SSL
       logger.debug("Start TLS");
       getSession().rein();
@@ -72,7 +70,7 @@ public class AUTH extends AbstractCommand {
       getSession()
           .setReplyCode(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE,
                         null);
-    } else if (types[0].equalsIgnoreCase("SSL")) {
+    } else if ("SSL".equalsIgnoreCase(types[0])) {
       // Both Command and Data will have SSL
       logger.debug("Start SSL");
       getSession().rein();

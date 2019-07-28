@@ -49,11 +49,11 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   /**
    * Current authentication
    */
-  private DbHostAuth currentAuth = null;
+  private DbHostAuth currentAuth;
   /**
    * is Admin role
    */
-  private boolean isAdmin = false;
+  private boolean isAdmin;
   /**
    * Role set from configuration file only
    */
@@ -112,14 +112,14 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    */
   public boolean connection(String hostId, byte[] arg0, boolean isSsl)
       throws Reply530Exception, Reply421Exception {
-    DbHostAuth auth = null;
+    DbHostAuth auth;
     try {
       auth = new DbHostAuth(hostId);
     } catch (final WaarpDatabaseException e) {
       logger.error("Cannot find authentication for " + hostId);
       setIsIdentified(false);
       currentAuth = null;
-      throw new Reply530Exception("HostId not allowed");
+      throw new Reply530Exception("HostId not allowed: " + hostId);
     }
     if (auth.isSsl() != isSsl) {
       if (auth.isSsl()) {
@@ -129,7 +129,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
       }
       setIsIdentified(false);
       currentAuth = null;
-      throw new Reply530Exception("HostId not allowed");
+      throw new Reply530Exception("HostId not allowed: mixed Ssl");
     }
     currentAuth = auth;
     role.clear();
@@ -185,7 +185,8 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    *
    * @throws Reply421Exception if the business root is not available
    */
-  private void setRootFromAuth() throws Reply421Exception {
+  @Override
+  protected void setRootFromAuth() throws Reply421Exception {
     rootFromAuth = setBusinessRootFromAuth();
     if (rootFromAuth == null) {
       rootFromAuth = DirInterface.SEPARATOR;
@@ -232,17 +233,14 @@ public class R66Auth extends FilesystemBasedAuthImpl {
 
   @Override
   public boolean isBusinessPathValid(String newPath) {
-    if (newPath == null) {
-      return false;
-    }
-    return true;
+    return newPath != null;
   }
 
   @Override
   public String toString() {
-    return "Auth:" + isIdentified + " " +
+    return "Auth:" + isIdentified + ' ' +
            (currentAuth != null? currentAuth.toString() : "no Internal Auth") +
-           " " + role.toString();
+           ' ' + role;
   }
 
   /**
@@ -251,7 +249,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @return the SimpleAuth if any for this user
    */
   public static DbHostAuth getServerAuth(String server) {
-    DbHostAuth auth = null;
+    DbHostAuth auth;
     try {
       auth = new DbHostAuth(server);
     } catch (final WaarpDatabaseException e) {
@@ -272,7 +270,8 @@ public class R66Auth extends FilesystemBasedAuthImpl {
     DbHostAuth auth = null;
     try {
       auth = new DbHostAuth(hostid);
-    } catch (final WaarpDatabaseException e1) {
+    } catch (final WaarpDatabaseException ignored) {
+      // nothing
     }
     if (auth == null) {
       auth =
@@ -284,13 +283,14 @@ public class R66Auth extends FilesystemBasedAuthImpl {
     user = auth.getHostid();
     try {
       setRootFromAuth();
-    } catch (final Reply421Exception e) {
+    } catch (final Reply421Exception ignored) {
+      // nothing
     }
     getSession().getDir().initAfterIdentification();
     isAdmin = isSSL;
     if (isSSL) {
       role.setRole(ROLE.FULLADMIN);
-      user = Configuration.configuration.getADMINNAME();
+      user = Configuration.configuration.getAdminName();
     }
   }
 
@@ -299,7 +299,6 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * specifically through ROLEs). Only
    * "false client" with port with negative values are allowed.
    *
-   * @param dbSession
    * @param hostId
    * @param arg0
    *
@@ -308,10 +307,9 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @throws Reply530Exception if the authentication is wrong
    * @throws Reply421Exception If the service is not available
    */
-  public boolean connectionHttps(DbSession dbSession, String hostId,
-                                 byte[] arg0)
+  public boolean connectionHttps(String hostId, byte[] arg0)
       throws Reply530Exception, Reply421Exception {
-    final DbHostAuth auth = R66Auth.getServerAuth(hostId);
+    final DbHostAuth auth = getServerAuth(hostId);
     if (auth == null) {
       logger.error("Cannot find authentication for " + hostId);
       setIsIdentified(false);
@@ -332,11 +330,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
       setRootFromAuth();
       getSession().getDir().initAfterIdentification();
       isAdmin = currentAuth.isAdminrole();
-      if (Configuration.configuration.getRoles().isEmpty()) {
-        if (isAdmin) {
-          role.setRole(ROLE.FULLADMIN);
-        }
-      } else {
+      if (!Configuration.configuration.getRoles().isEmpty()) {
         final RoleDefault configRole =
             Configuration.configuration.getRoles().get(hostId);
         if (configRole != null) {
@@ -345,11 +339,11 @@ public class R66Auth extends FilesystemBasedAuthImpl {
             isAdmin = true;
           }
         }
-        if (isAdmin) {
-          role.setRole(ROLE.FULLADMIN);
-        }
       }
-      logger.info(role.toString() + ":" + currentAuth);
+      if (isAdmin) {
+        role.setRole(ROLE.FULLADMIN);
+      }
+      logger.info(role + ":" + currentAuth);
       return true;
     }
     throw new Reply530Exception("Key is not valid for this HostId");

@@ -28,8 +28,6 @@ import java.io.IOException;
 
 /**
  * Interface for File support
- *
- *
  */
 public interface FileInterface {
   /**

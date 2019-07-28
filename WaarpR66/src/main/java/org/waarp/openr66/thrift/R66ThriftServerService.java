@@ -35,8 +35,6 @@ import java.net.UnknownHostException;
 
 /**
  * Main Thrift server service
- *
- *
  */
 public class R66ThriftServerService implements Runnable {
   /**
@@ -46,9 +44,9 @@ public class R66ThriftServerService implements Runnable {
       WaarpLoggerFactory.getLogger(R66ThriftServerService.class);
 
   protected int port = 4266;
-  protected TServerTransport serverTransport = null;
-  protected TServer server = null;
-  protected WaarpFuture serviceReady;
+  protected TServerTransport serverTransport;
+  protected TServer server;
+  protected final WaarpFuture serviceReady;
 
   public R66ThriftServerService(WaarpFuture serviceReady, int port) {
     this.serviceReady = serviceReady;

@@ -21,8 +21,6 @@ package org.waarp.common.crypto;
 
 /**
  * This class implements a simple Key Manager for HmacSha1 class from name
- *
- *
  */
 public class HmacSha1Manager extends KeyManager {
   static final HmacSha1Manager manager = new HmacSha1Manager();

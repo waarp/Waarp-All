@@ -31,7 +31,7 @@ import org.waarp.common.crypto.HmacSha256;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
-import org.waarp.common.utility.Base64;
+import org.waarp.common.utility.BaseXx;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
@@ -45,7 +45,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -297,12 +296,8 @@ public class RestHandlerHook implements HandlerHook {
     if (basicMatcher.find()) {
 
       String[] credentials;
-      try {
-        credentials =
-            new String(Base64.decode(basicMatcher.group(2))).split(":", 2);
-      } catch (final IOException e) {
-        throw new InternalServerErrorException(e);
-      }
+      credentials =
+          new String(BaseXx.getFromBase64(basicMatcher.group(2))).split(":", 2);
       if (credentials.length != 2) {
         throw new NotAllowedException(
             "Invalid header for Basic authentication.");
@@ -457,6 +452,7 @@ public class RestHandlerHook implements HandlerHook {
   public void postCall(HttpRequest httpRequest,
                        HttpResponseStatus httpResponseStatus,
                        HandlerInfo handlerInfo) {
+    // ignore
   }
 
   /**

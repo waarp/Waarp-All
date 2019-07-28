@@ -24,32 +24,29 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.group.ChannelGroupFuture;
-import io.netty.channel.group.ChannelGroupFutureListener;
-import io.netty.channel.local.LocalChannel;
-import io.netty.handler.traffic.ChannelTrafficShapingHandler;
-import io.netty.handler.traffic.TrafficCounter;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.file.DataBlock;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
-import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.DataPacket;
 import org.waarp.openr66.protocol.localhandler.packet.EndTransferPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
@@ -58,7 +55,8 @@ import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
+
+import static org.waarp.openr66.database.DbConstantR66.*;
 
 /**
  * Channel Utils
@@ -79,7 +77,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the remote InetAddress
    */
-  public final static InetAddress getRemoteInetAddress(Channel channel) {
+  public static final InetAddress getRemoteInetAddress(Channel channel) {
     InetSocketAddress socketAddress =
         (InetSocketAddress) channel.remoteAddress();
     if (socketAddress == null) {
@@ -95,7 +93,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the local InetAddress
    */
-  public final static InetAddress getLocalInetAddress(Channel channel) {
+  public static final InetAddress getLocalInetAddress(Channel channel) {
     final InetSocketAddress socketAddress =
         (InetSocketAddress) channel.localAddress();
     return socketAddress.getAddress();
@@ -108,7 +106,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the remote InetSocketAddress
    */
-  public final static InetSocketAddress getRemoteInetSocketAddress(
+  public static final InetSocketAddress getRemoteInetSocketAddress(
       Channel channel) {
     return (InetSocketAddress) channel.remoteAddress();
   }
@@ -120,32 +118,9 @@ public class ChannelUtils extends Thread {
    *
    * @return the local InetSocketAddress
    */
-  public final static InetSocketAddress getLocalInetSocketAddress(
+  public static final InetSocketAddress getLocalInetSocketAddress(
       Channel channel) {
     return (InetSocketAddress) channel.localAddress();
-  }
-
-  /**
-   * Finalize resources attached to handlers
-   */
-  private static class R66ChannelGroupFutureListener
-      implements ChannelGroupFutureListener {
-    String name;
-    EventLoopGroup group;
-
-    public R66ChannelGroupFutureListener(String name, EventLoopGroup group) {
-      this.name = name;
-      this.group = group;
-    }
-
-    @Override
-    public void operationComplete(ChannelGroupFuture future) throws Exception {
-      logger.info("Start with shutdown external resources for " + name);
-      if (group != null) {
-        group.shutdownGracefully();
-      }
-      logger.info("Done with shutdown " + name);
-    }
   }
 
   /**
@@ -186,22 +161,8 @@ public class ChannelUtils extends Thread {
    *
    * @return the current number of network connections
    */
-  public final static int nbCommandChannels(Configuration configuration) {
+  public static final int nbCommandChannels(Configuration configuration) {
     return configuration.getServerChannelGroup().size();
-  }
-
-  /**
-   * To be used only with LocalChannel (NetworkChannel could be using SSL)
-   *
-   * @param channel
-   */
-  public final static void close(final LocalChannel channel) {
-    channel.eventLoop().schedule(new Runnable() {
-      @Override
-      public void run() {
-        channel.close();
-      }
-    }, Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -241,7 +202,7 @@ public class ChannelUtils extends Thread {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public final static void writeEndTransfer(
+  public static final void writeEndTransfer(
       LocalChannelReference localChannelReference)
       throws OpenR66ProtocolPacketException {
     final EndTransferPacket packet =
@@ -258,7 +219,7 @@ public class ChannelUtils extends Thread {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public final static void writeEndTransfer(
+  public static final void writeEndTransfer(
       LocalChannelReference localChannelReference, String hash)
       throws OpenR66ProtocolPacketException {
     final EndTransferPacket packet =
@@ -279,111 +240,40 @@ public class ChannelUtils extends Thread {
    * @throws OpenR66ProtocolPacketException
    */
   public static ChannelFuture writeAbstractLocalPacket(
-      LocalChannelReference localChannelReference, AbstractLocalPacket packet,
-      boolean wait) throws OpenR66ProtocolPacketException {
+      final LocalChannelReference localChannelReference,
+      AbstractLocalPacket packet, boolean wait)
+      throws OpenR66ProtocolPacketException {
     final NetworkPacket networkPacket;
     try {
       networkPacket = new NetworkPacket(localChannelReference.getLocalId(),
                                         localChannelReference.getRemoteId(),
                                         packet, localChannelReference);
     } catch (final OpenR66ProtocolPacketException e) {
-      logger.error(Messages.getString("ChannelUtils.6") + packet.toString(),
+      logger.error(Messages.getString("ChannelUtils.6") + packet,
                    //$NON-NLS-1$
                    e);
       throw e;
     }
+    boolean addListener = packet instanceof ErrorPacket &&
+                          ((ErrorPacket) packet).getCode() ==
+                          ErrorPacket.FORWARDCLOSECODE;
+    ChannelFuture future =
+        localChannelReference.getNetworkChannel().writeAndFlush(networkPacket);
+    if (addListener) {
+      future.addListener(new GenericFutureListener<Future<? super Void>>() {
+
+        @Override
+        public void operationComplete(Future<? super Void> future)
+            throws Exception {
+          localChannelReference.close();
+        }
+      });
+    }
     if (wait) {
-      final ChannelFuture future = localChannelReference.getNetworkChannel()
-                                                        .writeAndFlush(
-                                                            networkPacket);
       localChannelReference.getNetworkChannelObject().use();
       WaarpNettyUtil.awaitOrInterrupted(future);
-      return future;
-    } else {
-      return localChannelReference.getNetworkChannel()
-                                  .writeAndFlush(networkPacket);
     }
-  }
-
-  /**
-   * Write an AbstractLocalPacket to the Local Channel
-   *
-   * @param localChannelReference
-   * @param packet
-   *
-   * @return the ChannelFuture on write operation
-   *
-   * @throws OpenR66ProtocolPacketException
-   */
-  public final static ChannelFuture writeAbstractLocalPacketToLocal(
-      LocalChannelReference localChannelReference, AbstractLocalPacket packet)
-      throws OpenR66ProtocolPacketException {
-    return localChannelReference.getLocalChannel().writeAndFlush(packet);
-  }
-
-  /**
-   * Compute Wait for Traffic in Write (ugly turn around)
-   *
-   * @param localChannelReference
-   * @param size
-   *
-   * @return the wait in ms
-   */
-  public static final long willBeWaitingWriting(
-      LocalChannelReference localChannelReference, int size) {
-    final ChannelTrafficShapingHandler cts =
-        localChannelReference.getChannelTrafficShapingHandler();
-    return willBeWaitingWriting(cts, size);
-  }
-
-  /**
-   * Compute Wait for Traffic in Write (ugly turn around)
-   *
-   * @param cts
-   * @param size
-   *
-   * @return the wait in ms
-   */
-  public static final long willBeWaitingWriting(
-      ChannelTrafficShapingHandler cts, int size) {
-    final long currentTime = System.currentTimeMillis();
-    if (cts != null &&
-        Configuration.configuration.getServerChannelWriteLimit() > 0) {
-      final TrafficCounter tc = cts.trafficCounter();
-      if (tc != null) {
-        final long wait = waitTraffic(
-            Configuration.configuration.getServerChannelWriteLimit(),
-            tc.currentWrittenBytes() + size, tc.lastTime(), currentTime);
-        if (wait > 0) {
-          return wait;
-        }
-      }
-    }
-    if (Configuration.configuration.getServerGlobalWriteLimit() > 0) {
-      final TrafficCounter tc =
-          Configuration.configuration.getGlobalTrafficShapingHandler()
-                                     .trafficCounter();
-      if (tc != null) {
-        final long wait =
-            waitTraffic(Configuration.configuration.getServerGlobalWriteLimit(),
-                        tc.currentWrittenBytes() + size, tc.lastTime(),
-                        currentTime);
-        if (wait > 0) {
-          return wait;
-        }
-      }
-    }
-    return 0;
-  }
-
-  private static final long waitTraffic(long limit, long bytes, long lastTime,
-                                        long curtime) {
-    final long interval = curtime - lastTime;
-    if (interval == 0) {
-      // Time is too short, so just lets continue
-      return 0;
-    }
-    return ((bytes * 1000 / limit - interval) / 10) * 10;
+    return future;
   }
 
   /**
@@ -397,12 +287,11 @@ public class ChannelUtils extends Thread {
     }
     // First try to StopAll
     TransferUtils
-        .stopSelectedTransfers(DbConstant.admin.getSession(), 0, null, null,
-                               null, null, null, null, null, null, null, true,
-                               true, true);
+        .stopSelectedTransfers(admin.getSession(), 0, null, null, null, null,
+                               null, null, null, null, null, true, true, true);
     Configuration.configuration.setShutdown(true);
     Configuration.configuration.prepareServerStop();
-    long delay = Configuration.configuration.getTIMEOUTCON();
+    long delay = Configuration.configuration.getTimeoutCon();
     // Inform others that shutdown
     if (Configuration.configuration.getLocalTransaction() != null) {
       int nb = Configuration.configuration.getLocalTransaction()
@@ -419,6 +308,7 @@ public class ChannelUtils extends Thread {
     try {
       Thread.sleep(delay);
     } catch (final InterruptedException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     NetworkTransaction.stopAllEndRetrieve();
     if (Configuration.configuration.getLocalTransaction() != null) {
@@ -445,14 +335,18 @@ public class ChannelUtils extends Thread {
     logger.info("Exit Shutdown ServerStop");
     Configuration.configuration.serverStop();
     logger.warn(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
-    System.err.println(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
+    SysErrLogger.FAKE_LOGGER
+        .syserr(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
     stopLogger();
-    // Thread.currentThread().interrupt();
   }
 
-  public final static void stopLogger() {
+  public static final void stopLogger() {
+    if (DetectionUtils.isJunit()) {
+      return;
+    }
     if (WaarpLoggerFactory
-        .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory) {
+            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &&
+        !DetectionUtils.isJunit()) {
       final LoggerContext lc =
           (LoggerContext) LoggerFactory.getILoggerFactory();
       lc.stop();
@@ -466,14 +360,13 @@ public class ChannelUtils extends Thread {
   @Override
   public void run() {
     logger.info("Should restart? " + WaarpShutdownHook.isRestart());
-    RestServiceInitializer.stopRestService();
     WaarpShutdownHook.terminate(false);
   }
 
   /**
    * Start Shutdown
    */
-  public final static void startShutdown() {
+  public static final void startShutdown() {
     if (WaarpShutdownHook.isInShutdown()) {
       return;
     }

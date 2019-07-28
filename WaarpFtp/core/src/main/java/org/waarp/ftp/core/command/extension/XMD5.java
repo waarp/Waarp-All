@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * XMD5 command: takes a filename and returns the MD5 of the file
- *
- *
  */
 public class XMD5 extends AbstractCommand {
   @Override

@@ -26,8 +26,6 @@ import java.util.Set;
 /**
  * XmlHash Hashtable for XmlValue utility. Hash all values (except subXml and
  * root for Multiple)
- *
- *
  */
 public class XmlRootHash {
   private final Hashtable<String, XmlValue> hashtable;
@@ -35,13 +33,7 @@ public class XmlRootHash {
   public XmlRootHash(XmlValue[] values) {
     hashtable = new Hashtable<String, XmlValue>();
     for (final XmlValue xmlValue : values) {
-      if (xmlValue.isMultiple()) {
-        hashtable.put(xmlValue.getName(), xmlValue);
-      } else if (xmlValue.isSubXml()) {
-        hashtable.put(xmlValue.getName(), xmlValue);
-      } else {
-        hashtable.put(xmlValue.getName(), xmlValue);
-      }
+      hashtable.put(xmlValue.getName(), xmlValue);
     }
   }
 

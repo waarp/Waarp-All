@@ -27,7 +27,6 @@ import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.pojo.UpdatedInfo;
 
@@ -39,11 +38,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.waarp.openr66.database.DbConstantR66.*;
+
 /**
  * Implementation of TransferDAO for a standard SQL database
  */
 public abstract class DBTransferDAO extends StatementExecutor
     implements TransferDAO {
+
+  private static final String LIMIT2 = " LIMIT ";
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DBTransferDAO.class);
@@ -76,17 +79,17 @@ public abstract class DBTransferDAO extends StatementExecutor
   public static final String UPDATED_INFO_FIELD = "updatedInfo";
 
   // CRUD requests
-  protected static String SQL_DELETE =
+  protected static final String SQL_DELETE =
       "DELETE FROM " + TABLE + " WHERE " + ID_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
       OWNER_REQUEST_FIELD + " = ?";
-  protected static String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
-  protected static String SQL_EXIST =
+  protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
+  protected static final String SQL_EXIST =
       "SELECT 1 FROM " + TABLE + " WHERE " + ID_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
       OWNER_REQUEST_FIELD + " = ?";
-  protected static String SQL_GET_ALL = "SELECT * FROM " + TABLE;
-  protected static String SQL_INSERT =
+  protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
+  protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + GLOBAL_STEP_FIELD + ", " +
       GLOBAL_LAST_STEP_FIELD + ", " + STEP_FIELD + ", " + RANK_FIELD + ", " +
       STEP_STATUS_FIELD + ", " + RETRIEVE_MODE_FIELD + ", " + FILENAME_FIELD +
@@ -97,11 +100,11 @@ public abstract class DBTransferDAO extends StatementExecutor
       INFO_STATUS_FIELD + ", " + OWNER_REQUEST_FIELD + ", " + REQUESTED_FIELD +
       ", " + REQUESTER_FIELD + ", " + ID_FIELD + ", " + UPDATED_INFO_FIELD +
       ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-  protected static String SQL_SELECT =
+  protected static final String SQL_SELECT =
       "SELECT * FROM " + TABLE + " WHERE " + ID_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
       OWNER_REQUEST_FIELD + " = ?";
-  protected static String SQL_UPDATE =
+  protected static final String SQL_UPDATE =
       "UPDATE " + TABLE + " SET " + ID_FIELD + " = ?, " + GLOBAL_STEP_FIELD +
       " = ?, " + GLOBAL_LAST_STEP_FIELD + " = ?, " + STEP_FIELD + " = ?, " +
       RANK_FIELD + " = ?, " + STEP_STATUS_FIELD + " = ?, " +
@@ -116,7 +119,7 @@ public abstract class DBTransferDAO extends StatementExecutor
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
       " = ?";
 
-  protected Connection connection;
+  protected final Connection connection;
 
   protected String getDeleteRequest() {
     return SQL_DELETE;
@@ -146,7 +149,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     return SQL_UPDATE;
   }
 
-  public DBTransferDAO(Connection con) {
+  protected DBTransferDAO(Connection con) {
     connection = con;
   }
 
@@ -217,7 +220,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + " " + filter.operand + " ?");
+      query.append(filter.key + ' ' + filter.operand + " ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -261,7 +264,7 @@ public abstract class DBTransferDAO extends StatementExecutor
         new StringBuilder(prepareFindQuery(filters, params));
     // Set LIMIT
     if (limit > 0) {
-      query.append(" LIMIT " + limit);
+      query.append(LIMIT2 + limit);
     }
     // Execute query
     PreparedStatement stm = null;
@@ -292,7 +295,7 @@ public abstract class DBTransferDAO extends StatementExecutor
         new StringBuilder(prepareFindQuery(filters, params));
     // Set LIMIT
     if (limit > 0) {
-      query.append(" LIMIT " + limit);
+      query.append(LIMIT2 + limit);
     }
     // Set OFFSET
     if (limit > 0) {
@@ -326,7 +329,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
-    if ((column != null) && (!column.equals(""))) {
+    if (column != null && !column.isEmpty()) {
       query.append(" ORDER BY " + column);
       if (!ascend) {
         query.append(" DESC");
@@ -362,7 +365,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
-    if ((column != null) && (!column.equals(""))) {
+    if (column != null && !column.isEmpty()) {
       query.append(" ORDER BY " + column);
       if (!ascend) {
         query.append(" DESC");
@@ -370,7 +373,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     }
     // Set LIMIT
     if (limit > 0) {
-      query.append(" LIMIT " + limit);
+      query.append(LIMIT2 + limit);
     }
     // Execute query
     PreparedStatement stm = null;
@@ -407,7 +410,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     }
     // Set LIMIT
     if (limit > 0) {
-      query.append(" LIMIT " + limit);
+      query.append(LIMIT2 + limit);
     }
     // Set OFFSET
     if (limit > 0) {
@@ -465,7 +468,7 @@ public abstract class DBTransferDAO extends StatementExecutor
       if (res.next()) {
         return getFromResultSet(res);
       } else {
-        throw new DAONoDataException(("No " + getClass().getName() + " found"));
+        throw new DAONoDataException("No " + getClass().getName() + " found");
       }
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
@@ -475,11 +478,11 @@ public abstract class DBTransferDAO extends StatementExecutor
     }
   }
 
-  abstract protected long getNextId() throws DAOConnectionException;
+  protected abstract long getNextId() throws DAOConnectionException;
 
   @Override
   public void insert(Transfer transfer) throws DAOConnectionException {
-    if (transfer.getId() == DbConstant.ILLEGALVALUE) {
+    if (transfer.getId() == ILLEGALVALUE) {
       transfer.setId(getNextId());
     }
 

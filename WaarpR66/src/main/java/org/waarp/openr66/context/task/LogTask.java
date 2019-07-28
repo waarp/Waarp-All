@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -44,10 +45,9 @@ import java.io.IOException;
  * If first word for logging is one of debug, info, warn, error, then the
  * corresponding level of log will be
  * used.
- *
- *
  */
 public class LogTask extends AbstractTask {
+  private static final String SPACES = "     ";
   /**
    * Internal Logger
    */
@@ -68,7 +68,7 @@ public class LogTask extends AbstractTask {
   @Override
   public void run() {
     String finalValue = argRule;
-    finalValue = getReplacedValue(finalValue, argTransfer.split(" "));
+    finalValue = getReplacedValue(finalValue, BLANK.split(argTransfer));
     final String tempValue = finalValue.toUpperCase();
     WaarpLogLevel finalLevel = WaarpLogLevel.WARN;
     for (final WaarpLogLevel level : WaarpLogLevel.values()) {
@@ -81,65 +81,70 @@ public class LogTask extends AbstractTask {
       case 0:
         break;
       case 1:
-        logger.log(finalLevel, finalValue + "     " + session.toString());
+        logger.log(finalLevel, finalValue + SPACES + session);
         break;
       case 3:
-        logger.log(finalLevel, finalValue + "     " + session.toString());
+        logger.log(finalLevel, finalValue + SPACES + session);
+        if (runFor2Or3(finalValue, finalLevel)) {
+          return;
+        }
+        break;
       case 2:
-        final String[] args = finalValue.split(" ");
-        final String filename = args[args.length - 1];
-        final File file = new File(filename);
-        if (file.getParentFile() == null ||
-            (file.exists() && !file.canWrite())) {
-          // File cannot be written so revert to log
-          session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
-          if (delay == 2) {
-            logger.log(finalLevel, finalValue + "     " + session.toString());
-          }
-          futureCompletion.setSuccess();
+        if (runFor2Or3(finalValue, finalLevel)) {
           return;
-        }
-        FileOutputStream outputStream = null;
-        try {
-          outputStream = new FileOutputStream(file, true);
-        } catch (final FileNotFoundException e) {
-          // File cannot be written so revert to log
-          session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
-          if (delay == 2) {
-            logger.log(finalLevel, finalValue + "     " + session.toString());
-          }
-          futureCompletion.setSuccess();
-          return;
-        }
-        try {
-          final int len = args.length - 1;
-          for (int i = 0; i < len; i++) {
-            outputStream.write(args[i].getBytes());
-            outputStream.write(' ');
-          }
-          outputStream.write(' ');
-        } catch (final IOException e) {
-          // File cannot be written so revert to log
-          try {
-            outputStream.close();
-          } catch (final IOException e1) {
-          }
-          file.delete();
-          session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
-          if (delay == 2) {
-            logger.log(finalLevel, finalValue + "     " + session.toString());
-          }
-          futureCompletion.setSuccess();
-          return;
-        }
-        try {
-          outputStream.close();
-        } catch (final IOException e) {
         }
         break;
       default:
     }
     futureCompletion.setSuccess();
+  }
+
+  private boolean runFor2Or3(final String finalValue,
+                             final WaarpLogLevel finalLevel) {
+    final String[] args = BLANK.split(finalValue);
+    final String filename = args[args.length - 1];
+    final File file = new File(filename);
+    if (file.getParentFile() == null || file.exists() && !file.canWrite()) {
+      // File cannot be written so revert to log
+      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
+      if (delay == 2) {
+        logger.log(finalLevel, finalValue + SPACES + session);
+      }
+      futureCompletion.setSuccess();
+      return true;
+    }
+    FileOutputStream outputStream;
+    try {
+      outputStream = new FileOutputStream(file, true);
+    } catch (final FileNotFoundException e) {
+      // File cannot be written so revert to log
+      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
+      if (delay == 2) {
+        logger.log(finalLevel, finalValue + SPACES + session);
+      }
+      futureCompletion.setSuccess();
+      return true;
+    }
+    try {
+      final int len = args.length - 1;
+      for (int i = 0; i < len; i++) {
+        outputStream.write(args[i].getBytes());
+        outputStream.write(' ');
+      }
+      outputStream.write(' ');
+    } catch (final IOException e) {
+      // File cannot be written so revert to log
+      FileUtils.close(outputStream);
+      file.delete();
+      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
+      if (delay == 2) {
+        logger.log(finalLevel, finalValue + SPACES + session);
+      }
+      futureCompletion.setSuccess();
+      return true;
+    }
+    FileUtils.close(outputStream);
+    return false;
   }
 
 }

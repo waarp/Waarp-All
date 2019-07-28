@@ -25,8 +25,6 @@ import java.util.Date;
 
 /**
  * Command run when a new file item is validated
- *
- *
  */
 public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   private FileItem fileItem;
@@ -36,7 +34,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   /**
    *
    */
-  public FileMonitorCommandRunnableFuture() {
+  protected FileMonitorCommandRunnableFuture() {
   }
 
   public void setMonitor(FileMonitor monitor) {
@@ -46,7 +44,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   /**
    * @param fileItem
    */
-  public FileMonitorCommandRunnableFuture(FileItem fileItem) {
+  protected FileMonitorCommandRunnableFuture(FileItem fileItem) {
     setFileItem(fileItem);
   }
 
@@ -74,7 +72,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @param status
    * @param specialId the specialId associated with the task
    */
-  protected void finalize(boolean status, long specialId) {
+  protected void finalizeValidFile(boolean status, long specialId) {
     if (getMonitor() != null) {
       final Date date = new Date();
       if (date.after(getMonitor().nextDay)) {
@@ -86,7 +84,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     }
     if (status) {
       getFileItem().used = true;
-      // Keep the hash: fileItem.hash = null;
+      // Keep the hash: fileItem.hash = null
       getFileItem().specialId = specialId;
       if (getMonitor() != null) {
         getMonitor().globalok.incrementAndGet();

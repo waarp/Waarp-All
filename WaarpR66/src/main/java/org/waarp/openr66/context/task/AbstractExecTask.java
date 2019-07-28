@@ -25,6 +25,8 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
@@ -46,6 +48,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Execute an external command
@@ -58,6 +62,11 @@ public abstract class AbstractExecTask extends AbstractTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractExecTask.class);
+  private static final Pattern COMPILE_BLANK = Pattern.compile(" ");
+  private static final Pattern COMPILE_REPLACE_ALL =
+      Pattern.compile("#([A-Z]+)#");
+  private static final Pattern COMPILE_HASH =
+      Pattern.compile("#", Pattern.LITERAL);
 
   /**
    * Constructor
@@ -80,7 +89,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    * @return the line after substitutions
    */
   protected String applyTransferSubstitutions(String line) {
-    final Object[] argFormat = argTransfer.split(" ");
+    final Object[] argFormat = COMPILE_BLANK.split(argTransfer);
     if (argFormat != null && argFormat.length > 0) {
       try {
         return String.format(line, argFormat);
@@ -105,22 +114,21 @@ public abstract class AbstractExecTask extends AbstractTask {
       useLocalExec = true;
     }
 
-    final String replacedLine = line.replaceAll("#([A-Z]+)#", "\\${$1}");
+    final String replacedLine =
+        COMPILE_REPLACE_ALL.matcher(line).replaceAll("\\${$1}");
 
     final CommandLine commandLine =
         CommandLine.parse(replacedLine, getSubstitutionMap());
 
     final File exec = new File(commandLine.getExecutable());
-    if (exec.isAbsolute()) {
-      if (!exec.canExecute()) {
-        logger.error("Exec command is not executable: " + line);
-        final R66Result result =
-            new R66Result(session, false, ErrorCode.CommandNotFound,
-                          session.getRunner());
-        futureCompletion.setResult(result);
-        futureCompletion.cancel();
-        return null;
-      }
+    if (exec.isAbsolute() && !exec.canExecute()) {
+      logger.error("Exec command is not executable: " + line);
+      final R66Result result =
+          new R66Result(session, false, ErrorCode.CommandNotFound,
+                        session.getRunner());
+      futureCompletion.setResult(result);
+      futureCompletion.cancel();
+      return null;
     }
 
     return commandLine;
@@ -132,170 +140,255 @@ public abstract class AbstractExecTask extends AbstractTask {
    */
   protected Map<String, Object> getSubstitutionMap() {
     final Map<String, Object> rv = new HashMap<String, Object>();
-    rv.put(NOWAIT.replace("#", ""), "");
-    rv.put(LOCALEXEC.replace("#", ""), "");
+    rv.put(
+        COMPILE_HASH.matcher(NOWAIT).replaceAll(Matcher.quoteReplacement("")),
+        "");
+    rv.put(COMPILE_HASH.matcher(LOCALEXEC)
+                       .replaceAll(Matcher.quoteReplacement("")), "");
 
     File trueFile = null;
     if (session.getFile() != null) {
       trueFile = session.getFile().getTrueFile();
     }
     if (trueFile != null) {
-      rv.put(TRUEFULLPATH.replace("#", ""), trueFile.getAbsolutePath());
-      rv.put(TRUEFILENAME.replace("#", ""),
+      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             trueFile.getAbsolutePath());
+      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
+                         .replaceAll(Matcher.quoteReplacement("")),
              R66Dir.getFinalUniqueFilename(session.getFile()));
-      rv.put(FILESIZE.replace("#", ""), Long.toString(trueFile.length()));
+      rv.put(COMPILE_HASH.matcher(FILESIZE)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             Long.toString(trueFile.length()));
     } else {
-      rv.put(TRUEFULLPATH.replace("#", ""), "nofile");
-      rv.put(TRUEFILENAME.replace("#", ""), "nofile");
-      rv.put(FILESIZE.replace("#", ""), "0");
+      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
+                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
+      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
+                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
+      rv.put(COMPILE_HASH.matcher(FILESIZE)
+                         .replaceAll(Matcher.quoteReplacement("")), "0");
     }
 
     final DbTaskRunner runner = session.getRunner();
     if (runner != null) {
-      rv.put(ORIGINALFULLPATH.replace("#", ""), runner.getOriginalFilename());
-      rv.put(ORIGINALFILENAME.replace("#", ""),
+      rv.put(COMPILE_HASH.matcher(ORIGINALFULLPATH)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getOriginalFilename());
+      rv.put(COMPILE_HASH.matcher(ORIGINALFILENAME)
+                         .replaceAll(Matcher.quoteReplacement("")),
              R66File.getBasename(runner.getOriginalFilename()));
-      rv.put(RULE.replace("#", ""), runner.getRuleId());
+      rv.put(
+          COMPILE_HASH.matcher(RULE).replaceAll(Matcher.quoteReplacement("")),
+          runner.getRuleId());
     }
 
     DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     final Date date = new Date();
-    rv.put(DATE.replace("#", ""), dateFormat.format(date));
+    rv.put(COMPILE_HASH.matcher(DATE).replaceAll(Matcher.quoteReplacement("")),
+           dateFormat.format(date));
     dateFormat = new SimpleDateFormat("HHmmss");
-    rv.put(HOUR.replace("#", ""), dateFormat.format(date));
+    rv.put(COMPILE_HASH.matcher(HOUR).replaceAll(Matcher.quoteReplacement("")),
+           dateFormat.format(date));
 
     if (session.getAuth() != null) {
-      rv.put(REMOTEHOST.replace("#", ""), session.getAuth().getUser());
-      String localhost = "";
+      rv.put(COMPILE_HASH.matcher(REMOTEHOST)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             session.getAuth().getUser());
+      String localhost;
       try {
         localhost =
             Configuration.configuration.getHostId(session.getAuth().isSsl());
       } catch (final OpenR66ProtocolNoSslException e) {
         // replace by standard name
-        localhost = Configuration.configuration.getHOST_ID();
+        localhost = Configuration.configuration.getHostId();
       }
-      rv.put(LOCALHOST.replace("#", ""), localhost);
+      rv.put(COMPILE_HASH.matcher(LOCALHOST)
+                         .replaceAll(Matcher.quoteReplacement("")), localhost);
     }
     if (session.getRemoteAddress() != null) {
-      rv.put(REMOTEHOSTADDR.replace("#", ""),
+      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")),
              session.getRemoteAddress().toString());
-      rv.put(LOCALHOSTADDR.replace("#", ""),
+      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")),
              session.getLocalAddress().toString());
     } else {
-      rv.put(REMOTEHOSTADDR.replace("#", ""), "unknown");
-      rv.put(LOCALHOSTADDR.replace("#", ""), "unknown");
+      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
+      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
     }
     if (runner != null) {
-      rv.put(TRANSFERID.replace("#", ""), runner.getSpecialId());
-      rv.put(REQUESTERHOST.replace("#", ""), runner.getRequester());
-      rv.put(REQUESTEDHOST.replace("#", ""), runner.getRequested());
-      rv.put(FULLTRANSFERID.replace("#", ""),
-             runner.getSpecialId() + "_" + runner.getRequester() + "_" +
+      rv.put(COMPILE_HASH.matcher(TRANSFERID)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getSpecialId());
+      rv.put(COMPILE_HASH.matcher(REQUESTERHOST)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getRequester());
+      rv.put(COMPILE_HASH.matcher(REQUESTEDHOST)
+                         .replaceAll(Matcher.quoteReplacement("")),
              runner.getRequested());
-      rv.put(RANKTRANSFER.replace("#", ""), Integer.toString(runner.getRank()));
+      rv.put(COMPILE_HASH.matcher(FULLTRANSFERID)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getSpecialId() + "_" + runner.getRequester() + '_' +
+             runner.getRequested());
+      rv.put(COMPILE_HASH.matcher(RANKTRANSFER)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             Integer.toString(runner.getRank()));
     }
-    rv.put(BLOCKSIZE.replace("#", ""), session.getBlockSize());
+    rv.put(COMPILE_HASH.matcher(BLOCKSIZE)
+                       .replaceAll(Matcher.quoteReplacement("")),
+           session.getBlockSize());
 
     R66Dir dir = new R66Dir(session);
     if (runner != null) {
       if (runner.isRecvThrough() || runner.isSendThrough()) {
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());
-          rv.put(INPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(INPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getSendPath());
-          rv.put(OUTPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(OUTPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());
-          rv.put(WORKPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(WORKPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());
-          rv.put(ARCHPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(ARCHPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
       } else {
         try {
           dir.changeDirectory(runner.getRule().getRecvPath());
-          rv.put(INPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(INPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectory(runner.getRule().getSendPath());
-          rv.put(OUTPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(OUTPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectory(runner.getRule().getWorkPath());
-          rv.put(WORKPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(WORKPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
         dir = new R66Dir(session);
         try {
           dir.changeDirectory(runner.getRule().getArchivePath());
-          rv.put(ARCHPATH.replace("#", ""), dir.getFullPath());
-        } catch (final CommandAbstractException e) {
+          rv.put(COMPILE_HASH.matcher(ARCHPATH)
+                             .replaceAll(Matcher.quoteReplacement("")),
+                 dir.getFullPath());
+        } catch (final CommandAbstractException ignored) {
+          // nothing
         }
       }
     } else {
       try {
         dir.changeDirectory(Configuration.configuration.getInPath());
-        rv.put(INPATH.replace("#", ""), dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+        rv.put(COMPILE_HASH.matcher(INPATH)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               dir.getFullPath());
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       dir = new R66Dir(session);
       try {
         dir.changeDirectory(Configuration.configuration.getOutPath());
-        rv.put(OUTPATH.replace("#", ""), dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+        rv.put(COMPILE_HASH.matcher(OUTPATH)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               dir.getFullPath());
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       dir = new R66Dir(session);
       try {
         dir.changeDirectory(Configuration.configuration.getWorkingPath());
-        rv.put(WORKPATH.replace("#", ""), dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+        rv.put(COMPILE_HASH.matcher(WORKPATH)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               dir.getFullPath());
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
       dir = new R66Dir(session);
       try {
         dir.changeDirectory(Configuration.configuration.getArchivePath());
-        rv.put(ARCHPATH.replace("#", ""), dir.getFullPath());
-      } catch (final CommandAbstractException e) {
+        rv.put(COMPILE_HASH.matcher(ARCHPATH)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               dir.getFullPath());
+      } catch (final CommandAbstractException ignored) {
+        // nothing
       }
     }
-    rv.put(HOMEPATH.replace("#", ""),
-           Configuration.configuration.getBaseDirectory());
+    rv.put(
+        COMPILE_HASH.matcher(HOMEPATH).replaceAll(Matcher.quoteReplacement("")),
+        Configuration.configuration.getBaseDirectory());
     if (session.getLocalChannelReference() == null) {
-      rv.put(ERRORMSG.replace("#", ""), "NoError");
-      rv.put(ERRORCODE.replace("#", ""), "-");
-      rv.put(ERRORSTRCODE.replace("#", ""), ErrorCode.Unknown.name());
+      rv.put(COMPILE_HASH.matcher(ERRORMSG)
+                         .replaceAll(Matcher.quoteReplacement("")), "NoError");
+      rv.put(COMPILE_HASH.matcher(ERRORCODE)
+                         .replaceAll(Matcher.quoteReplacement("")), "-");
+      rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             ErrorCode.Unknown.name());
     } else {
       try {
-        rv.put(ERRORMSG.replace("#", ""),
+        rv.put(COMPILE_HASH.matcher(ERRORMSG)
+                           .replaceAll(Matcher.quoteReplacement("")),
                session.getLocalChannelReference().getErrorMessage());
       } catch (final NullPointerException e) {
-        rv.put(ERRORMSG.replace("#", ""), "NoError");
+        rv.put(COMPILE_HASH.matcher(ERRORMSG)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               "NoError");
       }
       try {
-        rv.put(ERRORCODE.replace("#", ""),
+        rv.put(COMPILE_HASH.matcher(ERRORCODE)
+                           .replaceAll(Matcher.quoteReplacement("")),
                session.getLocalChannelReference().getCurrentCode().getCode());
       } catch (final NullPointerException e) {
-        rv.put(ERRORCODE.replace("#", ""), "-");
+        rv.put(COMPILE_HASH.matcher(ERRORCODE)
+                           .replaceAll(Matcher.quoteReplacement("")), "-");
       }
       try {
-        rv.put(ERRORSTRCODE.replace("#", ""),
+        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+                           .replaceAll(Matcher.quoteReplacement("")),
                session.getLocalChannelReference().getCurrentCode().name());
       } catch (final NullPointerException e) {
-        rv.put(ERRORSTRCODE.replace("#", ""), ErrorCode.Unknown.name());
+        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               ErrorCode.Unknown.name());
       }
     }
     return rv;
@@ -316,8 +409,8 @@ public abstract class AbstractExecTask extends AbstractTask {
     private PumpStreamHandler pumpStreamHandler;
     private ExecuteWatchdog watchdog;
 
-    public PrepareCommandExec(final String finalname, final boolean noOutput,
-                              boolean waitForValidation) {
+    PrepareCommandExec(final String finalname, final boolean noOutput,
+                       boolean waitForValidation) {
       this.finalname = finalname;
       this.noOutput = noOutput;
       this.waitForValidation = waitForValidation;
@@ -367,13 +460,10 @@ public abstract class AbstractExecTask extends AbstractTask {
         try {
           outputStream = new PipedOutputStream(inputStream);
         } catch (final IOException e1) {
-          try {
-            inputStream.close();
-          } catch (final IOException e) {
-          }
+          FileUtils.close(inputStream);
           logger.error(
               "Exception: " + e1.getMessage() + " Exec in error with " +
-              commandLine.toString(), e1);
+              commandLine, e1);
           futureCompletion.setFailure(e1);
           myResult = true;
           return this;
@@ -406,12 +496,12 @@ public abstract class AbstractExecTask extends AbstractTask {
     private boolean myResult;
     private int status;
 
-    public ExecuteCommand(final CommandLine commandLine,
-                          final DefaultExecutor defaultExecutor,
-                          final PipedInputStream inputStream,
-                          final PipedOutputStream outputStream,
-                          final PumpStreamHandler pumpStreamHandler,
-                          final Thread thread) {
+    ExecuteCommand(final CommandLine commandLine,
+                   final DefaultExecutor defaultExecutor,
+                   final PipedInputStream inputStream,
+                   final PipedOutputStream outputStream,
+                   final PumpStreamHandler pumpStreamHandler,
+                   final Thread thread) {
       this.commandLine = commandLine;
       this.defaultExecutor = defaultExecutor;
       this.inputStream = inputStream;
@@ -438,6 +528,7 @@ public abstract class AbstractExecTask extends AbstractTask {
           try {
             Thread.sleep(Configuration.RETRYINMS);
           } catch (final InterruptedException e1) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
           try {
             status = defaultExecutor.execute(commandLine);
@@ -450,7 +541,7 @@ public abstract class AbstractExecTask extends AbstractTask {
             closeAllForExecution(true);
             logger.error(
                 "IOException: " + e.getMessage() + " . Exec in error with " +
-                commandLine.toString());
+                commandLine);
             futureCompletion.setFailure(e);
             myResult = true;
             return this;
@@ -465,7 +556,7 @@ public abstract class AbstractExecTask extends AbstractTask {
         closeAllForExecution(true);
         logger.error(
             "IOException: " + e.getMessage() + " . Exec in error with " +
-            commandLine.toString());
+            commandLine);
         futureCompletion.setFailure(e);
         myResult = true;
         return this;
@@ -479,42 +570,25 @@ public abstract class AbstractExecTask extends AbstractTask {
             thread.join();
           }
         } catch (final InterruptedException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           Thread.currentThread().interrupt();
         }
       }
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (final IOException e1) {
-        }
-      }
+      FileUtils.close(inputStream);
       myResult = false;
       return this;
     }
 
     private void closeAllForExecution(boolean interrupt) {
-      if (outputStream != null) {
-        try {
-          outputStream.flush();
-        } catch (final IOException e2) {
-        }
-        try {
-          outputStream.close();
-        } catch (final IOException e2) {
-        }
-      }
+      FileUtils.close(outputStream);
       if (interrupt && thread != null) {
         thread.interrupt();
       }
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (final IOException e2) {
-        }
-      }
+      FileUtils.close(inputStream);
       try {
         pumpStreamHandler.stop();
-      } catch (final IOException e2) {
+      } catch (final IOException ignored) {
+        // nothing
       }
     }
   }

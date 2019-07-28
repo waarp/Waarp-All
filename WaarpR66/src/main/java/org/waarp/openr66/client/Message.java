@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.client;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -28,7 +29,6 @@ import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.authentication.R66Auth;
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -42,10 +42,10 @@ import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.net.SocketAddress;
 
+import static org.waarp.common.database.DbConstant.*;
+
 /**
  * Message testing between two hosts
- *
- *
  */
 public class Message implements Runnable {
   /**
@@ -53,22 +53,21 @@ public class Message implements Runnable {
    */
   private static WaarpLogger logger;
 
-  protected static String _INFO_ARGS = Messages.getString("Message.0") +
-                                       Messages
-                                           .getString("Message.OutputFormat");
+  protected static String _infoArgs = Messages.getString("Message.0") + Messages
+      .getString("Message.OutputFormat");
   //$NON-NLS-1$
 
-  final private NetworkTransaction networkTransaction;
+  private final NetworkTransaction networkTransaction;
 
-  final private R66Future future;
+  private final R66Future future;
 
   private final String requested;
 
   private final DbHostAuth hostAuth;
 
-  final private TestPacket testPacket;
+  private final TestPacket testPacket;
 
-  static String srequested = null;
+  static String srequested;
   static String smessage = "MESSAGE";
 
   /**
@@ -79,10 +78,10 @@ public class Message implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
-    _INFO_ARGS = Messages.getString("Message.0") +
-                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
+    _infoArgs = Messages.getString("Message.0") +
+                Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
-      logger.error(_INFO_ARGS);
+      logger.error(_infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -92,13 +91,13 @@ public class Message implements Runnable {
       return false;
     }
     for (int i = 1; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-to")) {
+      if ("-to".equalsIgnoreCase(args[i])) {
         i++;
         srequested = args[i];
         if (Configuration.configuration.getAliases().containsKey(srequested)) {
           srequested = Configuration.configuration.getAliases().get(srequested);
         }
-      } else if (args[i].equalsIgnoreCase("-msg")) {
+      } else if ("-msg".equalsIgnoreCase(args[i])) {
         i++;
         smessage = args[i];
       }
@@ -106,7 +105,7 @@ public class Message implements Runnable {
     OutputFormat.getParams(args);
     if (srequested == null) {
       logger.error(Messages.getString("Message.HostIdMustBeSet") +
-                   _INFO_ARGS); //$NON-NLS-1$
+                   _infoArgs); //$NON-NLS-1$
       return false;
     }
     return true;
@@ -142,7 +141,7 @@ public class Message implements Runnable {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
     // Connection
-    DbHostAuth host = null;
+    DbHostAuth host;
     if (hostAuth == null) {
       host = R66Auth.getServerAuth(requested);
     } else {
@@ -168,7 +167,7 @@ public class Message implements Runnable {
     }
     SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
-    LocalChannelReference localChannelReference = null;
+    LocalChannelReference localChannelReference;
     localChannelReference = networkTransaction
         .createConnectionWithRetry(socketAddress, isSSL, future);
     socketAddress = null;
@@ -188,8 +187,7 @@ public class Message implements Runnable {
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);
-      localChannelReference.getLocalChannel().close();
-      return;
+      localChannelReference.close();
     }
   }
 
@@ -199,16 +197,16 @@ public class Message implements Runnable {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
     if (args.length < 5) {
-      logger.error(_INFO_ARGS);
-      System.exit(1);
+      logger.error(_infoArgs);
+      System.exit(1);//NOSONAR
     }
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
       ChannelUtils.stopLogger();
-      System.exit(1);
+      System.exit(1);//NOSONAR
     }
     NetworkTransaction networkTransaction = null;
     int value = 3;
@@ -229,31 +227,33 @@ public class Message implements Runnable {
                     Messages.getString("RequestInformation.Success") +
                     info.getSheader()); //$NON-NLS-1$
         if (!OutputFormat.isQuiet()) {
-          System.out.println(Messages.getString("Message.11") +
-                             Messages.getString("RequestInformation.Success") +
-                             info.getSheader()); //$NON-NLS-1$
+          SysErrLogger.FAKE_LOGGER.sysout(Messages.getString("Message.11") +
+                                          Messages.getString(
+                                              "RequestInformation.Success") +
+                                          info.getSheader()); //$NON-NLS-1$
         }
       } else {
         value = 2;
         logger.error(Messages.getString("Message.11") +
                      Messages.getString("RequestInformation.Failure") +
                      //$NON-NLS-1$
-                     result.getResult().toString());
+                     result.getResult());
         if (!OutputFormat.isQuiet()) {
-          System.out.println(Messages.getString("Message.11") +
-                             Messages.getString("RequestInformation.Failure") +
-                             //$NON-NLS-1$
-                             result.getResult().toString());
+          SysErrLogger.FAKE_LOGGER.sysout(Messages.getString("Message.11") +
+                                          Messages.getString(
+                                              "RequestInformation.Failure") +
+                                          //$NON-NLS-1$
+                                          result.getResult());
         }
       }
     } finally {
       if (networkTransaction != null) {
         networkTransaction.closeAll();
       }
-      if (DbConstant.admin != null) {
-        DbConstant.admin.close();
+      if (admin != null) {
+        admin.close();
       }
-      System.exit(value);
+      System.exit(value);//NOSONAR
     }
   }
 

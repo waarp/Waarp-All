@@ -115,8 +115,6 @@ import java.util.Map;
  * means retry in case of error during initialization of connection in 1 hour if
  * not between 7AM to 7PM and
  * not between 1AM to 3AM.<br>
- *
- *
  */
 public class RescheduleTransferTask extends AbstractTask {
   /**
@@ -134,19 +132,19 @@ public class RescheduleTransferTask extends AbstractTask {
   public static final String CPTLIMIT = "CPTLIMIT";
   public static final String CPTTOTAL = "CPTTOTAL";
 
-  protected long newdate = 0;
+  protected long newdate;
 
-  protected Calendar newDate = null;
+  protected Calendar newDate;
 
-  protected boolean countUsed = false;
+  protected boolean countUsed;
 
   protected int limitCount = -1;
 
-  protected int totalCount = 0;
+  protected int totalCount;
 
   protected int resetCount = -1;
 
-  protected DbTaskRunner runner = null;
+  protected DbTaskRunner runner;
 
   /**
    * @param argRule
@@ -161,7 +159,7 @@ public class RescheduleTransferTask extends AbstractTask {
 
   @Override
   public void run() {
-    logger.info("Reschedule with " + argRule + ":" + argTransfer + " and {}",
+    logger.info("Reschedule with " + argRule + ':' + argTransfer + " and {}",
                 session);
     runner = session.getRunner();
     if (runner == null) {
@@ -189,8 +187,8 @@ public class RescheduleTransferTask extends AbstractTask {
       return;
     }
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" "));
-    final String[] args = finalname.split(" ");
+    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));
+    final String[] args = BLANK.split(finalname);
     if (args.length < 4) {
       final R66Result result =
           new R66Result(session, false, ErrorCode.Warning, runner);
@@ -220,7 +218,8 @@ public class RescheduleTransferTask extends AbstractTask {
         // Must not reschedule since limit is reached
         try {
           runner.saveStatus();
-        } catch (final OpenR66RunnerErrorException e) {
+        } catch (final OpenR66RunnerErrorException ignored) {
+          // nothing
         }
         final R66Result result =
             new R66Result(session, false, ErrorCode.Warning, runner);
@@ -240,7 +239,7 @@ public class RescheduleTransferTask extends AbstractTask {
     } catch (final OpenR66RunnerErrorException e) {
       logger.error(
           "Prepare transfer in     FAILURE      " + runner.toShortString() +
-          "     <AT>" + (new Date(newdate)).toString() + "</AT>", e);
+          "     <AT>" + new Date(newdate) + "</AT>", e);
       futureCompletion.setFailure(new OpenR66RunnerErrorException(
           "Reschedule failed: " + e.getMessage(), e));
       return;
@@ -251,7 +250,7 @@ public class RescheduleTransferTask extends AbstractTask {
     futureCompletion.setResult(result);
     logger.warn(
         "Reschedule transfer in     SUCCESS     " + runner.toShortString() +
-        "     <AT>" + (new Date(newdate)).toString() + "</AT>");
+        "     <AT>" + new Date(newdate) + "</AT>");
     futureCompletion.setSuccess();
   }
 
@@ -272,7 +271,7 @@ public class RescheduleTransferTask extends AbstractTask {
   protected boolean validateArgs(String[] args) {
     boolean validCode = false;
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-delay")) {
+      if ("-delay".equalsIgnoreCase(args[i])) {
         i++;
         try {
           newdate = Long.parseLong(args[i]);
@@ -280,7 +279,7 @@ public class RescheduleTransferTask extends AbstractTask {
           logger.warn("Bad Long format: args[i]");
           return false;
         }
-      } else if (args[i].equalsIgnoreCase("-case")) {
+      } else if ("-case".equalsIgnoreCase(args[i])) {
         i++;
         if (!validCode) {
           final String[] codes = args[i].split(",");
@@ -292,7 +291,7 @@ public class RescheduleTransferTask extends AbstractTask {
             }
           }
         }
-      } else if (args[i].equalsIgnoreCase("-count")) {
+      } else if ("-count".equalsIgnoreCase(args[i])) {
         i++;
         try {
           resetCount = Integer.parseInt(args[i]);
@@ -302,7 +301,7 @@ public class RescheduleTransferTask extends AbstractTask {
           return false;
         }
         final Map<String, Object> root = runner.getTransferMap();
-        Integer limit = null;
+        Integer limit;
         try {
           limit = (Integer) root.get(CPTLIMIT);
         } catch (final Exception e) {
@@ -333,7 +332,7 @@ public class RescheduleTransferTask extends AbstractTask {
     boolean betweenTest = false;
     boolean betweenResult = false;
     for (int i = 0; i < args.length; i++) {
-      if (args[i].equalsIgnoreCase("-notbetween")) {
+      if ("-notbetween".equalsIgnoreCase(args[i])) {
         i++;
         final String[] elmts = args[i].split(";");
         boolean startModified = false;
@@ -376,14 +375,14 @@ public class RescheduleTransferTask extends AbstractTask {
             return false;
           }
         } else if (start.compareTo(newDate) < 0) {
-          if ((!stopModified) || (newDate.compareTo(stop) < 0)) {
+          if (!stopModified || newDate.compareTo(stop) < 0) {
             logger.debug(
                 "newDate: " + newDate.getTime() + " Should not be between " +
                 start.getTime() + " and " + stop.getTime());
             return false;
           }
         }
-      } else if (args[i].equalsIgnoreCase("-between")) {
+      } else if ("-between".equalsIgnoreCase(args[i])) {
         i++;
         betweenTest = true;
         final String[] elmts = args[i].split(";");
@@ -426,7 +425,7 @@ public class RescheduleTransferTask extends AbstractTask {
             betweenResult = true;
           }
         } else if (start.compareTo(newDate) < 0) {
-          if ((!stopModified) || (newDate.compareTo(stop) < 0)) {
+          if (!stopModified || newDate.compareTo(stop) < 0) {
             logger.debug("newDate: " + newDate.getTime() + " is between " +
                          start.getTime() + " and " + stop.getTime());
             betweenResult = true;

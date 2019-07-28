@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.file.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,17 +29,15 @@ import java.io.PipedInputStream;
 /**
  * This class is used with external process in order to get the last echo from
  * the stdout of the process.
- *
- *
  */
 class LastLineReader implements Runnable {
   private final BufferedReader reader;
   /**
    * This will be the result at the end
    */
-  private String lastLine = null;
+  private String lastLine;
 
-  public LastLineReader(PipedInputStream inputStream) {
+  LastLineReader(PipedInputStream inputStream) {
     reader = new BufferedReader(new InputStreamReader(inputStream));
   }
 
@@ -56,10 +56,7 @@ class LastLineReader implements Runnable {
       // writer is found
       // before the thread closes the write pipe
     }
-    try {
-      reader.close();
-    } catch (final IOException e) {
-    }
+    FileUtils.close(reader);
   }
 
   /**

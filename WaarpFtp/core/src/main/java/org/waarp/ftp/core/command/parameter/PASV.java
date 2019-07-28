@@ -34,8 +34,6 @@ import java.net.InetSocketAddress;
 
 /**
  * PASV command
- *
- *
  */
 public class PASV extends AbstractCommand {
   /**
@@ -93,7 +91,7 @@ public class PASV extends AbstractCommand {
       address = local.getAddress().getHostAddress();
     }
     final String slocal = "Entering Passive Mode (" +
-                          FtpChannelUtils.getAddress(address, servPort) + ")";
+                          FtpChannelUtils.getAddress(address, servPort) + ')';
     final InetAddress remote =
         getSession().getDataConn().getRemoteAddress().getAddress();
     // Add the current FtpSession into the reference of session since the

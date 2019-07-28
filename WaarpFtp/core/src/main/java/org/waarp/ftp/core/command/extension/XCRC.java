@@ -26,8 +26,6 @@ import org.waarp.ftp.core.command.AbstractCommand;
 
 /**
  * XCRC command: takes a filename and returns the CRC of the file
- *
- *
  */
 public class XCRC extends AbstractCommand {
   @Override

@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpThreadFactory;
@@ -32,11 +33,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Execute a Java command through Class.forName call
- *
- *
  */
 public class ExecJavaTask extends AbstractTask {
-  protected boolean businessRequest = false;
+  protected boolean businessRequest;
 
   /**
    * Internal Logger
@@ -73,21 +72,21 @@ public class ExecJavaTask extends AbstractTask {
      */
     String finalname = argRule;
     if (argTransfer != null) {
-      finalname = getReplacedValue(finalname, argTransfer.split(" "));
+      finalname = getReplacedValue(finalname, BLANK.split(argTransfer));
     }
     // First get the Class Name
-    final String[] args = finalname.split(" ");
+    final String[] args = BLANK.split(finalname);
     final String className = args[0];
     final boolean isSpooled =
         className.equals(SpooledInformTask.class.getName());
     if (isSpooled) {
-      logger.debug("Exec with " + className + ":" + argTransfer + " and {}",
+      logger.debug("Exec with " + className + ':' + argTransfer + " and {}",
                    session);
     } else {
-      logger.debug("Exec with " + argRule + ":" + argTransfer + " and {}",
+      logger.debug("Exec with " + argRule + ':' + argTransfer + " and {}",
                    session);
     }
-    R66Runnable runnable = null;
+    R66Runnable runnable;
     try {
       runnable = (R66Runnable) Class.forName(className).newInstance();
     } catch (final Exception e) {
@@ -112,13 +111,13 @@ public class ExecJavaTask extends AbstractTask {
                    finalname.substring(className.length() + 1), businessRequest,
                    false);
     }
-    logger.debug(className + " " + runnable.getClass().getName());
+    logger.debug(className + ' ' + runnable.getClass().getName());
     if (!waitForValidation) {
       // Do not wait for validation
       futureCompletion.setSuccess();
       logger.info("Exec will start but no WAIT with {}", runnable);
     }
-    int status = -1;
+    int status;
     if (waitForValidation && delay <= 100) {
       runnable.run();
       status = runnable.getFinalStatus();
@@ -141,17 +140,18 @@ public class ExecJavaTask extends AbstractTask {
             }
           } else {
             while (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-              ;
+              // nothing
             }
             status = runnable.getFinalStatus();
           }
         } else {
           while (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-            ;
+            // nothing
           }
           status = runnable.getFinalStatus();
         }
       } catch (final InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.error(
             "Status: " + e.getMessage() + " \t Exec in error with " + runnable);
         if (waitForValidation) {

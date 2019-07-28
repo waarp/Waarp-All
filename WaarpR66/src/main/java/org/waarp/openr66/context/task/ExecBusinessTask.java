@@ -29,8 +29,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * Business Execution of a Java Task
  * <p>
  * Fullarg = First argument is the Java class name, Last argument is the delay.
- *
- *
  */
 public class ExecBusinessTask extends AbstractExecJavaTask {
 
@@ -47,10 +45,10 @@ public class ExecBusinessTask extends AbstractExecJavaTask {
       String validate = "Validated";
       if (isToValidate) {
         logger.debug("DEBUG: " + fullarg);
-        final String[] args = fullarg.split(" ");
+        final String[] args = BLANK.split(fullarg);
         final String operation = args[0];
-        int newdelay = 0;
-        String argRule = "";
+        int newdelay;
+        String argRule;
         try {
           newdelay = Integer.parseInt(args[args.length - 1]);
           argRule = fullarg
@@ -66,7 +64,7 @@ public class ExecBusinessTask extends AbstractExecJavaTask {
             task.run();
             task.getFutureCompletion().awaitOrInterruptible();
             final R66Future future = task.getFutureCompletion();
-            if ((!future.isDone()) || future.isFailed()) {
+            if (!future.isDone() || future.isFailed()) {
               invalid();
               return;
             }
@@ -80,17 +78,17 @@ public class ExecBusinessTask extends AbstractExecJavaTask {
             return;
           }
         } catch (final OpenR66RunnerErrorException e1) {
-          logger.error("ExecBusiness in error: " + e1.toString());
+          logger.error("ExecBusiness in error: " + e1);
           invalid();
           return;
         }
-        final BusinessRequestPacket packet = new BusinessRequestPacket(
-            this.getClass().getName() + " execution ok", 0);
+        final BusinessRequestPacket packet =
+            new BusinessRequestPacket(getClass().getName() + " execution ok",
+                                      0);
         validate(packet);
         return;
       }
       finalValidate(validate);
-      return;
     } else {
       // Rule EXECJAVA based should be used instead
       status = 2;

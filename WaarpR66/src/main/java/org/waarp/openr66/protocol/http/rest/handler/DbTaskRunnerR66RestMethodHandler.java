@@ -49,14 +49,20 @@ import java.sql.Timestamp;
 
 /**
  * DbTaskRunner Rest handler
- *
- *
  */
 public class DbTaskRunnerR66RestMethodHandler
     extends DataModelRestMethodHandler<DbTaskRunner> {
+  private static final String OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR =
+      "Owner of this request (optional) as VARCHAR";
+  private static final String PARTNER_AS_REQUESTED_AS_VARCHAR =
+      "Partner as requested as VARCHAR";
+  private static final String PARTNER_AS_REQUESTER_AS_VARCHAR =
+      "Partner as requester as VARCHAR";
+  private static final String SPECIAL_ID_AS_LONG_IN_URI_AS =
+      "Special Id as LONG in URI as ";
   public static final String BASEURI = "transfers";
 
-  public static enum FILTER_ARGS {
+  public enum FILTER_ARGS {
     LIMIT("number"), ORDERBYID("boolean"), STARTID("transfer id"),
     STOPID("transfer id"), IDRULE("rule name"),
     PARTNER("partner (requester or requested) name"), PENDING("boolean"),
@@ -64,7 +70,7 @@ public class DbTaskRunnerR66RestMethodHandler
     ALLSTATUS("boolean"), STARTTRANS("Date in ISO 8601 format or ms"),
     STOPTRANS("Date in ISO 8601 format or ms");
 
-    public String type;
+    public final String type;
 
     FILTER_ARGS(String type) {
       this.type = type;
@@ -235,13 +241,13 @@ public class DbTaskRunnerR66RestMethodHandler
     ObjectNode node3 = JsonHandler.createObjectNode();
     if (methods.contains(METHOD.GET)) {
       node3.put(DbTaskRunner.Columns.SPECIALID.name(),
-                "Special Id as LONG in URI as " + path + "/id");
+                SPECIAL_ID_AS_LONG_IN_URI_AS + path + "/id");
       node3.put(DbTaskRunner.Columns.REQUESTER.name(),
-                "Partner as requester as VARCHAR");
+                PARTNER_AS_REQUESTER_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.REQUESTED.name(),
-                "Partner as requested as VARCHAR");
+                PARTNER_AS_REQUESTED_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
-                "Owner of this request (optional) as VARCHAR");
+                OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
       node2 = RestArgument
           .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
                              node3, node1);
@@ -252,7 +258,7 @@ public class DbTaskRunnerR66RestMethodHandler
         node3.put(arg.name(), arg.type);
       }
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
-                "Owner of this request (optional) as VARCHAR");
+                OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
       node2 = RestArgument
           .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),
                              node3, JsonHandler.createArrayNode().add(node1));
@@ -261,13 +267,13 @@ public class DbTaskRunnerR66RestMethodHandler
     if (methods.contains(METHOD.PUT)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbTaskRunner.Columns.SPECIALID.name(),
-                "Special Id as LONG in URI as " + path + "/id");
+                SPECIAL_ID_AS_LONG_IN_URI_AS + path + "/id");
       node3.put(DbTaskRunner.Columns.REQUESTER.name(),
-                "Partner as requester as VARCHAR");
+                PARTNER_AS_REQUESTER_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.REQUESTED.name(),
-                "Partner as requested as VARCHAR");
+                PARTNER_AS_REQUESTED_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
-                "Owner of this request (optional) as VARCHAR");
+                OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
       for (final DbValue dbValue : values) {
         if (dbValue.getColumn()
                    .equalsIgnoreCase(DbTaskRunner.Columns.IDRULE.name())) {
@@ -283,13 +289,13 @@ public class DbTaskRunnerR66RestMethodHandler
     if (methods.contains(METHOD.DELETE)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbTaskRunner.Columns.SPECIALID.name(),
-                "Special Id as LONG in URI as " + path + "/id");
+                SPECIAL_ID_AS_LONG_IN_URI_AS + path + "/id");
       node3.put(DbTaskRunner.Columns.REQUESTER.name(),
-                "Partner as requester as VARCHAR");
+                PARTNER_AS_REQUESTER_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.REQUESTED.name(),
-                "Partner as requested as VARCHAR");
+                PARTNER_AS_REQUESTED_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
-                "Owner of this request (optional) as VARCHAR");
+                OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
       node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + "/id",
                                              COMMAND_TYPE.DELETE.name(), node3,
                                              node1);

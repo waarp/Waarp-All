@@ -28,15 +28,13 @@ import org.waarp.ftp.core.session.FtpSession;
 
 /**
  * Filesystem implementation of a FtpDir
- *
- *
  */
 public abstract class FilesystemBasedFtpDir extends FilesystemBasedDirImpl
     implements FtpDir {
   /**
    * @param session
    */
-  public FilesystemBasedFtpDir(FtpSession session) {
+  protected FilesystemBasedFtpDir(FtpSession session) {
     super(session, new FilesystemBasedOptsMLSxImpl());
   }
 

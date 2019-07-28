@@ -19,19 +19,18 @@
  */
 package org.waarp.openr66.protocol.localhandler.packet.json;
 
-import org.waarp.openr66.database.DbConstant;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Stop or Cancel one request JSON packet
- *
- *
  */
 public class StopOrCancelJsonPacket extends JsonPacket {
 
   protected String requester;
   protected String requested;
-  protected long specialid = DbConstant.ILLEGALVALUE;
+  protected long specialid = ILLEGALVALUE;
 
   /**
    * @return the requester
@@ -77,14 +76,14 @@ public class StopOrCancelJsonPacket extends JsonPacket {
 
   @Override
   public void setRequestUserPacket() {
-    super.setRequestUserPacket(LocalPacketFactory.STOPPACKET);
+    setRequestUserPacket(LocalPacketFactory.STOPPACKET);
   }
 
   public void setStop() {
-    super.setRequestUserPacket(LocalPacketFactory.STOPPACKET);
+    setRequestUserPacket(LocalPacketFactory.STOPPACKET);
   }
 
   public void setCancel() {
-    super.setRequestUserPacket(LocalPacketFactory.CANCELPACKET);
+    setRequestUserPacket(LocalPacketFactory.CANCELPACKET);
   }
 }

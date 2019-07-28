@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 public class FormattingTupleTest {
   private static final String NON_SENSICAL_EMPTY_OR_NULL_ARGUMENT_ARRAY =
       "non-sensical empty or null argument array";
+  private static final Object[] OBJECT_ARRAY_0 = new Object[0];
 
   @Test
   public void testTuple() {
@@ -39,7 +40,7 @@ public class FormattingTupleTest {
     formattingTuple0 = new FormattingTuple(null, objectArray0, null);
     Object[] objectArray1 = formattingTuple0.getArgArray();
     assertSame(objectArray0, objectArray1);
-    objectArray0 = new Object[0];
+    objectArray0 = OBJECT_ARRAY_0;
     formattingTuple0 = new FormattingTuple("@2tO", objectArray0, null);
     objectArray1 = formattingTuple0.getArgArray();
     assertSame(objectArray0, objectArray1);
@@ -69,7 +70,7 @@ public class FormattingTupleTest {
 
   @Test
   public void testError() {
-    final Object[] objectArray0 = new Object[0];
+    final Object[] objectArray0 = OBJECT_ARRAY_0;
     try {
       FormattingTuple.trimmedCopy(objectArray0);
       fail("Expecting exception: IllegalStateException");
