@@ -83,13 +83,11 @@ public final class LocalServerHandler {
   private LocalServerHandler() {
   }
 
-  public static void channelInactive(TransferActions serverHandler)
-      throws Exception {
+  public static void channelInactive(TransferActions serverHandler) {
     serverHandler.channelClosed();
   }
 
-  public static void channelActive(TransferActions serverHandler)
-      throws Exception {
+  public static void channelActive(TransferActions serverHandler) {
     serverHandler.newSession();
   }
 

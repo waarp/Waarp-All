@@ -22,12 +22,14 @@ package org.waarp.ftp;
 
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.ftp.core.exception.FtpNoConnectionException;
 import org.waarp.ftp.simpleimpl.SimpleGatewayFtpServer;
 import org.waarp.ftp.simpleimpl.config.FileBasedConfiguration;
+import org.waarp.ftp.simpleimpl.config.FileBasedSslConfiguration;
 import org.waarp.ftp.simpleimpl.control.SimpleBusinessHandler;
 import org.waarp.ftp.simpleimpl.data.FileSystemBasedDataBusinessHandler;
 
@@ -41,7 +43,8 @@ public class FtpServer {
   protected static File dir;
   protected static FileBasedConfiguration configuration;
 
-  public static void startFtpServer(String config) {
+  public static void startFtpServer(String config, String sslconfig,
+                                    boolean useSsl, boolean useNative) {
     WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(FtpServer.class);
@@ -63,6 +66,22 @@ public class FtpServer {
         return;
       }
       configuration.setTimeoutCon(1000);
+      if (useSsl) {
+        if (!FileBasedSslConfiguration
+            .setConfigurationServerFromXml(configuration, sslconfig)) {
+          SysErrLogger.FAKE_LOGGER.syserr("Bad Ssl configuration");
+          return;
+        }
+        if (useNative) {
+          // native SSL support
+          configuration.getFtpInternalConfiguration().setUsingNativeSsl(true);
+          configuration.getFtpInternalConfiguration().setAcceptAuthProt(false);
+        } else {
+          // AUTH, PROT, ... support
+          configuration.getFtpInternalConfiguration().setUsingNativeSsl(false);
+          configuration.getFtpInternalConfiguration().setAcceptAuthProt(true);
+        }
+      }
       // Start server.
       try {
         configuration.serverStartup();

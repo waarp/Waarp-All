@@ -273,6 +273,33 @@ public class FilesystemBasedDigest {
       this.algoName = algoName;
       this.byteSize = byteSize;
     }
+
+    public static DigestAlgo getFromName(String name) {
+      try {
+        return valueOf(name);
+      } catch (IllegalArgumentException ignore) {//NOSONAR
+        // ignore
+      }
+      if ("CRC32".equalsIgnoreCase(name)) {
+        return CRC32;
+      } else if ("ADLER32".equalsIgnoreCase(name)) {
+        return ADLER32;
+      } else if ("MD5".equalsIgnoreCase(name)) {
+        return MD5;
+      } else if ("MD2".equalsIgnoreCase(name)) {
+        return MD2;
+      } else if ("SHA-1".equalsIgnoreCase(name)) {
+        return SHA1;
+      } else if ("SHA-256".equalsIgnoreCase(name)) {
+        return SHA256;
+      } else if ("SHA-384".equalsIgnoreCase(name)) {
+        return SHA384;
+      } else if ("SHA-512".equalsIgnoreCase(name)) {
+        return SHA512;
+      } else {
+        throw new IllegalArgumentException("Digest Algo not found");
+      }
+    }
   }
 
   /**

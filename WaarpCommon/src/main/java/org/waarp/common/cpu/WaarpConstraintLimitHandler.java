@@ -344,8 +344,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
           if (shorttime >= 10) {
             try {
               Thread.sleep(shorttime);
-            } catch (final InterruptedException e) {
-              SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+            } catch (final InterruptedException ignore) {//NOSONAR
+              SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
             }
           }
         } else {
@@ -359,8 +359,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       delayNew = getSleepTime() * (step + 1);
       try {
         Thread.sleep(delayNew);
-      } catch (final InterruptedException e) {
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      } catch (final InterruptedException ignore) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
       }
       return true;
     } else {

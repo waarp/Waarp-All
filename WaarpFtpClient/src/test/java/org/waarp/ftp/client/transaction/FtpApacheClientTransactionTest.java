@@ -20,6 +20,7 @@
 
 package org.waarp.ftp.client.transaction;
 
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.ftp.client.NullOutputStream;
 import org.waarp.ftp.client.WaarpFtpClient;
 
@@ -82,6 +83,17 @@ public class FtpApacheClientTransactionTest extends WaarpFtpClient {
         results = executeSiteCommand("XSHA1 " + remote);
         for (final String string : results) {
           System.err.println("XSHA1: " + string);
+        }
+        for (DigestAlgo algo : DigestAlgo.values()) {
+          results =
+              executeSiteCommand("XDIGEST " + algo.algoName + " " + remote);
+          for (final String string : results) {
+            System.err.println("XDIGEST " + algo.algoName + ": " + string);
+          }
+          results = executeSiteCommand("XDIGEST " + algo.name() + " " + remote);
+          for (final String string : results) {
+            System.err.println("XDIGEST " + algo.algoName + ": " + string);
+          }
         }
         results = listFiles();
         for (final String string : results) {

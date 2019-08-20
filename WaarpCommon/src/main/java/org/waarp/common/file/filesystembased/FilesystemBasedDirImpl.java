@@ -737,49 +737,30 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
 
   @Override
   public byte[] getMD5(String path) throws CommandAbstractException {
-    final File file = getTrueFile(path);
-    try {
-      if (FilesystemBasedFileParameterImpl.useNio) {
-        return FilesystemBasedDigest.getHashMd5Nio(file);
-      }
-      return FilesystemBasedDigest.getHashMd5(file);
-    } catch (final IOException e1) {
-      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
-    }
+    return getDigest(path, DigestAlgo.MD5.name());
   }
 
   @Override
   public byte[] getSHA1(String path) throws CommandAbstractException {
+    return getDigest(path, DigestAlgo.SHA1.name());
+  }
+
+  @Override
+  public byte[] getDigest(String path, String algo)
+      throws CommandAbstractException {
+    final DigestAlgo digestAlgo;
+    try {
+      digestAlgo = DigestAlgo.getFromName(algo);
+    } catch (IllegalArgumentException e) {
+      throw new Reply553Exception("Algorithme unknown: " + algo);
+    }
     final File file = getTrueFile(path);
     try {
-      if (FilesystemBasedFileParameterImpl.useNio) {
-        return FilesystemBasedDigest.getHashSha1Nio(file);
-      }
-      return FilesystemBasedDigest.getHashSha1(file);
+      return FilesystemBasedDigest
+          .getHash(file, FilesystemBasedFileParameterImpl.useNio, digestAlgo);
     } catch (final IOException e1) {
       throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     }
   }
 
-  public byte[] getSHA256(String path) throws CommandAbstractException {
-    final File file = getTrueFile(path);
-    try {
-      return FilesystemBasedDigest
-          .getHash(file, FilesystemBasedFileParameterImpl.useNio,
-                   DigestAlgo.SHA256);
-    } catch (final IOException e1) {
-      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
-    }
-  }
-
-  public byte[] getSHA512(String path) throws CommandAbstractException {
-    final File file = getTrueFile(path);
-    try {
-      return FilesystemBasedDigest
-          .getHash(file, FilesystemBasedFileParameterImpl.useNio,
-                   DigestAlgo.SHA512);
-    } catch (final IOException e1) {
-      throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
-    }
-  }
 }

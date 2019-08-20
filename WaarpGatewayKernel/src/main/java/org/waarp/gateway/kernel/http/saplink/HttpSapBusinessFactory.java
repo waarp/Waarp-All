@@ -20,6 +20,7 @@
 package org.waarp.gateway.kernel.http.saplink;
 
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.AbstractHttpBusinessRequest;
 import org.waarp.gateway.kernel.AbstractHttpField;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldRole;
@@ -29,15 +30,24 @@ import org.waarp.gateway.kernel.HttpPage;
 import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.HttpPageHandler;
 
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
  */
-public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
+public class HttpSapBusinessFactory extends HttpBusinessFactory {
 
   public static final String SAPLINK = "/saplink";
+
+  @Override
+  public AbstractHttpBusinessRequest getNewHttpBusinessRequest(
+      final SocketAddress remoteAddress,
+      final Map<String, AbstractHttpField> fields, final HttpPage page) {
+    return null;
+  }
 
   /**
    * All functions for SapArg: some could be not implemented. Note that create
@@ -196,7 +206,7 @@ public abstract class HttpSapBusinessFactory extends HttpBusinessFactory {
       },
   };
 
-  protected HttpSapBusinessFactory() {
+  public HttpSapBusinessFactory() {
   }
 
   public static HttpPageHandler initializeHttpPageHandler() {

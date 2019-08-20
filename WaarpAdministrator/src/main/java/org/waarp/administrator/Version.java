@@ -8,7 +8,7 @@ public final class Version {
  /**
  * The version identifier.
  */
- public static final String ID = "3.2.0";
+ public static final String ID = "3.2.1";
  /**
  * Prints out the version identifier to stdout.
  */

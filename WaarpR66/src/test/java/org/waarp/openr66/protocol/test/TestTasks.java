@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.test;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -32,6 +33,7 @@ import org.waarp.openr66.context.task.ChModTask;
 import org.waarp.openr66.context.task.CopyRenameTask;
 import org.waarp.openr66.context.task.CopyTask;
 import org.waarp.openr66.context.task.DeleteTask;
+import org.waarp.openr66.context.task.ExecMoveTask;
 import org.waarp.openr66.context.task.ExecOutputTask;
 import org.waarp.openr66.context.task.ExecTask;
 import org.waarp.openr66.context.task.FileCheckTask;
@@ -42,6 +44,7 @@ import org.waarp.openr66.context.task.RenameTask;
 import org.waarp.openr66.context.task.SnmpTask;
 import org.waarp.openr66.context.task.TarTask;
 import org.waarp.openr66.context.task.TranscodeTask;
+import org.waarp.openr66.context.task.TransferTask;
 import org.waarp.openr66.context.task.UnzeroedFileTask;
 import org.waarp.openr66.context.task.ValidFilePathTask;
 import org.waarp.openr66.context.task.ZipTask;
@@ -57,6 +60,7 @@ import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket.TRANSFERMODE;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -327,13 +331,42 @@ public class TestTasks {
 
     // RENAME
     final RenameTask renameTask =
-        new RenameTask(out + "_rename2", 0, argTransfer, session);
+        new RenameTask(out + "/file_rename2", 0, argTransfer, session);
     renameTask.run();
     renameTask.getFutureCompletion().awaitOrInterruptible();
     System.out
         .println("RenameTask: " + renameTask.getFutureCompletion().isSuccess());
     assertTrue("RenameTask should be OK",
                renameTask.getFutureCompletion().isSuccess());
+
+    // EXECMOVE
+    File fileTemp = new File("/tmp/R66/out/file_rename3");
+    try {
+      fileTemp.createNewFile();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    final ExecMoveTask execMoveTask =
+        new ExecMoveTask("echo /tmp/R66/out/file_rename3", 0, argTransfer,
+                         session);
+    execMoveTask.run();
+    execMoveTask.getFutureCompletion().awaitOrInterruptible();
+    System.out.println(
+        "ExecMoveTask: " + execMoveTask.getFutureCompletion().isSuccess());
+    assertTrue("ExecMoveTask should be OK",
+               execMoveTask.getFutureCompletion().isSuccess());
+
+    // TRANSFER
+    final TransferTask transferTask =
+        new TransferTask("-file " + out + "/test.tar -to hostas -rule rule3", 0,
+                         argTransfer, session);
+    transferTask.run();
+    transferTask.getFutureCompletion().awaitOrInterruptible();
+    System.out
+        .println("TRANSFER: " + transferTask.getFutureCompletion().isSuccess());
+    assertTrue("TRANSFER should be OK",
+               transferTask.getFutureCompletion().isSuccess());
+    waitForAllDone(transferTask.getFutureCompletion().getResult().getRunner());
 
     // DELETE
     final DeleteTask deleteTask =
@@ -344,7 +377,29 @@ public class TestTasks {
         .println("DELETE: " + deleteTask.getFutureCompletion().isSuccess());
     assertTrue("DELETE should be OK",
                deleteTask.getFutureCompletion().isSuccess());
-
   }
 
+  private static void waitForAllDone(DbTaskRunner runner) {
+    while (true) {
+      try {
+        DbTaskRunner checkedRunner =
+            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
+                             runner.getRequested());
+        if (checkedRunner.isAllDone()) {
+          SysErrLogger.FAKE_LOGGER.sysout("DbTaskRunner done");
+          return;
+        } else if (checkedRunner.isInError()) {
+          SysErrLogger.FAKE_LOGGER.syserr("DbTaskRunner in error");
+          return;
+        }
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        SysErrLogger.FAKE_LOGGER.syserr("Interrupted", e);
+        return;
+      } catch (WaarpDatabaseException e) {
+        SysErrLogger.FAKE_LOGGER.syserr("Cannot found DbTaskRunner", e);
+        return;
+      }
+    }
+  }
 }

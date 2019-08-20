@@ -1,32 +1,3 @@
-ToDo
-====
-FTP
-***
-- +Add XSITE SHAxxx (business handler) and Junits for XSITE xxx
-
-All
-***
-- Allow 2 kinds of configuration (xml / json)
-- Vitam plugin
-
-R66
-***
-- +Add Junits on forward send
-- +Add Junits on rest/restV2
-- Check if properties used?
-- +Test for XML DAO ?
-- +Test for RescheduleTransfer and Transfer and SpooledInform and
-  RestartServer and LinkRename and FtpTransfer and ExecMove Tasks
-- +Test for kernel Exec (Execute, Java, LocalExec, LogJava, 
-    R66PreparedTransfer) ?
-- Look at REST V2
-- See if Rest V1 is available while V2 active (right now only V2 active)
-
-GatewayKernel
-*************
-- +Improve Junits
-
-
 Done
 ====
 All
@@ -121,6 +92,53 @@ GWFTP
 - Add Junits
 
 
+New New Done
+============
+
+All
+***
+- Improve some Junits
+- Improve build by including local repository (increase the size of the
+ project however)
+ 
+
+Common
+******
+- Remove PassThrough file implementation (never used)
+
+FTP
+***
+- Add XSITE DIGEST and XDIGEST (CRC32, ADLER32, MD5, MD2, SHA-1/SHA1, SHA-256
+/SHA256, SHA-384/SHA384, SHA-512/SHA512) and Junits
+- Add Junit tests on FTPS (native and dynamic)
+
+R66
+***
+- Fix some closing functions not called
+- Add simple Junit for Transfer and ExecMove Tasks
+- Kernel Exec (Execute, Java, LocalExec, LogJava, 
+    R66PreparedTransfer) moved to GGFTP (better place)
+
+TODO
+====
+
+All
+***
+- +Allow 2 kinds of configuration (xml / json)
+
+R66
+***
+- +Add Junits on forward send
+- +Add Junits on rest/restV2
+- +Check if properties used?
+- +Test for XML DAO ?
+- +Test for RescheduleTransfer and Transfer and SpooledInform and
+  RestartServer and LinkRename and FtpTransfer and ExecMove Tasks
+- +Test for kernel Exec (Execute, Java, LocalExec, LogJava, 
+    R66PreparedTransfer) ?
+- +Look at REST V2
+- +See if Rest V1 is available while V2 active (right now only V2 active)
+- +Vitam plugin
 
 
 VitamPlugin

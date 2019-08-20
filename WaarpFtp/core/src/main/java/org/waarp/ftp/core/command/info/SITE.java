@@ -27,13 +27,14 @@ import org.waarp.common.command.exception.Reply503Exception;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.command.FtpCommandCode;
 import org.waarp.ftp.core.command.extension.XCRC;
+import org.waarp.ftp.core.command.extension.XDIGEST;
 import org.waarp.ftp.core.command.extension.XMD5;
 import org.waarp.ftp.core.command.extension.XSHA1;
 import org.waarp.ftp.core.command.internal.IncorrectCommand;
 
 /**
  * SITE command: implements some specific command like {@link XMD5} {@link XCRC}
- * {@link XSHA1} as if they were
+ * {@link XSHA1} or {@link XDIGEST} as if they were
  * called directly
  */
 public class SITE extends AbstractCommand {

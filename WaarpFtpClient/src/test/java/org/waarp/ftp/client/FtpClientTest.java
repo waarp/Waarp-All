@@ -20,6 +20,7 @@
 
 package org.waarp.ftp.client;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -122,11 +123,15 @@ public class FtpClientTest {
         client.makeDir("T" + i);
       }
       logger.warn("Feature commands");
-      System.err.println("SITE: " + client.featureEnabled("SITE"));
-      System.err.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));
-      System.err.println("CRC: " + client.featureEnabled("XCRC"));
-      System.err.println("MD5: " + client.featureEnabled("XMD5"));
-      System.err.println("SHA1: " + client.featureEnabled("XSHA1"));
+      SysErrLogger.FAKE_LOGGER.sysout("SITE: " + client.featureEnabled("SITE"));
+      SysErrLogger.FAKE_LOGGER
+          .sysout("SITE CRC: " + client.featureEnabled("SITE XCRC"));
+      SysErrLogger.FAKE_LOGGER.sysout("CRC: " + client.featureEnabled("XCRC"));
+      SysErrLogger.FAKE_LOGGER.sysout("MD5: " + client.featureEnabled("XMD5"));
+      SysErrLogger.FAKE_LOGGER
+          .sysout("SHA1: " + client.featureEnabled("XSHA1"));
+      SysErrLogger.FAKE_LOGGER
+          .sysout("DIGEST: " + client.featureEnabled("XDIGEST"));
     } finally {
       logger.warn("Logout");
       client.logout();

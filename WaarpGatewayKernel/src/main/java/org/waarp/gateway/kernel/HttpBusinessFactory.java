@@ -215,10 +215,13 @@ public abstract class HttpBusinessFactory {
                                                classname, linkedHashMap));
       return true;
     } catch (final ClassNotFoundException ignored) {
+      ignored.printStackTrace();
       // nothing
     } catch (final InstantiationException ignored) {
+      ignored.printStackTrace();
       // nothing
     } catch (final IllegalAccessException ignored) {
+      ignored.printStackTrace();
       // nothing
     }
     return false;

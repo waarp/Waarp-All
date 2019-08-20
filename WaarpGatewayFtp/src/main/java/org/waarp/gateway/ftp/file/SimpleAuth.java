@@ -22,7 +22,7 @@ package org.waarp.gateway.ftp.file;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.gateway.kernel.exec.AbstractExecutor.CommandExecutor;
+import org.waarp.gateway.ftp.exec.AbstractExecutor.CommandExecutor;
 
 /**
  * Simple Authentication based on a previously load XML file.

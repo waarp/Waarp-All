@@ -142,9 +142,13 @@ public abstract class BusinessHandler {
            .append(FtpCommandCode.ALLO.name()).append('\n')
            .append(FtpCommandCode.EPRT.name()).append('\n')
            .append(FtpCommandCode.EPSV.name()).append('\n')
-           .append(FtpCommandCode.XCRC.name()).append(FILENAME).append('\n')
-           .append(FtpCommandCode.XMD5.name()).append(FILENAME).append('\n')
-           .append(FtpCommandCode.XSHA1.name()).append(FILENAME).append('\n')
+           .append(FtpCommandCode.XCRC.name()).append(' ').append(FILENAME)
+           .append('\n').append(FtpCommandCode.XMD5.name()).append(' ')
+           .append(FILENAME).append('\n').append(FtpCommandCode.XSHA1.name())
+           .append(' ').append(FILENAME).append('\n')
+           .append(FtpCommandCode.XDIGEST.name()).append(' ').append(
+        "Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)")
+           .append(' ').append(FILENAME).append('\n')
            .append(FtpCommandCode.SITE.name()).append(' ')
            .append(FtpCommandCode.XCRC.name())
            // .append(" \"filename\"")
@@ -153,6 +157,10 @@ public abstract class BusinessHandler {
            // .append(" \"filename\"")
            .append('\n').append(FtpCommandCode.SITE.name()).append(' ')
            .append(FtpCommandCode.XSHA1.name())
+           // .append(" \"filename\"")
+           .append('\n').append(FtpCommandCode.SITE.name()).append(' ')
+           .append(FtpCommandCode.XDIGEST.name()).append(' ').append(
+        "Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)")
            // .append(" \"filename\"")
            .append('\n').append("LAN EN*").append('\n')
            .append(FtpCommandCode.REST.name()).append(" STREAM\n");

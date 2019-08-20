@@ -80,7 +80,7 @@ public class WaarpFtp4jClient {
    * @param pwd
    * @param acct
    * @param isPassive
-   * @param ssl
+   * @param ssl -1 native, 1 auth
    * @param timeout
    */
   public WaarpFtp4jClient(String server, int port, String user, String pwd,

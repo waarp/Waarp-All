@@ -112,8 +112,13 @@ public class SimpleBusinessHandler extends BusinessHandler {
   @Override
   public String getHelpMessage(String arg) {
     return "This FTP server is only intend as a Gateway.\n" +
-           "This FTP server refers to RFC 959, 775, 2389, 2428, 3659, 4217 and supports XCRC, XMD5 and XSHA1 commands.\n" +
-           "XCRC, XMD5 and XSHA1 take a simple filename as argument and return \"250 digest-value is the digest of filename\".";
+           "This FTP server refers to RFC 959, 775, 2389, 2428, 3659, 4217 " +
+           "and supports XDIGEST, XCRC, XMD5 and XSHA1 commands.\n" +
+           "XCRC, XMD5 and XSHA1 take a simple filename as argument, XDIGEST " +
+           "taking algorithm (among CRC32, ADLER32, MD5, MD2, " +
+           "SHA-1, SHA-256, SHA-384, SHA-512) followed by filename " +
+           "as arguments," +
+           " and return \"250 digest-value is the digest of filename\".";
   }
 
   @Override

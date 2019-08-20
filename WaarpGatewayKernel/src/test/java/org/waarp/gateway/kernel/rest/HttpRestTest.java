@@ -30,7 +30,12 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.gateway.kernel.http.saplink.HttpGerenateJsonConfiguration;
 import org.waarp.gateway.kernel.rest.client.RestFuture;
+
+import java.io.File;
+
+import static org.junit.Assert.*;
 
 public class HttpRestTest {
 
@@ -52,7 +57,7 @@ public class HttpRestTest {
         .sendQuery(channel, HttpMethod.OPTIONS, HttpRestHandlerTest.HOST,
                    DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
                    null);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
 
     String json = "{'MODETRANS':'1', 'ACCOUNTID':'accid', " +
@@ -63,40 +68,40 @@ public class HttpRestTest {
         .sendQuery(channel, HttpMethod.POST, HttpRestHandlerTest.HOST,
                    DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
                    json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.syserr("GET");
     future = client.sendQuery(channel, HttpMethod.GET, HttpRestHandlerTest.HOST,
                               DbTransferLogDataModelRestMethodHandler.BASEURI,
                               null, null, json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.syserr("PUT");
     future = client.sendQuery(channel, HttpMethod.PUT, HttpRestHandlerTest.HOST,
                               DbTransferLogDataModelRestMethodHandler.BASEURI +
                               "/id", null, null, json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.syserr("PATCH");
     future = client
         .sendQuery(channel, HttpMethod.PATCH, HttpRestHandlerTest.HOST,
                    DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
                    json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.syserr("TRACE");
     future = client
         .sendQuery(channel, HttpMethod.TRACE, HttpRestHandlerTest.HOST,
                    DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
                    json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.syserr("DELETE");
     future = client
         .sendQuery(channel, HttpMethod.DELETE, HttpRestHandlerTest.HOST,
                    DbTransferLogDataModelRestMethodHandler.BASEURI + "/id",
                    null, null, json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
 
     // Wrong query
@@ -104,10 +109,17 @@ public class HttpRestTest {
     future = client
         .sendQuery(channel, HttpMethod.GET, HttpRestHandlerTest.HOST, null,
                    null, null, json);
-    Assert.assertTrue(future.awaitOrInterruptible());
+    assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     channel.close();
     HttpRestHandlerTest.group.close();
   }
 
+  @Test
+  public void testJson() {
+    File file = new File("/tmp/sapLink.json");
+    HttpGerenateJsonConfiguration.main(new String[] { file.getAbsolutePath() });
+    assertTrue(file.exists());
+    file.delete();
+  }
 }

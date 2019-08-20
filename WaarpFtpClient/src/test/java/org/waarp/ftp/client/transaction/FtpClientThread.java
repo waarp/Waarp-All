@@ -20,6 +20,7 @@
 
 package org.waarp.ftp.client.transaction;
 
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.client.FtpClientTest;
@@ -306,6 +307,18 @@ public class FtpClientThread implements Runnable {
       results = client.executeSiteCommand("XSHA1 " + remoteFilename);
       for (final String string : results) {
         logger.warn("XCRC: {}", string);
+      }
+      for (DigestAlgo algo : DigestAlgo.values()) {
+        results = client.executeSiteCommand(
+            "XDIGEST " + algo.algoName + " " + remoteFilename);
+        for (final String string : results) {
+          logger.warn("XDIGEST {}: {}", algo.algoName, string);
+        }
+        results = client.executeSiteCommand(
+            "XDIGEST " + algo.name() + " " + remoteFilename);
+        for (final String string : results) {
+          logger.warn("XDIGEST {}: {}", algo.name(), string);
+        }
       }
       results = client.listFiles();
       for (final String string : results) {

@@ -135,6 +135,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     if (informationPacket instanceof KeepAlivePacket ||
         informationPacket instanceof NoOpPacket) {
       // do no await
+      localChannelReference.getFutureValidRequest().setSuccess();
       localChannelReference.close();
       return;
     } else {

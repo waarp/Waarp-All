@@ -807,7 +807,8 @@ public class NetworkClientTest extends TestAbstract {
                             networkTransaction);
     requestTransfer.run();
     future.awaitOrInterruptible();
-    assertFalse("Request of Transfer should be OK", future.isSuccess());
+    assertFalse("Request of Transfer should be KO since done",
+                future.isSuccess());
 
     // RequestTransfer
     logger.warn("Start RequestTransfer cancel");
@@ -817,12 +818,13 @@ public class NetworkClientTest extends TestAbstract {
                             networkTransaction);
     requestTransfer.run();
     future.awaitOrInterruptible();
-    assertFalse("Request of Transfer should be OK", future.isSuccess());
+    assertFalse("Request of Transfer should be KO since done",
+                future.isSuccess());
 
     // RequestInformation
     logger.warn("Start RequestInformation");
     future = new R66Future(true);
-    final RequestInformation requestInformation =
+    RequestInformation requestInformation =
         new RequestInformation(future, "hostas", "rule3", "testTask.txt", scode,
                                id, false, networkTransaction);
     requestInformation.run();
@@ -885,8 +887,10 @@ public class NetworkClientTest extends TestAbstract {
     // MultipleSubmitTransfer
     logger.warn("Start MultipleSubmitTransfer");
     future = new R66Future(true);
+    File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     final MultipleSubmitTransfer multipleSubmitTransfer =
-        new MultipleSubmitTransfer(future, "hostas", "testTask.txt", "rule3",
+        new MultipleSubmitTransfer(future, "hostas",
+                                   "/tmp/R66/out/testTask.txt", "rule3",
                                    "Multiple Submit", true, 1024,
                                    DbConstantR66.ILLEGALVALUE, null,
                                    networkTransaction);
@@ -931,7 +935,7 @@ public class NetworkClientTest extends TestAbstract {
     Configuration.configuration.setTimeoutCon(100);
     future = new R66Future(true);
     final NoOpPacket noOpPacket = new NoOpPacket();
-    sendInformation(noOpPacket, socketServerAddress, future, scode, true,
+    sendInformation(noOpPacket, socketServerAddress, future, scode, false,
                     R66FiniteDualStates.INFORMATION, true);
 
     // KeepAlivePacket

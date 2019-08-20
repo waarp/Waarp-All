@@ -135,6 +135,12 @@ public class ExecMoveTask extends AbstractExecTask {
   }
 
   private void move(int status, String newName, String commandLine) {
+    if (newName == null) {
+      logger.error("Status: " + status + " Exec in error with " + commandLine +
+                   " returns no line");
+      futureCompletion.cancel();
+      return;
+    }
     final String newname = newName.replace('\\', '/');
     if (status == 0) {
       if (newname.indexOf(' ') > 0) {

@@ -143,7 +143,7 @@ public class LocalTransaction {
     // Now simulate sending first a Startup message
     StartupPacket startup =
         new StartupPacket(localChannelReference.getLocalId(), fromSsl);
-    localChannelReference.getServerHandler().newSession();
+    LocalServerHandler.channelActive(localChannelReference.getServerHandler());
     try {
       localChannelReference.getServerHandler().startup(startup);
     } catch (OpenR66ProtocolPacketException e) {

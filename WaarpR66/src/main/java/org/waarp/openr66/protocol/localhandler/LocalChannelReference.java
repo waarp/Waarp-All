@@ -226,6 +226,7 @@ public class LocalChannelReference {
     // Now force the close of the database after a wait
     ChannelCloseTimer
         .closeFutureTransaction(serverHandler, noconcurrencyDbSession);
+    LocalServerHandler.channelInactive(getServerHandler());
     LocalTransaction lt = Configuration.configuration.getLocalTransaction();
     if (lt != null) {
       lt.remove(this);

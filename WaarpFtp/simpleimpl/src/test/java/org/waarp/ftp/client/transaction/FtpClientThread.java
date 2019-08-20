@@ -20,6 +20,7 @@
 
 package org.waarp.ftp.client.transaction;
 
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -121,6 +122,44 @@ public class FtpClientThread implements Runnable {
         }
       } else {
         Thread.yield();
+      }
+      client.makeDir("newtest");
+      client.changeDir("newtest");
+      String[] results = client.executeCommand("CDUP");
+      for (final String string : results) {
+        logger.warn("CDUP: {}", string);
+      }
+      results = client.executeCommand("STAT");
+      for (final String string : results) {
+        logger.warn("STAT: {}", string);
+      }
+      results = client.executeCommand("HELP");
+      for (final String string : results) {
+        logger.warn("HELP: {}", string);
+      }
+      results = client.executeCommand("OPTS MLST");
+      for (final String string : results) {
+        logger.warn("OPTS: {}", string);
+      }
+      results = client.executeCommand("MDTM newtest");
+      for (final String string : results) {
+        logger.warn("MDTP: {}", string);
+      }
+      results = client.executeCommand("XCWD newtest");
+      for (final String string : results) {
+        logger.warn("XCWD: {}", string);
+      }
+      results = client.executeCommand("XPWD");
+      for (final String string : results) {
+        logger.warn("XPWD: {}", string);
+      }
+      results = client.executeCommand("XCUP");
+      for (final String string : results) {
+        logger.warn("XCUP: {}", string);
+      }
+      results = client.executeCommand("XRMD newtest");
+      for (final String string : results) {
+        logger.warn("XRMD: {}", string);
       }
 
       logger.info(id + " change type");
@@ -298,17 +337,33 @@ public class FtpClientThread implements Runnable {
           }
         }
       }
-      String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
+      results = client.executeSiteCommand("XCRC " + remoteFilename);
       for (final String string : results) {
         logger.warn("XCRC: {}", string);
       }
       results = client.executeSiteCommand("XMD5 " + remoteFilename);
       for (final String string : results) {
-        logger.warn("XCRC: {}", string);
+        logger.warn("XMD5: {}", string);
       }
       results = client.executeSiteCommand("XSHA1 " + remoteFilename);
       for (final String string : results) {
-        logger.warn("XCRC: {}", string);
+        logger.warn("XSHA1: {}", string);
+      }
+      for (DigestAlgo algo : DigestAlgo.values()) {
+        results = client.executeSiteCommand(
+            "XDIGEST " + algo.algoName + " " + remoteFilename);
+        for (final String string : results) {
+          logger.warn("XDIGEST {}: {}", algo.algoName, string);
+        }
+        results = client.executeSiteCommand(
+            "XDIGEST " + algo.name() + " " + remoteFilename);
+        for (final String string : results) {
+          logger.warn("XDIGEST {}: {}", algo.name(), string);
+        }
+      }
+      results = client.executeCommand("SIZE " + remoteFilename);
+      for (final String string : results) {
+        logger.warn("SIZE: {}", string);
       }
       results = client.listFiles();
       for (final String string : results) {

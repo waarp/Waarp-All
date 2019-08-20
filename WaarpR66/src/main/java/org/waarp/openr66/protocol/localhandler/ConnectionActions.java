@@ -122,20 +122,6 @@ public abstract class ConnectionActions {
   }
 
   /**
-   * @return the globalDigest
-   */
-  public FilesystemBasedDigest getGlobalDigest() {
-    return globalDigest;
-  }
-
-  /**
-   * @return the localDigest
-   */
-  public FilesystemBasedDigest getLocalDigest() {
-    return localDigest;
-  }
-
-  /**
    * Operations to ensure that channel closing is done correctly
    */
   public void channelClosed() {
@@ -157,7 +143,7 @@ public abstract class ConnectionActions {
       } else {
         if (localChannelReference != null) {
           final R66Future fvr = localChannelReference.getFutureValidRequest();
-          fvr.awaitOrInterruptible();
+          fvr.awaitOrInterruptible(Configuration.configuration.getTimeoutCon());
           if (fvr.isDone()) {
             if (!fvr.isSuccess()) {
               // test if remote server was Overloaded

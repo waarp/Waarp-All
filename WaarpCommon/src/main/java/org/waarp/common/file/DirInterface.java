@@ -327,4 +327,17 @@ public interface DirInterface {
    * @throws CommandAbstractException
    */
   byte[] getSHA1(String path) throws CommandAbstractException;
+
+  /**
+   * Get the Digest of the given FileInterface
+   *
+   * @param path
+   * @param algo algorithm of Digest among CRC32, ADLER32, MD5, MD2,
+   *     SHA-1, SHA-256, SHA-384, SHA-512
+   *
+   * @return the Digest
+   *
+   * @throws CommandAbstractException
+   */
+  byte[] getDigest(String path, String algo) throws CommandAbstractException;
 }

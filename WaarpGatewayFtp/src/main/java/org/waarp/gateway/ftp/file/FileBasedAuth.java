@@ -33,7 +33,7 @@ import org.waarp.ftp.core.session.FtpSession;
 import org.waarp.ftp.filesystembased.FilesystemBasedFtpAuth;
 import org.waarp.ftp.filesystembased.FilesystemBasedFtpRestart;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
-import org.waarp.gateway.kernel.exec.AbstractExecutor.CommandExecutor;
+import org.waarp.gateway.ftp.exec.AbstractExecutor.CommandExecutor;
 import org.waarp.gateway.kernel.session.HttpAuthInterface;
 
 import java.io.File;

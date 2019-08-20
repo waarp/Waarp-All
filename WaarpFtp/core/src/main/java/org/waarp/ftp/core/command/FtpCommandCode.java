@@ -1240,6 +1240,16 @@ public enum FtpCommandCode {
    * 500, 501, 502, 504, 421, 530<br>
    */
   XSHA1(org.waarp.ftp.core.command.extension.XSHA1.class, null),
+  /**
+   * Compute Digest on pathname given as second argument, first being the
+   * digest algorithm. Return on control network as
+   * 250 "DIGEST" is Digest of file
+   * "pathname"<br>
+   * <p>
+   * 250<br>
+   * 500, 501, 502, 504, 421, 530<br>
+   */
+  XDIGEST(org.waarp.ftp.core.command.extension.XDIGEST.class, null),
 
   // XXX GLOBAL OPERATION
   /**
@@ -1513,7 +1523,8 @@ public enum FtpCommandCode {
    */
   public static boolean isExtensionCommand(FtpCommandCode command) {
     return command == XMD5 || command == XCRC || command == XSHA1 ||
-           command == INTERNALSHUTDOWN || command == LIMITBANDWIDTH;
+           command == XDIGEST || command == INTERNALSHUTDOWN ||
+           command == LIMITBANDWIDTH;
   }
 
   @Override
