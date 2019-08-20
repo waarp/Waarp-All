@@ -21,10 +21,12 @@ package org.waarp.gateway.ftp.exec;
 
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpThreadFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -59,9 +61,18 @@ public class JavaExecutor extends AbstractExecutor {
   @Override
   public void run() throws CommandAbstractException {
     final String className = args[0];
+    try {
+      ParametersChecker.checkSanityString(className);
+    } catch (InvalidArgumentException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      logger.error(
+          "Status: " + e.getMessage() + "\n\t Exec in error with " + className);
+      throw new Reply421Exception("Pre Exec command is not correctly executed");
+    }
     GatewayRunnable runnable;
     try {
-      runnable = (GatewayRunnable) Class.forName(className).newInstance();
+      runnable = (GatewayRunnable) Class.forName(className)//NOSONAR
+                                        .newInstance();//NOSONAR
     } catch (final Exception e) {
       logger.error("ExecJava command is not available: " + className, e);
       throw new Reply421Exception("Pre Exec command is not executable");
@@ -93,7 +104,7 @@ public class JavaExecutor extends AbstractExecutor {
           }
           status = runnable.getFinalStatus();
         }
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.error("Status: " + e.getMessage() + "\n\t Exec in error with " +
                      runnable);

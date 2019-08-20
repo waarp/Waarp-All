@@ -218,7 +218,7 @@ public abstract class ConnectionActions {
         if (clientRunner != null) {
           try {
             Thread.sleep(Configuration.RETRYINMS);
-          } catch (final InterruptedException e1) {
+          } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
           clientRunner.interrupt();

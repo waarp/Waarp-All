@@ -60,7 +60,7 @@ public class WaarpLock extends ReentrantLock {
   public void lock(long timeout, TimeUnit timeUnit) {
     try {
       tryLock(timeout, timeUnit);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }

@@ -19,84 +19,15 @@
  */
 package org.waarp.common.xml;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Set;
-
 /**
  * XmlHash Hashtable for XmlValue utility. Hash all values (except subXml and
  * root for Multiple)
  */
-public class XmlRootHash {
-  private final Hashtable<String, XmlValue> hashtable;
+public class XmlRootHash extends XmlHash {
 
   public XmlRootHash(XmlValue[] values) {
-    hashtable = new Hashtable<String, XmlValue>();
     for (final XmlValue xmlValue : values) {
       hashtable.put(xmlValue.getName(), xmlValue);
     }
   }
-
-  public XmlValue get(String name) {
-    return hashtable.get(name);
-  }
-
-  public XmlValue put(XmlValue value) {
-    if (value.isMultiple()) {
-      return hashtable.put(value.getName(), value);
-    } else if (value.isSubXml()) {
-      final XmlValue ret = hashtable.put(value.getName(), value);
-      if (!value.isEmpty()) {
-        for (final XmlValue subvalue : value.getSubXml()) {
-          if (subvalue != null) {
-            put(subvalue);
-          }
-        }
-      }
-      return ret;
-    } else {
-      return hashtable.put(value.getName(), value);
-    }
-  }
-
-  public int size() {
-    return hashtable.size();
-  }
-
-  public boolean isEmpty() {
-    return hashtable.isEmpty();
-  }
-
-  public Enumeration<String> keys() {
-    return hashtable.keys();
-  }
-
-  public Enumeration<XmlValue> elements() {
-    return hashtable.elements();
-  }
-
-  public boolean contains(XmlValue value) {
-    return hashtable.contains(value);
-  }
-
-  public boolean containsValue(XmlValue value) {
-    return hashtable.containsValue(value);
-  }
-
-  public boolean containsKey(String key) {
-    return hashtable.containsKey(key);
-  }
-
-  public XmlValue remove(String key) {
-    return hashtable.remove(key);
-  }
-
-  public void clear() {
-    hashtable.clear();
-  }
-
-  public Set<String> keySet() {
-    return hashtable.keySet();
-  }
-
 }

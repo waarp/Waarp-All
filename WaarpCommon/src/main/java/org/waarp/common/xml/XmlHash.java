@@ -28,7 +28,11 @@ import java.util.Set;
  * but only root for Multiple
  */
 public class XmlHash {
-  private final Hashtable<String, XmlValue> hashtable;
+  final Hashtable<String, XmlValue> hashtable;
+
+  XmlHash() {
+    hashtable = new Hashtable<String, XmlValue>();
+  }
 
   public XmlHash(XmlValue[] values) {
     hashtable = new Hashtable<String, XmlValue>();

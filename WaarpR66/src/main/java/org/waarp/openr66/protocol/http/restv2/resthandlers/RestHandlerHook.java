@@ -189,7 +189,7 @@ public class RestHandlerHook implements HandlerHook {
   private Method getMethod(AbstractRestDbHandler handler,
                            HandlerInfo handlerInfo) {
     Method method = null;
-    for (final Method m : handler.getClass().getMethods()) {
+    for (final Method m : handler.getClass().getMethods()) {//NOSONAR
       if (m.getName().equals(handlerInfo.getMethodName()) &&
           m.getParameterTypes()[0] == HttpRequest.class &&
           m.getParameterTypes()[1] == HttpResponder.class) {

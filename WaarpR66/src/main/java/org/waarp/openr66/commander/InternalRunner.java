@@ -70,8 +70,9 @@ public class InternalRunner {
     } else {
       commander = new CommanderNoDb(this, true);
     }
+    // This is not daemon intentionally
     scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-        new WaarpThreadFactory("InternalRunner"));
+        new WaarpThreadFactory("InternalRunner", false));
     isRunning = true;
     final BlockingQueue<Runnable> workQueue =
         new LinkedBlockingQueue<Runnable>();
@@ -167,6 +168,7 @@ public class InternalRunner {
       commander = new CommanderNoDb(this);
     }
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
+                                                                      2 *
                                                                       Configuration.configuration
                                                                           .getDelayCommander(),
                                                                       Configuration.configuration

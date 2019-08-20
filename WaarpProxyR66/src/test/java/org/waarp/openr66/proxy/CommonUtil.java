@@ -115,7 +115,6 @@ public abstract class CommonUtil {
     Thread.sleep(1000);
     startUpProxy();
     Configuration.configuration.setTimeoutCon(100);
-    driver = initializeDriver();
     // Move to clientB
     setUpBeforeClassClient(CONFIG_CLIENT_B_XML);
     Configuration.configuration.setTimeoutCon(100);
@@ -403,7 +402,7 @@ public abstract class CommonUtil {
     System.setProperty("phantomjs.binary.path", libPhnatomJS.getAbsolutePath());
     try {
       driver = initializeDriver();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException e) {//NOSONAR
       e.printStackTrace();
       fail(e.getMessage());
     }
@@ -412,6 +411,7 @@ public abstract class CommonUtil {
   public static void reloadDriver() throws InterruptedException {
     if (driver != null) {
       finalizeDriver();
+      Thread.sleep(200);
     }
     driver = initializeDriver();
   }

@@ -256,7 +256,7 @@ public class FtpTransferControl {
       try {
         dataChannel = waitForOpenedDataChannel();
         dataAsyncConn.setNewOpenedDataChannel(dataChannel);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         logger.warn("Connection abort in passive mode", e);
         // Cannot open connection
         throw new Reply425Exception("Cannot open passive data connection");
@@ -289,7 +289,7 @@ public class FtpTransferControl {
           bootstrap.connect(inetSocketAddress, dataAsyncConn.getLocalAddress());
       try {
         future.await(session.getConfiguration().getTimeoutCon());
-      } catch (final InterruptedException e1) {
+      } catch (final InterruptedException e1) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
       if (!future.isSuccess()) {
@@ -306,7 +306,7 @@ public class FtpTransferControl {
       try {
         dataChannel = waitForOpenedDataChannel();
         dataAsyncConn.setNewOpenedDataChannel(dataChannel);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         logger.warn("Connection abort in active mode", e);
         // Cannot open connection
         session.getConfiguration()
@@ -620,7 +620,7 @@ public class FtpTransferControl {
         // Special wait to prevent fast LIST following by STOR or RETR command
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       }

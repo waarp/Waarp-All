@@ -119,8 +119,6 @@ public abstract class DBTransferDAO extends StatementExecutor
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
       " = ?";
 
-  protected final Connection connection;
-
   protected String getDeleteRequest() {
     return SQL_DELETE;
   }
@@ -150,7 +148,7 @@ public abstract class DBTransferDAO extends StatementExecutor
   }
 
   protected DBTransferDAO(Connection con) {
-    connection = con;
+    super(con);
   }
 
   @Override
@@ -569,14 +567,5 @@ public abstract class DBTransferDAO extends StatementExecutor
                         set.getTimestamp(TRANSFER_START_FIELD),
                         set.getTimestamp(TRANSFER_STOP_FIELD),
                         UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
-  }
-
-  @Override
-  public void close() {
-    try {
-      connection.close();
-    } catch (final SQLException e) {
-      logger.warn("Cannot properly close the database connection", e);
-    }
   }
 }

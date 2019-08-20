@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.protocol.configuration;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.SystemPropertyUtil;
 
 import java.text.MessageFormat;
@@ -34,12 +35,18 @@ public class Messages {
   private static String slocale = "en";
 
   static {
-    setSlocale(
-        SystemPropertyUtil.get(R66SystemProperties.OPENR66_LOCALE, "en"));
-    if (getSlocale() == null || getSlocale().isEmpty()) {
-      setSlocale("en");
+    try {
+      setSlocale(
+          SystemPropertyUtil.get(R66SystemProperties.OPENR66_LOCALE, "en"));
+      if (getSlocale() == null || getSlocale().isEmpty()) {
+        setSlocale("en");
+      }
+      init(new Locale(getSlocale()));
+    } catch (Throwable ignored) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER //NOSONAR
+                               .syserr("Error during static execution",//NOSONAR
+                                       ignored);//NOSONAR
     }
-    init(new Locale(getSlocale()));
   }
 
   private Messages() {

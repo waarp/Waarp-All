@@ -48,6 +48,19 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
 
   private static final DbType type = DbType.PostGreSQL;
 
+  protected static class DbTypeResolverPostgreSQL
+      extends DbModelAbstract.DbTypeResolver {
+
+    @Override
+    public String getType(final int sqlType) {
+      return DBType.getType(sqlType);
+    }
+  }
+
+  static {
+    dbTypeResolver = new DbTypeResolverPostgreSQL();
+  }
+
   protected Boolean useIsValid;
 
   @Override

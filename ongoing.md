@@ -119,6 +119,15 @@ R66
 - Kernel Exec (Execute, Java, LocalExec, LogJava, 
     R66PreparedTransfer) moved to GGFTP (better place)
 
+3.2.1
+=====
+
+All
+***
+- Improve coverage of tests
+- Limit duplication
+
+
 TODO
 ====
 
@@ -128,16 +137,12 @@ All
 
 R66
 ***
-- +Add Junits on forward send
-- +Add Junits on rest/restV2
-- +Check if properties used?
-- +Test for XML DAO ?
-- +Test for RescheduleTransfer and Transfer and SpooledInform and
-  RestartServer and LinkRename and FtpTransfer and ExecMove Tasks
-- +Test for kernel Exec (Execute, Java, LocalExec, LogJava, 
-    R66PreparedTransfer) ?
-- +Look at REST V2
+- +Add Junits on forward send (scenario to be defined)
 - +See if Rest V1 is available while V2 active (right now only V2 active)
+- +Look at REST V2
+- +Add Junits on rest/restV2 (scenario to be defined)
+- +Test for XML DAO ?
+- +Test for RescheduleTransfer and FtpTransfer Tasks
 - +Vitam plugin
 
 

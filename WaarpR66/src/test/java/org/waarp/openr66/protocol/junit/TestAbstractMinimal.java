@@ -96,7 +96,7 @@ public abstract class TestAbstractMinimal {
     FileUtils.forceDeleteRecursiveDir(tmp);
   }
 
-  static File generateOutFile(String name, int size) throws IOException {
+  protected static File generateOutFile(String name, int size) throws IOException {
     final File file = new File(name);
     final FileWriter fileWriterBig = new FileWriter(file);
     for (int i = 0; i < size / 10; i++) {

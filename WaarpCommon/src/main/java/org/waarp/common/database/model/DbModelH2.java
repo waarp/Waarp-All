@@ -50,6 +50,19 @@ public abstract class DbModelH2 extends DbModelAbstract {
 
   private static final DbType type = DbType.H2;
 
+  protected static class DbTypeResolverH2
+      extends DbModelAbstract.DbTypeResolver {
+
+    @Override
+    public String getType(final int sqlType) {
+      return DBType.getType(sqlType);
+    }
+  }
+
+  static {
+    dbTypeResolver = new DbTypeResolverH2();
+  }
+
   protected JdbcConnectionPool pool;
 
   @Override

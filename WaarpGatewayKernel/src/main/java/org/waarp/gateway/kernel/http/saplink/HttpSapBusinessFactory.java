@@ -207,6 +207,7 @@ public class HttpSapBusinessFactory extends HttpBusinessFactory {
   };
 
   public HttpSapBusinessFactory() {
+    // nothing
   }
 
   public static HttpPageHandler initializeHttpPageHandler() {

@@ -201,7 +201,7 @@ public class NetworkChannelReference {
     }
     try {
       Thread.sleep(Configuration.WAITFORNETOP);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     for (final LocalChannelReference localChannelReference : toCloseLater) {

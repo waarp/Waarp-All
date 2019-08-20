@@ -102,7 +102,7 @@ public class WaarpNettyUtilTest {
         final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           e.printStackTrace();
         }
       }
@@ -143,7 +143,7 @@ public class WaarpNettyUtilTest {
         final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           e.printStackTrace();
         }
       }
@@ -208,7 +208,7 @@ public class WaarpNettyUtilTest {
         final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           e.printStackTrace();
         }
       }
@@ -283,7 +283,7 @@ public class WaarpNettyUtilTest {
         final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           e.printStackTrace();
         }
       }
@@ -344,7 +344,7 @@ public class WaarpNettyUtilTest {
         final Channel channel = future.channel();
         try {
           channel.close().sync();
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           e.printStackTrace();
         }
       }

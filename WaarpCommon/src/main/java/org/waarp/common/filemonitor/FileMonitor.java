@@ -277,7 +277,7 @@ public class FileMonitor {
           time / 1000 + 's');
       try {
         Thread.sleep(time);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       return checkFile.exists();
@@ -551,7 +551,7 @@ public class FileMonitor {
       createChkFile();
       try {
         futureResult.get();
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.info("Interruption so exit");
         error = true;

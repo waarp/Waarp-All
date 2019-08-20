@@ -37,7 +37,7 @@ public class ProcessesTest {
     for (i = 0; i < 10; i++) {
       try {
         Thread.sleep(TIMEMS);
-      } catch (InterruptedException ignored) {
+      } catch (InterruptedException ignored) {//NOSONAR
       }
       if (!Processes.exists(pid)) {
         break;

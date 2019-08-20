@@ -260,17 +260,17 @@ public class LocalExecServerHandler
         int status = -1;
         try {
           // Execute the command
-          status = defaultExecutor.execute(commandLine);
+          status = defaultExecutor.execute(commandLine);//NOSONAR
         } catch (final ExecuteException e) {
           if (e.getExitValue() == -559038737) {
             // Cannot run immediately so retry once
             try {
               Thread.sleep(LocalExecDefaultResult.RETRYINMS);
-            } catch (final InterruptedException e1) {
+            } catch (final InterruptedException e1) {//NOSONAR
               SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             }
             try {
-              status = defaultExecutor.execute(commandLine);
+              status = defaultExecutor.execute(commandLine);//NOSONAR
             } catch (final ExecuteException e1) {
               try {
                 pumpStreamHandler.stop();

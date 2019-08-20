@@ -100,7 +100,7 @@ public final class Processes {
       Process psAux = new ProcessBuilder(args).start();
       try {
         Thread.sleep(100);
-      } catch (InterruptedException ignored) {
+      } catch (InterruptedException ignored) {//NOSONAR
       }
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(psAux.getInputStream(),
@@ -153,7 +153,7 @@ public final class Processes {
         }
         process.waitFor();
       } catch (IOException ignored) {
-      } catch (InterruptedException ignored) {
+      } catch (InterruptedException ignored) {//NOSONAR
       }
     } else {
       int signal = graceful? 15 : 9;
@@ -161,7 +161,7 @@ public final class Processes {
     }
     try {
       Thread.sleep(100);
-    } catch (InterruptedException ignored) {
+    } catch (InterruptedException ignored) {//NOSONAR
     }
   }
 
@@ -203,7 +203,7 @@ public final class Processes {
         }
         return process.waitFor();
       } catch (IOException ignored) {
-      } catch (InterruptedException ignored) {
+      } catch (InterruptedException ignored) {//NOSONAR
       }
     }
     throw new RuntimeException("Cannot find PID");
@@ -217,7 +217,7 @@ public final class Processes {
                              "PID eq " + pid).redirectErrorStream(true).start();
       try {
         Thread.sleep(100);
-      } catch (InterruptedException ignored) {
+      } catch (InterruptedException ignored) {//NOSONAR
       }
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(psAux.getInputStream(),

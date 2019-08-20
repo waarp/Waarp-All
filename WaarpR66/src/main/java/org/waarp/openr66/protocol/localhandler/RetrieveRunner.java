@@ -152,25 +152,7 @@ public class RetrieveRunner extends Thread {
         }
         done = true;
       } else {
-        if (localChannelReference.getFutureEndTransfer().isDone()) {
-          // Done and Not Success => error
-          if (!localChannelReference.getFutureEndTransfer().getResult()
-                                    .isAnswered()) {
-            localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
-            final ErrorPacket error =
-                new ErrorPacket(localChannelReference.getErrorMessage(),
-                                localChannelReference.getFutureEndTransfer()
-                                                     .getResult().getCode()
-                                                     .getCode(),
-                                ErrorPacket.FORWARDCLOSECODE);
-            try {
-              ChannelUtils
-                  .writeAbstractLocalPacket(localChannelReference, error, true);
-            } catch (final OpenR66ProtocolPacketException ignored) {
-              // ignore
-            }
-          }
-        }
+        checkDoneNotAnswered();
         if (!localChannelReference.getFutureRequest().isDone()) {
           R66Result result =
               localChannelReference.getFutureEndTransfer().getResult();
@@ -186,73 +168,81 @@ public class RetrieveRunner extends Thread {
     } finally {
       try {
         if (!done) {
-          if (localChannelReference.getFutureEndTransfer().isDone() &&
-              localChannelReference.getFutureEndTransfer().isSuccess()) {
-            if (!requestValidDone) {
-              localChannelReference
-                  .sessionNewState(R66FiniteDualStates.ENDREQUESTS);
-              final EndRequestPacket validPacket =
-                  new EndRequestPacket(ErrorCode.CompleteOk.ordinal());
-              if (session.getExtendedProtocol() &&
-                  session.getBusinessObject() != null &&
-                  session.getBusinessObject().getInfo(session) != null) {
-                validPacket
-                    .setOptional(session.getBusinessObject().getInfo(session));
-              }
-              try {
-                ChannelUtils.writeAbstractLocalPacket(localChannelReference,
-                                                      validPacket, true);
-              } catch (final OpenR66ProtocolPacketException ignored) {
-                // nothing
-              }
-            }
-            session.getRunner().setAllDone();
-            try {
-              session.getRunner().saveStatus();
-            } catch (final OpenR66RunnerErrorException e) {
-              // ignore
-            }
-            localChannelReference.validateRequest(
-                localChannelReference.getFutureEndTransfer().getResult());
-            if (session.getRunner() != null &&
-                session.getRunner().isSelfRequested()) {
-              localChannelReference.close();
-            }
-          } else {
-            if (localChannelReference.getFutureEndTransfer().isDone()) {
-              if (!localChannelReference.getFutureEndTransfer().getResult()
-                                        .isAnswered()) {
-                localChannelReference
-                    .sessionNewState(R66FiniteDualStates.ERROR);
-                final ErrorPacket error =
-                    new ErrorPacket(localChannelReference.getErrorMessage(),
-                                    localChannelReference.getFutureEndTransfer()
-                                                         .getResult().getCode()
-                                                         .getCode(),
-                                    ErrorPacket.FORWARDCLOSECODE);
-                try {
-                  ChannelUtils
-                      .writeAbstractLocalPacket(localChannelReference, error,
-                                                true);
-                } catch (final OpenR66ProtocolPacketException ignored) {
-                  // ignore
-                }
-              }
-            } else {
-              R66Result result =
-                  localChannelReference.getFutureEndTransfer().getResult();
-              if (result == null) {
-                result = new R66Result(session, false, ErrorCode.TransferError,
-                                       session.getRunner());
-              }
-              localChannelReference.invalidateRequest(result);
-            }
-          }
+          finalizeRequestDone(requestValidDone);
         }
         NetworkTransaction.normalEndRetrieve(localChannelReference);
       } finally {
         Thread.currentThread().setName(
             "RetrieveRunnerFinished: " + localChannelReference.getLocalId());
+      }
+    }
+  }
+
+  private boolean checkDoneNotAnswered() {
+    if (localChannelReference.getFutureEndTransfer().isDone()) {
+      // Done and Not Success => error
+      if (!localChannelReference.getFutureEndTransfer().getResult()
+                                .isAnswered()) {
+        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
+        final ErrorPacket error =
+            new ErrorPacket(localChannelReference.getErrorMessage(),
+                            localChannelReference.getFutureEndTransfer()
+                                                 .getResult().getCode()
+                                                 .getCode(),
+                            ErrorPacket.FORWARDCLOSECODE);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, error, true);
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // ignore
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private void finalizeRequestDone(final boolean requestValidDone) {
+    if (localChannelReference.getFutureEndTransfer().isDone() &&
+        localChannelReference.getFutureEndTransfer().isSuccess()) {
+      if (!requestValidDone) {
+        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);
+        final EndRequestPacket validPacket =
+            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());
+        if (session.getExtendedProtocol() &&
+            session.getBusinessObject() != null &&
+            session.getBusinessObject().getInfo(session) != null) {
+          validPacket.setOptional(session.getBusinessObject().getInfo(session));
+        }
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, validPacket,
+                                        true);
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
+        }
+      }
+      session.getRunner().setAllDone();
+      try {
+        session.getRunner().saveStatus();
+      } catch (final OpenR66RunnerErrorException e) {
+        // ignore
+      }
+      localChannelReference.validateRequest(
+          localChannelReference.getFutureEndTransfer().getResult());
+      if (session.getRunner() != null &&
+          session.getRunner().isSelfRequested()) {
+        localChannelReference.close();
+      }
+    } else {
+      if (!checkDoneNotAnswered()) {
+        R66Result result =
+            localChannelReference.getFutureEndTransfer().getResult();
+        if (result == null) {
+          result = new R66Result(session, false, ErrorCode.TransferError,
+                                 session.getRunner());
+        }
+        localChannelReference.invalidateRequest(result);
       }
     }
   }

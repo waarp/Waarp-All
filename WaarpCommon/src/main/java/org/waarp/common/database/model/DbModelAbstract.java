@@ -39,6 +39,12 @@ import java.util.ConcurrentModificationException;
  * This Abstract class regroups common methods for all implementation classes.
  */
 public abstract class DbModelAbstract implements DbModel {
+  protected static DbTypeResolver dbTypeResolver;
+
+  public abstract static class DbTypeResolver {
+    public abstract String getType(int sqlType);
+  }
+
   /**
    * Internal Logger
    */

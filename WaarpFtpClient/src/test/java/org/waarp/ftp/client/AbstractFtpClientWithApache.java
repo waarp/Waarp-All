@@ -57,7 +57,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     logger.warn("End Active");
     try {
       Thread.sleep(1000);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       // ignore
     }
   }
@@ -77,7 +77,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     logger.warn("End Passive");
     try {
       Thread.sleep(1000);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       // ignore
     }
   }
@@ -98,7 +98,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       }
     }
@@ -111,7 +111,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       }
     }
@@ -126,7 +126,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       }
     }
@@ -140,7 +140,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       if (delay > 0) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       }
     }
@@ -176,7 +176,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       client.changeDir("T0");
       try {
         Thread.sleep(delay);
-      } catch (final InterruptedException ignored) {
+      } catch (final InterruptedException ignored) {//NOSONAR
       }
       client.changeFileType(true);
       client.changeMode(true);

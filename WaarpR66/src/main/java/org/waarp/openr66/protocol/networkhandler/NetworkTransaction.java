@@ -349,7 +349,7 @@ public class NetworkTransaction {
         logger.debug(e);
         try {
           Thread.sleep(Configuration.configuration.getDelayRetry());
-        } catch (final InterruptedException e1) {
+        } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           break;
         }
@@ -511,7 +511,7 @@ public class NetworkTransaction {
         } else {
           try {
             Thread.sleep(Configuration.RETRYINMS);
-          } catch (final InterruptedException e) {
+          } catch (final InterruptedException e) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           }
           if (!channelFuture.isDone()) {
@@ -677,7 +677,7 @@ public class NetworkTransaction {
       localChannelReference.close();
       try {
         Thread.sleep(Configuration.WAITFORNETOP * 2);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // ignore
       }
@@ -1320,7 +1320,7 @@ public class NetworkTransaction {
     }
     try {
       Thread.sleep(Configuration.WAITFORNETOP);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     stopAllEndRetrieve();

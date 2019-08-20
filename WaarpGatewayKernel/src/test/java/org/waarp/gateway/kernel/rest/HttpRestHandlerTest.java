@@ -167,7 +167,7 @@ public class HttpRestHandlerTest extends HttpRestHandler {
     try {
       future.await();
       group.add(future.channel());
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       e.printStackTrace();
     }
   }

@@ -99,7 +99,7 @@ public abstract class AbstractFtpClient {
     logger.warn("Will shutdown from client");
     try {
       Thread.sleep(200);
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
     final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest("127.0.0.1", port, "fredo", "fred1", "a",
@@ -126,7 +126,7 @@ public abstract class AbstractFtpClient {
 
     try {
       Thread.sleep(1000);
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
   }
 
@@ -182,7 +182,7 @@ public abstract class AbstractFtpClient {
     if (isSSL != 0) {
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException ignored) {
+      } catch (final InterruptedException ignored) {//NOSONAR
       }
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -201,7 +201,7 @@ public abstract class AbstractFtpClient {
           } else {
             Thread.sleep(newdel);
           }
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       } else {
         Thread.yield();
@@ -209,7 +209,7 @@ public abstract class AbstractFtpClient {
     }
     try {
       Thread.sleep(100);
-    } catch (final InterruptedException e1) {
+    } catch (final InterruptedException e1) {//NOSONAR
       e1.printStackTrace();
       executorService.shutdownNow();
       // Thread.currentThread().interrupt();
@@ -226,7 +226,7 @@ public abstract class AbstractFtpClient {
       } else {
         date2 = System.currentTimeMillis();
       }
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       e.printStackTrace();
       executorService.shutdownNow();
       date2 = System.currentTimeMillis();

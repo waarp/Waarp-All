@@ -1222,7 +1222,7 @@ public class ServerActions extends ConnectionActions {
         .closeFutureTransaction(localChannelReference.getServerHandler());
     try {
       Thread.sleep(Configuration.WAITFORNETOP * 2);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       Thread.currentThread().interrupt();
     }

@@ -87,7 +87,7 @@ public abstract class ServiceLauncher implements Daemon {
     logger.debug("Engine " + className);
     try {
       engineLauncherInstance =
-          (ServiceLauncher) Class.forName(className).newInstance();
+          (ServiceLauncher) Class.forName(className).newInstance();//NOSONAR
     } catch (final Throwable e) {
       logger.error("Engine not correctly initialized", e);
       System.exit(2);//NOSONAR
@@ -203,7 +203,7 @@ public abstract class ServiceLauncher implements Daemon {
     boolean status = false;
     try {
       status = engine.waitShutdown();
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (!status || !stopCalledCorrectly) {

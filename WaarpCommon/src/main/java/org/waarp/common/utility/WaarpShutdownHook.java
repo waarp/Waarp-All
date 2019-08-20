@@ -171,7 +171,7 @@ public abstract class WaarpShutdownHook extends Thread {
       // Force exit!
       try {
         Thread.sleep(shutdownHook.shutdownConfiguration.timeout / 2);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       if (logger.isDebugEnabled()) {
@@ -191,7 +191,7 @@ public abstract class WaarpShutdownHook extends Thread {
       SysErrLogger.FAKE_LOGGER.syserr("Halt System");
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       //FBGEXIT DetectionUtils.SystemExit(0)
@@ -293,7 +293,7 @@ public abstract class WaarpShutdownHook extends Thread {
         cmd.append(applArgs);
         logger.debug("Should restart with:\n" + cmd);
         logger.warn("Should restart");
-        Runtime.getRuntime().exec(cmd.toString());
+        Runtime.getRuntime().exec(cmd.toString()); //NOSONAR
       } catch (final Throwable e) {
         // something went wrong
         throw new IOException("Error while trying to restart the application",
@@ -392,7 +392,7 @@ public abstract class WaarpShutdownHook extends Thread {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
           Thread.sleep(100);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       }
@@ -408,7 +408,7 @@ public abstract class WaarpShutdownHook extends Thread {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
           Thread.sleep(100);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       }
@@ -448,7 +448,7 @@ public abstract class WaarpShutdownHook extends Thread {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
           Thread.sleep(100);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       }

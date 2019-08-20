@@ -119,17 +119,17 @@ public class ExecuteExecutor extends AbstractExecutor {
     }
     int status;
     try {
-      status = defaultExecutor.execute(commandLine);
+      status = defaultExecutor.execute(commandLine);//NOSONAR
     } catch (final ExecuteException e) {
       if (e.getExitValue() == -559038737) {
         // Cannot run immediately so retry once
         try {
           Thread.sleep(10);
-        } catch (final InterruptedException e1) {
+        } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
         }
         try {
-          status = defaultExecutor.execute(commandLine);
+          status = defaultExecutor.execute(commandLine);//NOSONAR
         } catch (final ExecuteException e2) {
           try {
             pumpStreamHandler.stop();

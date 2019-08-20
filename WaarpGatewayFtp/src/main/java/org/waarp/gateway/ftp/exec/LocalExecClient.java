@@ -142,7 +142,7 @@ public class LocalExecClient {
     // Wait until the connection attempt succeeds or fails.
     try {
       channel = future.await().sync().channel();
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (!future.isSuccess()) {

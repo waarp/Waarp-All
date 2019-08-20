@@ -1525,7 +1525,7 @@ public final class Base64 {
           public Class<?> resolveClass(ObjectStreamClass streamClass)
               throws IOException, ClassNotFoundException {
             final Class<?> c =
-                Class.forName(streamClass.getName(), false, loader);
+                Class.forName(streamClass.getName(), false, loader);//NOSONAR
             if (c == null) {
               return super.resolveClass(streamClass);
             } else {

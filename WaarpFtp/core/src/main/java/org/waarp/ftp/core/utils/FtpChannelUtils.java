@@ -346,7 +346,7 @@ public class FtpChannelUtils implements Runnable {
     configuration.inShutdownProcess();
     try {
       Thread.sleep(delay);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     final Timer timer = new Timer(true);

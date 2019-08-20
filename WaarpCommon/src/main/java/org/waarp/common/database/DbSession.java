@@ -360,7 +360,7 @@ public class DbSession {
     }
     try {
       Thread.sleep(DbAdmin.WAITFORNETOP);
-    } catch (final InterruptedException e1) {
+    } catch (final InterruptedException e1) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       Thread.currentThread().interrupt();
     }
@@ -397,7 +397,7 @@ public class DbSession {
     }
     try {
       Thread.sleep(DbAdmin.WAITFORNETOP);
-    } catch (final InterruptedException e1) {
+    } catch (final InterruptedException e1) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       Thread.currentThread().interrupt();
     }

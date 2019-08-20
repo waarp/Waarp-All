@@ -321,7 +321,7 @@ public class DbConnectionPool {
         if (!semaphore.tryAcquire(timeout, TimeUnit.SECONDS)) {
           throw new TimeoutException();
         }
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         throw new RuntimeException(
             "Interrupted while waiting for a database connection.", e);
       }

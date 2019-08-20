@@ -40,6 +40,7 @@ import org.waarp.gateway.ftp.database.data.DbTransferLog;
 import org.waarp.gateway.ftp.utils.Version;
 import org.waarp.snmp.WaarpSnmpAgent;
 import org.waarp.snmp.interf.WaarpInterfaceMib;
+import org.waarp.snmp.r66.WaarpPrivateMib;
 import org.waarp.snmp.utils.MemoryGauge32;
 import org.waarp.snmp.utils.MemoryGauge32.MemoryType;
 import org.waarp.snmp.utils.WaarpEntry;
@@ -235,12 +236,13 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     // register Static info
     rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,
                              MibLevel.staticInfo.ordinal());
-    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(), "Waarp OpenR66");
+    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(),
+                     "Waarp " + "GatewayFtp");
     rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),
                      FileBasedConfiguration.fileBasedConfiguration.getHostId());
     rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);
     rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),
-                     "Waarp OpenR66: File Transfer Monitor");
+                     "Waarp Gateway Ftp: FTP Gateway");
     rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),
                      "http://waarp.github.com/Waarp");
     rowInfo.setValue(WaarpDefinitionIndex.applApplicationProtocol.ordinal(),
@@ -603,26 +605,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Definition part
    */
-  public static final WaarpEntry[] WaarpDefinition = {
-      // applName
-      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applServerName
-      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applVersion
-      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applDescription
-      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applURL
-      new WaarpEntry(SMIConstants.SYNTAX_OCTET_STRING,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applApplicationProtocol
-      new WaarpEntry(SMIConstants.SYNTAX_OBJECT_IDENTIFIER,
-                     MOAccessImpl.ACCESS_READ_ONLY)
-  };
+  public static final WaarpEntry[] WaarpDefinition =
+      WaarpPrivateMib.WaarpDefinition;
 
   /**
    * Global part
@@ -646,88 +630,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Global part
    */
-  public static final WaarpEntry[] WaarpGlobalValues = {
-      // applUptime
-      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applOperStatus
-      new WaarpEntry(SMIConstants.SYNTAX_INTEGER,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applLastChange
-      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applInboundAssociations
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applOutboundAssociations
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applAccumInboundAssociations
-      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applAccumOutboundAssociations
-      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applLastInboundActivity
-      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applLastOutboundActivity
-      new WaarpEntry(SMIConstants.SYNTAX_TIMETICKS,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applRejectedInboundAssociations
-      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applFailedOutboundAssociations
-      new WaarpEntry(SMIConstants.SYNTAX_COUNTER32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // Bandwidth
-      // applInboundBandwidthKBS
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // applOutboundBandwidthKBS
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // Overall status including past, future and current transfers
-      // nbInfoUnknown
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbInfoNotUpdated
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbInfoInterrupted
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbInfoToSubmit
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbInfoError
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbInfoRunning
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbInfoDone
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // Current situation of all transfers, running or not
-      // nbAllTransfer
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // memoryTotal
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // memoryFree
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // memoryUsed
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbThreads
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32,
-                     MOAccessImpl.ACCESS_READ_ONLY),
-      // nbNetworkConnection
-      new WaarpEntry(SMIConstants.SYNTAX_GAUGE32, MOAccessImpl.ACCESS_READ_ONLY)
-  };
+  public static final WaarpEntry[] WaarpGlobalValues =
+      WaarpPrivateMib.WaarpGlobalValues;
 
   /**
    * Detailed part

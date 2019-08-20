@@ -179,7 +179,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         logger.warn("Session not found at try " + i);
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        } catch (final InterruptedException e1) {
+        } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           break;
         }
@@ -369,7 +369,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         } catch (final FtpNoTransferException e) {
           try {
             Thread.sleep(100);
-          } catch (final InterruptedException e1) {
+          } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             break;
           }

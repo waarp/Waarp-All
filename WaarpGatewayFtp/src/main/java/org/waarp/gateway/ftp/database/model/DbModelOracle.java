@@ -19,17 +19,10 @@
  */
 package org.waarp.gateway.ftp.database.model;
 
-import org.waarp.common.database.DbConstant;
-import org.waarp.common.database.DbPreparedStatement;
-import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.common.logging.SysErrLogger;
-import org.waarp.gateway.ftp.database.data.DbTransferLog;
-
-import java.sql.SQLException;
 
 /**
  * Oracle Database Model implementation
@@ -53,129 +46,23 @@ public class DbModelOracle
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
-    final String createTableH2 = "CREATE TABLE ";
-    final String constraint = " CONSTRAINT ";
-    final String primaryKey = " PRIMARY KEY ";
-    final String notNull = " NOT NULL ";
-
-    final DbRequest request = new DbRequest(session);
-    // TRANSLOG
-    StringBuilder action =
-        new StringBuilder(createTableH2 + DbTransferLog.table + '(');
-    final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();
-    for (int i = 0; i < acolumns.length; i++) {
-      action.append(acolumns[i].name())
-            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)
-            .append(", ");
-    }
-    // Several columns for primary key
-    action.append(constraint + " TRANSLOG_PK " + primaryKey + '(');
-    for (int i = DbTransferLog.NBPRKEY; i > 1; i--) {
-      action.append(acolumns[acolumns.length - i].name()).append(',');
-    }
-    action.append(acolumns[acolumns.length - 1].name()).append("))");
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      // XXX FIX No return
-    } finally {
-      request.close();
-    }
-    // Index TRANSLOG
-    action = new StringBuilder(
-        "CREATE INDEX IDX_TRANSLOG ON " + DbTransferLog.table + '(');
-    final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action.append(icolumns[i].name()).append(", ");
-    }
-    action.append(icolumns[icolumns.length - 1].name()).append(')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      // XXX FIX No return
-    } finally {
-      request.close();
-    }
-
-    // cptrunner
-    action = new StringBuilder(
-        "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " START WITH " +
-        (DbConstant.ILLEGALVALUE + 1));
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-    } finally {
-      request.close();
-    }
+    org.waarp.gateway.kernel.database.model.DbModelOracle
+        .createTableMonitoring(session);
   }
 
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    final String action = "DROP SEQUENCE " + DbTransferLog.fieldseq;
-    final String action2 =
-        "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " START WITH " + newvalue;
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-      request.query(action2);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } finally {
-      request.close();
-    }
-
-    SysErrLogger.FAKE_LOGGER.sysout(action);
+    org.waarp.gateway.kernel.database.model.DbModelOracle
+        .resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
   public long nextSequence(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
-    final String action =
-        "SELECT " + DbTransferLog.fieldseq + ".NEXTVAL FROM DUAL";
-    final DbPreparedStatement preparedStatement =
-        new DbPreparedStatement(dbSession);
-    try {
-      preparedStatement.createPrepareStatement(action);
-      // Limit the search
-      preparedStatement.executeQuery();
-      if (preparedStatement.getNext()) {
-        try {
-          result = preparedStatement.getResultSet().getLong(1);
-        } catch (final SQLException e) {
-          throw new WaarpDatabaseSqlException(e);
-        }
-        return result;
-      } else {
-        throw new WaarpDatabaseNoDataException(
-            "No sequence found. Must be initialized first");
-      }
-    } finally {
-      preparedStatement.realClose();
-    }
+    return org.waarp.gateway.kernel.database.model.DbModelOracle
+        .nextSequenceMonitoring(dbSession);
   }
 
   @Override

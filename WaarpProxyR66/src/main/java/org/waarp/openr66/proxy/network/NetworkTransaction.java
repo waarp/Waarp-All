@@ -117,7 +117,7 @@ public class NetworkTransaction {
         channel = null;
         try {
           Thread.sleep(WAITFORNETOP * 5);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           break;
         }
@@ -215,7 +215,7 @@ public class NetworkTransaction {
       }
       try {
         channelFuture.await(configuration.getTimeoutCon() / 3);
-      } catch (final InterruptedException e1) {
+      } catch (final InterruptedException e1) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
       if (channelFuture.isSuccess()) {
@@ -231,7 +231,7 @@ public class NetworkTransaction {
       } else {
         try {
           Thread.sleep(WAITFORNETOP * 2);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
         if (!channelFuture.isDone()) {
@@ -259,7 +259,7 @@ public class NetworkTransaction {
     logger.debug("close All Network Channels");
     try {
       Thread.sleep(RETRYINMS * 2);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (!configuration.isServer()) {
@@ -271,7 +271,7 @@ public class NetworkTransaction {
     WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());
     try {
       Thread.sleep(WAITFORNETOP);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     configuration.clientStop();

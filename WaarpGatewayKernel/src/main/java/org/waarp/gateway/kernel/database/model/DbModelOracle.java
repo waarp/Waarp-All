@@ -53,7 +53,12 @@ public class DbModelOracle
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
+    createTableMonitoring(session);
+  }
+
+  public static void createTableMonitoring(final DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+    // Create tables: logs
     final String createTableH2 = "CREATE TABLE ";
     final String constraint = " CONSTRAINT ";
     final String primaryKey = " PRIMARY KEY ";
@@ -128,6 +133,12 @@ public class DbModelOracle
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
+    resetSequenceMonitoring(session, newvalue);
+  }
+
+  public static void resetSequenceMonitoring(final DbSession session,
+                                             final long newvalue)
+      throws WaarpDatabaseNoConnectionException {
     final String action = "DROP SEQUENCE " + DbTransferLog.fieldseq;
     final String action2 =
         "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
@@ -151,6 +162,12 @@ public class DbModelOracle
 
   @Override
   public long nextSequence(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+    return nextSequenceMonitoring(dbSession);
+  }
+
+  public static long nextSequenceMonitoring(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     long result = DbConstant.ILLEGALVALUE;

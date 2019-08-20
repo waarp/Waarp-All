@@ -78,6 +78,8 @@ import java.util.List;
 import java.util.Map;
 
 public class R66Service {
+  private static final String REQUEST3 = "request";
+  private static final String SUCCESS3 = "success";
 
   public interface Iface {
 
@@ -600,7 +602,6 @@ public class R66Service {
   public static class transferRequestQuery_args implements
                                                 TBase<transferRequestQuery_args, transferRequestQuery_args._Fields>,
                                                 Cloneable {
-    private static final String REQUEST3 = "request";
 
     private static final String REQUEST2 = "request:";
 
@@ -1015,7 +1016,6 @@ public class R66Service {
   public static class transferRequestQuery_result implements
                                                   TBase<transferRequestQuery_result, transferRequestQuery_result._Fields>,
                                                   Cloneable {
-    private static final String SUCCESS3 = "success";
 
     private static final String SUCCESS2 = "success:";
 
@@ -1465,7 +1465,7 @@ public class R66Service {
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      REQUEST((short) 1, "request");
+      REQUEST((short) 1, REQUEST3);
 
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();
@@ -1870,7 +1870,7 @@ public class R66Service {
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short) 0, "success");
+      SUCCESS((short) 0, SUCCESS3);
 
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();
@@ -2900,7 +2900,7 @@ public class R66Service {
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short) 0, "success");
+      SUCCESS((short) 0, SUCCESS3);
 
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();
@@ -3295,7 +3295,7 @@ public class R66Service {
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      REQUEST((short) 1, "request");
+      REQUEST((short) 1, REQUEST3);
 
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();
@@ -3704,7 +3704,7 @@ public class R66Service {
      * for finding and manipulating them.
      */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short) 0, "success");
+      SUCCESS((short) 0, SUCCESS3);
 
       private static final Map<String, _Fields> byName =
           new HashMap<String, _Fields>();

@@ -69,19 +69,9 @@ public class DBMultipleMonitorDAO extends StatementExecutor
       COUNT_CONFIG_FIELD + " = ?, " + COUNT_HOST_FIELD + " = ?, " +
       COUNT_RULE_FIELD + " = ? WHERE " + HOSTID_FIELD + " = ?";
 
-  protected final Connection connection;
 
   public DBMultipleMonitorDAO(Connection con) {
-    connection = con;
-  }
-
-  @Override
-  public void close() {
-    try {
-      connection.close();
-    } catch (final SQLException e) {
-      logger.warn("Cannot properly close the database connection", e);
-    }
+    super(con);
   }
 
   @Override

@@ -235,7 +235,7 @@ public class ClientExampleTest implements Runnable {
       executorService.shutdown();
       try {
         executorService.awaitTermination(1000000, TimeUnit.SECONDS);
-      } catch (final InterruptedException ignored) {
+      } catch (final InterruptedException ignored) {//NOSONAR
       }
       final long end = System.currentTimeMillis();
       executorService.shutdownNow();
@@ -317,7 +317,7 @@ public class ClientExampleTest implements Runnable {
     } finally {
       try {
         Thread.sleep(500);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         e.printStackTrace();
       }
       if (transport != null) {

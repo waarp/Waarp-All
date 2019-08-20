@@ -400,81 +400,8 @@ public class DbModelOracle
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     // Check if the database is up to date
-    DbRequest request = null;
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
-      try {
-        request = new DbRequest(session);
-        request.select(
-            "select " + DbHostConfiguration.Columns.HOSTID.name() + " from " +
-            DbHostConfiguration.table + " where " +
-            DbHostConfiguration.Columns.HOSTID + " = '" +
-            Configuration.configuration.getHostId() + '\'');
-        request.close();
-        DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_13.getVersion());
-      } catch (final WaarpDatabaseSqlException e) {
-        return !upgradeDb(session, version);
-      } finally {
-        if (request != null) {
-          request.close();
-        }
-      }
-    }
-    request = null;
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
-      try {
-        request = new DbRequest(session);
-        request.select(
-            "select " + DbTaskRunner.Columns.TRANSFERINFO.name() + " from " +
-            DbTaskRunner.table + " where " + DbTaskRunner.Columns.SPECIALID +
-            " = " + ILLEGALVALUE);
-        request.close();
-        DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_17.getVersion());
-      } catch (final WaarpDatabaseSqlException e) {
-        return !upgradeDb(session, version);
-      } finally {
-        if (request != null) {
-          request.close();
-        }
-      }
-    }
-    request = null;
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
-      try {
-        request = new DbRequest(session);
-        request.select(
-            "select " + DbHostAuth.Columns.ISACTIVE.name() + " from " +
-            DbHostAuth.table + " where " + DbHostAuth.Columns.PORT + " = " + 0);
-        request.close();
-        DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_23.getVersion());
-      } catch (final WaarpDatabaseSqlException e) {
-        return !upgradeDb(session, version);
-      } finally {
-        if (request != null) {
-          request.close();
-        }
-      }
-    }
-    request = null;
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
-      if (upgradeDb(session, version)) {
-        DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_25.getVersion());
-      } else {
-        return true;
-      }
-    }
-    return false;
+    return DbModelFactoryR66
+        .needUpgradeDbAllDb(dbTypeResolver, session, version);
   }
 
 }

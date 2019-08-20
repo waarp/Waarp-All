@@ -93,7 +93,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
       try {
         ((FtpSession) session).getDataConn().getFtpTransferControl()
                               .waitForDataNetworkHandlerReady();
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         // bad thing
         logger.warn("DataNetworkHandler was not ready", e);
         return;

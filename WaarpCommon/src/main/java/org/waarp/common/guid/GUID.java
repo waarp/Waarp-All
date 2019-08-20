@@ -196,7 +196,7 @@ public class GUID implements Comparable<GUID> {
       if (count > 0xFFFFFF) {
         try {
           FORSYNC.wait(1);//NOSONAR
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           // ignore
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }

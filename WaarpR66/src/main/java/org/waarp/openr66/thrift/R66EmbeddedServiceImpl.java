@@ -152,7 +152,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
             try {
               Thread.sleep(1000);
               runner.select();
-            } catch (final InterruptedException e) {
+            } catch (final InterruptedException e) {//NOSONAR
               SysErrLogger.FAKE_LOGGER.ignoreLog(e);
               break;
             }

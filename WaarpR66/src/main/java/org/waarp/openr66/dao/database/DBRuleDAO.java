@@ -99,19 +99,8 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
       S_ERROR_TASKS_FIELD + " = ? ," + UPDATED_INFO_FIELD + " = ? WHERE " +
       ID_FIELD + " = ?";
 
-  protected final Connection connection;
-
   public DBRuleDAO(Connection con) {
-    connection = con;
-  }
-
-  @Override
-  public void close() {
-    try {
-      connection.close();
-    } catch (final SQLException e) {
-      logger.warn("Cannot properly close the database connection", e);
-    }
+    super(con);
   }
 
   @Override

@@ -55,7 +55,12 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
+    createTableMonitoring(session);
+  }
+
+  public static void createTableMonitoring(final DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+    // Create tables: logs
     final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
@@ -146,6 +151,12 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
+    resetSequenceMonitoring(session, newvalue);
+  }
+
+  public static void resetSequenceMonitoring(final DbSession session,
+                                             final long newvalue)
+      throws WaarpDatabaseNoConnectionException {
     final String action =
         "UPDATE Sequences SET seq = " + newvalue + " WHERE name = '" +
         DbTransferLog.fieldseq + '\'';
@@ -166,6 +177,13 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
 
   @Override
   public synchronized long nextSequence(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+    return nextSequenceMonitoring(dbSession, lock);
+  }
+
+  public static long nextSequenceMonitoring(final DbSession dbSession,
+                                            final ReentrantLock lock)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     lock.lock();

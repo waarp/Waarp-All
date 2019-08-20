@@ -19,9 +19,11 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
@@ -77,6 +79,17 @@ public class ExecJavaTask extends AbstractTask {
     // First get the Class Name
     final String[] args = BLANK.split(finalname);
     final String className = args[0];
+    try {
+      ParametersChecker.checkSanityString(className);
+    } catch (InvalidArgumentException e) {
+      logger.error("ExecJava command is not correct", e);
+      final R66Result result =
+          new R66Result(session, false, ErrorCode.CommandNotFound,
+                        session.getRunner());
+      futureCompletion.setResult(result);
+      futureCompletion.cancel();
+      return;
+    }
     final boolean isSpooled =
         className.equals(SpooledInformTask.class.getName());
     if (isSpooled) {
@@ -88,7 +101,7 @@ public class ExecJavaTask extends AbstractTask {
     }
     R66Runnable runnable;
     try {
-      runnable = (R66Runnable) Class.forName(className).newInstance();
+      runnable = (R66Runnable) Class.forName(className).newInstance();//NOSONAR
     } catch (final Exception e) {
       logger.error("ExecJava command is not available: " + className, e);
       final R66Result result =
@@ -150,7 +163,7 @@ public class ExecJavaTask extends AbstractTask {
           }
           status = runnable.getFinalStatus();
         }
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.error(
             "Status: " + e.getMessage() + " \t Exec in error with " + runnable);

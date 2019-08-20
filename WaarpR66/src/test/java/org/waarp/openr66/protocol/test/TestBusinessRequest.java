@@ -158,8 +158,9 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     for (int i = 0; i < nbToDo; i++) {
       arrayFuture[i] = new R66Future(true);
       try {
-        value.append(argsAdd + argsAdd + argsAdd + argsAdd + argsAdd + argsAdd +
-                     argsAdd + argsAdd + argsAdd + argsAdd);
+        value.append(argsAdd).append(argsAdd).append(argsAdd).append(argsAdd)
+             .append(argsAdd).append(argsAdd).append(argsAdd).append(argsAdd)
+             .append(argsAdd).append(argsAdd);
       } catch (final OutOfMemoryError e) {
         logger.warn("Send size: " + value.length());
         lastnb = i;

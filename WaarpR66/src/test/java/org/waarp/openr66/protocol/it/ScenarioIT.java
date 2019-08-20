@@ -18,7 +18,7 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.waarp.openr66.protocol.junit;
+package org.waarp.openr66.protocol.it;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,6 +37,8 @@ import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.junit.NetworkClientTest;
+import org.waarp.openr66.protocol.junit.TestAbstract;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
@@ -51,7 +53,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ScenarioTest extends TestAbstract {
+public class ScenarioIT extends TestAbstract {
   private static final ArrayList<DbTaskRunner> dbTaskRunners =
       new ArrayList<DbTaskRunner>();
   private static final String CONFIG_SERVER_A_MINIMAL_XML =
@@ -160,7 +162,7 @@ public class ScenarioTest extends TestAbstract {
           return;
         }
         Thread.sleep(100);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e) {//NOSONAR
         logger.error("Interrupted", e);
         return;
       } catch (WaarpDatabaseException e) {

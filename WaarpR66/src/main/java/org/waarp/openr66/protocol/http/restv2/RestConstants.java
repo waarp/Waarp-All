@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.http.restv2;
 
 import io.netty.util.AsciiString;
 import org.waarp.common.database.ConnectionFactory;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.ServerHandler;
@@ -40,7 +41,13 @@ import java.nio.charset.Charset;
 public final class RestConstants {
 
   static {
-    DAOFactory.initialize(ConnectionFactory.getInstance());
+    try {
+      DAOFactory.initialize(ConnectionFactory.getInstance());
+    } catch (Throwable ignored) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER //NOSONAR
+                               .syserr("Error during static execution",//NOSONAR
+                                       ignored);//NOSONAR
+    }
     DAO_FACTORY = DAOFactory.getInstance();
   }
 

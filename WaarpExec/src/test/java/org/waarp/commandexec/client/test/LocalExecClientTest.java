@@ -228,7 +228,7 @@ public class LocalExecClientTest extends Thread {
     // Wait until the connection attempt succeeds or fails.
     try {
       channel = future.await().sync().channel();
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
     if (!future.isSuccess()) {
       System.err.println("Client Not Connected");

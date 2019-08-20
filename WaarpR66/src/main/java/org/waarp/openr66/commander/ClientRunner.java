@@ -305,7 +305,7 @@ public class ClientRunner extends Thread {
       try {
         Thread.sleep(Configuration.configuration.getConstraintLimitHandler()
                                                 .getSleepTime());
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       return runTransfer();
@@ -487,7 +487,7 @@ public class ClientRunner extends Thread {
         // now wait
         try {
           Thread.sleep(Configuration.configuration.getDelayRetry());
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           logger.debug(
               "Will not retry since limit of connection attemtps is reached for {}",

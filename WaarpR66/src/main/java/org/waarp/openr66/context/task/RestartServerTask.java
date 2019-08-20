@@ -80,7 +80,8 @@ public class RestartServerTask extends AbstractTask {
                 session.getAuth().getUser());
     WaarpShutdownHook.setRestart(true);
     futureCompletion.setSuccess();
-    final Thread thread = new Thread(new ChannelUtils(), "R66 Shutdown Thread");
+    final Thread thread =
+        new Thread(new ChannelUtils(), "R66 Shutdown and Restart Thread");
     thread.setDaemon(true);
     // give time for the task to finish correctly
     Configuration.configuration

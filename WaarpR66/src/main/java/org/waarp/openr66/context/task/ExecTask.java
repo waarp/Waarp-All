@@ -133,7 +133,7 @@ public class ExecTask extends AbstractExecTask {
                          CommandLine commandLine, Exception e) {
     try {
       Thread.sleep(Configuration.RETRYINMS);
-    } catch (final InterruptedException e2) {
+    } catch (final InterruptedException e2) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
     }
     logger.error("Status: " + status + " Exec in error with " + commandLine +

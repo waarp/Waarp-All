@@ -1,3 +1,15 @@
+
+--
+-- Name: multiplemonitor; Type: TABLE; Schema: public;
+--
+
+CREATE TABLE multiplemonitor (
+    countconfig integer NOT NULL,
+    counthost integer NOT NULL,
+    countrule integer NOT NULL,
+    hostid VARCHAR(8096) PRIMARY KEY
+);
+
 --
 -- Name: configuration; Type: TABLE; Schema: public;
 --
@@ -9,8 +21,7 @@ CREATE TABLE configuration (
     writesessionlimit bigint NOT NULL,
     delaylimit bigint NOT NULL,
     updatedinfo integer NOT NULL,
-    hostid character varying(8096) NOT NULL,
-    PRIMARY KEY (hostid)
+    hostid VARCHAR(8096) PRIMARY KEY
 );
 
 --
@@ -18,13 +29,12 @@ CREATE TABLE configuration (
 --
 
 CREATE TABLE hostconfig (
-    business text NOT NULL,
-    roles text NOT NULL,
-    aliases text NOT NULL,
-    others text NOT NULL,
+    business longvarchar NOT NULL,
+    roles longvarchar NOT NULL,
+    aliases longvarchar NOT NULL,
+    others longvarchar NOT NULL,
     updatedinfo integer NOT NULL,
-    hostid character varying(8096) NOT NULL,
-    PRIMARY KEY (hostid)
+    hostid VARCHAR(8096) PRIMARY KEY
 );
 
 --
@@ -32,29 +42,16 @@ CREATE TABLE hostconfig (
 --
 
 CREATE TABLE hosts (
-    address character varying(8096) NOT NULL,
+    address VARCHAR(8096) NOT NULL,
     port integer NOT NULL,
     isssl boolean NOT NULL,
-    hostkey bytea(255) NOT NULL,
+    hostkey binary NOT NULL,
     adminrole boolean NOT NULL,
     isclient boolean NOT NULL,
     isactive boolean NOT NULL,
     isproxified boolean NOT NULL,
     updatedinfo integer NOT NULL,
-    hostid character varying(8096) NOT NULL,
-    PRIMARY KEY (hostid)
-);
-
---
--- Name: multiplemonitor; Type: TABLE; Schema: public;
---
-
-CREATE TABLE multiplemonitor (
-    countconfig integer NOT NULL,
-    counthost integer NOT NULL,
-    countrule integer NOT NULL,
-    hostid character varying(8096) NOT NULL,
-    PRIMARY KEY (hostid)
+    hostid VARCHAR(8096) PRIMARY KEY
 );
 
 --
@@ -62,21 +59,20 @@ CREATE TABLE multiplemonitor (
 --
 
 CREATE TABLE rules (
-    hostids text,
+    hostids LONGVARCHAR,
     modetrans integer,
-    recvpath character varying(8096),
-    sendpath character varying(8096),
-    archivepath character varying(8096),
-    workpath character varying(8096),
-    rpretasks text,
-    rposttasks text,
-    rerrortasks text,
-    spretasks text,
-    sposttasks text,
-    serrortasks text,
+    recvpath VARCHAR(8096),
+    sendpath VARCHAR(8096),
+    archivepath VARCHAR(8096),
+    workpath VARCHAR(8096),
+    rpretasks LONGVARCHAR,
+    rposttasks LONGVARCHAR,
+    rerrortasks LONGVARCHAR,
+    spretasks LONGVARCHAR,
+    sposttasks LONGVARCHAR,
+    serrortasks LONGVARCHAR,
     updatedinfo integer,
-    idrule character varying(8096) NOT NULL,
-    PRIMARY KEY (idrule)
+    idrule VARCHAR(8096) PRIMARY KEY
 );
 
 --
@@ -88,23 +84,23 @@ CREATE TABLE runner (
     globallaststep integer NOT NULL,
     step integer NOT NULL,
     rank integer NOT NULL,
-    stepstatus character(3) NOT NULL,
+    stepstatus char(3) NOT NULL,
     retrievemode boolean NOT NULL,
-    filename character varying(8096) NOT NULL,
+    filename VARCHAR(8096) NOT NULL,
     ismoved boolean NOT NULL,
-    idrule character varying(8096) NOT NULL,
+    idrule VARCHAR(8096) NOT NULL,
     blocksz integer NOT NULL,
-    originalname character varying(8096) NOT NULL,
+    originalname VARCHAR(8096) NOT NULL,
     fileinfo text NOT NULL,
     transferinfo text NOT NULL,
     modetrans integer NOT NULL,
-    starttrans timestamp without time zone NOT NULL,
-    stoptrans timestamp without time zone NOT NULL,
-    infostatus character(3) NOT NULL,
+    starttrans timestamp  NOT NULL,
+    stoptrans timestamp  NOT NULL,
+    infostatus char(3) NOT NULL,
     updatedinfo integer NOT NULL,
-    ownerreq character varying(8096) NOT NULL,
-    requester character varying(8096) NOT NULL,
-    requested character varying(8096) NOT NULL,
+    ownerreq VARCHAR(8096) NOT NULL,
+    requester VARCHAR(8096) NOT NULL,
+    requested VARCHAR(8096) NOT NULL,
     specialid bigint NOT NULL,
     PRIMARY KEY (ownerreq, requester, requested, specialid)
 );

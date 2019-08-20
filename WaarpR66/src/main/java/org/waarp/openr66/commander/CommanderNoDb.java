@@ -179,7 +179,7 @@ public class CommanderNoDb implements CommanderInterface {
           internalRunner.submitTaskRunner(taskRunner);
           try {
             Thread.sleep(Configuration.RETRYINMS);
-          } catch (final InterruptedException e) {
+          } catch (final InterruptedException e) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           }
         }

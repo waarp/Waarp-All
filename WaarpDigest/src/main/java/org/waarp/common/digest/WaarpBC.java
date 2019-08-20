@@ -32,16 +32,24 @@ import java.security.Security;
 public class WaarpBC {
   public static final String PROTOCOL = "TLS";
   private static volatile boolean initialized = false;
+  private static boolean specialSecureRandom = false;
 
   static {
     initializedTlsContext();
   }
 
   public static void initializedTlsContext() {
-    if (!initialized) {
-      addBcProvider();
-      registerRandomSecure();
-      initialized = true;
+    try {
+      if (!initialized) {
+        addBcProvider();
+        registerRandomSecure();
+        initialized = true;
+      }
+    } catch (Throwable ignored) {//NOSONAR
+      ignored.printStackTrace();//NOSONAR
+      System.err //NOSONAR
+                 .println("Error occurs at startup: " +//NOSONAR
+                          ignored.getMessage());//NOSONAR
     }
   }
 
@@ -63,6 +71,7 @@ public class WaarpBC {
       if (provider != null) {
         Security.removeProvider(provider.getName());
         Security.insertProviderAt(provider, 1);
+        specialSecureRandom = true;
       }
     } else {
       System.setProperty("java.security.egd", "file:/dev/./urandom");
@@ -72,18 +81,24 @@ public class WaarpBC {
       if (provider != null) {
         final String name = String.format("%s.%s", type, alg);
         final Provider.Service service = provider.getService(type, alg);
-        Security.insertProviderAt(new Provider(name, provider.getVersion(),
-                                               "Waarp quick fix for SecureRandom using urandom") {
-          {
-            System.setProperty(name, service.getClassName());
-          }
+        if (service != null) {
+          Security.insertProviderAt(new Provider(name, provider.getVersion(),
+                                                 "Waarp quick fix for SecureRandom using urandom") {
+            {
+              System.setProperty(name, service.getClassName());
+            }
 
-        }, 1);
+          }, 1);
+          specialSecureRandom = true;
+        }
       }
     }
   }
 
   public static SecureRandom getSecureRandom() {
+    if (!specialSecureRandom) {
+      return new SecureRandom();
+    }
     if (System.getProperty("os.name").contains("Windows")) {
       try {
         return SecureRandom.getInstance("Windows-PRNG", "SunMSCAPI");

@@ -24,6 +24,7 @@ import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
@@ -104,10 +105,16 @@ public class HttpPage {
     setErrorpage(errorpage);
     setClassname(classname);
     setFields(fields);
+    try {
+      ParametersChecker.checkSanityString(classname);
+    } catch (InvalidArgumentException e) {
+      throw new IllegalArgumentException(e.getMessage());
+    }
     @SuppressWarnings("unchecked")
     final Class<HttpBusinessFactory> clasz =
-        (Class<HttpBusinessFactory>) Class.forName(classname);
-    setHttpBusinessFactory(clasz.newInstance());
+        (Class<HttpBusinessFactory>) Class.forName(classname);//NOSONAR
+    HttpBusinessFactory factory = clasz.newInstance();//NOSONAR
+    setHttpBusinessFactory(factory);//NOSONAR
   }
 
   /**

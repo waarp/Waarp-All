@@ -38,6 +38,7 @@ import org.waarp.common.database.model.DbType;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.FileUtils;
@@ -47,6 +48,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlRootHash;
@@ -315,9 +317,15 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_BUSINESS_FACTORY);
       if (value != null && !value.isEmpty()) {
         try {
-          config.setR66BusinessFactory(
-              (R66BusinessFactoryInterface) Class.forName(value.getString())
-                                                 .newInstance());
+          ParametersChecker.checkSanityString(value.getString());
+        } catch (InvalidArgumentException e) {
+          logger.error("Bad Business Factory class", e);
+          return false;
+        }
+        try {
+          config.setR66BusinessFactory((R66BusinessFactoryInterface) Class
+              .forName(value.getString())//NOSONAR
+              .newInstance());//NOSONAR
         } catch (final Exception e) {
           logger.error("Bad Business Factory class", e);
           return false;
@@ -531,9 +539,15 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_BUSINESS_FACTORY);
       if (value != null && !value.isEmpty()) {
         try {
-          config.setR66BusinessFactory(
-              (R66BusinessFactoryInterface) Class.forName(value.getString())
-                                                 .newInstance());
+          ParametersChecker.checkSanityString(value.getString());
+        } catch (InvalidArgumentException e) {
+          logger.error("Bad Business Factory class", e);
+          return false;
+        }
+        try {
+          config.setR66BusinessFactory((R66BusinessFactoryInterface) Class
+              .forName(value.getString())//NOSONAR
+              .newInstance());//NOSONAR
         } catch (final Exception e) {
           logger.error("Bad Business Factory class", e);
           return false;
@@ -542,7 +556,6 @@ public class FileBasedConfiguration {
       return true;
     } finally {
       hashConfig.clear();
-      hashConfig = null;
     }
   }
 
@@ -839,6 +852,9 @@ public class FileBasedConfiguration {
     value = hashConfig.get(XML_CSTRT_LIMITLOWBANDWIDTH);
     if (value != null && !value.isEmpty()) {
       limitLowBandwidth = value.getLong();
+    }
+    if (config.getConstraintLimitHandler() != null) {
+      config.getConstraintLimitHandler().release();
     }
     if (useCpuLimit || highcpuLimit > 0) {
       if (highcpuLimit > 0) {
@@ -1203,7 +1219,7 @@ public class FileBasedConfiguration {
     try {
       des.setSecretKey(key);
     } catch (final CryptoException e) {
-      logger.error("Unable to load CryptoKey from Config file");
+      logger.error("Unable to load CryptoKey from Config file {}", filename);
       return false;
     } catch (final IOException e) {
       logger.error("Unable to load CryptoKey from Config file");
@@ -1286,8 +1302,8 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_DBDRIVER);
       if (value == null || value.isEmpty()) {
         if (config.isWarnOnStartup()) {
-          logger.warn(
-              Messages.getString("FileBasedConfiguration.NoDB")); //$NON-NLS-1$
+          logger.warn(Messages.getString("FileBasedConfiguration.NoDB"));
+          //$NON-NLS-1$
         } else {
           logger.info(
               Messages.getString("FileBasedConfiguration.NoDB")); //$NON-NLS-1$
@@ -2045,6 +2061,10 @@ public class FileBasedConfiguration {
     config.setUseSSL(true);
     if (!loadIdentity(config, hashRootConfig)) {
       logger.error(CANNOT_LOAD_IDENTITY);
+      return false;
+    }
+    if (!loadDirectory(config)) {
+      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);
       return false;
     }
     if (!loadDatabase(config, false)) {

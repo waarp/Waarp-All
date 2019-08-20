@@ -76,7 +76,7 @@ class FtpTransferExecutor implements Runnable {
     }
     try {
       runNextCommand();
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       logger.error("Executor Interrupted {}", e.getMessage());
     }
   }

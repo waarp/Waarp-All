@@ -95,7 +95,7 @@ public abstract class AbstractFtpClientTest {
     if (isSSL != 0) {
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException ignored) {
+      } catch (final InterruptedException ignored) {//NOSONAR
       }
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -114,7 +114,7 @@ public abstract class AbstractFtpClientTest {
           } else {
             Thread.sleep(newdel);
           }
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       } else {
         Thread.yield();
@@ -122,7 +122,7 @@ public abstract class AbstractFtpClientTest {
     }
     try {
       Thread.sleep(100);
-    } catch (final InterruptedException e1) {
+    } catch (final InterruptedException e1) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.syserr(e1);
       executorService.shutdownNow();
       // Thread.currentThread().interrupt();
@@ -139,7 +139,7 @@ public abstract class AbstractFtpClientTest {
       } else {
         date2 = System.currentTimeMillis();
       }
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.syserr(e);
       executorService.shutdownNow();
       date2 = System.currentTimeMillis();
@@ -163,7 +163,7 @@ public abstract class AbstractFtpClientTest {
                              SSL_MODE != 0, SSL_MODE < 0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     final FileWriter fileWriterBig = new FileWriter(localFilename);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
       fileWriterBig.write("0123456789");
     }
     fileWriterBig.flush();
@@ -176,7 +176,7 @@ public abstract class AbstractFtpClientTest {
     logger.warn("Will shutdown from client");
     try {
       Thread.sleep(500);
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
     final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest("127.0.0.1", 2021, "fredo", "fred1", "a",
@@ -186,6 +186,7 @@ public abstract class AbstractFtpClientTest {
       numberKO.incrementAndGet();
       return;
     }
+
     try {
       final String[] results =
           client.executeSiteCommand("internalshutdown abcdef");
@@ -200,7 +201,7 @@ public abstract class AbstractFtpClientTest {
     FtpServer.stopFtpServer();
     try {
       Thread.sleep(1000);
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
   }
 

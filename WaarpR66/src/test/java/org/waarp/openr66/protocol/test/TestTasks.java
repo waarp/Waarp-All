@@ -393,7 +393,7 @@ public class TestTasks {
           return;
         }
         Thread.sleep(100);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.syserr("Interrupted", e);
         return;
       } catch (WaarpDatabaseException e) {

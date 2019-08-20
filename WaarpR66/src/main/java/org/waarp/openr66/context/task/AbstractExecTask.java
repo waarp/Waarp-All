@@ -521,17 +521,17 @@ public abstract class AbstractExecTask extends AbstractTask {
     public ExecuteCommand invoke() {
       status = -1;
       try {
-        status = defaultExecutor.execute(commandLine);
+        status = defaultExecutor.execute(commandLine);//NOSONAR
       } catch (final ExecuteException e) {
         if (e.getExitValue() == -559038737) {
           // Cannot run immediately so retry once
           try {
             Thread.sleep(Configuration.RETRYINMS);
-          } catch (final InterruptedException e1) {
+          } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
           try {
-            status = defaultExecutor.execute(commandLine);
+            status = defaultExecutor.execute(commandLine);//NOSONAR
           } catch (final ExecuteException e1) {
             closeAllForExecution(true);
             finalizeFromError(thread, status, commandLine, e1);
@@ -569,7 +569,7 @@ public abstract class AbstractExecTask extends AbstractTask {
           } else {
             thread.join();
           }
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           Thread.currentThread().interrupt();
         }

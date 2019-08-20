@@ -139,7 +139,7 @@ public class FtpClientTest {
     if (isSSL > 0) {
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException ignored) {
+      } catch (final InterruptedException ignored) {//NOSONAR
       }
     }
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -158,7 +158,7 @@ public class FtpClientTest {
           } else {
             Thread.sleep(newdel);
           }
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       } else {
         Thread.yield();
@@ -166,7 +166,7 @@ public class FtpClientTest {
     }
     try {
       Thread.sleep(100);
-    } catch (final InterruptedException e1) {
+    } catch (final InterruptedException e1) {//NOSONAR
       e1.printStackTrace();
       executorService.shutdownNow();
       // Thread.currentThread().interrupt();
@@ -183,7 +183,7 @@ public class FtpClientTest {
       } else {
         date2 = System.currentTimeMillis();
       }
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       e.printStackTrace();
       executorService.shutdownNow();
       date2 = System.currentTimeMillis();

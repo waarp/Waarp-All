@@ -72,19 +72,8 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
       OTHERS_FIELD + " = ?, " + UPDATED_INFO_FIELD + " = ? WHERE " +
       HOSTID_FIELD + " = ?";
 
-  protected final Connection connection;
-
   public DBBusinessDAO(Connection con) {
-    connection = con;
-  }
-
-  @Override
-  public void close() {
-    try {
-      connection.close();
-    } catch (final SQLException e) {
-      logger.warn("Cannot properly close the database connection", e);
-    }
+    super(con);
   }
 
   @Override

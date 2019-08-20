@@ -116,7 +116,7 @@ public class NetworkServerHandler
           // Give an extra time if necessary to let the local channel being closed
           try {
             Thread.sleep(Configuration.RETRYINMS * 2);
-          } catch (final InterruptedException e1) {
+          } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
         }
@@ -478,7 +478,7 @@ public class NetworkServerHandler
       if (channel.isActive()) {
         channel.writeAndFlush(networkPacket).await(Configuration.WAITFORNETOP);
       }
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }

@@ -20,10 +20,20 @@
 package org.waarp.gateway.kernel.database.model;
 
 import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModel;
 import org.waarp.common.database.model.DbModelFactory;
 import org.waarp.common.database.model.DbType;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.data.DbTransferLog;
+
+import java.sql.SQLException;
 
 /**
  * Factory to store the Database Model object
@@ -60,10 +70,61 @@ public class DbModelFactoryGateway extends DbModelFactory {
       case MySQL:
         dbModel = new DbModelMysql(dbserver, dbuser, dbpasswd);
         break;
+      case MariaDB:
+        dbModel = new DbModelMariaDb(dbserver, dbuser, dbpasswd);
+        break;
       default:
         throw new WaarpDatabaseNoConnectionException(
             "TypeDriver unknown: " + type);
     }
     return new DbAdmin(dbModel, dbserver, dbuser, dbpasswd, write);
+  }
+
+  public static void resetSequenceMonitoring(final DbSession session,
+                                             final long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+    final String action =
+        "ALTER SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
+        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
+    final DbRequest request = new DbRequest(session);
+    try {
+      request.query(action);
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      return;
+    } catch (final WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      return;
+    } finally {
+      request.close();
+    }
+    SysErrLogger.FAKE_LOGGER.sysout(action);
+  }
+
+  public static long nextSequenceMonitoring(final DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+    long result = DbConstant.ILLEGALVALUE;
+    final String action = "SELECT NEXTVAL('" + DbTransferLog.fieldseq + "')";
+    final DbPreparedStatement preparedStatement =
+        new DbPreparedStatement(dbSession);
+    try {
+      preparedStatement.createPrepareStatement(action);
+      // Limit the search
+      preparedStatement.executeQuery();
+      if (preparedStatement.getNext()) {
+        try {
+          result = preparedStatement.getResultSet().getLong(1);
+        } catch (final SQLException e) {
+          throw new WaarpDatabaseSqlException(e);
+        }
+        return result;
+      } else {
+        throw new WaarpDatabaseNoDataException(
+            "No sequence found. Must be initialized first");
+      }
+    } finally {
+      preparedStatement.realClose();
+    }
   }
 }

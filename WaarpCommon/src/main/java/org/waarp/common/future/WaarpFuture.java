@@ -340,7 +340,7 @@ public class WaarpFuture {
 
           try {
             wait(waitTime / 1000000, (int) (waitTime % 1000000));
-          } catch (InterruptedException e) {
+          } catch (InterruptedException e) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             if (interruptable) {
               throw e;

@@ -486,7 +486,7 @@ public class HttpTestRestR66Client implements Runnable {
       }
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException e1) {
+      } catch (final InterruptedException e1) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
     } finally {
@@ -511,7 +511,7 @@ public class HttpTestRestR66Client implements Runnable {
       while (!pool.awaitTermination(100000, TimeUnit.SECONDS)) {
 
       }
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
   }
 

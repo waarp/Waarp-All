@@ -123,7 +123,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
               Thread.sleep(
                   Configuration.configuration.getConstraintLimitHandler()
                                              .getSleepTime());
-            } catch (final InterruptedException e) {
+            } catch (final InterruptedException e) {//NOSONAR
               SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             }
             i--;

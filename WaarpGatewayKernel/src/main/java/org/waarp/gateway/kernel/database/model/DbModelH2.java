@@ -20,7 +20,6 @@
 package org.waarp.gateway.kernel.database.model;
 
 import org.waarp.common.database.DbConstant;
-import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -28,8 +27,6 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
-
-import java.sql.SQLException;
 
 /**
  * H2 Database Model implementation
@@ -52,7 +49,12 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    // Create tables: configuration, hosts, rules, runner, cptrunner
+    createTableMonitoring(session);
+  }
+
+  public static void createTableMonitoring(final DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+    // Create tables: logs
     final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
@@ -88,7 +90,7 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
     // Index Runner
     action = new StringBuilder(
         "CREATE INDEX IF NOT EXISTS IDX_TRANSLOG ON " + DbTransferLog.table +
-        '(');
+        "(");
     final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;
     for (int i = 0; i < icolumns.length - 1; i++) {
       action.append(icolumns[i].name()).append(", ");
@@ -107,7 +109,6 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
       request.close();
     }
 
-    // cptrunner
     // cptrunner
     action = new StringBuilder(
         "CREATE SEQUENCE IF NOT EXISTS " + DbTransferLog.fieldseq +
@@ -141,50 +142,14 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    final String action =
-        "ALTER SEQUENCE " + DbTransferLog.fieldseq + " RESTART WITH " +
-        newvalue;
-    final DbRequest request = new DbRequest(session);
-    try {
-      request.query(action);
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } finally {
-      request.close();
-    }
-    SysErrLogger.FAKE_LOGGER.sysout(action);
+    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
   public long nextSequence(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
-    final String action = "SELECT NEXTVAL('" + DbTransferLog.fieldseq + "')";
-    final DbPreparedStatement preparedStatement =
-        new DbPreparedStatement(dbSession);
-    try {
-      preparedStatement.createPrepareStatement(action);
-      // Limit the search
-      preparedStatement.executeQuery();
-      if (preparedStatement.getNext()) {
-        try {
-          result = preparedStatement.getResultSet().getLong(1);
-        } catch (final SQLException e) {
-          throw new WaarpDatabaseSqlException(e);
-        }
-        return result;
-      } else {
-        throw new WaarpDatabaseNoDataException(
-            "No sequence found. Must be initialized first");
-      }
-    } finally {
-      preparedStatement.realClose();
-    }
+    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
   }
 
   @Override

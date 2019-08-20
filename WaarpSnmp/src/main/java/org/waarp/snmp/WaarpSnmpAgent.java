@@ -481,7 +481,7 @@ public class WaarpSnmpAgent extends BaseAgent {
                 });
     try {
       Thread.sleep(100);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
   }
@@ -499,7 +499,7 @@ public class WaarpSnmpAgent extends BaseAgent {
       getMonitor().releaseResources();
       try {
         Thread.sleep(100);
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       if (workerPool != null) {

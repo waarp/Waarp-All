@@ -745,7 +745,7 @@ public class Configuration {
                                                retrieveRunner.getLocalId());
                                            try {
                                              Thread.sleep(WAITFORNETOP * 2);
-                                           } catch (InterruptedException e) {
+                                           } catch (InterruptedException e) {//NOSONAR
                                              SysErrLogger.FAKE_LOGGER
                                                  .ignoreLog(e);
                                              retrieveRunner.notStartRunner();
@@ -1069,7 +1069,7 @@ public class Configuration {
             .awaitTermination(getTimeoutCon() / 2, TimeUnit.MILLISECONDS)) {
           retrieveRunnerGroup.shutdownNow();
         }
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         retrieveRunnerGroup.shutdownNow();
         Thread.currentThread().interrupt();

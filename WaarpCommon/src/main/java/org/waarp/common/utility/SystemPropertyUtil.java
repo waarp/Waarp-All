@@ -81,13 +81,13 @@ public final class SystemPropertyUtil {
       try {
         System.setProperty(FILE_ENCODING, WaarpStringUtils.UTF_8);
         final Field charset = Charset.class.getDeclaredField("defaultCharset");
-        charset.setAccessible(true);
-        charset.set(null, null);
+        charset.setAccessible(true); //NOSONAR
+        charset.set(null, null); //NOSONAR
         synchronized (PROPS) {
           PROPS.clear();
           PROPS.putAll(newProps);
         }
-      } catch (final Exception e1) {
+      } catch (final Throwable e1) {//NOSONAR
         // ignore since it is a security issue and -Dfile.encoding=UTF-8 should be used
         SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
         SysErrLogger.FAKE_LOGGER.syserr(

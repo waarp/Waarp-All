@@ -189,7 +189,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     System.setProperty("phantomjs.binary.path", libPhnatomJS.getAbsolutePath());
     try {
       driver = initializeDriver();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException e) {//NOSONAR
       e.printStackTrace();
       fail(e.getMessage());
     }

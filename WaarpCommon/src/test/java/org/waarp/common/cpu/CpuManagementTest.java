@@ -67,7 +67,7 @@ public class CpuManagementTest {
     SysErrLogger.FAKE_LOGGER.syserr("LA: " + max);
     try {
       Thread.sleep(5000);
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
     final double min = cpuManagement.getLoadAverage();
     System.err.println("LA: " + min);
@@ -125,7 +125,7 @@ public class CpuManagementTest {
     System.err.println("LAs: " + max);
     try {
       Thread.sleep(2000);
-    } catch (final InterruptedException ignored) {
+    } catch (final InterruptedException ignored) {//NOSONAR
     }
     final double min = cpuManagement.getLoadAverage();
     System.err.println("LAs: " + min);

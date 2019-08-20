@@ -440,7 +440,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
     }
     try {
       future.await();
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (future.isSuccess()) {

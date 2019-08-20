@@ -113,7 +113,7 @@ public class TestTransferNoDb extends DirectTransfer {
         executorService.execute(transaction);
         try {
           Thread.sleep(10);
-        } catch (final InterruptedException ignored) {
+        } catch (final InterruptedException ignored) {//NOSONAR
         }
       }
       int success = 0;

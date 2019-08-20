@@ -117,7 +117,7 @@ public class SpooledEngine extends EngineAbstract {
                             TimeUnit.MILLISECONDS)) {
         Thread.sleep(Configuration.configuration.getTimeoutCon());
       }
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     for (final SpooledDirectoryTransfer spooledDirectoryTransfer : SpooledDirectoryTransfer.list) {

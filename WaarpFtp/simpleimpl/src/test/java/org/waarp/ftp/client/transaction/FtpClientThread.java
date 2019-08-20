@@ -28,6 +28,8 @@ import org.waarp.ftp.client.FtpClientTest;
 
 import java.io.File;
 
+import static junit.framework.TestCase.*;
+
 /**
  * FTP Thread used to check multiple FTP clients in parallel with the test scenario
  */
@@ -117,15 +119,19 @@ public class FtpClientThread implements Runnable {
       if (delay >= 10) {
         try {
           Thread.sleep(delay);
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       } else {
         Thread.yield();
       }
+      String[] results = client.executeCommand("XMKD newtest");
+      for (final String string : results) {
+        logger.warn("XMKD: {}", string);
+      }
       client.makeDir("newtest");
       client.changeDir("newtest");
-      String[] results = client.executeCommand("CDUP");
+      results = client.executeCommand("CDUP");
       for (final String string : results) {
         logger.warn("CDUP: {}", string);
       }
@@ -161,6 +167,25 @@ public class FtpClientThread implements Runnable {
       for (final String string : results) {
         logger.warn("XRMD: {}", string);
       }
+      assertNull(client.executeCommand("UnknownCommand 42"));
+      assertNull(client.executeCommand("SMNT UnimplementedCommand"));
+      assertNull(client.executeCommand("SITE RNTO IncorrectCommand"));
+      results = client.executeCommand("MODE S");
+      for (final String string : results) {
+        logger.warn("MODE: {}", string);
+      }
+      results = client.executeCommand("STRU F");
+      for (final String string : results) {
+        logger.warn("STRU: {}", string);
+      }
+      results = client.executeCommand("ALLO 100");
+      for (final String string : results) {
+        logger.warn("ALLO: {}", string);
+      }
+
+      if (isSsl == 0) {
+        assertNull(client.executeCommand("CCC"));
+      }
 
       logger.info(id + " change type");
       client.changeFileType(true);
@@ -179,7 +204,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException e) {
+                } catch (final InterruptedException e) {//NOSONAR
                   SysErrLogger.FAKE_LOGGER.ignoreLog(e);
                 }
               }
@@ -198,7 +223,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -211,7 +236,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -226,7 +251,7 @@ public class FtpClientThread implements Runnable {
             if (delay > 0) {
               try {
                 Thread.sleep(delay);
-              } catch (final InterruptedException ignored) {
+              } catch (final InterruptedException ignored) {//NOSONAR
               }
             }
           }
@@ -242,7 +267,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -266,7 +291,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -285,7 +310,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -298,7 +323,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -313,7 +338,7 @@ public class FtpClientThread implements Runnable {
             if (delay > 0) {
               try {
                 Thread.sleep(delay);
-              } catch (final InterruptedException ignored) {
+              } catch (final InterruptedException ignored) {//NOSONAR
               }
             }
           }
@@ -329,7 +354,7 @@ public class FtpClientThread implements Runnable {
               if (delay > 0) {
                 try {
                   Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {
+                } catch (final InterruptedException ignored) {//NOSONAR
                 }
               }
             }
@@ -365,10 +390,13 @@ public class FtpClientThread implements Runnable {
       for (final String string : results) {
         logger.warn("SIZE: {}", string);
       }
+      client.executeCommand("RNFR " + remoteFilename);
+      client.executeCommand("RNTO " + remoteFilename + "2");
       results = client.listFiles();
       for (final String string : results) {
         logger.warn("LIST: {}", string);
       }
+      client.executeCommand("REIN");
     } finally {
       logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),
                   FtpClientTest.numberKO.get());

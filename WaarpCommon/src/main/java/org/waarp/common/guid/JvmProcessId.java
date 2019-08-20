@@ -92,7 +92,7 @@ public final class JvmProcessId {
         processId = StringUtils.RANDOM.nextInt(MAX_PID + 1);
       }
       return processId;
-    } catch (final Exception e) {
+    } catch (final Throwable e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.syserr(e);
       return StringUtils.RANDOM.nextInt(MAX_PID + 1);
     }
@@ -115,7 +115,7 @@ public final class JvmProcessId {
         machineId = defaultMachineId();
       }
       return machineId;
-    } catch (final Exception e) {
+    } catch (final Throwable e) {//NOSONAR
       return StringUtils.getRandom(MACHINE_ID_LEN);
     }
   }

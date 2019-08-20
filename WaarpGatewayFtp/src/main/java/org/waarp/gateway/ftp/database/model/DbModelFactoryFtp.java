@@ -60,6 +60,9 @@ public class DbModelFactoryFtp extends DbModelFactory {
       case MySQL:
         dbModel = new DbModelMysql(dbserver, dbuser, dbpasswd);
         break;
+      case MariaDB:
+        dbModel = new DbModelMariaDb(dbserver, dbuser, dbpasswd);
+        break;
       default:
         throw new WaarpDatabaseNoConnectionException(
             "TypeDriver unknown: " + type);

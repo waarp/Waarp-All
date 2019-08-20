@@ -52,6 +52,19 @@ public abstract class DbModelOracle extends DbModelAbstract {
 
   private static final DbType type = DbType.Oracle;
 
+  protected static class DbTypeResolverOracle
+      extends DbModelAbstract.DbTypeResolver {
+
+    @Override
+    public String getType(final int sqlType) {
+      return DBType.getType(sqlType);
+    }
+  }
+
+  static {
+    dbTypeResolver = new DbTypeResolverOracle();
+  }
+
   protected OracleConnectionPoolDataSource oracleConnectionPoolDataSource;
   protected DbConnectionPool pool;
 

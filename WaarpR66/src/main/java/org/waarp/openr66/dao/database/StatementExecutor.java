@@ -23,6 +23,7 @@ package org.waarp.openr66.dao.database;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +33,11 @@ abstract class StatementExecutor {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(StatementExecutor.class);
+  protected final Connection connection;
+
+  StatementExecutor(Connection con) {
+    connection = con;
+  }
 
   public void setParameters(PreparedStatement stm, Object... values)
       throws SQLException {
@@ -73,6 +79,14 @@ abstract class StatementExecutor {
       rs.close();
     } catch (final SQLException e) {
       logger.warn("An error occurs while closing the resultSet.", e);
+    }
+  }
+
+  public void close() {
+    try {
+      connection.close();
+    } catch (final SQLException e) {
+      logger.warn("Cannot properly close the database connection", e);
     }
   }
 }

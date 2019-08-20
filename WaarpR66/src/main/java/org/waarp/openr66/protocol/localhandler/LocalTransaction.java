@@ -284,7 +284,7 @@ public class LocalTransaction {
           try {
             localChannelReference.getNetworkChannel().writeAndFlush(message)
                                  .await(Configuration.WAITFORNETOP);
-          } catch (final InterruptedException e1) {
+          } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
           try {

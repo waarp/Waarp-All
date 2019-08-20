@@ -319,7 +319,7 @@ public class FtpInternalConfiguration {
     ChannelFuture future = serverBootstrap.bind(socketAddress);
     try {
       future = future.sync();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException e) {//NOSONAR
       logger.error("Cannot start command conections", e);
       throw new FtpNoConnectionException("Can't initiate the FTP server", e);
     }
@@ -443,7 +443,7 @@ public class FtpInternalConfiguration {
         } catch (final ChannelException e) {
           logger.warn("Cannot open passive connection {}", e.getMessage());
           throw new Reply425Exception("Cannot open a Passive Connection");
-        } catch (final InterruptedException e) {
+        } catch (final InterruptedException e) {//NOSONAR
           logger.warn("Cannot open passive connection {}", e.getMessage());
           throw new Reply425Exception("Cannot open a Passive Connection");
         }

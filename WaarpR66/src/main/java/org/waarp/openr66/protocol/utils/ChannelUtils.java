@@ -307,7 +307,7 @@ public class ChannelUtils extends Thread {
         Messages.getString("ChannelUtils.7") + delay + " ms"); //$NON-NLS-1$
     try {
       Thread.sleep(delay);
-    } catch (final InterruptedException e) {
+    } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     NetworkTransaction.stopAllEndRetrieve();

@@ -70,7 +70,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
         logger.warn("Session not found at try " + i);
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        } catch (final InterruptedException e1) {
+        } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           break;
         }

@@ -80,19 +80,9 @@ public class DBHostDAO extends StatementExecutor implements HostDAO {
       ADMINROLE_FIELD + " = ?, " + UPDATED_INFO_FIELD + " = ? WHERE " +
       HOSTID_FIELD + " = ?";
 
-  protected final Connection connection;
 
   public DBHostDAO(Connection con) throws DAOConnectionException {
-    connection = con;
-  }
-
-  @Override
-  public void close() {
-    try {
-      connection.close();
-    } catch (final SQLException e) {
-      logger.warn("Cannot properly close the database connection", e);
-    }
+    super(con);
   }
 
   @Override
