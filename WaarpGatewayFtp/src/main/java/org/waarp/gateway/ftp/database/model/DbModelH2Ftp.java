@@ -17,20 +17,20 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-package org.waarp.gateway.kernel.database.model;
+package org.waarp.gateway.ftp.database.model;
 
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-
-import java.util.concurrent.locks.ReentrantLock;
+import org.waarp.common.database.model.DbModelH2;
+import org.waarp.gateway.kernel.database.model.DbModelFactoryGateway;
+import org.waarp.gateway.kernel.database.model.DbModelH2Kernel;
 
 /**
- * MariaDB Database Model implementation
+ * H2 Database Model implementation
  */
-public class DbModelMariaDb
-    extends org.waarp.common.database.model.DbModelMariadb {
+public class DbModelH2Ftp extends DbModelH2 {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -40,36 +40,34 @@ public class DbModelMariaDb
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMariaDb(String dbserver, String dbuser, String dbpasswd)
+  public DbModelH2Ftp(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
 
-  private final ReentrantLock lock = new ReentrantLock();
-
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    DbModelMysql.createTableMonitoring(session);
+    DbModelH2Kernel.createTableMonitoring(session);
   }
 
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    DbModelMysql.resetSequenceMonitoring(session, newvalue);
+    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
-  public synchronized long nextSequence(DbSession dbSession)
+  public long nextSequence(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    return DbModelMysql.nextSequenceMonitoring(dbSession, lock);
+    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
   }
 
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    return false;
+    return true;
   }
 
   @Override
@@ -78,4 +76,5 @@ public class DbModelMariaDb
       throws WaarpDatabaseNoConnectionException {
     return false;
   }
+
 }

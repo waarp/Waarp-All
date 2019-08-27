@@ -72,8 +72,8 @@ public class FFileDialog extends JDialog
   JPanel panel = new JPanel();
   final FFileChooser fileChooser = new FFileChooser();
   int mode = JFileChooser.FILES_ONLY;
-  Object data;
-  List masks;
+  transient Object data;
+  transient List masks;
 
   public FFileDialog() {
     getContentPane().setLayout(new BorderLayout());

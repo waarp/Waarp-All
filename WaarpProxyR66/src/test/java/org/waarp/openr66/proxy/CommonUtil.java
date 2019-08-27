@@ -48,6 +48,7 @@ import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 import org.waarp.openr66.server.R66Server;
 import org.waarp.openr66.server.ServerInitDatabase;
 
@@ -359,9 +360,9 @@ public abstract class CommonUtil {
   static void startUpProxy() {
     r66Configuration = Configuration.configuration;
     Configuration.configuration =
-        new org.waarp.openr66.proxy.configuration.Configuration();
+        new ConfigurationProxyR66();
     final File config = new File(resources, CONFIG_PROXY_XML);
-    assertTrue("Configuration file for Proxy must exist", config.isFile());
+    assertTrue("ConfigurationProxyR66 file for Proxy must exist", config.isFile());
     if (!org.waarp.openr66.proxy.configuration.FileBasedConfiguration
         .setConfigurationProxyFromXml(Configuration.configuration,
                                       config.getAbsolutePath())) {

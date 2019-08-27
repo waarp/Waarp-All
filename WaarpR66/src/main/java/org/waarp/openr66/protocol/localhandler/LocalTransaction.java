@@ -102,6 +102,7 @@ public class LocalTransaction {
       if (localChannelReference.getRemoteId().compareTo(remoteId) != 0) {
         localChannelReference.setRemoteId(remoteId);
       }
+      logger.trace("TRACE ID Found LCR {}", localChannelReference);
       return localChannelReference;
     }
     throw new OpenR66ProtocolSystemException(
@@ -143,7 +144,6 @@ public class LocalTransaction {
     // Now simulate sending first a Startup message
     StartupPacket startup =
         new StartupPacket(localChannelReference.getLocalId(), fromSsl);
-    LocalServerHandler.channelActive(localChannelReference.getServerHandler());
     try {
       localChannelReference.getServerHandler().startup(startup);
     } catch (OpenR66ProtocolPacketException e) {
@@ -171,6 +171,10 @@ public class LocalTransaction {
     localChannelHashMap.remove(localChannelReference.getLocalId());
     if (localChannelReference.getRequestId() != null) {
       localChannelHashMapIdBased.remove(localChannelReference.getRequestId());
+    }
+    if (localChannelReference.getNetworkChannelObject() != null) {
+      localChannelReference.getNetworkChannelObject()
+                           .remove(localChannelReference);
     }
   }
 

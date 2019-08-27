@@ -43,6 +43,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.Processes;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.client.MultipleDirectTransfer;
@@ -61,7 +62,19 @@ import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
+import org.waarp.openr66.protocol.http.rest.handler.DbConfigurationR66RestMethodHandler;
+import org.waarp.openr66.protocol.http.rest.handler.DbHostAuthR66RestMethodHandler;
+import org.waarp.openr66.protocol.http.rest.handler.DbHostConfigurationR66RestMethodHandler;
+import org.waarp.openr66.protocol.http.rest.handler.DbRuleR66RestMethodHandler;
+import org.waarp.openr66.protocol.http.rest.handler.DbTaskRunnerR66RestMethodHandler;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestBandwidthR66Handler;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestConfigR66Handler;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestControlR66Handler;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestInformationR66Handler;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestLogR66Handler;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestServerR66Handler;
 import org.waarp.openr66.protocol.http.rest.test.HttpTestRestR66Client;
+import org.waarp.openr66.protocol.http.restv2.RestConstants;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
 import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
@@ -1454,6 +1467,95 @@ public class NetworkClientTest extends TestAbstract {
         new File(dirResources, "certs/test-key.des").getAbsolutePath();
     logger.info("Key filename: {}", HttpTestRestR66Client.keydesfilename);
     HttpTestRestR66Client.main(new String[] { "1" });
+  }
+
+  @Test
+  public void test98_RestR66V1V2Simple() throws Exception {
+    try {
+      // Test Rest V1
+      // Step # | name | target | value | comment
+      // 1 | open | V1 |  |
+      final String baseUri = "http://localhost:8088/";
+      driver.get(baseUri + DbTaskRunnerR66RestMethodHandler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("answer"));
+      driver.get(baseUri + DbConfigurationR66RestMethodHandler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("answer"));
+      driver.get(baseUri + DbHostAuthR66RestMethodHandler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("answer"));
+      driver.get(baseUri + DbHostConfigurationR66RestMethodHandler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("answer"));
+      driver.get(baseUri + DbRuleR66RestMethodHandler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("answer"));
+      driver.get(baseUri + HttpRestBandwidthR66Handler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("Bad Request"));
+      driver.get(baseUri + HttpRestConfigR66Handler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("Bad Request"));
+      driver.get(baseUri + HttpRestControlR66Handler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("Bad Request"));
+      driver.get(baseUri + HttpRestInformationR66Handler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("Bad Request"));
+      driver.get(baseUri + HttpRestLogR66Handler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("Bad Request"));
+      driver.get(baseUri + HttpRestServerR66Handler.BASEURI);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("results"));
+
+      // 2 | type | V2 [  |
+      String v2BaseUri = baseUri + "v2/";
+      driver.get(v2BaseUri + "transfers");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("results"));
+      driver.get(v2BaseUri + "hostconfig");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("business"));
+      driver.get(v2BaseUri + "hosts");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("results"));
+      driver.get(v2BaseUri + "limits");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("results"));
+      driver.get(v2BaseUri + "rules");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("results"));
+      driver.get(v2BaseUri + "server/status");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
+      assertTrue(driver.getPageSource().contains("serverName"));
+    } catch (NoSuchElementException e) {
+      e.printStackTrace();
+      reloadDriver();
+      fail(e.getMessage());
+    } catch (StaleElementReferenceException e) {
+      e.printStackTrace();
+      reloadDriver();
+      fail(e.getMessage());
+    }
   }
 
   @Test

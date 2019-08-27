@@ -101,6 +101,8 @@ public class RequestPacket extends AbstractLocalPacket {
       case 5:
       case 6:
         return mode + 2;
+      default:
+        // nothing
     }
     return mode;
   }
@@ -384,7 +386,7 @@ public class RequestPacket extends AbstractLocalPacket {
     final byte[] away = new byte[1];
     away[0] = way;
     if (lcr.getPartner() != null && lcr.getPartner().useJson()) {
-      logger.debug("Request will use JSON " + lcr.getPartner());
+      logger.debug("Request {} will use JSON {}", specialId, lcr.getPartner());
       final ObjectNode node = JsonHandler.createObjectNode();
       JsonHandler.setValue(node, FIELDS.filename, filename);
       JsonHandler.setValue(node, FIELDS.block, blocksize);
@@ -418,9 +420,10 @@ public class RequestPacket extends AbstractLocalPacket {
 
   @Override
   public String toString() {
-    return "RequestPacket: " + rulename + " : " + mode + " : " + filename +
-           " : " + fileInformation + " : " + blocksize + " : " + rank + " : " +
-           way + " : " + code + " : " + originalSize + " : " + limit;
+    return "RequestPacket: " + specialId + " : " + rulename + " : " + mode +
+           " :  " + filename + " : " + fileInformation + " : " + blocksize +
+           " : " + rank + " : " + way + " : " + code + " : " + originalSize +
+           " : " + limit;
   }
 
   /**

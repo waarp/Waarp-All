@@ -30,6 +30,7 @@ import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -59,11 +60,15 @@ public class RetrieveRunner extends Thread {
   private boolean done;
 
   protected final AtomicBoolean running = new AtomicBoolean(true);
+  private final String nameThread;
 
   protected RetrieveRunner() {
     // empty constructor
     session = null;
     localChannelReference = null;
+    nameThread = "RetrieveRunner: None";
+    setName(nameThread);
+    setDaemon(true);
   }
 
   /**
@@ -72,6 +77,9 @@ public class RetrieveRunner extends Thread {
   public RetrieveRunner(R66Session session) {
     this.session = session;
     localChannelReference = this.session.getLocalChannelReference();
+    nameThread = "RetrieveRunner: " + localChannelReference.getLocalId();
+    setName(nameThread);
+    setDaemon(true);
   }
 
   /**
@@ -84,9 +92,8 @@ public class RetrieveRunner extends Thread {
   @Override
   public void run() {
     boolean requestValidDone = false;
+    setName(nameThread);
     try {
-      Thread.currentThread()
-            .setName("RetrieveRunner: " + localChannelReference.getLocalId());
       try {
         if (session.getRunner().getGloballaststep() ==
             TASKSTEP.POSTTASK.ordinal()) {
@@ -134,7 +141,8 @@ public class RetrieveRunner extends Thread {
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
-        if (!localChannelReference.getFutureRequest().awaitOrInterruptible() ||
+        if (!localChannelReference.getFutureRequest().awaitOrInterruptible(
+            Configuration.configuration.getTimeoutCon()) ||
             Thread.interrupted()) {
           // valid it however
           session.getRunner().setAllDone();
@@ -172,8 +180,7 @@ public class RetrieveRunner extends Thread {
         }
         NetworkTransaction.normalEndRetrieve(localChannelReference);
       } finally {
-        Thread.currentThread().setName(
-            "RetrieveRunnerFinished: " + localChannelReference.getLocalId());
+        setName("Finished_" + nameThread);
       }
     }
   }

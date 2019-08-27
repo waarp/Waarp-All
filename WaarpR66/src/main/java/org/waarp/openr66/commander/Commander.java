@@ -36,6 +36,7 @@ import org.waarp.openr66.database.data.DbMultipleMonitor;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 
 import static org.waarp.openr66.database.DbConstantR66.*;
 
@@ -63,10 +64,11 @@ public class Commander implements CommanderInterface {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(Commander.class);
 
-  private static final int LIMITSUBMIT = 100;
+  private static final int LIMIT_SUBMIT = 1000;
 
   private InternalRunner internalRunner;
   private DbPreparedStatement preparedStatementLock;
+  private long totalRuns = 0;
 
   /**
    * Prepare requests that will be executed from time to time
@@ -420,40 +422,49 @@ public class Commander implements CommanderInterface {
       logger.debug("start runner");
       try {
         // No specific HA mode since the other servers will wait for the commit on Lock
-        final DbTaskRunner[] tasks = DbTaskRunner
-            .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, false,
-                                               LIMITSUBMIT);
-        logger.debug("TaskRunner to launch: {}", tasks.length);
-        int i = 0;
-        while (i < tasks.length) {
-          if (WaarpShutdownHook.isShutdownStarting()) {
-            logger.info("Will not start transfers, server is in shutdown.");
-            return;
-          }
-          final DbTaskRunner taskRunner = tasks[i];
-
-          logger.debug("get a task: {}", taskRunner);
-          // Launch if possible this task
-          final String key =
-              taskRunner.getRequested() + ' ' + taskRunner.getRequester() +
-              ' ' + taskRunner.getSpecialId();
-          if (Configuration.configuration.getLocalTransaction()
-                                         .getFromRequest(key) != null) {
-            // already running
-            continue;
-          }
-          if (taskRunner.isSelfRequested()) {
-            // cannot schedule a request where the host is the requested host
-            taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
-            try {
-              taskRunner.update();
-            } catch (final WaarpDatabaseNoDataException e) {
-              logger.warn("Update failed, no transfer found");
+        int max = Math.min(LIMIT_SUBMIT,
+                           Configuration.configuration.getRunnerThread());
+        max = Math.min(max, internalRunner.allowedToSubmit());
+        if (max > 0) {
+          final DbTaskRunner[] tasks = DbTaskRunner
+              .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, false,
+                                                 max);
+          logger.info(
+              "TaskRunner to launch: {} (launched: {}, active: " + "{}) {}",
+              tasks.length, totalRuns, internalRunner.nbInternalRunner(),
+              NetworkTransaction.hashStatus());
+          int i = 0;
+          while (i < tasks.length) {
+            if (WaarpShutdownHook.isShutdownStarting()) {
+              logger.info("Will not start transfers, server is in shutdown.");
+              return;
             }
-            continue;
+            final DbTaskRunner taskRunner = tasks[i];
+
+            logger.debug("get a task: {}", taskRunner);
+            // Launch if possible this task
+            final String key =
+                taskRunner.getRequested() + ' ' + taskRunner.getRequester() +
+                ' ' + taskRunner.getSpecialId();
+            if (Configuration.configuration.getLocalTransaction()
+                                           .getFromRequest(key) != null) {
+              // already running
+              continue;
+            }
+            if (taskRunner.isSelfRequested()) {
+              // cannot schedule a request where the host is the requested host
+              taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
+              try {
+                taskRunner.update();
+              } catch (final WaarpDatabaseNoDataException e) {
+                logger.warn("Update failed, no transfer found");
+              }
+              continue;
+            }
+            internalRunner.submitTaskRunner(taskRunner);
+            i++;
+            totalRuns++;
           }
-          internalRunner.submitTaskRunner(taskRunner);
-          i++;
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {

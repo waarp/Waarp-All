@@ -728,8 +728,8 @@ public class Configuration {
     subTaskGroup = new NioEventLoopGroup(getServerThread(),
                                          new WaarpThreadFactory("SubTask"));
     retrieveRunnerGroup =
-        new ThreadPoolRunnerExecutor(10, getRunnerThread() * 2, 10,
-                                     TimeUnit.SECONDS,
+        new ThreadPoolRunnerExecutor(getRunnerThread(), getRunnerThread() * 2,
+                                     10, TimeUnit.SECONDS,
                                      new SynchronousQueue<Runnable>(),
                                      new WaarpThreadFactory("RetrieveRunner"),
                                      new RejectedExecutionHandler() {
@@ -980,8 +980,8 @@ public class Configuration {
         .initialize(getBaseDirectory() + '/' + getWorkingPath() + "/httptemp");
     for (final RestConfiguration config : getRestConfigurations()) {
       RestServiceInitializer.initRestService(config);
-      // FIXME REST V1 not started!!!
-      // HttpRestR66Handler.initializeService(config);
+      // REST V1 is included within V2
+      // so no HttpRestR66Handler.initializeService(config)
       logger.info(
           Messages.getString("Configuration.HTTPStart") + " (REST Support) " +
           config);
@@ -1602,6 +1602,7 @@ public class Configuration {
    */
   public void setHostId(String hostID) {
     hostId = hostID;
+    WaarpLoggerFactory.setLocalName(hostId);
   }
 
   /**

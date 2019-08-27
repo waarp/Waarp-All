@@ -512,6 +512,7 @@ public class DbTaskRunner extends AbstractDbData {
 
     // Usefull ?
     transfer.setRank(requestPacket.getRank());
+    logger.trace("TRACE ID {}", requestPacket.getSpecialId());
     transfer.setId(requestPacket.getSpecialId());
 
     originalSize = requestPacket.getOriginalSize();
@@ -561,7 +562,10 @@ public class DbTaskRunner extends AbstractDbData {
                      requestPacket.getBlocksize());
     transfer.setRequester(getRequester(session, requestPacket));
     transfer.setRank(requestPacket.getRank());
-
+    if (requestPacket.getSpecialId() != ILLEGALVALUE) {
+      logger.trace("TRACE ID {}", requestPacket.getSpecialId());
+      transfer.setId(requestPacket.getSpecialId());
+    }
     originalSize = requestPacket.getOriginalSize();
     setOriginalSizeTransferMap(originalSize);
 
@@ -825,6 +829,7 @@ public class DbTaskRunner extends AbstractDbData {
    */
   public DbTaskRunner(long id, String requested) throws WaarpDatabaseException {
     TransferDAO transferAccess = null;
+    logger.trace("TRACE ID {}", id);
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
       transfer = transferAccess
@@ -1043,6 +1048,8 @@ public class DbTaskRunner extends AbstractDbData {
    */
   public void setFrom(DbTaskRunner runner) {
     if (runner != null) {
+      logger.trace("TRACE ID {}", transfer.getId());
+      logger.trace("TRACE ID {}", runner.getSpecialId());
       transfer.setInfoStatus(runner.getErrorInfo());
       transfer.setRank(runner.getRank());
       transfer.setStepStatus(runner.getStatus());

@@ -294,7 +294,7 @@ public class PartnerConfiguration {
                                                               rank1 == rank2 &&
                                                               subversion1 <=
                                                               subversion2);
-    logger.debug(
+    logger.trace(
         "1: " + major1 + ':' + rank1 + ':' + subversion1 + " <=? " + major2 +
         ':' + rank2 + ':' + subversion2 + " = " + (b));
     return b;

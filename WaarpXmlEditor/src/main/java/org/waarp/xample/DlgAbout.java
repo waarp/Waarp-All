@@ -70,7 +70,7 @@ public class DlgAbout extends JDialog implements ActionListener {
   final String copyright =
       "Copyright (c) 2002 Felix Golubov & 2010 Frederic Bregier";
   final String comments = "Helper for XML Configuration editing";
-  Border border1;
+  transient Border border1;
 
   public DlgAbout(Frame parent) {
     super(parent);

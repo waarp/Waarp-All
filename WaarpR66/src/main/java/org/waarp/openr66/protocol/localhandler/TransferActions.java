@@ -26,6 +26,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.file.DataBlock;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
@@ -481,9 +482,14 @@ public class TransferActions extends ServerActions {
       // Try reload
       runner =
           reloadDbTaskRunner(packet, rule, isRetrieve, requested, requester);
-      if (runner == null) {
+
+      final LocalChannelReference lcr =
+          Configuration.configuration.getLocalTransaction().getFromRequest(
+              requested + ' ' + requester + ' ' + packet.getSpecialId());
+      if (checkRunnerConsistency(packet, runner, lcr)) {
         return null;
       }
+
       if (runner.isAllDone()) {
         // truly an error since done
         session.setStatus(31);
@@ -494,9 +500,6 @@ public class TransferActions extends ServerActions {
                                   + packet.getSpecialId()), packet);
         return null;
       }
-      final LocalChannelReference lcr =
-          Configuration.configuration.getLocalTransaction().getFromRequest(
-              requested + ' ' + requester + ' ' + packet.getSpecialId());
       if (lcr != null) {
         // truly an error since still running
         session.setStatus(32);
@@ -518,7 +521,10 @@ public class TransferActions extends ServerActions {
         // nothing
       }
       // Change the SpecialID! => could generate an error ?
-      packet.setSpecialId(runner.getSpecialId());
+      logger.trace("Here was sepSpecialId without condition");
+      if (packet.getSpecialId() == ILLEGALVALUE) {
+        packet.setSpecialId(runner.getSpecialId());
+      }
     } else {
       // Id should be a reload
       runner = reloadDbTaskRunnerFromId(packet, rule, isRetrieve, requested,
@@ -528,6 +534,47 @@ public class TransferActions extends ServerActions {
       }
     }
     return runner;
+  }
+
+  private boolean checkRunnerConsistency(final RequestPacket packet,
+                                         final DbTaskRunner runner,
+                                         final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    // Check correctness of packet received vs current LCR
+    if (runner == null) {
+      logger.info("Id is unknown: {}}", packet.getSpecialId());
+      return true;
+    }
+    if (lcr != null && localChannelReference != null &&
+        !runner.isSelfRequest() &&
+        (!lcr.getLocalId().equals(localChannelReference.getLocalId()) ||
+         !lcr.getRemoteId().equals(localChannelReference.getRemoteId()))) {
+      logger.warn("LocalChannelReference differs: {}\n\t {}\n\tWill while " +
+                  "runner is AllDone: {}", localChannelReference, lcr,
+                  runner.isAllDone());
+      logger.info("Id is unknown: {}}", packet.getSpecialId());
+      if (runner.isAllDone()) {
+        try {
+          lcr.getServerHandler().tryFinalizeRequest(
+              new R66Result(lcr.getSession(), false, ErrorCode.Internal,
+                            runner));
+        } catch (OpenR66RunnerErrorException ignore) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
+        } catch (OpenR66ProtocolSystemException ignore) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
+        }
+        lcr.close();
+        if (localChannelReference.getClientRunner() != null &&
+            localChannelReference.getClientRunner().getTaskRunner() != null &&
+            localChannelReference.getClientRunner().getTaskRunner()
+                                 .isAllDone()) {
+          localChannelReference.close();
+        }
+        return true;
+      }
+      return false;
+    }
+    return false;
   }
 
   private DbTaskRunner reloadDbTaskRunnerFromId(final RequestPacket packet,
@@ -560,6 +607,12 @@ public class TransferActions extends ServerActions {
         return null;
       }
     }
+    final LocalChannelReference lcr =
+        Configuration.configuration.getLocalTransaction().getFromRequest(
+            requested + ' ' + requester + ' ' + packet.getSpecialId());
+    if (checkRunnerConsistency(packet, runner, lcr)) {
+      return null;
+    }
     runner.setSender(isRetrieve);
     // FIX check for SelfRequest
     if (runner.isSelfRequest()) {
@@ -590,7 +643,7 @@ public class TransferActions extends ServerActions {
                                           final String requested,
                                           final String requester)
       throws OpenR66ProtocolPacketException {
-    DbTaskRunner runner;
+    DbTaskRunner runner = null;
     try {
       runner = new DbTaskRunner(session, rule, packet.getSpecialId(), requester,
                                 requested);
@@ -1196,7 +1249,9 @@ public class TransferActions extends ServerActions {
         // nothing
       }
     } else {
-      session.newState(ENDREQUESTR);
+      if (session.getState() != CLOSEDCHANNEL) {
+        session.newState(ENDREQUESTR);
+      }
     }
     if (runner != null &&
         (runner.isSelfRequested() || runner.isSelfRequest())) {

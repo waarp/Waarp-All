@@ -374,6 +374,7 @@ public class ExecBusinessHandler extends BusinessHandler {
 
   @Override
   protected void cleanSession() {
+    // Nothing
   }
 
   @Override

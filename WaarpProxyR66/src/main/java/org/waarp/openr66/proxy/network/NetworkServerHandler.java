@@ -42,7 +42,7 @@ import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
-import org.waarp.openr66.proxy.configuration.Configuration;
+import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 
 import java.net.BindException;
 import java.net.SocketAddress;
@@ -320,7 +320,8 @@ public class NetworkServerHandler
     }
     try {
       if (channel.isActive()) {
-        channel.writeAndFlush(networkPacket).await(Configuration.WAITFORNETOP);
+        channel.writeAndFlush(networkPacket)
+               .await(ConfigurationProxyR66.WAITFORNETOP);
       }
     } catch (final InterruptedException e) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);

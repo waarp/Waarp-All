@@ -70,8 +70,8 @@ public abstract class TestAbstract extends TestAbstractMinimal {
       "/tmp/R66/conf/config.xml";
 
   protected static NetworkTransaction networkTransaction;
-  private static Project project;
-  static File homeDir;
+  protected static Project project;
+  protected static File homeDir;
   public static WebDriver driver = null;
 
   public enum DriverType {
@@ -353,12 +353,31 @@ public abstract class TestAbstract extends TestAbstractMinimal {
         return;
       }
     } else {
-      logger.error("Needs a correct configuration file as first argument");
+      logger.error("Needs a correct configuration file as first argument: {}",
+                   clientConfigFile.getAbsolutePath());
       return;
     }
     Configuration.configuration.setTimeoutCon(100);
     Configuration.configuration.pipelineInit();
     networkTransaction = new NetworkTransaction();
+    DbTaskRunner.clearCache();
+    TransferDAO transferAccess = null;
+    try {
+      transferAccess = DAOFactory.getInstance().getTransferDAO();
+      transferAccess.deleteAll();
+    } catch (final DAOConnectionException e) {
+      throw new WaarpDatabaseException(e);
+    } finally {
+      if (transferAccess != null) {
+        transferAccess.close();
+      }
+    }
+  }
+
+  public static void setUpBeforeClassClient() throws Exception {
+    Configuration.configuration.setTimeoutCon(100);
+    networkTransaction =
+        Configuration.configuration.getInternalRunner().getNetworkTransaction();
     DbTaskRunner.clearCache();
     TransferDAO transferAccess = null;
     try {

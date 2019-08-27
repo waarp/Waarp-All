@@ -42,7 +42,7 @@ import static org.waarp.openr66.configuration.FileBasedConfiguration.*;
 import static org.waarp.openr66.configuration.FileBasedElements.*;
 
 /**
- * File Based Configuration
+ * File Based ConfigurationProxyR66
  */
 public class FileBasedConfiguration {
   /**
@@ -81,7 +81,7 @@ public class FileBasedConfiguration {
   private static final String XML_SERVER_REMOTESSL = "serverremotessl";
 
   /**
-   * Structure of the Configuration file
+   * Structure of the ConfigurationProxyR66 file
    */
   private static final XmlDecl[] configServerParamDecls = {
       // server
@@ -100,7 +100,7 @@ public class FileBasedConfiguration {
       new XmlDecl(XmlType.STRING, XML_MONITOR_SNMP_CONFIG)
   };
   /**
-   * Structure of the Configuration file
+   * Structure of the ConfigurationProxyR66 file
    */
   private static final XmlDecl[] configNetworkProxyDecls = {
       // proxy
@@ -112,7 +112,7 @@ public class FileBasedConfiguration {
       new XmlDecl(XmlType.BOOLEAN, XML_SERVER_REMOTESSL)
   };
   /**
-   * Structure of the Configuration file
+   * Structure of the ConfigurationProxyR66 file
    */
   private static final XmlDecl[] configNetworkServerDecls = {
       // network
@@ -123,7 +123,7 @@ public class FileBasedConfiguration {
   };
 
   /**
-   * Structure of the Configuration file
+   * Structure of the ConfigurationProxyR66 file
    */
   private static final XmlDecl[] configDirectoryDecls = {
       // directory
@@ -133,7 +133,7 @@ public class FileBasedConfiguration {
   };
 
   /**
-   * Structure of the Configuration file
+   * Structure of the ConfigurationProxyR66 file
    */
   private static final XmlDecl[] configLimitDecls = {
       // limit
@@ -158,7 +158,7 @@ public class FileBasedConfiguration {
   };
 
   /**
-   * Global Structure for Server Configuration
+   * Global Structure for Server ConfigurationProxyR66
    */
   private static final XmlDecl[] configServer = {
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,

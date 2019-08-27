@@ -17,19 +17,20 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-package org.waarp.gateway.ftp.database.model;
+package org.waarp.gateway.kernel.database.model;
 
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelMariadb;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * MySQL Database Model implementation
+ * MariaDB Database Model implementation
  */
-public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
+public class DbModelMariaDbKernel extends DbModelMariadb {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -39,7 +40,7 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMysql(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMariaDbKernel(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
@@ -49,29 +50,26 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    org.waarp.gateway.kernel.database.model.DbModelMysql
-        .createTableMonitoring(session);
+    DbModelMysqlKernel.createTableMonitoring(session);
   }
 
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    org.waarp.gateway.kernel.database.model.DbModelMysql
-        .resetSequenceMonitoring(session, newvalue);
+    DbModelMysqlKernel.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
   public synchronized long nextSequence(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    return org.waarp.gateway.kernel.database.model.DbModelMysql
-        .nextSequenceMonitoring(dbSession, lock);
+    return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);
   }
 
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    return true;
+    return false;
   }
 
   @Override

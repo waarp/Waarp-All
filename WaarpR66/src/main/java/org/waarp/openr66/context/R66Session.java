@@ -165,7 +165,8 @@ public class R66Session implements SessionInterface {
     try {
       state.setCurrent(desiredstate);
     } catch (final IllegalFiniteStateException e) {
-      logger.warn("Should not changed of State: {} {}", this, e.getMessage());
+      logger
+          .warn("Should not changed of State: {} {}", this, e.getMessage(), e);
       state.setDryCurrent(desiredstate);
     }
   }

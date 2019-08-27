@@ -83,13 +83,13 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
    *
    */
   private static final long serialVersionUID = 4353436426114132650L;
-  FXModel model;
+  transient FXModel model;
   final FTree tree;
   final JTextField mouseInfo;
   final JTextArea errorInfoArea;
   final JTextArea nodesInfoArea;
-  final Vector<FXViewStatusListener> viewListeners;
-  final InnerListener innerListener;
+  transient final Vector<FXViewStatusListener> viewListeners;
+  transient final InnerListener innerListener;
   boolean insert;
   boolean remove;
   boolean moveUp;

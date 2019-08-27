@@ -411,6 +411,10 @@ public abstract class AbstractTransfer implements Runnable {
     }
   }
 
+  public void setNormalInfoAsWarn(boolean normalInfoAsWarn1) {
+    normalInfoAsWarn = normalInfoAsWarn1;
+  }
+
   public List<String> getRemoteFiles(DbRule dbrule, String[] localfilenames,
                                      String requested,
                                      NetworkTransaction networkTransaction) {

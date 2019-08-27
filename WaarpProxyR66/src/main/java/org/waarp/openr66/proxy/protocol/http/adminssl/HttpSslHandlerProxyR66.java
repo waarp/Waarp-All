@@ -40,6 +40,7 @@ import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.http.adminssl.HttpSslHandler;
 import org.waarp.openr66.proxy.utils.Version;
 
 import java.util.Arrays;
@@ -52,8 +53,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 /**
  *
  */
-public class HttpSslHandler
-    extends org.waarp.openr66.protocol.http.adminssl.HttpSslHandler {
+public class HttpSslHandlerProxyR66 extends HttpSslHandler {
   private static final String XXXLEVEL4XXX2 = "XXXLEVEL4XXX";
   private static final String XXXLEVEL3XXX2 = "XXXLEVEL3XXX";
   private static final String XXXLEVEL2XXX2 = "XXXLEVEL2XXX";
@@ -63,7 +63,7 @@ public class HttpSslHandler
    * Internal Logger
    */
   private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(HttpSslHandler.class);
+      WaarpLoggerFactory.getLogger(HttpSslHandlerProxyR66.class);
 
   private enum REQUEST {
     Logon("Logon.html"), index("index.html"), error("error.html"),
@@ -85,7 +85,7 @@ public class HttpSslHandler
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpSslHandler handler) {
+    public String readFileUnique(HttpSslHandlerProxyR66 handler) {
       return handler.readFileHeader(configuration.getHttpBasePath() + header);
     }
   }

@@ -21,12 +21,12 @@ package org.waarp.openr66.database.model;
 
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.model.DbModelMysql;
 
 /**
- * MariaDB Database Model implementation
+ * MySQL Database Model implementation
  */
-public class DbModelMariadb
-    extends org.waarp.common.database.model.DbModelMariadb {
+public class DbModelMysqlR66 extends DbModelMysql {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -36,7 +36,7 @@ public class DbModelMariadb
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMariadb(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMysqlR66(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }

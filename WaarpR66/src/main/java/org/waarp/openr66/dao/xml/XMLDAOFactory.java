@@ -42,6 +42,7 @@ public class XMLDAOFactory extends DAOFactory {
       Configuration.configuration.getArchivePath();
 
   public XMLDAOFactory() {
+    // Empty
   }
 
   @Override

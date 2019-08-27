@@ -483,6 +483,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     if (transfer.getId() == ILLEGALVALUE) {
       transfer.setId(getNextId());
     }
+    logger.trace("TRACE ID {}", transfer.getId());
 
     final Object[] params = {
         transfer.getGlobalStep().ordinal(),

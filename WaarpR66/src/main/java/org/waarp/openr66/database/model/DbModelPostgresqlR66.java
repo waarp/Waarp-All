@@ -23,6 +23,7 @@ import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelPostgresql;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
@@ -38,14 +39,13 @@ import static org.waarp.common.database.DbConstant.*;
 /**
  * PostGreSQL Database Model implementation
  */
-public class DbModelPostgresql
-    extends org.waarp.common.database.model.DbModelPostgresql {
+public class DbModelPostgresqlR66 extends DbModelPostgresql {
   /**
    * Create the object and initialize if necessary the driver
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelPostgresql() throws WaarpDatabaseNoConnectionException {
+  public DbModelPostgresqlR66() throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 

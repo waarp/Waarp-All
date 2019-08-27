@@ -21,48 +21,59 @@
 package org.waarp.openr66.protocol.it;
 
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.waarp.common.database.exception.WaarpDatabaseException;
-import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.openr66.client.MultipleSubmitTransfer;
 import org.waarp.openr66.client.SubmitTransfer;
-import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.commander.InternalRunner;
 import org.waarp.openr66.database.DbConstantR66;
-import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.NetworkClientTest;
 import org.waarp.openr66.protocol.junit.TestAbstract;
-import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
-import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
-import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
-import org.waarp.openr66.protocol.localhandler.packet.json.ShutdownOrBlockJsonPacket;
 import org.waarp.openr66.protocol.utils.R66Future;
+import org.waarp.openr66.server.R66Server;
+import org.waarp.openr66.server.ServerInitDatabase;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScenarioIT extends TestAbstract {
+  /**
+   * If defined using -DIT_LONG_TEST=true then will execute long term tests
+   */
+  public static final String IT_LONG_TEST = "IT_LONG_TEST";
+
   private static final ArrayList<DbTaskRunner> dbTaskRunners =
       new ArrayList<DbTaskRunner>();
-  private static final String CONFIG_SERVER_A_MINIMAL_XML =
-      "config-serverA-minimal.xml";
-  private static final String LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML =
-      "Linux/config/config-serverInitA.xml";
-  private static final String LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML =
-      "Linux/config/config-serverInitB.xml";
-  private static final String CONFIG_CLIENT_A_XML = "config-clientA.xml";
+  private static final String SERVER_1_XML = "R1/conf/server_1.xml";
+  private static final String SERVER_2_XML = "R2/conf/server_2.xml";
+  private static final String SERVER_3_XML = "R3/conf/server_3.xml";
+  private static final String SERVER_INIT_1_XML =
+      "it/scenario_1_2_3/R1/conf/server_1.xml";
+
+  private static final List<Integer> PIDS = new ArrayList<Integer>();
+  public static int NUMBER_FILES = 50;
+  private static int r66Pid1 = 999999;
+  private static int r66Pid2 = 999999;
+  private static int r66Pid3 = 999999;
+  private static final boolean SERVER1_IN_JUNIT = false;
 
   /**
    * @throws Exception
@@ -72,14 +83,95 @@ public class ScenarioIT extends TestAbstract {
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
-    setUpBeforeClassMinimal(LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML);
-    setUpDbBeforeClass();
-    // setUpBeforeClassServer("Linux/config/config-serverInitB.xml", "config-serverB.xml", false);
-    setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
-                           CONFIG_SERVER_A_MINIMAL_XML, true);
-    setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
+    setUpBeforeClassMinimal(SERVER_INIT_1_XML);
+    File r1 = new File(file.getParentFile(), "it/scenario_1_2_3/R1/conf");
+    createBaseR66Directory(r1, "/tmp/R66/scenario_1_2_3/R1");
+    File r2 = new File(file.getParentFile(), "it/scenario_1_2_3/R2/conf");
+    createBaseR66Directory(r2, "/tmp/R66/scenario_1_2_3/R2");
+    File r3 = new File(file.getParentFile(), "it/scenario_1_2_3/R3/conf");
+    createBaseR66Directory(r3, "/tmp/R66/scenario_1_2_3/R3");
+    setUp3DbBeforeClass();
+    Configuration.configuration.setTimeoutCon(100);
+    if (!SERVER1_IN_JUNIT) {
+      r66Pid1 = startServer(SERVER_1_XML);
+    }
+    r66Pid2 = startServer(SERVER_2_XML);
+    r66Pid3 = startServer(SERVER_3_XML);
+    final File file2 = new File(dirResources, SERVER_1_XML);
+    if (SERVER1_IN_JUNIT) {
+      R66Server.main(new String[] { file2.getAbsolutePath() });
+      dir = dirResources;
+      setUpBeforeClassClient();
+    } else {
+      dir = dirResources;
+      setUpBeforeClassClient(SERVER_1_XML);
+    }
     WaarpLoggerFactory
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+  }
+
+  public static void setUp3DbBeforeClass() throws Exception {
+    deleteBase();
+    final ClassLoader classLoader = ScenarioIT.class.getClassLoader();
+    DetectionUtils.setJunit(true);
+    File file = new File(classLoader.getResource(SERVER_INIT_1_XML).getFile());
+    final String newfile = file.getAbsolutePath().replace("target/test-classes",
+                                                          "src/test/resources");
+    file = new File(newfile);
+    dir = file.getParentFile();
+    dirResources = dir.getParentFile().getParentFile();
+    logger.warn("File {} exists? {}", file, file.isFile());
+    homeDir =
+        dir.getParentFile().getParentFile().getParentFile().getParentFile()
+           .getParentFile().getParentFile().getParentFile();
+    logger.warn("Dir {} exists? {}", homeDir, homeDir.isDirectory());
+
+    // global ant project settings
+    project = Processes.getProject(homeDir);
+    initiateDb(SERVER_1_XML);
+    initiateDb(SERVER_2_XML);
+    initiateDb(SERVER_3_XML);
+
+    Processes.finalizeProject(project);
+  }
+
+  public static int startServer(String serverConfig) throws Exception {
+    final File file2 = new File(dirResources, serverConfig);
+    if (file2.exists()) {
+      System.err.println("Find server file: " + file2.getAbsolutePath());
+      final String[] argsServer = {
+          file2.getAbsolutePath()
+      };
+      // global ant project settings
+      project = Processes.getProject(homeDir);
+      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      int pid = Processes
+          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      PIDS.add(pid);
+      logger.warn("Start Done: {}", pid);
+      return pid;
+    } else {
+      System.err.println("Cannot find server file: " + file2.getAbsolutePath());
+      fail("Cannot find server file");
+      return 999999;
+    }
+  }
+
+  public static void initiateDb(String serverInit) {
+    DetectionUtils.setJunit(true);
+    final File file = new File(dirResources, serverInit);
+    logger.warn("File {} exists? {}", file, file.isFile());
+    final File fileAuth = new File(dirResources, "OpenR66-authent.xml");
+    logger.warn("File {} exists? {}", fileAuth, fileAuth.isFile());
+
+    final String[] args = {
+        file.getAbsolutePath(), "-initdb", "-dir",
+        file.getParentFile().getAbsolutePath(), "-auth",
+        fileAuth.getAbsolutePath()
+    };
+    Processes
+        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Configuration.configuration.setTimeoutCon(100);
   }
 
   /**
@@ -87,51 +179,88 @@ public class ScenarioIT extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    Thread.sleep(100);
-    for (final DbTaskRunner dbTaskRunner : dbTaskRunners) {
-      try {
-        dbTaskRunner.delete();
-      } catch (final WaarpDatabaseException e) {
-        logger.warn("Cannot apply nolog to " + dbTaskRunner, e);
-      }
+    for (int pid : PIDS) {
+      Processes.kill(pid, true);
     }
-    final DbHostAuth host = new DbHostAuth("hostas");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-    final byte scode = -1;
-
-    // Shutdown server
-    logger.warn("Shutdown Server");
-    Configuration.configuration.setTimeoutCon(100);
-    final R66Future future = new R66Future(true);
-    final ShutdownOrBlockJsonPacket node8 = new ShutdownOrBlockJsonPacket();
-    node8.setRestartOrBlock(false);
-    node8.setShutdownOrBlock(true);
-    node8.setKey(FilesystemBasedDigest.passwdCrypt(
-        Configuration.configuration.getServerAdminKey()));
-    final AbstractLocalPacket valid =
-        new JsonCommandPacket(node8, LocalPacketFactory.BLOCKREQUESTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.SHUTDOWN, true);
-    Thread.sleep(200);
-
     tearDownAfterClassClient();
     tearDownAfterClassMinimal();
     tearDownAfterClassServer();
   }
 
   @Test
-  public void test01_SendToItself() throws IOException, InterruptedException {
+  public void test010_MultipleSends() throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    Assume.assumeNotNull(networkTransaction);
+    File baseDir = new File("/tmp/R66/scenario_1_2_3/R1/out/");
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      File fileOut = new File(baseDir, "hello" + i);
+      final File outHello = generateOutFile(fileOut.getAbsolutePath(), 100);
+    }
+    final R66Future future = new R66Future(true);
+    final MultipleSubmitTransfer transaction =
+        new MultipleSubmitTransfer(future, "server2", "hello*", "first",
+                                   "test multiple with jump", true, 1024,
+                                   DbConstantR66.ILLEGALVALUE, null,
+                                   networkTransaction);
+    transaction.setNormalInfoAsWarn(false);
+    transaction.run();
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    long timestart = System.currentTimeMillis();
+    File dirR2 = new File("/tmp/R66/scenario_1_2_3/R2/in");
+    File dirR3 = new File("/tmp/R66/scenario_1_2_3/R3/in");
+    int max = 0;
+    long timestop;
+    if (SERVER1_IN_JUNIT) {
+      InternalRunner internalRunner =
+          Configuration.configuration.getInternalRunner();
+      for (int i = 0; i < NUMBER_FILES * 10; i++) {
+        Thread.sleep(100);
+        if (internalRunner != null) {
+          max = Math.max(max, internalRunner.nbInternalRunner());
+        }
+        int count = dirR3.list().length;
+        if (count == NUMBER_FILES) {
+          break;
+        }
+      }
+      timestop = System.currentTimeMillis();
+      Thread.sleep(1000);
+      logger.warn(
+          "Sent {} files to R2, then {} to R3, using at most {} parallel clients" +
+          " ({} per seconds)", dirR2.list().length, dirR3.list().length, max,
+          NUMBER_FILES * 1000 / (timestop - timestart));
+    } else {
+      for (int i = 0; i < NUMBER_FILES * 10; i++) {
+        Thread.sleep(200);
+        int count = dirR3.list().length;
+        if (count == NUMBER_FILES) {
+          break;
+        }
+      }
+      timestop = System.currentTimeMillis();
+      Thread.sleep(1000);
+      logger.warn(
+          "Sent {} files to R2, then {} to R3 ({} seconds, {} per seconds)",
+          dirR2.list().length, dirR3.list().length,
+          (timestop - timestart) / 1000,
+          NUMBER_FILES * 1000 / (timestop - timestart));
+    }
+    FileUtils.forceDeleteRecursiveDir(dirR2);
+    FileUtils.forceDeleteRecursiveDir(dirR3);
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
+  public void test011_SendToItself() throws IOException, InterruptedException {
     logger.warn("Start {}", Processes.getCurrentMethodName());
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 1000);
+    Assume.assumeNotNull(networkTransaction);
+    File baseDir = new File("/tmp/R66/scenario_1_2_3/R1/out/");
+    final File totest =
+        generateOutFile(baseDir.getAbsolutePath() + "/testTask.txt", 1000);
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
-        new SubmitTransfer(future, "hostas", "testTask.txt", "rule3",
+        new SubmitTransfer(future, "server1-ssl", "testTask.txt", "rule3",
                            "Test Send Submit", true, 8192,
                            DbConstantR66.ILLEGALVALUE, null);
     transaction.run();
@@ -148,6 +277,91 @@ public class ScenarioIT extends TestAbstract {
   }
 
 
+  @Test
+  public void test020_MultipleSends_Through_Itself()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    Assume.assumeNotNull(networkTransaction);
+    final R66Future future = new R66Future(true);
+    final MultipleSubmitTransfer transaction =
+        new MultipleSubmitTransfer(future, "server1", "hello*", "third",
+                                   "test multiple with jump through itself",
+                                   true, 1024, DbConstantR66.ILLEGALVALUE, null,
+                                   networkTransaction);
+    transaction.setNormalInfoAsWarn(false);
+    transaction.run();
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    long timestart = System.currentTimeMillis();
+    File dirR1 = new File("/tmp/R66/scenario_1_2_3/R1/in");
+    File dirR3 = new File("/tmp/R66/scenario_1_2_3/R3/in");
+    int max = 0;
+    long timestop;
+    if (SERVER1_IN_JUNIT) {
+      InternalRunner internalRunner =
+          Configuration.configuration.getInternalRunner();
+      for (int i = 0; i < NUMBER_FILES * 10; i++) {
+        Thread.sleep(100);
+        if (internalRunner != null) {
+          max = Math.max(max, internalRunner.nbInternalRunner());
+        }
+        int count = dirR3.list().length;
+        if (count == NUMBER_FILES) {
+          break;
+        }
+      }
+      timestop = System.currentTimeMillis();
+      Thread.sleep(1000);
+      logger.warn(
+          "Sent {} files to R2, then {} to R3, using at most {} parallel clients" +
+          " ({} per seconds)", dirR1.list().length, dirR3.list().length, max,
+          NUMBER_FILES * 1000 / (timestop - timestart));
+    } else {
+      for (int i = 0; i < NUMBER_FILES * 10; i++) {
+        Thread.sleep(200);
+        int count = dirR3.list().length;
+        if (count == NUMBER_FILES) {
+          break;
+        }
+      }
+      timestop = System.currentTimeMillis();
+      Thread.sleep(1000);
+      logger.warn(
+          "Sent {} files to R1, then {} to R3 ({} seconds, {} per seconds)",
+          dirR1.list().length, dirR3.list().length,
+          (timestop - timestart) / 1000,
+          NUMBER_FILES * 1000 / (timestop - timestart));
+    }
+    FileUtils.forceDeleteRecursiveDir(dirR1);
+    FileUtils.forceDeleteRecursiveDir(dirR3);
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  //@Ignore("Only for benchmarks")
+  @Test
+  public void test03_5000_MultipleSends()
+      throws IOException, InterruptedException {
+    Assume.assumeTrue("If the Long term tests are allowed",
+                      SystemPropertyUtil.get(IT_LONG_TEST, false));
+    int lastNumber = NUMBER_FILES;
+    NUMBER_FILES = 5000;
+    test010_MultipleSends();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    // Ensure the last send is ok
+    test011_SendToItself();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    test020_MultipleSends_Through_Itself();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    // Ensure the last send is ok
+    test011_SendToItself();
+    NUMBER_FILES = lastNumber;
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(5000);
+  }
+
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
@@ -159,6 +373,7 @@ public class ScenarioIT extends TestAbstract {
           return;
         } else if (checkedRunner.isInError()) {
           logger.error("DbTaskRunner in error");
+          fail("DbTaskRunner in error");
           return;
         }
         Thread.sleep(100);

@@ -94,13 +94,6 @@ public abstract class ConnectionActions {
    */
   protected FilesystemBasedDigest localDigest;
 
-  protected void setFrom(ConnectionActions handler) {
-    globalDigest = handler.globalDigest;
-    localChannelReference = handler.localChannelReference;
-    localDigest = handler.localDigest;
-    session = handler.session;
-  }
-
   void businessError() {
     if (session.getBusinessObject() != null) {
       session.getBusinessObject().checkAtError(session);
@@ -229,9 +222,8 @@ public abstract class ConnectionActions {
         runner.clean();
       }
       LocalTransaction lt = Configuration.configuration.getLocalTransaction();
-      if (lt != null && localChannelReference != null &&
-          lt.contained(localChannelReference.getLocalId())) {
-        localChannelReference.close();
+      if (lt != null && localChannelReference != null) {
+        localChannelReference.closeInternal();
       }
     }
   }
@@ -247,6 +239,16 @@ public abstract class ConnectionActions {
                                    .getBusinessInterface(session));
   }
 
+  protected void setLocalChannelReference(
+      LocalChannelReference localChannelReference) {
+    if (localChannelReference != null) {
+      this.localChannelReference = localChannelReference;
+      if (session != null) {
+        session.setLocalChannelReference(localChannelReference);
+      }
+    }
+  }
+
   /**
    * Startup of the session and the local channel reference
    *
@@ -256,15 +258,6 @@ public abstract class ConnectionActions {
    */
   public void startup(StartupPacket packet)
       throws OpenR66ProtocolPacketException {
-    for (int i = 0; i < Configuration.RETRYNB; i++) {
-      localChannelReference = Configuration.configuration.getLocalTransaction()
-                                                         .getFromId(packet
-                                                                        .getLocalId());
-      if (localChannelReference != null) {
-        session.setLocalChannelReference(localChannelReference);
-        break;
-      }
-    }
     packet.clear();
     if (localChannelReference == null) {
       session.newState(ERROR);

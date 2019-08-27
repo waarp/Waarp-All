@@ -46,6 +46,6 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());
     }
-    pipeline.addLast("handler", new HttpFormattedHandler());
+    pipeline.addLast("handler", new HttpFormattedHandlerProxyR66());
   }
 }

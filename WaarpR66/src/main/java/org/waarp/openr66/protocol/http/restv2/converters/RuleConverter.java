@@ -108,7 +108,25 @@ public final class RuleConverter {
     /**
      * From requested to requester, with MD5 checksum verification.
      */
-    receiveMD5(4);
+    receiveMD5(4),
+    /**
+     * From requester to requested, using Through mode.
+     */
+    SENDTHROUGHMODE(5),
+    /**
+     * From requested to requester, using Through mode.
+     */
+    RECVTHROUGHMODE(6),
+    /**
+     * From requester to requested, with MD5 checksum verification and
+     * Through mode.
+     */
+    SENDMD5THROUGHMODE(7),
+    /**
+     * From requested to requester, with MD5 checksum verification and
+     * Through mode.
+     */
+    RECVMD5THROUGHMODE(8);
 
     /**
      * The database code of the transfer mode.
@@ -135,7 +153,7 @@ public final class RuleConverter {
           return mode;
         }
       }
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Code unknown: " + code);
     }
   }
 

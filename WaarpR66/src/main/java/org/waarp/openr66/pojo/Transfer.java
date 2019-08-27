@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.pojo;
 
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -43,6 +45,11 @@ import static org.waarp.openr66.dao.database.DBTransferDAO.*;
 @XmlType(name = DbTaskRunner.XMLRUNNER)
 @XmlAccessorType(XmlAccessType.NONE)
 public class Transfer {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(Transfer.class);
 
   public enum TASKSTEP {
     NOTASK(0), PRETASK(1), TRANSFERTASK(2), POSTTASK(3), ALLDONETASK(4),
@@ -309,6 +316,7 @@ public class Transfer {
   }
 
   public void setId(long id) {
+    logger.trace("TRACE ID {}", id);
     this.id = id;
   }
 

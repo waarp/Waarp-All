@@ -125,7 +125,7 @@ public class XAmple extends JFrame
   public static final String BOUNDS_WIDTH = "BOUNDS_WIDTH";
   public static final String BOUNDS_HEIGHT = "BOUNDS_HEIGHT";
 
-  final History history = new History("");
+  transient final History history = new History("");
 
   final FHistoryButton btnOpenXSD;
   final FHistoryButton btnOpenXML;
@@ -150,12 +150,13 @@ public class XAmple extends JFrame
   final JMenuItem mAbout = new JMenuItem("About...");
 
   final FXDoubleView dblView;
-  final FXDocumentModel model;
+  transient final FXDocumentModel model;
 
   final JFileChooser fileDlg;
-  final TheFileFilter xsdFilter =
+  transient final TheFileFilter xsdFilter =
       new TheFileFilter("xsd", "XML Schema files *.xsd");
-  final TheFileFilter xmlFilter = new TheFileFilter("xml", "XML files *.xml");
+  transient final TheFileFilter xmlFilter =
+      new TheFileFilter("xml", "XML files *.xml");
 
   final FFileDialog fFileDialog = new FFileDialog();
 

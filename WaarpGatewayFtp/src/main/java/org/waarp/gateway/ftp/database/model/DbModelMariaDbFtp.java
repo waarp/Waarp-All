@@ -23,14 +23,15 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelMariadb;
+import org.waarp.gateway.kernel.database.model.DbModelMysqlKernel;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * MariaDb Database Model implementation
  */
-public class DbModelMariaDb
-    extends org.waarp.common.database.model.DbModelMariadb {
+public class DbModelMariaDbFtp extends DbModelMariadb {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -40,7 +41,7 @@ public class DbModelMariaDb
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMariaDb(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMariaDbFtp(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
@@ -50,23 +51,20 @@ public class DbModelMariaDb
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    org.waarp.gateway.kernel.database.model.DbModelMysql
-        .createTableMonitoring(session);
+    DbModelMysqlKernel.createTableMonitoring(session);
   }
 
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    org.waarp.gateway.kernel.database.model.DbModelMysql
-        .resetSequenceMonitoring(session, newvalue);
+    DbModelMysqlKernel.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
   public synchronized long nextSequence(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    return org.waarp.gateway.kernel.database.model.DbModelMysql
-        .nextSequenceMonitoring(dbSession, lock);
+    return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);
   }
 
   @Override

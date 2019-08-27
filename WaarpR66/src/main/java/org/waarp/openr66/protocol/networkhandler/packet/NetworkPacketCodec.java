@@ -77,7 +77,6 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     buf.skipBytes(length - 9);
     NetworkPacket networkPacket =
         new NetworkPacket(localId, remoteId, code, buffer);
-    logger.trace("received network packet {}", networkPacket);
     if (code == LocalPacketFactory.KEEPALIVEPACKET) {
       final KeepAlivePacket keepAlivePacket = (KeepAlivePacket) LocalPacketCodec
           .decodeNetworkPacket(networkPacket.getBuffer());
@@ -105,7 +104,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   @Override
   protected void encode(ChannelHandlerContext ctx, NetworkPacket msg,
                         ByteBuf out) throws Exception {
-    logger.trace("sending network packet {}", msg);
+    logger.trace("TRACE ID sending network packet {}", msg);
     final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
     finalBuf.release();

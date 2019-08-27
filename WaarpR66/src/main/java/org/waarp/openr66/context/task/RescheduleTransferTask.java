@@ -536,6 +536,8 @@ public class RescheduleTransferTask extends AbstractTask {
             }
             isModified = true;
             break;
+          default:
+            // nothing
         }
       }
     }

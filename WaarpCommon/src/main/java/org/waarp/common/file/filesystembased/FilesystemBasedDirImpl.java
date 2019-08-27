@@ -544,7 +544,6 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @return True if Full Time, False is Default (as in 'ls' command)
    */
   protected boolean isFullTime() {
-    // FIXME should be it the default ?
     return false;
   }
 

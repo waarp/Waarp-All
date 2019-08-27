@@ -67,9 +67,10 @@ public class FHistoryButton extends JComponent
   final JToggleButton leftButton = new JToggleButton();
   final Btn rightButton = new Btn();
   final JPopupMenu popupMenu = new JPopupMenu();
-  final ArrayList<History> items = new ArrayList<History>();
-  final ArrayList<ItemListener> itemListeners = new ArrayList<ItemListener>(1);
-  final ArrayList<ActionListener> actionListeners =
+  transient final ArrayList<History> items = new ArrayList<History>();
+  transient final ArrayList<ItemListener> itemListeners =
+      new ArrayList<ItemListener>(1);
+  transient final ArrayList<ActionListener> actionListeners =
       new ArrayList<ActionListener>(1);
 
   public FHistoryButton(ImageIcon icon, String leftTipText,

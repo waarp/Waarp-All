@@ -24,7 +24,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
-import org.waarp.openr66.proxy.configuration.Configuration;
+import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 import org.waarp.openr66.proxy.configuration.FileBasedConfiguration;
 
 import static org.waarp.openr66.protocol.configuration.Configuration.*;
@@ -48,7 +48,7 @@ public class R66Proxy {
       logger.error("Needs the configuration file as first argument");
       return;
     }
-    configuration = new Configuration();
+    configuration = new ConfigurationProxyR66();
     if (initialize(args[0])) {
       logger.warn("Proxy OpenR66 starts for " + configuration.getHostId());
       SysErrLogger.FAKE_LOGGER

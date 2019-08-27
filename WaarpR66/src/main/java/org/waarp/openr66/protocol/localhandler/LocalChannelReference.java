@@ -205,6 +205,8 @@ public class LocalChannelReference {
       logger.warn("DbAdmin is not active");
       noconcurrencyDbSession = null;
     }
+    LocalServerHandler.channelActive(serverHandler);
+    serverHandler.setLocalChannelReference(this);
     networkChannelRef.add(this);
   }
 
@@ -217,6 +219,7 @@ public class LocalChannelReference {
     localId = 0;
     futureRequest = new R66Future(true);
     cts = null;
+    serverHandler.localChannelReference = this;
   }
 
   /**
@@ -226,7 +229,17 @@ public class LocalChannelReference {
     // Now force the close of the database after a wait
     ChannelCloseTimer
         .closeFutureTransaction(serverHandler, noconcurrencyDbSession);
-    LocalServerHandler.channelInactive(getServerHandler());
+    closeInternal();
+  }
+
+  /**
+   * Close the localChannelReference
+   */
+  public void closeInternal() {
+    LocalServerHandler.channelInactive(serverHandler);
+    if (networkChannelRef != null) {
+      networkChannelRef.remove(this);
+    }
     LocalTransaction lt = Configuration.configuration.getLocalTransaction();
     if (lt != null) {
       lt.remove(this);

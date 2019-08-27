@@ -24,6 +24,7 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelOracle;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.database.data.DbHostAuth;
@@ -40,8 +41,7 @@ import static org.waarp.common.database.DbConstant.*;
 /**
  * Oracle Database Model implementation
  */
-public class DbModelOracle
-    extends org.waarp.common.database.model.DbModelOracle {
+public class DbModelOracleR66 extends DbModelOracle {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -51,7 +51,7 @@ public class DbModelOracle
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelOracle(String dbserver, String dbuser, String dbpasswd)
+  public DbModelOracleR66(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }

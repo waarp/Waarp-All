@@ -30,9 +30,9 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -74,14 +74,12 @@ public class InternalRunner {
     scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
         new WaarpThreadFactory("InternalRunner", false));
     isRunning = true;
-    final BlockingQueue<Runnable> workQueue =
-        new LinkedBlockingQueue<Runnable>();
-    threadPoolExecutor = new ThreadPoolExecutor(10, Configuration.configuration
-                                                        .getRunnerThread() * 3,
-                                                1000, TimeUnit.MILLISECONDS,
-                                                workQueue,
-                                                new WaarpThreadFactory(
-                                                    "ClientRunner"));
+    final BlockingQueue<Runnable> workQueue = new SynchronousQueue<Runnable>();
+    threadPoolExecutor =
+        new ThreadPoolExecutor(Configuration.configuration.getRunnerThread(),
+                               Configuration.configuration.getRunnerThread() *
+                               3, 1000, TimeUnit.MILLISECONDS, workQueue,
+                               new WaarpThreadFactory("ClientRunner"));
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       Configuration.configuration
                                                                           .getDelayCommander(),
@@ -93,6 +91,16 @@ public class InternalRunner {
 
   public NetworkTransaction getNetworkTransaction() {
     return networkTransaction;
+  }
+
+  public int allowedToSubmit() {
+    if ((isRunning || !Configuration.configuration.isShutdown()) &&
+        (threadPoolExecutor.getActiveCount() <
+         Configuration.configuration.getRunnerThread())) {
+      return Configuration.configuration.getRunnerThread() -
+             threadPoolExecutor.getActiveCount();
+    }
+    return 0;
   }
 
   /**
@@ -112,12 +120,11 @@ public class InternalRunner {
           runner.setSendThroughMode();
           taskRunner.checkThroughMode();
         }
-        runner.setDaemon(true);
         // create the client, connect and run
         threadPoolExecutor.execute(runner);
       } else {
         // too many current active threads
-        logger.debug("Task rescheduled {}", taskRunner);
+        logger.info("Task rescheduled {}", taskRunner);
       }
     }
   }

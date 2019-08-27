@@ -36,14 +36,14 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @param <E>
  */
-public class MachineState<E> {
+public class MachineState<E extends Enum<E>> {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(MachineState.class);
 
-  private ConcurrentMap<E, EnumSet<?>> statemap;
+  private ConcurrentMap<E, EnumSet<E>> statemap;
   private E currentState;
 
   /**
@@ -54,7 +54,7 @@ public class MachineState<E> {
    *     following
    *     states
    */
-  public MachineState(E initialState, ConcurrentMap<E, EnumSet<?>> map) {
+  public MachineState(E initialState, ConcurrentMap<E, EnumSet<E>> map) {
     statemap = map;
     currentState = initialState;
   }
@@ -66,7 +66,7 @@ public class MachineState<E> {
    * @param initialState initial MachineState
    */
   public MachineState(E initialState) {
-    statemap = new ConcurrentHashMap<E, EnumSet<?>>();
+    statemap = new ConcurrentHashMap<E, EnumSet<E>>();
     currentState = initialState;
   }
 
@@ -80,7 +80,7 @@ public class MachineState<E> {
    *
    * @return the previous association if any
    */
-  public EnumSet<?> addNewAssociation(E state, EnumSet<?> set) {
+  public EnumSet<E> addNewAssociation(E state, EnumSet<E> set) {
     return statemap.put(state, set);
   }
 
@@ -93,7 +93,7 @@ public class MachineState<E> {
    *
    * @return the previous association if any
    */
-  public EnumSet<?> addNewAssociation(Transition<E> elt) {
+  public EnumSet<E> addNewAssociation(Transition<E> elt) {
     return statemap.put(elt.getState(), elt.getSet());
   }
 
@@ -104,7 +104,7 @@ public class MachineState<E> {
    *
    * @return the previous association if any
    */
-  public EnumSet<?> removeAssociation(E state) {
+  public EnumSet<E> removeAssociation(E state) {
     return statemap.remove(state);
   }
 

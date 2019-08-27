@@ -30,7 +30,7 @@ public class WaarpUptime extends TimeTicks {
    *
    */
   private static final long serialVersionUID = -6737574100905398690L;
-  protected final SysUpTime type;
+  protected transient final SysUpTime type;
 
   protected void setInternalValue() {
     setValue(type.get().getValue());

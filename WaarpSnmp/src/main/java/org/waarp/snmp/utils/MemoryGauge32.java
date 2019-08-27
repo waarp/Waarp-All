@@ -40,7 +40,7 @@ public class MemoryGauge32 extends WaarpGauge32 {
   /**
    * Runtime for Memory
    */
-  protected final Runtime runtime = Runtime.getRuntime();
+  private transient final Runtime runtime = Runtime.getRuntime();
   /**
    * Type of MemoryType used
    */

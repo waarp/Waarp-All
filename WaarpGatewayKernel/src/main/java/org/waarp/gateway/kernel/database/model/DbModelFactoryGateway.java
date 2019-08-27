@@ -59,19 +59,19 @@ public class DbModelFactoryGateway extends DbModelFactory {
     DbModel dbModel;
     switch (type) {
       case H2:
-        dbModel = new DbModelH2(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelH2Kernel(dbserver, dbuser, dbpasswd);
         break;
       case Oracle:
-        dbModel = new DbModelOracle(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelOracleKernel(dbserver, dbuser, dbpasswd);
         break;
       case PostGreSQL:
-        dbModel = new DbModelPostgresql();
+        dbModel = new DbModelPostgresqlKernel();
         break;
       case MySQL:
-        dbModel = new DbModelMysql(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelMysqlKernel(dbserver, dbuser, dbpasswd);
         break;
       case MariaDB:
-        dbModel = new DbModelMariaDb(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelMariaDbKernel(dbserver, dbuser, dbpasswd);
         break;
       default:
         throw new WaarpDatabaseNoConnectionException(

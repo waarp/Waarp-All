@@ -100,7 +100,7 @@ public class FXApplet extends JApplet {
     }
   }
 
-  InnerListener innerListener;
+  transient InnerListener innerListener;
   String prmDocName;
   String prmXMLSchema;
   String prmXMLSource;
@@ -113,7 +113,7 @@ public class FXApplet extends JApplet {
   String prmOnSave;
   String prmCookieName;
   String prmCookieValue;
-  FXDocumentModel model;
+  transient FXDocumentModel model;
   FXDoubleView dblView;
   JToolBar toolbar;
   JButton btnXsdLoad;

@@ -62,6 +62,7 @@ import io.netty.util.internal.logging.Slf4JLoggerFactory;
 public abstract class WaarpLoggerFactory {
   private static volatile WaarpLoggerFactory defaultFactory;
   protected static WaarpLogLevel currentLevel;
+  static String localName = null;
 
   static {
     final String name = WaarpLoggerFactory.class.getName();
@@ -182,6 +183,13 @@ public abstract class WaarpLoggerFactory {
     if (currentLevel == null) {
       setInternalLogLevel(getLevelSpecific());
     }
+  }
+
+  /**
+   * @param localNameNew if set, will be added to each line of log
+   */
+  public static void setLocalName(String localNameNew) {
+    localName = localNameNew;
   }
 
   /**

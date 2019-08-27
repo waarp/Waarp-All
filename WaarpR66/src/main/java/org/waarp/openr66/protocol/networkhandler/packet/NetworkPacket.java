@@ -19,11 +19,15 @@
  */
 package org.waarp.openr66.protocol.networkhandler.packet;
 
+import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 
 /**
  * Network Packet A Packet is composed of one global length field, two Id (4
@@ -33,6 +37,11 @@ import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
  * reverse.
  */
 public class NetworkPacket {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(NetworkPacket.class);
   private ByteBuf buffer;
 
   private final int remoteId;
@@ -108,13 +117,17 @@ public class NetworkPacket {
     buf.writeInt(remoteId);
     buf.writeInt(localId);
     buf.writeByte(code);
+    logger.trace("TRACE ID Before sending NetworkPacket {}", this);
     return Unpooled.wrappedBuffer(buf, buffer);
   }
 
   @Override
   public String toString() {
     return "RId: " + remoteId + " LId: " + localId + " Code: " + code +
-           " Length: " + buffer.readableBytes();
+           " Length: " + buffer.readableBytes() +
+           (code == LocalPacketFactory.REQUESTPACKET? buffer
+               .toString(buffer.readerIndex(), buffer.readableBytes(),
+                         Charsets.UTF_8) : "");
   }
 
   public void clear() {

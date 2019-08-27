@@ -245,6 +245,8 @@ public class ChannelUtils extends Thread {
       throws OpenR66ProtocolPacketException {
     final NetworkPacket networkPacket;
     try {
+      logger.trace("TRACE ID {} {} {}", localChannelReference.getLocalId(),
+                   localChannelReference.getRemoteId(), packet);
       networkPacket = new NetworkPacket(localChannelReference.getLocalId(),
                                         localChannelReference.getRemoteId(),
                                         packet, localChannelReference);

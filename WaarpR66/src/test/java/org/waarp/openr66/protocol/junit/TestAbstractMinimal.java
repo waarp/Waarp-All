@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.junit;
 
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
+import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
@@ -67,24 +68,29 @@ public abstract class TestAbstractMinimal {
     }
     if (file.exists()) {
       dir = file.getParentFile();
-      final File tmp = new File("/tmp/R66");
-      tmp.mkdirs();
-      FileUtils.forceDeleteRecursiveDir(tmp);
-      new File(tmp, "in").mkdir();
-      new File(tmp, "out").mkdir();
-      new File(tmp, "arch").mkdir();
-      new File(tmp, "work").mkdir();
-      final File conf = new File(tmp, "conf");
-      conf.mkdir();
-      final File[] copied = FileUtils.copyRecursive(dir, conf, false);
-      for (final File fileCopied : copied) {
-        System.out.print(fileCopied.getAbsolutePath() + ' ');
-      }
-      System.out.println(" Done");
+      createBaseR66Directory(dir, "/tmp/R66");
     } else {
       System.err.println("Cannot find serverInitBaseDirectory file: " +
                          file.getAbsolutePath());
     }
+  }
+
+  public static void createBaseR66Directory(File dirConf, String path)
+      throws Reply550Exception {
+    final File tmp = new File(path);
+    tmp.mkdirs();
+    FileUtils.forceDeleteRecursiveDir(tmp);
+    new File(tmp, "in").mkdir();
+    new File(tmp, "out").mkdir();
+    new File(tmp, "arch").mkdir();
+    new File(tmp, "work").mkdir();
+    final File conf = new File(tmp, "conf");
+    conf.mkdir();
+    final File[] copied = FileUtils.copyRecursive(dirConf, conf, false);
+    for (final File fileCopied : copied) {
+      System.out.print(fileCopied.getAbsolutePath() + ' ');
+    }
+    System.out.println(" Done");
   }
 
   /**
@@ -96,7 +102,8 @@ public abstract class TestAbstractMinimal {
     FileUtils.forceDeleteRecursiveDir(tmp);
   }
 
-  protected static File generateOutFile(String name, int size) throws IOException {
+  protected static File generateOutFile(String name, int size)
+      throws IOException {
     final File file = new File(name);
     final FileWriter fileWriterBig = new FileWriter(file);
     for (int i = 0; i < size / 10; i++) {

@@ -183,7 +183,7 @@ public abstract class AbstractDir implements DirInterface {
    */
   public boolean isAbsolute(String path) {
     File file = new File(path);
-    logger.debug(
+    logger.trace(
         "isAbsolute: " + file + ':' + ISUNIX + ':' + file.isAbsolute() + ':' +
         file.getParentFile());
     if (!ISUNIX) {
@@ -292,7 +292,7 @@ public abstract class AbstractDir implements DirInterface {
     extDir = getSession().getAuth().getRelativePath(extDir);
     // Check if this business path is valid
     if (getSession().getAuth().isBusinessPathValid(extDir)) {
-      logger.debug("final path: " + extDir);
+      logger.trace("final path: " + extDir);
       return extDir;
     }
     throw new Reply553Exception("Pathname not allowed");

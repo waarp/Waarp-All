@@ -27,12 +27,12 @@ import java.util.EnumSet;
  * <br>
  * Note: the type EnumSet< ? > is in fact of type EnumSet< EnumState >
  */
-public class Transition<E> {
+public class Transition<E extends Enum<E>> {
 
   private E state;
-  private EnumSet<?> set;
+  private EnumSet<E> set;
 
-  public Transition(E state, EnumSet<?> set) {
+  public Transition(E state, EnumSet<E> set) {
     setState(state);
     setSet(set);
   }
@@ -54,14 +54,14 @@ public class Transition<E> {
   /**
    * @return the set
    */
-  public EnumSet<?> getSet() {
+  public EnumSet<E> getSet() {
     return set;
   }
 
   /**
    * @param set the set to set
    */
-  public void setSet(EnumSet<?> set) {
+  public void setSet(EnumSet<E> set) {
     this.set = set;
   }
 }

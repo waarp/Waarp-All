@@ -36,6 +36,7 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
+import org.waarp.openr66.protocol.http.HttpFormattedHandler;
 
 import java.io.IOException;
 import java.util.Date;
@@ -45,13 +46,12 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 /**
  * Handler for HTTP information support
  */
-public class HttpFormattedHandler
-    extends org.waarp.openr66.protocol.http.HttpFormattedHandler {
+public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(HttpFormattedHandler.class);
+      WaarpLoggerFactory.getLogger(HttpFormattedHandlerProxyR66.class);
 
   private static enum REQUEST {
     index("index.html"), error("monitoring_header.html", "monitoring_end.html"),
@@ -85,12 +85,12 @@ public class HttpFormattedHandler
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpFormattedHandler handler) {
+    public String readFileUnique(HttpFormattedHandlerProxyR66 handler) {
       return handler
           .readFileHeader(configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readHeader(HttpFormattedHandler handler) {
+    public String readHeader(HttpFormattedHandlerProxyR66 handler) {
       return handler
           .readFileHeader(configuration.getHttpBasePath() + MONITOR + header);
     }

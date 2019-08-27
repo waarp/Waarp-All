@@ -25,13 +25,14 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelH2;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 /**
  * H2 Database Model implementation
  */
-public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
+public class DbModelH2Kernel extends DbModelH2 {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -41,7 +42,7 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelH2(String dbserver, String dbuser, String dbpasswd)
+  public DbModelH2Kernel(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }

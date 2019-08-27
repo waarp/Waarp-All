@@ -23,27 +23,27 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelPostgresql;
 import org.waarp.gateway.kernel.database.model.DbModelFactoryGateway;
+import org.waarp.gateway.kernel.database.model.DbModelPostgresqlKernel;
 
 /**
  * PostGreSQL Database Model implementation
  */
-public class DbModelPostgresql
-    extends org.waarp.common.database.model.DbModelPostgresql {
+public class DbModelPostgresqlFtp extends DbModelPostgresql {
   /**
    * Create the object and initialize if necessary the driver
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelPostgresql() throws WaarpDatabaseNoConnectionException {
+  public DbModelPostgresqlFtp() throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    org.waarp.gateway.kernel.database.model.DbModelPostgresql
-        .createTableMonitoring(session);
+    DbModelPostgresqlKernel.createTableMonitoring(session);
   }
 
   @Override

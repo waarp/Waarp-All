@@ -173,31 +173,43 @@ public class NetworkTransaction {
   }
 
   public static String hashStatus() {
-    String partial = "NetworkTransaction: [InShutdown: " +
-                     networkChannelShutdownOnSocketAddressConcurrentHashMap
-                         .size() + " Blacklisted: " +
-                     networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-                         .size() + "\n RetrieveRunner: " +
-                     retrieveRunnerConcurrentHashMap.size() +
-                     " ClientNetworkChannels: " +
-                     clientNetworkChannelsPerHostId.size();
+    StringBuilder partial =
+        new StringBuilder("NetworkTransaction: [InShutdown: ").append(
+            networkChannelShutdownOnSocketAddressConcurrentHashMap.size())
+                                                              .append(
+                                                                  " Blacklisted: ")
+                                                              .append(
+                                                                  networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
+                                                                      .size())
+                                                              .append(
+                                                                  "\n RetrieveRunner: ")
+                                                              .append(
+                                                                  retrieveRunnerConcurrentHashMap
+                                                                      .size())
+                                                              .append(
+                                                                  " ClientNetworkChannels: ")
+                                                              .append(
+                                                                  clientNetworkChannelsPerHostId
+                                                                      .size());
     int nb = 0;
     for (final ClientNetworkChannels clientNetworkChannels : clientNetworkChannelsPerHostId
         .values()) {
       nb += clientNetworkChannels.size();
     }
-    partial += " Sum of ClientNetworkChannels NetworkClients: " + nb;
+    partial.append(" Sum of ClientNetworkChannels NetworkClients: ").append(nb);
     nb = 0;
     for (final NetworkChannelReference ncr : networkChannelOnSocketAddressConcurrentHashMap
         .values()) {
       nb += ncr.nbLocalChannels();
+      partial.append("\n NetworkChannels: ").append(ncr.toString());
     }
-    partial += "\n NetworkChannels: " +
-               networkChannelOnSocketAddressConcurrentHashMap.size() +
-               " LockOnSocketAddress: " +
-               reentrantLockOnSocketAddressConcurrentHashMap.size() +
-               " Sum of NetworkChannels LocalClients: " + nb + "] ";
-    return partial;
+    partial.append("\n NetworkChannels: ")
+           .append(networkChannelOnSocketAddressConcurrentHashMap.size())
+           .append(" LockOnSocketAddress: ")
+           .append(reentrantLockOnSocketAddressConcurrentHashMap.size())
+           .append(" Sum of NetworkChannels LocalClients: ").append(nb)
+           .append("] ");
+    return partial.toString();
   }
 
   private static WaarpLock getLockNCR(SocketAddress sa) {
@@ -406,17 +418,19 @@ public class NetworkTransaction {
       }
     }
     try {
-      networkChannelReference = createNewConnection(socketAddress, isSSL);
-      try {
-        localChannelReference =
-            Configuration.configuration.getLocalTransaction()
-                                       .createNewClient(networkChannelReference,
-                                                        ChannelUtils.NOCHANNEL,
-                                                        futureRequest, isSSL);
-      } catch (final OpenR66ProtocolSystemException e) {
-        throw new OpenR66ProtocolNetworkException(e);
-      } catch (final NullPointerException e) {
-        throw new OpenR66ProtocolNetworkException(e);
+      // Ensure networkChannelReference and localChannelReference are linked
+      synchronized (emptyLock) {
+        networkChannelReference = createNewConnection(socketAddress, isSSL);
+        try {
+          localChannelReference =
+              Configuration.configuration.getLocalTransaction().createNewClient(
+                  networkChannelReference, ChannelUtils.NOCHANNEL,
+                  futureRequest, isSSL);
+        } catch (final OpenR66ProtocolSystemException e) {
+          throw new OpenR66ProtocolNetworkException(e);
+        } catch (final NullPointerException e) {
+          throw new OpenR66ProtocolNetworkException(e);
+        }
       }
       ok = true;
     } finally {
@@ -507,6 +521,7 @@ public class NetworkTransaction {
           networkChannelReference =
               new NetworkChannelReference(channel, socketLock, isSSL);
           addNCR(networkChannelReference);
+          logger.info("New Real Connection: {}", networkChannelReference);
           return networkChannelReference;
         } else {
           try {
@@ -1076,7 +1091,7 @@ public class NetworkTransaction {
     try {
       logger.debug("Close con: " + networkChannelReference);
       if (localChannelReference != null) {
-        networkChannelReference.remove(localChannelReference);
+        networkChannelReference.closeAndRemove(localChannelReference);
       }
       final int count = networkChannelReference.nbLocalChannels();
       if (count <= 0) {

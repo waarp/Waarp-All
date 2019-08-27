@@ -304,7 +304,7 @@ public class NetworkServerHandler
       msg.clear();
       return;
     }
-    logger.trace("GET MSG: {}", msg);
+    logger.trace("TRACE ID GET MSG: {}", msg);
     networkChannelReference.use();
     LocalChannelReference localChannelReference;
     if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
@@ -313,7 +313,7 @@ public class NetworkServerHandler
                                                      msg, isSSL);
     } else {
       if (msg.getCode() == LocalPacketFactory.ENDREQUESTPACKET) {
-        // Not a local error but a remote one
+        // Coming from remote
         try {
           localChannelReference =
               Configuration.configuration.getLocalTransaction()

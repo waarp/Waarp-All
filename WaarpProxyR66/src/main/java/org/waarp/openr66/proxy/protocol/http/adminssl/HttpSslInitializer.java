@@ -54,6 +54,6 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());
     }
-    pipeline.addLast("handler", new HttpSslHandler());
+    pipeline.addLast("handler", new HttpSslHandlerProxyR66());
   }
 }

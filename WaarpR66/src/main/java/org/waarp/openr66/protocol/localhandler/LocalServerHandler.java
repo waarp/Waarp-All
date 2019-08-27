@@ -130,7 +130,8 @@ public final class LocalServerHandler {
       AbstractLocalPacket packet) throws Exception {
     // action as requested and answer if necessary
     TransferActions serverHandler = localChannelReference.getServerHandler();
-    logger.trace("Received virtually {}", packet);
+    logger.trace("TRACE ID Received virtually {} {}", packet,
+                 localChannelReference);
     if (packet.getType() == LocalPacketFactory.STARTUPPACKET) {
       logger.warn("Error in the protocol: {}", packet.toString());
     } else {

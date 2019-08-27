@@ -90,12 +90,16 @@ public class ClientRunner extends Thread {
 
   private LocalChannelReference localChannelReference;
 
+  private final String nameTask;
+
   public ClientRunner(NetworkTransaction networkTransaction,
                       DbTaskRunner taskRunner, R66Future futureRequest) {
     this.networkTransaction = networkTransaction;
     this.taskRunner = taskRunner;
     this.futureRequest = futureRequest;
     setDaemon(true);
+    nameTask = "Client_Runner_" + taskRunner.getKey();
+    setName(nameTask);
   }
 
   public static String hashStatus() {
@@ -203,12 +207,11 @@ public class ClientRunner extends Thread {
                        "     no result");
         }
       }
-      Thread.currentThread()
-            .setName("Finished_" + Thread.currentThread().getName());
     } finally {
       if (activeRunners != null) {
         activeRunners.remove(this);
       }
+      setName("Finished_" + nameTask);
     }
   }
 
@@ -253,7 +256,8 @@ public class ClientRunner extends Thread {
              OpenR66ProtocolNotYetConnectionException {
     logger.debug("Start attempt Transfer");
     localChannelReference = initRequest();
-    localChannelReference.getFutureValidRequest().awaitOrInterruptible();
+    localChannelReference.getFutureValidRequest().awaitOrInterruptible(
+        Configuration.configuration.getTimeoutCon());
     if (localChannelReference.getFutureValidRequest().isSuccess()) {
       return finishTransfer(localChannelReference);
     } else if (
@@ -431,12 +435,13 @@ public class ClientRunner extends Thread {
     final long id = taskRunner.getSpecialId();
     String tid;
     if (id == DbConstantR66.ILLEGALVALUE) {
-      tid =
-          taskRunner.getRuleId() + '_' + taskRunner.getMode() + "_NEWTRANSFER";
+      tid = "Runner_" + taskRunner.getRuleId() + '_' + taskRunner.getMode() +
+            "_NEWTRANSFER";
     } else {
-      tid = taskRunner.getRuleId() + '_' + taskRunner.getMode() + '_' + id;
+      tid = "Runner_" + taskRunner.getRuleId() + '_' + taskRunner.getMode() +
+            '_' + id;
     }
-    Thread.currentThread().setName(tid);
+    setName(tid);
     logger.debug("Will run {}", taskRunner);
     boolean restartPost = false;
     if (taskRunner.getGloballaststep() == TASKSTEP.POSTTASK.ordinal()) {
@@ -481,7 +486,8 @@ public class ClientRunner extends Thread {
       // propose to redo
       // See if reprogramming is ok (not too many tries)
       String retry;
-      if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {
+      //FIXME Do not stop: true forced
+      if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB) || true) {
         logger.debug("Will retry since Cannot connect to {}", host);
         retry = " but will retry";
         // now wait
@@ -555,8 +561,8 @@ public class ClientRunner extends Thread {
     RequestPacket request = taskRunner.getRequest();
     request
         .setLimit(localChannelReference.getChannelLimit(taskRunner.isSender()));
-    logger.debug("Will send request {} {}", request, localChannelReference);
     localChannelReference.setClientRunner(this);
+    logger.debug("Will send request {} {}", request, localChannelReference);
     localChannelReference.sessionNewState(R66FiniteDualStates.REQUESTR);
     try {
       ChannelUtils
@@ -568,7 +574,8 @@ public class ClientRunner extends Thread {
       localChannelReference.close();
       throw e;
     }
-    logger.debug("Wait for request to {}", host);
+    logger.debug("Wait for request to {} {} {}", host, localChannelReference,
+                 request);
     return localChannelReference;
   }
 

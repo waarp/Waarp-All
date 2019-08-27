@@ -23,12 +23,13 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.gateway.kernel.database.model.DbModelFactoryGateway;
+import org.waarp.common.database.model.DbModelOracle;
+import org.waarp.gateway.kernel.database.model.DbModelOracleKernel;
 
 /**
- * H2 Database Model implementation
+ * Oracle Database Model implementation
  */
-public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
+public class DbModelOracleFtp extends DbModelOracle {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -38,7 +39,7 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelH2(String dbserver, String dbuser, String dbpasswd)
+  public DbModelOracleFtp(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
@@ -46,21 +47,20 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    org.waarp.gateway.kernel.database.model.DbModelH2
-        .createTableMonitoring(session);
+    DbModelOracleKernel.createTableMonitoring(session);
   }
 
   @Override
   public void resetSequence(DbSession session, long newvalue)
       throws WaarpDatabaseNoConnectionException {
-    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
+    DbModelOracleKernel.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
   public long nextSequence(DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
+    return DbModelOracleKernel.nextSequenceMonitoring(dbSession);
   }
 
   @Override
@@ -75,5 +75,4 @@ public class DbModelH2 extends org.waarp.common.database.model.DbModelH2 {
       throws WaarpDatabaseNoConnectionException {
     return false;
   }
-
 }

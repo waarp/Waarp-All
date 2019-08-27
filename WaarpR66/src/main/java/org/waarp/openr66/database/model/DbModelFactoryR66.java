@@ -70,19 +70,19 @@ public class DbModelFactoryR66 extends DbModelFactory {
     DbModel dbModel;
     switch (type) {
       case H2:
-        dbModel = new DbModelH2(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelH2R66(dbserver, dbuser, dbpasswd);
         break;
       case Oracle:
-        dbModel = new DbModelOracle(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelOracleR66(dbserver, dbuser, dbpasswd);
         break;
       case PostGreSQL:
-        dbModel = new DbModelPostgresql();
+        dbModel = new DbModelPostgresqlR66();
         break;
       case MySQL:
-        dbModel = new DbModelMysql(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelMysqlR66(dbserver, dbuser, dbpasswd);
         break;
       case MariaDB:
-        dbModel = new DbModelMariadb(dbserver, dbuser, dbpasswd);
+        dbModel = new DbModelMariadbR66(dbserver, dbuser, dbpasswd);
         break;
       default:
         throw new WaarpDatabaseNoConnectionException(

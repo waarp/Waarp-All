@@ -94,15 +94,15 @@ public class WaarpUiPassword extends JFrame {
   private JMenuBar jMenuBar1;
 
   private final JFileChooser chooserKeyFile;
-  private final FileNameExtensionFilter filterKey;
+  private transient final FileNameExtensionFilter filterKey;
   private final JFileChooser chooserPwdFile;
-  private final FileNameExtensionFilter filterPwdKey;
+  private transient final FileNameExtensionFilter filterPwdKey;
 
   private AbstractAction closeHelpAction;
   private JTextPane jTextPaneHelp;
   private JButton jButtonHelp;
   private JDialog jDialogHelp;
-  private WaarpPassword waarpPassword;
+  private transient WaarpPassword waarpPassword;
   boolean passwordModified;
   boolean extended;
 

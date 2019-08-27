@@ -70,6 +70,7 @@ public class ChannelCloseTimer implements TimerTask {
         noconcurrencyDbSession.forceDisconnect();
         noconcurrencyDbSession = null;
       }
+      connectionActions.getLocalChannelReference().close();
     }
   }
 

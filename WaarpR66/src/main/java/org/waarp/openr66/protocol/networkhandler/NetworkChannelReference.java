@@ -155,10 +155,19 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void remove(LocalChannelReference localChannel) {
+  public void closeAndRemove(LocalChannelReference localChannel) {
     if (!localChannel.getFutureRequest().isDone()) {
       localChannel.close();
     }
+    remove(localChannel);
+  }
+
+  /**
+   * Remove one LocalChanelReference
+   *
+   * @param localChannel
+   */
+  public void remove(LocalChannelReference localChannel) {
     localChannelReferences.remove(localChannel);
     // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis()
   }

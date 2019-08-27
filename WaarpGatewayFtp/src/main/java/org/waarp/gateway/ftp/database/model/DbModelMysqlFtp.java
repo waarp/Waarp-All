@@ -17,15 +17,21 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-package org.waarp.openr66.database.model;
+package org.waarp.gateway.ftp.database.model;
 
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelMysql;
+import org.waarp.gateway.kernel.database.model.DbModelMysqlKernel;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * MySQL Database Model implementation
  */
-public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
+public class DbModelMysqlFtp extends DbModelMysql {
   /**
    * Create the object and initialize if necessary the driver
    *
@@ -35,30 +41,42 @@ public class DbModelMysql extends org.waarp.common.database.model.DbModelMysql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMysql(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMysqlFtp(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
 
+  private final ReentrantLock lock = new ReentrantLock();
+
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
-    DbModelFactoryR66.createTableMariaDbMySQL(dbTypeResolver, session);
+    DbModelMysqlKernel.createTableMonitoring(session);
+  }
+
+  @Override
+  public void resetSequence(DbSession session, long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+    DbModelMysqlKernel.resetSequenceMonitoring(session, newvalue);
+  }
+
+  @Override
+  public synchronized long nextSequence(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+    return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);
   }
 
   @Override
   public boolean upgradeDb(DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    return DbModelFactoryR66
-        .upgradeDbMariaDbMySQL(dbTypeResolver, session, version);
+    return true;
   }
 
   @Override
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    return DbModelFactoryR66
-        .needUpgradeDbAllDb(dbTypeResolver, session, version);
+    return false;
   }
-
 }

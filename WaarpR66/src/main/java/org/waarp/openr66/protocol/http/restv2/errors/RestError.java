@@ -23,6 +23,7 @@ package org.waarp.openr66.protocol.http.restv2.errors;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -37,8 +38,8 @@ import java.util.ResourceBundle;
  * Locale}. To objectToJson an
  * entire list of errors, use the {@code serializeErrors} method instead.
  */
-public class RestError {
-
+public class RestError implements Serializable {
+  private static final long serialVersionUID = -166335077846582940L;
   /**
    * The name of the property in the {@code restmessages} ResourceBundle
    * corresponding to the error message.

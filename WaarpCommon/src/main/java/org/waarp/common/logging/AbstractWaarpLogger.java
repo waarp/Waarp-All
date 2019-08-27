@@ -342,6 +342,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
     return getMethodAndLine(elt);
   }
 
+
   /**
    * @param elt
    *
@@ -356,6 +357,10 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
                                              .append(':')
                                              .append(elt.getLineNumber())
                                              .append(") : ");
+    if (WaarpLoggerFactory.localName != null) {
+      builder.append('[').append(WaarpLoggerFactory.localName).append("] ");
+    }
     return builder.toString();
   }
+
 }

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -237,24 +238,28 @@ public final class HostConfigConverter {
    */
   private static ArrayNode getAliasArray(Business hostConfig) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    if (hostConfig.getAliases() != null) {
+      try {
+        final Aliases aliases =
+            XmlUtils.xmlToObject(hostConfig.getAliases(), Aliases.class);
 
-    final Aliases aliases =
-        XmlUtils.xmlToObject(hostConfig.getAliases(), Aliases.class);
+        for (final AliasEntry alias : aliases.aliases) {
+          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+          final ArrayNode aliasIds = new ArrayNode(JsonNodeFactory.instance);
 
-    for (final AliasEntry alias : aliases.aliases) {
-      final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
-      final ArrayNode aliasIds = new ArrayNode(JsonNodeFactory.instance);
+          for (final String aliasId : alias.aliasList) {
+            aliasIds.add(aliasId);
+          }
 
-      for (final String aliasId : alias.aliasList) {
-        aliasIds.add(aliasId);
+          node.put(HOST_NAME, alias.hostName);
+          node.putArray(ALIAS_LIST).addAll(aliasIds);
+
+          array.add(node);
+        }
+      } catch (InternalServerErrorException ignore) { //NOSONAR
+        SysErrLogger.FAKE_LOGGER.syserr("No Alias definition");
       }
-
-      node.put(HOST_NAME, alias.hostName);
-      node.putArray(ALIAS_LIST).addAll(aliasIds);
-
-      array.add(node);
     }
-
     return array;
   }
 
@@ -268,24 +273,28 @@ public final class HostConfigConverter {
    */
   private static ArrayNode getRolesArray(Business hostConfig) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    if (hostConfig.getRoles() != null) {
+      try {
+        final Roles roles =
+            XmlUtils.xmlToObject(hostConfig.getRoles(), Roles.class);
 
-    final Roles roles =
-        XmlUtils.xmlToObject(hostConfig.getRoles(), Roles.class);
+        for (final RoleEntry role : roles.roles) {
+          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+          final ArrayNode roleTypes = new ArrayNode(JsonNodeFactory.instance);
 
-    for (final RoleEntry role : roles.roles) {
-      final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
-      final ArrayNode roleTypes = new ArrayNode(JsonNodeFactory.instance);
+          for (final ROLE roleType : role.roleList) {
+            roleTypes.add(roleType.name());
+          }
 
-      for (final ROLE roleType : role.roleList) {
-        roleTypes.add(roleType.name());
+          node.put(HOST_NAME, role.hostName);
+          node.putArray(ROLE_LIST).addAll(roleTypes);
+
+          array.add(node);
+        }
+      } catch (InternalServerErrorException ignore) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.syserr("No Roles definition");
       }
-
-      node.put(HOST_NAME, role.hostName);
-      node.putArray(ROLE_LIST).addAll(roleTypes);
-
-      array.add(node);
     }
-
     return array;
   }
 
@@ -300,11 +309,17 @@ public final class HostConfigConverter {
    */
   private static ArrayNode getBusinessArray(Business hostConfig) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
-    final Businesses business =
-        XmlUtils.xmlToObject(hostConfig.getBusiness(), Businesses.class);
+    if (hostConfig.getBusiness() != null) {
+      try {
+        final Businesses business =
+            XmlUtils.xmlToObject(hostConfig.getBusiness(), Businesses.class);
 
-    for (final String businessId : business.business) {
-      array.add(businessId);
+        for (final String businessId : business.business) {
+          array.add(businessId);
+        }
+      } catch (InternalServerErrorException ignore) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.syserr("No Business definition");
+      }
     }
     return array;
   }

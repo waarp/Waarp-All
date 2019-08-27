@@ -20,6 +20,7 @@
 
 package org.waarp.common.utility;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import jnr.constants.platform.Errno;
 import jnr.posix.POSIX;
@@ -41,7 +42,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 
 public final class Processes {
   private static final OurPOSIXHandler posixHandler;
+  private static String jvmArgsDefault = null;
 
   private Processes() {
   }
@@ -120,6 +121,64 @@ public final class Processes {
           for (int i = 0; i < 2; i++) {
             String pid = parts[i];
             if (!pid.trim().isEmpty()) {
+              return Integer.parseInt(pid);
+            }
+          }
+        }
+      } finally {
+        FileUtils.close(reader);
+      }
+    } catch (IOException ex) {
+      throw new RuntimeException(
+          String.format("Failed executing %s: %s", args, ex.getMessage()), ex);
+    }
+    throw new RuntimeException("Cannot find PID");
+  }
+
+  public static int getPidOfRunnerCommandLinux(String filterByRunner,
+                                               String filterByCommand,
+                                               List<Integer> previousPids) {
+    List<String> args = Arrays
+        .asList(("ps -C " + filterByRunner + " -e -o pid,args=").split(" +"));
+    // Example output:
+    // 22245 /opt/libreoffice5.4/program/soffice.bin --headless
+    // 22250 [soffice.bin] <defunct>
+
+    try {
+      Process psAux = new ProcessBuilder(args).start();
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ignored) {//NOSONAR
+      }
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(psAux.getInputStream(),
+                                WaarpStringUtils.UTF_8));
+      try {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          if (!line.contains(filterByCommand)) {
+            continue;
+          }
+          String[] parts = line.split("[\\W]+");
+          if (parts.length < 2) {
+            throw new RuntimeException(
+                "Unexpected format of the `ps` line, expected at least 2 " +
+                "columns:\n\t" + line);
+          }
+          for (int i = 0; i < 2; i++) {
+            String pid = parts[i];
+            if (!pid.trim().isEmpty()) {
+              boolean found = false;
+              int ipid = Integer.parseInt(pid);
+              for (Integer oldPid : previousPids) {
+                if (ipid == oldPid) {
+                  found = true;
+                  break;
+                }
+              }
+              if (found) {
+                break;
+              }
               return Integer.parseInt(pid);
             }
           }
@@ -220,8 +279,7 @@ public final class Processes {
       } catch (InterruptedException ignored) {//NOSONAR
       }
       BufferedReader reader = new BufferedReader(
-          new InputStreamReader(psAux.getInputStream(),
-                                StandardCharsets.UTF_8));
+          new InputStreamReader(psAux.getInputStream(), Charsets.UTF_8));
       try {
         String line;
         String spid = Integer.toString(pid);
@@ -239,6 +297,10 @@ public final class Processes {
     return exist.get();
   }
 
+  public static void setJvmArgsDefault(String jvmArgsDefault1) {
+    jvmArgsDefault = jvmArgsDefault1;
+  }
+
   public static Process launchJavaProcess(String applArgs) throws IOException {
     try {
       // java binary
@@ -253,6 +315,9 @@ public final class Processes {
         if (!arg.contains("-agentlib")) {
           vmArgsOneLine.append(arg).append(' ');
         }
+      }
+      if (jvmArgsDefault != null) {
+        vmArgsOneLine.append(' ').append(jvmArgsDefault).append(' ');
       }
       // init the command to execute, add the vm args
       final StringBuilder cmd;
@@ -303,7 +368,11 @@ public final class Processes {
 
       // add some vm args
       final Argument jvmArgs = javaTask.createJvmarg();
-      jvmArgs.setLine("-Xms512m -Xmx1024m");
+      if (jvmArgsDefault != null) {
+        jvmArgs.setLine("-Xms512m -Xmx1024m " + jvmArgsDefault);
+      } else {
+        jvmArgs.setLine("-Xms512m -Xmx1024m");
+      }
 
       // added some args for to class to launch
       final Argument taskArgs = javaTask.createArg();
