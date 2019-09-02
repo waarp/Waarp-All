@@ -56,6 +56,7 @@ import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.commander.ClientRunner;
+import org.waarp.openr66.commander.Commander;
 import org.waarp.openr66.commander.InternalRunner;
 import org.waarp.openr66.commander.ThreadPoolRunnerExecutor;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
@@ -63,6 +64,7 @@ import org.waarp.openr66.context.R66BusinessFactoryInterface;
 import org.waarp.openr66.context.R66DefaultBusinessFactory;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
+import org.waarp.openr66.dao.database.DBDAOFactory;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.exception.ServerException;
@@ -453,7 +455,7 @@ public class Configuration {
   protected EventLoopGroup handlerGroup;
   protected EventLoopGroup subTaskGroup;
   protected EventLoopGroup httpWorkerGroup;
-  protected ExecutorService retrieveRunnerGroup;
+  protected ThreadPoolRunnerExecutor retrieveRunnerGroup;
 
   /**
    * ExecutorService Scheduled tasks
@@ -721,44 +723,44 @@ public class Configuration {
     if (isConfigured()) {
       return;
     }
+    // To verify against limit of database
+    setRunnerThread(getRunnerThread());
     workerGroup = new NioEventLoopGroup(getClientThread(),
                                         new WaarpThreadFactory("Worker"));
     handlerGroup = new NioEventLoopGroup(getClientThread(),
                                          new WaarpThreadFactory("Handler"));
     subTaskGroup = new NioEventLoopGroup(getServerThread(),
                                          new WaarpThreadFactory("SubTask"));
+    final RejectedExecutionHandler rejectedExecutionHandler =
+        new RejectedExecutionHandler() {
+
+          @Override
+          public void rejectedExecution(Runnable r,
+                                        ThreadPoolExecutor executor) {
+            if (r instanceof RetrieveRunner) {
+              RetrieveRunner retrieveRunner = (RetrieveRunner) r;
+              logger.info("Try to reschedule RetrieveRunner: {}",
+                          retrieveRunner.getLocalId());
+              try {
+                Thread.sleep(WAITFORNETOP * 2);
+              } catch (InterruptedException e) {//NOSONAR
+                SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+                retrieveRunner.notStartRunner();
+                return;
+              }
+              getRetrieveRunnerGroup().execute(retrieveRunner);
+            } else {
+              logger.warn("Not RetrieveRunner: {}", r.getClass().getName());
+            }
+          }
+        };
+
     retrieveRunnerGroup =
-        new ThreadPoolRunnerExecutor(getRunnerThread(), getRunnerThread() * 2,
-                                     10, TimeUnit.SECONDS,
+        new ThreadPoolRunnerExecutor(getRunnerThread(), getRunnerThread() * 3,
+                                     1, TimeUnit.SECONDS,
                                      new SynchronousQueue<Runnable>(),
                                      new WaarpThreadFactory("RetrieveRunner"),
-                                     new RejectedExecutionHandler() {
-
-                                       @Override
-                                       public void rejectedExecution(Runnable r,
-                                                                     ThreadPoolExecutor executor) {
-                                         if (r instanceof RetrieveRunner) {
-                                           RetrieveRunner retrieveRunner =
-                                               (RetrieveRunner) r;
-                                           logger.info(
-                                               "Try to reschedule RetrieveRunner: {}",
-                                               retrieveRunner.getLocalId());
-                                           try {
-                                             Thread.sleep(WAITFORNETOP * 2);
-                                           } catch (InterruptedException e) {//NOSONAR
-                                             SysErrLogger.FAKE_LOGGER
-                                                 .ignoreLog(e);
-                                             retrieveRunner.notStartRunner();
-                                             return;
-                                           }
-                                           retrieveRunnerGroup
-                                               .execute(retrieveRunner);
-                                         } else {
-                                           logger.warn("Not RetrieveRunner: {}",
-                                                       r.getClass().getName());
-                                         }
-                                       }
-                                     });
+                                     rejectedExecutionHandler);
     localTransaction = new LocalTransaction();
     WaarpLoggerFactory
         .setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
@@ -1335,7 +1337,7 @@ public class Configuration {
   /**
    * @return the retrieveRunnerGroup
    */
-  public ExecutorService getRetrieveRunnerGroup() {
+  public ThreadPoolRunnerExecutor getRetrieveRunnerGroup() {
     return retrieveRunnerGroup;
   }
 
@@ -2163,7 +2165,21 @@ public class Configuration {
    * @param runnerTHREAD the rUNNER_THREAD to set
    */
   public void setRunnerThread(int runnerTHREAD) {
-    runnerThread = runnerTHREAD;
+    if (runnerTHREAD > Commander.LIMIT_SUBMIT) {
+      logger.warn("RunnerThread at {} will be limited to default maximum {}",
+                  runnerTHREAD, Commander.LIMIT_SUBMIT);
+      runnerThread = Commander.LIMIT_SUBMIT;
+    } else {
+      runnerThread = runnerTHREAD;
+    }
+    if (DBDAOFactory.getInstance() != null) {
+      int maxDb = DBDAOFactory.getInstance().getMaxConnections();
+      if (runnerThread > maxDb) {
+        logger.warn("RunnerThread at {} will be limited to database maximum {}",
+                    runnerThread, maxDb);
+        runnerThread = maxDb;
+      }
+    }
   }
 
   /**

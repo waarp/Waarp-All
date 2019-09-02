@@ -1277,6 +1277,14 @@ public class NetworkTransaction {
   }
 
   /**
+   * @return the current number of active RetrieveRunner
+   */
+  public static int getRetrieveRunnerActive() {
+    return Configuration.configuration.getRetrieveRunnerGroup()
+                                      .getActiveCount();
+  }
+
+  /**
    * Start retrieve operation
    *
    * @param session

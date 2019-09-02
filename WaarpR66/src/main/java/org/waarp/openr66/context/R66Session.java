@@ -235,6 +235,7 @@ public class R66Session implements SessionInterface {
       } catch (final IllegalFiniteStateException ignored) {
         // nothing
       }
+      R66FiniteDualStates.endSessionMachineSate(state);
     }
     // No clean of file since it can be used after channel is closed
     isReady = false;

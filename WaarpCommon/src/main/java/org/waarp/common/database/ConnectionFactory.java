@@ -76,7 +76,7 @@ public class ConnectionFactory {
 
   private static final boolean READONLY = false;
 
-  private int maxconnections = 50;
+  private int maxconnections = 100;
 
   /**
    * The datasource for connection pooling
@@ -203,6 +203,13 @@ public class ConnectionFactory {
     } catch (final SQLException e) {
       logger.debug("Cannot close properly the connection pool", e);
     }
+  }
+
+  /**
+   * @return the current configuration of the database maximum connections
+   */
+  public int getMaxconnections() {
+    return maxconnections;
   }
 
   /**

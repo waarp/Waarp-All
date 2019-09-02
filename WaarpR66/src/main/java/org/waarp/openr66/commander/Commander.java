@@ -64,7 +64,7 @@ public class Commander implements CommanderInterface {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(Commander.class);
 
-  private static final int LIMIT_SUBMIT = 1000;
+  public static final int LIMIT_SUBMIT = 1000;
 
   private InternalRunner internalRunner;
   private DbPreparedStatement preparedStatementLock;
@@ -422,17 +422,17 @@ public class Commander implements CommanderInterface {
       logger.debug("start runner");
       try {
         // No specific HA mode since the other servers will wait for the commit on Lock
-        int max = Math.min(LIMIT_SUBMIT,
-                           Configuration.configuration.getRunnerThread());
-        max = Math.min(max, internalRunner.allowedToSubmit());
+        int allowedToSubmit = internalRunner.allowedToSubmit();
+        int max = Math.min(Configuration.configuration.getRunnerThread(),
+                           allowedToSubmit);
         if (max > 0) {
           final DbTaskRunner[] tasks = DbTaskRunner
-              .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, false,
+              .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, true,
                                                  max);
-          logger.info(
-              "TaskRunner to launch: {} (launched: {}, active: " + "{}) {}",
-              tasks.length, totalRuns, internalRunner.nbInternalRunner(),
-              NetworkTransaction.hashStatus());
+          logger.info("TaskRunner to launch: {} (launched: {}, active: {}) {}",
+                      tasks.length, totalRuns,
+                      internalRunner.nbInternalRunner(),
+                      NetworkTransaction.hashStatus());
           int i = 0;
           while (i < tasks.length) {
             if (WaarpShutdownHook.isShutdownStarting()) {

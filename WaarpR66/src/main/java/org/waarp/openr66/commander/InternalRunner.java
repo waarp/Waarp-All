@@ -78,7 +78,7 @@ public class InternalRunner {
     threadPoolExecutor =
         new ThreadPoolExecutor(Configuration.configuration.getRunnerThread(),
                                Configuration.configuration.getRunnerThread() *
-                               3, 1000, TimeUnit.MILLISECONDS, workQueue,
+                               2, 1000, TimeUnit.MILLISECONDS, workQueue,
                                new WaarpThreadFactory("ClientRunner"));
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       Configuration.configuration
@@ -94,11 +94,10 @@ public class InternalRunner {
   }
 
   public int allowedToSubmit() {
+    int active = threadPoolExecutor.getActiveCount();
     if ((isRunning || !Configuration.configuration.isShutdown()) &&
-        (threadPoolExecutor.getActiveCount() <
-         Configuration.configuration.getRunnerThread())) {
-      return Configuration.configuration.getRunnerThread() -
-             threadPoolExecutor.getActiveCount();
+        (active < Configuration.configuration.getRunnerThread())) {
+      return Configuration.configuration.getRunnerThread() - active;
     }
     return 0;
   }

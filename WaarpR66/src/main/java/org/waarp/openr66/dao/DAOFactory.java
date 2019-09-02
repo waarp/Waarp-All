@@ -82,6 +82,13 @@ public abstract class DAOFactory {
   }
 
   /**
+   * @return the current configuration of the database maximum connections
+   */
+  public int getMaxConnections() {
+    return 1000;
+  }
+
+  /**
    * Return a BusinessDAO
    *
    * @return a ready to use BusinessDAO

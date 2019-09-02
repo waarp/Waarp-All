@@ -55,6 +55,11 @@ public class DBDAOFactory extends DAOFactory {
   }
 
   @Override
+  public int getMaxConnections() {
+    return connectionFactory.getMaxconnections();
+  }
+
+  @Override
   public DBBusinessDAO getBusinessDAO() throws DAOConnectionException {
     try {
       return new DBBusinessDAO(connectionFactory.getConnection());
