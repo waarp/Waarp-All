@@ -422,13 +422,13 @@ public class Commander implements CommanderInterface {
       logger.debug("start runner");
       try {
         // No specific HA mode since the other servers will wait for the commit on Lock
-        int allowedToSubmit = internalRunner.allowedToSubmit();
-        int max = Math.min(Configuration.configuration.getRunnerThread(),
-                           allowedToSubmit);
-        if (max > 0) {
+        int maxRunnable =
+            Math.min(Configuration.configuration.getRunnerThread(),
+                     internalRunner.allowedToSubmit());
+        if (maxRunnable > 0) {
           final DbTaskRunner[] tasks = DbTaskRunner
               .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, true,
-                                                 max);
+                                                 maxRunnable);
           logger.info("TaskRunner to launch: {} (launched: {}, active: {}) {}",
                       tasks.length, totalRuns,
                       internalRunner.nbInternalRunner(),

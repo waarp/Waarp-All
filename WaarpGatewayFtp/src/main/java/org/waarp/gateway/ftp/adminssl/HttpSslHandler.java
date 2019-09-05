@@ -54,6 +54,7 @@ import org.waarp.common.file.DirInterface;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ThreadLocalRandom;
+import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.core.session.FtpSession;
 import org.waarp.ftp.core.utils.FtpChannelUtils;
@@ -64,7 +65,6 @@ import org.waarp.gateway.ftp.database.data.DbTransferLog;
 import org.waarp.gateway.ftp.exec.AbstractExecutor;
 import org.waarp.gateway.ftp.exec.AbstractExecutor.CommandExecutor;
 import org.waarp.gateway.ftp.file.FileBasedAuth;
-import org.waarp.gateway.ftp.utils.Version;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 
 import java.io.IOException;
@@ -219,7 +219,8 @@ public class HttpSslHandler
                                     .getHostId());
     WaarpStringUtils
         .replaceAll(builder, "XXXADMINXXX", "Administrator Connected");
-    WaarpStringUtils.replace(builder, "XXXVERSIONXXX", Version.ID);
+    WaarpStringUtils
+        .replace(builder, "XXXVERSIONXXX", Version.fullIdentifier());
     return builder.toString();
   }
 

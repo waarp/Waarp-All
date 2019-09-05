@@ -474,7 +474,10 @@ public class DbTaskRunner extends AbstractDbData {
           "Argument in constructor cannot be null");
     }
     this.transfer = transfer;
+    // Keep stop
+    Timestamp stop = transfer.getStop();
     setToArray();
+    setStop(stop);
   }
 
   /**

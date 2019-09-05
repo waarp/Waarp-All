@@ -35,13 +35,13 @@ import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.http.adminssl.HttpSslHandler;
-import org.waarp.openr66.proxy.utils.Version;
 
 import java.util.Arrays;
 import java.util.List;
@@ -145,8 +145,8 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
                                 configuration.getHostId());
     WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXADMINXXX.toString(),
                                 "Administrator Connected");
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(), Version.ID);
+    WaarpStringUtils.replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(),
+                             Version.fullIdentifier());
     return builder.toString();
   }
 

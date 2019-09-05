@@ -241,7 +241,7 @@
     <slf4j.version>1.7.26</slf4j.version>
     <logback.version>1.2.3</logback.version>
     <guava.version>20.0</guava.version><!--Java6 version -->
-    <commons.compress.version>1.18</commons.compress.version>
+    <commons.compress.version>1.19</commons.compress.version>
     <commons.daemon.version>1.2.0</commons.daemon.version>
     <commons.io.version>2.6</commons.io.version>
     <commons.dbcp.version>1.4</commons.dbcp.version>
@@ -253,7 +253,7 @@
     <commons-beanutils.version>1.8.3</commons-beanutils.version>
     <h2.version>1.4.191</h2.version><!--Java6 version -->
     <mariadb.version>1.7.4</mariadb.version>
-    <mysql.version>5.1.47</mysql.version>
+    <mysql.version>5.1.48</mysql.version>
     <postgresql.version>42.2.6.jre6</postgresql.version>
     <oracle.version>6</oracle.version>
     <jackson.version>2.7.9</jackson.version><!--Java6 version -->
@@ -475,12 +475,10 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${maven.failsafe.version}</version>
-          <!--
           <configuration>
-            <argLine>${argLine} -Xmx2048m -XX:MaxPermSize=512M
-              ${itCoverageAgent}</argLine>
+            <forkCount>1</forkCount>
+            <reuseForks>false</reuseForks>
           </configuration>
-          -->
           <executions>
             <execution>
               <id>integration-test</id>
@@ -1013,10 +1011,6 @@
             <configuration>
               <target>
                 <mkdir dir="${project.build.directory}"/>
-                <mkdir dir="${project.build.directory}/classes"/>
-                <echo message="${project.version}"
-                      file="${project.build.directory}/version.txt"/>
-                <echo message="${project.artifactId}"/>
                 <taskdef resource="net/sf/antcontrib/antlib.xml"/>
                 <mkdir dir="${project.build.directory}/site"/>
                 <if>
@@ -1041,9 +1035,6 @@
                     <if>
                       <equals arg1="${project.artifactId}" arg2="WaarpFtp"/>
                       <then>
-                        <echo
-                          message="// DO NOT MODIFY - WILL BE OVERWRITTEN DURING THE BUILD PROCESS${line.separator}package ${waarp.directory.version};${line.separator}${line.separator}/**${line.separator} * Provides the version information of ${project.name}.${line.separator} */${line.separator}public final class Version {${line.separator} /**${line.separator} * The version identifier.${line.separator} */${line.separator} public static final String ID = &quot;${project.version}&quot;;${line.separator} /**${line.separator} * Prints out the version identifier to stdout.${line.separator} */${line.separator} public static void main(String[] args) {${line.separator}     System.out.println(ID);${line.separator} }${line.separator} private Version() {${line.separator}     super();${line.separator} }${line.separator}}${line.separator}"
-                          file="${project.basedir}/core/src/main/java/${waarp.module.version}/Version.java"/>
                         <mkdir dir="${project.build.directory}/site"/>
                         <mkdir dir="${project.build.directory}/site/core"/>
                         <mkdir
@@ -1062,19 +1053,6 @@
                       </then>
                     </if>
                   </then>
-                  <else>
-                    <if>
-                      <equals arg1="${project.artifactId}" arg2="Waarp-All"/>
-                      <then>
-                        <!-- Nothing to do -->
-                      </then>
-                      <else>
-                        <echo
-                          message="// DO NOT MODIFY - WILL BE OVERWRITTEN DURING THE BUILD PROCESS${line.separator}package ${waarp.directory.version};${line.separator}${line.separator}/**${line.separator} * Provides the version information of ${project.name}.${line.separator} */${line.separator}public final class Version {${line.separator} /**${line.separator} * The version identifier.${line.separator} */${line.separator} public static final String ID = &quot;${project.version}&quot;;${line.separator} /**${line.separator} * Prints out the version identifier to stdout.${line.separator} */${line.separator} public static void main(String[] args) {${line.separator}     System.out.println(ID);${line.separator} }${line.separator} private Version() {${line.separator}     super();${line.separator} }${line.separator}}${line.separator}"
-                          file="${basedir}/src/main/java/${waarp.module.version}/Version.java"/>
-                      </else>
-                    </if>
-                  </else>
                 </if>
               </target>
             </configuration>
@@ -1237,6 +1215,12 @@
         <version>${coberturaMavenPluginVersion}</version>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 
   <profiles>

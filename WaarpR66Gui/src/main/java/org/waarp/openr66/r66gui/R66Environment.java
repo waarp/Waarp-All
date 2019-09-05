@@ -29,6 +29,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.Version;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -360,7 +361,7 @@ public class R66Environment {
   public void about() {
     guiResultat =
         "<HTML><P ALIGN=CENTER><FONT SIZE=5 STYLE=\"font-size: 22pt\"><SPAN>R66 Client GUI Version: " +
-        Version.ID + "</SPAN></FONT></P>" +
+        Version.fullIdentifier() + "</SPAN></FONT></P>" +
         "<P ALIGN=CENTER><FONT SIZE=4 STYLE=\"font-size: 16pt\"><SPAN>This graphical user interface is intend to provide an easy way to use R66 for:</SPAN></FONT></P>" +
         "<UL><LI><P ALIGN=LEFT><FONT SIZE=4 STYLE=\"font-size: 16pt\"><SPAN>Testing new Rules, Hosts or connectivity</SPAN></FONT></P>" +
         "<LI><P ALIGN=LEFT<FONT SIZE=4 STYLE=\"font-size: 16pt\"><SPAN>Exchanging files between a PC and a R66 Server</SPAN></FONT></P>" +

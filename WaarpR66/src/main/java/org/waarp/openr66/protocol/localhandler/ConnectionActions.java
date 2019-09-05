@@ -223,7 +223,7 @@ public abstract class ConnectionActions {
       }
       LocalTransaction lt = Configuration.configuration.getLocalTransaction();
       if (lt != null && localChannelReference != null) {
-        localChannelReference.closeInternal();
+        localChannelReference.close();
       }
     }
   }

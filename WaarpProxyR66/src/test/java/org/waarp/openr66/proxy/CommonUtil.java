@@ -359,10 +359,10 @@ public abstract class CommonUtil {
 
   static void startUpProxy() {
     r66Configuration = Configuration.configuration;
-    Configuration.configuration =
-        new ConfigurationProxyR66();
+    Configuration.configuration = new ConfigurationProxyR66();
     final File config = new File(resources, CONFIG_PROXY_XML);
-    assertTrue("ConfigurationProxyR66 file for Proxy must exist", config.isFile());
+    assertTrue("ConfigurationProxyR66 file for Proxy must exist",
+               config.isFile());
     if (!org.waarp.openr66.proxy.configuration.FileBasedConfiguration
         .setConfigurationProxyFromXml(Configuration.configuration,
                                       config.getAbsolutePath())) {

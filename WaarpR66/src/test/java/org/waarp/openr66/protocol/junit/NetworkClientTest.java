@@ -45,6 +45,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.Version;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.client.MultipleDirectTransfer;
 import org.waarp.openr66.client.MultipleSubmitTransfer;
@@ -74,7 +75,6 @@ import org.waarp.openr66.protocol.http.rest.handler.HttpRestInformationR66Handle
 import org.waarp.openr66.protocol.http.rest.handler.HttpRestLogR66Handler;
 import org.waarp.openr66.protocol.http.rest.handler.HttpRestServerR66Handler;
 import org.waarp.openr66.protocol.http.rest.test.HttpTestRestR66Client;
-import org.waarp.openr66.protocol.http.restv2.RestConstants;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
 import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
@@ -265,6 +265,10 @@ public class NetworkClientTest extends TestAbstract {
   public void test4_RecvThroughClient() throws IOException {
     logger.warn("Start Test of Recv Through Transfer");
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    try {
+      Thread.sleep(20);
+    } catch (InterruptedException e) {
+    }
     final TestRecvThroughHandler handler = new TestRecvThroughHandler();
     R66Future future = new R66Future(true);
     TestRecvThroughClient transaction =
@@ -632,6 +636,10 @@ public class NetworkClientTest extends TestAbstract {
 
   @Test
   public void test1_JsonGenerator() {
+    // Simple check of version
+    logger.warn(Version.fullIdentifier());
+    assertNotNull(Version.fullIdentifier());
+    assertTrue(Version.artifactId().equals("WaarpR66"));
     final int nb = 11;
     logger.warn("Start Test Json");
     DbPreparedStatement preparedStatement;

@@ -35,9 +35,9 @@ import org.snmp4j.smi.VariableBinding;
 import org.waarp.common.command.ReplyCode;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.Version;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.database.data.DbTransferLog;
-import org.waarp.gateway.ftp.utils.Version;
 import org.waarp.snmp.WaarpSnmpAgent;
 import org.waarp.snmp.interf.WaarpInterfaceMib;
 import org.waarp.snmp.r66.WaarpPrivateMib;
@@ -66,7 +66,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   public static final String SnmpDefaultAuthor = "Frederic Bregier";
 
-  public static final String SnmpVersion = "Waarp GW FTP " + Version.ID;
+  public static final String SnmpVersion =
+      "Waarp GW FTP " + Version.fullIdentifier();
 
   public static final String SnmpDefaultLocalization = "Paris, France";
 
@@ -240,7 +241,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
                      "Waarp " + "GatewayFtp");
     rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),
                      FileBasedConfiguration.fileBasedConfiguration.getHostId());
-    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);
+    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(),
+                     Version.fullIdentifier());
     rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),
                      "Waarp Gateway Ftp: FTP Gateway");
     rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),

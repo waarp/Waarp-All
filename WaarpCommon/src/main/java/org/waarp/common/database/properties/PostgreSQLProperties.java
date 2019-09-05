@@ -33,7 +33,10 @@ public class PostgreSQLProperties implements DbProperties {
 
   private static final String DRIVER_NAME = "org.postgresql.Driver";
   private static final String VALIDATION_QUERY = "select 1";
-  private static final String MAX_CONNECTION_QUERY = "SHOW max_connections";
+  private static final String MAX_CONNECTION_QUERY =
+      "select (select setting as mc from pg_settings where name='max_connections')::int" +
+      " - (select setting from pg_settings where name='superuser_reserved_connections')::int";
+
 
   public PostgreSQLProperties() {
     // nothing

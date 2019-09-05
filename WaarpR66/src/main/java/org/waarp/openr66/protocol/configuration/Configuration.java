@@ -2172,14 +2172,6 @@ public class Configuration {
     } else {
       runnerThread = runnerTHREAD;
     }
-    if (DBDAOFactory.getInstance() != null) {
-      int maxDb = DBDAOFactory.getInstance().getMaxConnections();
-      if (runnerThread > maxDb) {
-        logger.warn("RunnerThread at {} will be limited to database maximum {}",
-                    runnerThread, maxDb);
-        runnerThread = maxDb;
-      }
-    }
   }
 
   /**

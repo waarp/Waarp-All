@@ -56,7 +56,7 @@ public class DBDAOFactory extends DAOFactory {
 
   @Override
   public int getMaxConnections() {
-    return connectionFactory.getMaxconnections();
+    return connectionFactory.getMaxConnections();
   }
 
   @Override

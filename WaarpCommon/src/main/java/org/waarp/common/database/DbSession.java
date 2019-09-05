@@ -395,12 +395,6 @@ public class DbSession {
       logger.debug("Connection already closed");
       return;
     }
-    /*try {
-      Thread.sleep(DbAdmin.WAITFORNETOP);
-    } catch (final InterruptedException e1) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
-      Thread.currentThread().interrupt();
-    }*/
     logger.debug("DbConnection still in use: " + nbThread);
     if (nbThread.get() > 0) {
       logger.info(

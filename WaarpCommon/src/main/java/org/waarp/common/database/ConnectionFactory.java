@@ -21,6 +21,7 @@
 package org.waarp.common.database;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.waarp.common.database.properties.DbProperties;
 import org.waarp.common.database.properties.H2Properties;
 import org.waarp.common.database.properties.MariaDBProperties;
@@ -29,6 +30,7 @@ import org.waarp.common.database.properties.OracleProperties;
 import org.waarp.common.database.properties.PostgreSQLProperties;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.SystemPropertyUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -76,7 +78,11 @@ public class ConnectionFactory {
 
   private static final boolean READONLY = false;
 
-  private int maxconnections = 100;
+  private static final int MAX_CONNECTIONS_DEFAULT = 10;
+  private static final int MAX_IDLE_DEFAULT = 2;
+
+  private int maxConnections = MAX_CONNECTIONS_DEFAULT;
+  private int maxIdle = MAX_IDLE_DEFAULT;
 
   /**
    * The datasource for connection pooling
@@ -180,7 +186,12 @@ public class ConnectionFactory {
     Connection con = null;
     try {
       con = getConnection();
-      maxconnections = properties.getMaximumConnections(con);
+      // Max of user value (if not set, default 10) and current maximum
+      // connections
+      maxConnections = Math.min(properties.getMaximumConnections(con),
+                                SystemPropertyUtil.get(
+                                    SystemPropertyUtil.WAARP_DATABASE_CONNECTION_MAX,
+                                    MAX_CONNECTIONS_DEFAULT));
     } catch (final SQLException e) {
       logger.warn("Cannot fetch maximum connection allowed from database", e);
     } finally {
@@ -188,9 +199,24 @@ public class ConnectionFactory {
         con.close();
       }
     }
-    ds.setMaxActive(maxconnections);
-    ds.setMaxIdle(maxconnections);
+    setMaxConnections(maxConnections);
     logger.info(toString());
+  }
+
+  /**
+   * Mainly for Junit
+   *
+   * @param max
+   */
+  public void setMaxConnections(int max) {
+    // Minimal value should be 2
+    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);
+    ds.setMaxActive(maxConnections);
+    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT),
+                       maxConnections);
+    if (maxIdle < GenericObjectPool.DEFAULT_MAX_IDLE) {
+      ds.setMaxIdle(maxIdle);
+    }
   }
 
   /**
@@ -208,8 +234,8 @@ public class ConnectionFactory {
   /**
    * @return the current configuration of the database maximum connections
    */
-  public int getMaxconnections() {
-    return maxconnections;
+  public int getMaxConnections() {
+    return maxConnections;
   }
 
   /**
@@ -252,7 +278,7 @@ public class ConnectionFactory {
     sb.append(", DefaultReadOnly:");
     sb.append(READONLY);
     sb.append(", max connecions:");
-    sb.append(maxconnections);
+    sb.append(maxConnections);
 
     return sb.toString();
   }

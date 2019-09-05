@@ -394,7 +394,9 @@ public abstract class TestAbstract extends TestAbstractMinimal {
 
   public static void tearDownAfterClassClient() throws Exception {
     Configuration.configuration.setTimeoutCon(100);
-    networkTransaction.closeAll();
+    if (networkTransaction != null) {
+      networkTransaction.closeAll();
+    }
   }
 
   @Before

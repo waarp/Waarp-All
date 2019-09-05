@@ -856,12 +856,8 @@ public class DbHostAuth extends AbstractDbData {
                                new String(getHostkey(), WaarpStringUtils.UTF8));
     } else {
       try {
-        WaarpStringUtils.replace(builder, "XXXKEYXXX",
-                                 Configuration.configuration.getCryptoKey()
-                                                            .decryptHexInString(
-                                                                new String(
-                                                                    getHostkey(),
-                                                                    WaarpStringUtils.UTF8)));
+        WaarpStringUtils.replace(builder, "XXXKEYXXX", new String(getHostkey(),
+                                                                  WaarpStringUtils.UTF8));
       } catch (final Exception e) {
         WaarpStringUtils.replace(builder, "XXXKEYXXX", "BAD DECRYPT");
       }

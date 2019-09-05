@@ -22,31 +22,35 @@ package org.waarp.openr66.protocol.it;
 
 import org.junit.AfterClass;
 import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.database.ConnectionFactory;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.MultipleSubmitTransfer;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.commander.InternalRunner;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
-import org.waarp.openr66.protocol.junit.NetworkClientTest;
 import org.waarp.openr66.protocol.junit.TestAbstract;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.server.R66Server;
 import org.waarp.openr66.server.ServerInitDatabase;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,72 +58,140 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ScenarioIT extends TestAbstract {
+public abstract class ScenarioBase extends TestAbstract {
   /**
    * If defined using -DIT_LONG_TEST=true then will execute long term tests
    */
   public static final String IT_LONG_TEST = "IT_LONG_TEST";
 
+  protected static ScenarioBase scenarioBase;
   private static final ArrayList<DbTaskRunner> dbTaskRunners =
       new ArrayList<DbTaskRunner>();
-  private static final String SERVER_1_XML = "R1/conf/server_1.xml";
+  private static final String SERVER_1_XML = "R1/conf/server_1_SQLDB.xml";
+  private static final String SERVER_1_REWRITTEN_XML = "R1/conf/server.xml";
+  private static final String RESOURCES_SERVER_1_XML =
+      "it/scenario_1_2_3/" + SERVER_1_XML;
+  static final String SERVER_H2_1_XML = "R1/conf/server_1.xml";
   private static final String SERVER_2_XML = "R2/conf/server_2.xml";
   private static final String SERVER_3_XML = "R3/conf/server_3.xml";
-  private static final String SERVER_INIT_1_XML =
-      "it/scenario_1_2_3/R1/conf/server_1.xml";
 
   private static final List<Integer> PIDS = new ArrayList<Integer>();
+  private static final String TMP_R66_SCENARIO_R1 =
+      "/tmp/R66/scenario_1_2_3/R1";
+  private static final String TMP_R66_CONFIG_R1 =
+      "/tmp/R66/scenario_1_2_3/" + SERVER_1_REWRITTEN_XML;
   public static int NUMBER_FILES = 50;
   private static int r66Pid1 = 999999;
   private static int r66Pid2 = 999999;
   private static int r66Pid3 = 999999;
-  private static final boolean SERVER1_IN_JUNIT = false;
+  private static final boolean SERVER1_IN_JUNIT = true;
+  private static final String TMP_CONFIG_XML = "/tmp/config.xml";
+  private static File configFile = null;
 
-  /**
-   * @throws Exception
-   */
-  @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
+    final ClassLoader classLoader = ScenarioBase.class.getClassLoader();
     final File file =
-        new File(classLoader.getResource("logback-test.xml").getFile());
-    setUpBeforeClassMinimal(SERVER_INIT_1_XML);
-    File r1 = new File(file.getParentFile(), "it/scenario_1_2_3/R1/conf");
-    createBaseR66Directory(r1, "/tmp/R66/scenario_1_2_3/R1");
-    File r2 = new File(file.getParentFile(), "it/scenario_1_2_3/R2/conf");
+        new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
+    dirResources = file.getParentFile().getParentFile().getParentFile();
+    setUpBeforeClassMinimal(RESOURCES_SERVER_1_XML);
+    File r1 = new File(dirResources, "R1/conf");
+    createBaseR66Directory(r1, TMP_R66_SCENARIO_R1);
+    File r2 = new File(dirResources, "R2/conf");
     createBaseR66Directory(r2, "/tmp/R66/scenario_1_2_3/R2");
-    File r3 = new File(file.getParentFile(), "it/scenario_1_2_3/R3/conf");
+    File r3 = new File(dirResources, "R3/conf");
     createBaseR66Directory(r3, "/tmp/R66/scenario_1_2_3/R3");
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(100);
     if (!SERVER1_IN_JUNIT) {
-      r66Pid1 = startServer(SERVER_1_XML);
+      r66Pid1 = startServer(configFile.getAbsolutePath());
     }
     r66Pid2 = startServer(SERVER_2_XML);
     r66Pid3 = startServer(SERVER_3_XML);
-    final File file2 = new File(dirResources, SERVER_1_XML);
     if (SERVER1_IN_JUNIT) {
-      R66Server.main(new String[] { file2.getAbsolutePath() });
-      dir = dirResources;
+      R66Server.main(new String[] { configFile.getAbsolutePath() });
       setUpBeforeClassClient();
     } else {
-      dir = dirResources;
-      setUpBeforeClassClient(SERVER_1_XML);
+      setUpBeforeClassClient(configFile.getAbsolutePath());
     }
     WaarpLoggerFactory
         .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
   }
 
+  public String getServerConfigFile() {
+    if (configFile != null) {
+      return configFile.getAbsolutePath();
+    }
+    ClassLoader classLoader = ScenarioBase.class.getClassLoader();
+    File file =
+        new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
+    if (!file.exists()) {
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Cannot find in  " + file.getAbsolutePath());
+      fail("Cannot find " + file.getAbsolutePath());
+    }
+    String content = WaarpStringUtils.readFile(file.getAbsolutePath());
+    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getJdbcUrl());
+    String driver = getJDC().getDriverClassName();
+    String target = "notfound";
+    String jdbcUrl = getJDC().getJdbcUrl();
+    if (driver.equalsIgnoreCase("org.mariadb.jdbc.Driver")) {
+      target = "mariadb";
+    } else if (driver.equalsIgnoreCase("org.h2.Driver")) {
+      target = "h2";
+    } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
+      target = "oracle";
+      jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
+      SysErrLogger.FAKE_LOGGER
+          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      throw new UnsupportedOperationException(
+          "Unsupported Test for Oracle since wrong JDBC driver");
+    } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
+      target = "postgresql";
+    } else if (driver.equalsIgnoreCase("com.mysql.jdbc.Driver")) {
+      target = "mysql";
+    } else {
+      SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
+    }
+    content = content.replace("XXXJDBCXXX", jdbcUrl);
+    content = content.replace("XXXDRIVERXXX", target);
+    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.syserr(target);
+    File fileTo = new File(TMP_R66_CONFIG_R1);
+    fileTo.getParentFile().mkdirs();
+    FileWriter writer = null;
+    try {
+      writer = new FileWriter(fileTo);
+      writer.write(content);
+      writer.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (writer != null) {
+        FileUtils.close(writer);
+      }
+    }
+    configFile = fileTo;
+    File copy = new File(TMP_CONFIG_XML);
+    try {
+      FileUtils.copy(configFile, copy, false, false);
+    } catch (Reply550Exception e) {
+      e.printStackTrace();
+    }
+    return TMP_R66_CONFIG_R1;
+  }
+
+  public abstract JdbcDatabaseContainer getJDC();
+
   public static void setUp3DbBeforeClass() throws Exception {
     deleteBase();
-    final ClassLoader classLoader = ScenarioIT.class.getClassLoader();
+    final ClassLoader classLoader = ScenarioBase.class.getClassLoader();
     DetectionUtils.setJunit(true);
-    File file = new File(classLoader.getResource(SERVER_INIT_1_XML).getFile());
+    File file =
+        new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     final String newfile = file.getAbsolutePath().replace("target/test-classes",
                                                           "src/test/resources");
     file = new File(newfile);
     dir = file.getParentFile();
-    dirResources = dir.getParentFile().getParentFile();
     logger.warn("File {} exists? {}", file, file.isFile());
     homeDir =
         dir.getParentFile().getParentFile().getParentFile().getParentFile()
@@ -128,15 +200,66 @@ public class ScenarioIT extends TestAbstract {
 
     // global ant project settings
     project = Processes.getProject(homeDir);
-    initiateDb(SERVER_1_XML);
+    String fileconf = null;
+    try {
+      fileconf = scenarioBase.getServerConfigFile();
+      if (fileconf.charAt(0) != '/') {
+        configFile = new File(dirResources, fileconf);
+      }
+    } catch (UnsupportedOperationException e) {
+      SysErrLogger.FAKE_LOGGER
+          .syserr("Database not supported by this test Start Stop R66", e);
+      Assume.assumeNoException(e);
+      return;
+    }
+    File copy = new File(TMP_CONFIG_XML);
+    if (copy.exists() && configFile != null && !configFile.exists()) {
+      try {
+        FileUtils.copy(copy, configFile, false, false);
+      } catch (Reply550Exception e) {
+        //e.printStackTrace();
+      }
+    }
+    initiateDb(configFile.getAbsolutePath());
     initiateDb(SERVER_2_XML);
     initiateDb(SERVER_3_XML);
 
     Processes.finalizeProject(project);
   }
 
+  public static void initiateDb(String serverInit) {
+    DetectionUtils.setJunit(true);
+    final File file;
+    final File dir2;
+    if (serverInit.charAt(0) == '/') {
+      file = new File(serverInit);
+      dir2 = dir;
+    } else {
+      file = new File(dirResources, serverInit);
+      dir2 = file.getParentFile();
+    }
+    logger.warn("File {} exists? {}", file, file.isFile());
+    final File fileAuth =
+        new File(dir2.getParentFile().getParentFile(), "OpenR66-authent.xml");
+    logger.warn("File {} exists? {}", fileAuth, fileAuth.isFile());
+
+    final String[] args = {
+        file.getAbsolutePath(), "-initdb", "-dir", dir2.getAbsolutePath(),
+        "-auth", fileAuth.getAbsolutePath()
+    };
+    Processes
+        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Configuration.configuration.setTimeoutCon(100);
+    // For debug only ServerInitDatabase.main(args);
+  }
+
   public static int startServer(String serverConfig) throws Exception {
-    final File file2 = new File(dirResources, serverConfig);
+    final File file2;
+    if (serverConfig.charAt(0) == '/') {
+      file2 = new File(serverConfig);
+    } else {
+      file2 = new File(dirResources, serverConfig);
+    }
     if (file2.exists()) {
       System.err.println("Find server file: " + file2.getAbsolutePath());
       final String[] argsServer = {
@@ -155,23 +278,6 @@ public class ScenarioIT extends TestAbstract {
       fail("Cannot find server file");
       return 999999;
     }
-  }
-
-  public static void initiateDb(String serverInit) {
-    DetectionUtils.setJunit(true);
-    final File file = new File(dirResources, serverInit);
-    logger.warn("File {} exists? {}", file, file.isFile());
-    final File fileAuth = new File(dirResources, "OpenR66-authent.xml");
-    logger.warn("File {} exists? {}", fileAuth, fileAuth.isFile());
-
-    final String[] args = {
-        file.getAbsolutePath(), "-initdb", "-dir",
-        file.getParentFile().getAbsolutePath(), "-auth",
-        fileAuth.getAbsolutePath()
-    };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
-    Configuration.configuration.setTimeoutCon(100);
   }
 
   /**
@@ -228,7 +334,8 @@ public class ScenarioIT extends TestAbstract {
       Thread.sleep(1000);
       logger.warn(
           "Sent {} files to R2, then {} to R3, using at most {} parallel clients" +
-          " ({} per seconds)", dirR2.list().length, dirR3.list().length, max,
+          " ({} seconds,  {} per seconds)", dirR2.list().length,
+          dirR3.list().length, max, (timestop - timestart) / 1000,
           NUMBER_FILES * 1000 / (timestop - timestart));
     } else {
       for (int i = 0; i < NUMBER_FILES * 10; i++) {
@@ -314,7 +421,8 @@ public class ScenarioIT extends TestAbstract {
       Thread.sleep(1000);
       logger.warn(
           "Sent {} files to R2, then {} to R3, using at most {} parallel clients" +
-          " ({} per seconds)", dirR1.list().length, dirR3.list().length, max,
+          " ({} seconds, {} per seconds)", dirR1.list().length,
+          dirR3.list().length, max, (timestop - timestart) / 1000,
           NUMBER_FILES * 1000 / (timestop - timestart));
     } else {
       for (int i = 0; i < NUMBER_FILES * 10; i++) {
@@ -337,9 +445,8 @@ public class ScenarioIT extends TestAbstract {
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
-  //@Ignore("Only for benchmarks")
   @Test
-  public void test03_5000_MultipleSends()
+  public void test04_5000_MultipleSends()
       throws IOException, InterruptedException {
     Assume.assumeTrue("If the Long term tests are allowed",
                       SystemPropertyUtil.get(IT_LONG_TEST, false));

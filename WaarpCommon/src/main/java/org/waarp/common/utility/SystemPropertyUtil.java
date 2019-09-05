@@ -42,6 +42,12 @@ public final class SystemPropertyUtil {
   private static final String USING_THE_DEFAULT_VALUE =
       USING_THE_DEFAULT_VALUE2;
   public static final String FILE_ENCODING = "file.encoding";
+  /**
+   * Maximum Connections to the Database. Waarp will manage by default up
+   * to 10 connections, except if this is set. The minimum value is 2.
+   */
+  public static final String WAARP_DATABASE_CONNECTION_MAX =
+      "waarp.database.connection.max";
 
   private static final Properties PROPS = new Properties();
   private static final String INVALID_PROPERTY = "Invalid property ";

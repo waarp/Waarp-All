@@ -30,6 +30,7 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.SynchronousQueue;
@@ -79,7 +80,15 @@ public class InternalRunner {
         new ThreadPoolExecutor(Configuration.configuration.getRunnerThread(),
                                Configuration.configuration.getRunnerThread() *
                                2, 1000, TimeUnit.MILLISECONDS, workQueue,
-                               new WaarpThreadFactory("ClientRunner"));
+                               new WaarpThreadFactory("ClientRunner"),
+                               new RejectedExecutionHandler() {
+                                 @Override
+                                 public void rejectedExecution(
+                                     Runnable runnable,
+                                     ThreadPoolExecutor threadPoolExecutor) {
+                                   logger.debug("Task rescheduled");
+                                 }
+                               });
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       Configuration.configuration
                                                                           .getDelayCommander(),
@@ -109,6 +118,7 @@ public class InternalRunner {
    */
   public void submitTaskRunner(DbTaskRunner taskRunner) {
     if (isRunning || !Configuration.configuration.isShutdown()) {
+      // last check: number can have raised up since Commander checks
       if (threadPoolExecutor.getActiveCount() <
           Configuration.configuration.getRunnerThread()) {
         logger.debug("Will run {}", taskRunner);
@@ -123,7 +133,7 @@ public class InternalRunner {
         threadPoolExecutor.execute(runner);
       } else {
         // too many current active threads
-        logger.info("Task rescheduled {}", taskRunner);
+        logger.debug("Task rescheduled {}", taskRunner);
       }
     }
   }

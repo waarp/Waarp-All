@@ -23,7 +23,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import org.waarp.common.database.DbSession;
-import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.guid.IntegerUuid;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -44,7 +43,6 @@ import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.protocol.utils.R66Versions;
 
@@ -190,21 +188,6 @@ public class LocalChannelReference {
     cts = (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()
                                                           .get(
                                                               NetworkServerInitializer.LIMITCHANNEL);
-    // FIXME always true since change for DbAdmin
-    if (admin.isActive()) {
-      try {
-        noconcurrencyDbSession = new DbSession(admin, false);
-        logger.info("LocalChannel {}, will use DB session {}", localId,
-                    noconcurrencyDbSession.getInternalId());
-      } catch (final WaarpDatabaseNoConnectionException e) {
-        // Cannot connect so use default connection
-        logger.warn("Use default database connection");
-        noconcurrencyDbSession = null;
-      }
-    } else {
-      logger.warn("DbAdmin is not active");
-      noconcurrencyDbSession = null;
-    }
     LocalServerHandler.channelActive(serverHandler);
     serverHandler.setLocalChannelReference(this);
     networkChannelRef.add(this);
@@ -226,16 +209,6 @@ public class LocalChannelReference {
    * Close the localChannelReference
    */
   public void close() {
-    // Now force the close of the database after a wait
-    ChannelCloseTimer
-        .closeFutureTransaction(serverHandler, noconcurrencyDbSession);
-    closeInternal();
-  }
-
-  /**
-   * Close the localChannelReference
-   */
-  public void closeInternal() {
     LocalServerHandler.channelInactive(serverHandler);
     if (networkChannelRef != null) {
       networkChannelRef.remove(this);

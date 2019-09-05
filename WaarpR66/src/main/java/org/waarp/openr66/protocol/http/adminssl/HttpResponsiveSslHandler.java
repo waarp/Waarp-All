@@ -42,6 +42,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
@@ -70,7 +71,6 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.NbAndSpecialId;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.protocol.utils.TransferUtils;
-import org.waarp.openr66.protocol.utils.Version;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -160,8 +160,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXADMINXXX.toString(),
                                 Messages.getString(
                                     "HttpSslHandler.2")); //$NON-NLS-1$
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(), Version.ID);
+    WaarpStringUtils.replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(),
+                             Version.fullIdentifier());
     return builder.toString();
   }
 

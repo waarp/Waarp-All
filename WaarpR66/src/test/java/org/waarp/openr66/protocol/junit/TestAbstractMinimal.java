@@ -41,7 +41,8 @@ public abstract class TestAbstractMinimal {
   /**
    * Internal Logger
    */
-  protected static WaarpLogger logger;
+  protected static WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);
   protected static File dir;
   protected static File dirResources;
 
@@ -86,6 +87,7 @@ public abstract class TestAbstractMinimal {
     new File(tmp, "work").mkdir();
     final File conf = new File(tmp, "conf");
     conf.mkdir();
+    logger.warn("Copy from {} to {}", dirConf, conf);
     final File[] copied = FileUtils.copyRecursive(dirConf, conf, false);
     for (final File fileCopied : copied) {
       System.out.print(fileCopied.getAbsolutePath() + ' ');
