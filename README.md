@@ -1,7 +1,8 @@
-Waarp Parent
-=============
+Waarp All
+=========
 
-You will find in this web site the sub project Waarp Parent.
+You will find in this web site the project Waarp All that contains all new
+ version for Waarp.
 
 The global license is GPL V3.
 
@@ -11,8 +12,20 @@ in Java. Its goal is to unify several protocols (FTP, SSH, HTTP and proprietary
 protocols) in an efficient and secured way. Its purpose is to enable bridging between 
 several protocols and to enable dynamic pre or post action on transfer or other commands.
 
-Packages
---------
+The composition of this project is still done according to old packages
+ (Digest, Common, Exec, Snmp, Thrift, XmlEditor, Password GUI, R66, R66 Proxy
+ , R66 Client Gui, FTP, Gateway Kernel, Gateway FTP, FTP Client, Waarp
+  Administrator).
+
+The following packages will not be merely updated since they will be replaced
+ soon by other softwares:
+- Waarp Administrator
+- Waarp XmlEditor
+
+This project in version 3.2 is still compatible with Java 6.
+
+Oldest Packages
+---------------
 
  * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpDigest) [Waarp Digest](http://waarp.github.com/WaarpDigest)
  * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpCommon) [Waarp Common](http://waarp.github.com/WaarpCommon)

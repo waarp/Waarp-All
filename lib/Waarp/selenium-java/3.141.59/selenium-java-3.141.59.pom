@@ -1,20 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <artifactId>Selenium-Parent</artifactId>
+    <artifactId>Waarp-Shaded-Parent</artifactId>
     <groupId>Waarp</groupId>
-    <version>3.141.59</version>
+    <version>1.0.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
+  <groupId>Waarp</groupId>
   <artifactId>selenium-java</artifactId>
-  <name>Shaded Selenium</name>
-  <description>Shaded version of Selenium to prevent issue on Jdk6</description>
+  <name>Waarp Shaded Selenium using JDK8 test only</name>
+  <version>3.141.59</version>
+  <description>Shaded version of Selenium to prevent issue on Jdk6 with other libraries</description>
   <url>http://waarp.github.com/WaarpR66</url>
   <inceptionYear>2019</inceptionYear>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven-shade-plugin}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>false</minimizeJar>
+              <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <createSourcesJar>false</createSourcesJar>
+              <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <useBaseVersion>true</useBaseVersion>
+              <transformers>
+                <transformer />
+                <transformer>
+                  <addHeader>false</addHeader>
+                </transformer>
+                <transformer />
+                <transformer />
+                <transformer>
+                  <manifestEntries>
+                    <X-Compile-Source-JDK>${java.version}</X-Compile-Source-JDK>
+                    <X-Compile-Target-JDK>${java.version}</X-Compile-Target-JDK>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+              <artifactSet>
+                <includes>
+                  <include>Waarp</include>
+                  <include>*</include>
+                </includes>
+                <excludes>
+                  <exclude>classworlds:classworlds</exclude>
+                  <exclude>junit</exclude>
+                  <exclude>jmock</exclude>
+                  <exclude>org.apache.maven:lib:tests</exclude>
+                  <exclude>com.github.jnr</exclude>
+                  <exclude>org.assertj</exclude>
+                  <exclude>com.google.code.gson:*</exclude>
+                  <exclude>io.rest-assured</exclude>
+                  <exclude>org.easymock</exclude>
+                  <exclude>org.mockito</exclude>
+                  <exclude>org.testcontainers</exclude>
+                  <exclude>net.java.dev.jna</exclude>
+                  <exclude>org.apache.ant</exclude>
+                  <exclude>Oracle</exclude>
+                </excludes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>com.shaded.google.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache</pattern>
+                  <shadedPattern>org.shaded.apache</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
