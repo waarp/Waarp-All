@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Implementation of HostDAO for standard SQL databases
  */
-public class DBHostDAO extends StatementExecutor implements HostDAO {
+public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DBHostDAO.class);
@@ -93,7 +93,7 @@ public class DBHostDAO extends StatementExecutor implements HostDAO {
       stm = connection.prepareStatement(SQL_DELETE);
       setParameters(stm, host.getHostid());
       try {
-        executeUpdate(stm);
+        executeAction(stm);
       } catch (final SQLException e2) {
         throw new DAONoDataException(e2);
       }
@@ -109,7 +109,7 @@ public class DBHostDAO extends StatementExecutor implements HostDAO {
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeUpdate(stm);
+      executeAction(stm);
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
@@ -260,7 +260,8 @@ public class DBHostDAO extends StatementExecutor implements HostDAO {
     }
   }
 
-  private Host getFromResultSet(ResultSet set) throws SQLException {
+  @Override
+  public Host getFromResultSet(ResultSet set) throws SQLException {
     return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),
                     set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),
                     set.getBoolean(IS_SSL_FIELD),

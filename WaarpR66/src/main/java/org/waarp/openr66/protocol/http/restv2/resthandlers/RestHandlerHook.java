@@ -32,6 +32,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.BaseXx;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
@@ -318,9 +319,7 @@ public class RestHandlerHook implements HandlerHook {
       } catch (final DAONoDataException e) {
         throw new InternalServerErrorException(e);
       } finally {
-        if (hostDAO != null) {
-          hostDAO.close();
-        }
+        DAOFactory.closeDAO(hostDAO);
       }
 
       String key;
@@ -370,9 +369,7 @@ public class RestHandlerHook implements HandlerHook {
       } catch (final DAONoDataException e) {
         throw new InternalServerErrorException(e);
       } finally {
-        if (hostDAO != null) {
-          hostDAO.close();
-        }
+        DAOFactory.closeDAO(hostDAO);
       }
 
       String pswd;

@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
@@ -114,9 +115,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
   }
 
@@ -161,9 +160,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
   }
 
@@ -196,9 +193,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
   }
 

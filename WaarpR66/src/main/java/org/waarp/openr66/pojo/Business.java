@@ -38,12 +38,10 @@ public class Business {
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
-   * Empty constructor for compatibility issues
-   *
-   * @deprecated
+   * Empty constructor
    */
-  @Deprecated
   public Business() {
+    // Nothing
   }
 
   public Business(String hostid, String business, String roles, String aliases,

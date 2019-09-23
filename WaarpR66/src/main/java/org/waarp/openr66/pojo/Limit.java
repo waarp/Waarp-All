@@ -40,10 +40,10 @@ public class Limit {
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
-   * Empty constructor for compatibility issues
+   * Empty constructor
    */
-  @Deprecated
   public Limit() {
+    // Nothing
   }
 
   public Limit(String hostid, long delayLimit, long readGlobalLimit,

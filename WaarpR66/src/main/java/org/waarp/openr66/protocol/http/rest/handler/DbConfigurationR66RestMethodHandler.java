@@ -158,11 +158,10 @@ public class DbConfigurationR66RestMethodHandler
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL, DbConfiguration.class.getSimpleName());
-    final DbValue[] values = DbConfiguration.getAllType();
-    for (final DbValue dbValue : values) {
-      node1.put(dbValue.getColumn(), dbValue.getType());
-    }
 
+    for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
+      node1.put(column.name(), DbConfiguration.dbTypes[column.ordinal()]);
+    }
     ObjectNode node2;
     ObjectNode node3;
     if (methods.contains(METHOD.GET)) {
@@ -187,12 +186,12 @@ public class DbConfigurationR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbConfiguration.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (final DbValue dbValue : values) {
-        if (dbValue.getColumn()
+      for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
+        if (column.name()
                    .equalsIgnoreCase(DbConfiguration.Columns.HOSTID.name())) {
           continue;
         }
-        node3.put(dbValue.getColumn(), dbValue.getType());
+        node3.put(column.name(), DbConfiguration.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + "/id",
                                              COMMAND_TYPE.UPDATE.name(), node3,
@@ -210,8 +209,8 @@ public class DbConfigurationR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (final DbValue dbValue : values) {
-        node3.put(dbValue.getColumn(), dbValue.getType());
+      for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
+        node3.put(column.name(), DbConfiguration.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
           .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),

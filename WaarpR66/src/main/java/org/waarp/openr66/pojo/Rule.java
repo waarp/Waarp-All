@@ -84,9 +84,8 @@ public class Rule {
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
-   * Empty constructor for compatibility issues
+   * Empty constructor
    */
-  @Deprecated
   public Rule() {
     hostids = new ArrayList<String>();
     rPreTasks = new ArrayList<RuleTask>();
@@ -183,7 +182,6 @@ public class Rule {
     return hostids.contains(hostid);
   }
 
-  @Deprecated
   public String getXMLHostids() {
     StringBuilder res = new StringBuilder("<hostids>");
     for (final String hostid : hostids) {
@@ -192,37 +190,30 @@ public class Rule {
     return res.append("</hostids>").toString();
   }
 
-  @Deprecated
   public String getXMLRPreTasks() {
     return getXMLTasks(rPreTasks);
   }
 
-  @Deprecated
   public String getXMLRPostTasks() {
     return getXMLTasks(rPostTasks);
   }
 
-  @Deprecated
   public String getXMLRErrorTasks() {
     return getXMLTasks(rErrorTasks);
   }
 
-  @Deprecated
   public String getXMLSPreTasks() {
     return getXMLTasks(sPreTasks);
   }
 
-  @Deprecated
   public String getXMLSPostTasks() {
     return getXMLTasks(sPostTasks);
   }
 
-  @Deprecated
   public String getXMLSErrorTasks() {
     return getXMLTasks(sErrorTasks);
   }
 
-  @Deprecated
   private String getXMLTasks(List<RuleTask> tasks) {
     StringBuilder res = new StringBuilder("<tasks>");
     for (final RuleTask task : tasks) {

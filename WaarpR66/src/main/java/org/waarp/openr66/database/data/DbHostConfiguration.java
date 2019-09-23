@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.database.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -27,8 +28,6 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
-import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
@@ -43,10 +42,12 @@ import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlType;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
+import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.database.DBBusinessDAO;
+import org.waarp.openr66.dao.database.StatementExecutor;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Business;
@@ -55,6 +56,7 @@ import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.utils.Version;
 
 import java.io.StringReader;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +69,7 @@ import java.util.regex.Pattern;
 /**
  * Configuration Table object
  */
-public class DbHostConfiguration extends AbstractDbData {
+public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * Internal Logger
    */
@@ -87,8 +89,6 @@ public class DbHostConfiguration extends AbstractDbData {
   };
 
   public static final String table = " HOSTCONFIG ";
-
-  private Business business;
 
   public static final String XML_ALIASES = "aliases";
 
@@ -182,23 +182,7 @@ public class DbHostConfiguration extends AbstractDbData {
 
   @Override
   protected void initObject() {
-    primaryKey = new DbValue[] { new DbValue("", Columns.HOSTID.name()) };
-    otherFields = new DbValue[] {
-        new DbValue("", Columns.BUSINESS.name(), true),
-        new DbValue("", Columns.ROLES.name(), true),
-        new DbValue("", Columns.ALIASES.name(), true),
-        new DbValue("", Columns.OTHERS.name(), true),
-        new DbValue(0, Columns.UPDATEDINFO.name())
-    };
-    allFields = new DbValue[] {
-        otherFields[0], otherFields[1], otherFields[2], otherFields[3],
-        otherFields[4], primaryKey[0]
-    };
-  }
-
-  @Override
-  protected String getSelectAllFields() {
-    return selectAllFields;
+    //nothing
   }
 
   @Override
@@ -207,88 +191,23 @@ public class DbHostConfiguration extends AbstractDbData {
   }
 
   @Override
-  protected String getInsertAllValues() {
-    return insertAllValues;
+  protected AbstractDAO<Business> getDao() throws DAOConnectionException {
+    return DAOFactory.getInstance().getBusinessDAO();
   }
 
   @Override
-  protected String getUpdateAllFields() {
-    return updateAllFields;
-  }
-
-  @Override
-  protected void setToArray() {
-    allFields[Columns.HOSTID.ordinal()].setValue(business.getHostid());
-    if (business.getBusiness() == null) {
-      business.setBusiness("");
-    } else {
-      int len;
-      do {
-        len = business.getBusiness().length();
-        business.setBusiness(
-            WHITESPACES.matcher(business.getBusiness()).replaceAll(" "));
-      } while (len != business.getBusiness().length());
+  protected String getPrimaryKey() {
+    if (pojo != null) {
+      return pojo.getHostid();
     }
-    allFields[Columns.BUSINESS.ordinal()].setValue(business.getBusiness());
-    if (business.getRoles() == null) {
-      business.setRoles("");
-    } else {
-      int len;
-      do {
-        len = business.getRoles().length();
-        business
-            .setRoles(WHITESPACES.matcher(business.getRoles()).replaceAll(" "));
-      } while (len != business.getRoles().length());
-    }
-    allFields[Columns.ROLES.ordinal()].setValue(business.getRoles());
-    if (business.getAliases() == null) {
-      business.setAliases("");
-    } else {
-      int len;
-      do {
-        len = business.getAliases().length();
-        business.setAliases(
-            WHITESPACES.matcher(business.getAliases()).replaceAll(" "));
-      } while (len != business.getAliases().length());
-    }
-    allFields[Columns.ALIASES.ordinal()].setValue(business.getAliases());
-    if (business.getOthers() == null) {
-      business.setOthers("");
-    } else {
-      int len;
-      do {
-        len = business.getOthers().length();
-        business.setOthers(
-            WHITESPACES.matcher(business.getOthers()).replaceAll(" "));
-      } while (len != business.getOthers().length());
-    }
-    allFields[Columns.OTHERS.ordinal()].setValue(business.getOthers());
-    allFields[Columns.UPDATEDINFO.ordinal()]
-        .setValue(business.getUpdatedInfo().ordinal());
+    throw new IllegalArgumentException("pojo is null");
   }
 
   @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
-    business.setHostid((String) allFields[Columns.HOSTID.ordinal()].getValue());
-    business
-        .setBusiness((String) allFields[Columns.BUSINESS.ordinal()].getValue());
-    business.setRoles((String) allFields[Columns.ROLES.ordinal()].getValue());
-    business
-        .setAliases((String) allFields[Columns.ALIASES.ordinal()].getValue());
-    business.setOthers((String) allFields[Columns.OTHERS.ordinal()].getValue());
-    business.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.valueOf(
-        (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue()));
+  protected String getPrimaryField() {
+    return Columns.HOSTID.name();
   }
 
-  @Override
-  protected String getWherePrimaryKey() {
-    return primaryKey[0].getColumn() + " = ? ";
-  }
-
-  @Override
-  protected void setPrimaryKey() {
-    primaryKey[0].setValue(business.getHostid());
-  }
 
   /**
    * @param hostid
@@ -299,8 +218,7 @@ public class DbHostConfiguration extends AbstractDbData {
    */
   public DbHostConfiguration(String hostid, String business, String roles,
                              String aliases, String others) {
-    this.business = new Business(hostid, business, roles, aliases, others);
-    setToArray();
+    this.pojo = new Business(hostid, business, roles, aliases, others);
   }
 
   public DbHostConfiguration(Business business) {
@@ -308,8 +226,7 @@ public class DbHostConfiguration extends AbstractDbData {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
     }
-    this.business = business;
-    setToArray();
+    this.pojo = business;
   }
 
   /**
@@ -321,13 +238,12 @@ public class DbHostConfiguration extends AbstractDbData {
    */
   public DbHostConfiguration(ObjectNode source)
       throws WaarpDatabaseSqlException {
-    business = new Business();
+    pojo = new Business();
     setFromJson(source, false);
-    if (business.getHostid() == null || business.getHostid().isEmpty()) {
+    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
-    setToArray();
     isSaved = false;
   }
 
@@ -340,17 +256,14 @@ public class DbHostConfiguration extends AbstractDbData {
     BusinessDAO businessAccess = null;
     try {
       businessAccess = DAOFactory.getInstance().getBusinessDAO();
-      business = businessAccess.select(hostid);
-      setToArray();
+      pojo = businessAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException(
           "DbHostConfiguration not " + "found", e);
     } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
-      }
+      DAOFactory.closeDAO(businessAccess);
     }
   }
 
@@ -358,32 +271,31 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return the hostid
    */
   public String getHostid() {
-    return business.getHostid();
+    return pojo.getHostid();
   }
 
   /**
    * @return the business
    */
   public String getBusiness() {
-    return business.getBusiness();
+    return pojo.getBusiness();
   }
 
   /**
    * @param business the business to set
    */
   public void setBusiness(String business) {
-    this.business.setBusiness(business == null? "" : business);
+    this.pojo.setBusiness(business == null? "" : business);
     int len;
     do {
-      len = this.business.getBusiness().length();
-      this.business.setBusiness(
-          WHITESPACES.matcher(this.business.getBusiness()).replaceAll(" "));
-    } while (len != this.business.getBusiness().length());
+      len = this.pojo.getBusiness().length();
+      this.pojo.setBusiness(
+          WHITESPACES.matcher(this.pojo.getBusiness()).replaceAll(" "));
+    } while (len != this.pojo.getBusiness().length());
     Configuration.configuration.getBusinessWhiteSet().clear();
-    if (!this.business.getBusiness().isEmpty()) {
-      readValuesFromXml(this.business.getBusiness(), businessDecl);
+    if (!this.pojo.getBusiness().isEmpty()) {
+      readValuesFromXml(this.pojo.getBusiness(), businessDecl);
     }
-    allFields[Columns.BUSINESS.ordinal()].setValue(business);
     isSaved = false;
   }
 
@@ -391,25 +303,24 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return the roles
    */
   public String getRoles() {
-    return business.getRoles();
+    return pojo.getRoles();
   }
 
   /**
    * @param roles the roles to set
    */
   public void setRoles(String roles) {
-    business.setRoles(roles == null? "" : roles);
+    pojo.setRoles(roles == null? "" : roles);
     int len;
     do {
       len = getRoles().length();
-      business
-          .setRoles(WHITESPACES.matcher(business.getRoles()).replaceAll(" "));
-    } while (len != business.getRoles().length());
+      pojo
+          .setRoles(WHITESPACES.matcher(pojo.getRoles()).replaceAll(" "));
+    } while (len != pojo.getRoles().length());
     Configuration.configuration.getRoles().clear();
-    if (!business.getRoles().isEmpty()) {
-      readValuesFromXml(business.getRoles(), roleDecl);
+    if (!pojo.getRoles().isEmpty()) {
+      readValuesFromXml(pojo.getRoles(), roleDecl);
     }
-    allFields[Columns.ROLES.ordinal()].setValue(roles);
     isSaved = false;
   }
 
@@ -417,26 +328,25 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return the aliases
    */
   public String getAliases() {
-    return business.getAliases();
+    return pojo.getAliases();
   }
 
   /**
    * @param aliases the aliases to set
    */
   public void setAliases(String aliases) {
-    business.setAliases(aliases == null? "" : aliases);
+    pojo.setAliases(aliases == null? "" : aliases);
     int len;
     do {
-      len = business.getAliases().length();
-      business.setAliases(
-          WHITESPACES.matcher(business.getAliases()).replaceAll(" "));
-    } while (len != business.getAliases().length());
+      len = pojo.getAliases().length();
+      pojo.setAliases(
+          WHITESPACES.matcher(pojo.getAliases()).replaceAll(" "));
+    } while (len != pojo.getAliases().length());
     Configuration.configuration.getAliases().clear();
     Configuration.configuration.getReverseAliases().clear();
-    if (!business.getAliases().isEmpty()) {
-      readValuesFromXml(business.getAliases(), aliasDecl);
+    if (!pojo.getAliases().isEmpty()) {
+      readValuesFromXml(pojo.getAliases(), aliasDecl);
     }
-    allFields[Columns.ALIASES.ordinal()].setValue(aliases);
     isSaved = false;
   }
 
@@ -536,21 +446,20 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return the others
    */
   public String getOthers() {
-    return business.getOthers();
+    return pojo.getOthers();
   }
 
   /**
    * @param others the others to set
    */
   public void setOthers(String others) {
-    business.setOthers(others == null? "" : others);
+    pojo.setOthers(others == null? "" : others);
     int len;
     do {
-      len = business.getOthers().length();
-      business
-          .setOthers(WHITESPACES.matcher(business.getOthers()).replaceAll(" "));
-    } while (len != business.getOthers().length());
-    allFields[Columns.OTHERS.ordinal()].setValue(others);
+      len = pojo.getOthers().length();
+      pojo
+          .setOthers(WHITESPACES.matcher(pojo.getOthers()).replaceAll(" "));
+    } while (len != pojo.getOthers().length());
     isSaved = false;
   }
 
@@ -558,10 +467,10 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return the element for the content of the other part
    */
   public Element getOtherElement() {
-    if (business.getOthers() != null && !business.getOthers().isEmpty()) {
+    if (pojo.getOthers() != null && !pojo.getOthers().isEmpty()) {
       Document document;
       try {
-        document = DocumentHelper.parseText(business.getOthers());
+        document = DocumentHelper.parseText(pojo.getOthers());
       } catch (final DocumentException e) {
         return DocumentHelper.createElement(OtherFields.root.name());
       }
@@ -579,85 +488,54 @@ public class DbHostConfiguration extends AbstractDbData {
   }
 
   @Override
-  public void delete() throws WaarpDatabaseException {
-    BusinessDAO businessAccess = null;
-    try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
-      businessAccess.delete(business);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(
-          "DbHostConfiguration not " + "found", e);
-    } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
-      }
+  protected void setFromJson(final String field, final JsonNode value) {
+    if (value == null) {
+      return;
     }
-  }
-
-  @Override
-  public void insert() throws WaarpDatabaseException {
-    BusinessDAO businessAccess = null;
-    try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
-      businessAccess.insert(business);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public boolean exist() throws WaarpDatabaseException {
-    BusinessDAO businessAccess = null;
-    try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
-      return businessAccess.exist(business.getHostid());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void select() throws WaarpDatabaseException {
-    BusinessDAO businessAccess = null;
-    try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
-      business = businessAccess.select(business.getHostid());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(
-          "DbHostConfiguration not " + "found", e);
-    } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void update() throws WaarpDatabaseException {
-    BusinessDAO businessAccess = null;
-    try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
-      businessAccess.update(business);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(
-          "DbHostConfiguration not " + "found", e);
-    } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
+    for (Columns column : Columns.values()) {
+      if (column.name().equalsIgnoreCase(field)) {
+        int len;
+        switch (column) {
+          case ALIASES:
+            String aliases = value.asText();
+            do {
+              len = aliases.length();
+              aliases = WHITESPACES.matcher(aliases).replaceAll(" ");
+            } while (len != aliases.length());
+            pojo.setAliases(aliases);
+            break;
+          case BUSINESS:
+            String business = value.asText();
+            do {
+              len = business.length();
+              business = WHITESPACES.matcher(business).replaceAll(" ");
+            } while (len != business.length());
+            pojo.setBusiness(business);
+            break;
+          case OTHERS:
+            String others = value.asText();
+            do {
+              len = others.length();
+              others = WHITESPACES.matcher(others).replaceAll(" ");
+            } while (len != others.length());
+            pojo.setOthers(others);
+            break;
+          case ROLES:
+            String roles = value.asText();
+            do {
+              len = roles.length();
+              roles = WHITESPACES.matcher(roles).replaceAll(" ");
+            } while (len != roles.length());
+            pojo.setRoles(roles);
+            break;
+          case UPDATEDINFO:
+            pojo.setUpdatedInfo(
+                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));
+            break;
+          case HOSTID:
+            pojo.setHostid(value.asText());
+            break;
+        }
       }
     }
   }
@@ -666,7 +544,7 @@ public class DbHostConfiguration extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbHostConfiguration() {
-    business = new Business();
+    pojo = new Business();
   }
 
   /**
@@ -682,11 +560,21 @@ public class DbHostConfiguration extends AbstractDbData {
   public static DbHostConfiguration getFromStatement(
       DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    final DbHostConfiguration dbConfiguration = new DbHostConfiguration();
-    dbConfiguration.getValues(preparedStatement, dbConfiguration.allFields);
-    dbConfiguration.setToArray();
-    dbConfiguration.isSaved = true;
-    return dbConfiguration;
+    final DbHostConfiguration dbHostConfiguration = new DbHostConfiguration();
+    AbstractDAO<Business> businessDAO = null;
+    try {
+      businessDAO = dbHostConfiguration.getDao();
+      dbHostConfiguration.pojo = ((StatementExecutor<Business>) businessDAO)
+          .getFromResultSet(preparedStatement.getResultSet());
+      return dbHostConfiguration;
+    } catch (SQLException e) {
+      DbSession.error(e);
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } catch (DAOConnectionException e) {
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } finally {
+      DAOFactory.closeDAO(businessDAO);
+    }
   }
 
   /**
@@ -711,9 +599,7 @@ public class DbHostConfiguration extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (businessAccess != null) {
-        businessAccess.close();
-      }
+      DAOFactory.closeDAO(businessAccess);
     }
     final DbHostConfiguration[] res =
         new DbHostConfiguration[businesses.size()];
@@ -800,7 +686,7 @@ public class DbHostConfiguration extends AbstractDbData {
 
   @Override
   public void changeUpdatedInfo(UpdatedInfo info) {
-    business
+    pojo
         .setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
@@ -815,7 +701,7 @@ public class DbHostConfiguration extends AbstractDbData {
    * @return True if this Configuration refers to the current host
    */
   public boolean isOwnConfiguration() {
-    return business.getHostid().equals(Configuration.configuration.getHostId());
+    return pojo.getHostid().equals(Configuration.configuration.getHostId());
   }
 
   /**
@@ -1248,11 +1134,4 @@ public class DbHostConfiguration extends AbstractDbData {
     }
   }
 
-  /**
-   * @return the DbValue associated with this table
-   */
-  public static DbValue[] getAllType() {
-    final DbHostConfiguration item = new DbHostConfiguration();
-    return item.allFields;
-  }
 }

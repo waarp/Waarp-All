@@ -46,6 +46,7 @@ public class RuleTask {
 
   @SuppressWarnings("unused")
   public RuleTask() {
+    // Nothing
   }
 
   public RuleTask(String type, String path, int delay) {

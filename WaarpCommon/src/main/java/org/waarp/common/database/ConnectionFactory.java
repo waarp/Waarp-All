@@ -184,6 +184,8 @@ public class ConnectionFactory {
 
     // Get maximum connections
     Connection con = null;
+    // default
+    maxConnections = MAX_CONNECTIONS_DEFAULT;
     try {
       con = getConnection();
       // Max of user value (if not set, default 10) and current maximum

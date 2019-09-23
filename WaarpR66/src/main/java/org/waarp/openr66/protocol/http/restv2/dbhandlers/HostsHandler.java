@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -194,9 +195,7 @@ public class HostsHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
 
     final int totalResults = hosts.size();
@@ -243,9 +242,7 @@ public class HostsHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
 
     final ObjectNode responseObject = HostConverter.hostToNode(host);

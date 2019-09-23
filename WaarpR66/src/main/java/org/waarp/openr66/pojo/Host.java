@@ -67,10 +67,10 @@ public class Host {
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
-   * Empty constructor for compatibility issues
+   * Empty constructor
    */
-  @Deprecated
   public Host() {
+    // Nothing
   }
 
   public Host(String hostid, String address, int port, byte[] hostkey,

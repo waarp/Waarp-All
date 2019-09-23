@@ -19,25 +19,25 @@
  */
 package org.waarp.openr66.database.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
-import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.openr66.commander.CommanderNoDb;
+import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.LimitDAO;
 import org.waarp.openr66.dao.database.DBLimitDAO;
+import org.waarp.openr66.dao.database.StatementExecutor;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Limit;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,8 @@ import java.util.List;
 /**
  * Configuration Table object
  */
-public class DbConfiguration extends AbstractDbData {
+public class DbConfiguration extends AbstractDbDataDao<Limit> {
+
   public enum Columns {
     READGLOBALLIMIT, WRITEGLOBALLIMIT, READSESSIONLIMIT, WRITESESSIONLIMIT,
     DELAYLIMIT, UPDATEDINFO, HOSTID
@@ -57,8 +58,6 @@ public class DbConfiguration extends AbstractDbData {
   };
 
   public static final String table = " CONFIGURATION ";
-
-  private Limit limit;
 
   // ALL TABLE SHOULD IMPLEMENT THIS
   public static final int NBPRKEY = 1;
@@ -78,85 +77,28 @@ public class DbConfiguration extends AbstractDbData {
   protected static final String insertAllValues = " (?,?,?,?,?,?,?) ";
 
   @Override
-  protected void initObject() {
-    primaryKey = new DbValue[] { new DbValue("", Columns.HOSTID.name()) };
-    otherFields = new DbValue[] {
-        new DbValue(0L, Columns.READGLOBALLIMIT.name()),
-        new DbValue(0L, Columns.WRITEGLOBALLIMIT.name()),
-        new DbValue(0L, Columns.READSESSIONLIMIT.name()),
-        new DbValue(0L, Columns.WRITESESSIONLIMIT.name()),
-        new DbValue(0L, Columns.DELAYLIMIT.name()),
-        new DbValue(0, Columns.UPDATEDINFO.name())
-    };
-    allFields = new DbValue[] {
-        otherFields[0], otherFields[1], otherFields[2], otherFields[3],
-        otherFields[4], otherFields[5], primaryKey[0]
-    };
-
-  }
-
-  @Override
-  protected String getSelectAllFields() {
-    return selectAllFields;
-  }
-
-  @Override
   protected String getTable() {
     return table;
   }
 
   @Override
-  protected String getInsertAllValues() {
-    return insertAllValues;
+  protected AbstractDAO<Limit> getDao() throws DAOConnectionException {
+    return DAOFactory.getInstance().getLimitDAO();
   }
 
   @Override
-  protected String getUpdateAllFields() {
-    return updateAllFields;
+  protected String getPrimaryKey() {
+    if (pojo != null) {
+      return pojo.getHostid();
+    }
+    throw new IllegalArgumentException("pojo is null");
   }
 
   @Override
-  protected void setToArray() {
-    allFields[Columns.HOSTID.ordinal()].setValue(limit.getHostid());
-    allFields[Columns.READGLOBALLIMIT.ordinal()]
-        .setValue(limit.getReadGlobalLimit());
-    allFields[Columns.WRITEGLOBALLIMIT.ordinal()]
-        .setValue(limit.getWriteGlobalLimit());
-    allFields[Columns.READSESSIONLIMIT.ordinal()]
-        .setValue(limit.getReadSessionLimit());
-    allFields[Columns.WRITESESSIONLIMIT.ordinal()]
-        .setValue(limit.getWriteSessionLimit());
-    allFields[Columns.DELAYLIMIT.ordinal()].setValue(limit.getDelayLimit());
-    allFields[Columns.UPDATEDINFO.ordinal()]
-        .setValue(limit.getUpdatedInfo().ordinal());
+  protected String getPrimaryField() {
+    return Columns.HOSTID.name();
   }
 
-  @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
-    limit.setHostid((String) allFields[Columns.HOSTID.ordinal()].getValue());
-    limit.setReadGlobalLimit(
-        (Long) allFields[Columns.READGLOBALLIMIT.ordinal()].getValue());
-    limit.setWriteGlobalLimit(
-        (Long) allFields[Columns.WRITEGLOBALLIMIT.ordinal()].getValue());
-    limit.setReadSessionLimit(
-        (Long) allFields[Columns.READSESSIONLIMIT.ordinal()].getValue());
-    limit.setWriteSessionLimit(
-        (Long) allFields[Columns.WRITESESSIONLIMIT.ordinal()].getValue());
-    limit.setDelayLimit(
-        (Long) allFields[Columns.DELAYLIMIT.ordinal()].getValue());
-    limit.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.valueOf(
-        (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue()));
-  }
-
-  @Override
-  protected String getWherePrimaryKey() {
-    return primaryKey[0].getColumn() + " = ? ";
-  }
-
-  @Override
-  protected void setPrimaryKey() {
-    primaryKey[0].setValue(limit.getHostid());
-  }
 
   /**
    * @param hostid
@@ -168,8 +110,7 @@ public class DbConfiguration extends AbstractDbData {
    */
   public DbConfiguration(String hostid, long rg, long wg, long rs, long ws,
                          long del) {
-    limit = new Limit(hostid, rg, wg, rs, ws, del);
-    setToArray();
+    pojo = new Limit(hostid, rg, wg, rs, ws, del);
   }
 
   public DbConfiguration(Limit limit) {
@@ -177,8 +118,7 @@ public class DbConfiguration extends AbstractDbData {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
     }
-    this.limit = limit;
-    setToArray();
+    this.pojo = limit;
   }
 
   /**
@@ -189,13 +129,12 @@ public class DbConfiguration extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public DbConfiguration(ObjectNode source) throws WaarpDatabaseSqlException {
-    limit = new Limit();
+    pojo = new Limit();
     setFromJson(source, false);
-    if (limit.getHostid() == null || limit.getHostid().isEmpty()) {
+    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
-    setToArray();
   }
 
   /**
@@ -210,7 +149,7 @@ public class DbConfiguration extends AbstractDbData {
   public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
-    if (limit.getHostid() == null || limit.getHostid().isEmpty()) {
+    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
@@ -225,106 +164,13 @@ public class DbConfiguration extends AbstractDbData {
     LimitDAO limitAccess = null;
     try {
       limitAccess = DAOFactory.getInstance().getLimitDAO();
-      limit = limitAccess.select(hostid);
+      pojo = limitAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      limit = new Limit(hostid, 0L);
+      pojo = new Limit(hostid, 0L);
     } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
-    }
-    setToArray();
-  }
-
-  @Override
-  public void delete() throws WaarpDatabaseException {
-    LimitDAO limitAccess = null;
-    try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
-      limitAccess.delete(limit);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find " + "Configuration",
-                                             e);
-    } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void insert() throws WaarpDatabaseException {
-    LimitDAO limitAccess = null;
-    if (limit.getUpdatedInfo().equals(UpdatedInfo.TOSUBMIT)) {
-      CommanderNoDb.todoList.add(this);
-    }
-    try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
-      limitAccess.insert(limit);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public boolean exist() throws WaarpDatabaseException {
-    LimitDAO limitAccess = null;
-    try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
-      return limitAccess.exist(limit.getHostid());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void select() throws WaarpDatabaseException {
-    LimitDAO limitAccess = null;
-    try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
-      limit = limitAccess.select(limit.getHostid());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find " + "Configuration",
-                                             e);
-    } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void update() throws WaarpDatabaseException {
-    LimitDAO limitAccess = null;
-    if (limit.getUpdatedInfo().equals(UpdatedInfo.TOSUBMIT)) {
-      CommanderNoDb.todoList.add(this);
-    }
-    try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
-      limitAccess.update(limit);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find " + "Configuration",
-                                             e);
-    } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
+      DAOFactory.closeDAO(limitAccess);
     }
   }
 
@@ -332,21 +178,46 @@ public class DbConfiguration extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbConfiguration() {
-    limit = new Limit();
+    pojo = new Limit();
   }
 
-  public static DbConfiguration getFromStatement(
-      DbPreparedStatement preparedStatement)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    final DbConfiguration dbConfiguration = new DbConfiguration();
-    dbConfiguration.getValues(preparedStatement, dbConfiguration.allFields);
-    dbConfiguration.setToArray();
-    dbConfiguration.isSaved = true;
-    return dbConfiguration;
+  @Override
+  protected void setFromJson(final String field, final JsonNode value) {
+    if (value == null) {
+      return;
+    }
+    for (Columns column : Columns.values()) {
+      if (column.name().equalsIgnoreCase(field)) {
+        switch (column) {
+          case READGLOBALLIMIT:
+            pojo.setReadGlobalLimit(value.asLong());
+            break;
+          case WRITEGLOBALLIMIT:
+            pojo.setWriteGlobalLimit(value.asLong());
+            break;
+          case READSESSIONLIMIT:
+            pojo.setReadSessionLimit(value.asLong());
+            break;
+          case WRITESESSIONLIMIT:
+            pojo.setWriteSessionLimit(value.asLong());
+            break;
+          case DELAYLIMIT:
+            pojo.setDelayLimit(value.asLong());
+            break;
+          case UPDATEDINFO:
+            pojo.setUpdatedInfo(
+                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));
+            break;
+          case HOSTID:
+            pojo.setHostid(value.asText());
+            break;
+        }
+      }
+    }
   }
 
   /**
-   * @return the DbPreparedStatement for getting Updated Object
+   * @return the array of DbConfiguration from Updated status
    *
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
@@ -367,9 +238,7 @@ public class DbConfiguration extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (limitAccess != null) {
-        limitAccess.close();
-      }
+      DAOFactory.closeDAO(limitAccess);
     }
     final DbConfiguration[] res = new DbConfiguration[limits.size()];
     int i = 0;
@@ -433,34 +302,47 @@ public class DbConfiguration extends AbstractDbData {
     return preparedStatement;
   }
 
+  public static DbConfiguration getFromStatement(
+      final DbPreparedStatement statement)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+    final DbConfiguration dbConfiguration = new DbConfiguration();
+    AbstractDAO<Limit> limitDAO = null;
+    try {
+      limitDAO = dbConfiguration.getDao();
+      dbConfiguration.pojo = ((StatementExecutor<Limit>) limitDAO)
+          .getFromResultSet(statement.getResultSet());
+      return dbConfiguration;
+    } catch (SQLException e) {
+      DbSession.error(e);
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } catch (DAOConnectionException e) {
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } finally {
+      DAOFactory.closeDAO(limitDAO);
+    }
+  }
+
   @Override
   public void changeUpdatedInfo(UpdatedInfo info) {
-    limit.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
+    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
   /**
    * Update configuration according to new value of limits
    */
   public void updateConfiguration() {
-    Configuration.configuration.changeNetworkLimit(limit.getWriteGlobalLimit(),
-                                                   limit.getReadGlobalLimit(),
-                                                   limit.getWriteSessionLimit(),
-                                                   limit.getReadSessionLimit(),
-                                                   limit.getDelayLimit());
+    Configuration.configuration.changeNetworkLimit(pojo.getWriteGlobalLimit(),
+                                                   pojo.getReadGlobalLimit(),
+                                                   pojo.getWriteSessionLimit(),
+                                                   pojo.getReadSessionLimit(),
+                                                   pojo.getDelayLimit());
   }
 
   /**
    * @return True if this Configuration refers to the current host
    */
   public boolean isOwnConfiguration() {
-    return limit.getHostid().equals(Configuration.configuration.getHostId());
+    return pojo.getHostid().equals(Configuration.configuration.getHostId());
   }
 
-  /**
-   * @return the DbValue associated with this table
-   */
-  public static DbValue[] getAllType() {
-    final DbConfiguration item = new DbConfiguration();
-    return item.allFields;
-  }
 }

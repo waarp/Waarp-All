@@ -539,9 +539,7 @@ public class HttpFormattedHandler
       logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
     responseContent.append(REQUEST.active.readEnd());
   }
@@ -601,9 +599,7 @@ public class HttpFormattedHandler
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
     responseContent.append(REQUEST.error.readEnd());
   }
@@ -636,9 +632,7 @@ public class HttpFormattedHandler
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
     responseContent.append(REQUEST.done.readEnd());
   }
@@ -669,9 +663,7 @@ public class HttpFormattedHandler
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
     responseContent.append(REQUEST.all.readEnd());
   }
@@ -738,9 +730,7 @@ public class HttpFormattedHandler
       sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
       return;
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
     if (status != HttpResponseStatus.INTERNAL_SERVER_ERROR) {
       responseContent.append("<p>No problem is found in Transfers</p><br>");

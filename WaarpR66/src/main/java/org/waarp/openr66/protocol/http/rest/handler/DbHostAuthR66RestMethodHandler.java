@@ -163,9 +163,8 @@ public class DbHostAuthR66RestMethodHandler
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL, DbHostAuth.class.getSimpleName());
-    final DbValue[] values = DbHostAuth.getAllType();
-    for (final DbValue dbValue : values) {
-      node1.put(dbValue.getColumn(), dbValue.getType());
+    for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
+      node1.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);
     }
 
     ObjectNode node2;
@@ -191,12 +190,12 @@ public class DbHostAuthR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostAuth.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (final DbValue dbValue : values) {
-        if (dbValue.getColumn()
+      for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
+        if (column.name()
                    .equalsIgnoreCase(DbHostAuth.Columns.HOSTID.name())) {
           continue;
         }
-        node3.put(dbValue.getColumn(), dbValue.getType());
+        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + "/id",
                                              COMMAND_TYPE.UPDATE.name(), node3,
@@ -214,8 +213,8 @@ public class DbHostAuthR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (final DbValue dbValue : values) {
-        node3.put(dbValue.getColumn(), dbValue.getType());
+      for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
+        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
           .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),

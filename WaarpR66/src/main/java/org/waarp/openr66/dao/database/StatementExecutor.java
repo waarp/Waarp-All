@@ -22,18 +22,24 @@ package org.waarp.openr66.dao.database;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.pojo.Limit;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-abstract class StatementExecutor {
+public abstract class StatementExecutor<E> {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(StatementExecutor.class);
   protected final Connection connection;
+
+  public abstract E getFromResultSet(ResultSet set) throws SQLException,
+                                                           DAOConnectionException;
 
   StatementExecutor(Connection con) {
     connection = con;
@@ -50,10 +56,16 @@ abstract class StatementExecutor {
     int res;
     res = stm.executeUpdate();
     if (res < 1) {
-      logger.warn("Update failed, no record updated.");
+      logger.error("Update failed, no record updated.");
+      //FIXME should be throw new SQLDataException("Update failed, no record
+      // updated.");
     } else {
-      logger.debug(res + " records updated.");
+      logger.debug("{} records updated.", res);
     }
+  }
+
+  public void executeAction(PreparedStatement stm) throws SQLException {
+    stm.executeUpdate();
   }
 
   public ResultSet executeQuery(PreparedStatement stm) throws SQLException {

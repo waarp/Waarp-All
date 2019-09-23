@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.openr66.dao.BusinessDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Business;
@@ -115,9 +116,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(businessDAO);
     }
   }
 
@@ -154,9 +153,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(businessDAO);
     }
   }
 
@@ -197,9 +194,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(businessDAO);
     }
   }
 
@@ -229,9 +224,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(businessDAO);
     }
   }
 

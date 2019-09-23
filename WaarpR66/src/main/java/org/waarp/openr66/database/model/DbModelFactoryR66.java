@@ -40,6 +40,8 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.utils.R66Versions;
 
+import java.sql.Types;
+
 import static org.waarp.common.database.DbConstant.*;
 
 /**
@@ -278,7 +280,11 @@ public class DbModelFactoryR66 extends DbModelFactory {
     for (int i = 0; i < acolumns.length; i++) {
       action.append(acolumns[i].name())
             .append(dbTypeResolver.getType(DbTaskRunner.dbTypes[i]))
-            .append(notNull).append(", ");
+            .append(notNull);
+      if ( DbTaskRunner.dbTypes[i] == Types.TIMESTAMP) {
+        action.append(" DEFAULT CURRENT_TIMESTAMP(3)");
+      }
+      action.append(", ");
     }
     // Several columns for primary key
     action.append(" CONSTRAINT runner_pk " + primaryKey + '(');

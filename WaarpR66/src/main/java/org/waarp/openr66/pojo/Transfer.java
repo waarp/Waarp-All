@@ -305,10 +305,10 @@ public class Transfer {
   }
 
   /**
-   * Empty constructor for compatibility issues
+   * Empty constructor
    */
-  @Deprecated
   public Transfer() {
+    // Nothing
   }
 
   public long getId() {

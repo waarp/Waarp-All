@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Implementation of BusinessDAO for standard SQL databases
  */
-public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
+public class DBBusinessDAO extends StatementExecutor<Business> implements BusinessDAO {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DBBusinessDAO.class);
@@ -84,7 +84,7 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
       stm = connection.prepareStatement(SQL_DELETE);
       setParameters(stm, business.getHostid());
       try {
-        executeUpdate(stm);
+        executeAction(stm);
       } catch (final SQLException e2) {
         throw new DAONoDataException(e2);
       }
@@ -100,7 +100,7 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeUpdate(stm);
+      executeAction(stm);
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
@@ -252,7 +252,8 @@ public class DBBusinessDAO extends StatementExecutor implements BusinessDAO {
     }
   }
 
-  private Business getFromResultSet(ResultSet set) throws SQLException {
+  @Override
+  public Business getFromResultSet(ResultSet set) throws SQLException {
     return new Business(set.getString(HOSTID_FIELD),
                         set.getString(BUSINESS_FIELD),
                         set.getString(ROLES_FIELD),

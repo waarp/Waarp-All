@@ -50,7 +50,7 @@ import static org.waarp.openr66.dao.DAOFactory.*;
 /**
  * Implementation of RuleDAO for standard SQL databases
  */
-public class DBRuleDAO extends StatementExecutor implements RuleDAO {
+public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DBRuleDAO.class);
@@ -111,7 +111,7 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
       stm = connection.prepareStatement(SQL_DELETE);
       setParameters(stm, rule.getName());
       try {
-        executeUpdate(stm);
+        executeAction(stm);
       } catch (final SQLException e2) {
         throw new DAONoDataException(e2);
       }
@@ -127,7 +127,7 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeUpdate(stm);
+      executeAction(stm);
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
@@ -284,7 +284,8 @@ public class DBRuleDAO extends StatementExecutor implements RuleDAO {
     }
   }
 
-  protected Rule getFromResultSet(ResultSet set)
+  @Override
+  public Rule getFromResultSet(ResultSet set)
       throws SQLException, DAOConnectionException {
     return new Rule(set.getString(ID_FIELD), set.getInt(MODE_TRANS_FIELD),
                     retrieveHostids(set.getString(HOSTIDS_FIELD)),

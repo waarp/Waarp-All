@@ -165,9 +165,8 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
       node1 = JsonHandler.createArrayNode();
       final ObjectNode node1b = JsonHandler.createObjectNode();
       node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());
-      final DbValue[] values = DbTaskRunner.getAllType();
-      for (final DbValue dbValue : values) {
-        node1b.put(dbValue.getColumn(), dbValue.getType());
+      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
+        node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
       }
       node1.add(node1b);
       try {

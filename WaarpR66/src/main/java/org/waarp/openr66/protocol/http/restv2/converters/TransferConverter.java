@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -186,9 +187,7 @@ public final class TransferConverter {
     } catch (final DAONoDataException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
+      DAOFactory.closeDAO(ruleDAO);
     }
 
     transfer.setRetrieveMode(
@@ -218,9 +217,7 @@ public final class TransferConverter {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
+      DAOFactory.closeDAO(ruleDAO);
     }
   }
 
@@ -239,9 +236,7 @@ public final class TransferConverter {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
   }
 
@@ -265,9 +260,7 @@ public final class TransferConverter {
     } catch (final DAONoDataException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
+      DAOFactory.closeDAO(ruleDAO);
     }
   }
 

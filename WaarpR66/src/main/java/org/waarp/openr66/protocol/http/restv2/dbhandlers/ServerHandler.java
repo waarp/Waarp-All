@@ -33,6 +33,7 @@ import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.BusinessDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.RuleDAO;
@@ -251,9 +252,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
     }
   }
 
@@ -456,9 +455,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (transferDAO != null) {
-        transferDAO.close();
-      }
+      DAOFactory.closeDAO(transferDAO);
     }
   }
 
@@ -596,15 +593,9 @@ public class ServerHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
+      DAOFactory.closeDAO(ruleDAO);
+      DAOFactory.closeDAO(businessDAO);
     }
   }
 
@@ -784,15 +775,9 @@ public class ServerHandler extends AbstractRestDbHandler {
     } catch (final DAONoDataException e) {
       responder.sendStatus(NOT_FOUND);
     } finally {
-      if (hostDAO != null) {
-        hostDAO.close();
-      }
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(hostDAO);
+      DAOFactory.closeDAO(ruleDAO);
+      DAOFactory.closeDAO(businessDAO);
     }
   }
 

@@ -232,9 +232,8 @@ public class DbTaskRunnerR66RestMethodHandler
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());
-    final DbValue[] values = DbTaskRunner.getAllType();
-    for (final DbValue dbValue : values) {
-      node1.put(dbValue.getColumn(), dbValue.getType());
+    for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
+      node1.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
     }
 
     ObjectNode node2;
@@ -274,12 +273,12 @@ public class DbTaskRunnerR66RestMethodHandler
                 PARTNER_AS_REQUESTED_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-      for (final DbValue dbValue : values) {
-        if (dbValue.getColumn()
+      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
+        if (column.name()
                    .equalsIgnoreCase(DbTaskRunner.Columns.IDRULE.name())) {
           continue;
         }
-        node3.put(dbValue.getColumn(), dbValue.getType());
+        node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + "/id",
                                              COMMAND_TYPE.UPDATE.name(), node3,
@@ -303,8 +302,8 @@ public class DbTaskRunnerR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (final DbValue dbValue : values) {
-        node3.put(dbValue.getColumn(), dbValue.getType());
+      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
+        node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
           .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),

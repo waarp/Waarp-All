@@ -43,7 +43,7 @@ import static org.waarp.openr66.database.DbConstantR66.*;
 /**
  * Implementation of TransferDAO for a standard SQL database
  */
-public abstract class DBTransferDAO extends StatementExecutor
+public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     implements TransferDAO {
 
   private static final String LIMIT2 = " LIMIT ";
@@ -163,7 +163,7 @@ public abstract class DBTransferDAO extends StatementExecutor
       stm = connection.prepareStatement(getDeleteRequest());
       setParameters(stm, params);
       try {
-        executeUpdate(stm);
+        executeAction(stm);
       } catch (final SQLException e2) {
         throw new DAONoDataException(e2);
       }
@@ -179,7 +179,7 @@ public abstract class DBTransferDAO extends StatementExecutor
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(getDeleteAllRequest());
-      executeUpdate(stm);
+      executeAction(stm);
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
@@ -545,7 +545,8 @@ public abstract class DBTransferDAO extends StatementExecutor
     }
   }
 
-  private Transfer getFromResultSet(ResultSet set) throws SQLException {
+  @Override
+  public Transfer getFromResultSet(ResultSet set) throws SQLException {
     return new Transfer(set.getLong(ID_FIELD), set.getString(ID_RULE_FIELD),
                         set.getInt(TRANSFER_MODE_FIELD),
                         set.getString(FILENAME_FIELD),
@@ -568,5 +569,17 @@ public abstract class DBTransferDAO extends StatementExecutor
                         set.getTimestamp(TRANSFER_START_FIELD),
                         set.getTimestamp(TRANSFER_STOP_FIELD),
                         UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+  }
+
+
+  @Override
+  public Transfer select(final String id)
+      throws DAOConnectionException, DAONoDataException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean exist(final String id) throws DAOConnectionException {
+    throw new UnsupportedOperationException();
   }
 }

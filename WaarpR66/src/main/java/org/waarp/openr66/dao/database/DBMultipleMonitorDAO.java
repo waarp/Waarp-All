@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Implementation of MultipleMonitorDAO for standard SQL databases
  */
-public class DBMultipleMonitorDAO extends StatementExecutor
+public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
     implements MultipleMonitorDAO {
 
   private static final WaarpLogger logger =
@@ -82,7 +82,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor
       stm = connection.prepareStatement(SQL_DELETE);
       setParameters(stm, multipleMonitor.getHostid());
       try {
-        executeUpdate(stm);
+        executeAction(stm);
       } catch (final SQLException e2) {
         throw new DAONoDataException(e2);
       }
@@ -98,7 +98,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeUpdate(stm);
+      executeAction(stm);
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
@@ -252,7 +252,8 @@ public class DBMultipleMonitorDAO extends StatementExecutor
     }
   }
 
-  private MultipleMonitor getFromResultSet(ResultSet set) throws SQLException {
+  @Override
+  public MultipleMonitor getFromResultSet(ResultSet set) throws SQLException {
     return new MultipleMonitor(set.getString(HOSTID_FIELD),
                                set.getInt(COUNT_CONFIG_FIELD),
                                set.getInt(COUNT_HOST_FIELD),

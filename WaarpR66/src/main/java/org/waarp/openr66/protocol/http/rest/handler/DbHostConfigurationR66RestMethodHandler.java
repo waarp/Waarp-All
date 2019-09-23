@@ -40,6 +40,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.database.data.DbHostConfiguration.Columns;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -177,9 +178,8 @@ public class DbHostConfigurationR66RestMethodHandler
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL,
               DbHostConfiguration.class.getSimpleName());
-    final DbValue[] values = DbHostConfiguration.getAllType();
-    for (final DbValue dbValue : values) {
-      node1.put(dbValue.getColumn(), dbValue.getType());
+    for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
+      node1.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
     }
 
     ObjectNode node2;
@@ -206,12 +206,12 @@ public class DbHostConfigurationR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostConfiguration.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (final DbValue dbValue : values) {
-        if (dbValue.getColumn().equalsIgnoreCase(
+      for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
+        if (column.name().equalsIgnoreCase(
             DbHostConfiguration.Columns.HOSTID.name())) {
           continue;
         }
-        node3.put(dbValue.getColumn(), dbValue.getType());
+        node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + "/id",
                                              COMMAND_TYPE.UPDATE.name(), node3,
@@ -229,8 +229,8 @@ public class DbHostConfigurationR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (final DbValue dbValue : values) {
-        node3.put(dbValue.getColumn(), dbValue.getType());
+      for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
+        node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
           .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),

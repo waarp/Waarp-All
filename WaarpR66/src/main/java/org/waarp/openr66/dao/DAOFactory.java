@@ -82,6 +82,17 @@ public abstract class DAOFactory {
   }
 
   /**
+   * Close the DAO
+   *
+   * @param dao
+   */
+  public static void closeDAO(AbstractDAO<?> dao) {
+    if (dao != null) {
+      dao.close();
+    }
+  }
+
+  /**
    * @return the current configuration of the database maximum connections
    */
   public int getMaxConnections() {

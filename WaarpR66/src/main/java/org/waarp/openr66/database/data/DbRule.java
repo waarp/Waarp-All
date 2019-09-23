@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.database.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dom4j.Document;
@@ -42,10 +43,12 @@ import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
 import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
 import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.database.DBRuleDAO;
+import org.waarp.openr66.dao.database.StatementExecutor;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
@@ -67,7 +70,7 @@ import java.util.List;
 /**
  * Rule Table object
  */
-public class DbRule extends AbstractDbData {
+public class DbRule extends AbstractDbDataDao<Rule> {
   private static final String RULE_NOT_FOUND = "Rule not found";
   /**
    * Internal Logger
@@ -111,11 +114,6 @@ public class DbRule extends AbstractDbData {
    */
   public static final String TASK_COMMENT = "comment";
 
-  /**
-   * Global Id
-   */
-  private Rule rule;
-
   // ALL TABLE SHOULD IMPLEMENT THIS
   public static final int NBPRKEY = 1;
 
@@ -142,35 +140,7 @@ public class DbRule extends AbstractDbData {
 
   @Override
   protected void initObject() {
-    primaryKey = new DbValue[] { new DbValue("", Columns.IDRULE.name()) };
-    otherFields = new DbValue[] {
-        // HOSTIDS, MODETRANS, RECVPATH, SENDPATH, ARCHIVEPATH, WORKPATH,
-        // PRETASKS, POSTTASKS, ERRORTASKS
-        new DbValue("", Columns.HOSTIDS.name(), true),
-        new DbValue(0, Columns.MODETRANS.name()),
-        new DbValue("", Columns.RECVPATH.name()),
-        new DbValue("", Columns.SENDPATH.name()),
-        new DbValue("", Columns.ARCHIVEPATH.name()),
-        new DbValue("", Columns.WORKPATH.name()),
-        new DbValue("", Columns.RPRETASKS.name(), true),
-        new DbValue("", Columns.RPOSTTASKS.name(), true),
-        new DbValue("", Columns.RERRORTASKS.name(), true),
-        new DbValue("", Columns.SPRETASKS.name(), true),
-        new DbValue("", Columns.SPOSTTASKS.name(), true),
-        new DbValue("", Columns.SERRORTASKS.name(), true),
-        new DbValue(0, Columns.UPDATEDINFO.name())
-    };
-    allFields = new DbValue[] {
-        otherFields[0], otherFields[1], otherFields[2], otherFields[3],
-        otherFields[4], otherFields[5], otherFields[6], otherFields[7],
-        otherFields[8], otherFields[9], otherFields[10], otherFields[11],
-        otherFields[12], primaryKey[0]
-    };
-  }
-
-  @Override
-  protected String getSelectAllFields() {
-    return selectAllFields;
+    // Nothing
   }
 
   @Override
@@ -179,113 +149,40 @@ public class DbRule extends AbstractDbData {
   }
 
   @Override
-  protected String getInsertAllValues() {
-    return insertAllValues;
+  protected AbstractDAO<Rule> getDao() throws DAOConnectionException {
+    return DAOFactory.getInstance().getRuleDAO();
   }
 
   @Override
-  protected String getUpdateAllFields() {
-    return updateAllFields;
+  protected String getPrimaryKey() {
+    if (pojo != null) {
+      return pojo.getName();
+    }
+    throw new IllegalArgumentException("pojo is null");
+  }
+
+  @Override
+  protected String getPrimaryField() {
+    return Columns.IDRULE.name();
   }
 
   protected final void checkPath() {
     if (getRecvPath() != null && !getRecvPath().isEmpty() &&
         getRecvPath().charAt(0) != DirInterface.SEPARATORCHAR) {
-      rule.setRecvPath(DirInterface.SEPARATOR + getRecvPath());
+      pojo.setRecvPath(DirInterface.SEPARATOR + getRecvPath());
     }
     if (getSendPath() != null && !getSendPath().isEmpty() &&
         getSendPath().charAt(0) != DirInterface.SEPARATORCHAR) {
-      rule.setSendPath(DirInterface.SEPARATOR + getSendPath());
+      pojo.setSendPath(DirInterface.SEPARATOR + getSendPath());
     }
     if (getArchivePath() != null && !getArchivePath().isEmpty() &&
         getArchivePath().charAt(0) != DirInterface.SEPARATORCHAR) {
-      rule.setArchivePath(DirInterface.SEPARATOR + getArchivePath());
+      pojo.setArchivePath(DirInterface.SEPARATOR + getArchivePath());
     }
     if (getWorkPath() != null && !getWorkPath().isEmpty() &&
         getWorkPath().charAt(0) != DirInterface.SEPARATORCHAR) {
-      rule.setWorkPath(DirInterface.SEPARATOR + getWorkPath());
+      pojo.setWorkPath(DirInterface.SEPARATOR + getWorkPath());
     }
-  }
-
-  @Override
-  protected void setToArray() {
-    checkPath();
-    allFields[Columns.HOSTIDS.ordinal()].setValue(rule.getXMLHostids());
-    allFields[Columns.MODETRANS.ordinal()].setValue(getMode());
-    allFields[Columns.RECVPATH.ordinal()].setValue(getRecvPath());
-    allFields[Columns.SENDPATH.ordinal()].setValue(getSendPath());
-    allFields[Columns.ARCHIVEPATH.ordinal()].setValue(getArchivePath());
-    allFields[Columns.WORKPATH.ordinal()].setValue(getWorkPath());
-    allFields[Columns.RPRETASKS.ordinal()].setValue(rule.getXMLRPreTasks());
-    allFields[Columns.RPOSTTASKS.ordinal()].setValue(rule.getXMLRPostTasks());
-    allFields[Columns.RERRORTASKS.ordinal()].setValue(rule.getXMLRErrorTasks());
-    allFields[Columns.SPRETASKS.ordinal()].setValue(rule.getXMLSPreTasks());
-    allFields[Columns.SPOSTTASKS.ordinal()].setValue(rule.getXMLSPostTasks());
-    allFields[Columns.SERRORTASKS.ordinal()].setValue(rule.getXMLSErrorTasks());
-    allFields[Columns.UPDATEDINFO.ordinal()]
-        .setValue(rule.getUpdatedInfo().ordinal());
-    allFields[Columns.IDRULE.ordinal()].setValue(getIdRule());
-  }
-
-  @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
-    rule.setHostids(Arrays.asList(
-        getIdsRule((String) allFields[Columns.HOSTIDS.ordinal()].getValue())));
-    rule.setMode((Integer) allFields[Columns.MODETRANS.ordinal()].getValue());
-    rule.setRecvPath((String) allFields[Columns.RECVPATH.ordinal()].getValue());
-    rule.setSendPath((String) allFields[Columns.SENDPATH.ordinal()].getValue());
-    rule.setArchivePath(
-        (String) allFields[Columns.ARCHIVEPATH.ordinal()].getValue());
-    rule.setWorkPath((String) allFields[Columns.WORKPATH.ordinal()].getValue());
-    rule.setRPreTasks(fromLegacyTasks(getTasksRule(
-        (String) allFields[Columns.RPRETASKS.ordinal()].getValue())));
-    rule.setRPostTasks(fromLegacyTasks(getTasksRule(
-        (String) allFields[Columns.RPOSTTASKS.ordinal()].getValue())));
-    rule.setRErrorTasks(fromLegacyTasks(getTasksRule(
-        (String) allFields[Columns.RERRORTASKS.ordinal()].getValue())));
-    rule.setSPreTasks(fromLegacyTasks(getTasksRule(
-        (String) allFields[Columns.SPRETASKS.ordinal()].getValue())));
-    rule.setSPostTasks(fromLegacyTasks(getTasksRule(
-        (String) allFields[Columns.SPOSTTASKS.ordinal()].getValue())));
-    rule.setSErrorTasks(fromLegacyTasks(getTasksRule(
-        (String) allFields[Columns.SERRORTASKS.ordinal()].getValue())));
-    rule.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.valueOf(
-        (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue()));
-    rule.setName((String) allFields[Columns.IDRULE.ordinal()].getValue());
-    checkPath();
-  }
-
-  protected void setFromArrayClone(DbRule source)
-      throws WaarpDatabaseSqlException {
-    rule.setMode((Integer) allFields[Columns.MODETRANS.ordinal()].getValue());
-    rule.setRecvPath((String) allFields[Columns.RECVPATH.ordinal()].getValue());
-    rule.setSendPath((String) allFields[Columns.SENDPATH.ordinal()].getValue());
-    rule.setArchivePath(
-        (String) allFields[Columns.ARCHIVEPATH.ordinal()].getValue());
-    rule.setWorkPath((String) allFields[Columns.WORKPATH.ordinal()].getValue());
-    rule.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.valueOf(
-        (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue()));
-    rule.setName((String) allFields[Columns.IDRULE.ordinal()].getValue());
-
-    rule.setHostids(source.rule.getHostids());
-
-    rule.setRPreTasks(source.rule.getRPreTasks());
-    rule.setRPostTasks(source.rule.getRPostTasks());
-    rule.setRErrorTasks(source.rule.getRErrorTasks());
-    rule.setSPreTasks(source.rule.getSPreTasks());
-    rule.setSPostTasks(source.rule.getSPostTasks());
-    rule.setSErrorTasks(source.rule.getSErrorTasks());
-    checkPath();
-  }
-
-  @Override
-  protected String getWherePrimaryKey() {
-    return primaryKey[0].getColumn() + " = ? ";
-  }
-
-  @Override
-  protected void setPrimaryKey() {
-    primaryKey[0].setValue(getIdRule());
   }
 
   /**
@@ -307,7 +204,7 @@ public class DbRule extends AbstractDbData {
                 String sendPath, String archivePath, String workPath,
                 String rpreTasks, String rpostTasks, String rerrorTasks,
                 String spreTasks, String spostTasks, String serrorTasks) {
-    rule = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,
+    pojo = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,
                     sendPath, archivePath, workPath,
                     fromLegacyTasks(getTasksRule(rpreTasks)),
                     fromLegacyTasks(getTasksRule(rpostTasks)),
@@ -315,7 +212,7 @@ public class DbRule extends AbstractDbData {
                     fromLegacyTasks(getTasksRule(spreTasks)),
                     fromLegacyTasks(getTasksRule(spostTasks)),
                     fromLegacyTasks(getTasksRule(serrorTasks)));
-    setToArray();
+    checkPath();
   }
 
   /**
@@ -327,17 +224,15 @@ public class DbRule extends AbstractDbData {
     RuleDAO ruleAccess = null;
     try {
       ruleAccess = DAOFactory.getInstance().getRuleDAO();
-      rule = ruleAccess.select(idRule);
-      setToArray();
+      pojo = ruleAccess.select(idRule);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
     } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
+      DAOFactory.closeDAO(ruleAccess);
     }
+    checkPath();
   }
 
   public DbRule(Rule rule) {
@@ -345,8 +240,8 @@ public class DbRule extends AbstractDbData {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
     }
-    this.rule = rule;
-    setToArray();
+    this.pojo = rule;
+    checkPath();
   }
 
   /**
@@ -373,7 +268,7 @@ public class DbRule extends AbstractDbData {
     if (idsArrayRef == null) {
       idsArrayRef = STRING_0_LENGTH;
     }
-    rule =
+    pojo =
         new Rule(idrule, mode, Arrays.asList(idsArrayRef), recvpath, sendpath,
                  archivepath, workpath, fromLegacyTasks(rpretasksArray),
                  fromLegacyTasks(rposttasksArray),
@@ -381,7 +276,7 @@ public class DbRule extends AbstractDbData {
                  fromLegacyTasks(spretasksArray),
                  fromLegacyTasks(sposttasksArray),
                  fromLegacyTasks(serrortasksArray));
-    setToArray();
+    checkPath();
   }
 
   /**
@@ -392,28 +287,87 @@ public class DbRule extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public DbRule(ObjectNode source) throws WaarpDatabaseSqlException {
-    rule = new Rule();
+    pojo = new Rule();
     setFromJson(source, false);
     if (getIdRule() == null || getIdRule().isEmpty()) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
-    setToArray();
+    checkPath();
   }
 
   @Override
   public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
+    checkPath();
+  }
+
+  @Override
+  protected void setFromJson(final String field, final JsonNode value) {
+    if (value == null) {
+      return;
+    }
+    for (Columns column : Columns.values()) {
+      if (column.name().equalsIgnoreCase(field)) {
+        switch (column) {
+          case ARCHIVEPATH:
+            pojo.setArchivePath(value.asText());
+            break;
+          case HOSTIDS:
+            pojo.setHostids(Arrays.asList(getIdsRule(value.asText())));
+            break;
+          case IDRULE:
+            pojo.setName(value.asText());
+            break;
+          case MODETRANS:
+            pojo.setMode(value.asInt());
+            break;
+          case RECVPATH:
+            pojo.setRecvPath(value.asText());
+            break;
+          case RERRORTASKS:
+            pojo.setRErrorTasks(fromLegacyTasks(getTasksRule(value.asText())));
+            break;
+          case RPOSTTASKS:
+            pojo.setRPostTasks(fromLegacyTasks(getTasksRule(value.asText())));
+            break;
+          case RPRETASKS:
+            pojo.setRPreTasks(fromLegacyTasks(getTasksRule(value.asText())));
+            break;
+          case SENDPATH:
+            pojo.setSendPath(value.asText());
+            break;
+          case SERRORTASKS:
+            pojo.setSErrorTasks(fromLegacyTasks(getTasksRule(value.asText())));
+            break;
+          case SPOSTTASKS:
+            pojo.setSPostTasks(fromLegacyTasks(getTasksRule(value.asText())));
+            break;
+          case SPRETASKS:
+            pojo.setSPreTasks(fromLegacyTasks(getTasksRule(value.asText())));
+            break;
+          case WORKPATH:
+            pojo.setWorkPath(value.asText());
+            break;
+          case UPDATEDINFO:
+            pojo.setUpdatedInfo(
+                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));
+            break;
+        }
+      }
+    }
+    checkPath();
   }
 
   /**
-   * Delete all entries (used when purge and reload)
-   *
-   * @return the previous existing array of DbRule
-   *
-   * @throws WaarpDatabaseException
+   * Private constructor for Commander only
    */
+  private DbRule() {
+    pojo = new Rule();
+  }
+
+
   public static DbRule[] deleteAll() throws WaarpDatabaseException {
     RuleDAO ruleAccess = null;
     List<Rule> rules;
@@ -424,9 +378,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
+      DAOFactory.closeDAO(ruleAccess);
     }
     final DbRule[] res = new DbRule[rules.size()];
     int i = 0;
@@ -435,96 +387,6 @@ public class DbRule extends AbstractDbData {
       i++;
     }
     return res;
-  }
-
-  @Override
-  public void delete() throws WaarpDatabaseException {
-    RuleDAO ruleAccess = null;
-    try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
-      ruleAccess.delete(rule);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
-    } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void insert() throws WaarpDatabaseException {
-    RuleDAO ruleAccess = null;
-    try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
-      ruleAccess.insert(rule);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public boolean exist() throws WaarpDatabaseException {
-    RuleDAO ruleAccess = null;
-    try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
-      return ruleAccess.exist(rule.getName());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void select() throws WaarpDatabaseException {
-    RuleDAO ruleAccess = null;
-    try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
-      rule = ruleAccess.select(rule.getName());
-      setToArray();
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
-    } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void update() throws WaarpDatabaseException {
-    RuleDAO ruleAccess = null;
-    try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
-      ruleAccess.update(rule);
-      setToArray();
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
-    } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
-    }
-  }
-
-  /**
-   * Private constructor for Commander only
-   */
-  private DbRule() {
-    rule = new Rule();
   }
 
   /**
@@ -546,9 +408,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
+      DAOFactory.closeDAO(ruleAccess);
     }
     final DbRule[] res = new DbRule[rules.size()];
     int i = 0;
@@ -572,11 +432,20 @@ public class DbRule extends AbstractDbData {
   public static DbRule getFromStatement(DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbRule dbRule = new DbRule();
-    dbRule.getValues(preparedStatement, dbRule.allFields);
-    dbRule.setToArray();
-    dbRule.isSaved = true;
-    logger.debug("Get one Rule from Db: " + dbRule.getIdRule());
-    return dbRule;
+    AbstractDAO<Rule> ruleDAO = null;
+    try {
+      ruleDAO = dbRule.getDao();
+      dbRule.pojo = ((StatementExecutor<Rule>) ruleDAO)
+          .getFromResultSet(preparedStatement.getResultSet());
+      return dbRule;
+    } catch (SQLException e) {
+      DbSession.error(e);
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } catch (DAOConnectionException e) {
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } finally {
+      DAOFactory.closeDAO(ruleDAO);
+    }
   }
 
   /**
@@ -599,9 +468,7 @@ public class DbRule extends AbstractDbData {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (ruleAccess != null) {
-        ruleAccess.close();
-      }
+      DAOFactory.closeDAO(ruleAccess);
     }
     final DbRule[] res = new DbRule[rules.size()];
     int i = 0;
@@ -614,7 +481,7 @@ public class DbRule extends AbstractDbData {
 
   @Override
   public void changeUpdatedInfo(UpdatedInfo info) {
-    rule.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
+    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
   /**
@@ -690,8 +557,8 @@ public class DbRule extends AbstractDbData {
    */
   public String setRecvPath(String filename)
       throws OpenR66ProtocolSystemException {
-    if (rule.getRecvPath() != null && !rule.getRecvPath().isEmpty()) {
-      return rule.getRecvPath() + DirInterface.SEPARATOR + filename;
+    if (pojo.getRecvPath() != null && !pojo.getRecvPath().isEmpty()) {
+      return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;
     }
     return Configuration.configuration.getInPath() + DirInterface.SEPARATOR +
            filename;
@@ -708,10 +575,10 @@ public class DbRule extends AbstractDbData {
    */
   public String setSendPath(String filename)
       throws OpenR66ProtocolSystemException {
-    if (rule.getSendPath() != null) {
+    if (pojo.getSendPath() != null) {
       final File file = new File(filename);
       final String basename = file.getName();
-      return rule.getSendPath() + DirInterface.SEPARATOR + basename;
+      return pojo.getSendPath() + DirInterface.SEPARATOR + basename;
     }
     return Configuration.configuration.getOutPath() + DirInterface.SEPARATOR +
            filename;
@@ -728,8 +595,8 @@ public class DbRule extends AbstractDbData {
    */
   public String setArchivePath(String filename)
       throws OpenR66ProtocolSystemException {
-    if (rule.getArchivePath() != null) {
-      return rule.getArchivePath() + DirInterface.SEPARATOR + filename;
+    if (pojo.getArchivePath() != null) {
+      return pojo.getArchivePath() + DirInterface.SEPARATOR + filename;
     }
     return Configuration.configuration.getArchivePath() +
            DirInterface.SEPARATOR + filename;
@@ -746,8 +613,8 @@ public class DbRule extends AbstractDbData {
    */
   public String setWorkingPath(String filename)
       throws OpenR66ProtocolSystemException {
-    if (rule.getWorkPath() != null) {
-      return rule.getWorkPath() + DirInterface.SEPARATOR + filename +
+    if (pojo.getWorkPath() != null) {
+      return pojo.getWorkPath() + DirInterface.SEPARATOR + filename +
              Configuration.EXT_R66;
     }
     return Configuration.configuration.getWorkingPath() +
@@ -796,16 +663,16 @@ public class DbRule extends AbstractDbData {
    */
   @Override
   public String toString() {
-    return "Rule Name:" + getIdRule() + " IDS:" + rule.getXMLHostids() +
+    return "Rule Name:" + getIdRule() + " IDS:" + pojo.getXMLHostids() +
            " MODETRANS: " + RequestPacket.TRANSFERMODE.values()[getMode()] +
            " RECV:" + getRecvPath() + " SEND:" + getSendPath() + " ARCHIVE:" +
            getArchivePath() + " WORK:" + getWorkPath() + " RPRET:{" +
-           rule.getXMLRPreTasks().replace('\n', ' ') + "} RPOST:{" +
-           rule.getXMLRPostTasks().replace('\n', ' ') + "} RERROR:{" +
-           rule.getXMLRErrorTasks().replace('\n', ' ') + "} SPRET:{" +
-           rule.getXMLSPreTasks().replace('\n', ' ') + "} SPOST:{" +
-           rule.getXMLSPostTasks().replace('\n', ' ') + "} SERROR:{" +
-           rule.getXMLSErrorTasks().replace('\n', ' ') + '}';
+           pojo.getXMLRPreTasks().replace('\n', ' ') + "} RPOST:{" +
+           pojo.getXMLRPostTasks().replace('\n', ' ') + "} RERROR:{" +
+           pojo.getXMLRErrorTasks().replace('\n', ' ') + "} SPRET:{" +
+           pojo.getXMLSPreTasks().replace('\n', ' ') + "} SPOST:{" +
+           pojo.getXMLSPostTasks().replace('\n', ' ') + "} SERROR:{" +
+           pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';
   }
 
   /**
@@ -818,22 +685,22 @@ public class DbRule extends AbstractDbData {
     if (isSender) {
       switch (step) {
         case PRETASK:
-          return "S:{" + rule.getXMLRPreTasks().replace('\n', ' ') + '}';
+          return "S:{" + pojo.getXMLRPreTasks().replace('\n', ' ') + '}';
         case POSTTASK:
-          return "S:{" + rule.getXMLRPostTasks().replace('\n', ' ') + '}';
+          return "S:{" + pojo.getXMLRPostTasks().replace('\n', ' ') + '}';
         case ERRORTASK:
-          return "S:{" + rule.getXMLRErrorTasks().replace('\n', ' ') + '}';
+          return "S:{" + pojo.getXMLRErrorTasks().replace('\n', ' ') + '}';
         default:
           return "S:{no task}";
       }
     } else {
       switch (step) {
         case PRETASK:
-          return "R:{" + rule.getXMLSPreTasks().replace('\n', ' ') + '}';
+          return "R:{" + pojo.getXMLSPreTasks().replace('\n', ' ') + '}';
         case POSTTASK:
-          return "R:{" + rule.getXMLSPostTasks().replace('\n', ' ') + '}';
+          return "R:{" + pojo.getXMLSPostTasks().replace('\n', ' ') + '}';
         case ERRORTASK:
-          return "R:{" + rule.getXMLSErrorTasks().replace('\n', ' ') + '}';
+          return "R:{" + pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';
         default:
           return "R:{no task}";
       }
@@ -932,37 +799,37 @@ public class DbRule extends AbstractDbData {
 
   private ObjectNode getInternalJson() {
     final ObjectNode node = getJson();
-    if (rule.getHostids().isEmpty()) {
+    if (pojo.getHostids().isEmpty()) {
       node.put(Columns.HOSTIDS.name(), "");
     }
-    if (rule.getRecvPath() == null) {
+    if (pojo.getRecvPath() == null) {
       node.put(Columns.RECVPATH.name(), "");
     }
-    if (rule.getSendPath() == null) {
+    if (pojo.getSendPath() == null) {
       node.put(Columns.SENDPATH.name(), "");
     }
-    if (rule.getArchivePath() == null) {
+    if (pojo.getArchivePath() == null) {
       node.put(Columns.ARCHIVEPATH.name(), "");
     }
-    if (rule.getWorkPath() == null) {
+    if (pojo.getWorkPath() == null) {
       node.put(Columns.WORKPATH.name(), "");
     }
-    if (rule.getRPreTasks().isEmpty()) {
+    if (pojo.getRPreTasks().isEmpty()) {
       node.put(Columns.RPRETASKS.name(), "");
     }
-    if (rule.getRPostTasks().isEmpty()) {
+    if (pojo.getRPostTasks().isEmpty()) {
       node.put(Columns.RPOSTTASKS.name(), "");
     }
-    if (rule.getRErrorTasks().isEmpty()) {
+    if (pojo.getRErrorTasks().isEmpty()) {
       node.put(Columns.RERRORTASKS.name(), "");
     }
-    if (rule.getSPreTasks().isEmpty()) {
+    if (pojo.getSPreTasks().isEmpty()) {
       node.put(Columns.SPRETASKS.name(), "");
     }
-    if (rule.getSPostTasks().isEmpty()) {
+    if (pojo.getSPostTasks().isEmpty()) {
       node.put(Columns.SPOSTTASKS.name(), "");
     }
-    if (rule.getSErrorTasks().isEmpty()) {
+    if (pojo.getSErrorTasks().isEmpty()) {
       node.put(Columns.SERRORTASKS.name(), "");
     }
     return node;
@@ -989,8 +856,8 @@ public class DbRule extends AbstractDbData {
     final StringBuilder builder = new StringBuilder(body);
     WaarpStringUtils.replace(builder, "XXXRULEXXX", getIdRule());
     WaarpStringUtils.replace(builder, "XXXIDSXXX",
-                             rule.getXMLHostids() == null? "" :
-                                 rule.getXMLHostids());
+                             pojo.getXMLHostids() == null? "" :
+                                 pojo.getXMLHostids());
     if (getMode() == RequestPacket.TRANSFERMODE.RECVMODE.ordinal()) {
       WaarpStringUtils.replace(builder, "XXXRECVXXX", "checked");
     } else if (getMode() == RequestPacket.TRANSFERMODE.SENDMODE.ordinal()) {
@@ -1013,35 +880,35 @@ public class DbRule extends AbstractDbData {
       WaarpStringUtils.replace(builder, "XXXSENDMTXXX", "checked");
     }
     WaarpStringUtils.replace(builder, "XXXRPXXX",
-                             rule.getRecvPath() == null? "" :
-                                 rule.getRecvPath());
+                             pojo.getRecvPath() == null? "" :
+                                 pojo.getRecvPath());
     WaarpStringUtils.replace(builder, "XXXSPXXX",
-                             rule.getSendPath() == null? "" :
-                                 rule.getSendPath());
+                             pojo.getSendPath() == null? "" :
+                                 pojo.getSendPath());
     WaarpStringUtils.replace(builder, "XXXAPXXX",
-                             rule.getArchivePath() == null? "" :
-                                 rule.getArchivePath());
+                             pojo.getArchivePath() == null? "" :
+                                 pojo.getArchivePath());
     WaarpStringUtils.replace(builder, "XXXWPXXX",
-                             rule.getWorkPath() == null? "" :
-                                 rule.getWorkPath());
+                             pojo.getWorkPath() == null? "" :
+                                 pojo.getWorkPath());
     WaarpStringUtils.replace(builder, "XXXRPTXXX",
-                             rule.getXMLRPreTasks() == null? "" :
-                                 rule.getXMLRPreTasks());
+                             pojo.getXMLRPreTasks() == null? "" :
+                                 pojo.getXMLRPreTasks());
     WaarpStringUtils.replace(builder, "XXXRSTXXX",
-                             rule.getXMLRPostTasks() == null? "" :
-                                 rule.getXMLRPostTasks());
+                             pojo.getXMLRPostTasks() == null? "" :
+                                 pojo.getXMLRPostTasks());
     WaarpStringUtils.replace(builder, "XXXRETXXX",
-                             rule.getXMLRErrorTasks() == null? "" :
-                                 rule.getXMLRErrorTasks());
+                             pojo.getXMLRErrorTasks() == null? "" :
+                                 pojo.getXMLRErrorTasks());
     WaarpStringUtils.replace(builder, "XXXSPTXXX",
-                             rule.getXMLSPreTasks() == null? "" :
-                                 rule.getXMLSPreTasks());
+                             pojo.getXMLSPreTasks() == null? "" :
+                                 pojo.getXMLSPreTasks());
     WaarpStringUtils.replace(builder, "XXXSSTXXX",
-                             rule.getXMLSPostTasks() == null? "" :
-                                 rule.getXMLSPostTasks());
+                             pojo.getXMLSPostTasks() == null? "" :
+                                 pojo.getXMLSPostTasks());
     WaarpStringUtils.replace(builder, "XXXSETXXX",
-                             rule.getXMLSErrorTasks() == null? "" :
-                                 rule.getXMLSErrorTasks());
+                             pojo.getXMLSErrorTasks() == null? "" :
+                                 pojo.getXMLSErrorTasks());
     return builder.toString();
   }
 
@@ -1089,99 +956,91 @@ public class DbRule extends AbstractDbData {
    * @return the Rule recvPath
    */
   public String getRuleRecvPath() {
-    return rule.getRecvPath();
+    return pojo.getRecvPath();
   }
 
   /**
    * @return the Rule sendPath
    */
   public String getRuleSendPath() {
-    return rule.getSendPath();
+    return pojo.getSendPath();
   }
 
   /**
    * @return the Rule archivePath
    */
   public String getRuleArchivePath() {
-    return rule.getArchivePath();
+    return pojo.getArchivePath();
   }
 
   /**
    * @return the Rule workPath
    */
   public String getRuleWorkPath() {
-    return rule.getWorkPath();
-  }
-
-  /**
-   * @return the DbValue associated with this table
-   */
-  public static DbValue[] getAllType() {
-    final DbRule item = new DbRule();
-    return item.allFields;
+    return pojo.getWorkPath();
   }
 
   /**
    * @return the idRule
    */
   public String getIdRule() {
-    return rule.getName();
+    return pojo.getName();
   }
 
   /**
    * @return the mode
    */
   public int getMode() {
-    return rule.getMode();
+    return pojo.getMode();
   }
 
   /**
    * @return the idsArray
    */
   public String[] getIdsArray() {
-    return rule.getHostids().toArray(STRING_0_LENGTH);
+    return pojo.getHostids().toArray(STRING_0_LENGTH);
   }
 
   /**
    * @return the rpreTasksArray
    */
   public String[][] getRpreTasksArray() {
-    return toLegacyTasks(rule.getRPreTasks());
+    return toLegacyTasks(pojo.getRPreTasks());
   }
 
   /**
    * @return the rpostTasksArray
    */
   public String[][] getRpostTasksArray() {
-    return toLegacyTasks(rule.getRPostTasks());
+    return toLegacyTasks(pojo.getRPostTasks());
   }
 
   /**
    * @return the rerrorTasksArray
    */
   public String[][] getRerrorTasksArray() {
-    return toLegacyTasks(rule.getRErrorTasks());
+    return toLegacyTasks(pojo.getRErrorTasks());
   }
 
   /**
    * @return the spreTasksArray
    */
   public String[][] getSpreTasksArray() {
-    return toLegacyTasks(rule.getSPreTasks());
+    return toLegacyTasks(pojo.getSPreTasks());
   }
 
   /**
    * @return the spostTasksArray
    */
   public String[][] getSpostTasksArray() {
-    return toLegacyTasks(rule.getSPostTasks());
+    return toLegacyTasks(pojo.getSPostTasks());
   }
 
   /**
    * @return the serrorTasksArray
    */
   public String[][] getSerrorTasksArray() {
-    return toLegacyTasks(rule.getSErrorTasks());
+    return toLegacyTasks(pojo.getSErrorTasks());
   }
 
   private List<RuleTask> fromLegacyTasks(String[][] tasks) {

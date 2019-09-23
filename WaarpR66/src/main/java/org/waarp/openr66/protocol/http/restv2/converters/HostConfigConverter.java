@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.openr66.dao.BusinessDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Business;
@@ -211,9 +212,7 @@ public final class HostConfigConverter {
     } catch (final DAONoDataException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (businessDAO != null) {
-        businessDAO.close();
-      }
+      DAOFactory.closeDAO(businessDAO);
     }
 
     final Roles roles = nodeToRoles(array);

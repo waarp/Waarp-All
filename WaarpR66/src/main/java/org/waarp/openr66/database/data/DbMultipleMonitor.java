@@ -19,27 +19,30 @@
  */
 package org.waarp.openr66.database.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
-import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.MultipleMonitorDAO;
+import org.waarp.openr66.dao.database.DBDAOFactory;
+import org.waarp.openr66.dao.database.StatementExecutor;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.MultipleMonitor;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
+import java.sql.SQLException;
 import java.sql.Types;
 
 /**
  * Configuration Table object
  */
-public class DbMultipleMonitor extends AbstractDbData {
+public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   public enum Columns {
     COUNTCONFIG, COUNTHOST, COUNTRULE, HOSTID
   }
@@ -48,8 +51,6 @@ public class DbMultipleMonitor extends AbstractDbData {
       { Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.NVARCHAR };
 
   public static final String table = " MULTIPLEMONITOR ";
-
-  private MultipleMonitor multipleMonitor;
 
   // ALL TABLE SHOULD IMPLEMENT THIS
   public static final int NBPRKEY = 1;
@@ -66,20 +67,7 @@ public class DbMultipleMonitor extends AbstractDbData {
 
   @Override
   protected void initObject() {
-    primaryKey = new DbValue[] { new DbValue("", Columns.HOSTID.name()) };
-    otherFields = new DbValue[] {
-        new DbValue(0, Columns.COUNTCONFIG.name()),
-        new DbValue(0, Columns.COUNTHOST.name()),
-        new DbValue(0, Columns.COUNTRULE.name())
-    };
-    allFields = new DbValue[] {
-        otherFields[0], otherFields[1], otherFields[2], primaryKey[0]
-    };
-  }
-
-  @Override
-  protected String getSelectAllFields() {
-    return selectAllFields;
+    // Nothing
   }
 
   @Override
@@ -88,41 +76,22 @@ public class DbMultipleMonitor extends AbstractDbData {
   }
 
   @Override
-  protected String getInsertAllValues() {
-    return insertAllValues;
+  protected AbstractDAO<MultipleMonitor> getDao()
+      throws DAOConnectionException {
+    return DAOFactory.getInstance().getMultipleMonitorDAO();
   }
 
   @Override
-  protected String getUpdateAllFields() {
-    return updateAllFields;
+  protected String getPrimaryKey() {
+    if (pojo != null) {
+      return pojo.getHostid();
+    }
+    throw new IllegalArgumentException("pojo is null");
   }
 
   @Override
-  protected void setToArray() {
-    allFields[Columns.HOSTID.ordinal()].setValue(multipleMonitor.getHostid());
-    allFields[Columns.COUNTCONFIG.ordinal()].setValue(getCountConfig());
-    allFields[Columns.COUNTHOST.ordinal()].setValue(getCountHost());
-    allFields[Columns.COUNTRULE.ordinal()].setValue(getCountRule());
-  }
-
-  @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
-    multipleMonitor
-        .setHostid((String) allFields[Columns.HOSTID.ordinal()].getValue());
-    setCountConfig(
-        (Integer) allFields[Columns.COUNTCONFIG.ordinal()].getValue());
-    setCountHost((Integer) allFields[Columns.COUNTHOST.ordinal()].getValue());
-    setCountRule((Integer) allFields[Columns.COUNTRULE.ordinal()].getValue());
-  }
-
-  @Override
-  protected String getWherePrimaryKey() {
-    return primaryKey[0].getColumn() + " = ? ";
-  }
-
-  @Override
-  protected void setPrimaryKey() {
-    primaryKey[0].setValue(multipleMonitor.getHostid());
+  protected String getPrimaryField() {
+    return Columns.HOSTID.name();
   }
 
   /**
@@ -132,7 +101,7 @@ public class DbMultipleMonitor extends AbstractDbData {
    * @param cr count for Rule
    */
   public DbMultipleMonitor(String hostid, int cc, int ch, int cr) {
-    multipleMonitor = new MultipleMonitor(hostid, cc, ch, cr);
+    pojo = new MultipleMonitor(hostid, cc, ch, cr);
   }
 
   /**
@@ -144,100 +113,39 @@ public class DbMultipleMonitor extends AbstractDbData {
     MultipleMonitorDAO monitorAccess = null;
     try {
       monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
-      multipleMonitor = monitorAccess.select(hostid);
-      setToArray();
+      pojo = monitorAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException("Cannot find " + "MultipleMonitor",
                                              e);
     } finally {
-      if (monitorAccess != null) {
-        monitorAccess.close();
-      }
+      DBDAOFactory.closeDAO(monitorAccess);
     }
   }
 
   @Override
-  public void delete() throws WaarpDatabaseException {
-    MultipleMonitorDAO monitorAccess = null;
-    try {
-      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
-      monitorAccess.delete(multipleMonitor);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find " + "MultipleMonitor",
-                                             e);
-    } finally {
-      if (monitorAccess != null) {
-        monitorAccess.close();
-      }
+  protected void setFromJson(final String field, final JsonNode value) {
+    if (value == null) {
+      return;
     }
-  }
-
-  @Override
-  public void insert() throws WaarpDatabaseException {
-    MultipleMonitorDAO monitorAccess = null;
-    try {
-      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
-      monitorAccess.insert(multipleMonitor);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (monitorAccess != null) {
-        monitorAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public boolean exist() throws WaarpDatabaseException {
-    MultipleMonitorDAO monitorAccess = null;
-    try {
-      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
-      return monitorAccess.exist(multipleMonitor.getHostid());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } finally {
-      if (monitorAccess != null) {
-        monitorAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void select() throws WaarpDatabaseException {
-    MultipleMonitorDAO monitorAccess = null;
-    try {
-      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
-      multipleMonitor = monitorAccess.select(multipleMonitor.getHostid());
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find " + "MultipleMonitor",
-                                             e);
-    } finally {
-      if (monitorAccess != null) {
-        monitorAccess.close();
-      }
-    }
-  }
-
-  @Override
-  public void update() throws WaarpDatabaseException {
-    MultipleMonitorDAO monitorAccess = null;
-    try {
-      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
-      monitorAccess.update(multipleMonitor);
-    } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseException(e);
-    } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException("Cannot find " + "MultipleMonitor",
-                                             e);
-    } finally {
-      if (monitorAccess != null) {
-        monitorAccess.close();
+    for (Columns column : Columns.values()) {
+      if (column.name().equalsIgnoreCase(field)) {
+        int len;
+        switch (column) {
+          case COUNTCONFIG:
+            pojo.setCountConfig(value.asInt());
+            break;
+          case COUNTHOST:
+            pojo.setCountHost(value.asInt());
+            break;
+          case COUNTRULE:
+            pojo.setCountRule(value.asInt());
+            break;
+          case HOSTID:
+            pojo.setHostid(value.asText());
+            break;
+        }
       }
     }
   }
@@ -246,7 +154,7 @@ public class DbMultipleMonitor extends AbstractDbData {
    * Private constructor for Commander only
    */
   private DbMultipleMonitor() {
-    multipleMonitor = new MultipleMonitor();
+    pojo = new MultipleMonitor();
   }
 
   /**
@@ -263,10 +171,20 @@ public class DbMultipleMonitor extends AbstractDbData {
       DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbMultipleMonitor dbMm = new DbMultipleMonitor();
-    dbMm.getValues(preparedStatement, dbMm.allFields);
-    dbMm.setToArray();
-    dbMm.isSaved = true;
-    return dbMm;
+    AbstractDAO<MultipleMonitor> multipleDAO = null;
+    try {
+      multipleDAO = dbMm.getDao();
+      dbMm.pojo = ((StatementExecutor<MultipleMonitor>) multipleDAO)
+          .getFromResultSet(preparedStatement.getResultSet());
+      return dbMm;
+    } catch (SQLException e) {
+      DbSession.error(e);
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } catch (DAOConnectionException e) {
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } finally {
+      DAOFactory.closeDAO(multipleDAO);
+    }
   }
 
   /**
@@ -363,41 +281,41 @@ public class DbMultipleMonitor extends AbstractDbData {
    * @return the countConfig
    */
   public int getCountConfig() {
-    return multipleMonitor.getCountConfig();
+    return pojo.getCountConfig();
   }
 
   /**
    * @param countConfig the countConfig to set
    */
   private void setCountConfig(int countConfig) {
-    multipleMonitor.setCountConfig(countConfig);
+    pojo.setCountConfig(countConfig);
   }
 
   /**
    * @return the countHost
    */
   public int getCountHost() {
-    return multipleMonitor.getCountHost();
+    return pojo.getCountHost();
   }
 
   /**
    * @param countHost the countHost to set
    */
   private void setCountHost(int countHost) {
-    multipleMonitor.setCountHost(countHost);
+    pojo.setCountHost(countHost);
   }
 
   /**
    * @return the countRule
    */
   public int getCountRule() {
-    return multipleMonitor.getCountRule();
+    return pojo.getCountRule();
   }
 
   /**
    * @param countRule the countRule to set
    */
   private void setCountRule(int countRule) {
-    multipleMonitor.setCountRule(countRule);
+    pojo.setCountRule(countRule);
   }
 }

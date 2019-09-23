@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -162,9 +163,7 @@ public class RulesHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
+      DAOFactory.closeDAO(ruleDAO);
     }
 
     final int totalResults = rules.size();
@@ -212,9 +211,7 @@ public class RulesHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (ruleDAO != null) {
-        ruleDAO.close();
-      }
+      DAOFactory.closeDAO(ruleDAO);
     }
 
     final ObjectNode responseObject = ruleToNode(rule);

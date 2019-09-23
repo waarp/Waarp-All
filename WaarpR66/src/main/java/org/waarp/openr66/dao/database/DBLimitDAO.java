@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Implementation of LimitDAO for standard SQL databases
  */
-public class DBLimitDAO extends StatementExecutor implements LimitDAO {
+public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DBLimitDAO.class);
@@ -89,7 +89,7 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
       stm = connection.prepareStatement(SQL_DELETE);
       setParameters(stm, limit.getHostid());
       try {
-        executeUpdate(stm);
+        executeAction(stm);
       } catch (final SQLException e2) {
         throw new DAONoDataException(e2);
       }
@@ -105,7 +105,7 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeUpdate(stm);
+      executeAction(stm);
     } catch (final SQLException e) {
       throw new DAOConnectionException(e);
     } finally {
@@ -258,7 +258,8 @@ public class DBLimitDAO extends StatementExecutor implements LimitDAO {
     }
   }
 
-  private Limit getFromResultSet(ResultSet set) throws SQLException {
+  @Override
+  public Limit getFromResultSet(ResultSet set) throws SQLException {
     return new Limit(set.getString(HOSTID_FIELD),
                      set.getLong(DELAY_LIMIT_FIELD),
                      set.getLong(READ_GLOBAL_LIMIT_FIELD),

@@ -34,11 +34,10 @@ public class MultipleMonitor {
   private int countRule;
 
   /**
-   * Empty constructor for compatibility issues
+   * Empty constructor
    */
-  @Deprecated
   public MultipleMonitor() {
-    // nothing
+    // Nothing
   }
 
   public MultipleMonitor(String hostid, int countConfig, int countHost,

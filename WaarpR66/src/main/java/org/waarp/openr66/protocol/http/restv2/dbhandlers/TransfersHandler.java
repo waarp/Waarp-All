@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import org.joda.time.DateTime;
 import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -207,9 +208,7 @@ public class TransfersHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (transferDAO != null) {
-        transferDAO.close();
-      }
+      DAOFactory.closeDAO(transferDAO);
     }
 
     final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
@@ -248,9 +247,7 @@ public class TransfersHandler extends AbstractRestDbHandler {
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {
-      if (transferDAO != null) {
-        transferDAO.close();
-      }
+      DAOFactory.closeDAO(transferDAO);
     }
 
     final ObjectNode responseObject =

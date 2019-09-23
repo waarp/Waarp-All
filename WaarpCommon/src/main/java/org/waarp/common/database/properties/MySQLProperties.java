@@ -61,7 +61,8 @@ public class MySQLProperties implements DbProperties {
     ResultSet rs = null;
     try {
       stm = connection.createStatement();
-      rs = stm.executeQuery(MAX_CONNECTION_QUERY);
+      //rs = stm.executeQuery(MAX_CONNECTION_QUERY);
+      rs = stm.executeQuery("SELECT @@GLOBAL.max_connections");
       if (!rs.next()) {
         throw new SQLException("Cannot find max connection");
       }

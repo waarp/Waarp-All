@@ -224,6 +224,17 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   @Override
+  public Transfer select(final String id)
+      throws DAOConnectionException, DAONoDataException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean exist(final String id) throws DAOConnectionException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<Transfer> find(List<Filter> filters, int limit)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
