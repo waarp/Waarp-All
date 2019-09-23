@@ -21,6 +21,8 @@ package org.waarp.common.file;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
@@ -634,5 +636,35 @@ public final class FileUtils {
       return FILE_0_LENGTH;
     }
     return directory.listFiles(filter);
+  }
+
+  /**
+   * Read one compressed file and return the associated BufferedReader
+   *
+   * @param fileIn
+   * @param fileOut
+   *
+   * @return the size of the uncompressed file or -1 if an error occurs
+   *
+   * @throws Reply550Exception
+   */
+  public static long uncompressedBz2File(File fileIn, File fileOut)
+      throws Reply550Exception {
+    FileInputStream fin = null;
+    CompressorInputStream input = null;
+    FileOutputStream output = null;
+    try {
+      fin = new FileInputStream(fileIn);
+      input = new BZip2CompressorInputStream(fin);
+      output = new FileOutputStream(fileOut);
+      return ByteStreams.copy(input, output);
+    } catch (IOException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      return -1;
+    } finally {
+      FileUtils.close(output);
+      FileUtils.close(input);
+      FileUtils.close(fin);
+    }
   }
 }

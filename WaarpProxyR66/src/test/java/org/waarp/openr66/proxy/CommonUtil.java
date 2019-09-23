@@ -31,6 +31,7 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
@@ -398,9 +399,20 @@ public abstract class CommonUtil {
   public static void initiateWebDriver(File file) {
     File libdir = file.getParentFile().getParentFile().getParentFile();
     // test-classes -> target -> WaarpR66 -> lib -> geckodriver (linux x64)
-    File libPhnatomJS = new File(libdir, "lib/phantomjs-2.1.1");
-    assertTrue(libPhnatomJS.exists());
-    System.setProperty("phantomjs.binary.path", libPhnatomJS.getAbsolutePath());
+    File libPhantomJS = new File("/tmp/phantomjs-2.1.1");
+    if (!libPhantomJS.canRead()) {
+      File libPhantomJSZip = new File(libdir, "lib/phantomjs-2.1.1.bz2");
+      if (libPhantomJSZip.canRead()) {
+        try {
+          FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
+          libPhantomJS.setExecutable(true);
+        } catch (Reply550Exception e) {
+          fail(e.getMessage());
+        }
+      }
+    }
+    assertTrue(libPhantomJS.exists());
+    System.setProperty("phantomjs.binary.path", libPhantomJS.getAbsolutePath());
     try {
       driver = initializeDriver();
     } catch (InterruptedException e) {//NOSONAR

@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.logging.SysErrLogger;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -98,5 +99,21 @@ public class FileUtilsTest {
     FileUtils.computeGlobalHash(digest2, file1, (int) file1.length() - 10);
     assertFalse(
         FilesystemBasedDigest.digestEquals(digest.Final(), digest2.Final()));
+  }
+
+  @Test
+  public void uncompressBz2() throws Reply550Exception {
+    final ClassLoader classLoader = FileUtilsTest.class.getClassLoader();
+    File file = new File(classLoader.getResource("cert.jks").getFile());
+    file = file.getParentFile().getParentFile().getParentFile().getParentFile();
+    file = new File(file, "lib/phantomjs-2.1.1.bz2");
+    SysErrLogger.FAKE_LOGGER.sysout(file.getAbsolutePath());
+    assertTrue(file.canRead());
+    File to = new File("/tmp/phantomjs-2.1.1");
+    assertTrue(FileUtils.uncompressedBz2File(file, to) > 0);
+    assertTrue(to.canRead());
+    to.setExecutable(true);
+    SysErrLogger.FAKE_LOGGER
+        .sysout(to.getAbsolutePath() + " => " + to.length());
   }
 }
