@@ -20,10 +20,11 @@
 package org.waarp.gateway.ftp.exec;
 
 import org.waarp.common.digest.FilesystemBasedDigest;
-import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.client.WaarpFtp4jClient;
+import org.waarp.openr66.context.task.FtpArgs;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,8 +99,14 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     // nothing
   }
 
+  /**
+   * "-file filepath <br> -to requestedHost <br> -port port <br> -user user <br> -pwd pwd <br> [-account
+   * account] <br> [-mode active/passive] <br> [-ssl no/implicit/explicit]<br> [-cwd remotepath] <br> [-digest
+   * (crc,md5,sha1)] <br> [-pre extraCommand1 with ',' as separator of arguments] <br> -command command from
+   * (get,put,append) <br> [-post extraCommand2 with ',' as separator of arguments]" <br>
+   **/
   @Override
-  public void run() {
+  /*public void run() {
     logger.info("FtpTransfer with " + args.length + " arguments");
     if (args.length < 10) {
       status = -1;
@@ -121,12 +128,6 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     int codeCommand = 0; // -1 get, 1 put, 2 append
     String preArgs = null;
     String postArgs = null;
-    /*
-     * "-file filepath <br> -to requestedHost <br> -port port <br> -user user <br> -pwd pwd <br> [-account
-     * account] <br> [-mode active/passive] <br> [-ssl no/implicit/explicit]<br> [-cwd remotepath] <br> [-digest
-     * (crc,md5,sha1)] <br> [-pre extraCommand1 with ',' as separator of arguments] <br> -command command from
-     * (get,put,append) <br> [-post extraCommand2 with ',' as separator of arguments]" <br>
-     */
     for (int i = 0; i < args.length; i++) {
       if ("-file".equalsIgnoreCase(args[i])) {
         i++;
@@ -300,6 +301,96 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     logger.info(
         "FTP transfer in\n    SUCCESS\n    " + filepath + "\n    <REMOTE>" +
         requested + "</REMOTE>");
+    status = 0;
+  }*/
+
+  public void run() {
+    logger.info("FtpTransfer with " + args.length + " arguments");
+    final FtpArgs ftpArgs;
+    try {
+      ftpArgs = FtpArgs.getFtpArgs(args);
+    } catch (OpenR66RunnerErrorException e) {
+      status = -2;
+      logger.error("Not enough arguments", e);
+      return;
+    }
+    int timeout = 30000;
+    if (delay > 1000) {
+      timeout = delay;
+    }
+    final WaarpFtp4jClient ftpClient =
+        new WaarpFtp4jClient(ftpArgs.getRequested(), ftpArgs.getPort(),
+                             ftpArgs.getUser(), ftpArgs.getPwd(),
+                             ftpArgs.getAcct(), ftpArgs.isPassive(),
+                             ftpArgs.getSsl(), 5000, timeout);
+    boolean connected = false;
+    for (int i = 0; i < 3; i++) {
+      if (ftpClient.connect()) {
+        connected = true;
+        break;
+      }
+    }
+    if (!connected) {
+      status = -3;
+      logger.error(ftpClient.getResult());
+      return;
+    }
+    try {
+      if (ftpArgs.getCwd() != null && !ftpClient.changeDir(ftpArgs.getCwd())) {
+        ftpClient.makeDir(ftpArgs.getCwd());
+        if (!ftpClient.changeDir(ftpArgs.getCwd())) {
+          logger.warn("Cannot change od directory: " + ftpArgs.getCwd());
+        }
+      }
+      if (ftpArgs.getPreArgs() != null) {
+        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());
+        for (final String string : result) {
+          logger.debug("PRE: " + string);
+        }
+      }
+      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),
+                                  ftpArgs.getCodeCommand())) {
+        status = -4;
+        logger.error(ftpClient.getResult());
+        return;
+      }
+      if (ftpArgs.getDigest() != null) {
+        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());
+        String hashresult = null;
+        if (values != null) {
+          values = BLANK.split(values[0]);
+          hashresult = values.length > 3? values[1] : values[0];
+        }
+        if (hashresult == null) {
+          status = -5;
+          logger.error("Hash cannot be computed: " + ftpClient.getResult());
+          return;
+        }
+        // now check locally
+        String hash;
+        try {
+          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
+              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));
+        } catch (final IOException e) {
+          hash = null;
+        }
+        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
+          status = -6;
+          logger.error("Hash not equal: " + ftpClient.getResult());
+          return;
+        }
+      }
+      if (ftpArgs.getPostArgs() != null) {
+        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());
+        for (final String string : result) {
+          logger.debug("POST: " + string);
+        }
+      }
+    } finally {
+      ftpClient.logout();
+    }
+    logger.info("FTP transfer in\n    SUCCESS\n    " + ftpArgs.getFilepath() +
+                "\n    <REMOTE>" + ftpArgs.getRequested() + "</REMOTE>");
     status = 0;
   }
 

@@ -27,7 +27,6 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.traffic.AbstractTrafficShapingHandler;
-import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timer;
@@ -64,11 +63,9 @@ import org.waarp.openr66.context.R66BusinessFactoryInterface;
 import org.waarp.openr66.context.R66DefaultBusinessFactory;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
-import org.waarp.openr66.dao.database.DBDAOFactory;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.exception.ServerException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
 import org.waarp.openr66.protocol.http.HttpInitializer;
 import org.waarp.openr66.protocol.http.adminssl.HttpReponsiveSslInitializer;
@@ -1276,19 +1273,6 @@ public class Configuration {
     } else if (getClientThread() < nb) {
       setClientThread(nb);
     }
-  }
-
-  /**
-   * @return a new ChannelTrafficShapingHandler
-   *
-   * @throws OpenR66ProtocolNoDataException
-   * @deprecated Should instance channelTrafficShaping in initializer
-   */
-  @Deprecated
-  public ChannelTrafficShapingHandler newChannelTrafficShapingHandler() {
-    return new ChannelTrafficShapingHandler(getServerChannelWriteLimit(),
-                                            getServerChannelReadLimit(),
-                                            getDelayLimit());
   }
 
   /**

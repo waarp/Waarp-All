@@ -431,14 +431,8 @@ public class DbSession {
     try {
       getAdmin().getDbModel().validConnection(this);
       setDisActive(false);
-      if (getAdmin() != null) {
-        getAdmin().setActive(true);
-      }
     } catch (final WaarpDatabaseNoConnectionException e) {
       setDisActive(true);
-      if (getAdmin() != null) {
-        getAdmin().setActive(false);
-      }
       throw e;
     }
   }

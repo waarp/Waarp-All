@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
@@ -40,7 +39,6 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.openr66.context.R66Session;
-import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.database.data.DbHostConfiguration.Columns;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -178,7 +176,8 @@ public class DbHostConfigurationR66RestMethodHandler
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL,
               DbHostConfiguration.class.getSimpleName());
-    for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
+    for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns
+        .values()) {
       node1.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
     }
 
@@ -206,7 +205,8 @@ public class DbHostConfigurationR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostConfiguration.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
+      for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns
+          .values()) {
         if (column.name().equalsIgnoreCase(
             DbHostConfiguration.Columns.HOSTID.name())) {
           continue;
@@ -229,7 +229,8 @@ public class DbHostConfigurationR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
+      for (DbHostConfiguration.Columns column : DbHostConfiguration.Columns
+          .values()) {
         node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument

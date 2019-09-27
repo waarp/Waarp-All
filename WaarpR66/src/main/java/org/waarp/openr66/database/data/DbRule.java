@@ -27,8 +27,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
-import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;

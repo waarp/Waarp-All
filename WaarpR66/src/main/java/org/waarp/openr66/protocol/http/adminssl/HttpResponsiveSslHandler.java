@@ -1783,12 +1783,9 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       }
       if (dbSession == null) {
         try {
-          // FIXME always true since change for DbAdmin
-          if (DbConstantR66.admin.isActive()) {
-            dbSession = new DbSession(DbConstantR66.admin, false);
-            DbAdmin.incHttpSession();
-            isPrivateDbSession = true;
-          }
+          dbSession = new DbSession(DbConstantR66.admin, false);
+          DbAdmin.incHttpSession();
+          isPrivateDbSession = true;
         } catch (final WaarpDatabaseNoConnectionException e1) {
           // Cannot connect so use default connection
           logger.warn("Use default database connection");

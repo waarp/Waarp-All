@@ -64,36 +64,6 @@ public final class WaarpNettyUtil {
    * Add default configuration for server bootstrap
    *
    * @param bootstrap
-   * @param groupBoss
-   * @param groupWorker
-   * @param timeout
-   *
-   * @deprecated Use setServerBootstrap(ServerBootstrap bootstrap,
-   *     EventLoopGroup group, int timeout)
-   */
-  @Deprecated
-  public static void setServerBootstrap(ServerBootstrap bootstrap,
-                                        EventLoopGroup groupBoss,
-                                        EventLoopGroup groupWorker,
-                                        int timeout) {
-    bootstrap.channel(NioServerSocketChannel.class);
-    bootstrap.group(groupBoss, groupWorker);
-    // bootstrap.option(ChannelOption.TCP_NODELAY, true)
-    bootstrap.option(ChannelOption.SO_REUSEADDR, true);
-    bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-    bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
-    bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-    bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
-    bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
-    bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
-    bootstrap
-        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-  }
-
-  /**
-   * Add default configuration for server bootstrap
-   *
-   * @param bootstrap
    * @param group
    * @param timeout
    */

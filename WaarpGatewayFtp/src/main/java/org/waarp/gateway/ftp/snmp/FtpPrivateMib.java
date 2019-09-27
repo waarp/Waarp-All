@@ -321,10 +321,12 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
   @Override
   public void updateServices(WaarpMOScalar scalar) {
+    // Nothing
   }
 
   @Override
   public void updateServices(MOScope range) {
+    // Nothing
   }
 
   /**

@@ -20,11 +20,7 @@
 
 package org.waarp.openr66.dao;
 
-import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.MultipleMonitor;
-
-import java.util.List;
 
 /**
  * Interface to interact with MultipleMonitor objects in the persistance layer

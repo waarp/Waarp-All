@@ -103,9 +103,6 @@ public abstract class DbModelAbstract implements DbModel {
       // nothing
     }
     dbSession.setDisActive(true);
-    if (dbSession.getAdmin() != null) {
-      dbSession.getAdmin().setActive(false);
-    }
     DbAdmin.removeConnection(dbSession.getInternalId());
   }
 
@@ -125,14 +122,8 @@ public abstract class DbModelAbstract implements DbModel {
           throw new SQLException(CANNOT_CONNECT_TO_DATABASE);
         }
         dbSession.setDisActive(false);
-        if (dbSession.getAdmin() != null) {
-          dbSession.getAdmin().setActive(true);
-        }
       } catch (final SQLException e2) {
         dbSession.setDisActive(true);
-        if (dbSession.getAdmin() != null) {
-          dbSession.getAdmin().setActive(false);
-        }
         // Might be unsupported so switch to SELECT 1 way
         if (e2 instanceof PSQLException) {
           validConnectionSelect(dbSession);
@@ -171,9 +162,6 @@ public abstract class DbModelAbstract implements DbModel {
                                                      e);
       }
       dbSession.setDisActive(false);
-      if (dbSession.getAdmin() != null) {
-        dbSession.getAdmin().setActive(true);
-      }
       dbSession.recreateLongTermPreparedStatements();
       return true;
     } catch (final WaarpDatabaseSqlException e1) {
@@ -205,14 +193,8 @@ public abstract class DbModelAbstract implements DbModel {
           }
         }
         dbSession.setDisActive(false);
-        if (dbSession.getAdmin() != null) {
-          dbSession.getAdmin().setActive(true);
-        }
       } catch (final SQLException e2) {
         dbSession.setDisActive(true);
-        if (dbSession.getAdmin() != null) {
-          dbSession.getAdmin().setActive(false);
-        }
         stmt = subValidConnectionSelect(dbSession, stmt);
         if (stmt == null) {
           return;
@@ -279,9 +261,6 @@ public abstract class DbModelAbstract implements DbModel {
                                                      e);
       }
       dbSession.setDisActive(false);
-      if (dbSession.getAdmin() != null) {
-        dbSession.getAdmin().setActive(true);
-      }
       dbSession.recreateLongTermPreparedStatements();
       closingStatement(stmt);
       return null;

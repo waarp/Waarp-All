@@ -314,8 +314,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     int len;
     do {
       len = getRoles().length();
-      pojo
-          .setRoles(WHITESPACES.matcher(pojo.getRoles()).replaceAll(" "));
+      pojo.setRoles(WHITESPACES.matcher(pojo.getRoles()).replaceAll(" "));
     } while (len != pojo.getRoles().length());
     Configuration.configuration.getRoles().clear();
     if (!pojo.getRoles().isEmpty()) {
@@ -339,8 +338,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     int len;
     do {
       len = pojo.getAliases().length();
-      pojo.setAliases(
-          WHITESPACES.matcher(pojo.getAliases()).replaceAll(" "));
+      pojo.setAliases(WHITESPACES.matcher(pojo.getAliases()).replaceAll(" "));
     } while (len != pojo.getAliases().length());
     Configuration.configuration.getAliases().clear();
     Configuration.configuration.getReverseAliases().clear();
@@ -457,8 +455,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     int len;
     do {
       len = pojo.getOthers().length();
-      pojo
-          .setOthers(WHITESPACES.matcher(pojo.getOthers()).replaceAll(" "));
+      pojo.setOthers(WHITESPACES.matcher(pojo.getOthers()).replaceAll(" "));
     } while (len != pojo.getOthers().length());
     isSaved = false;
   }
@@ -686,8 +683,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
 
   @Override
   public void changeUpdatedInfo(UpdatedInfo info) {
-    pojo
-        .setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
+    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
   /**

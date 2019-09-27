@@ -37,8 +37,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.waarp.common.database.DbConstant.*;
-
 /**
  * This class launch and control the Commander and enable TaskRunner job
  * submissions
@@ -65,12 +63,7 @@ public class InternalRunner {
    */
   public InternalRunner()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    // FIXME always true since change for DbAdmin
-    if (admin.isActive()) {
-      commander = new Commander(this, true);
-    } else {
-      commander = new CommanderNoDb(this, true);
-    }
+    commander = new Commander(this, true);
     // This is not daemon intentionally
     scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
         new WaarpThreadFactory("InternalRunner", false));
@@ -177,12 +170,7 @@ public class InternalRunner {
     if (commander != null) {
       commander.finalizeCommander();
     }
-    // FIXME always true since change for DbAdmin
-    if (admin.isActive()) {
-      commander = new Commander(this);
-    } else {
-      commander = new CommanderNoDb(this);
-    }
+    commander = new Commander(this);
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       2 *
                                                                       Configuration.configuration

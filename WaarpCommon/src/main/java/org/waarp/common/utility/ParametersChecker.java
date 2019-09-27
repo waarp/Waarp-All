@@ -226,7 +226,7 @@ public final class ParametersChecker {
   }
 
   /**
-   * Check external argument
+   * Check external argument (null is consider as correct)
    *
    * @param strings
    *

@@ -33,38 +33,6 @@ public abstract class WaarpCompletedFuture extends WaarpFuture {
   }
 
   @Override
-  public WaarpFuture await() throws InterruptedException {
-    if (Thread.interrupted()) {
-      throw new InterruptedException();
-    }
-    return this;
-  }
-
-  @Override
-  public boolean await(long timeout, TimeUnit unit)
-      throws InterruptedException {
-    if (Thread.interrupted()) {
-      throw new InterruptedException();
-    }
-    return true;
-  }
-
-  @Override
-  public WaarpFuture awaitUninterruptibly() {
-    return this;
-  }
-
-  @Override
-  public boolean awaitUninterruptibly(long timeout, TimeUnit unit) {
-    return true;
-  }
-
-  @Override
-  public boolean awaitUninterruptibly(long timeoutMillis) {
-    return true;
-  }
-
-  @Override
   public boolean awaitOrInterruptible() {
     return !Thread.interrupted();
   }

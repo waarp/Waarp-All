@@ -167,6 +167,9 @@ public class XMLTransferDAO implements TransferDAO {
     removeNoDbSpecialId(transfer.getId());
   }
 
+  /**
+   * {@link DAOConnectionException}
+   */
   @Override
   public void deleteAll() throws DAOConnectionException {
     dbR66TaskHashMap.clear();
@@ -217,41 +220,76 @@ public class XMLTransferDAO implements TransferDAO {
     return file.exists();
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
   @Override
   public List<Transfer> find(List<Filter> fitlers)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   public Transfer select(final String id)
       throws DAOConnectionException, DAONoDataException {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   public boolean exist(final String id) throws DAOConnectionException {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
   @Override
   public List<Transfer> find(List<Filter> filters, int limit)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
   @Override
   public List<Transfer> find(List<Filter> filters, int limit, int offset)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
   @Override
   public List<Transfer> find(List<Filter> filters, String column,
                              boolean ascend) throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
   @Override
   public List<Transfer> find(List<Filter> filters, String column,
                              boolean ascend, int limit)
@@ -259,6 +297,11 @@ public class XMLTransferDAO implements TransferDAO {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
   @Override
   public List<Transfer> find(List<Filter> filters, String column,
                              boolean ascend, int limit, int offset)

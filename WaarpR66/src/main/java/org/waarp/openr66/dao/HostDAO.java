@@ -20,15 +20,11 @@
 
 package org.waarp.openr66.dao;
 
-import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Host;
-
-import java.util.List;
 
 /**
  * Interface to interact with Host objects in the persistance layer
  */
-public interface HostDAO extends AbstractDAO<Host>{
+public interface HostDAO extends AbstractDAO<Host> {
   // Nothing
 }

@@ -152,6 +152,41 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
+  protected Object[] getInsertValues(final Transfer transfer) {
+    return new Object[] {
+        transfer.getGlobalStep().ordinal(),
+        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),
+        transfer.getRank(), transfer.getStepStatus().getCode(),
+        transfer.getRetrieveMode(), transfer.getFilename(),
+        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),
+        transfer.getOriginalName(), transfer.getFileInfo(),
+        transfer.getTransferInfo(), transfer.getTransferMode(),
+        transfer.getStart(), transfer.getStop(),
+        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),
+        transfer.getRequested(), transfer.getRequester(), transfer.getId(),
+        transfer.getUpdatedInfo().ordinal()
+    };
+  }
+
+  @Override
+  protected Object[] getUpdateValues(final Transfer transfer) {
+    return new Object[] {
+        transfer.getId(), transfer.getGlobalStep().ordinal(),
+        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),
+        transfer.getRank(), transfer.getStepStatus().getCode(),
+        transfer.getRetrieveMode(), transfer.getFilename(),
+        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),
+        transfer.getOriginalName(), transfer.getFileInfo(),
+        transfer.getTransferInfo(), transfer.getTransferMode(),
+        transfer.getStart(), transfer.getStop(),
+        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),
+        transfer.getRequested(), transfer.getRequester(),
+        transfer.getUpdatedInfo().ordinal(), transfer.getOwnerRequest(),
+        transfer.getRequester(), transfer.getRequested(), transfer.getId()
+    };
+  }
+
+  @Override
   public void delete(Transfer transfer)
       throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
@@ -174,39 +209,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     }
   }
 
-  @Override
-  public void deleteAll() throws DAOConnectionException {
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(getDeleteAllRequest());
-      executeAction(stm);
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
-  }
-
-  @Override
-  public List<Transfer> getAll() throws DAOConnectionException {
-    final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(getGetAllRequest());
-      res = executeQuery(stm);
-      while (res.next()) {
-        transfers.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return transfers;
-  }
-
   private String prepareFindQuery(List<Filter> filters, Object[] params) {
     final StringBuilder query = new StringBuilder(getGetAllRequest());
     final Iterator<Filter> it = filters.listIterator();
@@ -224,32 +226,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       prefix = " AND ";
     }
     return query.toString();
-  }
-
-  @Override
-  public List<Transfer> find(List<Filter> filters)
-      throws DAOConnectionException {
-    final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
-    // Create the SQL query
-    final Object[] params = new Object[filters.size()];
-    final String query = prepareFindQuery(filters, params);
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query);
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        transfers.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return transfers;
   }
 
   @Override
@@ -484,65 +460,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       transfer.setId(getNextId());
     }
     logger.trace("TRACE ID {}", transfer.getId());
-
-    final Object[] params = {
-        transfer.getGlobalStep().ordinal(),
-        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),
-        transfer.getRank(), transfer.getStepStatus().getCode(),
-        transfer.getRetrieveMode(), transfer.getFilename(),
-        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),
-        transfer.getOriginalName(), transfer.getFileInfo(),
-        transfer.getTransferInfo(), transfer.getTransferMode(),
-        transfer.getStart(), transfer.getStop(),
-        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),
-        transfer.getRequested(), transfer.getRequester(), transfer.getId(),
-        transfer.getUpdatedInfo().ordinal()
-    };
-
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_INSERT);
-      setParameters(stm, params);
-      executeUpdate(stm);
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
-  }
-
-  @Override
-  public void update(Transfer transfer)
-      throws DAOConnectionException, DAONoDataException {
-    final Object[] params = {
-        transfer.getId(), transfer.getGlobalStep().ordinal(),
-        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),
-        transfer.getRank(), transfer.getStepStatus().getCode(),
-        transfer.getRetrieveMode(), transfer.getFilename(),
-        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),
-        transfer.getOriginalName(), transfer.getFileInfo(),
-        transfer.getTransferInfo(), transfer.getTransferMode(),
-        transfer.getStart(), transfer.getStop(),
-        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),
-        transfer.getRequested(), transfer.getRequester(),
-        transfer.getUpdatedInfo().ordinal(), transfer.getOwnerRequest(),
-        transfer.getRequester(), transfer.getRequested(), transfer.getId()
-    };
-
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(getUpdateRequest());
-      setParameters(stm, params);
-      try {
-        executeUpdate(stm);
-      } catch (final SQLException e2) {
-        throw new DAONoDataException(e2);
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+    super.insert(transfer);
   }
 
   @Override
@@ -572,14 +490,41 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @param id id of the object requested
+   *
+   * @return never
+   */
   @Override
-  public Transfer select(final String id)
-      throws DAOConnectionException, DAONoDataException {
+  public Transfer select(final String id) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @param id id of the object requested
+   *
+   * @return never
+   */
   @Override
-  public boolean exist(final String id) throws DAOConnectionException {
+  public boolean exist(final String id) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @param e1 as Transfer
+   *
+   * @return never
+   */
+  @Override
+  protected String getId(final Transfer e1) {
     throw new UnsupportedOperationException();
   }
 }
+
+

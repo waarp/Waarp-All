@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;

@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
-import org.waarp.common.database.ConnectionFactory;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;

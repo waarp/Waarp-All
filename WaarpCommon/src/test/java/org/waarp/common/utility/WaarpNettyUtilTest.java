@@ -72,47 +72,6 @@ public class WaarpNettyUtilTest {
   private static final int PORT = 9999;
 
   @Test
-  public void setServerBootstrap() {
-    final EventLoopGroup bossGroup = new NioEventLoopGroup();
-    final EventLoopGroup workerGroup = new NioEventLoopGroup();
-    final Bootstrap clientBootstrap = new Bootstrap();
-    WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
-    clientBootstrap.handler(new HttpClientInitializer(null));
-
-    final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
-    bootstrap.childHandler(new HttpServerInitializer(null));
-    ChannelFuture future = null;
-    try {
-      future = bootstrap.bind(PORT).sync();
-      future.channel();
-      final Channel clientChannel =
-          clientBootstrap.connect("localhost", PORT).sync().channel();
-      final HttpRequest request =
-          new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-      request.headers().set(HttpHeaderNames.HOST, "localhost")
-             .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
-             .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-      clientChannel.writeAndFlush(request);
-      clientChannel.closeFuture().sync();
-    } catch (final Exception e) {
-      fail("Should not " + e.getMessage());
-    } finally {
-      if (future != null) {
-        final Channel channel = future.channel();
-        try {
-          channel.close().sync();
-        } catch (final InterruptedException e) {//NOSONAR
-          e.printStackTrace();
-        }
-      }
-      bossGroup.shutdownGracefully();
-      workerGroup.shutdownGracefully();
-      System.out.println("NoSsl done");
-    }
-  }
-
-  @Test
   public void setServerBootstrap1Group() {
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     final Bootstrap clientBootstrap = new Bootstrap();
@@ -150,73 +109,6 @@ public class WaarpNettyUtilTest {
       workerGroup.shutdownGracefully();
       System.out.println("NoSsl 1 group done");
     }
-  }
-
-  @Test
-  public void setServerSslBootstrap() throws CryptoException {
-    // Load the KeyStore (No certificates)
-    final String keyStoreFilename = "certs/testsslnocert.jks";
-    final ClassLoader classLoader = WaarpNettyUtilTest.class.getClassLoader();
-    final URL url = classLoader.getResource(keyStoreFilename);
-    assertNotNull(url);
-    final File file = new File(url.getFile());
-    assertTrue("File Should exists", file.exists());
-    final String keyStorePasswd = "testsslnocert";
-    final String keyPassword = "testalias";
-    final WaarpSecureKeyStore WaarpSecureKeyStore =
-        new WaarpSecureKeyStore(file.getAbsolutePath(), keyStorePasswd,
-                                keyPassword);
-    // Include certificates
-    final String trustStoreFilename = "certs/testcert.jks";
-    final File file2 =
-        new File(classLoader.getResource(trustStoreFilename).getFile());
-    assertTrue("File2 Should exists", file2.exists());
-    final String trustStorePasswd = "testcert";
-    WaarpSecureKeyStore
-        .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, true);
-    final WaarpSslContextFactory waarpSslContextFactory =
-        new WaarpSslContextFactory(WaarpSecureKeyStore);
-
-    final EventLoopGroup bossGroup = new NioEventLoopGroup();
-    final EventLoopGroup workerGroup = new NioEventLoopGroup();
-    final Bootstrap clientBootstrap = new Bootstrap();
-    WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
-
-    clientBootstrap.handler(new HttpClientInitializer(waarpSslContextFactory));
-
-    final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
-    bootstrap.childHandler(new HttpServerInitializer(waarpSslContextFactory));
-    ChannelFuture future = null;
-    try {
-      future = bootstrap.bind(PORT).sync();
-      future.channel();
-      final Channel clientChannel =
-          clientBootstrap.connect("localhost", PORT).sync().channel();
-      WaarpSslUtility.waitForHandshake(clientChannel);
-      final HttpRequest request =
-          new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-      request.headers().set(HttpHeaderNames.HOST, "localhost")
-             .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
-             .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-      clientChannel.writeAndFlush(request);
-      clientChannel.closeFuture().sync();
-    } catch (final Exception e) {
-      fail("Should not " + e.getMessage());
-    } finally {
-      if (future != null) {
-        final Channel channel = future.channel();
-        try {
-          channel.close().sync();
-        } catch (final InterruptedException e) {//NOSONAR
-          e.printStackTrace();
-        }
-      }
-      bossGroup.shutdownGracefully();
-      workerGroup.shutdownGracefully();
-      System.out.println("Ssl done");
-    }
-
   }
 
   @Test
@@ -303,13 +195,12 @@ public class WaarpNettyUtilTest {
     constraintLimitHandler.setServer(true);
     workerGroup.execute(constraintLimitHandler);
 
-    final EventLoopGroup bossGroup = new NioEventLoopGroup();
     final Bootstrap clientBootstrap = new Bootstrap();
     WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
     clientBootstrap.handler(new HttpClientInitializer(null));
 
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, bossGroup, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
@@ -350,44 +241,11 @@ public class WaarpNettyUtilTest {
       }
       constraintLimitHandler.release();
       trafficShapingHandler.release();
-      bossGroup.shutdownGracefully();
       workerGroup.shutdownGracefully();
       System.out.println("Traffic and Constraint done");
     }
 
   }
-
-  /*
-   * @Test public void setServerBootstrap1GroupWithConstraint() { final EventLoopGroup workerGroup = new
-   * NioEventLoopGroup(); final GlobalTrafficShapingHandler trafficShapingHandler = new
-   * GlobalTrafficShapingHandler(workerGroup.next()); final ExtendedConstraintLimitHandler
-   * constraintLimitHandler = new ExtendedConstraintLimitHandler(trafficShapingHandler);
-   * constraintLimitHandler.setServer(true); workerGroup.execute(constraintLimitHandler);
-   *
-   * final Bootstrap clientBootstrap = new Bootstrap(); WaarpNettyUtil.setBootstrap(clientBootstrap,
-   * workerGroup, 10000); clientBootstrap.handler(new HttpClientInitializer(null));
-   *
-   * ServerBootstrap bootstrap = new ServerBootstrap(); WaarpNettyUtil.setServerBootstrap(bootstrap,
-   * workerGroup, 30000); bootstrap.childHandler(new HttpServerInitializer(null)); ChannelFuture future = null;
-   * try { future = bootstrap.bind(PORT).sync(); Channel channel = future.channel();
-   * channel.pipeline().addFirst("Traffic", trafficShapingHandler); Channel clientChannel =
-   * clientBootstrap.connect("localhost", PORT).sync().channel(); HttpRequest request = new
-   * DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-   * request.headers().set(HttpHeaderNames.HOST, "localhost") .set(HttpHeaderNames.CONNECTION,
-   * HttpHeaderValues.CLOSE) .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP); Thread.sleep(10);
-   * clientChannel.writeAndFlush(request); assertFalse(constraintLimitHandler.checkConstraints());
-   * clientChannel.closeFuture().sync(); clientChannel = clientBootstrap.connect("localhost",
-   * PORT).sync().channel(); request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-   * request.headers().set(HttpHeaderNames.HOST, "localhost") .set(HttpHeaderNames.CONNECTION,
-   * HttpHeaderValues.CLOSE) .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP); Thread.sleep(10);
-   * clientChannel.writeAndFlush(request); clientChannel.closeFuture().sync(); } catch (Exception e) {
-   * fail("Should not " + e.getMessage()); } finally { if (future != null) { Channel channel = future.channel();
-   * try { channel.close().sync(); } catch (InterruptedException e) { e.printStackTrace(); } }
-   * constraintLimitHandler.release(); trafficShapingHandler.release(); workerGroup.shutdownGracefully();
-   * System.out.println("Traffic and Constraint done"); }
-   *
-   * }
-   */
 
   public class HttpServerHandler
       extends SimpleChannelInboundHandler<HttpObject> {

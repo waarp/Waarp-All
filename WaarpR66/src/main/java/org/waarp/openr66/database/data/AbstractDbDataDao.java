@@ -44,7 +44,6 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   private static final String NO_ROW_FOUND = "No row found";
   public static final String JSON_MODEL = "@model";
 
-  protected boolean isSaved;
   protected E pojo;
 
   /**
@@ -247,41 +246,73 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     // nothing
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   protected String getWherePrimaryKey() {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   */
   @Override
   protected void setPrimaryKey() {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   protected String getSelectAllFields() {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   protected String getInsertAllValues() {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   protected String getUpdateAllFields() {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   */
   @Override
   protected void setToArray() {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   */
   @Override
   protected void setFromArray() throws WaarpDatabaseSqlException {
     throw new UnsupportedOperationException("Should not be called");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   */
   @Override
   protected void getValues(DbPreparedStatement preparedStatement,
                            DbValue[] values)

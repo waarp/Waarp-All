@@ -22,20 +22,14 @@ package org.waarp.openr66.dao.database;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.pojo.UpdatedInfo;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Implementation of HostDAO for standard SQL databases
@@ -86,178 +80,61 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  public void delete(Host host)
-      throws DAOConnectionException, DAONoDataException {
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_DELETE);
-      setParameters(stm, host.getHostid());
-      try {
-        executeAction(stm);
-      } catch (final SQLException e2) {
-        throw new DAONoDataException(e2);
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+  protected String getId(final Host e1) {
+    return e1.getHostid();
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeAction(stm);
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+  protected String getSelectRequest() {
+    return SQL_SELECT;
   }
 
   @Override
-  public List<Host> getAll() throws DAOConnectionException {
-    final ArrayList<Host> hosts = new ArrayList<Host>();
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(SQL_GET_ALL);
-      res = executeQuery(stm);
-      while (res.next()) {
-        hosts.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return hosts;
+  protected String getGetAllRequest() {
+    return SQL_GET_ALL;
   }
 
   @Override
-  public List<Host> find(List<Filter> filters) throws DAOConnectionException {
-    final ArrayList<Host> hosts = new ArrayList<Host>();
-    // Create the SQL query
-    final StringBuilder query = new StringBuilder(SQL_GET_ALL);
-    final Object[] params = new Object[filters.size()];
-    final Iterator<Filter> it = filters.listIterator();
-    if (it.hasNext()) {
-      query.append(" WHERE ");
-    }
-    String prefix = "";
-    int i = 0;
-    while (it.hasNext()) {
-      query.append(prefix);
-      final Filter filter = it.next();
-      query.append(filter.key + ' ' + filter.operand + " ?");
-      params[i] = filter.value;
-      i++;
-      prefix = " AND ";
-    }
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query.toString());
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        hosts.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return hosts;
+  protected String getExistRequest() {
+    return SQL_EXIST;
   }
 
   @Override
-  public boolean exist(String hostid) throws DAOConnectionException {
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(SQL_EXIST);
-      setParameters(stm, hostid);
-      res = executeQuery(stm);
-      return res.next();
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-  }
-
-  @Override
-  public Host select(String hostid)
-      throws DAOConnectionException, DAONoDataException {
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(SQL_SELECT);
-      setParameters(stm, hostid);
-      res = executeQuery(stm);
-      if (res.next()) {
-        return getFromResultSet(res);
-      } else {
-        throw new DAONoDataException("No " + getClass().getName() + " found");
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-  }
-
-  @Override
-  public void insert(Host host) throws DAOConnectionException {
-    final Object[] params = {
+  protected Object[] getInsertValues(final Host host) {
+    return new Object[] {
         host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),
         host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),
         host.isAdmin(), host.getUpdatedInfo().ordinal()
     };
-
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_INSERT);
-      setParameters(stm, params);
-      executeUpdate(stm);
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
   }
 
   @Override
-  public void update(Host host)
-      throws DAOConnectionException, DAONoDataException {
-    final Object[] params = {
+  protected String getInsertRequest() {
+    return SQL_INSERT;
+  }
+
+  @Override
+  protected Object[] getUpdateValues(final Host host) {
+    return new Object[] {
         host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),
         host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),
         host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()
     };
+  }
 
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_UPDATE);
-      setParameters(stm, params);
-      try {
-        executeUpdate(stm);
-      } catch (final SQLException e2) {
-        throw new DAONoDataException(e2);
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+  @Override
+  protected String getUpdateRequest() {
+    return SQL_UPDATE;
+  }
+
+  @Override
+  protected String getDeleteRequest() {
+    return SQL_DELETE;
+  }
+
+  @Override
+  protected String getDeleteAllRequest() {
+    return SQL_DELETE_ALL;
   }
 
   @Override

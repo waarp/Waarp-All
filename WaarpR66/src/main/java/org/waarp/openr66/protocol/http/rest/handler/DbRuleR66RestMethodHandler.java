@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
@@ -182,8 +181,7 @@ public class DbRuleR66RestMethodHandler
       node3.put(DbRule.Columns.IDRULE.name(),
                 RULE_ID_IN_URI_AS_VARCHAR_AS + path + "/id");
       for (DbRule.Columns column : DbRule.Columns.values()) {
-        if (column.name()
-                   .equalsIgnoreCase(DbRule.Columns.IDRULE.name())) {
+        if (column.name().equalsIgnoreCase(DbRule.Columns.IDRULE.name())) {
           continue;
         }
         node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);

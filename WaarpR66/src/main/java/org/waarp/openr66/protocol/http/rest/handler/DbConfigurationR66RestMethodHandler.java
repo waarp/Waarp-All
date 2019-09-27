@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
@@ -188,7 +187,7 @@ public class DbConfigurationR66RestMethodHandler
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
       for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
         if (column.name()
-                   .equalsIgnoreCase(DbConfiguration.Columns.HOSTID.name())) {
+                  .equalsIgnoreCase(DbConfiguration.Columns.HOSTID.name())) {
           continue;
         }
         node3.put(column.name(), DbConfiguration.dbTypes[column.ordinal()]);

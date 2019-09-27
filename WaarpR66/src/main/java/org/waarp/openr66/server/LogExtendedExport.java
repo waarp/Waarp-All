@@ -264,8 +264,7 @@ public class LogExtendedExport implements Runnable {
           } else {
             logsFile = futuretemp.getResult().getFile().getTrueFile();
           }
-          // FIXME always true since change for DbAdmin
-          if (tryimport && admin.isActive()) {
+          if (tryimport) {
             try {
               DbTaskRunner.loadXml(logsFile);
             } catch (final OpenR66ProtocolBusinessException e) {

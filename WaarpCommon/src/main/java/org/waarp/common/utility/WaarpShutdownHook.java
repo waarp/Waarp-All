@@ -93,6 +93,13 @@ public abstract class WaarpShutdownHook extends Thread {
   }
 
   /**
+   * @return the current ShutdownConfiguration
+   */
+  public ShutdownConfiguration getShutdownConfiguration() {
+    return shutdownConfiguration;
+  }
+
+  /**
    * For Server part
    */
   public static void addShutdownHook() {

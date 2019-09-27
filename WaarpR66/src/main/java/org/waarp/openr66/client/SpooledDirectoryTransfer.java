@@ -242,19 +242,6 @@ public class SpooledDirectoryTransfer implements Runnable {
 
   @Override
   public void run() {
-    // FIXME never true since change for DbAdmin
-    if (submit && !admin.isActive()) {
-      logger.error(
-          Messages.getString("SpooledDirectoryTransfer.2")); //$NON-NLS-1$
-      future.cancel();
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("SpooledDirectoryTransfer.2")));
-      }
-      return;
-    }
     setSent(0);
     setError(0);
     // first check if rule is for SEND
@@ -551,10 +538,6 @@ public class SpooledDirectoryTransfer implements Runnable {
                     transaction2.run();
                     // special task
                     r66Future.awaitOrInterruptible();
-                    // FIXME never true since change for DbAdmin
-                    if (!admin.isActive()) {
-                      DbTaskRunner.removeNoDbSpecialId(specialId);
-                    }
                   }
                 } catch (final WaarpDatabaseException e) {
                   direct = true;
@@ -669,14 +652,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                 runner = r66result.getRunner();
                 if (runner != null) {
                   specialId = runner.getSpecialId();
-                  // FIXME never true since change for DbAdmin
-                  if (!admin.isActive() && remoteHosts.size() > 1) {
-                    DbTaskRunner.removeNoDbSpecialId(specialId);
-                    specialId = ILLEGALVALUE;
-                    // FIXME always true since change for DbAdmin
-                  } else if (admin.isActive()) {
-                    DbTaskRunner.removeNoDbSpecialId(specialId);
-                  }
+                  DbTaskRunner.removeNoDbSpecialId(specialId);
                   if (isConnectionImpossible) {
                     logger.info(
                         text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
@@ -1088,12 +1064,6 @@ public class SpooledDirectoryTransfer implements Runnable {
       if (arg.sname == null) {
         arg.sname = Configuration.configuration.getHostId() + " : " +
                     arg.localDirectory;
-      }
-      // FIXME never true since change for DbAdmin
-      if (arg.tosubmit && !admin.isActive()) {
-        logger.error(
-            Messages.getString("SpooledDirectoryTransfer.2")); //$NON-NLS-1$
-        return false;
       }
       if (!arg.rhosts.isEmpty() && arg.rule != null &&
           !arg.localDirectory.isEmpty() && arg.statusfile != null &&

@@ -21,7 +21,6 @@
 package org.waarp.openr66.protocol.junit;
 
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.BUnzip2;
 import org.junit.After;
 import org.junit.Before;
 import org.openqa.selenium.WebDriver;

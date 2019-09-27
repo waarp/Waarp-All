@@ -20,7 +20,6 @@
 package org.waarp.common.cpu;
 
 import io.netty.handler.traffic.AbstractTrafficShapingHandler;
-import org.waarp.common.database.DbAdmin;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -294,14 +293,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       return true;
     }
     if (channelLimit > 0) {
-      // FIXME since change that removes DbAdmin, this is no more accurate
-      int nb = DbAdmin.getNbConnection() - DbAdmin.getHttpSession();
-      if (channelLimit < nb) {
-        lastAlert = "Network Constraint: " + nb + " > " + channelLimit;
-        logger.debug(lastAlert);
-        return true;
-      }
-      nb = getNumberLocalChannel();
+      int nb = getNumberLocalChannel();
       if (channelLimit < nb) {
         lastAlert = "LocalNetwork Constraint: " + nb + " > " + channelLimit;
         logger.debug(lastAlert);

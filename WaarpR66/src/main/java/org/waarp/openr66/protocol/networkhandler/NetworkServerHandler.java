@@ -177,15 +177,12 @@ public class NetworkServerHandler
       return;
     }
     try {
-      // FIXME always true since change for DbAdmin
-      if (admin.isActive()) {
-        if (admin.isCompatibleWithThreadSharedConnexion()) {
-          dbSession = new DbSession(admin, false);
-          dbSession.useConnection();
-        } else {
-          logger.debug("DbSession will be adjusted on LocalChannelReference");
-          dbSession = admin.getSession();
-        }
+      if (admin.isCompatibleWithThreadSharedConnexion()) {
+        dbSession = new DbSession(admin, false);
+        dbSession.useConnection();
+      } else {
+        logger.debug("DbSession will be adjusted on LocalChannelReference");
+        dbSession = admin.getSession();
       }
     } catch (final WaarpDatabaseNoConnectionException e1) {
       // Cannot connect so use default connection

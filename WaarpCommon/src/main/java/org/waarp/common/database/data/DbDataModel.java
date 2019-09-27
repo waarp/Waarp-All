@@ -343,37 +343,6 @@ public class DbDataModel extends AbstractDbData {
   }
 
   /**
-   * Private constructor for Commander only
-   *
-   * @deprecated
-   */
-  @Deprecated
-  private DbDataModel(DbSession session) {
-    super(session);
-  }
-
-  /**
-   * For instance from Commander when getting updated information
-   *
-   * @param preparedStatement
-   *
-   * @return the next updated Configuration
-   *
-   * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
-   */
-  public static DbDataModel getFromStatement(
-      DbPreparedStatement preparedStatement)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    final DbDataModel dbDataModel =
-        new DbDataModel(preparedStatement.getDbSession());
-    dbDataModel.getValues(preparedStatement, dbDataModel.allFields);
-    dbDataModel.setFromArray();
-    dbDataModel.isSaved = true;
-    return dbDataModel;
-  }
-
-  /**
    * @return the DbPreparedStatement for getting Updated Object
    *
    * @throws WaarpDatabaseNoConnectionException

@@ -712,10 +712,12 @@ public class XAmple extends JFrame
 
   @Override
   public void newDocumentLoaded(FXStatusEvent e) {
+    // Nothing
   }
 
   @Override
   public void docValidityStatusChanged(FXStatusEvent e) {
+    // Nothing
   }
 
   class TheFileFilter extends FileFilter {

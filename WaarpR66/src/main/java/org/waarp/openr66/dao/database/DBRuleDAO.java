@@ -26,10 +26,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Rule;
 import org.waarp.openr66.pojo.RuleTask;
 import org.waarp.openr66.pojo.UpdatedInfo;
@@ -38,11 +36,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.waarp.openr66.dao.DAOFactory.*;
@@ -104,138 +100,28 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   }
 
   @Override
-  public void delete(Rule rule)
-      throws DAOConnectionException, DAONoDataException {
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_DELETE);
-      setParameters(stm, rule.getName());
-      try {
-        executeAction(stm);
-      } catch (final SQLException e2) {
-        throw new DAONoDataException(e2);
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+  protected String getId(final Rule e1) {
+    return e1.getName();
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_DELETE_ALL);
-      executeAction(stm);
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+  protected String getSelectRequest() {
+    return SQL_SELECT;
   }
 
   @Override
-  public List<Rule> getAll() throws DAOConnectionException {
-    final ArrayList<Rule> rules = new ArrayList<Rule>();
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(SQL_GET_ALL);
-      res = executeQuery(stm);
-      while (res.next()) {
-        rules.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return rules;
+  protected String getGetAllRequest() {
+    return SQL_GET_ALL;
   }
 
   @Override
-  public List<Rule> find(List<Filter> filters) throws DAOConnectionException {
-    final ArrayList<Rule> rules = new ArrayList<Rule>();
-    // Create the SQL query
-    final StringBuilder query = new StringBuilder(SQL_GET_ALL);
-    final Object[] params = new Object[filters.size()];
-    final Iterator<Filter> it = filters.listIterator();
-    if (it.hasNext()) {
-      query.append(" WHERE ");
-    }
-    String prefix = "";
-    int i = 0;
-    while (it.hasNext()) {
-      query.append(prefix);
-      final Filter filter = it.next();
-      query.append(filter.key + ' ' + filter.operand + " ?");
-      params[i] = filter.value;
-      i++;
-      prefix = " AND ";
-    }
-    // Execute query
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(query.toString());
-      setParameters(stm, params);
-      res = executeQuery(stm);
-      while (res.next()) {
-        rules.add(getFromResultSet(res));
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-    return rules;
+  protected String getExistRequest() {
+    return SQL_EXIST;
   }
 
   @Override
-  public boolean exist(String ruleName) throws DAOConnectionException {
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(SQL_EXIST);
-      setParameters(stm, ruleName);
-      res = executeQuery(stm);
-      return res.next();
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-  }
-
-  @Override
-  public Rule select(String ruleName)
-      throws DAOConnectionException, DAONoDataException {
-    PreparedStatement stm = null;
-    ResultSet res = null;
-    try {
-      stm = connection.prepareStatement(SQL_SELECT);
-      setParameters(stm, ruleName);
-      res = executeQuery(stm);
-      if (res.next()) {
-        return getFromResultSet(res);
-      } else {
-        throw new DAONoDataException("No " + getClass().getName() + " found");
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeResultSet(res);
-      closeStatement(stm);
-    }
-  }
-
-  @Override
-  public void insert(Rule rule) throws DAOConnectionException {
-    final Object[] params = {
+  protected Object[] getInsertValues(final Rule rule) {
+    return new Object[] {
         rule.getName(), rule.getXMLHostids(), rule.getMode(),
         rule.getRecvPath(), rule.getSendPath(), rule.getArchivePath(),
         rule.getWorkPath(), rule.getXMLRPreTasks(), rule.getXMLRPostTasks(),
@@ -243,23 +129,16 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
         rule.getXMLSPostTasks(), rule.getXMLSErrorTasks(),
         rule.getUpdatedInfo().ordinal()
     };
-
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_INSERT);
-      setParameters(stm, params);
-      executeUpdate(stm);
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
   }
 
   @Override
-  public void update(Rule rule)
-      throws DAOConnectionException, DAONoDataException {
-    final Object[] params = {
+  protected String getInsertRequest() {
+    return SQL_INSERT;
+  }
+
+  @Override
+  protected Object[] getUpdateValues(final Rule rule) {
+    return new Object[] {
         rule.getName(), rule.getXMLHostids(), rule.getMode(),
         rule.getRecvPath(), rule.getSendPath(), rule.getArchivePath(),
         rule.getWorkPath(), rule.getXMLRPreTasks(), rule.getXMLRPostTasks(),
@@ -267,21 +146,21 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
         rule.getXMLSPostTasks(), rule.getXMLSErrorTasks(),
         rule.getUpdatedInfo().ordinal(), rule.getName()
     };
+  }
 
-    PreparedStatement stm = null;
-    try {
-      stm = connection.prepareStatement(SQL_UPDATE);
-      setParameters(stm, params);
-      try {
-        executeUpdate(stm);
-      } catch (final SQLException e2) {
-        throw new DAONoDataException(e2);
-      }
-    } catch (final SQLException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      closeStatement(stm);
-    }
+  @Override
+  protected String getUpdateRequest() {
+    return SQL_UPDATE;
+  }
+
+  @Override
+  protected String getDeleteRequest() {
+    return SQL_DELETE;
+  }
+
+  @Override
+  protected String getDeleteAllRequest() {
+    return SQL_DELETE_ALL;
   }
 
   @Override

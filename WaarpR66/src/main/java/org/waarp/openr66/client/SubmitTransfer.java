@@ -56,16 +56,6 @@ public class SubmitTransfer extends AbstractTransfer {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SubmitTransfer.class);
     }
-    // FIXME never true since change for DbAdmin
-    if (!admin.isActive()) {
-      logger.debug("Client not connected");
-      final R66Result result = new R66Result(
-          new OpenR66DatabaseGlobalException("No database connexion"), null,
-          true, ErrorCode.Internal, null);
-      future.setResult(result);
-      future.setFailure(result.getException());
-      return;
-    }
     final DbTaskRunner taskRunner = initRequest();
     if (taskRunner == null) {
       logger.debug("Cannot prepare task");

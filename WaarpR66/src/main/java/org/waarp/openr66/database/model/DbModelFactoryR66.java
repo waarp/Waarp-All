@@ -281,7 +281,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
       action.append(acolumns[i].name())
             .append(dbTypeResolver.getType(DbTaskRunner.dbTypes[i]))
             .append(notNull);
-      if ( DbTaskRunner.dbTypes[i] == Types.TIMESTAMP) {
+      if (DbTaskRunner.dbTypes[i] == Types.TIMESTAMP) {
         action.append(" DEFAULT CURRENT_TIMESTAMP(3)");
       }
       action.append(", ");

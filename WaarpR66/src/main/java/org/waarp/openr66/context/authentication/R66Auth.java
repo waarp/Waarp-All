@@ -22,7 +22,6 @@ package org.waarp.openr66.context.authentication;
 import org.waarp.common.command.NextCommandReply;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.command.exception.Reply530Exception;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedAuthImpl;
@@ -82,23 +81,6 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   protected NextCommandReply setBusinessPassword(String arg0)
       throws Reply421Exception, Reply530Exception {
     throw new Reply421Exception("Command not valid");
-  }
-
-  /**
-   * @param dbSession
-   * @param hostId
-   * @param arg0
-   *
-   * @return True if the connection is OK (authentication is OK)
-   *
-   * @throws Reply530Exception if the authentication is wrong
-   * @throws Reply421Exception If the service is not available
-   */
-  @Deprecated
-  public boolean connection(DbSession dbSession, String hostId, byte[] arg0,
-                            boolean isSsl)
-      throws Reply530Exception, Reply421Exception {
-    return connection(hostId, arg0, isSsl);
   }
 
   /**

@@ -22,24 +22,28 @@ package org.waarp.openr66.dao.database;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.dao.AbstractDAO;
+import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.pojo.Limit;
+import org.waarp.openr66.dao.exception.DAONoDataException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public abstract class StatementExecutor<E> {
+public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(StatementExecutor.class);
   protected final Connection connection;
 
-  public abstract E getFromResultSet(ResultSet set) throws SQLException,
-                                                           DAOConnectionException;
+  public abstract E getFromResultSet(ResultSet set)
+      throws SQLException, DAOConnectionException;
 
   StatementExecutor(Connection con) {
     connection = con;
@@ -101,4 +105,189 @@ public abstract class StatementExecutor<E> {
       logger.warn("Cannot properly close the database connection", e);
     }
   }
+
+  protected abstract String getId(E e1);
+
+  protected abstract String getSelectRequest();
+
+  protected abstract String getGetAllRequest();
+
+  protected abstract String getExistRequest();
+
+  protected abstract Object[] getInsertValues(E e1);
+
+  protected abstract String getInsertRequest();
+
+  protected abstract Object[] getUpdateValues(E e1);
+
+  protected abstract String getUpdateRequest();
+
+  protected abstract String getDeleteRequest();
+
+  protected abstract String getDeleteAllRequest();
+
+  @Override
+  public void delete(E e1) throws DAOConnectionException, DAONoDataException {
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(getDeleteRequest());
+      setParameters(stm, getId(e1));
+      try {
+        executeAction(stm);
+      } catch (final SQLException e2) {
+        throw new DAONoDataException(e2);
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
+  @Override
+  public void deleteAll() throws DAOConnectionException {
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(getDeleteAllRequest());
+      executeAction(stm);
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
+  @Override
+  public List<E> getAll() throws DAOConnectionException {
+    final ArrayList<E> es = new ArrayList<E>();
+    PreparedStatement stm = null;
+    ResultSet res = null;
+    try {
+      stm = connection.prepareStatement(getGetAllRequest());
+      res = executeQuery(stm);
+      while (res.next()) {
+        es.add(getFromResultSet(res));
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeResultSet(res);
+      closeStatement(stm);
+    }
+    return es;
+  }
+
+  @Override
+  public List<E> find(List<Filter> filters) throws DAOConnectionException {
+    final ArrayList<E> es = new ArrayList<E>();
+    // Create the SQL query
+    final StringBuilder query = new StringBuilder(getGetAllRequest());
+    final Object[] params = new Object[filters.size()];
+    final Iterator<Filter> it = filters.listIterator();
+    if (it.hasNext()) {
+      query.append(" WHERE ");
+    }
+    String prefix = "";
+    int i = 0;
+    while (it.hasNext()) {
+      query.append(prefix);
+      final Filter filter = it.next();
+      query.append(filter.key + ' ' + filter.operand + " ?");
+      params[i] = filter.value;
+      i++;
+      prefix = " AND ";
+    }
+    // Execute query
+    PreparedStatement stm = null;
+    ResultSet res = null;
+    try {
+      stm = connection.prepareStatement(query.toString());
+      setParameters(stm, params);
+      res = executeQuery(stm);
+      while (res.next()) {
+        es.add(getFromResultSet(res));
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeResultSet(res);
+      closeStatement(stm);
+    }
+    return es;
+  }
+
+  @Override
+  public boolean exist(String id) throws DAOConnectionException {
+    PreparedStatement stm = null;
+    ResultSet res = null;
+    try {
+      stm = connection.prepareStatement(getExistRequest());
+      setParameters(stm, id);
+      res = executeQuery(stm);
+      return res.next();
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeResultSet(res);
+      closeStatement(stm);
+    }
+  }
+
+  @Override
+  public E select(String id) throws DAOConnectionException, DAONoDataException {
+    PreparedStatement stm = null;
+    ResultSet res = null;
+    try {
+      stm = connection.prepareStatement(getSelectRequest());
+      setParameters(stm, id);
+      res = executeQuery(stm);
+      if (res.next()) {
+        return getFromResultSet(res);
+      } else {
+        throw new DAONoDataException("No " + getClass().getName() + " found");
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeResultSet(res);
+      closeStatement(stm);
+    }
+  }
+
+  @Override
+  public void insert(E e1) throws DAOConnectionException {
+    final Object[] params = getInsertValues(e1);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(getInsertRequest());
+      setParameters(stm, params);
+      executeUpdate(stm);
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
+  @Override
+  public void update(E e1) throws DAOConnectionException, DAONoDataException {
+    final Object[] params = getUpdateValues(e1);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(getUpdateRequest());
+      setParameters(stm, params);
+      try {
+        executeUpdate(stm);
+      } catch (final SQLException e2) {
+        throw new DAONoDataException(e2);
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
 }

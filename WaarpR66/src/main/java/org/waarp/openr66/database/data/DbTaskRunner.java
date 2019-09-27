@@ -246,11 +246,21 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     return DAOFactory.getInstance().getTransferDAO();
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   protected String getPrimaryKey() {
     throw new UnsupportedOperationException("Not correct for Transfer");
   }
 
+  /**
+   * {@link UnsupportedOperationException}
+   *
+   * @return never
+   */
   @Override
   protected String getPrimaryField() {
     throw new UnsupportedOperationException("Not correct for Transfer");

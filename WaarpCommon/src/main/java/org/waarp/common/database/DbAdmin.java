@@ -120,22 +120,6 @@ public class DbAdmin {
   }
 
   /**
-   * @return the isActive
-   */
-  @Deprecated
-  public boolean isActive() {
-    return true;
-  }
-
-  /**
-   * @param isActive the isActive to set
-   */
-  @Deprecated
-  public void setActive(boolean isActive) {
-    // nothing
-  }
-
-  /**
    * Validate connection
    *
    * @throws WaarpDatabaseNoConnectionException

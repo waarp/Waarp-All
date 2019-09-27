@@ -772,8 +772,7 @@ public class FileBasedConfiguration {
       }
       logger.info("Delay Retry: {}", config.getDelayRetry());
     }
-    // FIXME always true since change for DbAdmin
-    if (admin.isActive() && updateLimit) {
+    if (updateLimit) {
       value = hashConfig.get(XML_SERVER_HOSTID);
       if (value != null && !value.isEmpty()) {
         config.setHostId(value.getString());

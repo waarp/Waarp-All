@@ -22,7 +22,6 @@ package org.waarp.openr66.dao;
 
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
-import org.waarp.openr66.pojo.Host;
 
 import java.util.List;
 
@@ -31,7 +30,7 @@ import java.util.List;
  *
  * @param <E>
  */
-public interface AbstractDAO<E> extends Cloneable{
+public interface AbstractDAO<E> extends Cloneable {
 
   /**
    * Retrieve all objects in a List from the persistance layer

@@ -180,14 +180,9 @@ public class Monitoring implements WaarpInterfaceMonitor {
     if (session != null) {
       dbSession = session;
     } else {
-      // FIXME always true since change for DbAdmin
-      if (admin.isActive()) {
-        try {
-          dbSession = new DbSession(admin, false);
-        } catch (final WaarpDatabaseNoConnectionException e) {
-          dbSession = admin.getSession();
-        }
-      } else {
+      try {
+        dbSession = new DbSession(admin, false);
+      } catch (final WaarpDatabaseNoConnectionException e) {
         dbSession = admin.getSession();
       }
     }

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.data.AbstractDbData;
-import org.waarp.common.database.data.DbValue;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
@@ -275,7 +274,7 @@ public class DbTaskRunnerR66RestMethodHandler
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
       for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
         if (column.name()
-                   .equalsIgnoreCase(DbTaskRunner.Columns.IDRULE.name())) {
+                  .equalsIgnoreCase(DbTaskRunner.Columns.IDRULE.name())) {
           continue;
         }
         node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);

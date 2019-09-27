@@ -20,11 +20,7 @@
 
 package org.waarp.openr66.dao;
 
-import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Business;
-
-import java.util.List;
 
 /**
  * Interface to interact with Business objects in the persistance layer
