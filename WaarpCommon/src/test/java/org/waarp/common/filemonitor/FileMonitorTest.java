@@ -25,7 +25,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.filemonitor.FileMonitor.FileItem;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,6 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
 public class FileMonitorTest {
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(FileMonitorTest.class);
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -77,6 +82,15 @@ public class FileMonitorTest {
 
   @Test
   public void testFileMonitor() throws Exception {
+    testFileMonitor(true);
+  }
+
+  @Test
+  public void testFileMonitorAlreadyUsed() throws Exception {
+    testFileMonitor(false);
+  }
+
+  public void testFileMonitor(final boolean ignoreAlreadyUsed) throws Exception {
     final File statusFile = new File("/tmp/status.txt");
     statusFile.delete();
     final File stopFile = new File("/tmp/stop.txt");
@@ -97,17 +111,27 @@ public class FileMonitorTest {
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem file) {
-            System.out.println("File New: " + file.file.getAbsolutePath());
+            setFileItem(file);
+            checkReuse(ignoreAlreadyUsed);
+            if (isIgnored(ignoreAlreadyUsed)) {
+              logger.warn("RUN Ignore: " + file);
+              return;
+            } else if (isReuse()) {
+              logger.warn("RUN on File REnew: " + file);
+            } else {
+              logger.warn("RUN on File New: " + file);
+            }
             countNew.incrementAndGet();
             setFileItem(file);
             finalizeValidFile(true, 0);
+            logger.warn("Final state: " + file);
           }
         };
     final FileMonitorCommandRunnableFuture commandRemovedFile =
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem file) {
-            System.err.println("File Del: " + file.file.getAbsolutePath());
+            logger.warn("File Del: " + file.file.getAbsolutePath());
             setFileItem(file);
             countDelete.incrementAndGet();
           }
@@ -116,7 +140,7 @@ public class FileMonitorTest {
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem unused) {
-            System.err.println("Check done");
+            logger.warn("Check done");
             countCheck.incrementAndGet();
           }
         };
@@ -124,30 +148,56 @@ public class FileMonitorTest {
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
                         100, null, false, commandValidFile, commandRemovedFile,
                         commandCheckIteration);
+    fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     commandValidFile.setMonitor(fileMonitor);
 
     fileMonitor.start();
     Thread.sleep(500);
-    System.err.println("Create file: " + fileTest.getAbsolutePath());
+    logger.warn("Create file: " + fileTest.getAbsolutePath());
     FileWriter fileWriterBig = new FileWriter(fileTest);
     for (int i = 0; i < 100; i++) {
       fileWriterBig.write("a");
     }
     fileWriterBig.flush();
     fileWriterBig.close();
+    Thread.sleep(1400);
+
+    logger.warn("Delete file: " + fileTest.getAbsolutePath());
+    fileTest.delete();
+    Thread.sleep(300);
+
+    logger.warn("Create new file: " + fileTest.getAbsolutePath());
+    fileWriterBig = new FileWriter(fileTest);
+    for (int i = 0; i < 100; i++) {
+      fileWriterBig.write("a");
+      fileWriterBig.flush();
+      Thread.sleep(10);
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
     Thread.sleep(1200);
 
-    System.err.println("Delete file: " + fileTest.getAbsolutePath());
-    fileTest.delete();
-    Thread.sleep(500);
+    logger.warn("Overwrite file: " + fileTest.getAbsolutePath());
+    fileWriterBig = new FileWriter(fileTest);
+    for (int i = 0; i < 100; i++) {
+      fileWriterBig.write("a");
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    Thread.sleep(900);
 
-    System.err.println("Add Directory: " + directory2.getAbsolutePath());
+    logger.warn("Delete file: " + fileTest.getAbsolutePath());
+    fileTest.delete();
+    Thread.sleep(300);
+
+    logger.warn("Add Directory: " + directory2.getAbsolutePath());
     fileMonitor.addDirectory(directory2);
     Thread.sleep(10);
-    System.err.println("Create file2: " + fileTest2.getAbsolutePath());
+    logger.warn("Create file2: " + fileTest2.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest2);
     for (int i = 0; i < 100; i++) {
       fileWriterBig.write("a");
+      fileWriterBig.flush();
     }
     fileWriterBig.flush();
     fileWriterBig.close();
@@ -160,7 +210,7 @@ public class FileMonitorTest {
 
     assertEquals(0, fileMonitor.getCurrentHistoryNb());
 
-    System.err.println("Remove Directory: " + directory2.getAbsolutePath());
+    logger.warn("Remove Directory: " + directory2.getAbsolutePath());
     fileMonitor.removeDirectory(directory2);
     Thread.sleep(500);
 
@@ -168,7 +218,7 @@ public class FileMonitorTest {
     fileMonitor.setNextAsFullStatus();
     Thread.sleep(500);
 
-    System.err.println("Create stopFile: " + stopFile.getAbsolutePath());
+    logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
     fileWriterBig = new FileWriter(stopFile);
     fileWriterBig.write('a');
     fileWriterBig.flush();
@@ -180,6 +230,7 @@ public class FileMonitorTest {
     assertTrue("Should be > 0", countDelete.get() > 0);
     assertTrue("Should be > 0", countNew.get() > 0);
     System.out.println(fileMonitor.getStatus());
+    assertEquals(ignoreAlreadyUsed? 3 : 4, countNew.get());
   }
 
 }

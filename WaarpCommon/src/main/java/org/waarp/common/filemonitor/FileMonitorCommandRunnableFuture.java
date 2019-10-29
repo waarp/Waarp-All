@@ -20,8 +20,11 @@
 package org.waarp.common.filemonitor;
 
 import org.waarp.common.filemonitor.FileMonitor.FileItem;
+import org.waarp.common.filemonitor.FileMonitor.Status;
 
 import java.util.Date;
+
+import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Command run when a new file item is validated
@@ -66,6 +69,34 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   public abstract void run(FileItem fileItem);
 
   /**
+   * To be called at the beginning of the primary action (only for
+   * commandValidFile).
+   *
+   * @param ignoreAlreadyUsed
+   */
+  protected void checkReuse(boolean ignoreAlreadyUsed) {
+    if (!ignoreAlreadyUsed && fileItem.used &&
+        fileItem.specialId != ILLEGALVALUE && fileItem.status == Status.RESTART) {
+      fileItem.used = false;
+    }
+  }
+
+  protected boolean isReuse() {
+    return fileItem.status == Status.RESTART && !fileItem.used &&
+           fileItem.specialId != ILLEGALVALUE;
+  }
+
+  protected boolean isIgnored(boolean ignoreAlreadyUsed) {
+    return !ignoreAlreadyUsed && fileItem.used;
+  }
+
+  protected void setValid(FileItem fileItem) {
+    fileItem.specialId = ILLEGALVALUE;
+    fileItem.used = false;
+    fileItem.status = Status.VALID;
+  }
+
+  /**
    * To be called at the end of the primary action (only for
    * commandValidFile).
    *
@@ -84,6 +115,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     }
     if (status) {
       getFileItem().used = true;
+      getFileItem().status = Status.DONE;
       // Keep the hash: fileItem.hash = null
       getFileItem().specialId = specialId;
       if (getMonitor() != null) {
@@ -93,6 +125,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     } else {
       // execution in error, will retry later on
       getFileItem().used = false;
+      getFileItem().status = Status.VALID;
       getFileItem().hash = null;
       getFileItem().specialId = specialId;
       if (getMonitor() != null) {

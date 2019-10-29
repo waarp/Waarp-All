@@ -1,0 +1,2 @@
+quote INTERNALSHUTDOWN abcdef
+bye
