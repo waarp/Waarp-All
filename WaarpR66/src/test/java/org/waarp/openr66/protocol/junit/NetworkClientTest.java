@@ -52,6 +52,7 @@ import org.waarp.openr66.client.MultipleSubmitTransfer;
 import org.waarp.openr66.client.RequestInformation;
 import org.waarp.openr66.client.RequestTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
+import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -455,21 +456,35 @@ public class NetworkClientTest extends TestAbstract {
         "/tmp/R66/test/stopout.txt";
     private static final String SPOOLED_ROOT = "/tmp/R66/test";
     R66Future future;
+    private boolean ignoreAlreadyUsed = false;
 
     @Override
     public void run() {
-      List<String> directory = new ArrayList<String>();
-      directory.add(TMP_R_66_TEST_OUT_EXAMPLE);
-      List<String> remoteHosts = new ArrayList<String>();
-      remoteHosts.add("hostas");
+      Arguments arguments = new Arguments();
+      arguments.setName("SpooledClient");
+      arguments.getLocalDirectory().add(TMP_R_66_TEST_OUT_EXAMPLE);
+      arguments.setStatusFile("/tmp/R66/test/statusoutdirect1.json");
+      arguments.setStopFile(TMP_R_66_TEST_STOPOUT_TXT);
+      arguments.setRule("rule3");
+      arguments.setFileInfo("fileInfo");
+      arguments.setMd5(true);
+      arguments.getRemoteHosts().add("hostas");
+      arguments.getWaarpHosts().add("hostas");
+      arguments.setBlock(5000);
+      arguments.setRegex(null);
+      arguments.setElapsed(1000);
+      arguments.setToSubmit(false);
+      arguments.setNoLog(false);
+      arguments.setRecursive(false);
+      arguments.setElapsedWaarp(1000);
+      arguments.setParallel(false);
+      arguments.setLimitParallel(1);
+      arguments.setMinimalSize(100);
+      arguments.setLogWarn(true);
+      arguments.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+
       SpooledDirectoryTransfer spooledDirectoryTransfer =
-          new SpooledDirectoryTransfer(future, "SpooledClient", directory,
-                                       "/tmp/R66/test/statusoutdirect1.json",
-                                       TMP_R_66_TEST_STOPOUT_TXT, "rule3",
-                                       "fileInfo", true, remoteHosts, 5000,
-                                       null, 1000, false, false, false, 1000,
-                                       false, 1, remoteHosts, 100, true,
-                                       networkTransaction);
+          new SpooledDirectoryTransfer(future, arguments, networkTransaction);
       spooledDirectoryTransfer.run();
     }
   }
@@ -485,10 +500,44 @@ public class NetworkClientTest extends TestAbstract {
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     final R66Future future = new R66Future(true);
     SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = false;
     spooledThread.future = future;
     spooledThread.start();
     Thread.sleep(100);
     final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    generateOutFile(stop.getAbsolutePath(), 10);
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    totestBig.delete();
+    stop.delete();
+    File all = new File(SpooledThread.SPOOLED_ROOT);
+    FileUtils.forceDeleteRecursiveDir(all);
+  }
+
+  @Test
+  public void test7_SpooledIgnore() throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Transfer");
+    final int size = 200;
+    File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
+    directory.mkdirs();
+    File stop = new File(SpooledThread.TMP_R_66_TEST_STOPOUT_TXT);
+    stop.delete();
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Future future = new R66Future(true);
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = true;
+    spooledThread.future = future;
+    spooledThread.start();
+    Thread.sleep(100);
+    final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
     Thread.sleep(2000);
     generateOutFile(stop.getAbsolutePath(), 10);
