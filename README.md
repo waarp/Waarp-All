@@ -1,57 +1,111 @@
 Waarp All
 =========
 
-You will find in this web site the project Waarp All that contains all new
- version for Waarp.
+Waarp provides a secure and efficient open source MFT solution
 
-The global license is GPL V3.
+Waarp Platform is a set of applications and tools specialized in managing and
+monitoring a high number of transfers in a secure and reliable way.
 
-Waarp is a project that provides, among other packages, 
-an open source massive file transfer monitor 
-in Java. Its goal is to unify several protocols (FTP, SSH, HTTP and proprietary 
-protocols) in an efficient and secured way. Its purpose is to enable bridging between 
-several protocols and to enable dynamic pre or post action on transfer or other commands.
+It relies on its own open protocol named R66, which has been designed to
+optimize file transfers, ensure the integrity of the data provide ways to
+integrate transfers in larger business transactions.
 
-The composition of this project is still done according to old packages
- (Digest, Common, Exec, Snmp, Thrift, XmlEditor, Password GUI, R66, R66 Proxy
- , R66 Client Gui, FTP, Gateway Kernel, Gateway FTP, FTP Client, Waarp
-  Administrator).
+Current applications are:
+* Waarp R66: the transfer agent that implements the R66 protocol
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpR66))
+* Waarp Gateway FTP: a service to interconnect FTP- and R66-based file exchanges
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpGatewayFtp))
+* Waarp Password: a tool to generate the password files used by Waarp R66 and
+  Waarp Gateway FTP
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpPassword))
+* Waarp FTP: a fast and extensible FTP server based on Netty
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpFtp))
 
-The following packages will not be merely updated since they will be replaced
- soon by other softwares:
+The following applications are deprecated and won't be maintained anymore:
 - Waarp Administrator
 - Waarp XmlEditor
 
-This project in version 3.2 is still compatible with Java 6.
+## Features
 
-Oldest Packages
----------------
+* Supports Java 6-8
+* Supports multiple databases: Postgresql, MySQL, MariaDB,  Oracle DB, H2
+* Unlimited number of transfers
+* Unlimited number of connections
+* Traceability
+* End-to-end security
+* End-to-end integrity checks
+* Virtualization of access path
+* Encrypted connections with TLS
+* Partners authentication (with login/password and/or strong TLS client
+  authentication)
+* Works in clusters
+* REST API
+* And much much more!
 
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpDigest) [Waarp Digest](http://waarp.github.com/WaarpDigest)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpCommon) [Waarp Common](http://waarp.github.com/WaarpCommon)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpExec) [Waarp Exec](http://waarp.github.com/WaarpExec)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpSnmp) [Waarp Snmp](http://waarp.github.com/WaarpSnmp)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpXmlEditor) [Waarp XmlEditor](http://waarp.github.com/WaarpXmlEditor)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpPassword) [Waarp Password Gui](http://waarp.github.com/WaarpPassword)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpR66) [Waarp R66](http://waarp.github.com/WaarpR66)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpProxyR66) [Waarp Proxy R66](http://waarp.github.com/WaarpProxyR66)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpR66Gui) [Waarp R66 Client GUI](http://waarp.github.com/WaarpR66Gui)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpFtp) [Waarp FTP](http://waarp.github.com/WaarpFtp)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpGatewayKernel) [Waarp Gateway Kernel (R66 linked)](http://waarp.github.com/WaarpGatewayKernel)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpGatewayFtp) [Waarp Gateway FTP (R66 linked)](http://waarp.github.com/WaarpGatewayFtp)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpThrift) [Waarp Thrift (R66 linked)](http://waarp.github.com/WaarpThrift)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpFtpClient) [Waarp FTP Client (Gateway and R66 linked)](http://waarp.github.com/WaarpFtpClient)
- * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpAdministrator) [Waarp WaarpAdministrator (R66 linked)](http://waarp.github.com/WaarpAdministrator)
- 
-Support
--------
 
-Support is available through community and also through commercial support
-with the company named [Waarp](http://www.waarp.fr/)
+## Getting Started
 
-![Waarp Company](http://waarp.github.com/Waarp/res/waarp/waarp.gif "Waarp")
+### Build from source
 
- * Installation and parameters
- * Integration, additional development
- * Support, maintenance, phone support
- 
+Just clone the project and use maven to build it.
+
+*Even though Java 6 is supported at runtime, Java 8 is required to build the
+project*
+
+```sh
+git clone https://github.com/waarp/Waarp-All.git
+cd Waarp-All
+mvn package
+```
+
+mvn package also runs the full test suite, which takes quite some time (for more
+information about setting up your environment to run the tests, see below).
+
+If you want to build the jars without running the tests, use the following
+command instead:
+
+```sh
+mvn package -D skipTests
+```
+
+After that, you will find the JARs for each module and application in their
+respective `target` directory (ex: `./WaarpR66/target/WaarpR66-*.jar`)
+
+### Installation
+
+Detailed instructions are provided in the
+[documentation](https://doc.waarp.org/waarp-r66/latest/fr/ ) (in French only for
+now) to install Waarp R66 from portable archives ad OS packages (Deb, RPM).
+
+### Run the tests
+
+*Even though Java 6 is supported at runtime, Java 8 is required to build the
+project*
+
+The full test suite (including integration tests on several databases) requires
+[Docker](https://www.docker.com).
+
+From the root of the project, run the command:
+
+```sh
+mvn test
+```
+
+## Support
+
+[Waarp](https://www.Waarp.fr) provides professional support and services.
+
+You can also have community support on [our forum](https://discuss.waarp.org).
+
+## Related Projects
+
+Those projects are part of the Waarp Platform, but are managed seperately:
+
+- [Waarp Vitam](https://github.com/waarp/WaarpVitam)
+
+Waarp solutions are built on the amazing [Netty](https://netty.io/) framework.
+
+## License
+
+This project is distributed under the terms of the [GNU GPLv3](LICENSE.md) License
+
