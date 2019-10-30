@@ -107,5 +107,5 @@ Waarp solutions are built on the amazing [Netty](https://netty.io/) framework.
 
 ## License
 
-This project is distributed under the terms of the [GNU GPLv3](LICENSE.md) License
+This project is distributed under the terms of the [GNU GPLv3](LICENSE.txt) License
 
