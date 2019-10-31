@@ -25,13 +25,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.filemonitor.FileMonitor.FileItem;
+import org.waarp.common.filemonitor.FileMonitor.Status;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -90,7 +91,8 @@ public class FileMonitorTest {
     testFileMonitor(false);
   }
 
-  public void testFileMonitor(final boolean ignoreAlreadyUsed) throws Exception {
+  public void testFileMonitor(final boolean ignoreAlreadyUsed)
+      throws Exception {
     final File statusFile = new File("/tmp/status.txt");
     statusFile.delete();
     final File stopFile = new File("/tmp/stop.txt");
@@ -150,6 +152,7 @@ public class FileMonitorTest {
                         commandCheckIteration);
     fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     commandValidFile.setMonitor(fileMonitor);
+    fileMonitor.setCheckDelay(-1);
 
     fileMonitor.start();
     Thread.sleep(500);
@@ -160,11 +163,15 @@ public class FileMonitorTest {
     }
     fileWriterBig.flush();
     fileWriterBig.close();
-    Thread.sleep(1400);
+    while (countNew.get() == 0) {
+      Thread.sleep(100);
+    }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
-    Thread.sleep(300);
+    while (countDelete.get() == 0) {
+      Thread.sleep(100);
+    }
 
     logger.warn("Create new file: " + fileTest.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest);
@@ -175,7 +182,9 @@ public class FileMonitorTest {
     }
     fileWriterBig.flush();
     fileWriterBig.close();
-    Thread.sleep(1200);
+    while (countNew.get() == 1) {
+      Thread.sleep(100);
+    }
 
     logger.warn("Overwrite file: " + fileTest.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest);
@@ -184,11 +193,22 @@ public class FileMonitorTest {
     }
     fileWriterBig.flush();
     fileWriterBig.close();
-    Thread.sleep(900);
+    int created = countNew.get();
+    if (ignoreAlreadyUsed) {
+      Thread.sleep(400);
+    } else {
+      while (countNew.get() == 2) {
+        Thread.sleep(100);
+      }
+      created = countNew.get();
+      Thread.sleep(400);
+    }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
-    Thread.sleep(300);
+    while (countDelete.get() == 1) {
+      Thread.sleep(100);
+    }
 
     logger.warn("Add Directory: " + directory2.getAbsolutePath());
     fileMonitor.addDirectory(directory2);
@@ -201,12 +221,16 @@ public class FileMonitorTest {
     }
     fileWriterBig.flush();
     fileWriterBig.close();
-    Thread.sleep(1200);
+    while (countNew.get() == created) {
+      Thread.sleep(100);
+    }
 
     assertEquals(1, fileMonitor.getCurrentHistoryNb());
 
     fileTest2.delete();
-    Thread.sleep(1000);
+    while (countDelete.get() == 2) {
+      Thread.sleep(100);
+    }
 
     assertEquals(0, fileMonitor.getCurrentHistoryNb());
 
@@ -231,6 +255,213 @@ public class FileMonitorTest {
     assertTrue("Should be > 0", countNew.get() > 0);
     System.out.println(fileMonitor.getStatus());
     assertEquals(ignoreAlreadyUsed? 3 : 4, countNew.get());
+  }
+
+  @Test
+  public void testFileMonitorRecheck() throws Exception {
+    testFileMonitorRecheck(true);
+  }
+
+  @Test
+  public void testFileMonitorRecheckAlreadyUsed() throws Exception {
+    testFileMonitorRecheck(false);
+  }
+
+  public void testFileMonitorRecheck(final boolean ignoreAlreadyUsed)
+      throws Exception {
+    final File statusFile = new File("/tmp/status.txt");
+    statusFile.delete();
+    final File stopFile = new File("/tmp/stop.txt");
+    stopFile.delete();
+    final File directory = new File("/tmp/monitor");
+    final File fileTest = new File(directory, "test.txt");
+    directory.mkdirs();
+    fileTest.delete();
+    final File directory2 = new File("/tmp/monitor2");
+    directory2.mkdirs();
+    final File fileTest2 = new File(directory2, "test.txt");
+    fileTest2.delete();
+
+    final AtomicBoolean checkOK = new AtomicBoolean(false);
+    final AtomicInteger countNew = new AtomicInteger();
+    final AtomicInteger countDelete = new AtomicInteger();
+    final AtomicInteger countCheck = new AtomicInteger();
+    final FileMonitorCommandRunnableFuture commandValidFile =
+        new FileMonitorCommandRunnableFuture() {
+          @Override
+          protected boolean checkFileItemBusiness(final FileItem fileItem) {
+            if (super.checkFileItemBusiness(fileItem)) {
+              return true;
+            }
+            if (!ignoreAlreadyUsed && fileItem.used && checkOK.get()) {
+              // Fake reused
+              fileItem.used = false;
+              fileItem.status = Status.VALID;
+              return true;
+            }
+            return false;
+          }
+
+          @Override
+          public void run(FileItem file) {
+            setFileItem(file);
+            checkReuse(ignoreAlreadyUsed);
+            if (isIgnored(ignoreAlreadyUsed)) {
+              logger.warn("RUN Ignore: " + file);
+              return;
+            } else if (isReuse()) {
+              logger.warn("RUN on File REnew: " + file);
+            } else {
+              logger.warn("RUN on File New: " + file);
+            }
+            countNew.incrementAndGet();
+            setFileItem(file);
+            finalizeValidFile(true, 0);
+            logger.warn("Final state: " + file);
+          }
+        };
+    final FileMonitorCommandRunnableFuture commandRemovedFile =
+        new FileMonitorCommandRunnableFuture() {
+          @Override
+          public void run(FileItem file) {
+            logger.warn("File Del: " + file.file.getAbsolutePath());
+            setFileItem(file);
+            countDelete.incrementAndGet();
+          }
+        };
+    final FileMonitorCommandRunnableFuture commandCheckIteration =
+        new FileMonitorCommandRunnableFuture() {
+          @Override
+          public void run(FileItem unused) {
+            logger.warn("Check done");
+            countCheck.incrementAndGet();
+          }
+        };
+    final FileMonitor fileMonitor =
+        new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
+                        100, null, false, commandValidFile, commandRemovedFile,
+                        commandCheckIteration);
+    fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+    fileMonitor.setCheckDelay(300);
+    commandValidFile.setMonitor(fileMonitor);
+
+    fileMonitor.start();
+    Thread.sleep(500);
+    logger.warn("Create file: " + fileTest.getAbsolutePath());
+    FileWriter fileWriterBig = new FileWriter(fileTest);
+    for (int i = 0; i < 100; i++) {
+      fileWriterBig.write("a");
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    while (countNew.get() == 0) {
+      Thread.sleep(100);
+    }
+
+    logger.warn("Delete file: " + fileTest.getAbsolutePath());
+    fileTest.delete();
+    while (countDelete.get() == 0) {
+      Thread.sleep(100);
+    }
+
+    logger.warn("Create new file: " + fileTest.getAbsolutePath());
+    fileWriterBig = new FileWriter(fileTest);
+    for (int i = 0; i < 100; i++) {
+      fileWriterBig.write("a");
+      fileWriterBig.flush();
+      Thread.sleep(10);
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    while (countNew.get() == 1) {
+      Thread.sleep(100);
+    }
+
+    logger.warn("Waiting long delay for check: " + fileTest.getAbsolutePath());
+    // FIXME change false to true and wait for 300 more (400), and check redo
+    //  is launched if ignore false
+    Thread.sleep(400);
+    logger.warn("Check is true: " + fileTest.getAbsolutePath());
+    checkOK.set(true);
+    int created = countNew.get();
+    if (ignoreAlreadyUsed) {
+      Thread.sleep(400);
+    } else {
+      while (countNew.get() == 2) {
+        Thread.sleep(100);
+      }
+      created = countNew.get();
+    }
+    checkOK.set(false);
+    logger.warn("Override file: " + fileTest.getAbsolutePath());
+
+    fileWriterBig = new FileWriter(fileTest);
+    for (int i = 0; i < 100; i++) {
+      fileWriterBig.write("a");
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    if (ignoreAlreadyUsed) {
+      Thread.sleep(400);
+    } else {
+      while (countNew.get() == created) {
+        Thread.sleep(100);
+      }
+      created = countNew.get();
+      Thread.sleep(400);
+    }
+
+    logger.warn("Delete file: " + fileTest.getAbsolutePath());
+    fileTest.delete();
+    while (countDelete.get() == 1) {
+      Thread.sleep(100);
+    }
+
+    logger.warn("Add Directory: " + directory2.getAbsolutePath());
+    fileMonitor.addDirectory(directory2);
+    Thread.sleep(10);
+    logger.warn("Create file2: " + fileTest2.getAbsolutePath());
+    fileWriterBig = new FileWriter(fileTest2);
+    for (int i = 0; i < 100; i++) {
+      fileWriterBig.write("a");
+      fileWriterBig.flush();
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    while (countNew.get() == created) {
+      Thread.sleep(100);
+    }
+
+    assertEquals(1, fileMonitor.getCurrentHistoryNb());
+
+    fileTest2.delete();
+    while (countDelete.get() == 2) {
+      Thread.sleep(100);
+    }
+
+    assertEquals(0, fileMonitor.getCurrentHistoryNb());
+
+    logger.warn("Remove Directory: " + directory2.getAbsolutePath());
+    fileMonitor.removeDirectory(directory2);
+    Thread.sleep(500);
+
+    // Full status
+    fileMonitor.setNextAsFullStatus();
+    Thread.sleep(500);
+
+    logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
+    fileWriterBig = new FileWriter(stopFile);
+    fileWriterBig.write('a');
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    Thread.sleep(500);
+
+    fileMonitor.waitForStopFile();
+    assertTrue("Should be > 0", countCheck.get() > 0);
+    assertTrue("Should be > 0", countDelete.get() > 0);
+    assertTrue("Should be > 0", countNew.get() > 0);
+    System.out.println(fileMonitor.getStatus());
+    assertEquals(ignoreAlreadyUsed? 3 : 5, countNew.get());
   }
 
 }

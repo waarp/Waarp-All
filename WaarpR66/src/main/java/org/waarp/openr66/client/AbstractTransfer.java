@@ -402,7 +402,7 @@ public abstract class AbstractTransfer implements Runnable {
     if (runner.getLocalChannelReference() != null) {
       runner.getLocalChannelReference().setErrorMessage(code.getMesg(), code);
     }
-    taskRunner.setErrorTask(runner.getLocalChannelReference());
+    taskRunner.setErrorTask();
     try {
       taskRunner.forceSaveStatus();
       taskRunner.run();

@@ -57,6 +57,8 @@ public class RequestInformation implements Runnable {
    */
   static volatile WaarpLogger logger;
 
+  public static final byte REQUEST_CHECK = -1;
+
   protected static String _infoArgs =
       Messages.getString("RequestInformation.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
@@ -74,7 +76,7 @@ public class RequestInformation implements Runnable {
   static String srequested;
   static String sfilename;
   static String srulename;
-  static byte scode = -1;
+  static byte scode = REQUEST_CHECK;
   static long sid = ILLEGALVALUE;
   static boolean sisTo = true;
   protected static boolean snormalInfoAsWarn = true;
@@ -135,15 +137,15 @@ public class RequestInformation implements Runnable {
       }
     }
     OutputFormat.getParams(args);
-    if (sfilename != null && scode == -1) {
+    if (sfilename != null && scode == REQUEST_CHECK) {
       scode = (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal();
     }
-    if (srulename == null && scode != -1 || srequested == null) {
+    if (srulename == null && scode != REQUEST_CHECK || srequested == null) {
       logger.error(Messages.getString("RequestInformation.12") +
                    _infoArgs); //$NON-NLS-1$
       return false;
     }
-    if (scode != -1 && sid != ILLEGALVALUE) {
+    if (scode != REQUEST_CHECK && sid != ILLEGALVALUE) {
       logger.error(Messages.getString("RequestInformation.13") +
                    _infoArgs); //$NON-NLS-1$
       return false;
@@ -182,7 +184,7 @@ public class RequestInformation implements Runnable {
       logger = WaarpLoggerFactory.getLogger(RequestInformation.class);
     }
     InformationPacket request;
-    if (code != -1) {
+    if (code != REQUEST_CHECK) {
       request = new InformationPacket(rulename, code, filename);
     } else {
       request =
@@ -273,7 +275,8 @@ public class RequestInformation implements Runnable {
       requestInformation.normalInfoAsWarn = snormalInfoAsWarn;
       requestInformation.run();
       result.awaitOrInterruptible();
-      // if transfer information request (code = -1) => middle empty and header = Runner as XML
+      // if transfer information request (code = -1 = REQUEST_CHECK) => middle empty and
+      // header = Runner as XML
       // if listing request => middle = nb of files, header = list of files in native/list/mlsx/exist (true/false)
       // format, 1 file per line
       final OutputFormat outputFormat =
@@ -286,7 +289,7 @@ public class RequestInformation implements Runnable {
         outputFormat.setValue(FIELDS.statusTxt.name(), Messages
             .getString("RequestInformation.Success")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), srequested);
-        if (requestInformation.code != -1) {
+        if (requestInformation.code != REQUEST_CHECK) {
           outputFormat.setValue("nb", Integer.parseInt(info.getSmiddle()));
           final String[] files = info.getSheader().split("\n");
           int i = 0;
