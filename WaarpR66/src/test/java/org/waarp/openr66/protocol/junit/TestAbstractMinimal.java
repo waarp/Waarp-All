@@ -106,10 +106,15 @@ public abstract class TestAbstractMinimal {
 
   protected static File generateOutFile(String name, int size)
       throws IOException {
+    return generateOutFile(name, size, "0123456789");
+  }
+
+  protected static File generateOutFile(String name, int size, String tenchars)
+      throws IOException {
     final File file = new File(name);
     final FileWriter fileWriterBig = new FileWriter(file);
     for (int i = 0; i < size / 10; i++) {
-      fileWriterBig.write("0123456789");
+      fileWriterBig.write(tenchars);
     }
     fileWriterBig.flush();
     fileWriterBig.close();

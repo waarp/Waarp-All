@@ -60,6 +60,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.context.ErrorCode.*;
 
 /**
  * Direct Transfer from a client with or without database connection or Submit
@@ -474,35 +475,40 @@ public class SpooledDirectoryTransfer implements Runnable {
       if (isReuse() && remoteHosts.size() == 1) {
         // if specialId is not IllegalValue, then used was necessarily true
         // before
-        // Cancel the unique previous transfer
-        String host = remoteHosts.get(0).trim();
-        if (host != null && !host.isEmpty()) {
-          final String filename = fileItem.file.getAbsolutePath();
-          String text =
-              "Request Transfer to be cancelled: " + fileItem.specialId + ' ' +
-              filename + ' ';
-          try {
-            R66Future r66Future = new R66Future(true);
-            final String srequester =
-                Configuration.configuration.getHostId(admin.getSession(), host);
-            // Try restart
-            final RequestTransfer transaction =
-                new RequestTransfer(r66Future, fileItem.specialId, host,
-                                    srequester, true, false, false,
-                                    networkTransaction);
-            transaction.normalInfoAsWarn = normalInfoAsWarn;
-            logger.info(text + host);
-            // special task
-            transaction.run();
-            r66Future.awaitOrInterruptible();
-            // reset fileItem usage
-            setValid(fileItem);
-          } catch (final WaarpDatabaseException e) {
-            if (admin.getSession() != null) {
-              admin.getSession().checkConnectionNoException();
+        if (!submit) {
+          // reset fileItem usage
+          setValid(fileItem);
+        } else {
+          // Cancel the unique previous transfer
+          String host = remoteHosts.get(0).trim();
+          if (host != null && !host.isEmpty()) {
+            final String filename = fileItem.file.getAbsolutePath();
+            String text =
+                "Request Transfer to be cancelled: " + fileItem.specialId +
+                ' ' + filename + ' ';
+            try {
+              R66Future r66Future = new R66Future(true);
+              final String srequester = Configuration.configuration
+                  .getHostId(admin.getSession(), host);
+              // Try restart
+              final RequestTransfer transaction =
+                  new RequestTransfer(r66Future, fileItem.specialId, host,
+                                      srequester, true, false, false,
+                                      networkTransaction);
+              transaction.normalInfoAsWarn = normalInfoAsWarn;
+              logger.info(text + host);
+              // special task
+              transaction.run();
+              r66Future.awaitOrInterruptible();
+              // reset fileItem usage
+              setValid(fileItem);
+            } catch (final WaarpDatabaseException e) {
+              if (admin.getSession() != null) {
+                admin.getSession().checkConnectionNoException();
+              }
+              logger.warn(Messages.getString("RequestTransfer.5") + host,
+                          e); //$NON-NLS-1$
             }
-            logger.warn(Messages.getString("RequestTransfer.5") + host,
-                        e); //$NON-NLS-1$
           }
         }
       }
@@ -693,9 +699,17 @@ public class SpooledDirectoryTransfer implements Runnable {
                         text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
                         REMOTE + host + REMOTE2, r66Future.getCause());
                   } else {
-                    logger.error(
-                        text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
-                        REMOTE + host + REMOTE2, r66Future.getCause());
+                    if (r66result.getCode() == QueryRemotelyUnknown) {
+                      logger
+                          .info("Transfer not found" + REMOTE + host + REMOTE2);
+                      // False negative
+                      ko--;
+                      setError(getError() - 1);
+                    } else {
+                      logger.error(text + Messages
+                          .getString(REQUEST_INFORMATION_FAILURE) + REMOTE +
+                                   host + REMOTE2, r66Future.getCause());
+                    }
                   }
                 }
               } else {

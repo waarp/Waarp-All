@@ -76,7 +76,8 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    */
   protected void checkReuse(boolean ignoreAlreadyUsed) {
     if (!ignoreAlreadyUsed && fileItem.used &&
-        fileItem.specialId != ILLEGALVALUE && fileItem.status == Status.RESTART) {
+        fileItem.specialId != ILLEGALVALUE &&
+        fileItem.status == Status.RESTART) {
       fileItem.used = false;
     }
   }
@@ -88,6 +89,18 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
 
   protected boolean isIgnored(boolean ignoreAlreadyUsed) {
     return !ignoreAlreadyUsed && fileItem.used;
+  }
+
+  /**
+   * To be overriden to adapt to the situation for extra check
+   *
+   * @param fileItem
+   *
+   * @return True if the file has to be run (or re-run), False in other
+   *     conditions (ignored)
+   */
+  protected boolean checkFileItemBusiness(FileItem fileItem) {
+    return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;
   }
 
   protected void setValid(FileItem fileItem) {

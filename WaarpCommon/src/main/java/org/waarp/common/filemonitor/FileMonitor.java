@@ -76,6 +76,7 @@ public class FileMonitor {
   protected static final DigestAlgo defaultDigestAlgo = DigestAlgo.MD5;
   protected static final long MINIMAL_DELAY = 100;
   protected static final long DEFAULT_DELAY = 1000;
+  protected static final long DEFAULT_CHECK_DELAY = 300000; // 5 minutes
 
   protected WaarpFuture future;
   protected WaarpFuture internalfuture;
@@ -87,6 +88,7 @@ public class FileMonitor {
   protected final DigestAlgo digest;
   protected long elapseTime = DEFAULT_DELAY; // default to 1s
   protected long elapseWaarpTime = -1; // default set to run after each run
+  protected long checkDelay = DEFAULT_CHECK_DELAY; // default set to 5 minutes
   protected Timer timer;
   protected Timer timerWaarp;
   // used only if elapseWaarpTime > defaultDelay (1s)
@@ -255,6 +257,14 @@ public class FileMonitor {
    */
   public void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
     this.ignoreAlreadyUsed = ignoreAlreadyUsed;
+  }
+
+  /**
+   * @param checkDelay the delay before checking if action was
+   *     correctly taken
+   */
+  public void setCheckDelay(long checkDelay) {
+    this.checkDelay = checkDelay;
   }
 
   /**
@@ -742,11 +752,12 @@ public class FileMonitor {
           if (checkStop()) {
             return false;
           }
+          boolean toIgnore = false;
           if (!ignoreAlreadyUsed && fileItem.used &&
               fileItem.specialId != DbConstant.ILLEGALVALUE) {
             if (fileItem.status != Status.RESTART) {
               logger.debug("File Ignore check: " + fileItem);
-              continue;
+              toIgnore = true;
             }
           }
           logger.debug("File Run check: " + fileItem);
@@ -755,6 +766,13 @@ public class FileMonitor {
           if (commandValidFileFactory != null) {
             final FileMonitorCommandRunnableFuture torun =
                 commandValidFileFactory.create(fileItem);
+            if (!torun.checkFileItemBusiness(fileItem)) {
+              logger.debug("File Ignore Business check: " + fileItem);
+              continue;
+            }
+            if (toIgnore) {
+              continue;
+            }
             if (executor != null) {
               final Future<?> torunFuture = executor.submit(torun);
               results.add(torunFuture);
@@ -762,8 +780,18 @@ public class FileMonitor {
               torun.run(fileItem);
             }
           } else if (commandValidFile != null) {
+            if (!commandValidFile.checkFileItemBusiness(fileItem)) {
+              logger.debug("File Ignore Business check: " + fileItem);
+              continue;
+            }
+            if (toIgnore) {
+              continue;
+            }
             commandValidFile.run(fileItem);
           } else {
+            if (toIgnore) {
+              continue;
+            }
             toUse.add(fileItem);
           }
           fileItemsChanged = true;
@@ -938,6 +966,7 @@ public class FileMonitor {
   public static enum Status {
     START, CHANGING, VALID, DONE, RESTART
   }
+
   /**
    * One element in the directory
    */
@@ -991,7 +1020,7 @@ public class FileMonitor {
     @Override
     public String toString() {
       return file.getAbsolutePath() + " : " + size + " : " + specialId + " : " +
-             used + " : " + status + " : " + lastTime;
+             used + " : " + status + " : " + lastTime + " : " + timeUsed;
     }
 
     @Override

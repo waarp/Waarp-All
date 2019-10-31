@@ -2430,10 +2430,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   /**
    * Set the Error Task step
-   *
-   * @param localChannelReference (to get session)
    */
-  public void setErrorTask(LocalChannelReference localChannelReference) {
+  public void setErrorTask() {
     setStopNow();
     pojo.setGlobalStep(Transfer.TASKSTEP.ERRORTASK);
     pojo.setStep(0);
@@ -2918,8 +2916,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (getGlobalStep() != TASKSTEP.ERRORTASK) {
       // errorstep was not already executed
       // real error
-      localChannelReference
-          .setErrorMessage(finalValue.getMessage(), finalValue.getCode());
+      if (localChannelReference != null && finalValue != null) {
+        localChannelReference
+            .setErrorMessage(finalValue.getMessage(), finalValue.getCode());
+      }
       // First send error mesg
       if (!finalValue.isAnswered()) {
         localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
@@ -2937,7 +2937,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       }
       // now run error task
-      setErrorTask(localChannelReference);
+      setErrorTask();
       saveStatus();
       try {
         run();

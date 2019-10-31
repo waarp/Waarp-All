@@ -40,6 +40,7 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessRemoteFileNot
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessStopException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
@@ -501,6 +502,8 @@ public final class LocalServerHandler {
           if (runner != null) {
             runner.stopOrCancelRunner(code);
           }
+        } else if (exception instanceof OpenR66ProtocolNoDataException) {
+          code = ErrorCode.FileNotFound;
         } else {
           final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {

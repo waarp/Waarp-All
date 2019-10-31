@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.commander;
 
+import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -29,6 +30,7 @@ import org.waarp.openr66.client.RecvThroughHandler;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbHostAuth;
@@ -37,6 +39,7 @@ import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -46,6 +49,7 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.protocol.utils.TransferUtils;
 
+import java.io.File;
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -144,6 +148,49 @@ public class ClientRunner extends Thread {
       if (taskRunner.isSelfRequest()) {
         taskRunner.setSenderByRequestToValidate(false);
       }
+      // Try to check if file still exists in send not self not through mode
+      if (taskRunner.isSender() && !taskRunner.isSelfRequest() &&
+          !taskRunner.isSendThrough()) {
+        try {
+          R66Session session = new R66Session();
+          session.setReady(true);
+          boolean ssl = Configuration.configuration.isUseSSL();
+          session.getAuth().specialNoSessionAuth(ssl,
+                                                 Configuration.configuration
+                                                     .getHostId(ssl));
+          DbTaskRunner reloaded =
+              new DbTaskRunner(session, taskRunner.getRule(),
+                               taskRunner.getSpecialId(),
+                               taskRunner.getRequester(),
+                               taskRunner.getRequested());
+          session.setRunner(reloaded);
+          File file = new File(reloaded.getFullFilePath());
+          if (!file.isFile()) {
+            logger.warn("File not found: {}", file.getAbsolutePath());
+            // File does no more exist => error
+            reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);
+            reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);
+            logger
+                .error("Runner Error: {} {}", ErrorCode.FileNotFound.getMesg(),
+                       taskRunner.toShortString());
+            reloaded.setErrorTask();
+            reloaded.update();
+            return;
+          }
+        } catch (CommandAbstractException e) {
+          // Wrong path? Ignore
+          logger.warn(e);
+        } catch (OpenR66RunnerErrorException e) {
+          // Wrong run error? Ignore
+          logger.warn(e);
+        } catch (WaarpDatabaseException e) {
+          // Wrong dbtask? Ignore
+          logger.warn(e);
+        } catch (OpenR66ProtocolNoSslException e) {
+          // Wrong ssl? Ignore
+          logger.warn(e);
+        }
+      }
       R66Future transfer;
       try {
         transfer = runTransfer();
@@ -158,7 +205,7 @@ public class ClientRunner extends Thread {
               .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
                                ErrorCode.ConnectionImpossible);
         }
-        taskRunner.setErrorTask(localChannelReference);
+        taskRunner.setErrorTask();
         try {
           taskRunner.forceSaveStatus();
           taskRunner.run();
@@ -320,7 +367,7 @@ public class ClientRunner extends Thread {
       taskRunner.getLocalChannelReference()
                 .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
                                  ErrorCode.ConnectionImpossible);
-      taskRunner.setErrorTask(localChannelReference);
+      taskRunner.setErrorTask();
       taskRunner.run();
       throw new OpenR66ProtocolNoConnectionException(
           "End of retry on ServerOverloaded");
@@ -484,44 +531,28 @@ public class ClientRunner extends Thread {
     taskRunner.setLocalChannelReference(localChannelReference);
     if (localChannelReference == null) {
       // propose to redo
-      // See if reprogramming is ok (not too many tries)
       String retry;
-      //FIXME Do not stop: true forced
-      if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB) || true) {
-        logger.debug("Will retry since Cannot connect to {}", host);
-        retry = " but will retry";
-        // now wait
-        try {
-          Thread.sleep(Configuration.configuration.getDelayRetry());
-        } catch (final InterruptedException e) {//NOSONAR
-          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-          logger.debug(
-              "Will not retry since limit of connection attemtps is reached for {}",
-              host);
-          retry = " and retries limit is reached so stop here";
-          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
-                            true);
-          taskRunner.setLocalChannelReference(new LocalChannelReference());
-          throw new OpenR66ProtocolNoConnectionException(
-              CANNOT_CONNECT_TO_SERVER + host + retry);
-        }
-        changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,
-                          true);
-        throw new OpenR66ProtocolNotYetConnectionException(
-            CANNOT_CONNECT_TO_SERVER + host + retry);
-      } else {
+      logger.debug("Will retry since Cannot connect to {}", host);
+      retry = " but will retry";
+      // now wait
+      try {
+        Thread.sleep(Configuration.configuration.getDelayRetry());
+      } catch (final InterruptedException e) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         logger.debug(
             "Will not retry since limit of connection attemtps is reached for {}",
             host);
-        retry = " and retries limit is reached so stop here";
+        retry = " and retries gets an interruption so stop here";
         changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
                           true);
         taskRunner.setLocalChannelReference(new LocalChannelReference());
-        // set this server as being in shutdown status
-        NetworkTransaction.proposeShutdownNetworkChannel(socketAddress, isSSL);
         throw new OpenR66ProtocolNoConnectionException(
             CANNOT_CONNECT_TO_SERVER + host + retry);
       }
+      changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,
+                        true);
+      throw new OpenR66ProtocolNotYetConnectionException(
+          CANNOT_CONNECT_TO_SERVER + host + retry);
     }
     if (handler != null) {
       localChannelReference.setRecvThroughHandler(handler);
