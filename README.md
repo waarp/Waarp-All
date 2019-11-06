@@ -91,6 +91,27 @@ From the root of the project, run the command:
 mvn test
 ```
 
+### Build the documentation
+
+Documentation is managed with [Sphinx](https://www.sphinx-doc.org/). To build
+it, you need Python:
+
+```sh
+cd doc/waarp-r66
+
+# create a virtual environment (you need to do this only once
+python -m virtualenv .venv
+
+# Enter the virtual environment
+. .venv/bin/activate
+
+# Install the requirements
+pip install -r requirement.txt
+
+# Build the doc. After that, it will be available in the directory build/html
+make html
+```
+
 ## Support
 
 [Waarp](https://www.Waarp.fr) provides professional support and services.
