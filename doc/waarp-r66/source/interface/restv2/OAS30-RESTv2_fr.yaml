@@ -1,0 +1,2520 @@
+openapi: 3.0.0
+info:
+  title: API REST pour WaarpR66
+  version: 2.0.0
+  description: API REST pour la gestion de serveurs WaarpR66.
+servers: []
+paths:
+  /v2/transfers:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Liste de réponses
+                type: object
+                properties:
+                  totalResults:
+                    title: Total de réponses
+                    minimum: 0
+                    format: int32
+                    description: >-
+                      Le nombre total de transferts trouvés avant avant
+                      application des paramètres `offset` et `limit`.
+                    type: integer
+                  results:
+                    title: Réponses
+                    uniqueItems: true
+                    description: Un tableau contenant tous les transferts demandés.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ObjectTransfer'
+                required:
+                  - totalResults
+                  - results
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >
+        Renvoie une liste des transferts monitorés par le serveur respectant les
+        filtres donnés en paramètres de requête.
+      operationId: Lister les transfers
+      parameters:
+        - name: limit
+          in: query
+          description: Nombre maximal de transferts pouvant être inclus dans la réponse.
+          schema:
+            default: 20
+            minimum: 0
+            format: int32
+            type: integer
+        - name: offset
+          in: query
+          description: Indice de la première entrée à inclure dans la réponse.
+          schema:
+            default: 0
+            minimum: 0
+            format: int64
+            type: integer
+        - name: order
+          in: query
+          description: |
+            Ordre dans lequel les réponses seront triées. Valeurs possibles :
+            `ascId`, `descId`, `ascFile`, `descFile`, `ascStart`, `descStart`, `ascStop`, `descStop` 
+          schema:
+            default: ascId
+            enum:
+              - ascId
+              - descId
+              - ascFile
+              - descFile
+              - ascStart
+              - descStart
+              - ascStop
+              - descStop
+            type: string
+        - name: ruleName
+          in: query
+          description: Filter les transferts par règle de transfert.
+          schema:
+            type: string
+        - name: partner
+          in: query
+          description: Filtrer les transferts par partenaire.
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: |
+            Filtrer les transferts par statut. Valeurs possibles :
+            `TOSUBMIT`, `NOTUPDATED`, `RUNNING`, `INTERRUPTED`, `DONE`, `INERROR`, `UNKNOWN`
+          schema:
+            $ref: '#/components/schemas/TransferStatus'
+        - name: filename
+          in: query
+          description: Filtrer les transferts par fichier.
+          schema:
+            type: string
+        - name: startTrans
+          in: query
+          description: Filtrer les transferts commençant après cette date (format ISO-8601).
+          schema:
+            type: string
+            format: date-time
+        - name: stopTrans
+          in: query
+          description: Filtrer les transferts commençant avant cette date (format ISO-8601).
+          schema:
+            type: string
+            format: date-time
+    post:
+      responses:
+        '201':
+          description: Le nouveau transfert a été créé avec succès.
+          headers:
+            transferURI:
+              description: L'URI d'accès pour consulter le transfert.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectTransfer'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >-
+        Initialise un nouveau transfert sur le serveur avec les attributs
+        définis dans le corps de la requête. Les informations sur le transfert
+        créé sont renvoyées dans la réponse ainsi que l'URI pour le consuter.
+      operationId: Ajouter un transfert
+      requestBody:
+        content:
+          application/json:
+            example:
+              ruleName: default
+              filename: example_file.txt
+              requested: server2
+              blockSize: 65536
+              fileInfo: This is comment example.
+              start: '1970-01-01T01:00:00+00:00'
+            schema:
+              title: L'initialisateur de transfert
+              type: object
+              properties:
+                ruleName:
+                  title: Nom de règle
+                  description: Le nom de la règle utilisée pour le transfert.
+                  type: string
+                filename:
+                  title: Nom de fichier
+                  description: >
+                    Le chemin du fichier traité. Peut être un chemin relatif ou
+                    absolu.
+
+
+                    **Attention** : Dans le cas d'un chemin relatif, le dossier
+                    courant sera le dossier d'envoi spécifié dans la règle de
+                    transfert. Si la règle  de transfert ne spécifie pas de
+                    dossier d'envoi, le dossier d'envoi définit dans la
+                    configuration du serveur sera utilisé à la place.
+                  type: string
+                requested:
+                  title: Nom du partenaire
+                  description: >-
+                    Le nom du serveur auquel la demande de transfert sera
+                    envoyée.
+                  type: string
+                blockSize:
+                  title: Taille de bloc
+                  default: 65536
+                  minimum: 0
+                  format: int32
+                  description: >-
+                    La taille (en octets) d'un bloc de données pour le
+                    transfert.
+                  type: integer
+                fileInfo:
+                  title: Informations transfert
+                  description: >-
+                    Informations (commentaires) supplémentaires sur le transfert
+                    renseignées par l'utilisateur.
+                  type: string
+                start:
+                  title: Date de lancement
+                  description: >-
+                    Date de lancement du transfert (en format ISO 8601). Si
+                    aucune date n'est renseignée, le transfert sera lancé
+                    immédiatement.
+                  type: string
+                  format: date-time
+              required:
+                - ruleName
+                - filename
+                - requested
+        required: true
+  '/v2/transfers/{id}':
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectTransfer'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: 'Si le transfert demandé existe, renvoie toutes ses informations.'
+      operationId: Requête de consultation
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          L'identifiant unique du transfert. Afin de garantir l'unicité de cet
+          id dans le cas d'une base de donnée partagée, ce paramètre est en fait
+          composé de l'id du transfert sur le serveur, ainsi que du nom de
+          l'hôte destinataire de ce transfert (i.e. le champ `requested` du
+          transfert).
+  '/v2/transfers/{id}/restart':
+    put:
+      responses:
+        '202':
+          description: Le transfert a été redémarré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectTransfer'
+      description: 'S''il existe, redémarre le transfert demandé.'
+      operationId: Requête de redémarrage
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          L'identifiant unique du transfert. Afin de garantir l'unicité de cet
+          id dans le cas d'une base de donnée partagée, ce paramètre est en fait
+          composé de l'id du transfert sur le serveur, ainsi que du nom de
+          l'hôte destinataire de ce transfert (i.e. le champ `requested` du
+          transfert).
+  '/v2/transfers/{id}/stop':
+    put:
+      responses:
+        '202':
+          description: Le transfert a été arrêté avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectTransfer'
+      description: 'S''il existe, arrête le transfert demandé.'
+      operationId: Requête d'arrêt
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          L'identifiant unique du transfert. Afin de garantir l'unicité de cet
+          id dans le cas d'une base de donnée partagée, ce paramètre est en fait
+          composé de l'id du transfert sur le serveur, ainsi que du nom de
+          l'hôte destinataire de ce transfert (i.e. le champ `requested` du
+          transfert).
+  '/v2/transfers/{id}/cancel':
+    put:
+      responses:
+        '202':
+          description: Le transfert a été annulé avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectTransfer'
+      description: 'If it exists, cancels the requested transfer.'
+      operationId: Requête d'annulation
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          L'identifiant unique du transfert. Afin de garantir l'unicité de cet
+          id dans le cas d'une base de donnée partagée, ce paramètre est en fait
+          composé de l'id du transfert sur le serveur, ainsi que du nom de
+          l'hôte destinataire de ce transfert (i.e. le champ `requested` du
+          transfert).
+  /v2/hosts:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Liste de réponses
+                type: object
+                properties:
+                  totalResults:
+                    title: Total de réponses
+                    minimum: 0
+                    format: int32
+                    description: Le nombre total d'entrées respectant les filtres donnés.
+                    type: integer
+                  results:
+                    title: Réponses
+                    uniqueItems: true
+                    description: >-
+                      Un tableau JSON contenant les hôtes respectant les filtres
+                      de la requête.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ObjectHost'
+                required:
+                  - totalResults
+                  - results
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '415':
+          $ref: '#/components/responses/trait_checksContentType_415'
+      description: >
+        Renvoie l'ensemble des hôtes conformes aux filtres passés en paramètres
+        de requête.
+
+        Les hôtes peuvent être filtrés par addresse, sur leur utilisation de
+        SSL, ou sur le fait qu'ils soient actifs ou non.
+
+        Les paramètres `offset` et `limit` permettent de fixer un numéro de
+        départ et un nombre maximal d'hôtes désirés, afin de ne renvoyer qu'un
+        sous-ensemble de la liste demandée.
+
+        Le paramètre `order` spécifie dans quel ordre les hôtes doivent être
+        ordonées.
+      operationId: Lister les hôtes
+      parameters:
+        - name: limit
+          in: query
+          description: >-
+            Fixe le nombre maximal de transferts pouvant être inclus dans la
+            réponse. Utile lorsque le nombre d'entrées sélectionnées par les
+            filtres est trop important pour tenir dans un seule message.
+          schema:
+            default: 20
+            minimum: 0
+            format: int32
+            type: integer
+        - name: offset
+          in: query
+          description: >
+            Indice de la première entrée à inclure dans la réponse. Généralement
+            utilisé en combinaison avec le paramètre `limit` pour restreindre
+            l'ensemble des hôtes à renvoyer.
+
+
+            **Attention** : Si le `offset` est plus grand que le nombre total de
+            réponses, aucune entrée ne sera renvoyée.
+          schema:
+            default: 0
+            minimum: 0
+            format: int64
+            type: integer
+        - name: order
+          in: query
+          description: >-
+            Spécifie l'attribut à utiliser pour trier les éléments de la
+            réponse, ainsi que le sens du tri. Ce paramètre devrait donc être le
+            nom d'un attribut d'hôte préfixé par "asc" ou "desc", correspondant
+            respectivement à l'ordre croissant et décroissant.
+          schema:
+            default: ascHostID
+            enum:
+              - ascHostID
+              - descHostID
+              - ascAddress
+              - ascAddress
+            type: string
+        - name: address
+          in: query
+          description: >-
+            Si ce paramètre est défini, la réponse ne contiendra que les hôtes
+            ayant cette adresse.
+          schema:
+            type: string
+        - name: isSSL
+          in: query
+          description: >
+            Si ce paramètre est vrai, la réponse ne contiendra que les hôtes
+            autorisant les transferts SSL. Et si le paramètre est faux, que ceux
+            ne les autorisant pas.
+
+            Si le paramètre n'est pas défini, aucun filtrage ne sera fait.
+          schema:
+            type: boolean
+        - name: isActive
+          in: query
+          description: >
+            Si ce paramètre est vrai, la réponse ne contiendra que les hôtes
+            actifs. Et si le paramètre est faux, que ceux inactifs.
+
+            Si le paramètre n'est pas défini, aucun filtrage ne sera fait.
+          schema:
+            type: boolean
+    post:
+      responses:
+        '201':
+          description: Le nouvel hôte a été ajouté avec succès.
+          headers:
+            hostURI:
+              description: L'URI d'accès aux informations du nouvel hôte.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectHost'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '415':
+          $ref: '#/components/responses/trait_checksContentType_415'
+      description: >
+        Ajoute un nouvel hôte à la base de données avec les attribut de l'objet
+        passé dans le corps de la requête.
+
+        La nouvelle entrée créée est renvoyée dans la réponse, ainsi que l'URI
+        pour la consulter.
+      operationId: Ajouter un hôte
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Le nouvel hôte
+              $ref: '#/components/schemas/ObjectHost'
+        required: true
+  '/v2/hosts/{id}':
+    get:
+      responses:
+        '200':
+          description: L'hôte demandé a été trouvé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectHost'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        S'il existe, renvoie les informations de l'hôte demandé sous forme d'un
+        objet JSON.
+      operationId: Consulter un hôte
+    put:
+      responses:
+        '202':
+          description: L'hôte a été mis à jour avec succès.
+          headers:
+            host-uri:
+              description: >-
+                Le chemin d'accès de l'hôte modifié. Si le nom d'hôte n'a pas
+                été changé, cet URI sera identique à celui ayant été utilisé
+                pour la requête.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectHost'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+        '415':
+          $ref: '#/components/responses/trait_checksContentType_415'
+      description: >
+        S'il existe, remplace les informations de l'hôte demandé par celles
+        données dans la requête.
+
+        Les nouvelles informations seront renvoyées dans la réponse, ainsi que
+        leur URI d'accès.
+      operationId: Modifier un hôte
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Le nouvel hôte
+              $ref: '#/components/schemas/ObjectHost'
+        required: true
+    delete:
+      responses:
+        '204':
+          description: L'hôte a été supprimé avec succès.
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: 'S''il existe, supprime l''hôte de la base de données.'
+      operationId: Supprimer un hôte
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Le nom unique de l'hôte désiré.
+  /v2/hostconfig:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectHostConfig'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: Renvoie la configuration du serveur sous forme d'un objet JSON.
+      operationId: Consulter la configuration
+    post:
+      responses:
+        '201':
+          description: La configuration du serveur a été ajoutée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectHostConfig'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        Initialise la configuration du serveur dans la base de données avec les
+        attribut passés dans la requête.
+      operationId: Initialiser la configuration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: La nouvelle configuration
+              $ref: '#/components/schemas/ObjectHostConfig'
+        required: true
+    put:
+      responses:
+        '202':
+          description: La configuration a été mise à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectHostConfig'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        Si le serveur a une configuration en base de données, remplace cette
+        configuration avec les nouveaux attributs passé dans la requête.
+      operationId: Modifier la configuration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: La nouvelle configuration
+              $ref: '#/components/schemas/ObjectHostConfig'
+        required: true
+    delete:
+      responses:
+        '204':
+          description: La configuration a été supprimée avec succès.
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        Si le serveur a une configuration en base de données, supprime cette
+        configuration.
+      operationId: Supprimer la configuration
+  /v2/limits:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectLimit'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: Renvoie les limites de bande passante sous forme d'un objet JSON.
+      operationId: Consulter les limites
+    post:
+      responses:
+        '201':
+          description: Les limites ont été initialisées avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectLimit'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        Initialise les limites de bande passante du serveur avec les attributs
+        passés dans la requête.
+      operationId: Initialiser les limites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Les nouvelles limites
+              $ref: '#/components/schemas/ObjectLimit'
+        required: true
+    put:
+      responses:
+        '201':
+          description: Les limites ont été modifiées avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectLimit'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        Si le serveur a des limites en base de données, remplace ces limites par
+        celle passées dans la requête.
+      operationId: Modifier les limites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Les nouvelles limites
+              $ref: '#/components/schemas/ObjectHostConfig'
+        required: true
+    delete:
+      responses:
+        '204':
+          description: Les limites ont élé enlevées avec succès.
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: 'Si le serveur a des limites en base de données, supprime ces limites.'
+      operationId: Supprimer les limites
+  /v2/rules:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Liste de réponses
+                type: object
+                properties:
+                  totalResults:
+                    title: Nombre total de réponses
+                    minimum: 0
+                    format: int32
+                    description: Le nombre total d'entrées respectant les filtres donnés.
+                    type: integer
+                  results:
+                    title: Réponses
+                    uniqueItems: true
+                    description: Le tableau contenant les règles demandées.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ObjectRule'
+                required:
+                  - totalResults
+                  - results
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >
+        Renvoie l'ensemble des règles de transfert conformes aux filtres passés
+        en paramètres de requête.
+
+        Les règles peuvent être filtrées par mode de transmission.
+
+        Les paramètres `offset` et `limit` permettent de fixer un numéro de
+        départ et un nombre maximal de règles désirées, afin de ne renvoyer
+        qu'un sous-ensemble de la liste demandée.
+
+        Le paramètre `order` spécifie dans quel ordre les règles doivent être
+        ordonées.
+      operationId: Lister les règles de transfert
+      parameters:
+        - name: limit
+          in: query
+          description: >-
+            Fixe le nombre maximal de règles pouvant être inclues dans la
+            réponse. Utile lorsque le nombre d'entrées sélectionnées par les
+            filtres est trop important pour tenir dans un seule message.
+          schema:
+            default: 20
+            minimum: 0
+            format: int32
+            type: integer
+        - name: offset
+          in: query
+          description: >
+            Indice de la première entrée à inclure dans la réponse. Généralement
+            utilisé en combinaison avec le paramètre `limit` pour restreindre
+            l'ensemble des hôtes à renvoyer.
+
+
+            **Attention** : Si le `offset` est plus grand que le nombre total de
+            réponses, aucune entrée ne sera renvoyée.
+          schema:
+            default: 0
+            minimum: 0
+            format: int64
+            type: integer
+        - name: order
+          in: query
+          description: >-
+            Spécifie l'attribut à utiliser pour trier les éléments de la
+            réponse, ainsi que le sens du tri. Ce paramètre devrait donc être le
+            nom d'un attribut d'hôte préfixé par "asc" ou "desc", correspondant
+            respectivement à l'ordre croissant et décroissant.
+          schema:
+            enum:
+              - ascRuleID
+              - descRuleID
+            type: string
+        - name: modeTrans
+          in: query
+          description: >-
+            Si ce paramètre est défini, la réponse ne contiendra que les règles
+            utilisant ce mode de transfert.
+          schema:
+            enum:
+              - send
+              - receive
+              - send+md5
+              - receive+md5
+            type: string
+    post:
+      responses:
+        '201':
+          description: La nouvelle règle de transfert a été ajoutée avec succès.
+          headers:
+            ruleURI:
+              description: L'URI d'accès à la nouvelle règle créée.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectRule'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >
+        Creates a new transfer rule with the ObjectRule passed in the request
+        body.
+
+        The created entry is returned in the response body, along with its URI.
+      operationId: Ajouter une règle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: La nouvelle règle
+              $ref: '#/components/schemas/ObjectRule'
+        required: true
+  '/v2/rules/{id}':
+    get:
+      responses:
+        '200':
+          description: La règle remandée a été trouvée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectRule'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >-
+        Si elle existe, renvoie les informations de la règle demandée sous forme
+        d'un objet JSON.
+      operationId: Consulter une règle
+    put:
+      responses:
+        '201':
+          description: La règle de transfert a été mise à jour avec succès.
+          headers:
+            ruleURI:
+              description: >-
+                Le chemin d'accès de la règle modifiée. Si le nom de la règle
+                n'a pas été changé, cet URI sera identique à celui ayant été
+                utilisé pour la requête.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectRule'
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: >
+        Si elle existe, remplace les informations de la règle demandée par
+        celles données dans la requête.
+
+        Les nouvelles informations seront renvoyées dans la réponse, ainsi que
+        leur URI d'accès.
+      operationId: Modifier une règle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: La nouvelle règle
+              $ref: '#/components/schemas/ObjectRule'
+        required: true
+    delete:
+      responses:
+        '204':
+          description: La règle a été supprimée avec succès.
+        '404':
+          $ref: '#/components/responses/trait_returnsNotFound_404'
+      description: 'Si elle existe, supprime la règle de transfert de la base de données.'
+      operationId: Supprimer une règle
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'identifiant unique de la règle souhaitée.
+  /v2/server/status:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Le statut du serveur
+                type: object
+                properties:
+                  serverName:
+                    title: Nom du serveur
+                    description: Le nom du serveur R66.
+                    type: string
+                  noSSL:
+                    title: Transferts en clair
+                    description: Spécifie si le serveur supporte les transferts en clair.
+                    type: boolean
+                  SSL:
+                    title: Transferts avec SSL
+                    description: >-
+                      Spécifie si le serveur supporte les transferts sécurisés
+                      avec SSL.
+                    type: boolean
+                  date:
+                    title: Date requête
+                    description: >-
+                      La date (en format ISO-8601) à laquelle la requête de
+                      statut du serveur a été faite.
+                    type: string
+                    format: date-time
+                  lastRun:
+                    title: Date dernière requête
+                    description: >-
+                      La date (en format ISO-8601) à laquelle la dernière
+                      requête de statut du serveur a été faite.
+                    type: string
+                    format: date-time
+                  fromDate:
+                    title: Date de lancement
+                    description: >-
+                      La date (en format ISO-8601) à laquelle le serveur R66 a
+                      été lancé.
+                    type: string
+                    format: date-time
+                  secondsRunning:
+                    title: Durée de fonctionnement
+                    default: 0
+                    minimum: 0
+                    format: int32
+                    description: >-
+                      La durée de fonctionnement (en secondes) du serveur r66
+                      depuis son lancement.
+                    type: integer
+                  networkConnections:
+                    title: Nombre de connections
+                    default: 0
+                    minimum: 0
+                    format: int32
+                    description: >-
+                      Le nombre de connections actuellement ouvertes sur le
+                      serveur.
+                    type: integer
+                  nbThreads:
+                    title: Nombre de threads
+                    default: 1
+                    minimum: 1
+                    format: int32
+                    description: >-
+                      Le nombre de threads actuellement utilisés par le serveur
+                      r66.
+                    type: integer
+                  inBandwidth:
+                    title: Bande passante descendante
+                    default: 0
+                    minimum: 0
+                    format: int64
+                    description: >-
+                      L'utilisation actuelle de bande passante descendante par
+                      le serveur r66.
+                    type: integer
+                  outBandwidth:
+                    title: Bande passante montante
+                    default: 0
+                    minimum: 0
+                    format: int64
+                    description: >-
+                      L'utilisation actuelle de bande passante montante par le
+                      serveur r66.
+                    type: integer
+                  overall:
+                    title: Statut des transferts
+                    description: >-
+                      Un résumé des statuts des différents transferts sur le
+                      serveur.
+                    type: object
+                    properties:
+                      allTransfers:
+                        title: Nombre total de transferts
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre total de transferts relevé sur le serveur.
+                        type: integer
+                      unknown:
+                        title: Statuts indéterminés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre total de transferts dont le statut est
+                          inconnu.
+                        type: integer
+                      notUpdated:
+                        title: Statuts non à jour
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre total de transferts dont le statut n'est pas
+                          à jour.
+                        type: integer
+                      interrupted:
+                        title: Transferts interrompus
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre total de transferts ayant été interrompus.
+                        type: integer
+                      toSubmit:
+                        title: Transferts plannifiés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre total de transferts en attente d'être
+                          exécutés.
+                        type: integer
+                      inError:
+                        title: Transferts échoués
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre total de transferts ayant terminé en erreur.
+                        type: integer
+                      running:
+                        title: Transferts en cours
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre total de transferts en cours d'exécution.
+                        type: integer
+                      done:
+                        title: Transferts terminés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre total de transferts complêtés avec succès.
+                        type: integer
+                      runningIn:
+                        title: Transferts entrants
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre de transferts entrants en cours.
+                        type: integer
+                      runningOut:
+                        title: Transferts sortants
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre de transferts sortants en cours.
+                        type: integer
+                      lastRunningIn:
+                        title: Dernière réception
+                        description: La date du dernier transfert entrant.
+                        type: string
+                        format: date-time
+                      lastRunningOut:
+                        title: Dernier envoi
+                        description: La date du dernier transfert sortant.
+                        type: string
+                        format: date-time
+                      allIn:
+                        title: Total transferts entrants
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre total de transferts entrants traités par le
+                          serveur.
+                        type: integer
+                      allOut:
+                        title: Total transferts sortants
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre total de transferts sortants traités par le
+                          serveur.
+                        type: integer
+                      errorsIn:
+                        title: Transferts entrants échoués
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre de transferts entrants ayant échoués.
+                        type: integer
+                      errorsOut:
+                        title: Transferts sortants échoués
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre de transferts sortants ayant échoués.
+                        type: integer
+                    required:
+                      - allTransfers
+                      - unknown
+                      - notUpdated
+                      - interrupted
+                      - toSubmit
+                      - inError
+                      - running
+                      - done
+                      - runningIn
+                      - runningOut
+                      - lastRunningIn
+                      - lastRunningOut
+                      - allIn
+                      - allOut
+                      - errorsIn
+                      - errorsOut
+                  globalSteps:
+                    title: Étapes globales
+                    description: >-
+                      Un résumé de toutes les traitements en cours d'exécution
+                      pour les transferts (i.e. leur étape globale actuelle).
+                    type: object
+                    properties:
+                      noTask:
+                        title: Transfers en attente
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts n'ayant pas encore effectué de
+                          traitements.
+                        type: integer
+                      preTask:
+                        title: Pré-traitements en cours
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts exécutant leurs
+                          pré-traitements.
+                        type: integer
+                      transferTask:
+                        title: Transferts en cours
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts en phase de transfert de
+                          fichier.
+                        type: integer
+                      postTask:
+                        title: Post-traitements en cours
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts exécutant leurs
+                          post-traitements.
+                        type: integer
+                      allDoneTask:
+                        title: Transferts terminés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant terminé leurs
+                          traitements normaux avec succès.
+                        type: integer
+                      errorTask:
+                        title: Transferts échoués
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transfers ayant terminé leurs traitements
+                          d'erreur.
+                        type: integer
+                    required:
+                      - noTask
+                      - preTask
+                      - transferTask
+                      - postTask
+                      - allDoneTask
+                      - errorTask
+                  runningSteps:
+                    title: Sous-étapes
+                    description: >-
+                      Un résumé de toutes les sous-étapes en cours des
+                      transferts, c'est-à-dire la sous-partie de l'étape globale
+                      actuelle que le transfert est en train de traiter.
+                    type: object
+                    properties:
+                      allRunning:
+                        title: Total transferts
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre total de transferts traités par le serveur.
+                        type: integer
+                      running:
+                        title: Transferts en cours
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre de transferts en cours de traitement.
+                        type: integer
+                      initOk:
+                        title: Initialisation terminée
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayangt terminé leur phase
+                          d'initialisation.
+                        type: integer
+                      preProcessingOK:
+                        title: Pré-traitements terminés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant terminé leurs
+                          pré-traitements.
+                        type: integer
+                      transferOk:
+                        title: Envoi terminé
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant terminé la phase de
+                          transfert de données.
+                        type: integer
+                      postProcessingOk:
+                        title: Post-traitements terminés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant terminé leurs
+                          post-traitements.
+                        type: integer
+                      completeOk:
+                        title: Transferts terminés
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: Le nombre de transferts entièrement complêtés.
+                        type: integer
+                    required:
+                      - allRunning
+                      - running
+                      - initOk
+                      - preProcessingOK
+                      - transferOk
+                      - postProcessingOk
+                      - completeOk
+                  errors:
+                    title: Erreurs
+                    description: >-
+                      Un résumé de toutes les erreurs rencontrées durant le
+                      traitement de transferts.
+                    type: object
+                    properties:
+                      connectionImpossible:
+                        title: Connection impossible
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le partenaire
+                          ne pouvait pas être contacté.
+                        type: integer
+                      serverOverloaded:
+                        title: Serveur surchargé
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre total de transferts ayant échoué car les
+                          limites de capacité du serveur ont été atteintes.
+                        type: integer
+                      badAuthent:
+                        title: Mauvaise authentification
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le serveur a
+                          échoué à s'authentifier auprès de son partenaire.
+                        type: integer
+                      externalOp:
+                        title: Erreur externe
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué à cause d'une
+                          erreur survenue lors d'un traitement externe.
+                        type: integer
+                      transferError:
+                        title: Règle inconnue
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car la règle
+                          utilisée est inconnue de un des deux partenaires.
+                        type: integer
+                      md5Error:
+                        title: Mauvais hash MD5
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car la
+                          vérification du hash MD5 du fichier a échoué.
+                        type: integer
+                      disconnection:
+                        title: Déconnection
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le partenaire
+                          distant s'est déconnecté durant le transfert.
+                        type: integer
+                      remoteShutdown:
+                        title: Arrêt partenaire
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le partenaire
+                          distant a été arrêté pendant le transfert.
+                        type: integer
+                      finalOp:
+                        title: Erreur de finalisation
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué à cause d'une
+                          erreur durant la finalisation du transfert
+                          (c'est-à-dire le déplacement du fichier du dossier de
+                          travail au dossier de réception).
+                        type: integer
+                      unimplemented:
+                        title: Non implémenté
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car une opération
+                          externe (typiquement une classe Java) a été appelée
+                          mais n'est pas disponible sur le serveur.
+                        type: integer
+                      shutdown:
+                        title: Arrêt serveur
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le serveur a
+                          été arrêté pendant le transfert.
+                        type: integer
+                      remoteError:
+                        title: Erreur distante
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué à cause d'une
+                          erreur d'exécution sur le partenaire distant.
+                        type: integer
+                      internal:
+                        title: Erreur interne
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué à cause d'une
+                          erreur d'exécution sur le serveur.
+                        type: integer
+                      stopped:
+                        title: Transfert arrêté
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car l'arrêt du
+                          transfert a été demandé.
+                        type: integer
+                      canceled:
+                        title: Transfert annulé
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car l'annulation
+                          du transfert a été demandée.
+                        type: integer
+                      warning:
+                        title: Alerte
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant lancé une alerte lors de
+                          l'exécution.
+                        type: integer
+                      unknown:
+                        title: Erreur inconnue
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué pour des raisons
+                          inconnues.
+                        type: integer
+                      queryAlreadyFinished:
+                        title: Transfert déjà terminé
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transfert ayant échoué car le transfert
+                          demandé est déjà terminé sur le partenaire distant.
+                        type: integer
+                      queryStillRunning:
+                        title: Transfert déja en cours
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le transfert
+                          demandé est déjà en cours sur le partenaire distant.
+                        type: integer
+                      unknownHost:
+                        title: Hôte inconnu
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le partenaire
+                          demandé n'existe pas.
+                        type: integer
+                      remotelyUnknown:
+                        title: Requête inconnue
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car la requête de
+                          transfert n'existe pas sur le partenaire distant.
+                        type: integer
+                      fileNotFound:
+                        title: Fichier inconnu
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transfets ayant échoué car le fichier
+                          demandé n'existe pas.
+                        type: integer
+                      commandNotFound:
+                        title: Commande inconnue
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car une des
+                          commandes à exécuter n'existe pas.
+                        type: integer
+                      passThroughMode:
+                        title: PassThrough impossible
+                        default: 0
+                        minimum: 0
+                        format: int64
+                        description: >-
+                          Le nombre de transferts ayant échoué car le transfert
+                          a été demandé en mode passthrough, mais le partenaire
+                          distant n'autorise pas ce mode.
+                        type: integer
+                    required:
+                      - connectionImpossible
+                      - serverOverloaded
+                      - badAuthent
+                      - externalOp
+                      - transferError
+                      - md5Error
+                      - disconnection
+                      - remoteShutdown
+                      - finalOp
+                      - unimplemented
+                      - shutdown
+                      - remoteError
+                      - internal
+                      - stopped
+                      - canceled
+                      - warning
+                      - unknown
+                      - queryAlreadyFinished
+                      - queryStillRunning
+                      - unknownHost
+                      - remotelyUnknown
+                      - fileNotFound
+                      - commandNotFound
+                      - passThroughMode
+                required:
+                  - serverName
+                  - noSSL
+                  - SSL
+                  - date
+                  - lastRun
+                  - fromDate
+                  - secondsRunning
+                  - networkConnections
+                  - nbThreads
+                  - inBandwidth
+                  - overall
+                  - globalSteps
+                  - runningSteps
+                  - errors
+      description: >-
+        Renvoie le statut général du serveur sous forme d'un objet JSON
+        regroupant toutes les informations sur celui-ci.
+      operationId: Obtenir le statut du serveur
+      parameters:
+        - name: period
+          in: query
+          required: true
+          description: >-
+            La période de temps (en format ISO-8601) sur laquelle le statut du
+            serveur est étudié.
+          schema:
+            default: P1DT0H0M0S
+            pattern: P(\d)+DT(\d)+H(\d)+M(\d)+S
+            type: string
+  /v2/server/deactivate:
+    put:
+      responses:
+        '202':
+          description: Le serveur a été (dés)activé avec succès.
+      description: >-
+        Désactive ou active le serveur pour que celui-ci accepte ou refuse les
+        nouvelles requêtes de transfert.
+      operationId: (Dés)activer le serveur
+  /v2/server/shutdown:
+    put:
+      responses:
+        '202':
+          description: 'Le requête a été traitée avec succès, le serveur va s''éteindre.'
+      description: Stoppe tous les transferts en cours et arrête le serveur R66.
+      operationId: Arrêter le serveur
+  /v2/server/reboot:
+    put:
+      responses:
+        '202':
+          description: 'Le requête a été traitée avec succès, le serveur va redémarrer.'
+      description: Stoppe tous les transferts en cours et redémarre le serveur R66.
+      operationId: Redémarrer le serveur
+  /v2/server/logs:
+    get:
+      responses:
+        '200':
+          description: Les logs ont été exportés avec succès.
+          content:
+            application/json:
+              schema:
+                title: Résultats de l'export
+                type: object
+                properties:
+                  filePath:
+                    title: Destination
+                    description: >-
+                      Le chemin vers le fichier XML où les logs ont été
+                      exportés.
+                    example: /logs/log1.txt
+                    type: string
+                  exported:
+                    title: Entrées exportées
+                    minimum: 0
+                    format: int64
+                    description: Le nombre d'entrées de transferts ayant été exportées.
+                    type: integer
+                  purged:
+                    title: Entrées purgées
+                    minimum: 0
+                    format: int64
+                    description: >-
+                      Si la purge de transfert a été activée dans la requête,
+                      donne le nombre d'entrées ayant été purgées du serveur.
+                    type: integer
+                required:
+                  - filePath
+                  - exported
+                  - purged
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >-
+        Exporte les logs de transferts du serveur vers un fichier XML dans le
+        dossier de logs du serveur.
+      operationId: Exporter les logs du serveur
+      parameters:
+        - name: purge
+          in: query
+          description: >-
+            Spécifie si les transferts exportés doivent être purgés de la base
+            de données après l'export de log.
+          schema:
+            default: false
+            type: boolean
+        - name: clean
+          in: query
+          description: >-
+            Spécifie si, avant d'être exportés, les transferts doivent avoir
+            leur statut marqué comme terminé lorsque leur étape globale et
+            sous-étape le permettent.
+          schema:
+            default: false
+            type: boolean
+        - name: status
+          in: query
+          description: Filtre pour n'exporter que les transferts ayant ce statuts.
+          schema:
+            $ref: '#/components/schemas/TransferStatus'
+        - name: ruleName
+          in: query
+          description: >-
+            Filtre pour n'exporter que les transferts utilisant cette règle de
+            tranfert.
+          schema:
+            type: string
+        - name: start
+          in: query
+          description: Filtre pour n'exporter que les transferts ultérieurs à cette date.
+          schema:
+            type: string
+            format: date-time
+        - name: stop
+          in: query
+          description: Filtre pour n'exporter que les transferts antérieurs à cette date.
+          schema:
+            type: string
+            format: date-time
+        - name: startID
+          in: query
+          description: >-
+            Filtre pour n'exporter que les transferts ayant un ID plus grand que
+            celui-ci.
+          schema:
+            format: int64
+            type: integer
+        - name: stopID
+          in: query
+          description: >-
+            Filtre pour n'exporter que les transferts ayant un ID plus petit que
+            celui-ci.
+          schema:
+            format: int64
+            type: integer
+        - name: requested
+          in: query
+          description: Filtre pour n'exporter que les transferts demandés par cet hôte.
+          schema:
+            type: string
+  /v2/server/config:
+    get:
+      responses:
+        '200':
+          description: La configuration a été exportée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Chemins d'export
+                type: object
+                properties:
+                  fileHost:
+                    title: Fichier des hôtes
+                    description: Le chemin vers le fichier contenant la liste des hôtes.
+                    example: /configs/host.conf
+                    type: string
+                  fileRule:
+                    title: Fichier des règles
+                    description: >-
+                      Le chemin vers le fichier contenant la liste des règles de
+                      transfert.
+                    example: /configs/rules.conf
+                    type: string
+                  fileBusiness:
+                    title: Fichier de business
+                    description: >-
+                      Le chemin vers le fichier contenant la liste des
+                      partenaires de business.
+                    example: /configs/business.conf
+                    type: string
+                  fileAlias:
+                    title: Fichier des alias
+                    description: >-
+                      Le chemin vers le fichier contenant la liste des alias des
+                      hôtes.
+                    example: /configs/aliases.conf
+                    type: string
+                  fileRoles:
+                    title: Fichier des roles
+                    description: >-
+                      Le chemin vers le fichier contenant la liste des rôles des
+                      hôtes.
+                    example: /configs/roles.conf
+                    type: string
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >-
+        Exporte divers éléments de la configuration du serveur R66 vers des
+        fichiers dans le dossier de configuration du serveur.
+      operationId: Exporter la configuration serveur
+      parameters:
+        - name: exportHosts
+          in: query
+          description: >-
+            Spécifie si la liste des hôtes connus du serveur doit être exportée
+            non.
+          schema:
+            default: false
+            type: boolean
+        - name: exportRules
+          in: query
+          description: Spécifie si les règles de transfert doivent être exportées ou non.
+          schema:
+            default: false
+            type: boolean
+        - name: exportBusiness
+          in: query
+          description: >-
+            Spécifie si la liste des hôtes autorisés à exécuter un business sur
+            le serveur doit être exportée ou non.
+          schema:
+            default: false
+            type: boolean
+        - name: exportAliases
+          in: query
+          description: >-
+            Spécifie si la liste des alias connus de chaque hôte doit être
+            exportée ou non.
+          schema:
+            default: false
+            type: boolean
+        - name: exportRoles
+          in: query
+          description: >-
+            Spécifie si la liste des rôles autorisés de chaque hôte doit être
+            exportée ou non.
+          schema:
+            default: false
+            type: boolean
+    put:
+      responses:
+        '202':
+          description: La configuration a été importée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Résultat de l'importation
+                type: object
+                properties:
+                  purgedHost:
+                    title: Purge hôtes
+                    description: >-
+                      Indique si les anciens hôtes ont été supprimés avant
+                      l'importation.
+                    type: boolean
+                  purgedRule:
+                    title: Purge règles
+                    description: >-
+                      Indique si les anciennes règles ont été supprimées avant
+                      l'importation.
+                    type: boolean
+                  purgedBusiness:
+                    title: Purge business
+                    description: >-
+                      Indique si les anciens partenaire de business ont été
+                      supprimés avant l'importation.
+                    type: boolean
+                  purgedAlias:
+                    title: Purge alias
+                    description: >-
+                      Indique si les anciens alias ont été supprimés avant
+                      l'importation.
+                    type: boolean
+                  purgedRoles:
+                    title: Purge rôles
+                    description: >-
+                      Indique si les anciens rôles ont été supprimés avant
+                      l'importation.
+                    type: boolean
+                  importedHost:
+                    title: Importation hôtes
+                    description: Indique si de nouveaux hôtes ont été importés ou non.
+                    type: boolean
+                  importedRule:
+                    title: Importation règles
+                    description: Indique si de nouvelles règles ont été importés ou non.
+                    type: boolean
+                  importedBusiness:
+                    title: Importation business
+                    description: >-
+                      Indique si de nouveaux partenaire de business ont été
+                      importés ou non.
+                    type: boolean
+                  importedAlias:
+                    title: Importation alias
+                    description: Indique si de nouveaux alias ont été importés ou non.
+                    type: boolean
+                  importedRoles:
+                    title: Importation rôles
+                    description: Indique si de nouveaux rôles ont été importés ou non.
+                    type: boolean
+                required:
+                  - purgedHost
+                  - purgedRule
+                  - purgedBusiness
+                  - purgedAlias
+                  - purgedRoles
+                  - importedHost
+                  - importedRule
+                  - importedBusiness
+                  - importedAlias
+                  - importedRoles
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >-
+        Importe divers éléments de la configuration du serveur R66 depuis des
+        fichiers dans le dossier de configuration du serveur.
+      operationId: Importer la configuration serveur
+      parameters:
+        - name: purgeHosts
+          in: query
+          description: >-
+            Spécifie si l'ancienne base de données des hôtes doit être purgée
+            avant d'importer la nouvelle.
+          schema:
+            default: false
+            type: boolean
+        - name: purgeRules
+          in: query
+          description: >-
+            Spécifie si l'ancienne base de données des règles de transfert doit
+            être purgée avant d'importer la nouvelle.
+          schema:
+            default: false
+            type: boolean
+        - name: purgeBusiness
+          in: query
+          description: >-
+            Spécifie si l'ancienne base de données des partenaire de business
+            doit être purgée avant d'importer la nouvelle.
+          schema:
+            default: false
+            type: boolean
+        - name: purgeAliases
+          in: query
+          description: >-
+            Spécifie si l'ancienne base de données des alias doit être purgée
+            avant d'importer la nouvelle.
+          schema:
+            default: false
+            type: boolean
+        - name: purgeRoles
+          in: query
+          description: >-
+            Spécifie si l'ancienne base de données des rôles doit être purgée
+            avant d'importer la nouvelle.
+          schema:
+            default: false
+            type: boolean
+        - name: hostsFile
+          in: query
+          description: Le chemin du fichier contenant les hôtes à importer.
+          schema:
+            type: string
+        - name: rulesFile
+          in: query
+          description: Le chemin du fichier contenant les règles à importer.
+          schema:
+            type: string
+        - name: businessFile
+          in: query
+          description: Le chemin du fichier contenant les partenaire business à importer.
+          schema:
+            type: string
+        - name: aliasesFile
+          in: query
+          description: Le chemin du fichier contenant les alias à importer.
+          schema:
+            type: string
+        - name: rolesFile
+          in: query
+          description: Le chemin du fichier contenant les rôles à importer.
+          schema:
+            type: string
+components:
+  schemas:
+    ObjectTransfer:
+      title: Transfert
+      description: >-
+        Un objet regroupant les informations sur un transfert telles qu'elles
+        sont stockées dans la base de données WaarpR66.
+      example:
+        id: 1
+        globalStep: NOTASK
+        globalLastStep: NOTASK
+        step: 0
+        rank: 0
+        status: TOSUBMIT
+        stepStatus: ''
+        originalFilename: out/file_example.txt
+        filename: in/file_example.txt
+        ruleName: default
+        blockSize: 65536
+        fileInfo: '{"ORIGINALSIZE":1024}'
+        transferInfo: This is comment example.
+        start: '1970-01-01T01:00:00+00:00'
+        stop: '1970-01-01T02:00:00+00:00'
+        requester: server1
+        requested: server2
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          title: ID de transfert
+          format: int64
+          description: L'id unique donné au transfert par le serveur interrogé.
+          type: integer
+        globalStep:
+          title: Étape globale
+          description: >-
+            L'étape générale du transfert. Indique l'action que le serveur est
+            en train d'effectuer sur le transfert.
+          enum:
+            - NOTASK
+            - PRETASK
+            - POSTTASK
+            - ALLDONETASK
+            - ERRORTASK
+            - TRANSFERTASK
+          type: string
+        globalLastStep:
+          title: Dernière étape globale
+          description: >-
+            La dernière étape générale du transfert terminée avec succès. Sert
+            notamment à marquer où reprendre un transfert interrompu lors du
+            redémarrage de celui-ci.
+          enum:
+            - NOTASK
+            - PRETASK
+            - POSTTASK
+            - ALLDONETASK
+            - ERRORTASK
+            - TRANSFERTASK
+          type: string
+        step:
+          title: Sous-étape
+          minimum: 0
+          format: int32
+          description: Donne l'état de l'étape générale en cours d'exécution.
+          type: integer
+        rank:
+          title: Rang
+          minimum: 0
+          format: int32
+          description: >-
+            Le numéro du dernier bloc de données transféré. Sert notamment en
+            cas de reprise d'un transfert après interruption pour marquer le
+            bloc à transmettre.
+          type: integer
+        status:
+          title: Statut de transfert
+          description: Donne l'état actuel du transfert.
+          $ref: '#/components/schemas/TransferStatus'
+        stepStatus:
+          title: Code d'erreur
+          description: >-
+            Donne le code d'erreur du transfert (sous forme d'un caractère)
+            lorsque le transfert se termine en erreur.
+          type: string
+        originalFilename:
+          title: Nom de fichier original
+          description: Chemin du fichier à transférer sur le disque de l'envoyeur.
+          type: string
+        filename:
+          title: Nom de fichier
+          description: >-
+            Chemin du fichier sur le disque du destinataire à l'issue du
+            transfert.
+          type: string
+        ruleName:
+          title: Nom de règle
+          description: Nom de la règle utilisée pour le transfert.
+          type: string
+        blockSize:
+          title: Taille de bloc
+          minimum: 0
+          format: int32
+          description: La taille (en octets) d'un bloc de données pour le transfert.
+          type: integer
+        fileInfo:
+          title: Informations fichier
+          description: Métadonnées du fichier traité au format JSON.
+          type: string
+        transferInfo:
+          title: Informations transfert
+          description: >-
+            Informations (commentaires) supplémentaires sur le transfert
+            renseignées par l'utilisateur.
+          type: string
+        start:
+          title: Date de lancement
+          description: Date de lancement du transfert (en format ISO 8601).
+          type: string
+          format: date-time
+        stop:
+          title: Date de fin
+          description: >-
+            Date de fin du transfert lorsque celui-ci est terminé (en format ISO
+            8601).
+          type: string
+          format: date-time
+        requester:
+          title: Émetteur de requête
+          description: Nom de l'hôte ayant émis la demande transfert.
+          type: string
+        requested:
+          title: Receveur de requête
+          description: Nom de l'hôte auquel la demande de transfert a été envoyée.
+          type: string
+      required:
+        - id
+        - globalStep
+        - globalLastStep
+        - step
+        - rank
+        - status
+        - stepStatus
+        - originalFilename
+        - filename
+        - ruleName
+        - blockSize
+        - fileInfo
+        - transferInfo
+        - start
+        - stop
+        - requester
+        - requested
+    ObjectHost:
+      title: Hôte
+      description: >-
+        Un objet regroupant les informations d'un hôte telles qu'elles sont
+        représentées dans la base de données.
+      example:
+        name: server1
+        address: 127.0.0.1
+        port: 8080
+        password: password
+        isSSL: false
+        isAdmin: false
+        isClient: false
+        isActive: true
+        isProxy: false
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          title: Nom
+          description: 'Le nom de l''hôte, doit être unique.'
+          type: string
+        address:
+          title: Adresse
+          description: >-
+            L'adresse de l'hôte, peut être une adresse IP ou bien une adresse
+            Web résolvable par DNS.
+          type: string
+        port:
+          title: Numéro de port
+          default: 0
+          minimum: 0
+          maximum: 65535
+          format: int32
+          description: >-
+            Le numéro du port TCP de l'hôte pour les connections entrantes. Vaut
+            *0* si l'hôte n'accepte pas de connections entrantes.
+          type: integer
+        password:
+          title: Mot de passe
+          description: Le mot de passe d'authentification du nouvel hôte.
+          type: string
+        isSSL:
+          title: Utilisation de SSL
+          default: false
+          description: Spécifie si l'hôte accepte les transferts sécurisés avec SSL.
+          type: boolean
+        isAdmin:
+          title: Droits administrateur
+          default: false
+          description: Spécifie si l'hôte a les droits administrateur sur le serveur.
+          type: boolean
+        isClient:
+          title: Statut de client
+          default: false
+          description: Spécifie si l'hôte accepte les requêtes de transfert.
+          type: boolean
+        isActive:
+          title: Activation
+          default: false
+          description: Spécifie si l'hôte peut envoyer et recevoir des transferts ou non.
+          type: boolean
+        isProxy:
+          title: Utilisation de proxy
+          default: false
+          description: Spécifie si l'hôte utilise un proxy pour les connections entrantes.
+          type: boolean
+      required:
+        - name
+        - address
+        - password
+    ObjectHostConfig:
+      title: Configuration serveur
+      description: >-
+        Un objet regroupant les informations sur la configuration du serveur
+        telles qu'elles sont stockées dans la base de données WaarpR66.
+      example:
+        business:
+          - server1
+          - server2
+        roles:
+          - hostName: server1
+            roleList:
+              - TRANSFER
+              - RULE
+        aliases:
+          - hostName: server1
+            aliasList:
+              - alias1
+              - alias2
+        others: <root><version>3.0.12</version></root>
+      type: object
+      additionalProperties: false
+      properties:
+        business:
+          default: []
+          uniqueItems: true
+          description: >-
+            La liste des hôtes autorisés à émettre une requête de business vers
+            ce serveur.
+          type: array
+          items:
+            type: string
+        roles:
+          default: []
+          uniqueItems: true
+          description: >-
+            La liste associant chaque hôte a l'ensemble de ses droits sur le
+            serveur.
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              hostName:
+                description: Le nom de l'hôte.
+                type: string
+              roleList:
+                uniqueItems: true
+                minItems: 1
+                description: La liste des droits de l'hôte sur le serveur.
+                type: array
+                items:
+                  title: Rôles utilisateur
+                  description: >-
+                    Une énumération des différents droits qu'un serveur R66 peut
+                    accorder aux autres hôtes.
+                  enum:
+                    - NOACCESS
+                    - READONLY
+                    - TRANSFER
+                    - RULE
+                    - HOST
+                    - LIMIT
+                    - SYSTEM
+                    - LOGCONTROL
+                    - PARTNER
+                    - CONFIGADMIN
+                    - FULLADMIN
+                  type: string
+            required:
+              - hostName
+              - roleList
+        aliases:
+          default: []
+          uniqueItems: true
+          description: La liste associant chaque hôte à l'ensemble de ses alias.
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              hostName:
+                description: Le nom de l'hôte.
+                type: string
+              aliasList:
+                uniqueItems: true
+                minItems: 1
+                description: La liste des alias de l'hôte.
+                type: array
+                items:
+                  type: string
+            required:
+              - hostName
+              - aliasList
+        others:
+          pattern: <root><version>.*</version></root>
+          description: >-
+            La version de la base de données. Permet de comparer la version de
+            la base donnée avec celle du serveur R66.
+          type: string
+    ObjectLimit:
+      title: Limites de bande passante
+      description: >-
+        Un objet regroupant les informations sur les limites de bande passante
+        du serveur telles qu'elles sont stockées dans la base de données
+        WaarpR66.
+      example:
+        upGlobalLimit: 1000000000
+        downGlobalLimit: 50000000
+        upSessionLimit: 1000000
+        downSessionLimit: 500000
+        delayLimit: 1000
+      type: object
+      additionalProperties: false
+      properties:
+        upGlobalLimit:
+          minimum: 0
+          format: int64
+          description: >-
+            La limite globale de bande passante montante du serveur. Une valeur
+            de *0* signifie que aucune limite n'est imposée.
+          type: integer
+        downGlobalLimit:
+          minimum: 0
+          format: int64
+          description: >-
+            La limite globale de bande passante descendante du serveur. Une
+            valeur de *0* signifie que aucune limite n'est imposée.
+          type: integer
+        upSessionLimit:
+          minimum: 0
+          format: int64
+          description: >-
+            La limite de bande passante montante par transfert. Une valeur de
+            *0* signifie que aucune limite n'est imposée.
+          type: integer
+        downSessionLimit:
+          minimum: 0
+          format: int64
+          description: >-
+            La limite de bande passante descendante par transfert. Une valeur de
+            *0* signifie que aucune limite n'est imposée.
+          type: integer
+        delayLimit:
+          minimum: 0
+          format: int64
+          description: >-
+            Le délai (en ms) entre deux vérification du respect des limites de
+            bande passante. Une valeur de *0* signifie que la vérification des
+            limites est désactivée.
+          type: integer
+    ObjectRule:
+      title: Règle de transfert
+      description: >-
+        Un objet regroupant les informations sur une règle de transfert telles
+        qu'elles sont stockées dans la base de données WaarpR66.
+      example:
+        name: example
+        hostIds:
+          - server1
+          - server2
+        modeTrans: send
+        recvPath: in/
+        sendPath: out/
+        archivePath: arch/
+        workPath: work/
+        rPreTasks:
+          - type: ZIP
+            arguments: file.txt work/
+            delay: 1
+        rPostTask:
+          - type: MOVERENAME
+            arguments: arch/file.bak
+        rErrorTasks:
+          - type: RESCHEDULE
+            arguments: >-
+              -delay 3600000 -case
+              ConnectionImpossible,ServerOverloaded,Shutdown
+        sPreTasks: []
+        sPostTasks:
+          - type: ZIP
+            arguments: file.zip work/
+            delay: 0
+        sErrorTasks:
+          - type: DELETE
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          title: Nom de la règle
+          description: Le nom unique de la nouvelle règle de transfert.
+          type: string
+        hostIds:
+          title: Noms des hôtes autorisés
+          uniqueItems: true
+          description: >-
+            Un tableau listant les noms des hôtes autorisés à utiliser cette
+            règle de transfert. Si ce champ est laissé vide, tous les hôtes
+            seront autorisés à utiliser la règle.
+          type: array
+          items:
+            type: string
+        modeTrans:
+          title: Mode de transfert
+          description: >-
+            Définit le sens de transmission du fichier, ainsi que l'utilisation
+            d'un checksum MD5 du fichier.
+          enum:
+            - send
+            - receive
+            - sendMD5
+            - receiveMD5
+          type: string
+        recvPath:
+          title: Dossier destination
+          description: >
+            Chemin du dossier où les fichiers sont déposés sur l'hôte
+            destinataire une fois le transfert terminé.
+
+            Si aucun chemin n'est défini, le dossier de réception par défaut du
+            serveur sera utilisé.
+
+
+            Peut être un chemin relatif ou absolu.
+          type: string
+        sendPath:
+          title: Dossier source
+          description: >
+            Chemin du dossier racine à partir duquel le chemin du fichier à
+            transférer est appliqué sur l'hôte expéditeur.
+
+            Si aucun chemin n'est défini, le dossier d'envoi par défaut du
+            serveur sera utilisé.
+
+
+            Peut être un chemin relatif ou absolu.
+          type: string
+        archivePath:
+          title: Dossier d'archive
+          description: >
+            Chemin du dossier dans lequel les logs de transfert sont stockés.
+
+            Si aucun chemin n'est défini, le dossier d'archive par défaut du
+            serveur sera utilisé.
+
+
+            Peut être un chemin relatif ou absolu.
+          type: string
+        workPath:
+          title: Dossier de travail
+          description: >
+            Chemin du dossier dans lequel les fichiers sont stockés
+            temporairement sur le serveur destination pendant leur transfert.
+
+            Si aucun chemin n'est défini, le dossier de travail par défaut du
+            serveur sera utilisé.
+
+
+            Peut être un chemin relatif ou absolu.
+          type: string
+        rPreTasks:
+          title: Pré-traitements destinataire
+          description: >-
+            Traitements effectués par le destinataire avant le transfert du
+            fichier.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleTask'
+        rPostTask:
+          title: Post-traitements destinataire
+          description: >-
+            Traitements effectués par le destinataire après le transfert du
+            fichier.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleTask'
+        rErrorTasks:
+          title: Traitements d'erreur destinataire
+          description: Traitements effectués par le destinataire en cas d'erreur.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleTask'
+        sPreTasks:
+          title: Pré-traitements expéditeur
+          description: >-
+            Traitements effectués par l'expéditeur avant le transfert du
+            fichier.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleTask'
+        sPostTasks:
+          title: Post-traitements expéditeur
+          description: >-
+            Traitements effectués par l'expéditeur après le transfert du
+            fichier.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleTask'
+        sErrorTasks:
+          title: Traitements d'erreur expéditeur
+          description: Traitements effectués par l'expéditeur en cas d'erreur.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleTask'
+      required:
+        - name
+        - modeTrans
+    RuleTask:
+      title: Traitement
+      description: Un objet représentant un traitement effectué lors d'un transfert.
+      example:
+        type: ZIP
+        arguments: '#TRUEFULLPATH# unzip/output/'
+        delay: 1
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          title: Type de traitement
+          description: >-
+            Une énumérarion de tous les types de traitement possibles lors d'un
+            transfert.
+          enum:
+            - LOG
+            - MOVE
+            - MOVERENAME
+            - COPY
+            - COPYRENAME
+            - EXEC
+            - EXECMOVE
+            - EXECOUTPUT
+            - EXECJAVA
+            - TRANSFER
+            - VALIDFILEPATH
+            - DELETE
+            - LINKRENAME
+            - RESCHEDULE
+            - TAR
+            - ZIP
+            - TRANSCODE
+            - SNMP
+          type: string
+        arguments:
+          title: Arguments
+          description: >-
+            Les arguments du traitement (si pertinent). Des substitutions
+            peuvent être effectuées en utilisant les noms de variables
+            appropriés (*#TRUEFULLPATH#*, *#DATE#*, ...).
+          type: string
+        delay:
+          title: Type d'opération
+          default: 0
+          minimum: 0
+          format: int32
+          description: >-
+            Donne le type d'opération à effectuer (quand pertinent) pour le
+            traitement.
+          type: integer
+      required:
+        - type
+    TransferStatus:
+      title: Statut de transfert
+      description: Une énumération des différents états possibles d'un transfert.
+      enum:
+        - TOSUBMIT
+        - NOTUPDATED
+        - RUNNING
+        - INTERRUPTED
+        - DONE
+        - INERROR
+        - UNKNOWN
+      type: string
+    HttpError:
+      title: Erreurs utilisateur
+      description: >-
+        Un objet listant les causes de l'échec d'une requête REST lorsque cet
+        échec est dû à des entrées utilisateur invalides.
+      type: object
+      properties:
+        errors:
+          title: Liste d'erreurs
+          minItems: 1
+          description: >-
+            Un tableau de toutes les erreurs utilisateurs rencontrées lors du
+            traitement de la requête.
+          type: array
+          items:
+            description: Un objet représentant une erreur utilisateur.
+            type: object
+            properties:
+              message:
+                description: Un message décrivant l'erreur rencontrée.
+                type: string
+              errorCode:
+                format: int32
+                description: Le code d'erreur REST correspondant à l'erreur rencontrée.
+                type: integer
+            required:
+              - message
+              - errorCode
+      required:
+        - errors
+  responses:
+    trait_returnsNotFound_404:
+      description: >-
+        Dans le cas d'une requête sur une collection, cela signifie que
+        l'identifiant donné n'existe pas dans la base de données.
+    trait_returnsBadRequest_400:
+      description: >
+        La requête est invalide, soit à cause de paramètres de requête erronés,
+        soit à cause d'un corps de requête invalide.
+
+
+        Les causes de l'échec de la requête sont données dans le corps de la
+        réponse sour forme d'un tableau JSON.
+      content:
+        application/json:
+          example:
+            errors:
+              - message: 'Query parameter ''startTrans'' : illegal value ''not_a_date''.'
+                errorCode: 4
+              - message: 'Query parameter ''status'' : illegal value ''not_a_status''.'
+                errorCode: 4
+          schema:
+            $ref: '#/components/schemas/HttpError'
+    trait_checksContentType_415:
+      description: Le type de contenu de la requête n'est pas valide pour cette requête.
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    BasicAuthentication:
+      description: Authentification HTTP basique au moyen d'identifiants encodés en base64.
+      type: http
+      scheme: basic
+    BasicAuthentication+Signature:
+      description: >-
+        Authentification HTTP basique au moyen d'identifiants encodés en base64,
+        avec vérification de signature des requêtes.
+      type: http
+      scheme: basic
+    HmacKey:
+      description: Authentification par le biais d'un hash des identifiants utilisateur.
+      type: apiKey
+      in: header
+      name: Authorization
+    HmacKey+Signature:
+      description: >-
+        Authentification par le biais d'un hash des identifiants utilisateur,
+        avec vérification de signature des requêtes.
+      type: apiKey
+      in: header
+      name: Authorization
+  links: {}
+  callbacks: {}

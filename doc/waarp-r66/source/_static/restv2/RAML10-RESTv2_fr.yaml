@@ -1,0 +1,2134 @@
+#%RAML 1.0
+title: API REST pour WaarpR66
+description: API REST pour la gestion de serveurs WaarpR66.
+version: 2.0.0
+mediaType:
+  - application/json
+securedBy:
+  - BasicAuthentication
+  - BasicAuthentication+Signature
+  - HmacKey
+  - HmacKey+Signature
+securitySchemes:
+  BasicAuthentication:
+    type: Basic Authentication
+    description: Authentification HTTP basique au moyen d'identifiants encodés en base64.
+    displayName: Authentification basique
+    describedBy:
+      headers:
+        Authorization:
+          type: string
+          description: |
+            Le nom d'utilisateur, suivi par deux points (" *:* "), suivi du mot de passe. Le tout est encodé en Base64.
+            Ces identifiants encodés doivent être précédés de la chaîne de caractères *"Basic "* qui annonce l'utilisation du schéma d'authentification basique.
+          example: Basic d20tY2xpZW50OndtLWNsaWVudHBhc3N3b3Jk
+  BasicAuthentication+Signature:
+    type: Basic Authentication
+    description: Authentification HTTP basique au moyen d'identifiants encodés en base64, avec vérification de signature des requêtes.
+    displayName: Authentification basique & signature
+    describedBy:
+      headers:
+        Authorization:
+          type: string
+          description: |
+            Le nom d'utilisateur, suivi par deux points (" *:* "), suivi du mot de passe. Le tout est encodé en Base64.
+            Ces identifiants encodés doivent être précédés de la chaîne de caractères *"Basic "* qui annonce l'utilisation du schéma d'authentification basique.
+          example: Basic d20tY2xpZW50OndtLWNsaWVudHBhc3N3b3Jk
+        X-Auth-Signature:
+          type: string
+          description: |
+            La signature de la requête est le résultat de la concaténation de :
+            * l'entête HTTP *Authorization*
+            * le corps de la requête
+            * l'URI de la requête
+            * la méthode HTTP de la requête
+            Le tout doit être ensuite hashé avec la clé de signature du serveur en utilisant l'algorithme *HmacSha256*.
+          example: 4dd8bfd9c1c537dbe67ce1572ceac0c18fbce70b2d08100ebd1fe773c32573dd
+  HmacKey:
+    type: x-custom
+    description: Authentification par le biais d'un hash des identifiants utilisateur.
+    displayName: Authentification par hash
+    describedBy:
+      headers:
+        Authorization:
+          type: string
+          description: |
+            Cet entête est une chaîne de caractères formée par la concaténation des éléments suivants :
+            * le timestamp de la requête (i.e. l'entête *X-Auth-Timestamp*)
+            * le nom d'utilisateur (i.e. l'entête *X-Auth-User*)
+            * le mot de passe de l'utilisateur
+            Cette chaîne est ensuite hashée avec l'algorithme *HmacSha256* en utilisant la clé de signature REST du serveur.
+            Le hash doit être préfixé de la déclaration "HMAC " afin de spécifié l'utilisation de l'authentification par clé HMAC.
+          example: HMAC e4219167eb4cf1f8590d684713218c4ad011d475d8f3b2d37fb15ce3da675021
+        X-Auth-User:
+          type: string
+          description: Le nom de l'utilisateur émettant la requête.
+          example: user1
+        X-Auth-Timestamp:
+          type: datetime
+          description: La date à laquelle la requête a été émise (en format ISO 8601).
+          example: 1970-01-01T01:00:00+00:00
+  HmacKey+Signature:
+    type: x-custom
+    displayName: Authentification par hash & signature
+    description: Authentification par le biais d'un hash des identifiants utilisateur, avec vérification de signature des requêtes.
+    describedBy:
+      headers:
+        Authorization:
+          type: string
+          description: |
+            Cet entête est une chaîne de caractères formée par le concaténation des éléments suivants :
+            * le timestamp de la requête (i.e. l'entête *X-Auth-Timestamp*)
+            * le nom d'utilisateur (i.e. l'entête *X-Auth-User*)
+            * le mot de passe de l'utilisateur
+            Cette chaîne est ensuite hashée avec l'algorithme *HmacSha256* en utilisant la clé de signature REST du serveur.
+            Le hash doit être préfixé de la déclaration "HMAC " afin de spécifié l'utilisation de l'authentification par clé HMAC.
+          example: HMAC e4219167eb4cf1f8590d684713218c4ad011d475d8f3b2d37fb15ce3da675021
+        X-Auth-User:
+          type: string
+          description: Le nom de l'utilisateur émettant la requête.
+          example: user1
+        X-Auth-Timestamp:
+          type: datetime
+          description: La date à laquelle la requête a été émise (en format ISO 8601).
+          example: 1970-01-01T01:00:00+00:00
+        X-Signature:
+          type: string
+          description: |
+            La signature de la requête est le résultat de la concaténation de :
+            * l'entête HTTP *Authorization*
+            * le corps de la requête
+            * l'URI de la requête
+            * la méthode HTTP de la requête
+            Le tout doit être ensuite hashé avec la clé de signature du serveur en utilisant l'algorithme *HmacSha256*.
+          example: 4dd8bfd9c1c537dbe67ce1572ceac0c18fbce70b2d08100ebd1fe773c32573dd
+traits:
+  returnsNotFound:
+    responses:
+      404:
+        description: Dans le cas d'une requête sur une collection, cela signifie que l'identifiant donné n'existe pas dans la base de données.
+  returnsBadRequest:
+    responses:
+      400:
+        description: |
+          La requête est invalide, soit à cause de paramètres de requête erronés, soit à cause d'un corps de requête invalide.
+
+          Les causes de l'échec de la requête sont données dans le corps de la réponse sour forme d'un tableau JSON.
+        body:
+          type: HttpError
+          description: La liste de toutes les erreurs utilisateur rencontrées.
+  checksContentType:
+    responses:
+      415:
+        description: Le type de contenu de la requête n'est pas valide pour cette requête.
+types:
+  ObjectTransfer:
+    type: object
+    description: Un objet regroupant les informations sur un transfert telles qu'elles sont stockées dans la base de données WaarpR66.
+    example: |
+      {
+        "id": 1,
+        "globalStep": "NOTASK",
+        "globalLastStep": "NOTASK",
+        "step": 0,
+        "rank": 0,
+        "status": "TOSUBMIT",
+        "stepStatus": "",
+        "originalFilename": "out/file_example.txt",
+        "filename": "in/file_example.txt",
+        "ruleName": "default",
+        "blockSize": 65536,
+        "fileInfo": "{\"ORIGINALSIZE\":1024}",
+        "transferInfo": "This is comment example.",
+        "start": "1970-01-01T01:00:00+00:00",
+        "stop": "1970-01-01T02:00:00+00:00",
+        "requester": "server1",
+        "requested": "server2"
+      }
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: L'id unique donné au transfert par le serveur interrogé.
+        displayName: ID de transfert
+      globalStep:
+        type: string
+        description: L'étape générale du transfert. Indique l'action que le serveur est en train d'effectuer sur le transfert.
+        displayName: Étape globale
+        enum:
+          - NOTASK
+          - PRETASK
+          - POSTTASK
+          - ALLDONETASK
+          - ERRORTASK
+          - TRANSFERTASK
+      globalLastStep:
+        type: string
+        description: La dernière étape générale du transfert terminée avec succès. Sert notamment à marquer où reprendre un transfert interrompu lors du redémarrage de celui-ci.
+        displayName: Dernière étape globale
+        enum:
+          - NOTASK
+          - PRETASK
+          - POSTTASK
+          - ALLDONETASK
+          - ERRORTASK
+          - TRANSFERTASK
+      step:
+        type: integer
+        format: int32
+        description: Donne l'état de l'étape générale en cours d'exécution.
+        displayName: Sous-étape
+        minimum: 0
+      rank:
+        type: integer
+        format: int32
+        description: Le numéro du dernier bloc de données transféré. Sert notamment en cas de reprise d'un transfert après interruption pour marquer le bloc à transmettre.
+        minimum: 0
+        displayName: Rang
+      status:
+        type: TransferStatus
+        description: Donne l'état actuel du transfert.
+        displayName: Statut de transfert
+      stepStatus:
+        type: string
+        description: Donne le code d'erreur du transfert (sous forme d'un caractère) lorsque le transfert se termine en erreur.
+        displayName: Code d'erreur
+      originalFilename:
+        type: string
+        description: Chemin du fichier à transférer sur le disque de l'envoyeur.
+        displayName: Nom de fichier original
+      filename:
+        type: string
+        description: Chemin du fichier sur le disque du destinataire à l'issue du transfert.
+        displayName: Nom de fichier
+      ruleName:
+        type: string
+        description: Nom de la règle utilisée pour le transfert.
+        displayName: Nom de règle
+      blockSize:
+        type: integer
+        format: int32
+        description: La taille (en octets) d'un bloc de données pour le transfert.
+        minimum: 0
+        displayName: Taille de bloc
+      fileInfo:
+        type: string
+        description: Métadonnées du fichier traité au format JSON.
+        displayName: Informations fichier
+      transferInfo:
+        type: string
+        description: Informations (commentaires) supplémentaires sur le transfert renseignées par l'utilisateur.
+        displayName: Informations transfert
+      start:
+        type: datetime
+        description: Date de lancement du transfert (en format ISO 8601).
+        displayName: Date de lancement
+      stop:
+        type: datetime
+        description: Date de fin du transfert lorsque celui-ci est terminé (en format ISO 8601).
+        displayName: Date de fin
+      requester:
+        type: string
+        description: Nom de l'hôte ayant émis la demande transfert.
+        displayName: Émetteur de requête
+      requested:
+        type: string
+        description: Nom de l'hôte auquel la demande de transfert a été envoyée.
+        displayName: Receveur de requête
+    additionalProperties: false
+    displayName: Transfert
+  ObjectHost:
+    type: object
+    displayName: Hôte
+    description: Un objet regroupant les informations d'un hôte telles qu'elles sont représentées dans la base de données.
+    additionalProperties: false
+    example: |
+      {
+        "name": "server1",
+        "address": "127.0.0.1",
+        "port": 8080,
+        "password": "password",
+        "isSSL": false,
+        "isAdmin": false,
+        "isClient": false,
+        "isActive": true,
+        "isProxy": false
+      }
+    properties:
+      name:
+        type: string
+        displayName: Nom
+        description: Le nom de l'hôte, doit être unique.
+        required: true
+      address:
+        type: string
+        description: L'adresse de l'hôte, peut être une adresse IP ou bien une adresse Web résolvable par DNS.
+        displayName: Adresse
+        required: true
+      port:
+        type: integer
+        format: int32
+        description: Le numéro du port TCP de l'hôte pour les connections entrantes. Vaut *0* si l'hôte n'accepte pas de connections entrantes.
+        maximum: 65535
+        displayName: Numéro de port
+        required: false
+        default: 0
+        minimum: 0
+      password:
+        type: string
+        displayName: Mot de passe
+        description: Le mot de passe d'authentification du nouvel hôte.
+        required: true
+      isSSL:
+        type: boolean
+        description: Spécifie si l'hôte accepte les transferts sécurisés avec SSL.
+        default: false
+        required: false
+        displayName: Utilisation de SSL
+      isAdmin:
+        type: boolean
+        description: Spécifie si l'hôte a les droits administrateur sur le serveur.
+        default: false
+        required: false
+        displayName: Droits administrateur
+      isClient:
+        type: boolean
+        description: Spécifie si l'hôte accepte les requêtes de transfert.
+        default: false
+        required: false
+        displayName: Statut de client
+      isActive:
+        type: boolean
+        default: false
+        required: false
+        displayName: Activation
+        description: Spécifie si l'hôte peut envoyer et recevoir des transferts ou non.
+      isProxy:
+        type: boolean
+        default: false
+        required: false
+        displayName: Utilisation de proxy
+        description: Spécifie si l'hôte utilise un proxy pour les connections entrantes.
+  ObjectHostConfig:
+    type: object
+    description: Un objet regroupant les informations sur la configuration du serveur telles qu'elles sont stockées dans la base de données WaarpR66.
+    example: |
+      {
+        "business": ["server1", "server2"],
+        "roles": [{
+          "hostName": "server1",
+          "roleList": ["TRANSFER", "RULE"]
+        }],
+        "aliases": [{
+          "hostName": "server1",
+          "aliasList": ["alias1", "alias2"]
+        }],
+        "others": "<root><version>3.0.12</version></root>"
+      }
+    properties:
+      business:
+        type: array
+        description: La liste des hôtes autorisés à émettre une requête de business vers ce serveur.
+        uniqueItems: true
+        items:
+          type: string
+        required: false
+        default: []
+      roles:
+        type: array
+        description: La liste associant chaque hôte a l'ensemble de ses droits sur le serveur.
+        uniqueItems: true
+        items:
+          type: object
+          properties:
+            hostName:
+              type: string
+              description: Le nom de l'hôte.
+            roleList:
+              type: array
+              description: La liste des droits de l'hôte sur le serveur.
+              uniqueItems: true
+              minItems: 1
+              items:
+                type: string
+                description: Une énumération des différents droits qu'un serveur R66 peut accorder aux autres hôtes.
+                enum:
+                  - NOACCESS
+                  - READONLY
+                  - TRANSFER
+                  - RULE
+                  - HOST
+                  - LIMIT
+                  - SYSTEM
+                  - LOGCONTROL
+                  - PARTNER
+                  - CONFIGADMIN
+                  - FULLADMIN
+                displayName: Rôles utilisateur
+          additionalProperties: false
+        required: false
+        default: []
+      aliases:
+        type: array
+        description: La liste associant chaque hôte à l'ensemble de ses alias.
+        uniqueItems: true
+        items:
+          type: object
+          properties:
+            hostName:
+              type: string
+              description: Le nom de l'hôte.
+            aliasList:
+              type: array
+              description: La liste des alias de l'hôte.
+              uniqueItems: true
+              minItems: 1
+              items:
+                type: string
+          additionalProperties: false
+        required: false
+        default: []
+      others:
+        type: string
+        description: La version de la base de données. Permet de comparer la version de la base donnée avec celle du serveur R66.
+        required: false
+        pattern: <root><version>.*</version></root>
+    additionalProperties: false
+    displayName: Configuration serveur
+  ObjectLimit:
+    type: object
+    description: Un objet regroupant les informations sur les limites de bande passante du serveur telles qu'elles sont stockées dans la base de données WaarpR66.
+    example: |
+      {
+        "upGlobalLimit": 1000000000,
+        "downGlobalLimit": 50000000,
+        "upSessionLimit": 1000000,
+        "downSessionLimit": 500000,
+        "delayLimit": 1000
+      }
+    properties:
+      upGlobalLimit:
+        type: integer
+        format: int64
+        description: La limite globale de bande passante montante du serveur. Une valeur de *0* signifie que aucune limite n'est imposée.
+        minimum: 0
+        required: false
+      downGlobalLimit:
+        type: integer
+        format: int64
+        description: La limite globale de bande passante descendante du serveur. Une valeur de *0* signifie que aucune limite n'est imposée.
+        minimum: 0
+        required: false
+      upSessionLimit:
+        type: integer
+        format: int64
+        description: La limite de bande passante montante par transfert. Une valeur de *0* signifie que aucune limite n'est imposée.
+        minimum: 0
+        required: false
+      downSessionLimit:
+        type: integer
+        format: int64
+        description: La limite de bande passante descendante par transfert. Une valeur de *0* signifie que aucune limite n'est imposée.
+        minimum: 0
+        required: false
+      delayLimit:
+        type: integer
+        format: int64
+        description: Le délai (en ms) entre deux vérification du respect des limites de bande passante. Une valeur de *0* signifie que la vérification des limites est désactivée.
+        minimum: 0
+        required: false
+    additionalProperties: false
+    displayName: Limites de bande passante
+  ObjectRule:
+    type: object
+    description: Un objet regroupant les informations sur une règle de transfert telles qu'elles sont stockées dans la base de données WaarpR66.
+    example: |
+      {
+        "name": "example",
+        "hostIds": ["server1", "server2"],
+        "modeTrans": "send",
+        "recvPath": "in/",
+        "sendPath": "out/",
+        "archivePath": "arch/",
+        "workPath": "work/",
+        "rPreTasks": [{
+          "type": "ZIP",
+          "arguments": "file.txt work/",
+          "delay": 1
+        }],
+        "rPostTask": [{
+          "type": "MOVERENAME",
+          "arguments": "arch/file.bak"
+        }],
+        "rErrorTasks": [{
+          "type": "RESCHEDULE",
+          "arguments": "-delay 3600000 -case ConnectionImpossible,ServerOverloaded,Shutdown"
+        }],
+        "sPreTasks": [],
+        "sPostTasks": [{
+          "type": "ZIP",
+          "arguments": "file.zip work/",
+          "delay": 0
+        }],
+        "sErrorTasks": [{
+          "type": "DELETE"
+        }]
+      }
+    properties:
+      name:
+        type: string
+        description: Le nom unique de la nouvelle règle de transfert.
+        displayName: Nom de la règle
+        required: true
+      hostIds:
+        type: array
+        description: Un tableau listant les noms des hôtes autorisés à utiliser cette règle de transfert. Si ce champ est laissé vide, tous les hôtes seront autorisés à utiliser la règle.
+        uniqueItems: true
+        required: false
+        items:
+          type: string
+        displayName: Noms des hôtes autorisés
+      modeTrans:
+        type: string
+        displayName: Mode de transfert
+        description: Définit le sens de transmission du fichier, ainsi que l'utilisation d'un checksum MD5 du fichier.
+        required: true
+        enum:
+          - send
+          - receive
+          - sendMD5
+          - receiveMD5
+      recvPath:
+        type: string
+        description: |
+          Chemin du dossier où les fichiers sont déposés sur l'hôte destinataire une fois le transfert terminé.
+          Si aucun chemin n'est défini, le dossier de réception par défaut du serveur sera utilisé.
+
+          Peut être un chemin relatif ou absolu.
+        required: false
+        displayName: Dossier destination
+      sendPath:
+        type: string
+        description: |
+          Chemin du dossier racine à partir duquel le chemin du fichier à transférer est appliqué sur l'hôte expéditeur.
+          Si aucun chemin n'est défini, le dossier d'envoi par défaut du serveur sera utilisé.
+
+          Peut être un chemin relatif ou absolu.
+        required: false
+        displayName: Dossier source
+      archivePath:
+        type: string
+        description: |
+          Chemin du dossier dans lequel les logs de transfert sont stockés.
+          Si aucun chemin n'est défini, le dossier d'archive par défaut du serveur sera utilisé.
+
+          Peut être un chemin relatif ou absolu.
+        required: false
+        displayName: Dossier d'archive
+      workPath:
+        type: string
+        description: |
+          Chemin du dossier dans lequel les fichiers sont stockés temporairement sur le serveur destination pendant leur transfert.
+          Si aucun chemin n'est défini, le dossier de travail par défaut du serveur sera utilisé.
+
+          Peut être un chemin relatif ou absolu.
+        required: false
+        displayName: Dossier de travail
+      rPreTasks:
+        type: array
+        description: Traitements effectués par le destinataire avant le transfert du fichier.
+        items:
+          type: RuleTask
+        displayName: Pré-traitements destinataire
+        required: false
+      rPostTask:
+        type: array
+        description: Traitements effectués par le destinataire après le transfert du fichier.
+        items:
+          type: RuleTask
+        displayName: Post-traitements destinataire
+        required: false
+      rErrorTasks:
+        type: array
+        description: Traitements effectués par le destinataire en cas d'erreur.
+        items:
+          type: RuleTask
+        displayName: Traitements d'erreur destinataire
+        required: false
+      sPreTasks:
+        type: array
+        description: Traitements effectués par l'expéditeur avant le transfert du fichier.
+        items:
+          type: RuleTask
+        displayName: Pré-traitements expéditeur
+        required: false
+      sPostTasks:
+        type: array
+        description: Traitements effectués par l'expéditeur après le transfert du fichier.
+        items:
+          type: RuleTask
+        displayName: Post-traitements expéditeur
+        required: false
+      sErrorTasks:
+        type: array
+        description: Traitements effectués par l'expéditeur en cas d'erreur.
+        items:
+          type: RuleTask
+        displayName: Traitements d'erreur expéditeur
+        required: false
+    additionalProperties: false
+    displayName: Règle de transfert
+  RuleTask:
+    type: object
+    description: Un objet représentant un traitement effectué lors d'un transfert.
+    example: |
+      {
+        "type": "ZIP",
+        "arguments": "#TRUEFULLPATH# unzip/output/",
+        "delay": 1
+      }
+    properties:
+      type:
+        type: string
+        description: Une énumérarion de tous les types de traitement possibles lors d'un transfert.
+        enum:
+          - LOG
+          - MOVE
+          - MOVERENAME
+          - COPY
+          - COPYRENAME
+          - EXEC
+          - EXECMOVE
+          - EXECOUTPUT
+          - EXECJAVA
+          - TRANSFER
+          - VALIDFILEPATH
+          - DELETE
+          - LINKRENAME
+          - RESCHEDULE
+          - TAR
+          - ZIP
+          - TRANSCODE
+          - SNMP
+        displayName: Type de traitement
+      arguments:
+        type: string
+        description: Les arguments du traitement (si pertinent). Des substitutions peuvent être effectuées en utilisant les noms de variables appropriés (*#TRUEFULLPATH#*, *#DATE#*, ...).
+        required: false
+        displayName: Arguments
+      delay:
+        type: integer
+        format: int32
+        description: Donne le type d'opération à effectuer (quand pertinent) pour le traitement.
+        default: 0
+        minimum: 0
+        required: false
+        displayName: Type d'opération
+    additionalProperties: false
+    displayName: Traitement
+  TransferStatus:
+    type: string
+    description: Une énumération des différents états possibles d'un transfert.
+    displayName: Statut de transfert
+    enum:
+      - TOSUBMIT
+      - NOTUPDATED
+      - RUNNING
+      - INTERRUPTED
+      - DONE
+      - INERROR
+      - UNKNOWN
+  HttpError:
+    type: object
+    description: Un objet listant les causes de l'échec d'une requête REST lorsque cet échec est dû à des entrées utilisateur invalides.
+    displayName: Erreurs utilisateur
+    example: |
+      {
+        "errors": [{
+          "message": "Query parameter 'startTrans' : illegal value 'not_a_date'.",
+          "errorCode": 4
+        }, {
+          "message": "Query parameter 'status' : illegal value 'not_a_status'.",
+          "errorCode": 4
+        }]
+      }
+    properties:
+      errors:
+        type: array
+        description: Un tableau de toutes les erreurs utilisateurs rencontrées lors du traitement de la requête.
+        minItems: 1
+        items:
+          type: object
+          description: Un objet représentant une erreur utilisateur.
+          properties:
+            message:
+              type: string
+              description: Un message décrivant l'erreur rencontrée.
+            errorCode:
+              type: integer
+              format: int32
+              description: Le code d'erreur REST correspondant à l'erreur rencontrée.
+        displayName: Liste d'erreurs
+  HttpOption:
+    type: string
+    description: Une énumération des méthodes HTTP supportées par l'API REST.
+    enum:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    displayName: Méthodes HTTP
+/v2/transfers:
+  displayName: Gestion des transfers
+  description: Un point d'entrée pour accéder à l'ensemble des transfers du serveur. Les transfers peuvent être consultés ou ajouté ici.
+  get:
+    displayName: Lister les transfers
+    description: |
+      Renvoie une liste des transferts monitorés par le serveur respectant les filtres donnés en paramètres de requête.
+      Les paramètres `offset` et `limit` permettent de fixer un numéro de départ et un nombre maximal de transferts désirés, afin de ne renvoyer qu'un sous-ensemble de la liste demandée.
+      Le paramètre  `order` spécifie dans quel ordre les transferts doivent être ordonées.
+    is:
+      - returnsBadRequest
+    queryParameters:
+      limit:
+        type: integer
+        format: int32
+        description: Fixe le nombre maximal de transferts pouvant être inclus dans la réponse. Utile lorsque le nombre d'entrées sélectionnées par les filtres est trop important pour tenir dans un seule message.
+        default: 20
+        minimum: 0
+        required: false
+        displayName: Limite du nombre de réponses
+        example: 20
+      offset:
+        type: integer
+        format: int64
+        description: |
+          Indice de la première entrée à inclure dans la réponse. Généralement utilisé en combinaison avec le paramètre `limit` pour restreindre l'ensemble des transferts à renvoyer.
+
+          **Attention** : Si le `offset` est plus grand que la taille de l'ensemble de base, aucune entrée ne sera renvoyée.
+        default: 0
+        minimum: 0
+        required: false
+        displayName: Décalage du début de liste
+        example: 0
+      order:
+        type: string
+        description: Spécifie l'attribut à utiliser pour trier les éléments de la réponse, ainsi que le sens du tri. Ce paramètre devrait donc être le nom d'un attribut de transfert préfixé par "asc" ou "desc", correspondant respectivement à l'ordre croissant et décroissant.
+        default: ascId
+        required: false
+        displayName: Ordre d'affichage
+        enum:
+          - ascId
+          - descId
+          - ascFile
+          - descFile
+          - ascStart
+          - descStart
+          - ascStop
+          - descStop
+        example: ascId
+      ruleName:
+        type: string
+        description: Si ce paramètre est défini, la réponse contiendra uniquement les transferts utilisant cette règle de transfert.
+        required: false
+        displayName: Filtre par règle
+        example: default
+      partner:
+        type: string
+        description: Si ce paramètre est défini, la réponse contiendra uniquement les transferts en provenance ou à destination de cet hôte.
+        required: false
+        displayName: Filtre par partenaire
+        example: server1
+      status:
+        type: TransferStatus
+        description: Si ce paramètre est défini, la réponse ne contiendra que les transferts ayant ce statut.
+        required: false
+        displayName: Filtre par statut
+        example: TOSUBMIT
+      filename:
+        type: string
+        description: Si ce paramètre est défini, la réponse contiendra uniquement les transferts impliquant ce fichier.
+        required: false
+        displayName: Filtre par fichier
+        example: example.txt
+      startTrans:
+        type: datetime
+        description: Si ce paramètre est défini, la réponse ne contiendra que les transferts ayant débuté après cette date (en format ISO-8601).
+        required: false
+        displayName: Date minimum
+        example: 1970-01-01T01:00:00.00+00:00
+      stopTrans:
+        type: datetime
+        description: Si ce paramètre est défini, la réponse ne contiendra que les transferts ayant débuté après cette date (en format ISO-8601).
+        required: false
+        displayName: Date maximum
+        example: 1970-01-01T02:00:00.00+00:00
+    responses:
+      200:
+        description: La requête s'est déroulée avec succès.
+        body:
+          type: object
+          description: Une représentation des transferts demandés sous forme d'un tableau d'objets JSON.
+          displayName: Liste de réponses
+          properties:
+            totalResults:
+              type: integer
+              format: int32
+              description: Le nombre total de transferts trouvés avant avant application des paramètres `offset` et `limit`.
+              minimum: 0
+              displayName: Total de réponses
+            results:
+              type: array
+              description: Un tableau contenant tous les transferts demandés.
+              uniqueItems: true
+              items:
+                type: ObjectTransfer
+              displayName: Réponses
+  post:
+    displayName: Ajouter un transfert
+    description: Initialise un nouveau transfert sur le serveur avec les attributs définis dans le corps de la requête. Les informations sur le transfert créé sont renvoyées dans la réponse ainsi que l'URI pour le consuter.
+    body:
+      type: object
+      description: L'objet dont les attributs sont utilisés pour initialiser le nouveau transfert.
+      displayName: L'initialisateur de transfert
+      example: |
+        {
+          "ruleName": "default",
+          "filename": "example_file.txt",
+          "requested": "server2",
+          "blockSize": 65536,
+          "fileInfo": "This is comment example.",
+          "start": "1970-01-01T01:00:00+00:00"
+        }
+      properties:
+        ruleName:
+          type: string
+          description: Le nom de la règle utilisée pour le transfert.
+          displayName: Nom de règle
+        filename:
+          type: string
+          description: |
+            Le chemin du fichier traité. Peut être un chemin relatif ou absolu.
+
+            **Attention** : Dans le cas d'un chemin relatif, le dossier courant sera le dossier d'envoi spécifié dans la règle de transfert. Si la règle  de transfert ne spécifie pas de dossier d'envoi, le dossier d'envoi définit dans la configuration du serveur sera utilisé à la place.
+          displayName: Nom de fichier
+        requested:
+          type: string
+          description: Le nom du serveur auquel la demande de transfert sera envoyée.
+          displayName: Nom du partenaire
+        blockSize:
+          type: integer
+          format: int32
+          description: La taille (en octets) d'un bloc de données pour le transfert.
+          default: 65536
+          minimum: 0
+          required: false
+          displayName: Taille de bloc
+        fileInfo:
+          type: string
+          description: Informations (commentaires) supplémentaires sur le transfert renseignées par l'utilisateur.
+          required: false
+          displayName: Informations transfert
+        start:
+          type: datetime
+          description: Date de lancement du transfert (en format ISO 8601). Si aucune date n'est renseignée, le transfert sera lancé immédiatement.
+          required: false
+          displayName: Date de lancement
+    responses:
+      201:
+        description: Le nouveau transfert a été créé avec succès.
+        headers:
+          transferURI:
+            type: string
+            description: L'URI d'accès pour consulter le transfert.
+            displayName: Chemin d'accès
+            example: /transfer/transfer1
+        body:
+          type: ObjectTransfer
+          description: L'objet représentant le nouveau transfert créé.
+          displayName: Le nouveau transfert
+    is: [returnsBadRequest]
+  /{id}:
+    displayName: Accès à un transfert
+    description: Le point d'accès pour consulter ou modifier un transfert particulier, identifié par le paramètre `id` de l'URI.
+    is:
+      - returnsNotFound
+    uriParameters:
+      id:
+        type: string
+        description: L'identifiant unique du transfert. Afin de garantir l'unicité de cet id dans le cas d'une base de donnée partagée, ce paramètre est en fait composé de l'id du transfert sur le serveur, ainsi que du nom de l'hôte destinataire de ce transfert (i.e. le champ `requested` du transfert).
+        displayName: Identifiant du transfert
+        example: 29372323293823_server2
+    get:
+      displayName: Consulter un transfert
+      description: Si le transfert demandé existe, renvoie toutes ses informations.
+      responses:
+        200:
+          description: La requête s'est déroulée avec succès.
+          body:
+            type: ObjectTransfer
+            description: La représentation des informations du transfert sous forme d'un objet JSON.
+            displayName: Le transfert demandé
+    /restart:
+      displayName: Redémarrage de transfert
+      description: Le point d'entrée pour redémarrer le transfert.
+      put:
+        displayName: Redémarrer un transfert
+        description: S'il existe, redémarre le transfert demandé.
+        responses:
+          202:
+            description: Le transfert a été redémarré avec succès.
+            body:
+              type: ObjectTransfer
+              description: La représentation des informations du transfert redémarré sous forme d'un objet JSON.
+              displayName: Le transfert redémarré
+    /stop:
+      displayName: Arrêt de transfert
+      description: Le point d'entrée pour stopper le transfert.
+      put:
+        displayName: Arrêter un transfert
+        description: S'il existe, arrête le transfert demandé.
+        responses:
+          202:
+            description: Le transfert a été arrêté avec succès.
+            body:
+              type: ObjectTransfer
+              description: La représentation des informations du transfert stoppé sous forme d'un objet JSON.
+              displayName: Le transfert stoppé
+    /cancel:
+      displayName: Annulation de transfert
+      description: Le point d'entrée pour annuler untransfert
+      put:
+        displayName: Annuler un transfert
+        description: If it exists, cancels the requested transfer.
+        responses:
+          202:
+            description: Le transfert a été annulé avec succès.
+            body:
+              type: ObjectTransfer
+              description: La représentation des informations du transfert annulé sous forme d'un objet JSON.
+              displayName: Le transfert annulé
+/v2/hosts:
+  displayName: Gestion des hôtes
+  description: |
+    Un point d'entrée pour accéder à l'ensemble des hôtes connus par le serveur.
+    Les hôtes peuvent êtres consultés ici, et de nouveaux peuvent également être ajoutés.
+  get:
+    displayName: Lister les hôtes
+    description: |
+      Renvoie l'ensemble des hôtes conformes aux filtres passés en paramètres de requête.
+      Les hôtes peuvent être filtrés par addresse, sur leur utilisation de SSL, ou sur le fait qu'ils soient actifs ou non.
+      Les paramètres `offset` et `limit` permettent de fixer un numéro de départ et un nombre maximal d'hôtes désirés, afin de ne renvoyer qu'un sous-ensemble de la liste demandée.
+      Le paramètre `order` spécifie dans quel ordre les hôtes doivent être ordonées.
+    is:
+      - returnsBadRequest
+      - checksContentType
+    queryParameters:
+      limit:
+        type: integer
+        format: int32
+        description: Fixe le nombre maximal de transferts pouvant être inclus dans la réponse. Utile lorsque le nombre d'entrées sélectionnées par les filtres est trop important pour tenir dans un seule message.
+        default: 20
+        minimum: 0
+        required: false
+        displayName: Limite du nombre de réponses
+      offset:
+        type: integer
+        format: int64
+        description: |
+          Indice de la première entrée à inclure dans la réponse. Généralement utilisé en combinaison avec le paramètre `limit` pour restreindre l'ensemble des hôtes à renvoyer.
+
+          **Attention** : Si le `offset` est plus grand que le nombre total de réponses, aucune entrée ne sera renvoyée.
+        default: 0
+        minimum: 0
+        required: false
+        displayName: Décalage du début de liste
+      order:
+        type: string
+        description: Spécifie l'attribut à utiliser pour trier les éléments de la réponse, ainsi que le sens du tri. Ce paramètre devrait donc être le nom d'un attribut d'hôte préfixé par "asc" ou "desc", correspondant respectivement à l'ordre croissant et décroissant.
+        default: ascHostID
+        required: false
+        enum:
+          - ascHostID
+          - descHostID
+          - ascAddress
+          - ascAddress
+        displayName: Ordre d'affichage
+      address:
+        type: string
+        description: Si ce paramètre est défini, la réponse ne contiendra que les hôtes ayant cette adresse.
+        required: false
+        displayName: Filtrage par adresse
+        examples:
+          Adresse_IP: 127.0.0.1
+          Adresse_Web: www.example.com
+      isSSL:
+        type: boolean
+        description: |
+          Si ce paramètre est vrai, la réponse ne contiendra que les hôtes autorisant les transferts SSL. Et si le paramètre est faux, que ceux ne les autorisant pas.
+          Si le paramètre n'est pas défini, aucun filtrage ne sera fait.
+        required: false
+        displayName: Filtrage par SSL
+      isActive:
+        type: boolean
+        description: |
+          Si ce paramètre est vrai, la réponse ne contiendra que les hôtes actifs. Et si le paramètre est faux, que ceux inactifs.
+          Si le paramètre n'est pas défini, aucun filtrage ne sera fait.
+        required: false
+        displayName: Filtrage par activation
+    responses:
+      200:
+        description: La requête s'est déroulée avec succès.
+        body:
+          type: object
+          description: Une représentation de l'ensemble des hôtes demandés sous forme d'un tableau d'objets JSON.
+          displayName: Liste de réponses
+          properties:
+            totalResults:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Le nombre total d'entrées respectant les filtres donnés.
+              displayName: Total de réponses
+            results:
+              type: array
+              description: Un tableau JSON contenant les hôtes respectant les filtres de la requête.
+              uniqueItems: true
+              items:
+                type: ObjectHost
+              displayName: Réponses
+  post:
+    displayName: Ajouter un hôte
+    description: |
+      Ajoute un nouvel hôte à la base de données avec les attribut de l'objet passé dans le corps de la requête.
+      La nouvelle entrée créée est renvoyée dans la réponse, ainsi que l'URI pour la consulter.
+    is:
+      - returnsBadRequest
+      - checksContentType
+    body:
+      type: ObjectHost
+      description: |
+        Le nouvel hôte à ajouter à la base.
+
+        **Attention**: Tous les champs optionnels laissé vides seront initialisés avec leurs valeurs par défaut.
+      displayName: Le nouvel hôte
+    responses:
+      201:
+        description: Le nouvel hôte a été ajouté avec succès.
+        headers:
+          hostURI:
+            type: string
+            description: L'URI d'accès aux informations du nouvel hôte.
+            displayName: Chemin d'accès
+            example: /v2/transfers/server1
+        body:
+          type: ObjectHost
+          displayName: Le nouvel hôte
+          description: La représentation des information du nouvel hôte sous forme d'un objet JSON.
+  /{id}:
+    displayName: Accès à un hôte
+    description: Le point d'accès pour consulter ou modifier un hôte particulier, identifié par le paramètre `id` de l'URI.
+    is:
+      - returnsNotFound
+    uriParameters:
+      id:
+        type: string
+        displayName: Nom de l'hôte
+        description: Le nom unique de l'hôte désiré.
+        example: server1
+    get:
+      displayName: Consulter un hôte
+      description: S'il existe, renvoie les informations de l'hôte demandé sous forme d'un objet JSON.
+      responses:
+        200:
+          description: L'hôte demandé a été trouvé.
+          body:
+            type: ObjectHost
+            description: Les informations de l'hôte demandé sous forme d'un objet JSON.
+            displayName: L'hôte demandé
+    put:
+      displayName: Modifier un hôte
+      description: |
+        S'il existe, remplace les informations de l'hôte demandé par celles données dans la requête.
+        Les nouvelles informations seront renvoyées dans la réponse, ainsi que leur URI d'accès.
+      is:
+        - returnsBadRequest
+        - checksContentType
+      body:
+        type: ObjectHost
+        description: |
+          Les nouvelles informations à affecter à l'hôte.
+
+          **Attention**: Toutes les anciennes valeurs des attributs seront écrasées, même celles laissées vides.
+          Pour conserver l'ancienne valeur d'un attribut, remplir celui-ci avec une valeur identique à l'ancienne.
+        displayName: Le nouvel hôte
+      responses:
+        202:
+          description: L'hôte a été mis à jour avec succès.
+          headers:
+            host-uri:
+              type: string
+              displayName: Chemin d'accès
+              description: Le chemin d'accès de l'hôte modifié. Si le nom d'hôte n'a pas été changé, cet URI sera identique à celui ayant été utilisé pour la requête.
+              example: /v2/hosts/server1_bis
+          body:
+            type: ObjectHost
+            description: La représentation de l'hôte mis à jour sous forme d'objet JSON.
+            displayName: Le nouvel hôte
+    delete:
+      displayName: Supprimer un hôte
+      description: S'il existe, supprime l'hôte de la base de données.
+      responses:
+        204:
+          description: L'hôte a été supprimé avec succès.
+/v2/hostconfig:
+  displayName: Gestion de configuration
+  description: |
+    Un point d'entrée pour accéder à la configuration du serveur.
+    La configuration peut être initialisée, consultée, modifiée ou supprimée ici.
+  is:
+    - returnsNotFound
+  get:
+    displayName: Consulter la configuration
+    description: Renvoie la configuration du serveur sous forme d'un objet JSON.
+    responses:
+      200:
+        description: La requête s'est déroulée avec succès.
+        body:
+          type: ObjectHostConfig
+          description: La configuration du serveur en format JSON.
+          displayName: La configuration du serveur
+  post:
+    displayName: Initialiser la configuration
+    description: Initialise la configuration du serveur dans la base de données avec les attribut passés dans la requête.
+    is:
+      - returnsBadRequest
+    body:
+      type: ObjectHostConfig
+      displayName: La nouvelle configuration
+      description: |
+        La nouvelle configuration à ajouter à la base de données.
+
+        **Attention**: Tous les champs optionnels laissé vides seront initialisés avec leurs valeurs par défaut.
+    responses:
+      201:
+        description: La configuration du serveur a été ajoutée avec succès.
+        body:
+          type: ObjectHostConfig
+          description: La nouvelle configuration du serveur en format JSON.
+          displayName: La nouvelle configuration
+  put:
+    displayName: Modifier la configuration
+    description: Si le serveur a une configuration en base de données, remplace cette configuration avec les nouveaux attributs passé dans la requête.
+    is:
+      - returnsBadRequest
+    body:
+      type: ObjectHostConfig
+      displayName: La nouvelle configuration
+      description: |
+        La nouvelle configuration remplaçant l'actuelle configuration.
+
+        **Attention**: Tous les champs optionnels laissé vides seront initialisés avec leurs valeurs par défaut.
+        Pour conserver l'ancienne valeur d'un attribut, remplir celui-ci avec une valeur identique à l'ancienne.
+    responses:
+      202:
+        description: La configuration a été mise à jour avec succès.
+        body:
+          type: ObjectHostConfig
+          description: La nouvelle configuration du serveur en format JSON.
+          displayName: La nouvelle configuration
+  delete:
+    displayName: Supprimer la configuration
+    description: Si le serveur a une configuration en base de données, supprime cette configuration.
+    responses:
+      204:
+        description: La configuration a été supprimée avec succès.
+/v2/limits:
+  displayName: Gestion de bande passante
+  description: |
+    Un point d'entrée pour accéder aux limites de bande passante du serveur.
+    Les limites peuvent être fixées, consultées, modifiées et supprimées ici.
+  is:
+    - returnsNotFound
+  get:
+    displayName: Consulter les limites
+    description: Renvoie les limites de bande passante sous forme d'un objet JSON.
+    responses:
+      200:
+        description: La requête s'est déroulée avec succès.
+        body:
+          type: ObjectLimit
+          description: Les limites de bande passante du serveur en format JSON.
+          displayName: Les limites
+  post:
+    displayName: Initialiser les limites
+    description: Initialise les limites de bande passante du serveur avec les attributs passés dans la requête.
+    is:
+      - returnsBadRequest
+    body:
+      type: ObjectLimit
+      displayName: Les nouvelles limites
+      description: |
+        Les nouvelles limites de bande passante à ajouter en base de données.
+
+        **Attention**: Tous les champs optionnels laissé vides seront initialisés avec leurs valeurs par défaut.
+    responses:
+      201:
+        description: Les limites ont été initialisées avec succès.
+        body:
+          type: ObjectLimit
+          description: Les nouvelles limites en format JSON.
+  put:
+    displayName: Modifier les limites
+    is:
+      - returnsBadRequest
+    description: Si le serveur a des limites en base de données, remplace ces limites par celle passées dans la requête.
+    body:
+      type: ObjectHostConfig
+      displayName: Les nouvelles limites
+      description: |
+        Les nouvelles limites de bande passante à ajouter en base de données.
+
+        **Attention**: Tous les champs optionnels laissé vides seront initialisés avec leurs valeurs par défaut.
+        Pour conserver l'ancienne valeur d'un attribut, remplir celui-ci avec une valeur identique à l'ancienne.
+    responses:
+      201:
+        description: Les limites ont été modifiées avec succès.
+        body:
+          type: ObjectLimit
+          description: Les nouvelles limites en format JSON.
+  delete:
+    description: Si le serveur a des limites en base de données, supprime ces limites.
+    displayName: Supprimer les limites
+    responses:
+      204:
+        description: Les limites ont élé enlevées avec succès.
+/v2/rules:
+  displayName: Gestion des règles
+  description: |
+    Un point d'entrée pour accéder à l'ensemble des règles de transfert du serveur.
+    Des règles peuvent êtres ajoutées et consultées ici.
+  get:
+    displayName: Lister les règles
+    description: |
+      Renvoie l'ensemble des règles de transfert conformes aux filtres passés en paramètres de requête.
+      Les règles peuvent être filtrées par mode de transmission.
+      Les paramètres `offset` et `limit` permettent de fixer un numéro de départ et un nombre maximal de règles désirées, afin de ne renvoyer qu'un sous-ensemble de la liste demandée.
+      Le paramètre `order` spécifie dans quel ordre les règles doivent être ordonées.
+    is:
+      - returnsBadRequest
+    queryParameters:
+      limit:
+        type: integer
+        format: int32
+        description: Fixe le nombre maximal de règles pouvant être inclues dans la réponse. Utile lorsque le nombre d'entrées sélectionnées par les filtres est trop important pour tenir dans un seule message.
+        default: 20
+        minimum: 0
+        required: false
+      offset:
+        type: integer
+        format: int64
+        description: |
+          Indice de la première entrée à inclure dans la réponse. Généralement utilisé en combinaison avec le paramètre `limit` pour restreindre l'ensemble des hôtes à renvoyer.
+
+          **Attention** : Si le `offset` est plus grand que le nombre total de réponses, aucune entrée ne sera renvoyée.
+        default: 0
+        minimum: 0
+        required: false
+      order:
+        type: string
+        description: Spécifie l'attribut à utiliser pour trier les éléments de la réponse, ainsi que le sens du tri. Ce paramètre devrait donc être le nom d'un attribut d'hôte préfixé par "asc" ou "desc", correspondant respectivement à l'ordre croissant et décroissant.
+        required: false
+        enum:
+          - ascRuleID
+          - descRuleID
+      modeTrans:
+        type: string
+        description: Si ce paramètre est défini, la réponse ne contiendra que les règles utilisant ce mode de transfert.
+        required: false
+        enum:
+        - send
+        - receive
+        - send+md5
+        - receive+md5
+    responses:
+      200:
+        description: La requête s'est déroulée avec succès.
+        body:
+          type: object
+          description: Une représentation de l'ensemble des hôtes demandés sous forme d'un tableau d'objets JSON.
+          displayName: Liste de réponses
+          properties:
+            totalResults:
+              type: integer
+              format: int32
+              description: Le nombre total d'entrées respectant les filtres donnés.
+              minimum: 0
+              displayName: Nombre total de réponses
+            results:
+              type: array
+              uniqueItems: true
+              items:
+                type: ObjectRule
+              description: Le tableau contenant les règles demandées.
+              displayName: Réponses
+  post:
+    displayName: Ajouter une règle
+    description: |
+      Creates a new transfer rule with the ObjectRule passed in the request body.
+      The created entry is returned in the response body, along with its URI.
+    is:
+      - returnsBadRequest
+    body:
+      type: ObjectRule
+      displayName: La nouvelle règle
+      description: |
+        La nouvelle règle de transfert à ajouter à la base.
+
+        **Attention**: Tous les champs optionnels laissé vides seront initialisés avec leurs valeurs par défaut.
+    responses:
+      201:
+        description: La nouvelle règle de transfert a été ajoutée avec succès.
+        headers:
+          ruleURI:
+            type: string
+            description: L'URI d'accès à la nouvelle règle créée.
+            displayName: Chemin d'accès
+            example: /rules/default
+        body:
+          type: ObjectRule
+          description: La nouvelle règle de transfert en format JSON.
+          displayName: La nouvelle règle
+  /{id}:
+    displayName: Accès à une règle
+    description: Le point d'accès pour consulter ou modifier une règle particulière, identifiée par le paramètre `id` de l'URI.
+    is:
+      - returnsNotFound
+    uriParameters:
+      id:
+        type: string
+        description: L'identifiant unique de la règle souhaitée.
+        displayName: Nom de la règle
+        example: rule1
+    get:
+      displayName: Consulter une règle
+      description: Si elle existe, renvoie les informations de la règle demandée sous forme d'un objet JSON.
+      responses:
+        200:
+          description: La règle remandée a été trouvée.
+          body:
+            type: ObjectRule
+            description: Les informations de la règle de transfert demandée en format JSON.
+            displayName: La règle demandée
+    put:
+      displayName: Modifier une règle
+      description: |
+        Si elle existe, remplace les informations de la règle demandée par celles données dans la requête.
+        Les nouvelles informations seront renvoyées dans la réponse, ainsi que leur URI d'accès.
+      is:
+        - returnsBadRequest
+      body:
+        type: ObjectRule
+        displayName: La nouvelle règle
+        description: |
+          Les nouvelles informations à affecter à la règle de transfert.
+
+          **Attention**: Toutes les anciennes valeurs des attributs seront écrasées, même celles laissées vides.
+          Pour conserver l'ancienne valeur d'un attribut, remplir celui-ci avec une valeur identique à l'ancienne.
+      responses:
+        201:
+          description: La règle de transfert a été mise à jour avec succès.
+          headers:
+            ruleURI:
+              type: string
+              description: Le chemin d'accès de la règle modifiée. Si le nom de la règle n'a pas été changé, cet URI sera identique à celui ayant été utilisé pour la requête.
+              displayName: Chemin d'accès
+              example: /rules/new_default
+          body:
+            type: ObjectRule
+            description: Les nouvelles informations sur la règle de transfert en format JSON.
+            displayName: La nouvelle règle
+    delete:
+      description: Si elle existe, supprime la règle de transfert de la base de données.
+      displayName: Supprimer une règle
+      responses:
+        204:
+          description: La règle a été supprimée avec succès.
+/v2/server:
+  displayName: Commandes serveur
+  description: La racine des points d'accès aux commandes serveur.
+  /status:
+    displayName: Statut du serveur
+    description: Le point d'entrée pour obtenir un statut global du serveur.
+    get:
+      displayName: Consulter le statut du serveur
+      description: Renvoie le statut général du serveur sous forme d'un objet JSON regroupant toutes les informations sur celui-ci.
+      queryParameters:
+        period:
+          type: string
+          pattern: P(\d)+DT(\d)+H(\d)+M(\d)+S
+          displayName: Période
+          description: La période de temps (en format ISO-8601) sur laquelle le statut du serveur est étudié.
+
+          default: P1DT0H0M0S
+      responses:
+        200:
+          description: La requête s'est déroulée avec succès.
+          body:
+            type: object
+            displayName: Le statut du serveur
+            description: Un objet regroupant toutes les informations d'un serveur R66.
+            properties:
+              serverName:
+                type: string
+                description: Le nom du serveur R66.
+                displayName: Nom du serveur
+              noSSL:
+                type: boolean
+                description: Spécifie si le serveur supporte les transferts en clair.
+                displayName: Transferts en clair
+              SSL:
+                type: boolean
+                displayName: Transferts avec SSL
+                description: Spécifie si le serveur supporte les transferts sécurisés avec SSL.
+              date:
+                type: datetime
+                description: La date (en format ISO-8601) à laquelle la requête de statut du serveur a été faite.
+                displayName: Date requête
+              lastRun:
+                type: datetime
+                description: La date (en format ISO-8601) à laquelle la dernière requête de statut du serveur a été faite.
+                displayName: Date dernière requête
+              fromDate:
+                type: datetime
+                description: La date (en format ISO-8601) à laquelle le serveur R66 a été lancé.
+                displayName: Date de lancement
+              secondsRunning:
+                type: integer
+                format: int32
+                description: La durée de fonctionnement (en secondes) du serveur r66 depuis son lancement.
+                default: 0
+                minimum: 0
+                displayName: Durée de fonctionnement
+              networkConnections:
+                type: integer
+                format: int32
+                description: Le nombre de connections actuellement ouvertes sur le serveur.
+                default: 0
+                minimum: 0
+                displayName: Nombre de connections
+              nbThreads:
+                type: integer
+                format: int32
+                description: Le nombre de threads actuellement utilisés par le serveur r66.
+                default: 1
+                minimum: 1
+                displayName: Nombre de threads
+              inBandwidth:
+                type: integer
+                format: int64
+                description: L'utilisation actuelle de bande passante descendante par le serveur r66.
+                default: 0
+                minimum: 0
+                displayName: Bande passante descendante
+              outBandwidth:
+                type: integer
+                format: int64
+                description: L'utilisation actuelle de bande passante montante par le serveur r66.
+                default: 0
+                minimum: 0
+                required: false
+                displayName: Bande passante montante
+              overall:
+                type: object
+                description: Un résumé des statuts des différents transferts sur le serveur.
+                displayName: Statut des transferts
+                properties:
+                  allTransfers:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts relevé sur le serveur.
+                    default: 0
+                    minimum: 0
+                    displayName: Nombre total de transferts
+                  unknown:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    displayName: Statuts indéterminés
+                    description: Le nombre total de transferts dont le statut est inconnu.
+                  notUpdated:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    displayName: Statuts non à jour
+                    description: Le nombre total de transferts dont le statut n'est pas à jour.
+                  interrupted:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts ayant été interrompus.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts interrompus
+                  toSubmit:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts en attente d'être exécutés.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts plannifiés
+                  inError:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts ayant terminé en erreur.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts échoués
+                  running:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts en cours d'exécution.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts en cours
+                  done:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts complêtés avec succès.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts terminés
+                  runningIn:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts entrants en cours.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts entrants
+                  runningOut:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts sortants
+                    description: Le nombre de transferts sortants en cours.
+                  lastRunningIn:
+                    type: datetime
+                    description: La date du dernier transfert entrant.
+                    displayName: Dernière réception
+                  lastRunningOut:
+                    type: datetime
+                    description: La date du dernier transfert sortant.
+                    displayName: Dernier envoi
+                  allIn:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts entrants traités par le serveur.
+                    default: 0
+                    minimum: 0
+                    displayName: Total transferts entrants
+                  allOut:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts sortants traités par le serveur.
+                    default: 0
+                    minimum: 0
+                    displayName: Total transferts sortants
+                  errorsIn:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts entrants ayant échoués.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts entrants échoués
+                  errorsOut:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts sortants ayant échoués.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts sortants échoués
+              globalSteps:
+                type: object
+                description: Un résumé de toutes les traitements en cours d'exécution pour les transferts (i.e. leur étape globale actuelle).
+                displayName: Étapes globales
+                properties:
+                  noTask:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts n'ayant pas encore effectué de traitements.
+                    default: 0
+                    minimum: 0
+                    displayName: Transfers en attente
+                  preTask:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts exécutant leurs pré-traitements.
+                    default: 0
+                    minimum: 0
+                    displayName: Pré-traitements en cours
+                  transferTask:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts en phase de transfert de fichier.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts en cours
+                  postTask:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts exécutant leurs post-traitements.
+                    default: 0
+                    minimum: 0
+                    displayName: Post-traitements en cours
+                  allDoneTask:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant terminé leurs traitements normaux avec succès.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts terminés
+                  errorTask:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transfers ayant terminé leurs traitements d'erreur.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts échoués
+              runningSteps:
+                type: object
+                description: Un résumé de toutes les sous-étapes en cours des transferts, c'est-à-dire la sous-partie de l'étape globale actuelle que le transfert est en train de traiter.
+                displayName: Sous-étapes
+                properties:
+                  allRunning:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts traités par le serveur.
+                    default: 0
+                    minimum: 0
+                    displayName: Total transferts
+                  running:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    description: Le nombre de transferts en cours de traitement.
+                    displayName: Transferts en cours
+                  initOk:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayangt terminé leur phase d'initialisation.
+                    default: 0
+                    minimum: 0
+                    displayName: Initialisation terminée
+                  preProcessingOK:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant terminé leurs pré-traitements.
+                    default: 0
+                    minimum: 0
+                    displayName: Pré-traitements terminés
+                  transferOk:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant terminé la phase de transfert de données.
+                    default: 0
+                    minimum: 0
+                    displayName: Envoi terminé
+                  postProcessingOk:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant terminé leurs post-traitements.
+                    default: 0
+                    minimum: 0
+                    displayName: Post-traitements terminés
+                  completeOk:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts entièrement complêtés.
+                    default: 0
+                    minimum: 0
+                    displayName: Transferts terminés
+              errors:
+                type: object
+                description: Un résumé de toutes les erreurs rencontrées durant le traitement de transferts.
+                displayName: Erreurs
+                properties:
+                  connectionImpossible:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le partenaire ne pouvait pas être contacté.
+                    default: 0
+                    minimum: 0
+                    displayName: Connection impossible
+                  serverOverloaded:
+                    type: integer
+                    format: int64
+                    description: Le nombre total de transferts ayant échoué car les limites de capacité du serveur ont été atteintes.
+                    default: 0
+                    minimum: 0
+                    displayName: Serveur surchargé
+                  badAuthent:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le serveur a échoué à s'authentifier auprès de son partenaire.
+                    default: 0
+                    minimum: 0
+                    displayName: Mauvaise authentification
+                  externalOp:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué à cause d'une erreur survenue lors d'un traitement externe.
+                    default: 0
+                    minimum: 0
+                    displayName: Erreur externe
+                  transferError:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    description: Le nombre de transferts ayant échoué car la règle utilisée est inconnue de un des deux partenaires.
+                    displayName: Règle inconnue
+                  md5Error:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car la vérification du hash MD5 du fichier a échoué.
+                    default: 0
+                    minimum: 0
+                    displayName: Mauvais hash MD5
+                  disconnection:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le partenaire distant s'est déconnecté durant le transfert.
+                    default: 0
+                    minimum: 0
+                    displayName: Déconnection
+                  remoteShutdown:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le partenaire distant a été arrêté pendant le transfert.
+                    default: 0
+                    minimum: 0
+                    displayName: Arrêt partenaire
+                  finalOp:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué à cause d'une erreur durant la finalisation du transfert (c'est-à-dire le déplacement du fichier du dossier de travail au dossier de réception).
+                    default: 0
+                    minimum: 0
+                    displayName: Erreur de finalisation
+                  unimplemented:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car une opération externe (typiquement une classe Java) a été appelée mais n'est pas disponible sur le serveur.
+                    default: 0
+                    minimum: 0
+                    displayName: Non implémenté
+                  shutdown:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le serveur a été arrêté pendant le transfert.
+                    default: 0
+                    minimum: 0
+                    displayName: Arrêt serveur
+                  remoteError:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué à cause d'une erreur d'exécution sur le partenaire distant.
+                    default: 0
+                    minimum: 0
+                    displayName: Erreur distante
+                  internal:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué à cause d'une erreur d'exécution sur le serveur.
+                    default: 0
+                    minimum: 0
+                    displayName: Erreur interne
+                  stopped:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car l'arrêt du transfert a été demandé.
+                    default: 0
+                    minimum: 0
+                    displayName: Transfert arrêté
+                  canceled:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car l'annulation du transfert a été demandée.
+                    default: 0
+                    minimum: 0
+                    displayName: Transfert annulé
+                  warning:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant lancé une alerte lors de l'exécution.
+                    default: 0
+                    minimum: 0
+                    displayName: Alerte
+                  unknown:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué pour des raisons inconnues.
+                    default: 0
+                    minimum: 0
+                    displayName: Erreur inconnue
+                  queryAlreadyFinished:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transfert ayant échoué car le transfert demandé est déjà terminé sur le partenaire distant.
+                    default: 0
+                    minimum: 0
+                    displayName: Transfert déjà terminé
+                  queryStillRunning:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le transfert demandé est déjà en cours sur le partenaire distant.
+                    default: 0
+                    minimum: 0
+                    displayName: Transfert déja en cours
+                  unknownHost:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car le partenaire demandé n'existe pas.
+                    default: 0
+                    minimum: 0
+                    displayName: Hôte inconnu
+                  remotelyUnknown:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car la requête de transfert n'existe pas sur le partenaire distant.
+                    default: 0
+                    minimum: 0
+                    displayName: Requête inconnue
+                  fileNotFound:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    displayName: Fichier inconnu
+                    description: Le nombre de transfets ayant échoué car le fichier demandé n'existe pas.
+                  commandNotFound:
+                    type: integer
+                    format: int64
+                    description: Le nombre de transferts ayant échoué car une des commandes à exécuter n'existe pas.
+                    default: 0
+                    minimum: 0
+                    displayName: Commande inconnue
+                  passThroughMode:
+                    type: integer
+                    format: int64
+                    default: 0
+                    minimum: 0
+                    description: Le nombre de transferts ayant échoué car le transfert a été demandé en mode passthrough, mais le partenaire distant n'autorise pas ce mode.
+                    displayName: PassThrough impossible
+  /deactivate:
+    displayName: Activation du serveur
+    description: Un point d'entrée pour activer et désactiver le serveur.
+    put:
+      displayName: (Dés)activer le serveur
+      description: Désactive ou active le serveur pour que celui-ci accepte ou refuse les nouvelles requêtes de transfert.
+      responses:
+        202:
+          description: Le serveur a été (dés)activé avec succès.
+  /shutdown:
+    displayName: Arrêt du serveur
+    description: Un point d'entrée pour arrêter le serveur.
+    put:
+      displayName: Arrêter le serveur
+      description: Stoppe tous les transferts en cours et arrête le serveur R66.
+      responses:
+        202:
+          description: Le requête a été traitée avec succès, le serveur va s'éteindre.
+  /reboot:
+    displayName: Redémarrage du serveur
+    description: Un point d'entrée pour redémarrer le serveur.
+    put:
+      displayName: Redémarrer le serveur
+      description: Stoppe tous les transferts en cours et redémarre le serveur R66.
+      responses:
+        202:
+          description: Le requête a été traitée avec succès, le serveur va redémarrer.
+  /logs:
+    displayName: Logs du serveur
+    description: Un point d'entrée pour accéder au logs du serveur.
+    get:
+      displayName: Exporter les logs du serveur
+      description: Exporte les logs de transferts du serveur vers un fichier XML dans le dossier de logs du serveur.
+      is:
+        - returnsBadRequest
+      queryParameters:
+        purge:
+          type: boolean
+          description: Spécifie si les transferts exportés doivent être purgés de la base de données après l'export de log.
+          default: false
+          required: false
+          displayName: Purge après export
+        clean:
+          type: boolean
+          description: Spécifie si, avant d'être exportés, les transferts doivent avoir leur statut marqué comme terminé lorsque leur étape globale et sous-étape le permettent.
+          default: false
+          required: false
+          displayName: Marquer comme terminé
+        status:
+          type: TransferStatus
+          required: false
+          description: Filtre pour n'exporter que les transferts ayant ce statuts.
+          displayName: Statuts
+          example: "TOSUBMIT"
+        ruleName:
+          type: string
+          description: Filtre pour n'exporter que les transferts utilisant cette règle de tranfert.
+          required: false
+          displayName: Règle de transfert
+          example: rule1
+        start:
+          type: datetime
+          description: Filtre pour n'exporter que les transferts ultérieurs à cette date.
+          required: false
+          displayName: Date de début
+          example: 1970-01-01T01:00:00.000+00:00
+        stop:
+          type: datetime
+          description: Filtre pour n'exporter que les transferts antérieurs à cette date.
+          required: false
+          displayName: Date de fin
+          example: 1970-01-01T02:00:00.000+00:00
+        startID:
+          type: integer
+          format: int64
+          description: Filtre pour n'exporter que les transferts ayant un ID plus grand que celui-ci.
+          required: false
+          displayName: ID minimum
+          example: 0
+        stopID:
+          type: integer
+          format: int64
+          description: Filtre pour n'exporter que les transferts ayant un ID plus petit que celui-ci.
+          required: false
+          displayName: ID maximum
+          example: 10
+        requested:
+          type: string
+          description: Filtre pour n'exporter que les transferts demandés par cet hôte.
+          required: false
+          displayName: Émetteur de transfert
+          example: server2
+      responses:
+        200:
+          description: Les logs ont été exportés avec succès.
+          body:
+            type: object
+            displayName: Résultats de l'export
+            description: Les informations sur le déroulement de l'export de logs.
+            properties:
+              filePath:
+                type: string
+                description: Le chemin vers le fichier XML où les logs ont été exportés.
+                displayName: Destination
+                example: /logs/log1.txt
+              exported:
+                type: integer
+                format: int64
+                minimum: 0
+                displayName: Entrées exportées
+                description: Le nombre d'entrées de transferts ayant été exportées.
+              purged:
+                type: integer
+                format: int64
+                description: Si la purge de transfert a été activée dans la requête, donne le nombre d'entrées ayant été purgées du serveur.
+                minimum: 0
+                displayName: Entrées purgées
+  /config:
+    displayName: Import/Export de configuration
+    description: Un point d'entrée pour importer ou exporter la configuration du serveur R66.
+    get:
+      displayName: Exporter la configuration
+      description: Exporte divers éléments de la configuration du serveur R66 vers des fichiers dans le dossier de configuration du serveur.
+      is:
+        - returnsBadRequest
+      queryParameters:
+        exportHosts:
+          type: boolean
+          description: Spécifie si la liste des hôtes connus du serveur doit être exportée non.
+          default: false
+          required: false
+          displayName: Export des hôtes
+        exportRules:
+          type: boolean
+          description: Spécifie si les règles de transfert doivent être exportées ou non.
+          default: false
+          required: false
+          displayName: Export des règles
+        exportBusiness:
+          type: boolean
+          description: Spécifie si la liste des hôtes autorisés à exécuter un business sur le serveur doit être exportée ou non.
+          default: false
+          required: false
+          displayName: Export des partenaire de business
+        exportAliases:
+          type: boolean
+          description: Spécifie si la liste des alias connus de chaque hôte doit être exportée ou non.
+          default: false
+          required: false
+          displayName: Export des alias
+        exportRoles:
+          type: boolean
+          description: Spécifie si la liste des rôles autorisés de chaque hôte doit être exportée ou non.
+          default: false
+          required: false
+          displayName: Export des roles
+      responses:
+        200:
+          description: La configuration a été exportée avec succès.
+          body:
+            type: object
+            displayName: Chemins d'export
+            description: Un objet regroupant les chemins des fichiers dans lesquels la configuration du serveur a été exportée.
+            properties:
+              fileHost:
+                type: string
+                description: Le chemin vers le fichier contenant la liste des hôtes.
+                required: false
+                displayName: Fichier des hôtes
+                example: /configs/host.conf
+              fileRule:
+                type: string
+                description: Le chemin vers le fichier contenant la liste des règles de transfert.
+                required: false
+                displayName: Fichier des règles
+                example: /configs/rules.conf
+              fileBusiness:
+                type: string
+                required: false
+                description: Le chemin vers le fichier contenant la liste des partenaires de business.
+                displayName: Fichier de business
+                example: /configs/business.conf
+              fileAlias:
+                type: string
+                description: Le chemin vers le fichier contenant la liste des alias des hôtes.
+                required: false
+                displayName: Fichier des alias
+                example: /configs/aliases.conf
+              fileRoles:
+                type: string
+                description: Le chemin vers le fichier contenant la liste des rôles des hôtes.
+                required: false
+                displayName: Fichier des roles
+                example: /configs/roles.conf
+    put:
+      displayName: Importer la configuration
+      description: Importe divers éléments de la configuration du serveur R66 depuis des fichiers dans le dossier de configuration du serveur.
+      is:
+        - returnsBadRequest
+      queryParameters:
+        purgeHosts:
+          type: boolean
+          description: Spécifie si l'ancienne base de données des hôtes doit être purgée avant d'importer la nouvelle.
+          default: false
+          required: false
+          displayName: Purger les hôtes
+        purgeRules:
+          type: boolean
+          description: Spécifie si l'ancienne base de données des règles de transfert doit être purgée avant d'importer la nouvelle.
+          default: false
+          required: false
+          displayName: Purger les règles
+        purgeBusiness:
+          type: boolean
+          description: Spécifie si l'ancienne base de données des partenaire de business doit être purgée avant d'importer la nouvelle.
+          default: false
+          required: false
+          displayName: Purger les partenaires business
+        purgeAliases:
+          type: boolean
+          description: Spécifie si l'ancienne base de données des alias doit être purgée avant d'importer la nouvelle.
+          default: false
+          required: false
+          displayName: Purger les alias
+        purgeRoles:
+          type: boolean
+          description: Spécifie si l'ancienne base de données des rôles doit être purgée avant d'importer la nouvelle.
+          default: false
+          required: false
+          displayName: Purger les rôles
+        hostsFile:
+          type: string
+          description: Le chemin du fichier contenant les hôtes à importer.
+          required: false
+          displayName: Fichier hôtes
+          example: config/hosts.conf
+        rulesFile:
+          type: string
+          description: Le chemin du fichier contenant les règles à importer.
+          required: false
+          displayName: Fichier règles
+          example: config/rules.conf
+        businessFile:
+          type: string
+          description: Le chemin du fichier contenant les partenaire business à importer.
+          required: false
+          displayName: Fichier business
+          example: config/business.conf
+        aliasesFile:
+          type: string
+          description: Le chemin du fichier contenant les alias à importer.
+          required: false
+          displayName: Fichier alias
+          example: config/alias.conf
+        rolesFile:
+          type: string
+          description: Le chemin du fichier contenant les rôles à importer.
+          required: false
+          displayName: Fichier rôles
+          example: config/roles.conf
+      responses:
+        202:
+          description: La configuration a été importée avec succès.
+          body:
+            type: object
+            displayName: Résultat de l'importation
+            properties:
+              purgedHost:
+                type: boolean
+                displayName: Purge hôtes
+                description: Indique si les anciens hôtes ont été supprimés avant l'importation.
+              purgedRule:
+                type: boolean
+                description: Indique si les anciennes règles ont été supprimées avant l'importation.
+                displayName: Purge règles
+              purgedBusiness:
+                type: boolean
+                description: Indique si les anciens partenaire de business ont été supprimés avant l'importation.
+                displayName: Purge business
+              purgedAlias:
+                type: boolean
+                description: Indique si les anciens alias ont été supprimés avant l'importation.
+                displayName: Purge alias
+              purgedRoles:
+                type: boolean
+                description: Indique si les anciens rôles ont été supprimés avant l'importation.
+                displayName: Purge rôles
+              importedHost:
+                type: boolean
+                description: Indique si de nouveaux hôtes ont été importés ou non.
+                displayName: Importation hôtes
+              importedRule:
+                type: boolean
+                description: Indique si de nouvelles règles ont été importés ou non.
+                displayName: Importation règles
+              importedBusiness:
+                type: boolean
+                description: Indique si de nouveaux partenaire de business ont été importés ou non.
+                displayName: Importation business
+              importedAlias:
+                type: boolean
+                description: Indique si de nouveaux alias ont été importés ou non.
+                displayName: Importation alias
+              importedRoles:
+                type: boolean
+                description: Indique si de nouveaux rôles ont été importés ou non.
+                displayName: Importation rôles

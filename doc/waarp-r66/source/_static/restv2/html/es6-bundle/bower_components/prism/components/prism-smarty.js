@@ -1,0 +1,8 @@
+/* TODO
+	Add support for variables inside double quoted strings
+	Add support for {php}
+*/(function(Prism){Prism.languages.smarty={comment:/\{\*[\s\S]*?\*\}/,delimiter:{pattern:/^\{|\}$/i,alias:"punctuation"},string:/(["'])(?:\\.|(?!\1)[^\\\r\n])*\1/,number:/\b0x[\dA-Fa-f]+|(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee][-+]?\d+)?/,variable:[/\$(?!\d)\w+/,/#(?!\d)\w+#/,{pattern:/(\.|->)(?!\d)\w+/,lookbehind:!0},{pattern:/(\[)(?!\d)\w+(?=\])/,lookbehind:!0}],function:[{pattern:/(\|\s*)@?(?!\d)\w+/,lookbehind:!0},/^\/?(?!\d)\w+/,/(?!\d)\w+(?=\()/],"attr-name":{// Value is made optional because it may have already been tokenized
+pattern:/\w+\s*=\s*(?:(?!\d)\w+)?/,inside:{variable:{pattern:/(=\s*)(?!\d)\w+/,lookbehind:!0},operator:/=/}},punctuation:[/[\[\]().,:`]|->/],operator:[/[+\-*\/%]|==?=?|[!<>]=?|&&|\|\|?/,/\bis\s+(?:not\s+)?(?:div|even|odd)(?:\s+by)?\b/,/\b(?:eq|neq?|gt|lt|gt?e|lt?e|not|mod|or|and)\b/],keyword:/\b(?:false|off|on|no|true|yes)\b/};// Tokenize all inline Smarty expressions
+Prism.hooks.add("before-tokenize",function(env){var smartyPattern=/\{\*[\s\S]*?\*\}|\{[\s\S]+?\}/g,smartyLitteralStart="{literal}",smartyLitteralEnd="{/literal}",smartyLitteralMode=!1;Prism.languages["markup-templating"].buildPlaceholders(env,"smarty",smartyPattern,function(match){// Smarty tags inside {literal} block are ignored
+if(match===smartyLitteralEnd){smartyLitteralMode=!1}if(!smartyLitteralMode){if(match===smartyLitteralStart){smartyLitteralMode=!0}return!0}return!1})});// Re-insert the tokens after tokenizing
+Prism.hooks.add("after-tokenize",function(env){Prism.languages["markup-templating"].tokenizePlaceholders(env,"smarty")})})(Prism);
