@@ -45,7 +45,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   public abstract E getFromResultSet(ResultSet set)
       throws SQLException, DAOConnectionException;
 
-  StatementExecutor(Connection con) {
+  protected StatementExecutor(Connection con) {
     connection = con;
   }
 

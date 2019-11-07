@@ -67,15 +67,21 @@ public abstract class DAOFactory {
                          Boolean.FALSE);
     } catch (ParserConfigurationException ignored) {
       // nothing
+    } catch (AbstractMethodError ignored) {
+      // nothing
     }
     try {
       factory.setFeature(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
     } catch (ParserConfigurationException ignored) {
       // nothing
+    } catch (AbstractMethodError ignored) {
+      // nothing
     }
     try {
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
     } catch (ParserConfigurationException ignored) {
+      // nothing
+    } catch (AbstractMethodError ignored) {
       // nothing
     }
     return factory;
