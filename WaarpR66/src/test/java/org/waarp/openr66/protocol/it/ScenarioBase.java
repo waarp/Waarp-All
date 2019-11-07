@@ -44,6 +44,8 @@ import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
+import org.waarp.openr66.protocol.test.TestRecvThroughClient;
+import org.waarp.openr66.protocol.test.TestRecvThroughClient.TestRecvThroughHandler;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.server.R66Server;
 import org.waarp.openr66.server.ServerInitDatabase;
@@ -53,6 +55,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.*;
 
@@ -382,6 +386,44 @@ public abstract class ScenarioBase extends TestAbstract {
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
+  @Test
+  public void test012_MultipleSendsSync()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    Assume.assumeNotNull(networkTransaction);
+    File baseDir = new File("/tmp/R66/scenario_1_2_3/R2/out/");
+    File fileOut = new File(baseDir, "hello");
+    final File outHello = generateOutFile(fileOut.getAbsolutePath(), 100000);
+    ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
+    ExecutorService executorService =
+        Executors.newFixedThreadPool(NUMBER_FILES);
+    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    long timestart = System.currentTimeMillis();
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      final R66Future future = new R66Future(true);
+      futures.add(future);
+      final TestRecvThroughClient transaction =
+          new TestRecvThroughClient(future, handler, "server2", "hello",
+                                    "recvthrough", "Test Multiple RecvThrough",
+                                    true, 8192, networkTransaction);
+      transaction.setNormalInfoAsWarn(false);
+      executorService.execute(transaction);
+    }
+    Thread.sleep(100);
+    executorService.shutdown();
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      final R66Future future = futures.remove(0);
+      future.awaitOrInterruptible();
+      assertTrue(future.isSuccess());
+    }
+    long timestop = System.currentTimeMillis();
+    logger
+        .warn("RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
+              NUMBER_FILES, (timestop - timestart) / 1000,
+              NUMBER_FILES * 1000 / (timestop - timestart));
+    outHello.delete();
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
 
   @Test
   public void test020_MultipleSends_Through_Itself()

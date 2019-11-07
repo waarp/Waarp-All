@@ -1,0 +1,867 @@
+OPENR66-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    NOTIFICATION-GROUP, NOTIFICATION-TYPE, enterprises, OBJECT-TYPE, Counter32, Gauge32, Counter64, MODULE-IDENTITY, mib-2
+      FROM SNMPv2-SMI
+    TimeStamp, TEXTUAL-CONVENTION
+      FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    system
+        FROM SNMPv2-MIB;
+
+openr66 MODULE-IDENTITY
+    LAST-UPDATED    "201103050000Z"
+    ORGANIZATION    "Waarp OpenR66"
+    CONTACT-INFO
+      "        Frederic Bregier
+
+       E-Mail: openr66@free.fr"
+    DESCRIPTION
+      "The MIB module describing OpenR66 Mib"
+    REVISION        "201103050000Z"
+    DESCRIPTION
+      "This revision is the first setup of the OpenR66 MIB."
+-- 1.3.6.1.4.1.66666.66.1.1 -- 
+::= { enterprises 66666 66 1 1 }
+
+-- root
+waarp OBJECT IDENTIFIER ::= { enterprises 66666 }    
+r66 OBJECT IDENTIFIER ::= { waarp 66 }    
+
+-- Textual conventions
+
+-- DistinguishedName is used to refer to objects in the
+-- directory.
+
+DistinguishedName ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS current
+    DESCRIPTION
+        "A Distinguished Name represented in accordance with
+         RFC 2253, presented in the UTF-8 charset defined in
+         RFC 2279."
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+-- Uniform Resource Locators are stored in URLStrings.
+
+URLString ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS current
+    DESCRIPTION
+        "A Uniform Resource Locator represented in accordance
+         with RFCs 1738 and 2368, presented in the NVT ASCII
+         charset defined in RFC 854."
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+    
+-- The basic applEntry contains the different elements.
+
+applDefinitions OBJECT IDENTIFIER ::= { r66 1 }
+applGlobalValues OBJECT IDENTIFIER ::= { r66 2 }
+applDetailedValues OBJECT IDENTIFIER ::= { r66 3 }
+applErrorValues OBJECT IDENTIFIER ::= { r66 4 }
+waarptraps  OBJECT IDENTIFIER ::= { r66 5 }
+
+
+applName OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The name the network service application chooses to be
+       known by."
+    ::= {applDefinitions 1}
+
+applServerName OBJECT-TYPE
+    SYNTAX DistinguishedName
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The Server Name of this particular instance."
+    ::= {applDefinitions 2}
+
+applVersion OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The version of network service application software.
+       This field is usually defined by the vendor of the
+       network service application software."
+    ::= {applDefinitions 3}
+
+applDescription OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "A text description of the application.  This information
+       is intended to identify and briefly describe the
+       application in a status display."
+    ::= {applDefinitions 4}
+
+applURL OBJECT-TYPE
+    SYNTAX URLString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "A URL pointing to a description of the application.
+       This information is intended to identify and describe
+       the application in a status display."
+    ::= {applDefinitions 5}
+
+assocApplicationProtocol OBJECT-TYPE
+    SYNTAX OBJECT IDENTIFIER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "An identification of the protocol being used for the
+       application.  For an OSI Application, this will be the
+       Application Context.  For Internet applications, OID
+       values of the form {applTCPProtoID port} or {applUDPProtoID
+       port} are used for TCP-based and UDP-based protocols,
+       respectively. In either case 'port' corresponds to the
+       primary port number being used by the protocol. The
+       usual IANA procedures may be used to register ports for
+       new protocols."
+    ::= {applDefinitions 6}
+
+    
+applUptime OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time the network service
+       application was last initialized.  If the application was
+       last initialized prior to the last initialization of the
+       network management subsystem, then this object contains
+       a zero value."
+    ::= {applGlobalValues 1}
+
+applOperStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+      up(1),
+      down(2),
+      halted(3),
+      congested(4),
+      restarting(5),
+      quiescing(6)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Indicates the operational status of the network service
+       application. 'down' indicates that the network service is
+       not available. 'up' indicates that the network service
+       is operational and available.  'halted' indicates that the
+       service is operational but not available.  'congested'
+       indicates that the service is operational but no additional
+       inbound associations can be accommodated.  'restarting'
+       indicates that the service is currently unavailable but is
+       in the process of restarting and will be available soon.
+       'quiescing' indicates that service is currently operational
+       but is in the process of shutting down. Additional inbound
+       associations may be rejected by applications in the
+       'quiescing' state."
+    ::= {applGlobalValues 2}
+
+applLastChange OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time the network service
+       application entered its current operational state.  If
+       the current state was entered prior to the last
+       initialization of the local network management subsystem,
+       then this object contains a zero value."
+    ::= {applGlobalValues 3}
+
+applInboundAssociations OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The number of current associations to the network service
+       application, where it is the responder.  An inbound
+       association occurs when another application successfully
+       connects to this one."
+    ::= {applGlobalValues 4}
+
+applOutboundAssociations OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The number of current associations to the network service
+       application, where it is the initiator.  An outbound
+       association occurs when this application successfully
+       connects to another one."
+    ::= {applGlobalValues 5}
+
+applAccumInboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number of associations to the application entity
+       since application initialization, where it was the responder."
+    ::= {applGlobalValues 6}
+
+applAccumOutboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number of associations to the application entity
+       since application initialization, where it was the initiator."
+    ::= {applGlobalValues 7}
+
+applLastInboundActivity OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time this application last
+       had an inbound association.  If the last association
+       occurred prior to the last initialization of the network
+       subsystem, then this object contains a zero value."
+    ::= {applGlobalValues 8}
+
+applLastOutboundActivity OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The value of sysUpTime at the time this application last
+       had an outbound association.  If the last association
+       occurred prior to the last initialization of the network
+       subsystem, then this object contains a zero value."
+    ::= {applGlobalValues 9}
+
+applRejectedInboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number of inbound associations the application
+       entity has rejected, since application initialization.
+       Rejected associations are not counted in the accumulated
+       association totals.  Note that this only counts
+       associations the application entity has rejected itself;
+       it does not count rejections that occur at lower layers
+       of the network.  Thus, this counter may not reflect the
+       true number of failed inbound associations."
+    ::= {applGlobalValues 10}
+
+applFailedOutboundAssociations OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The total number associations where the application entity
+       is initiator and association establishment has failed,
+       since application initialization.  Failed associations are
+       not counted in the accumulated association totals."
+    ::= {applGlobalValues 11}
+
+    -- Bandwidth
+applInboundBandwidthKBS OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The Inbound bandwidth usage in KB/s."
+    ::= {applGlobalValues 12}
+
+applOutboundBandwidthKBS OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "The Outbound bandwidth usage in KB/s."
+    ::= {applGlobalValues 13}
+
+    -- Overall status including past, future and current transfers
+nbInfoUnknown OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Unknown."
+    ::= {applGlobalValues 14}
+
+nbInfoNotUpdated OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as NotUpdated."
+    ::= {applGlobalValues 15}
+    
+nbInfoInterrupted OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Interrupted."
+    ::= {applGlobalValues 16}
+
+nbInfoToSubmit OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as ToSubmit."
+    ::= {applGlobalValues 17}
+
+nbInfoError OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Error."
+    ::= {applGlobalValues 18}
+
+nbInfoRunning OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Running."
+    ::= {applGlobalValues 19}
+
+nbInfoDone OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count with Info as Done."
+    ::= {applGlobalValues 20}
+
+    
+    -- Current situation of all transfers, running or not
+nbStepAllTransfer OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in total, running or not."
+    ::= {applGlobalValues 21}
+    
+memoryTotal OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total Allocated Memory in KiloBytes."
+    ::= {applGlobalValues 22}
+
+memoryFree OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total Free Memory in KiloBytes."
+    ::= {applGlobalValues 23}
+    
+memoryUsed OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total Used Memory in KiloBytes."
+    ::= {applGlobalValues 24}
+
+nbThreads OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total number of active threads."
+    ::= {applGlobalValues 25}
+
+nbNetworkConnection OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Total number of active network connections."
+    ::= {applGlobalValues 26}
+
+-- detailed part
+
+nbStepNotask OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Step is as NoTask."
+    ::= {applDetailedValues 1}
+
+nbStepPretask OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Step is as PreTask."
+    ::= {applDetailedValues 2}
+
+nbStepTransfer OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Step is as Transfer."
+    ::= {applDetailedValues 3}
+
+nbStepPosttask OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Step is as PostTask."
+    ::= {applDetailedValues 4}
+
+nbStepAllDone OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Step is as AllDone."
+    ::= {applDetailedValues 5}
+
+nbStepError OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Step is as Error."
+    ::= {applDetailedValues 6}
+
+    
+    -- First on Running Transfers only
+nbAllRunningStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count of all transfers currently in running."
+    ::= {applDetailedValues 7}
+
+nbRunningStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in Step Running."
+    ::= {applDetailedValues 8}
+
+nbInitOkStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in Step InitOk."
+    ::= {applDetailedValues 9}
+
+nbPreProcessingOkStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in Step PreProcessingOk."
+    ::= {applDetailedValues 10}
+
+nbTransferOkStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in Step TransferOk."
+    ::= {applDetailedValues 11}
+
+nbPostProcessingOkStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in Step PostProcessingOk."
+    ::= {applDetailedValues 12}
+
+nbCompleteOkStep OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count in Step CompleteOk."
+    ::= {applDetailedValues 13}
+
+    
+    -- Error Status on all transfers
+nbStatusConnectionImpossible OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is ConnectionImpossible."
+    ::= {applErrorValues 1}
+
+nbStatusServerOverloaded OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is ServerOverloaded."
+    ::= {applErrorValues 2}
+
+nbStatusBadAuthent OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is BadAuthent."
+    ::= {applErrorValues 3}
+
+nbStatusExternalOp OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is ExternalOp."
+    ::= {applErrorValues 4}
+
+nbStatusTransferError OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is TransferError."
+    ::= {applErrorValues 5}
+
+nbStatusMD5Error OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is MD5Error."
+    ::= {applErrorValues 6}
+
+nbStatusDisconnection OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Disconnection."
+    ::= {applErrorValues 7}
+
+nbStatusFinalOp OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is FinalOp."
+    ::= {applErrorValues 8}
+
+nbStatusUnimplemented OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Unimplemented."
+    ::= {applErrorValues 9}
+
+nbStatusInternal OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Internal."
+    ::= {applErrorValues 10}
+
+nbStatusWarning OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Warning."
+    ::= {applErrorValues 11}
+
+nbStatusQueryAlreadyFinished OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is QueryAlreadyFinished."
+    ::= {applErrorValues 12}
+
+nbStatusQueryStillRunning OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is QueryStillRunning."
+    ::= {applErrorValues 13}
+
+nbStatusNotKnownHost OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is NotKnownHost."
+    ::= {applErrorValues 14}
+
+nbStatusQueryRemotelyUnknown OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is QueryRemotelyUnknown."
+    ::= {applErrorValues 15}
+
+nbStatusCommandNotFound OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is CommandNotFound."
+    ::= {applErrorValues 16}
+
+nbStatusPassThroughMode OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is PassThroughMode."
+    ::= {applErrorValues 17}
+
+nbStatusRemoteShutdown OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is RemoteShutdown."
+    ::= {applErrorValues 18}
+
+nbStatusShutdown OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Shutdown."
+    ::= {applErrorValues 19}
+
+nbStatusRemoteError OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is RemoteError."
+    ::= {applErrorValues 20}
+
+nbStatusStopped OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Stopped."
+    ::= {applErrorValues 21}
+
+nbStatusCanceled OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Canceled."
+    ::= {applErrorValues 22}
+
+nbStatusFileNotFound OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is FileNotFound."
+    ::= {applErrorValues 23}
+
+nbStatusUnknown OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "Transfers count where Status is Unknown."
+    ::= {applErrorValues 24}
+
+-- test notification
+
+startOrShutdownObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Start Or Shutdown Extra Information."
+::= { startOrShutdownWaarp 1 }
+
+startOrShutdownWaarp NOTIFICATION-TYPE
+       OBJECTS { startOrShutdownObject }
+       STATUS current
+       DESCRIPTION "Start or Shutdown SMIv2 notification"
+       ::= { waarpgroup 1 }
+ 
+errorObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Nature of Error."
+::= { errorWaarp 1 }
+
+errorWaarp NOTIFICATION-TYPE
+       OBJECTS { errorObject }
+       STATUS current
+       DESCRIPTION "Error SMIv2 notification"
+       ::= { waarpgroup 2 }
+
+warningObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Nature of Warning."
+::= { warningWaarp 1 }
+
+warningWaarp NOTIFICATION-TYPE
+       OBJECTS { warningObject }
+       STATUS current
+       DESCRIPTION "Warning SMIv2 notification"
+       ::= { waarpgroup 3 }
+
+overloadedObject OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Overloaded Server extra information."
+::= { overloadedWaarp 1 }
+
+overloadedWaarp NOTIFICATION-TYPE
+       OBJECTS { overloadedObject }
+       STATUS current
+       DESCRIPTION "Overloaded SMIv2 notification"
+       ::= { waarpgroup 4 }
+
+globalStepInfo OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "GlobalStep rank."
+::= { infoWaarp 1 }
+stepInfo OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Step in GlobalStep."
+::= { infoWaarp 2 }
+rankFileInfo OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "File Rank."
+::= { infoWaarp 3 }
+stepStatusInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString 
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Status of Step."
+::= { infoWaarp 4 }
+filenameInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current Filename."
+::= { infoWaarp 5 }
+originalNameInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Original Filename."
+::= { infoWaarp 6 }
+idRuleInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "ID of Rule."
+::= { infoWaarp 7 }
+modeTransInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Mode of Transfer."
+::= { infoWaarp 8 }
+retrieveModeInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Retrieve Mode."
+::= { infoWaarp 9 }
+startTransInfo OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Start Time of this transfer."
+::= { infoWaarp 10 }
+infoStatusInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current Status."
+::= { infoWaarp 11 }
+requesterInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Requester Id for this transfer."
+::= { infoWaarp 12 }
+requestedInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Requested Id for this transfer."
+::= { infoWaarp 13 }
+specialIdInfo OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Unique Id for this Transfer."
+::= { infoWaarp 14 }
+               
+infoWaarp NOTIFICATION-TYPE
+       OBJECTS { globalStepInfo, stepInfo, rankFileInfo, stepStatusInfo, filenameInfo, 
+       originalNameInfo, idRuleInfo, modeTransInfo, retrieveModeInfo, startTransInfo, 
+       infoStatusInfo, requesterInfo, requestedInfo, specialIdInfo }
+       STATUS current
+       DESCRIPTION "Info SMIv2 notification"
+       ::= { waarpgroup 5 }
+       
+waarpgroup NOTIFICATION-GROUP
+    NOTIFICATIONS  { startOrShutdownWaarp,errorWaarp,warningWaarp,overloadedWaarp,infoWaarp }
+    STATUS         current
+    DESCRIPTION    "Group of Notification in Waarp"
+    ::= { waarptraps 1 }
+    
+END
