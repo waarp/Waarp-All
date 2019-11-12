@@ -219,6 +219,20 @@ balises suivantes :
    deux envois.
 
 
+``<ignoreAlreadyUsed>``
+
+   Si positionné à vraie, tout fichier déjà traité et non effacé, même s'il est modifié,
+   sera ignoré et ne sera donc pas renvoyé pour éviter tout risque de collisions
+   quant au contenu transféré. Normalement, cette option devrait être activée car
+   la modification d'un fichier non transféré est une erreur d'exploitation.
+
+   Cependant, si cette option n'est pas activée ou absente, alors, même si le fichier a été
+   pris en compte pour un transfert mais toujours non effectué (partenaire injoignable
+   par exemple), alors le nouveau contenu prendra le dessus sur le précédent et
+   relancera la procédure de trasfert.
+
+   Par défaut cette option est désactivée car elle ne gène pas l'usage normal.
+
 Exemple complet
 ---------------
 

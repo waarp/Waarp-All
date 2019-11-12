@@ -2,6 +2,55 @@
 Liste des changements
 #####################
 
+
+Waarp R66 3.2.1 (2019-11-XX)
+============================
+
+Mise à jour
+-----------
+
+Pour une installation faite à partir des packages, utiliser une des commandes
+suivantes (selon la distribution) :
+
+.. code-block:: bash
+
+   # Avec les dépôts
+   yum install waarp-r66
+
+   # avec le package rpm
+   yum install path/to/waarp-r66-3.2.1-1.el6.noarch.rpm
+
+
+Pour une installation faite à partir les packages autonomes, la procédure est
+la suivante :
+
+1. Si le serveur R66 ou filewatcher a été installé en tant que service, arrêter
+   celui-ci.
+   Pour Windows seulement : désinstaller le service.
+2. Extraire l'archive au même niveau que l'ancienne installation.
+3. Copier le contenu du dossier ``etc/conf.d`` de l'ancienne installation vers le
+   dossier ``etc/conf.d`` de la nouvelle version.
+4. Procéder de même avec le dossier data de l'ancienne installation.
+5. Si le serveur R66 ou filewatcher a été installé en tant que service :
+
+   - Pour windows seulement : réinstaller les services depuis la nouvelle
+     installation.
+   - Pour linux : mettre à jour les chemins du service avec les nouveaux dossiers.
+
+   Enfin, redémarrer les services.
+
+
+Améliorations
+-------------
+
+- Amélioration de la prise en compte d'un transfert échoué sur connexion impossible pour rejeu
+- Amélioration de la détection au plus tôt de l'absence d'un fichier lors d'une demande d'émission
+- Amélioration de la prise en compte d'un fichier déjà pris en compte par FileWatcher mais modifié après,
+  sans être effacé (ce qui n'est pas une bonne pratique) : le fichier sera reprogrammé pour un nouveau
+  transfert. Cette amélioration est désactivable avec l'option ``-ignoreAlreadyUsed=true``
+- Mise à jour des dépendances externes
+
+
 Waarp R66 3.2.0 (2019-10-25)
 ============================
 
