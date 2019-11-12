@@ -9,3 +9,4 @@ Référence des fichiers de configuration
    client
    snmp
    rule
+   authent

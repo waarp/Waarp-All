@@ -12,7 +12,7 @@ de l'instance serveur.
 
    Les changements dans ce fichier sont pris en compte au redémarrage du serveur.
 
-Les directives de configuration sont réparties en 8 sections :
+Les directives de configuration sont réparties en 11 sections :
 
 - :ref:`identity <server-xml-identity>`: données concernant l'identité
   de l'instance
@@ -26,7 +26,11 @@ Les directives de configuration sont réparties en 8 sections :
   ressources et du comportement interne du serveur
 - :ref:`db <server-xml-db>`: paramétrage de la base de données
 - :ref:`rest <server-xml-rest>`: paramétrage de l'interface REST
+- :ref:`business <server-xml-business>`: paramétrage des composantes métiers (Mode ``Embedded``)
+- :ref:`roles <server-xml-roles>`: paramétrage des rôles autorisés des partenaires
+- :ref:`aliases <server-xml-aliases>`: paramétrage d'alias (nom de remplacement) pour des partenaires
 
+Il existe également des options étendues à la JVM : :ref:`ExtraOptions <Extra-Waarp-options>`
 
 .. _server-xml-identity:
 
@@ -47,29 +51,30 @@ authentfile string N           Fichier XML contenant l'authentification des part
 Section ``server``
 ------------------
 
-================== ======= ==== ========= =============
-Balise             Type    Obl. Défaut    Signification
-================== ======= ==== ========= =============
-serveradmin        string  O              Nom d'utilisateur de l'administrateur utilisé pour accéder à l'interface web d'administration
-serverpasswd       string  O              Mot de passe de l'administrateur encryptée avec la clef « cryptokey » utilisé pour accéder à l'interface web d'administration
-usenossl           boolean N    True      Active le mode non-SSL
-usessl             boolean N    False     Active le mode SSL
-usehttpcomp        boolean N    False     Si le mode SSL  est activé, active la compression SSL
-uselocalexec       boolean N    False     Par défaut, Waarp R66 utilise System.exec() pour exécuter les processus externes. Cela peut poser des problèmes de performance (limitations de la JDK). L'utilisation de GoldenGate LocalExec Daemon peut permettre d'obtenir de meilleures performance par délégation d'exécution.
-lexecadd           string  N    127.0.0.1 Adresse sur laquelle écoute le daemon LocalExec
-lexecport          integer N    9999      Port sur lequel écoute le daemon LocalExec
-httpadmin          string  O              Chemin vers le dossier où sont stockées les sources de l'interface d'administration web
-admkeypath         string  O              Chemin vers le fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
-admkeystorepass    string  O              Mot de passe du fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
-admkeypass         string  O              Mot de passe certificat HTTPS pour l'interface web d'administration contenu dans le fichier JKS.
-checkaddress       boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP de l'hôte distant qui demande une connexion
-checkclientaddress boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP des clients qui demandent une connexion
-multiplemonitors   integer O    1         Nombre de serveurs qui agissent dans le même groupe comme une seule instance R66
-pastlimit          integer N    86400000  Profondeur maximale affichées dans l'interface HTTP de monitoring en ms
-minimaldelay       integer N    5000      Intervalle de rafraîchissement automatique de l'interface HTTP de monitoring en ms
-snmpconfig         string  N              Chemin vers le fichier de configuration de l'agent SNMP (voir :ref:`référence <snmp-xml>`)
-multiplemonitors   integer N    1         Nombre d'instances dans un cluster de serveurs Waarp R66
-================== ======= ==== ========= =============
+====================== ======= ==== ========= =============
+Balise                 Type    Obl. Défaut    Signification
+====================== ======= ==== ========= =============
+serveradmin            string  O              Nom d'utilisateur de l'administrateur utilisé pour accéder à l'interface web d'administration
+serverpasswd           string  O              Mot de passe de l'administrateur encryptée avec la clef « cryptokey » utilisé pour accéder à l'interface web d'administration
+usenossl               boolean N    True      Active le mode non-SSL
+usessl                 boolean N    False     Active le mode SSL
+usehttpcomp            boolean N    False     Si le mode SSL  est activé, active la compression SSL
+uselocalexec           boolean N    False     Par défaut, Waarp R66 utilise System.exec() pour exécuter les processus externes. Cela peut poser des problèmes de performance (limitations de la JDK). L'utilisation de GoldenGate LocalExec Daemon peut permettre d'obtenir de meilleures performance par délégation d'exécution.
+lexecadd               string  N    127.0.0.1 Adresse sur laquelle écoute le daemon LocalExec
+lexecport              integer N    9999      Port sur lequel écoute le daemon LocalExec
+httpadmin              string  O              Chemin vers le dossier où sont stockées les sources de l'interface d'administration web
+admkeypath             string  O              Chemin vers le fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
+admkeystorepass        string  O              Mot de passe du fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
+admkeypass             string  O              Mot de passe certificat HTTPS pour l'interface web d'administration contenu dans le fichier JKS.
+checkaddress           boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP de l'hôte distant qui demande une connexion
+checkclientaddress     boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP des clients qui demandent une connexion
+multiplemonitors       integer O    1         Nombre de serveurs qui agissent dans le même groupe comme une seule instance R66
+pastlimit              integer N    86400000  Profondeur maximale affichées dans l'interface HTTP de monitoring en ms
+minimaldelay           integer N    5000      Intervalle de rafraîchissement automatique de l'interface HTTP de monitoring en ms
+snmpconfig             string  N              Chemin vers le fichier de configuration de l'agent SNMP (voir :ref:`référence <snmp-xml>`)
+multiplemonitors       integer N    1         Nombre d'instances dans un cluster de serveurs Waarp R66
+businessfactorynetwork string   N    null     Indique la classe Factory pour les comportements "métiers" à associer à Waarp (Embedded)
+====================== ======= ==== ========= =============
 
 
 .. _server-xml-network:
@@ -159,7 +164,7 @@ highcpulimit      decimal N    0.0        Seuil maximal de consommation de CPU (
 percentdecrease   decimal N    0.01       Valeur de diminution de la bande passante quand le seuil maximal de consommation CPU est atteint (en pourcentage)
 delaythrottle     integer N    1000       Intervalle de contrôle de la consommation de ressources (en ms)
 limitlowbandwidth integer N    1000000    Seuil minimal de consommation de bande passante (en octets)
-digest            Integer N    2          Algorithme de hashage utilisé par défaut. CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5, SHA384=6, SHA512=7
+digest            Integer N    2          Algorithme de hashage utilisé par défaut. CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5, SHA384=6, SHA512=7 (SHA256=5 est recommandé)
 usefastmd5        boolean N    True       Utilisation de la librairie FastMD5
 usethrift         integer N    0          Active le serveur RPC Apache Thrift (0 désactive le serveur RPC, une valeur supérieure à 0 indique le port sur lequel écouter)
 checkversion      boolean N    True       Vérifie la version de ses partenaires pour s'assurer de la compatibilité du protocole
@@ -266,6 +271,116 @@ Pour chaque fonctionnalités, les actions à activer sont indiquées par
 une combinaison des lettres ``C``, ``R``, ``U`` et ``D`` (``C`` pour
 *création*, ``R`` pour *lecture*, ``U`` pour *mise-à-jour* et ``D`` pour
 *suppression*) ou seules les actions voulues doivent être indiquées.
+
+
+.. _server-xml-business:
+
+Section ``business``
+--------------------
+
+
+================= ======= ==== ========== =============
+Balise            Type    Obl. Défaut     Signification
+================= ======= ==== ========== =============
+businessid        string  N               Id d'un partenaire autorisé à déclencher des opérations Business
+================= ======= ==== ========== =============
+
+.. _server-xml-roles:
+
+Section ``roles``
+--------------------
+
+Il s'agit d'une liste de ``role``, contenant chacun:
+
+================= ======= ==== ========== =============
+Balise            Type    Obl. Défaut     Signification
+================= ======= ==== ========== =============
+roleid            string  O               Id d'un partenaire
+roleset           string  O               liste de rôles autorisés, séparés par un "blanc" ou un "|", parmi:  NOACCESS,READONLY,TRANSFER,RULE,HOST,LIMIT,SYSTEM,LOGCONTROL,PARTNER(READONLY,TRANSFER),CONFIGADMIN(PARTNER,RULE,HOST),FULLADMIN(CONFIGADMIN,LIMIT,SYSTEM,LOGCONTROL)
+================= ======= ==== ========== =============
+
+.. _server-xml-alias:
+
+Section ``aliases``
+--------------------
+
+Il s'agit d'une liste de ``alias``, contenant chacun:
+
+================= ======= ==== ========== =============
+Balise            Type    Obl. Défaut     Signification
+================= ======= ==== ========== =============
+realid            string  O               Id d'un partenaire
+aliasid           string  O               liste de noms alias équiavelents, séparés par un "blanc" ou un "|"
+================= ======= ==== ========== =============
+
+
+.. _Extra-Waarp-options:
+
+Section ``ExtraOptions``
+------------------------
+
+Extra XML Option:
+
+- Mise à jour automatique de la base en fonction de la version de Waarp
+
+Par défaut, le champ ``<root><version>version</version></root>`` du fichier de configuration XML
+est géré par Waarp pour vérifier la configuration de la base de données et sa version par rapport à celle
+du programme, afin de permettre une mise à jour automatique.
+
+Cette mise à jour automatique peut être empêchée par l'option ``<db>dbcheck>False</dbcheck>...</db>`` ou
+grâce à la propriété Java ``-Dopenr66.startup.dbcheck=0``.
+
+- Partage d'une même base entre plusieurs moniteurs Waarp
+
+Dans le cas où une base est partagée entre plusieurs moniteurs R66, afin d'être capable de voir tous les
+transferts dans la console web d'administration, vous pouvez indiquer une option spéciale dans "Autres
+informations" avec l'identifiant qui sera utilisé pour se connecter à cette interface Web.
+    ``<root>...<seeallid>id1,id2,...,idn</seeallid></root>``
+
+- Options additionnelles pour Waarp via la JVM :
+
+  - ``-Dopenr66.locale=en|fr`` pour choisir entre l'anglais ou le français pour le langage de l'interface (
+  (défaut = en)
+  - ``-Dopenr66.ishostproxyfied=1|0``  pour indiquer que ce serveur est derrière un proxy (comme R66Proxy
+  ou un matériel équivalent) afin d'empêcher le contrôle des adresses IP de s'appliquer (puisque celle-ci
+  sera celle du Proxy) (défaut = 0)
+  - ``-Dopenr66.startup.warning=1|0`` pour décider si les Warning du démarrage seront affichées ou non
+  (défaut = 1)
+  - ``-Dopenr66.startup.checkdb=1|0`` pour choisir s'il y a un test entre le niveau de la configuration de la
+  base de données
+  et la version du serveur lors du démarrage (défaut = 0)
+   - ``-Dopenr66.startup.autoUpgrade=0|1`` (défaut 0) Si les versions de la base et du moniteur diffèrent,
+   autorise la mise à jour automatique de la base de données.
+  - ``-Dopenr66.chroot.checked=1|0`` pour choisir si toutes les règles doivent respecter le contrat "choroot"
+  Par exemple, tenter de récupérer un fichier (RECV) depuis un partenaire distant en spécifiant un chemin
+  complet peut être autorisé, même si il est en dehors du répertoire "OUT", sauf si checked=1. Si
+  checked=1, alors tous les fichiers reçus doivent spécifier un chemin incluant "OUT", sans remonter
+  au-delà.  (défaut = 1)
+  - ``-Dopenr66.blacklist.badauthent=1|0`` pour choisir si un serveur qui a une mauvaise identification
+  doit être immédiatement "black listé" (il n'est plus autorisé pour un temps) pour prévenir des attaques
+  DDOS. Si ``-Dopenr66.ishostproxyfied=1``, alors il est obligatoirement faux. En effet, dans ce cas, si un
+   des partenaires a un problème d'authentification, alors tous les partenaires proxifiés via le même
+   proxy seront bannis puisque visibles depuis la même adresse IP. (défaut = 1)
+  - ``-Dopenr66.filename.maxlength=n`` pour choisir la longueur maximum autorisée pour le nom du fichier
+   (défaut = 255) quand on reçoit un fichier (nom temporaire et nom final). Ceci n'empêche pas de changer
+   le nom du fichier après et #ORIGINALFILENAME# contient toujours le nom complet d'origine du fichier, non
+    tronqué.
+  - ``-Dopenr66.trace.stats=n`` pour mettre en debug certaines traces spécifiques sur des données toutes
+  les n secondes. 0 signifie absence de trace. (défaut n=0)
+  - ``-Dopenr66.cache.limit=n`` et ``-Dopenr66.cache.timelimit=m`` pour mettre en cache les informations de
+   transfert avec
+      - n est le nombre maximum de tâches à conserver dans un cache LRU (Last Recent Used). La valeur
+      minimale est 100
+      - m est le temps maximum en millisecondes avant qu'un élément créé, utilisé ou modifié soit évincé du
+       cache. La valeur minimale est 1000 ms (1s). Une valeur trop grande peut provoquer des consommations
+       mémoires trop importante.
+    (défaut n=20000, m=180000 - 180s -)
+    **A noter: Cette option n'est plus valide à compter de la version 3.2.0 qui ne tient plus un cache LRU
+    actif**
+   - ``-Dopenr66.usespaceseparator=0|1`` (défaut 0) Autorise Waarp à utiliser l'espace comme séparateur
+   mais induit des risques de bugs.
+   - ``-Dopenr66.executebeforetransferred=0|1`` (défaut 1) Autorise Waarp à exécuter les Error-Tasks si une
+    erreur intervient pendant les "pré-task", avant le transfert effectif
 
 
 .. _server-xml-example:
