@@ -142,6 +142,14 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
                                     Messages.getString(
                                         "RequestInformation.Success")); //$NON-NLS-1$
               outputFormat.setValue(FIELDS.remote.name(), host);
+              outputFormat.setValue(FIELDS.statusCode.name(),
+                                    runner.getErrorInfo().getCode());
+              outputFormat
+                  .setValue(FIELDS.idTransfer.name(), runner.getSpecialId());
+              outputFormat
+                  .setValue(FIELDS.finalPath.name(), runner.getFilename());
+              outputFormat.setValue(FIELDS.originalPath.name(),
+                                    runner.getOriginalFilename());
               outputFormat.setValueString(runner.getJson());
               getResults().add(outputFormat);
               if (transaction.normalInfoAsWarn) {
@@ -164,6 +172,14 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
                                       Messages.getString(
                                           "RequestInformation.Failure")); //$NON-NLS-1$
                 outputFormat.setValue(FIELDS.remote.name(), host);
+                outputFormat.setValue(FIELDS.statusCode.name(),
+                                      runner.getErrorInfo().getCode());
+                outputFormat
+                    .setValue(FIELDS.idTransfer.name(), runner.getSpecialId());
+                outputFormat
+                    .setValue(FIELDS.finalPath.name(), runner.getFilename());
+                outputFormat.setValue(FIELDS.originalPath.name(),
+                                      runner.getOriginalFilename());
                 outputFormat.setValueString(runner.getJson());
               }
               logger.error(outputFormat.loggerOut(), future.getCause());

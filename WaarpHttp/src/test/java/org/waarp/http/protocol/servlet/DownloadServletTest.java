@@ -363,9 +363,8 @@ public class DownloadServletTest extends TestAbstract {
     MatcherAssert.assertThat("Response Code", http.getResponseCode(),
                              is(HttpStatus.NOT_FOUND_404));
     // Test GET
-    http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
+        .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", "UTF-8");
@@ -386,9 +385,8 @@ public class DownloadServletTest extends TestAbstract {
     file.delete();
 
     // Test HEAD 2
-    http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
+        .openConnection();
     http.setRequestMethod("HEAD");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", "UTF-8");

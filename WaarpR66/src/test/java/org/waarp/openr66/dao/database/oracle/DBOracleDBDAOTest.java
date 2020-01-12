@@ -32,10 +32,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBOracleDBDAOTest extends DBAllDAOTest {
+  static {
+    TMPFSMAP.clear();
+    TMPFSMAP.put("/var/lib/oracle/data", "rw");
+  }
 
   @ClassRule
   public static OracleContainer db =
-      new OracleContainer("epiclabs/docker-oracle-xe-11g");
+      new OracleContainer("epiclabs/docker-oracle-xe-11g").withTmpFs(TMPFSMAP);
   private final String createScript = "oracle/create.sql";
   private final String populateScript = "oracle/populate.sql";
   private final String cleanScript = "oracle/clean.sql";

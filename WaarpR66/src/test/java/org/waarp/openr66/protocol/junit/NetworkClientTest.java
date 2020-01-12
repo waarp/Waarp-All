@@ -321,8 +321,8 @@ public class NetworkClientTest extends TestAbstract {
       futures.add(future);
       final TestRecvThroughClient transaction =
           new TestRecvThroughClient(future, handler, "hostas", "testTask.txt",
-                                    "rule6", "Test Multiple RecvThrough",
-                                    true, 8192, networkTransaction);
+                                    "rule6", "Test Multiple RecvThrough", true,
+                                    8192, networkTransaction);
       executorService.execute(transaction);
     }
     Thread.sleep(100);

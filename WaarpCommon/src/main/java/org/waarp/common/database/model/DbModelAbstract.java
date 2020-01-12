@@ -43,6 +43,26 @@ public abstract class DbModelAbstract implements DbModel {
 
   public abstract static class DbTypeResolver {
     public abstract String getType(int sqlType);
+
+    public String getCreateTable() {
+      return "CREATE TABLE ";
+    }
+
+    public String getPrimaryKey() {
+      return " PRIMARY KEY ";
+    }
+
+    public String getNotNull() {
+      return " NOT NULL ";
+    }
+
+    public String getCreateIndex() {
+      return "CREATE INDEX ";
+    }
+  }
+
+  public DbTypeResolver getDbTypeResolver() {
+    return dbTypeResolver;
   }
 
   /**

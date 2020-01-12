@@ -53,6 +53,17 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
     public String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
+
+    @Override
+    public String getCreateTable() {
+      return "CREATE TABLE IF NOT EXISTS ";
+    }
+
+    @Override
+    public String getCreateIndex() {
+      return "CREATE INDEX IF NOT EXISTS ";
+    }
+
   }
 
   static {

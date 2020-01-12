@@ -101,7 +101,8 @@ public class DownloadServlet extends AbstractServlet {
       }
       String filename = getFilename(arguments);
       logger.debug("RECVGET: {}", filename);
-      final HttpDownloadSession session = getDownloadSession(arguments, filename, false);
+      final HttpDownloadSession session =
+          getDownloadSession(arguments, filename, false);
       logger.debug("SESSION: {}", session);
       Callable<String> hashCompute = new Callable<String>() {
         @Override
@@ -121,7 +122,8 @@ public class DownloadServlet extends AbstractServlet {
                          "must-revalidate, post-check=0, " + "pre-check=0");
       // Used by javascript downloader
       response.addCookie(new Cookie("fileDownload", "true"));
-      response.setHeader("Content-Length", Long.toString(session.getFileSize()));
+      response
+          .setHeader("Content-Length", Long.toString(session.getFileSize()));
       String hash = null;
       try {
         hash = future.get();

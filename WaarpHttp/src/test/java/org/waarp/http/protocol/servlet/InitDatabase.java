@@ -105,7 +105,7 @@ public class InitDatabase extends TestAbstract {
     ChannelUtils.exit();
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void test_empty() throws WaarpDatabaseException {
     DbHostAuth[] auths = DbHostAuth.getAllHosts();

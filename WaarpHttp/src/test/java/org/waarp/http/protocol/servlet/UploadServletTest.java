@@ -502,7 +502,8 @@ public class UploadServletTest extends TestAbstract {
     map.put("user", "test");
     map.put("key", KEY);
     map.put("rulename", "rule3");
-    map.put("sha256", "72bb112c25550df94e763170196be56b7774cab8bb54a4a4dacd6cb6f2c9c48f");
+    map.put("sha256",
+            "72bb112c25550df94e763170196be56b7774cab8bb54a4a4dacd6cb6f2c9c48f");
     map.put("resumableChunkNumber", "1");
     map.put("resumableChunkSize", "1024");
     map.put("resumableTotalSize", "100");
@@ -557,11 +558,9 @@ public class UploadServletTest extends TestAbstract {
                is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
 
-    ByteArrayInputStream stream =
-        new ByteArrayInputStream(content.getBytes());
-    String sha =
-        FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(stream,
-                                                        DigestAlgo.SHA256));
+    ByteArrayInputStream stream = new ByteArrayInputStream(content.getBytes());
+    String sha = FilesystemBasedDigest
+        .getHex(FilesystemBasedDigest.getHash(stream, DigestAlgo.SHA256));
     stream.close();
     map.put("resumableIdentifier", "abcdabacffff");
     map.put("sha256", sha);
@@ -586,8 +585,7 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.OK_200));
+    assertThat("Response Code", http.getResponseCode(), is(HttpStatus.OK_200));
     http.disconnect();
   }
 
@@ -650,7 +648,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, "Upload");
-    assertThat("Response Code", http.getResponseCode(), is(HttpStatus.CREATED_201));
+    assertThat("Response Code", http.getResponseCode(),
+               is(HttpStatus.CREATED_201));
     http.disconnect();
 
     // GET 1/2

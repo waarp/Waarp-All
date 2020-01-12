@@ -46,7 +46,8 @@ public class OutputFormat extends JsonHandler {
   static OUTPUTFORMAT defaultOutput = OUTPUTFORMAT.JSON;
 
   public enum FIELDS {
-    command, args, status, statusTxt, transfer, error, remote
+    command, args, status, statusTxt, transfer, error, remote, statusCode,
+    idTransfer, originalPath, finalPath
   }
 
   /**
