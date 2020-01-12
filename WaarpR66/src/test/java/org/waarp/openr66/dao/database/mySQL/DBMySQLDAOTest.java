@@ -33,9 +33,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBMySQLDAOTest extends DBAllDAOTest {
+  static {
+    TMPFSMAP.clear();
+    TMPFSMAP.put("/var/lib/mysql/data", "rw");
+  }
 
   @ClassRule
-  public static MySQLContainer db = new MySQLContainer();
+  public static MySQLContainer db = (MySQLContainer) new MySQLContainer();
+      // No TMPFS
   private final String createScript = "mysql/create.sql";
   private final String populateScript = "mysql/populate.sql";
   private final String cleanScript = "mysql/clean.sql";

@@ -26,7 +26,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
-import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -150,13 +149,7 @@ public class SubmitTransfer extends AbstractTransfer {
     final OutputFormat outputFormat =
         new OutputFormat(SubmitTransfer.class.getSimpleName(), args);
     if (future.isSuccess()) {
-      outputFormat.setValue(FIELDS.status.name(), 0);
-      outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("SubmitTransfer.3") + Messages
-                                .getString(
-                                    "RequestInformation.Success")); //$NON-NLS-1$
-      outputFormat.setValue(FIELDS.remote.name(), rhost);
-      outputFormat.setValueString(runner.getJson());
+      prepareSubmitOkOutputFormat(runner, outputFormat);
       if (transaction.normalInfoAsWarn) {
         logger.warn(outputFormat.loggerOut());
       } else {
@@ -166,26 +159,7 @@ public class SubmitTransfer extends AbstractTransfer {
         outputFormat.sysout();
       }
     } else {
-      outputFormat.setValue(FIELDS.status.name(), 2);
-      if (runner == null) {
-        outputFormat.setValue(FIELDS.statusTxt.name(),
-                              Messages.getString("SubmitTransfer.3") + Messages
-                                  .getString(
-                                      "Transfer.FailedNoId")); //$NON-NLS-1$
-        outputFormat.setValue(FIELDS.remote.name(), rhost);
-      } else {
-        outputFormat.setValue(FIELDS.statusTxt.name(),
-                              Messages.getString("SubmitTransfer.3") + Messages
-                                  .getString(
-                                      "RequestInformation.Failure")); //$NON-NLS-1$
-        outputFormat.setValue(FIELDS.remote.name(), rhost);
-        outputFormat.setValueString(runner.getJson());
-      }
-      logger.error(outputFormat.loggerOut(), future.getCause());
-      if (future.getCause() != null) {
-        outputFormat
-            .setValue(FIELDS.error.name(), future.getCause().getMessage());
-      }
+      prepareSubmitKoOutputFormat(future, runner, outputFormat);
       if (!OutputFormat.isQuiet()) {
         outputFormat.sysout();
       }

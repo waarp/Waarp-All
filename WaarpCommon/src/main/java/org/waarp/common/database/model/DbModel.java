@@ -23,6 +23,7 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelAbstract.DbTypeResolver;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -61,6 +62,11 @@ public interface DbModel {
    * @return the current DbType used
    */
   DbType getDbType();
+
+  /**
+   * @return the current DbTypeResolver
+   */
+  DbTypeResolver getDbTypeResolver();
 
   /**
    * Create all necessary tables into the database

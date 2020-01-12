@@ -145,8 +145,8 @@ public class HttpSessionAbstract implements HttpSession {
     } catch (WaarpDatabaseNoDataException e) {
       // Not found so create it
       Transfer transfer =
-          new Transfer(requester, rulename, rule.getMode(), !uploadMode, filename,
-                       comment, chunkSize);
+          new Transfer(requester, rulename, rule.getMode(), !uploadMode,
+                       filename, comment, chunkSize);
       transfer.setId(identifier);
       runner = new DbTaskRunner(transfer);
       try {

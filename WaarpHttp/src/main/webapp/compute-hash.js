@@ -13,7 +13,7 @@ function uuidv4() {
 }
 
 function uuidlong() {
-  var array = new Uint32Array(1);
+  var array = new BigInt64Array(1);
   crypto.getRandomValues(array);
   return array[0];
 }

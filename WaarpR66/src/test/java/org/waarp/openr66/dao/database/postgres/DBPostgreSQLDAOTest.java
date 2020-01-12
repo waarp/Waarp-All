@@ -32,9 +32,17 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBPostgreSQLDAOTest extends DBAllDAOTest {
+  static {
+    TMPFSMAP.clear();
+    TMPFSMAP.put("/var/lib/postgresql/data", "rw");
+  }
 
   @ClassRule
-  public static PostgreSQLContainer db = new PostgreSQLContainer();
+  public static PostgreSQLContainer db =
+      (PostgreSQLContainer) new PostgreSQLContainer().withCommand(
+          "postgres -c fsync=false -c synchronous_commit=off -c " +
+          "full_page_writes=false -c wal_level=minimal -c " +
+          "max_wal_senders=0").withTmpFs(TMPFSMAP);
   private final String createScript = "postgresql/create.sql";
   private final String populateScript = "postgresql/populate.sql";
   private final String cleanScript = "postgresql/clean.sql";
