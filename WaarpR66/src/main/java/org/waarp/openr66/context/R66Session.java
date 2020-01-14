@@ -191,7 +191,7 @@ public class R66Session implements SessionInterface {
    *
    * @param stat
    *
-   * @deprecated
+   * @deprecated used only for trace
    */
   @Deprecated
   public void setStatus(int stat) {

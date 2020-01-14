@@ -23,6 +23,7 @@ package org.waarp.openr66.protocol.junit;
 import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.Before;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
@@ -229,15 +230,16 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   }
 
   private static WebDriver createPhantomJSDriver() {
-    DesiredCapabilities desiredCapabilities = DesiredCapabilities.phantomjs();
+    DesiredCapabilities desiredCapabilities =
+        new DesiredCapabilities("phantomjs", "", Platform.ANY);
     desiredCapabilities.setCapability(
         PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
         System.getProperty("phantomjs.binary.path"));
     desiredCapabilities
         .setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
-    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, true);
+    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
     desiredCapabilities
-        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, true);
+        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
 
     desiredCapabilities.setJavascriptEnabled(true);

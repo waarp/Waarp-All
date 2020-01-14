@@ -47,7 +47,8 @@ public class OutputFormat extends JsonHandler {
 
   public enum FIELDS {
     command, args, status, statusTxt, transfer, error, remote, statusCode,
-    idTransfer, originalPath, finalPath
+    specialid, originalPath, finalPath, ruleid, requester, requested,
+    originalSize, fileInformation
   }
 
   /**

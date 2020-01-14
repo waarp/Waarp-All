@@ -40,6 +40,10 @@ import static org.junit.Assert.*;
 public class FileMonitorTest {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(FileMonitorTest.class);
+  private static final int LARGE_WAIT = 800;
+  private static final int SMALL_WAIT = 100;
+  private static final int FILE_SIZE = 100;
+  private static final int MINIMAL_WAIT = 10;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -148,106 +152,106 @@ public class FileMonitorTest {
         };
     final FileMonitor fileMonitor =
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
-                        100, null, false, commandValidFile, commandRemovedFile,
+                        SMALL_WAIT, null, false, commandValidFile, commandRemovedFile,
                         commandCheckIteration);
     fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     commandValidFile.setMonitor(fileMonitor);
     fileMonitor.setCheckDelay(-1);
 
     fileMonitor.start();
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
     logger.warn("Create file: " + fileTest.getAbsolutePath());
     FileWriter fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     while (countNew.get() == 0) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
     while (countDelete.get() == 0) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Create new file: " + fileTest.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
       fileWriterBig.flush();
-      Thread.sleep(10);
+      Thread.sleep(MINIMAL_WAIT);
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     while (countNew.get() == 1) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Overwrite file: " + fileTest.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     int created = countNew.get();
     if (ignoreAlreadyUsed) {
-      Thread.sleep(400);
+      Thread.sleep(LARGE_WAIT);
     } else {
       while (countNew.get() == 2) {
-        Thread.sleep(100);
+        Thread.sleep(SMALL_WAIT);
       }
       created = countNew.get();
-      Thread.sleep(400);
+      Thread.sleep(LARGE_WAIT);
     }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
     while (countDelete.get() == 1) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Add Directory: " + directory2.getAbsolutePath());
     fileMonitor.addDirectory(directory2);
-    Thread.sleep(10);
+    Thread.sleep(MINIMAL_WAIT);
     logger.warn("Create file2: " + fileTest2.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest2);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
       fileWriterBig.flush();
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     while (countNew.get() == created) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     assertEquals(1, fileMonitor.getCurrentHistoryNb());
 
     fileTest2.delete();
     while (countDelete.get() == 2) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     assertEquals(0, fileMonitor.getCurrentHistoryNb());
 
     logger.warn("Remove Directory: " + directory2.getAbsolutePath());
     fileMonitor.removeDirectory(directory2);
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
 
     // Full status
     fileMonitor.setNextAsFullStatus();
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
 
     logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
     fileWriterBig = new FileWriter(stopFile);
     fileWriterBig.write('a');
     fileWriterBig.flush();
     fileWriterBig.close();
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
 
     fileMonitor.waitForStopFile();
     assertTrue("Should be > 0", countCheck.get() > 0);
@@ -339,56 +343,56 @@ public class FileMonitorTest {
         };
     final FileMonitor fileMonitor =
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
-                        100, null, false, commandValidFile, commandRemovedFile,
+                        SMALL_WAIT, null, false, commandValidFile, commandRemovedFile,
                         commandCheckIteration);
     fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
-    fileMonitor.setCheckDelay(300);
+    fileMonitor.setCheckDelay(LARGE_WAIT);
     commandValidFile.setMonitor(fileMonitor);
 
     fileMonitor.start();
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
     logger.warn("Create file: " + fileTest.getAbsolutePath());
     FileWriter fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < SMALL_WAIT; i++) {
       fileWriterBig.write("a");
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     while (countNew.get() == 0) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
     while (countDelete.get() == 0) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Create new file: " + fileTest.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
       fileWriterBig.flush();
-      Thread.sleep(10);
+      Thread.sleep(MINIMAL_WAIT);
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     while (countNew.get() == 1) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Waiting long delay for check: " + fileTest.getAbsolutePath());
     // FIXME change false to true and wait for 300 more (400), and check redo
     //  is launched if ignore false
-    Thread.sleep(400);
+    Thread.sleep(LARGE_WAIT);
     logger.warn("Check is true: " + fileTest.getAbsolutePath());
     checkOK.set(true);
     int created = countNew.get();
     if (ignoreAlreadyUsed) {
-      Thread.sleep(400);
+      Thread.sleep(LARGE_WAIT);
     } else {
       while (countNew.get() == 2) {
-        Thread.sleep(100);
+        Thread.sleep(SMALL_WAIT);
       }
       created = countNew.get();
     }
@@ -396,65 +400,65 @@ public class FileMonitorTest {
     logger.warn("Override file: " + fileTest.getAbsolutePath());
 
     fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     if (ignoreAlreadyUsed) {
-      Thread.sleep(400);
+      Thread.sleep(LARGE_WAIT);
     } else {
       while (countNew.get() == created) {
-        Thread.sleep(100);
+        Thread.sleep(SMALL_WAIT);
       }
       created = countNew.get();
-      Thread.sleep(400);
+      Thread.sleep(LARGE_WAIT);
     }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
     while (countDelete.get() == 1) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     logger.warn("Add Directory: " + directory2.getAbsolutePath());
     fileMonitor.addDirectory(directory2);
-    Thread.sleep(10);
+    Thread.sleep(MINIMAL_WAIT);
     logger.warn("Create file2: " + fileTest2.getAbsolutePath());
     fileWriterBig = new FileWriter(fileTest2);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
       fileWriterBig.flush();
     }
     fileWriterBig.flush();
     fileWriterBig.close();
     while (countNew.get() == created) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     assertEquals(1, fileMonitor.getCurrentHistoryNb());
 
     fileTest2.delete();
     while (countDelete.get() == 2) {
-      Thread.sleep(100);
+      Thread.sleep(SMALL_WAIT);
     }
 
     assertEquals(0, fileMonitor.getCurrentHistoryNb());
 
     logger.warn("Remove Directory: " + directory2.getAbsolutePath());
     fileMonitor.removeDirectory(directory2);
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
 
     // Full status
     fileMonitor.setNextAsFullStatus();
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
 
     logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
     fileWriterBig = new FileWriter(stopFile);
     fileWriterBig.write('a');
     fileWriterBig.flush();
     fileWriterBig.close();
-    Thread.sleep(500);
+    Thread.sleep(LARGE_WAIT);
 
     fileMonitor.waitForStopFile();
     assertTrue("Should be > 0", countCheck.get() > 0);

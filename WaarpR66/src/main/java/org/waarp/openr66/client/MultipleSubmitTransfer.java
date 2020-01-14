@@ -136,21 +136,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
                 new OutputFormat(MultipleSubmitTransfer.class.getSimpleName(),
                                  null);
             if (future.isSuccess()) {
-              outputFormat.setValue(FIELDS.status.name(), 0);
-              outputFormat.setValue(FIELDS.statusTxt.name(),
-                                    Messages.getString("SubmitTransfer.3") +
-                                    Messages.getString(
-                                        "RequestInformation.Success")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), host);
-              outputFormat.setValue(FIELDS.statusCode.name(),
-                                    runner.getErrorInfo().getCode());
-              outputFormat
-                  .setValue(FIELDS.idTransfer.name(), runner.getSpecialId());
-              outputFormat
-                  .setValue(FIELDS.finalPath.name(), runner.getFilename());
-              outputFormat.setValue(FIELDS.originalPath.name(),
-                                    runner.getOriginalFilename());
-              outputFormat.setValueString(runner.getJson());
+              prepareSubmitOkOutputFormat(runner, outputFormat);
               getResults().add(outputFormat);
               if (transaction.normalInfoAsWarn) {
                 logger.warn(outputFormat.loggerOut());
@@ -159,34 +145,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
               }
               setDoneMultiple(getDoneMultiple() + 1);
             } else {
-              outputFormat.setValue(FIELDS.status.name(), 2);
-              if (runner == null) {
-                outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString("SubmitTransfer.3") +
-                                      Messages.getString(
-                                          "Transfer.FailedNoId")); //$NON-NLS-1$
-                outputFormat.setValue(FIELDS.remote.name(), host);
-              } else {
-                outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString("SubmitTransfer.3") +
-                                      Messages.getString(
-                                          "RequestInformation.Failure")); //$NON-NLS-1$
-                outputFormat.setValue(FIELDS.remote.name(), host);
-                outputFormat.setValue(FIELDS.statusCode.name(),
-                                      runner.getErrorInfo().getCode());
-                outputFormat
-                    .setValue(FIELDS.idTransfer.name(), runner.getSpecialId());
-                outputFormat
-                    .setValue(FIELDS.finalPath.name(), runner.getFilename());
-                outputFormat.setValue(FIELDS.originalPath.name(),
-                                      runner.getOriginalFilename());
-                outputFormat.setValueString(runner.getJson());
-              }
-              logger.error(outputFormat.loggerOut(), future.getCause());
-              if (future.getCause() != null) {
-                outputFormat.setValue(FIELDS.error.name(),
-                                      future.getCause().getMessage());
-              }
+              prepareSubmitKoOutputFormat(future, runner, outputFormat);
               getResults().add(outputFormat);
               setErrorMultiple(getErrorMultiple() + 1);
               resultError = future.getResult();

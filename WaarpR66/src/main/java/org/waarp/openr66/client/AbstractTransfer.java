@@ -594,11 +594,16 @@ public abstract class AbstractTransfer implements Runnable {
   private static void partialOutputFormat(final DbTaskRunner runner,
                                           final OutputFormat outputFormat) {
     outputFormat.setValue(FIELDS.remote.name(), rhost);
+    outputFormat.setValue(FIELDS.ruleid.name(), runner.getRuleId());
     outputFormat.setValueString(runner.getJson());
     outputFormat
         .setValue(FIELDS.statusCode.name(), runner.getErrorInfo().getCode());
-    outputFormat.setValue(FIELDS.idTransfer.name(), runner.getSpecialId());
+    outputFormat.setValue(FIELDS.specialid.name(), runner.getSpecialId());
     outputFormat.setValue(FIELDS.finalPath.name(), runner.getFilename());
+    outputFormat.setValue(FIELDS.requested.name(), runner.getRequested());
+    outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
+    outputFormat.setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
+    outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
     outputFormat
         .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());
   }

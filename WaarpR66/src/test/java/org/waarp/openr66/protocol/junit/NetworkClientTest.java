@@ -540,11 +540,11 @@ public class NetworkClientTest extends TestAbstract {
     spooledThread.ignoreAlreadyUsed = false;
     spooledThread.future = future;
     spooledThread.start();
-    Thread.sleep(100);
+    Thread.sleep(200);
     logger.warn("1rst file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(2000);
+    Thread.sleep(3000);
     logger.warn("1rst file delete");
     totestBig.delete();
     Thread.sleep(2000);
@@ -559,7 +559,7 @@ public class NetworkClientTest extends TestAbstract {
     Thread.sleep(2000);
     logger.warn("Third file deleted");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(1400);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
@@ -588,7 +588,7 @@ public class NetworkClientTest extends TestAbstract {
     spooledThread.future = future;
     spooledThread.submit = true;
     spooledThread.start();
-    Thread.sleep(100);
+    Thread.sleep(200);
     logger.warn("1rst file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
@@ -599,15 +599,15 @@ public class NetworkClientTest extends TestAbstract {
     logger.warn("Second file");
     generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(2000);
+    Thread.sleep(3000);
     logger.warn("Third file");
     generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size,
         "abcdefghij");
-    Thread.sleep(2000);
+    Thread.sleep(3000);
     logger.warn("Third file deleted");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(2000);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
@@ -635,14 +635,14 @@ public class NetworkClientTest extends TestAbstract {
     spooledThread.ignoreAlreadyUsed = true;
     spooledThread.future = future;
     spooledThread.start();
-    Thread.sleep(100);
+    Thread.sleep(200);
     logger.warn("First file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(1600);
+    Thread.sleep(2000);
     logger.warn("First file deleted");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(2000);
     logger.warn("Second file");
     generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
@@ -654,7 +654,7 @@ public class NetworkClientTest extends TestAbstract {
     Thread.sleep(2000);
     logger.warn("Third file deleted");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(2000);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
@@ -684,14 +684,14 @@ public class NetworkClientTest extends TestAbstract {
     spooledThread.future = future;
     spooledThread.submit = true;
     spooledThread.start();
-    Thread.sleep(100);
+    Thread.sleep(200);
     logger.warn("First file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(1600);
+    Thread.sleep(2000);
     logger.warn("First file deleted");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(2000);
     logger.warn("Second file");
     generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
@@ -703,7 +703,7 @@ public class NetworkClientTest extends TestAbstract {
     Thread.sleep(2000);
     logger.warn("Third file deleted");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(2000);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
@@ -732,14 +732,14 @@ public class NetworkClientTest extends TestAbstract {
     spooledThread.future = future;
     spooledThread.host = "hostbs";
     spooledThread.start();
-    Thread.sleep(100);
+    Thread.sleep(200);
     logger.warn("1rst file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
     Thread.sleep(6000);
     logger.warn("1rst file delete");
     totestBig.delete();
-    Thread.sleep(1200);
+    Thread.sleep(2000);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
