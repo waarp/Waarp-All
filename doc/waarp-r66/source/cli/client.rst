@@ -1,17 +1,32 @@
+.. _waarp-r66client:
+
+################
 Waarp R66 Client
 ################
 
 .. todo:: faire la distinction entre archives et packages
-
 .. todo:: ajouter les commandes manquantes
+
+Le script ``waarp-r66client`` (ou ``./bin/waarp-r66client.sh`` dans les archives
+portables) exécutent des appels ``java`` qui utilisent les commandes fournies
+par Waarp R66.
+
+L'utilisation des scripts est préférée pour les raisons suivantes :
+
+- Ils construisent automatiquement les commandes java, qui sont laborieuses à
+  saisir ;
+- Ils fournissent une indirection pour gérer les installations multi-instances
+- Ils sont plus ergonomiques.
+
+Le détail des commandes java brutes est disponible :ref:`ici <raw-commands>`.
 
 .. contents::
 
 Commandes de gestion des transferts
-***********************************
+===================================
 
 Commande ``waarp-r66client send``
-=================================
+---------------------------------
 
 .. program:: waarp-r66client send
 
@@ -84,7 +99,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client asend``
-==================================
+----------------------------------
 
 .. program:: waarp-r66client asend
 
@@ -169,7 +184,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client msend``
-==================================
+----------------------------------
 
 .. program:: waarp-r66client msend
 
@@ -251,7 +266,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client masend``
-===================================
+-----------------------------------
 
 .. program:: waarp-r66client masend
 
@@ -348,7 +363,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client transfer``
-=====================================
+-------------------------------------
 
 .. program:: waarp-r66client transfer
 
@@ -454,7 +469,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client getinfo``
-====================================
+------------------------------------
 
 .. program:: waarp-r66client getinfo
 
@@ -512,7 +527,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client gui``
-================================
+--------------------------------
 
 Ouvre un client graphique pour démarrer un transfert.
 
@@ -524,10 +539,10 @@ Ouvre un client graphique pour démarrer un transfert.
 
 
 Autres commandes
-****************
+================
 
 Commande ``waarp-r66client initdb``
-===================================
+-----------------------------------
 
 .. program:: waarp-r66client initdb
 
@@ -581,7 +596,7 @@ Code  Signification
 
 
 Commande ``waarp-r66client loadconf``
-=====================================
+-------------------------------------
 
 .. program:: waarp-r66client loadconf
 
@@ -613,7 +628,7 @@ Code  Signification
 .. _r66client-log-export:
 
 Commande ``waarp-r66client log-export``
-=======================================
+---------------------------------------
 
 .. program:: waarp-r66client log-export
 
@@ -699,7 +714,7 @@ Code   Signification
 
 
 Commande ``waarp-r66client config-export``
-==========================================
+------------------------------------------
 
 .. program:: waarp-r66client config-export
 
@@ -757,90 +772,3 @@ Code   Signification
 ====== =============
 
 
-Commande non implémentée via script : ``org.waarp.client.Message``
-==================================================================
-
-.. program:: xxx
-
-Permet d'échanger un message simple avec un partenaire pour s'assurer de la
-connectivité et de l'authentification respective entre les partenaires.
-
-Cette commande accepte les arguments suivants :
-
-.. option:: clientConfigurationFile.xml
-
-  *obligatoire*
-
-  Fichier de confguration client Waarp R66, en mode synchrone
-
-.. option:: -to PARTNER
-
-   *obligatoire*
-
-   Serveur R66 de destination
-
-.. option:: -msg MESSAGE
-
-   *obligatoire pour indiquer le message à transmettre*
-
-   Contenu du message à transmettre. Celui-ci apparaîtra dans les logs respectifs
-   des deux serveurs (émetteur et récepteur).
-
-
-Codes de retour :
-
-====== =============
-Code   Signification
-====== =============
-``0``  Succès
-``1``  Les arguments sont incorrects ou le fichier de configuration contient une erreur
-``2``  Une erreur s'est produite lors de la tentative de connexion ou d'authentification
-====== =============
-
-
-Commande non implémentée via script : ``org.waarp.client.BusinessRequest``
-==========================================================================
-
-.. program:: xxx
-
-Permet de déclencher une action à distance avec un partenaire si le partenaire
-demandeur est autorisé (cf. BUSINESS ROLE)
-
-Cette commande accepte les arguments suivants :
-
-.. option:: clientConfigurationFile.xml
-
-  *obligatoire*
-
-  Fichier de confguration client Waarp R66, en mode synchrone
-
-.. option:: -to PARTNER
-
-   *obligatoire*
-
-   Serveur R66 de destination
-
-.. option:: -class FULL.CLASS.NAME
-
-   *obligatoire pour indiquer la classe cible à exécuter de type ExecBusinessTask*
-
-   Nom de la classe à exécuter
-
-.. option:: -arg ARGUMENT
-
-   Argument à appliquer à la classe
-
-.. option:: -nolog
-
-   Désactive les logs pour ce transfert
-
-
-Codes de retour :
-
-====== =============
-Code   Signification
-====== =============
-``0``  Succès
-``2``  Les arguments sont incorrects ou le fichier de configuration contient une erreur
-``N``  Une erreur s'est produite lors de la tentative d'exécution
-====== =============

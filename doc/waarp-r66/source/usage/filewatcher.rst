@@ -1,3 +1,4 @@
+#####################
 Waarp R66 FileWatcher
 #####################
 
@@ -20,8 +21,8 @@ Principe
 --------
 
 Le filewatcher étant un client, il prend sa configuration dans le fichier de
-configuration du client :file:`client.xml` de l'instance concernée. Selon la 
-méthode d'installation et le système d'exploitation cible, celui-ci peut se 
+configuration du client :file:`client.xml` de l'instance concernée. Selon la
+méthode d'installation et le système d'exploitation cible, celui-ci peut se
 trouver aux emplacements suivants :
 
 - :file:`etc/conf.d/{HOSTID}/client.xml`
@@ -48,7 +49,7 @@ juste avant la balise ``</config>`` :
    </config>
 
 Le fichier indiqué dans la balise ``<stopfile>`` permet d'arrêter le
-filewatcher. Une fois lancé, et tant que ce fichier n'existe pas, le 
+filewatcher. Une fois lancé, et tant que ce fichier n'existe pas, le
 filewatcher fonctionne. dès que le fichier est créé, le filewatcher s'arrête.
 
 La configuration individuelle des dossiers à surveiller ainsi que les paramètres
@@ -199,20 +200,22 @@ balises suivantes :
    Si submit est True, les transferts sont asynchrones. sinon, ils sont directs.
 
 ``<parallel>``
-   Si submit est false, c'est-à-dire si les transferts sont gérés directement 
-   par le file watcher, les transferts peuvent être faits en parallèle ou séquentiellement.
+   Si submit est false, c'est-à-dire si les transferts sont gérés directement
+   par le file watcher, les transferts peuvent être faits en parallèle ou
+   séquentiellement.
 
 ``<limitParallel>``
    Si les transferts doivent être faits en parallèle, le nombre maximal de
    transferts simultanés.
 
 ``<waarp>``
-   L'historique de transfert peut être envoyé au serveur Waarp R66 désigné ci-dessous.
-   ceci permet la consultation de l'historique du filewatcher dans l'interface HTTP
-   de monitoring de ce serveur. 
+   L'historique de transfert peut être envoyé au serveur Waarp R66 désigné
+   ci-dessous.  ceci permet la consultation de l'historique du filewatcher dans
+   l'interface HTTP de monitoring de ce serveur.
 
-   Ceci est facultatif (et inutile si submit vaut true -- les transferts sont 
-   déjà effectués par un serveur -- ou si les interfaces de monitoring sont désactivées).
+   Ceci est facultatif (et inutile si submit vaut true -- les transferts sont
+   déjà effectués par un serveur -- ou si les interfaces de monitoring sont
+   désactivées).
 
 ``<elapseWaarp>``
    Si l'historique doit être envoyé à un serveur Waarp R66, intervalle en ms entre
@@ -221,15 +224,16 @@ balises suivantes :
 
 ``<ignoreAlreadyUsed>``
 
-   Si positionné à vraie, tout fichier déjà traité et non effacé, même s'il est modifié,
-   sera ignoré et ne sera donc pas renvoyé pour éviter tout risque de collisions
-   quant au contenu transféré. Normalement, cette option devrait être activée car
-   la modification d'un fichier non transféré est une erreur d'exploitation.
+   Si positionné à vrai, tout fichier déjà traité et non effacé, même s'il est
+   modifié, sera ignoré et ne sera donc pas renvoyé pour éviter tout risque de
+   collisions quant au contenu transféré. Normalement, cette option devrait être
+   activée car la modification d'un fichier non transféré est une erreur
+   d'exploitation.
 
-   Cependant, si cette option n'est pas activée ou absente, alors, même si le fichier a été
-   pris en compte pour un transfert mais toujours non effectué (partenaire injoignable
-   par exemple), alors le nouveau contenu prendra le dessus sur le précédent et
-   relancera la procédure de trasfert.
+   Cependant, si cette option n'est pas activée ou absente, alors, même si le
+   fichier a été pris en compte pour un transfert mais toujours non effectué
+   (partenaire injoignable par exemple), alors le nouveau contenu prendra le
+   dessus sur le précédent et relancera la procédure de trasfert.
 
    Par défaut cette option est désactivée car elle ne gène pas l'usage normal.
 
@@ -257,6 +261,7 @@ Exemple complet
            <info>spooled transfer</info>
            <waarp>hostas</waarp>
            <elapseWaarp>5000</elapseWaarp>
+           <ignoreAlreadyUsed>False</ignoreAlreadyUsed>
        </spooled>
    </spooleddaemon>
 
@@ -270,7 +275,7 @@ Linux
 Avec les archives, le filewatcher peut être démarré avec la commande suivante :
 
 .. code-block:: bash
-   
+
    ./bin/waarp-r66client HOSTID watcher start
 
 Cette commande démarre le filelwatcher au premier plan. On peut l'arrêter en
@@ -280,14 +285,14 @@ Pour le démarrer en tant tâche de fond (service), il faut définir la variable
 :envvar:`WAARP_SERVICE` avant :
 
 .. code-block:: bash
-   
+
    export WAARP_SERVICE=1
    ./bin/waarp-r66client.sh HOSTID watcher start
 
 Le service peut alors être arrêté ou redémarré avec les commandes suivantes :
 
 .. code-block:: bash
-   
+
    ./bin/waarp-r66client.sh HOSTID watcher stop
    ./bin/waarp-r66client.sh HOSTID watcher restart
 
@@ -299,7 +304,7 @@ Windows
 Sous Windows, le filewatcher peut être démarré avec la commande suivante :
 
 .. code-block:: bat
-   
+
    bin\waarp-r66client.bat HOSTID watcher start
 
 Cette commande démarre le filelwatcher au premier plan. On peut l'arrêter en

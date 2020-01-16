@@ -1,21 +1,39 @@
+.. _waarp-r66server:
+
+################
 Waarp R66 Server
 ################
 
 .. todo:: faire la distinction packages/archives
 .. todo:: ajouter les commandes manquantes
 
+
+Le script ``waarp-r66server`` (ou ``./bin/waarp-r66server.sh`` dans les archives
+portables) exécutent des appels ``java`` qui utilisent les commandes fournies
+par Waarp R66.
+
+L'utilisation des scripts est préférée pour les raisons suivantes :
+
+- Ils construisent automatiquement les commandes java, qui sont laborieuses à
+  saisir ;
+- Ils fournissent une indirection pour gérer les installations multi-instances
+- Ils sont plus ergonomiques.
+
+Le détail des commandes java brutes est disponible :ref:`ici <raw-commands>`.
+
+
 .. contents::
 
 Gestion du service
-******************
+==================
 
-Le serveur WaarpR66 peut être démarré et arrêté avec le script ``waarp-r66server``.
+Le serveur Waarp R66 peut être démarré et arrêté avec le script ``waarp-r66server``.
 
 Les commandes suivantes sont disponibles :
 
 
 Commande ``waarp-r66server start``
-==================================
+----------------------------------
 
 .. program:: waarp-r66server start
 
@@ -33,7 +51,7 @@ Code   Signification
 
 
 Commande ``waarp-r66server stop``
-=================================
+---------------------------------
 
 .. program:: waarp-r66server stop
 
@@ -50,7 +68,7 @@ Code   Signification
 
 
 Commande ``waarp-r66server status``
-===================================
+-----------------------------------
 
 .. program:: waarp-r66server status
 
@@ -67,7 +85,7 @@ Code   Signification
 
 
 Commande ``waarp-r66server restart``
-====================================
+------------------------------------
 
 .. program:: waarp-r66server restart
 
@@ -83,14 +101,14 @@ Code   Signification
 ====== =============
 
 Autres commandes
-----------------
+================
 
 D'autres commandes de maintenance sont disponibles pour le même exécutable
 ``waarp-r66server``.
 
 
 Commande ``waarp-r66server initdb``
-===================================
+-----------------------------------
 
 .. program:: waarp-r66server initdb
 
@@ -149,7 +167,7 @@ Code  Signification
 
 
 Commande ``waarp-r66server loadauth``
-=====================================
+-------------------------------------
 
 .. program:: waarp-r66server loadauth
 
@@ -174,7 +192,7 @@ Code  Signification
 
 
 Commande ``waarp-r66server loadrule``
-=====================================
+-------------------------------------
 
 Charge les règles de transfert depuis un dossier donné en argument dans
 la base de données de WaarpR66 Server.
@@ -197,7 +215,7 @@ Code  Signification
 
 
 Commande ``waarp-r66server loadconf``
-=====================================
+-------------------------------------
 
 Charge la configuration (authentification et règles de transfert) depuis
 des fichiers XML dans la base de données de WaarpR66 Server.
