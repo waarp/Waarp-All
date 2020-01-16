@@ -3,7 +3,7 @@ Liste des changements
 #####################
 
 
-Waarp R66 3.2.1 (2019-11-XX)
+Waarp R66 3.3.0 (2020-01-18)
 ============================
 
 Mise à jour
@@ -39,15 +39,20 @@ la suivante :
 
    Enfin, redémarrer les services.
 
-
 Améliorations
 -------------
 
-- Amélioration de la prise en compte d'un transfert échoué sur connexion impossible pour rejeu
-- Amélioration de la détection au plus tôt de l'absence d'un fichier lors d'une demande d'émission
-- Amélioration de la prise en compte d'un fichier déjà pris en compte par FileWatcher mais modifié après,
-  sans être effacé (ce qui n'est pas une bonne pratique) : le fichier sera reprogrammé pour un nouveau
-  transfert. Cette amélioration est désactivable avec l'option ``-ignoreAlreadyUsed=true``
+- Ajout des propriétés suivantes à la sortie des commandes ``*send`` :
+  ``specialid``, ``finalPath``, ``originalPath``, ``statusCode``, ``ruleid``,
+  ``requested``, ``requester``, ``fileInformation``, ``originalSize``
+- Amélioration de la prise en compte d'un transfert échoué sur connexion
+  impossible pour rejeu
+- Amélioration de la détection au plus tôt de l'absence d'un fichier lors d'une
+  demande d'émission
+- Amélioration de la prise en compte d'un fichier déjà pris en compte par
+  FileWatcher mais modifié après, sans être effacé (ce qui n'est pas une bonne
+  pratique) : le fichier sera reprogrammé pour un nouveau transfert. Cette
+  amélioration est désactivable avec l'option ``-ignoreAlreadyUsed=true``
 - Mise à jour des dépendances externes
 
 
