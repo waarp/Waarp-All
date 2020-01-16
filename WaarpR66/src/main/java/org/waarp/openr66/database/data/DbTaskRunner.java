@@ -2205,16 +2205,35 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param map the Map to set as XML string to transferInformation
    */
   public void setTransferMap(Map<String, Object> map) {
-    setTransferInformation(JsonHandler.writeAsString(map));
+    setTransferInfo(JsonHandler.writeAsString(map));
+  }
+
+  /**
+   * Helper to set a new (key, value) in the map Transfer
+   *
+   * @param key
+   * @param value
+   */
+  public void addToTransferMap(String key, Object value) {
+    Map<String, Object> map = getTransferMap();
+    map.put(key, value);
+    setTransferMap(map);
+  }
+
+  /**
+   * @param key
+   *
+   * @return the associated value or null if it does not exist
+   */
+  public Object getFromTransferMap(String key) {
+    return getTransferMap().get(key);
   }
 
   /**
    * @param size the new size value to set in TransferMap
    */
   private void setOriginalSizeTransferMap(long size) {
-    final Map<String, Object> map = getTransferMap();
-    map.put(JSON_ORIGINALSIZE, size);
-    setTransferMap(map);
+    addToTransferMap(JSON_ORIGINALSIZE, size);
   }
 
   /**
@@ -2248,11 +2267,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param transferInformation the transferInformation to set
    */
-  private void setTransferInformation(String transferInformation) {
+  private void setTransferInfo(String transferInformation) {
     if (transferInformation == null) {
       transferInformation = "{}";
     }
-    pojo.setFileInfo(transferInformation);
+    pojo.setTransferInfo(transferInformation);
   }
 
   /**
@@ -2430,10 +2449,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   /**
    * Set the Error Task step
-   *
-   * @param localChannelReference (to get session)
    */
-  public void setErrorTask(LocalChannelReference localChannelReference) {
+  public void setErrorTask() {
     setStopNow();
     pojo.setGlobalStep(Transfer.TASKSTEP.ERRORTASK);
     pojo.setStep(0);
@@ -2647,9 +2664,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void run() throws OpenR66RunnerErrorException {
     R66Future future;
-    logger.debug(
-        toLogRunStep() + " Status: " + getStatus() + " Sender: " + isSender() +
-        ' ' + rule.printTasks(isSender(), getGlobalStep()));
+    try {
+      logger.debug(toLogRunStep() + " Status: " + getStatus() + " Sender: " +
+                   isSender() + ' ' +
+                   rule.printTasks(isSender(), getGlobalStep()));
+    } catch (NullPointerException ignored) {
+      // Ignored
+    }
     if (getStatus() != ErrorCode.Running) {
       throw new OpenR66RunnerErrorException(
           "Current global STEP not ready to run: " + this);
@@ -2918,8 +2939,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (getGlobalStep() != TASKSTEP.ERRORTASK) {
       // errorstep was not already executed
       // real error
-      localChannelReference
-          .setErrorMessage(finalValue.getMessage(), finalValue.getCode());
+      if (localChannelReference != null && finalValue != null) {
+        localChannelReference
+            .setErrorMessage(finalValue.getMessage(), finalValue.getCode());
+      }
       // First send error mesg
       if (!finalValue.isAnswered()) {
         localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
@@ -2937,7 +2960,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       }
       // now run error task
-      setErrorTask(localChannelReference);
+      setErrorTask();
       saveStatus();
       try {
         run();

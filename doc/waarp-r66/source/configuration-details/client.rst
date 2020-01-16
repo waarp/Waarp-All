@@ -39,11 +39,12 @@ authentfile string N           Fichier XML contenant l'authentification des part
 Section ``client``
 ------------------
 
-================ ======== ==== ====== =============
-Balise           Type     Obl. Défaut Signification
-================ ======== ==== ====== =============
-taskrunnernodb   boolean  N    False  Indique que le client n'utilise pas de base de données
-================ ======== ==== ====== =============
+====================== ======== ==== ====== =============
+Balise                 Type     Obl. Défaut Signification
+====================== ======== ==== ====== =============
+taskrunnernodb         boolean  N    False  Indique que le client n'utilise pas de base de données
+businessfactorynetwork string   N    null   Indique la classe Factory pour les comportements "métiers" à associer à Waarp (Embedded)
+====================== ======== ==== ====== =============
 
 
 .. _client-xml-ssl:
@@ -118,7 +119,7 @@ highcpulimit      decimal N    0.0        Seuil maximal de consommation de CPU (
 percentdecrease   decimal N    0.01       Valeur de diminution de la bande passante quand le seuil maximal de consommation CPU est atteint (en pourcentage)
 delaythrottle     integer N    1000       Intervalle de contrôle de la consommation de ressources (en ms)
 limitlowbandwidth integer N    1000000    Seuil minimal de consommation de bande passante (en octets)
-digest            Integer N    2          Algorithme de hashage utilisé par défaut. CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5, SHA384=6, SHA512=7
+digest            Integer N    2          Algorithme de hashage utilisé par défaut. CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5, SHA384=6, SHA512=7 (SHA256=5 est recommandé)
 usefastmd5        boolean N    True       Utilisation de la librairie FastMD5
 usethrift         integer N    0          Active le serveur RPC Apache Thrift (0 désactive le serveur RPC, une valeur supérieure à 0 indique le port sur lequel écouter)
 checkversion      boolean N    True       Vérifie la version de ses partenaires pour s'assurer de la compatibilité du protocole

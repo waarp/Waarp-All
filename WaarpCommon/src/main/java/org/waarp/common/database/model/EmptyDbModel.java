@@ -24,6 +24,7 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelAbstract.DbTypeResolver;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -59,6 +60,11 @@ public class EmptyDbModel implements DbModel {
   @Override
   public DbType getDbType() {
     return DbType.none;
+  }
+
+  @Override
+  public DbTypeResolver getDbTypeResolver() {
+    return null;
   }
 
   @Override

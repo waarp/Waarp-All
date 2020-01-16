@@ -25,7 +25,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.utils.OutputFormat;
-import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
@@ -174,24 +173,7 @@ public class DirectTransfer extends AbstractTransfer {
       final OutputFormat outputFormat =
           new OutputFormat(DirectTransfer.class.getSimpleName(), args);
       if (future.isSuccess()) {
-        if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-          outputFormat.setValue(FIELDS.status.name(), 1);
-          outputFormat.setValue(FIELDS.statusTxt.name(),
-                                Messages.getString("Transfer.Status") + Messages
-                                    .getString(
-                                        "RequestInformation.Warned")); //$NON-NLS-1$
-        } else {
-          outputFormat.setValue(FIELDS.status.name(), 0);
-          outputFormat.setValue(FIELDS.statusTxt.name(),
-                                Messages.getString("Transfer.Status") + Messages
-                                    .getString(
-                                        "RequestInformation.Success")); //$NON-NLS-1$
-        }
-        outputFormat.setValue(FIELDS.remote.name(), rhost);
-        outputFormat.setValueString(result.getRunner().getJson());
-        outputFormat.setValue("filefinal", result.getFile() != null?
-            result.getFile().toString() : "no file");
-        outputFormat.setValue("delay", delay);
+        prepareOkOutputFormat(delay, result, outputFormat);
         if (transaction.normalInfoAsWarn) {
           logger.warn(outputFormat.loggerOut());
         } else {
@@ -216,13 +198,7 @@ public class DirectTransfer extends AbstractTransfer {
         System.exit(0);//NOSONAR
       } else {
         if (result == null || result.getRunner() == null) {
-          outputFormat.setValue(FIELDS.status.name(), 2);
-          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-              .getString("Transfer.FailedNoId")); //$NON-NLS-1$
-          outputFormat.setValue(FIELDS.remote.name(), rhost);
-          logger.error(outputFormat.loggerOut(), future.getCause());
-          outputFormat
-              .setValue(FIELDS.error.name(), future.getCause().getMessage());
+          prepareKoOutputFormat(future, outputFormat);
           if (!OutputFormat.isQuiet()) {
             outputFormat.sysout();
           }
@@ -232,28 +208,7 @@ public class DirectTransfer extends AbstractTransfer {
           networkTransaction.closeAll();
           System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
         }
-        if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-          outputFormat.setValue(FIELDS.status.name(), 1);
-          outputFormat.setValue(FIELDS.statusTxt.name(),
-                                Messages.getString("Transfer.Status") + Messages
-                                    .getString(
-                                        "RequestInformation.Warned")); //$NON-NLS-1$
-        } else {
-          outputFormat.setValue(FIELDS.status.name(), 2);
-          outputFormat.setValue(FIELDS.statusTxt.name(),
-                                Messages.getString("Transfer.Status") + Messages
-                                    .getString(
-                                        "RequestInformation.Failure")); //$NON-NLS-1$
-        }
-        outputFormat.setValue(FIELDS.remote.name(), rhost);
-        outputFormat.setValueString(result.getRunner().getJson());
-        if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-          logger.warn(outputFormat.loggerOut(), future.getCause());
-        } else {
-          logger.error(outputFormat.loggerOut(), future.getCause());
-        }
-        outputFormat
-            .setValue(FIELDS.error.name(), future.getCause().getMessage());
+        prepareKoOutputFormat(future, result, outputFormat);
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
         }

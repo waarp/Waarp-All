@@ -76,6 +76,7 @@ public class FileMonitor {
   protected static final DigestAlgo defaultDigestAlgo = DigestAlgo.MD5;
   protected static final long MINIMAL_DELAY = 100;
   protected static final long DEFAULT_DELAY = 1000;
+  protected static final long DEFAULT_CHECK_DELAY = 300000; // 5 minutes
 
   protected WaarpFuture future;
   protected WaarpFuture internalfuture;
@@ -87,10 +88,13 @@ public class FileMonitor {
   protected final DigestAlgo digest;
   protected long elapseTime = DEFAULT_DELAY; // default to 1s
   protected long elapseWaarpTime = -1; // default set to run after each run
+  protected long checkDelay = DEFAULT_CHECK_DELAY; // default set to 5 minutes
   protected Timer timer;
   protected Timer timerWaarp;
   // used only if elapseWaarpTime > defaultDelay (1s)
   protected final boolean scanSubDir;
+
+  protected boolean ignoreAlreadyUsed = false;
 
   protected boolean initialized;
   protected File checkFile;
@@ -238,6 +242,29 @@ public class FileMonitor {
     if (elapseWaarpTime >= DEFAULT_DELAY) {
       this.elapseWaarpTime = (elapseWaarpTime / 10) * 10;
     }
+  }
+
+  /**
+   * @return True if Already used files will be ignored
+   */
+  public boolean isIgnoreAlreadyUsed() {
+    return ignoreAlreadyUsed;
+  }
+
+  /**
+   * @param ignoreAlreadyUsed if True, already used files will be ignored.
+   *     Else if False, if an already used file is modified, then it will be reused.
+   */
+  public void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
+    this.ignoreAlreadyUsed = ignoreAlreadyUsed;
+  }
+
+  /**
+   * @param checkDelay the delay before checking if action was
+   *     correctly taken
+   */
+  public void setCheckDelay(long checkDelay) {
+    this.checkDelay = checkDelay;
   }
 
   /**
@@ -607,6 +634,49 @@ public class FileMonitor {
     return true;
   }
 
+  private void setIfAlreadyUsed(FileItem fileItem, boolean valid) {
+    if (!ignoreAlreadyUsed && fileItem.specialId != DbConstant.ILLEGALVALUE &&
+        fileItem.used) {
+      switch (fileItem.status) {
+        case START:
+          fileItem.status = Status.CHANGING;
+          break;
+        case CHANGING:
+          if (valid) {
+            fileItem.status = Status.VALID;
+          }
+          break;
+        case VALID:
+          if (valid) {
+            fileItem.status = Status.RESTART;
+          }
+          break;
+        case DONE:
+          if (valid) {
+            fileItem.status = Status.START;
+          }
+          break;
+        case RESTART:
+          break;
+      }
+    } else {
+      switch (fileItem.status) {
+        case START:
+          fileItem.status = Status.CHANGING;
+          break;
+        case CHANGING:
+          if (valid) {
+            fileItem.status = Status.VALID;
+          }
+          break;
+        case VALID:
+        case DONE:
+        case RESTART:
+          break;
+      }
+    }
+  }
+
   /**
    * @param fileItemsChanged
    * @param directory
@@ -632,15 +702,31 @@ public class FileMonitor {
           fileItemsChanged = true;
           continue;
         }
-        if (fileItem.used) {
+        if (fileItem.used && ignoreAlreadyUsed) {
           // already used so ignore
+          continue;
+        }
+        logger.debug("File check: " + fileItem);
+        final long size = fileItem.file.length();
+        if (size != fileItem.size) {
+          // changed or second size check
+          fileItem.size = size;
+          fileItemsChanged = true;
+          fileItem.status = Status.CHANGING;
+          logger.debug("File Size check: " + fileItem + "(" + size + ")");
           continue;
         }
         final long lastTimeModified = fileItem.file.lastModified();
         if (lastTimeModified != fileItem.lastTime) {
           // changed or second time check
           fileItem.lastTime = lastTimeModified;
+          if (!ignoreAlreadyUsed && fileItem.used) {
+            fileItem.hash = null;
+          }
           fileItemsChanged = true;
+          fileItem.status = Status.CHANGING;
+          logger.debug(
+              "File Change check: " + fileItem + "(" + lastTimeModified + ")");
           continue;
         }
         // now check Hash or third time
@@ -650,21 +736,43 @@ public class FileMonitor {
           if (hash == null || fileItem.hash == null) {
             fileItem.hash = hash;
             fileItemsChanged = true;
+            fileItem.status = Status.CHANGING;
+            logger.debug("File Hash0 check: " + fileItem);
             continue;
           }
           if (!Arrays.equals(hash, fileItem.hash)) {
             fileItem.hash = hash;
             fileItemsChanged = true;
+            fileItem.status = Status.CHANGING;
+            logger.debug("File Hash1 check: " + fileItem);
             continue;
+          } else {
+            setIfAlreadyUsed(fileItem, fileItem.status != Status.DONE);
           }
           if (checkStop()) {
             return false;
           }
+          boolean toIgnore = false;
+          if (!ignoreAlreadyUsed && fileItem.used &&
+              fileItem.specialId != DbConstant.ILLEGALVALUE) {
+            if (fileItem.status != Status.RESTART) {
+              logger.debug("File Ignore check: " + fileItem);
+              toIgnore = true;
+            }
+          }
+          logger.debug("File Run check: " + fileItem);
           // now time and hash are the same so act on it
           fileItem.timeUsed = System.currentTimeMillis();
           if (commandValidFileFactory != null) {
             final FileMonitorCommandRunnableFuture torun =
                 commandValidFileFactory.create(fileItem);
+            if (!torun.checkFileItemBusiness(fileItem)) {
+              logger.debug("File Ignore Business check: " + fileItem);
+              continue;
+            }
+            if (toIgnore) {
+              continue;
+            }
             if (executor != null) {
               final Future<?> torunFuture = executor.submit(torun);
               results.add(torunFuture);
@@ -672,8 +780,18 @@ public class FileMonitor {
               torun.run(fileItem);
             }
           } else if (commandValidFile != null) {
+            if (!commandValidFile.checkFileItemBusiness(fileItem)) {
+              logger.debug("File Ignore Business check: " + fileItem);
+              continue;
+            }
+            if (toIgnore) {
+              continue;
+            }
             commandValidFile.run(fileItem);
           } else {
+            if (toIgnore) {
+              continue;
+            }
             toUse.add(fileItem);
           }
           fileItemsChanged = true;
@@ -845,15 +963,21 @@ public class FileMonitor {
 
   }
 
+  public static enum Status {
+    START, CHANGING, VALID, DONE, RESTART
+  }
+
   /**
    * One element in the directory
    */
   public static class FileItem implements Cloneable {
     public File file;
+    public long size;
     public byte[] hash;
     public long lastTime = Long.MIN_VALUE;
     public long timeUsed = Long.MIN_VALUE;
     public boolean used;
+    public Status status = Status.START;
     public long specialId = DbConstant.ILLEGALVALUE;
 
     public FileItem() {
@@ -882,14 +1006,21 @@ public class FileMonitor {
      * @param item
      *
      * @return True if the fileItem is strictly the same (and not only the
-     *     file
-     *     as in equals)
+     *     file as in equals)
      */
     public boolean isStrictlySame(FileItem item) {
-      return item != null && file.equals(item.file) &&
-             lastTime == item.lastTime && timeUsed == item.timeUsed &&
-             used == item.used &&
+      return item != null &&
+             file.getAbsolutePath().equals(item.file.getAbsolutePath()) &&
+             file.length() == item.size && lastTime == item.lastTime &&
+             timeUsed == item.timeUsed && used == item.used &&
+             status.equals(item.status) &&
              (hash != null? Arrays.equals(hash, item.hash) : item.hash == null);
+    }
+
+    @Override
+    public String toString() {
+      return file.getAbsolutePath() + " : " + size + " : " + specialId + " : " +
+             used + " : " + status + " : " + lastTime + " : " + timeUsed;
     }
 
     @Override
@@ -900,6 +1031,8 @@ public class FileMonitor {
       clone.timeUsed = timeUsed;
       clone.used = used;
       clone.specialId = specialId;
+      clone.status = status;
+      clone.size = size;
       return clone;
     }
   }

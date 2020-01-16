@@ -41,9 +41,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Class for access to Database
  *
- * @deprecated
+ * Partially deprecated (only in Waarp R66 but not other components)
  */
-@Deprecated
 public class DbAdmin {
   /**
    * Internal Logger

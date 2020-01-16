@@ -60,6 +60,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.context.ErrorCode.*;
 
 /**
  * Direct Transfer from a client with or without database connection or Submit
@@ -136,9 +137,9 @@ public class SpooledDirectoryTransfer implements Runnable {
 
   protected final String stopFile;
 
-  protected final String rulename;
+  protected final String ruleName;
 
-  protected final String fileinfo;
+  protected final String fileInfo;
 
   protected final boolean isMD5;
 
@@ -168,6 +169,8 @@ public class SpooledDirectoryTransfer implements Runnable {
 
   protected final boolean normalInfoAsWarn;
 
+  protected final boolean ignoreAlreadyUsed;
+
   protected final NetworkTransaction networkTransaction;
 
   protected FileMonitor monitor;
@@ -177,66 +180,42 @@ public class SpooledDirectoryTransfer implements Runnable {
 
   /**
    * @param future
-   * @param name
-   * @param directory
-   * @param statusfile
-   * @param stopfile
-   * @param rulename
-   * @param fileinfo
-   * @param isMD5
-   * @param remoteHosts
-   * @param blocksize
-   * @param regex
-   * @param elapse
-   * @param submit
-   * @param nolog
-   * @param recursive
-   * @param elapseWaarp
-   * @param parallel
-   * @param waarphost
-   * @param minimalSize
+   * @param arguments
    * @param networkTransaction
    */
-  public SpooledDirectoryTransfer(R66Future future, String name,
-                                  List<String> directory, String statusfile,
-                                  String stopfile, String rulename,
-                                  String fileinfo, boolean isMD5,
-                                  List<String> remoteHosts, int blocksize,
-                                  String regex, long elapse, boolean submit,
-                                  boolean nolog, boolean recursive,
-                                  long elapseWaarp, boolean parallel,
-                                  int limitParallel, List<String> waarphost,
-                                  long minimalSize, boolean logWarn,
-                                  NetworkTransaction networkTransaction) {
+  public SpooledDirectoryTransfer(final R66Future future,
+                                  final Arguments arguments,
+                                  final NetworkTransaction networkTransaction) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
     }
     this.future = future;
-    this.name = name;
-    this.directory = directory;
-    statusFile = statusfile;
-    stopFile = stopfile;
-    this.rulename = rulename;
-    this.fileinfo = fileinfo;
-    this.isMD5 = isMD5;
-    this.remoteHosts = remoteHosts;
-    this.blocksize = blocksize;
-    regexFilter = regex;
-    elapseTime = elapse;
-    this.submit = submit;
-    this.nolog = nolog && !submit;
+    this.name = arguments.name;
+    this.directory = arguments.localDirectory;
+    statusFile = arguments.statusFile;
+    stopFile = arguments.stopFile;
+    this.ruleName = arguments.rule;
+    this.fileInfo = arguments.fileInfo;
+    this.isMD5 = arguments.isMd5;
+    this.remoteHosts = arguments.remoteHosts;
+    this.blocksize = arguments.block;
+    regexFilter = arguments.regex;
+    elapseTime = arguments.elapsed;
+    this.submit = arguments.toSubmit;
+    this.nolog = arguments.noLog && !arguments.toSubmit;
     AbstractTransfer.nolog = this.nolog;
-    recurs = recursive;
-    elapseWaarpTime = elapseWaarp;
+    recurs = arguments.recursive;
+    elapseWaarpTime = arguments.elapsedWaarp;
     if (this.submit) {
       this.parallel = false;
     } else {
-      this.parallel = parallel;
+      this.parallel = arguments.isParallel;
     }
-    limitParallelTasks = limitParallel;
-    waarpHosts = waarphost;
-    this.minimalSize = minimalSize;
-    normalInfoAsWarn = logWarn;
+    limitParallelTasks = arguments.limitParallel;
+    waarpHosts = arguments.waarpHosts;
+    this.minimalSize = arguments.minimalSize;
+    normalInfoAsWarn = arguments.logWarn;
+    this.ignoreAlreadyUsed = arguments.ignoreAlreadyUsed;
     this.networkTransaction = networkTransaction;
   }
 
@@ -247,7 +226,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     // first check if rule is for SEND
     DbRule dbrule;
     try {
-      dbrule = new DbRule(rulename);
+      dbrule = new DbRule(ruleName);
     } catch (final WaarpDatabaseException e1) {
       logger.error(Messages.getString("Transfer.18"), e1); //$NON-NLS-1$
       future.setFailure(e1);
@@ -348,6 +327,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     monitor = new FileMonitor(name, status, stop, dir, null, elapseTime, filter,
                               recurs, commandValidFile, waarpRemovedCommand,
                               null);
+    monitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     if (!monitor.initialized()) {
       // wrong
       logger.error(
@@ -438,7 +418,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     }
     logger.warn("SpooledDirectoryTransfer starts name:" + name + " directory:" +
                 directory + " statusFile:" + statusFile + " stopFile:" +
-                stopFile + " rulename:" + rulename + " fileinfo:" + fileinfo +
+                stopFile + " rulename:" + ruleName + " fileinfo:" + fileInfo +
                 " hosts:" + remoteHosts + " regex:" + regexFilter +
                 " minimalSize:" + minimalSize + " waarp:" + waarpHosts +
                 " elapse:" + elapseTime + " waarpElapse:" + elapseWaarpTime +
@@ -478,6 +458,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     @Override
     public void run(FileItem fileItem) {
       setFileItem(fileItem);
+      checkReuse(ignoreAlreadyUsed);
       if (admin.getSession() != null && admin.getSession().isDisActive()) {
         admin.getSession().checkConnectionNoException();
       }
@@ -485,6 +466,52 @@ public class SpooledDirectoryTransfer implements Runnable {
       int ko = 0;
       long specialId =
           remoteHosts.size() > 1? ILLEGALVALUE : fileItem.specialId;
+      long newSpecialId = ILLEGALVALUE;
+      // check if already launched before
+      if (isIgnored(ignoreAlreadyUsed)) {
+        // Nothing to do
+        return;
+      }
+      if (isReuse() && remoteHosts.size() == 1) {
+        // if specialId is not IllegalValue, then used was necessarily true
+        // before
+        if (!submit) {
+          // reset fileItem usage
+          setValid(fileItem);
+        } else {
+          // Cancel the unique previous transfer
+          String host = remoteHosts.get(0).trim();
+          if (host != null && !host.isEmpty()) {
+            final String filename = fileItem.file.getAbsolutePath();
+            String text =
+                "Request Transfer to be cancelled: " + fileItem.specialId +
+                ' ' + filename + ' ';
+            try {
+              R66Future r66Future = new R66Future(true);
+              final String srequester = Configuration.configuration
+                  .getHostId(admin.getSession(), host);
+              // Try restart
+              final RequestTransfer transaction =
+                  new RequestTransfer(r66Future, fileItem.specialId, host,
+                                      srequester, true, false, false,
+                                      networkTransaction);
+              transaction.normalInfoAsWarn = normalInfoAsWarn;
+              logger.info(text + host);
+              // special task
+              transaction.run();
+              r66Future.awaitOrInterruptible();
+              // reset fileItem usage
+              setValid(fileItem);
+            } catch (final WaarpDatabaseException e) {
+              if (admin.getSession() != null) {
+                admin.getSession().checkConnectionNoException();
+              }
+              logger.warn(Messages.getString("RequestTransfer.5") + host,
+                          e); //$NON-NLS-1$
+            }
+          }
+        }
+      }
       try {
         for (String host : remoteHosts) {
           host = host.trim();
@@ -497,8 +524,8 @@ public class SpooledDirectoryTransfer implements Runnable {
             if (submit) {
               text = "Submit Transfer: ";
               final SubmitTransfer transaction =
-                  new SubmitTransfer(r66Future, host, filename, rulename,
-                                     fileinfo, isMD5, blocksize, specialId,
+                  new SubmitTransfer(r66Future, host, filename, ruleName,
+                                     fileInfo, isMD5, blocksize, specialId,
                                      null);
               transaction.normalInfoAsWarn = normalInfoAsWarn;
               logger.info(text + host);
@@ -551,8 +578,8 @@ public class SpooledDirectoryTransfer implements Runnable {
                   text = "Direct Transfer: ";
                   r66Future = new R66Future(true);
                   final DirectTransfer transaction =
-                      new DirectTransfer(r66Future, host, filename, rulename,
-                                         fileinfo, isMD5, blocksize,
+                      new DirectTransfer(r66Future, host, filename, ruleName,
+                                         fileInfo, isMD5, blocksize,
                                          ILLEGALVALUE, networkTransaction);
                   transaction.normalInfoAsWarn = normalInfoAsWarn;
                   logger.info(text + host);
@@ -561,8 +588,8 @@ public class SpooledDirectoryTransfer implements Runnable {
               } else {
                 text = "Direct Transfer: ";
                 final DirectTransfer transaction =
-                    new DirectTransfer(r66Future, host, filename, rulename,
-                                       fileinfo, isMD5, blocksize, ILLEGALVALUE,
+                    new DirectTransfer(r66Future, host, filename, ruleName,
+                                       fileInfo, isMD5, blocksize, ILLEGALVALUE,
                                        networkTransaction);
                 transaction.normalInfoAsWarn = normalInfoAsWarn;
                 logger.info(text + host);
@@ -578,7 +605,7 @@ public class SpooledDirectoryTransfer implements Runnable {
               if (r66result != null) {
                 runner = r66result.getRunner();
                 if (runner != null) {
-                  specialId = runner.getSpecialId();
+                  newSpecialId = runner.getSpecialId();
                   String status = Messages
                       .getString("RequestInformation.Success"); //$NON-NLS-1$
                   if (runner.getErrorInfo() == ErrorCode.Warning) {
@@ -610,7 +637,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                           e);
                     }
                   }
-                  DbTaskRunner.removeNoDbSpecialId(specialId);
+                  DbTaskRunner.removeNoDbSpecialId(newSpecialId);
                 } else {
                   if (normalInfoAsWarn) {
                     logger.warn(
@@ -651,8 +678,8 @@ public class SpooledDirectoryTransfer implements Runnable {
                     !normalInfoAsWarn;
                 runner = r66result.getRunner();
                 if (runner != null) {
-                  specialId = runner.getSpecialId();
-                  DbTaskRunner.removeNoDbSpecialId(specialId);
+                  newSpecialId = runner.getSpecialId();
+                  DbTaskRunner.removeNoDbSpecialId(newSpecialId);
                   if (isConnectionImpossible) {
                     logger.info(
                         text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
@@ -672,9 +699,17 @@ public class SpooledDirectoryTransfer implements Runnable {
                         text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
                         REMOTE + host + REMOTE2, r66Future.getCause());
                   } else {
-                    logger.error(
-                        text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
-                        REMOTE + host + REMOTE2, r66Future.getCause());
+                    if (r66result.getCode() == QueryRemotelyUnknown) {
+                      logger
+                          .info("Transfer not found" + REMOTE + host + REMOTE2);
+                      // False negative
+                      ko--;
+                      setError(getError() - 1);
+                    } else {
+                      logger.error(text + Messages
+                          .getString(REQUEST_INFORMATION_FAILURE) + REMOTE +
+                                   host + REMOTE2, r66Future.getCause());
+                    }
                   }
                 }
               } else {
@@ -691,7 +726,7 @@ public class SpooledDirectoryTransfer implements Runnable {
         logger.error("Error in SpooledDirectory", e);
         finalStatus = false;
       }
-      specialId = remoteHosts.size() > 1? ILLEGALVALUE : specialId;
+      specialId = remoteHosts.size() > 1? ILLEGALVALUE : newSpecialId;
       if (ko > 0) {
         // If at least one is in error, the transfer is in error so should be redone
         finalStatus = false;
@@ -703,27 +738,184 @@ public class SpooledDirectoryTransfer implements Runnable {
   /**
    * Default arguments
    */
-  protected static class Arguments {
-    protected String sname;
-    protected final List<String> rhosts = new ArrayList<String>();
-    protected final List<String> localDirectory = new ArrayList<String>();
-    protected String rule;
-    protected String fileInfo = NO_INFO_ARGS;
-    protected boolean ismd5;
-    protected int block = 0x10000; // 64K as default
-    protected String statusfile;
-    protected String stopfile;
-    protected String regex;
-    protected long elapsed = 1000;
-    protected long elapsedWaarp = 5000;
-    protected boolean tosubmit = true;
-    protected boolean noLog;
-    protected boolean recursive;
-    protected final List<String> waarphosts = new ArrayList<String>();
-    protected boolean isparallel = true;
-    protected int limitParallel;
-    protected long minimalSize;
-    protected boolean logWarn = true;
+  public static class Arguments {
+    private String name;
+    private final List<String> remoteHosts = new ArrayList<String>();
+    private final List<String> localDirectory = new ArrayList<String>();
+    private String rule;
+    private String fileInfo = NO_INFO_ARGS;
+    private boolean isMd5;
+    private int block = 0x10000; // 64K as default
+    private String statusFile;
+    private String stopFile;
+    private String regex;
+    private long elapsed = 1000;
+    private long elapsedWaarp = 5000;
+    private boolean toSubmit = true;
+    private boolean noLog;
+    private boolean recursive;
+    private final List<String> waarpHosts = new ArrayList<String>();
+    private boolean isParallel = true;
+    private int limitParallel;
+    private long minimalSize;
+    private boolean logWarn = true;
+    private boolean ignoreAlreadyUsed = false;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    public List<String> getRemoteHosts() {
+      return remoteHosts;
+    }
+
+    public List<String> getLocalDirectory() {
+      return localDirectory;
+    }
+
+    public String getRule() {
+      return rule;
+    }
+
+    public void setRule(final String rule) {
+      this.rule = rule;
+    }
+
+    public String getFileInfo() {
+      return fileInfo;
+    }
+
+    public void setFileInfo(final String fileInfo) {
+      this.fileInfo = fileInfo;
+    }
+
+    public boolean isMd5() {
+      return isMd5;
+    }
+
+    public void setMd5(final boolean md5) {
+      this.isMd5 = md5;
+    }
+
+    public int getBlock() {
+      return block;
+    }
+
+    public void setBlock(final int block) {
+      this.block = block;
+    }
+
+    public String getStatusFile() {
+      return statusFile;
+    }
+
+    public void setStatusFile(final String statusFile) {
+      this.statusFile = statusFile;
+    }
+
+    public String getStopFile() {
+      return stopFile;
+    }
+
+    public void setStopFile(final String stopFile) {
+      this.stopFile = stopFile;
+    }
+
+    public String getRegex() {
+      return regex;
+    }
+
+    public void setRegex(final String regex) {
+      this.regex = regex;
+    }
+
+    public long getElapsed() {
+      return elapsed;
+    }
+
+    public void setElapsed(final long elapsed) {
+      this.elapsed = elapsed;
+    }
+
+    public long getElapsedWaarp() {
+      return elapsedWaarp;
+    }
+
+    public void setElapsedWaarp(final long elapsedWaarp) {
+      this.elapsedWaarp = elapsedWaarp;
+    }
+
+    public boolean isToSubmit() {
+      return toSubmit;
+    }
+
+    public void setToSubmit(final boolean toSubmit) {
+      this.toSubmit = toSubmit;
+    }
+
+    public boolean isNoLog() {
+      return noLog;
+    }
+
+    public void setNoLog(final boolean noLog) {
+      this.noLog = noLog;
+    }
+
+    public boolean isRecursive() {
+      return recursive;
+    }
+
+    public void setRecursive(final boolean recursive) {
+      this.recursive = recursive;
+    }
+
+    public List<String> getWaarpHosts() {
+      return waarpHosts;
+    }
+
+    public boolean isParallel() {
+      return isParallel;
+    }
+
+    public void setParallel(final boolean parallel) {
+      this.isParallel = parallel;
+    }
+
+    public int getLimitParallel() {
+      return limitParallel;
+    }
+
+    public void setLimitParallel(final int limitParallel) {
+      this.limitParallel = limitParallel;
+    }
+
+    public long getMinimalSize() {
+      return minimalSize;
+    }
+
+    public void setMinimalSize(final long minimalSize) {
+      this.minimalSize = minimalSize;
+    }
+
+    public boolean isLogWarn() {
+      return logWarn;
+    }
+
+    public void setLogWarn(final boolean logWarn) {
+      this.logWarn = logWarn;
+    }
+
+    public boolean isIgnoreAlreadyUsed() {
+      return ignoreAlreadyUsed;
+    }
+
+    public void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
+      this.ignoreAlreadyUsed = ignoreAlreadyUsed;
+    }
   }
 
   protected static final List<Arguments> arguments = new ArrayList<Arguments>();
@@ -750,6 +942,7 @@ public class SpooledDirectoryTransfer implements Runnable {
   private static final String XML_ELAPSE_WAARP = "elapseWaarp";
   private static final String XML_MINIMAL_SIZE = "minimalSize";
   private static final String XML_LOG_WARN = "logWarn";
+  private static final String XML_IGNORED_ALREADY_USED = "ignoreAlreadyUsed";
 
   private static final XmlDecl[] subSpooled = {
       new XmlDecl(XmlType.STRING, XML_NAME),
@@ -769,6 +962,7 @@ public class SpooledDirectoryTransfer implements Runnable {
       new XmlDecl(XmlType.BOOLEAN, XML_NOLOG),
       new XmlDecl(XML_WAARP, XmlType.STRING, XML_WAARP, true),
       new XmlDecl(XmlType.LONG, XML_ELAPSE_WAARP),
+      new XmlDecl(XmlType.BOOLEAN, XML_IGNORED_ALREADY_USED),
       new XmlDecl(XmlType.LONG, XML_MINIMAL_SIZE)
   };
   private static final XmlDecl[] spooled = {
@@ -815,12 +1009,12 @@ public class SpooledDirectoryTransfer implements Runnable {
     if (value != null && value.getList() != null) {
       for (final XmlValue[] xml : (Iterable<XmlValue[]>) value.getList()) {
         final Arguments arg = new Arguments();
-        arg.stopfile = stopfile;
-        arg.logWarn = logWarn;
+        arg.setStopFile(stopfile);
+        arg.setLogWarn(logWarn);
         final XmlHash subHash = new XmlHash(xml);
         value = subHash.get(XML_NAME);
         if (value != null && !value.isEmpty()) {
-          arg.sname = value.getString();
+          arg.setName(value.getString());
         }
         value = subHash.get(XML_TO);
         if (value != null && value.getList() != null) {
@@ -828,9 +1022,9 @@ public class SpooledDirectoryTransfer implements Runnable {
             if (to.trim().isEmpty()) {
               continue;
             }
-            arg.rhosts.add(to.trim());
+            arg.getRemoteHosts().add(to.trim());
           }
-          if (arg.rhosts.isEmpty()) {
+          if (arg.getRemoteHosts().isEmpty()) {
             logger.warn("to directive is empty but must not");
             continue;
           }
@@ -840,14 +1034,14 @@ public class SpooledDirectoryTransfer implements Runnable {
         }
         value = subHash.get(XML_RULE);
         if (value != null && !value.isEmpty()) {
-          arg.rule = value.getString();
+          arg.setRule(value.getString());
         } else {
           logger.warn("rule directive is empty but must not");
           continue;
         }
         value = subHash.get(XML_STATUSFILE);
         if (value != null && !value.isEmpty()) {
-          arg.statusfile = value.getString();
+          arg.setStatusFile(value.getString());
         } else {
           logger.warn("statusfile directive is empty but must not");
           continue;
@@ -858,9 +1052,9 @@ public class SpooledDirectoryTransfer implements Runnable {
             if (dir.trim().isEmpty()) {
               continue;
             }
-            arg.localDirectory.add(dir.trim());
+            arg.getLocalDirectory().add(dir.trim());
           }
-          if (arg.localDirectory.isEmpty()) {
+          if (arg.getLocalDirectory().isEmpty()) {
             logger.warn("directory directive is empty but must not");
             continue;
           }
@@ -870,43 +1064,43 @@ public class SpooledDirectoryTransfer implements Runnable {
         }
         value = subHash.get(XML_REGEX);
         if (value != null && !value.isEmpty()) {
-          arg.regex = value.getString();
+          arg.setRegex(value.getString());
         }
         value = subHash.get(XML_RECURSIVE);
         if (value != null && !value.isEmpty()) {
-          arg.recursive = value.getBoolean();
+          arg.setRecursive(value.getBoolean());
         }
         value = subHash.get(XML_ELAPSE);
         if (value != null && !value.isEmpty()) {
-          arg.elapsed = value.getLong();
+          arg.setElapsed(value.getLong());
         }
         value = subHash.get(XML_SUBMIT);
         if (value != null && !value.isEmpty()) {
-          arg.tosubmit = value.getBoolean();
+          arg.setToSubmit(value.getBoolean());
         }
         value = subHash.get(XML_PARALLEL);
         if (value != null && !value.isEmpty()) {
-          arg.isparallel = value.getBoolean();
+          arg.setParallel(value.getBoolean());
         }
         value = subHash.get(XML_LIMIT_PARALLEL);
         if (value != null && !value.isEmpty()) {
-          arg.limitParallel = value.getInteger();
+          arg.setLimitParallel(value.getInteger());
         }
         value = subHash.get(XML_INFO);
         if (value != null && !value.isEmpty()) {
-          arg.fileInfo = value.getString();
+          arg.setFileInfo(value.getString());
         }
         value = subHash.get(XML_MD_5);
         if (value != null && !value.isEmpty()) {
-          arg.ismd5 = value.getBoolean();
+          arg.setMd5(value.getBoolean());
         }
         value = subHash.get(XML_BLOCK);
         if (value != null && !value.isEmpty()) {
-          arg.block = value.getInteger();
+          arg.setBlock(value.getInteger());
         }
         value = subHash.get(XML_NOLOG);
         if (value != null && !value.isEmpty()) {
-          arg.noLog = value.getBoolean();
+          arg.setNoLog(value.getBoolean());
         }
         value = subHash.get(XML_WAARP);
         if (value != null && value.getList() != null) {
@@ -914,16 +1108,20 @@ public class SpooledDirectoryTransfer implements Runnable {
             if (host.trim().isEmpty()) {
               continue;
             }
-            arg.waarphosts.add(host.trim());
+            arg.getWaarpHosts().add(host.trim());
           }
         }
         value = subHash.get(XML_ELAPSE_WAARP);
         if (value != null && !value.isEmpty()) {
-          arg.elapsedWaarp = value.getLong();
+          arg.setElapsedWaarp(value.getLong());
         }
         value = subHash.get(XML_MINIMAL_SIZE);
         if (value != null && !value.isEmpty()) {
-          arg.minimalSize = value.getLong();
+          arg.setMinimalSize(value.getLong());
+        }
+        value = subHash.get(XML_IGNORED_ALREADY_USED);
+        if (value != null && !value.isEmpty()) {
+          arg.setIgnoreAlreadyUsed(value.getBoolean());
         }
         arguments.add(arg);
       }
@@ -959,7 +1157,7 @@ public class SpooledDirectoryTransfer implements Runnable {
       }
       // Now set default values from configuration
       final Arguments arg = new Arguments();
-      arg.block = Configuration.configuration.getBlockSize();
+      arg.setBlock(Configuration.configuration.getBlockSize());
       int i = 1;
       try {
         for (i = 1; i < args.length; i++) {
@@ -975,11 +1173,11 @@ public class SpooledDirectoryTransfer implements Runnable {
                                              .containsKey(string)) {
                 string = Configuration.configuration.getAliases().get(string);
               }
-              arg.rhosts.add(string);
+              arg.getRemoteHosts().add(string);
             }
           } else if ("-name".equalsIgnoreCase(args[i])) {
             i++;
-            arg.sname = args[i];
+            arg.setName(args[i]);
           } else if ("-directory".equalsIgnoreCase(args[i])) {
             i++;
             final String[] dir = args[i].split(",");
@@ -987,45 +1185,45 @@ public class SpooledDirectoryTransfer implements Runnable {
               if (string.trim().isEmpty()) {
                 continue;
               }
-              arg.localDirectory.add(string.trim());
+              arg.getLocalDirectory().add(string.trim());
             }
           } else if ("-rule".equalsIgnoreCase(args[i])) {
             i++;
-            arg.rule = args[i];
+            arg.setRule(args[i]);
           } else if ("-statusfile".equalsIgnoreCase(args[i])) {
             i++;
-            arg.statusfile = args[i];
+            arg.setStatusFile(args[i]);
           } else if ("-stopfile".equalsIgnoreCase(args[i])) {
             i++;
-            arg.stopfile = args[i];
+            arg.setStopFile(args[i]);
           } else if ("-info".equalsIgnoreCase(args[i])) {
             i++;
-            arg.fileInfo = args[i];
+            arg.setFileInfo(args[i]);
           } else if ("-md5".equalsIgnoreCase(args[i])) {
-            arg.ismd5 = true;
+            arg.setMd5(true);
           } else if ("-block".equalsIgnoreCase(args[i])) {
             i++;
-            arg.block = Integer.parseInt(args[i]);
-            if (arg.block < 100) {
+            arg.setBlock(Integer.parseInt(args[i]));
+            if (arg.getBlock() < 100) {
               logger.error(Messages.getString("AbstractTransfer.1") +
-                           arg.block); //$NON-NLS-1$
+                           arg.getBlock()); //$NON-NLS-1$
               return false;
             }
           } else if ("-nolog".equalsIgnoreCase(args[i])) {
-            arg.noLog = true;
+            arg.setNoLog(true);
           } else if ("-submit".equalsIgnoreCase(args[i])) {
-            arg.tosubmit = true;
+            arg.setToSubmit(true);
           } else if ("-direct".equalsIgnoreCase(args[i])) {
-            arg.tosubmit = false;
+            arg.setToSubmit(false);
           } else if ("-recursive".equalsIgnoreCase(args[i])) {
-            arg.recursive = true;
+            arg.setRecursive(true);
           } else if ("-logWarn".equalsIgnoreCase(args[i])) {
-            arg.logWarn = true;
+            arg.setLogWarn(true);
           } else if ("-notlogWarn".equalsIgnoreCase(args[i])) {
-            arg.logWarn = false;
+            arg.setLogWarn(false);
           } else if ("-regex".equalsIgnoreCase(args[i])) {
             i++;
-            arg.regex = args[i];
+            arg.setRegex(args[i]);
           } else if ("-waarp".equalsIgnoreCase(args[i])) {
             i++;
             final String[] host = args[i].split(",");
@@ -1033,24 +1231,26 @@ public class SpooledDirectoryTransfer implements Runnable {
               if (string.trim().isEmpty()) {
                 continue;
               }
-              arg.waarphosts.add(string.trim());
+              arg.getWaarpHosts().add(string.trim());
             }
           } else if ("-elapse".equalsIgnoreCase(args[i])) {
             i++;
-            arg.elapsed = Long.parseLong(args[i]);
+            arg.setElapsed(Long.parseLong(args[i]));
           } else if ("-elapseWaarp".equalsIgnoreCase(args[i])) {
             i++;
-            arg.elapsedWaarp = Long.parseLong(args[i]);
+            arg.setElapsedWaarp(Long.parseLong(args[i]));
           } else if ("-minimalSize".equalsIgnoreCase(args[i])) {
             i++;
-            arg.minimalSize = Long.parseLong(args[i]);
+            arg.setMinimalSize(Long.parseLong(args[i]));
           } else if ("-limitParallel".equalsIgnoreCase(args[i])) {
             i++;
-            arg.limitParallel = Integer.parseInt(args[i]);
+            arg.setLimitParallel(Integer.parseInt(args[i]));
           } else if ("-parallel".equalsIgnoreCase(args[i])) {
-            arg.isparallel = true;
+            arg.setParallel(true);
           } else if ("-sequential".equalsIgnoreCase(args[i])) {
-            arg.isparallel = false;
+            arg.setParallel(false);
+          } else if ("-ignoreAlreadyUsed".equalsIgnoreCase(args[i])) {
+            arg.setIgnoreAlreadyUsed(true);
           }
         }
       } catch (final NumberFormatException e) {
@@ -1058,16 +1258,16 @@ public class SpooledDirectoryTransfer implements Runnable {
             .error(Messages.getString("AbstractTransfer.20") + i); //$NON-NLS-1$
         return false;
       }
-      if (arg.fileInfo == null) {
-        arg.fileInfo = NO_INFO_ARGS;
+      if (arg.getFileInfo() == null) {
+        arg.setFileInfo(NO_INFO_ARGS);
       }
-      if (arg.sname == null) {
-        arg.sname = Configuration.configuration.getHostId() + " : " +
-                    arg.localDirectory;
+      if (arg.getName() == null) {
+        arg.setName(Configuration.configuration.getHostId() + " : " +
+                    arg.getLocalDirectory());
       }
-      if (!arg.rhosts.isEmpty() && arg.rule != null &&
-          !arg.localDirectory.isEmpty() && arg.statusfile != null &&
-          arg.stopfile != null) {
+      if (!arg.getRemoteHosts().isEmpty() && arg.getRule() != null &&
+          !arg.getLocalDirectory().isEmpty() && arg.getStatusFile() != null &&
+          arg.getStopFile() != null) {
         arguments.add(arg);
         return true;
       }
@@ -1124,15 +1324,7 @@ public class SpooledDirectoryTransfer implements Runnable {
       for (final Arguments arg : arguments) {
         final R66Future future = new R66Future(true);
         final SpooledDirectoryTransfer spooled =
-            new SpooledDirectoryTransfer(future, arg.sname, arg.localDirectory,
-                                         arg.statusfile, arg.stopfile, arg.rule,
-                                         arg.fileInfo, arg.ismd5, arg.rhosts,
-                                         arg.block, arg.regex, arg.elapsed,
-                                         arg.tosubmit, arg.noLog, arg.recursive,
-                                         arg.elapsedWaarp, arg.isparallel,
-                                         arg.limitParallel, arg.waarphosts,
-                                         arg.minimalSize, arg.logWarn,
-                                         networkTransactionStatic);
+            new SpooledDirectoryTransfer(future, arg, networkTransactionStatic);
         executorService.submit(spooled);
         list.add(spooled);
       }

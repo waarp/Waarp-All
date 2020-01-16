@@ -119,24 +119,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
             final OutputFormat outputFormat = new OutputFormat(
                 "Unique " + MultipleDirectTransfer.class.getSimpleName(), null);
             if (future.isSuccess()) {
-              if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-                outputFormat.setValue(FIELDS.status.name(), 1);
-                outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString(TRANSFER_STATUS) +
-                                      Messages.getString(
-                                          "RequestInformation.Warned")); //$NON-NLS-1$
-              } else {
-                outputFormat.setValue(FIELDS.status.name(), 0);
-                outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString(TRANSFER_STATUS) +
-                                      Messages.getString(
-                                          "RequestInformation.Success")); //$NON-NLS-1$
-              }
-              outputFormat.setValue(FIELDS.remote.name(), host);
-              outputFormat.setValueString(result.getRunner().getJson());
-              outputFormat.setValue("filefinal", result.getFile() != null?
-                  result.getFile().toString() : "no file");
-              outputFormat.setValue("delay", delay);
+              prepareOkOutputFormat(delay, result, outputFormat);
               getResults().add(outputFormat);
               setDoneMultiple(getDoneMultiple() + 1);
               if (transaction.normalInfoAsWarn) {
@@ -155,13 +138,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
               }
             } else {
               if (result == null || result.getRunner() == null) {
-                outputFormat.setValue(FIELDS.status.name(), 2);
-                outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                    .getString("Transfer.FailedNoId")); //$NON-NLS-1$
-                outputFormat.setValue(FIELDS.remote.name(), host);
-                logger.error(outputFormat.loggerOut(), future.getCause());
-                outputFormat.setValue(FIELDS.error.name(),
-                                      future.getCause().getMessage());
+                prepareKoOutputFormat(future, outputFormat);
                 outputFormat.sysout();
                 if (DetectionUtils.isJunit()) {
                   return;
@@ -169,28 +146,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
                 networkTransaction.closeAll();
                 System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
               }
-              if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-                outputFormat.setValue(FIELDS.status.name(), 1);
-                outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString(TRANSFER_STATUS) +
-                                      Messages.getString(
-                                          "RequestInformation.Warned")); //$NON-NLS-1$
-              } else {
-                outputFormat.setValue(FIELDS.status.name(), 2);
-                outputFormat.setValue(FIELDS.statusTxt.name(),
-                                      Messages.getString(TRANSFER_STATUS) +
-                                      Messages.getString(
-                                          "RequestInformation.Failure")); //$NON-NLS-1$
-              }
-              outputFormat.setValue(FIELDS.remote.name(), host);
-              outputFormat.setValueString(result.getRunner().getJson());
-              if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-                logger.warn(outputFormat.loggerOut(), future.getCause());
-              } else {
-                logger.error(outputFormat.loggerOut(), future.getCause());
-              }
-              outputFormat.setValue(FIELDS.error.name(),
-                                    future.getCause().getMessage());
+              prepareKoOutputFormat(future, result, outputFormat);
               getResults().add(outputFormat);
               setErrorMultiple(getErrorMultiple() + 1);
               inError = true;

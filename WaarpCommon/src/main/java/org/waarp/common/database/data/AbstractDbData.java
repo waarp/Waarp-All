@@ -109,9 +109,8 @@ public abstract class AbstractDbData {
    *
    * @param dbSession
    *
-   * @deprecated
+   * Deprecated for Waarp R66
    */
-  @Deprecated
   protected AbstractDbData(DbSession dbSession) {
     this.dbSession = dbSession;
     initObject();

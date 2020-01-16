@@ -52,6 +52,7 @@ import org.waarp.openr66.client.MultipleSubmitTransfer;
 import org.waarp.openr66.client.RequestInformation;
 import org.waarp.openr66.client.RequestTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
+import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -304,6 +305,40 @@ public class NetworkClientTest extends TestAbstract {
     totestBig.delete();
   }
 
+  @Test
+  public void test5_MultipleRecvThroughClient()
+      throws IOException, InterruptedException {
+    logger.warn("Start Test of Multiple Recv Through Transfer");
+    File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100000);
+    int NUMBER_FILES = 10;
+    ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
+    ExecutorService executorService =
+        Executors.newFixedThreadPool(NUMBER_FILES);
+    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    long timestart = System.currentTimeMillis();
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      final R66Future future = new R66Future(true);
+      futures.add(future);
+      final TestRecvThroughClient transaction =
+          new TestRecvThroughClient(future, handler, "hostas", "testTask.txt",
+                                    "rule6", "Test Multiple RecvThrough", true,
+                                    8192, networkTransaction);
+      executorService.execute(transaction);
+    }
+    Thread.sleep(100);
+    executorService.shutdown();
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      final R66Future future = futures.remove(0);
+      future.awaitOrInterruptible();
+      assertTrue(future.isSuccess());
+    }
+    long timestop = System.currentTimeMillis();
+    logger
+        .warn("RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
+              NUMBER_FILES, (timestop - timestart) / 1000,
+              NUMBER_FILES * 1000 / (timestop - timestart));
+  }
+
   private void checkFinalResult(R66Future future, R66Result result, long delay,
                                 long size) {
     if (future.isSuccess()) {
@@ -455,21 +490,38 @@ public class NetworkClientTest extends TestAbstract {
         "/tmp/R66/test/stopout.txt";
     private static final String SPOOLED_ROOT = "/tmp/R66/test";
     R66Future future;
+    private boolean ignoreAlreadyUsed = false;
+    private boolean submit = false;
+    private String host = "hostas";
+    private SpooledDirectoryTransfer spooledDirectoryTransfer;
 
     @Override
     public void run() {
-      List<String> directory = new ArrayList<String>();
-      directory.add(TMP_R_66_TEST_OUT_EXAMPLE);
-      List<String> remoteHosts = new ArrayList<String>();
-      remoteHosts.add("hostas");
-      SpooledDirectoryTransfer spooledDirectoryTransfer =
-          new SpooledDirectoryTransfer(future, "SpooledClient", directory,
-                                       "/tmp/R66/test/statusoutdirect1.json",
-                                       TMP_R_66_TEST_STOPOUT_TXT, "rule3",
-                                       "fileInfo", true, remoteHosts, 5000,
-                                       null, 1000, false, false, false, 1000,
-                                       false, 1, remoteHosts, 100, true,
-                                       networkTransaction);
+      Arguments arguments = new Arguments();
+      arguments.setName("SpooledClient");
+      arguments.getLocalDirectory().add(TMP_R_66_TEST_OUT_EXAMPLE);
+      arguments.setStatusFile("/tmp/R66/test/statusoutdirect1.json");
+      arguments.setStopFile(TMP_R_66_TEST_STOPOUT_TXT);
+      arguments.setRule("rule3del");
+      arguments.setFileInfo("fileInfo");
+      arguments.setMd5(true);
+      arguments.getRemoteHosts().add(host);
+      arguments.getWaarpHosts().add("hostas");
+      arguments.setBlock(5000);
+      arguments.setRegex(null);
+      arguments.setElapsed(100);
+      arguments.setToSubmit(submit);
+      arguments.setNoLog(false);
+      arguments.setRecursive(false);
+      arguments.setElapsedWaarp(100);
+      arguments.setParallel(false);
+      arguments.setLimitParallel(1);
+      arguments.setMinimalSize(100);
+      arguments.setLogWarn(true);
+      arguments.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+
+      spooledDirectoryTransfer =
+          new SpooledDirectoryTransfer(future, arguments, networkTransaction);
       spooledDirectoryTransfer.run();
     }
   }
@@ -485,19 +537,258 @@ public class NetworkClientTest extends TestAbstract {
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     final R66Future future = new R66Future(true);
     SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = false;
     spooledThread.future = future;
     spooledThread.start();
-    Thread.sleep(100);
+    Thread.sleep(200);
+    logger.warn("1rst file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(3000);
+    logger.warn("1rst file delete");
+    totestBig.delete();
+    Thread.sleep(2000);
+    logger.warn("Second file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    logger.warn("Third file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size,
+        "abcdefghij");
+    Thread.sleep(2000);
+    logger.warn("Third file deleted");
+    totestBig.delete();
+    Thread.sleep(1400);
+    generateOutFile(stop.getAbsolutePath(), 10);
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    stop.delete();
+    File all = new File(SpooledThread.SPOOLED_ROOT);
+    FileUtils.forceDeleteRecursiveDir(all);
+    logger
+        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
+    assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
+  }
+
+  @Test
+  public void test7_SpooledSubmit() throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Transfer");
+    final int size = 200;
+    File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
+    directory.mkdirs();
+    File stop = new File(SpooledThread.TMP_R_66_TEST_STOPOUT_TXT);
+    stop.delete();
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Future future = new R66Future(true);
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = false;
+    spooledThread.future = future;
+    spooledThread.submit = true;
+    spooledThread.start();
+    Thread.sleep(200);
+    logger.warn("1rst file");
+    final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    logger.warn("1rst file delete");
+    totestBig.delete();
+    Thread.sleep(2000);
+    logger.warn("Second file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(3000);
+    logger.warn("Third file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size,
+        "abcdefghij");
+    Thread.sleep(3000);
+    logger.warn("Third file deleted");
+    totestBig.delete();
     Thread.sleep(2000);
     generateOutFile(stop.getAbsolutePath(), 10);
     future.awaitOrInterruptible();
     assertTrue(future.isSuccess());
-    totestBig.delete();
     stop.delete();
     File all = new File(SpooledThread.SPOOLED_ROOT);
     FileUtils.forceDeleteRecursiveDir(all);
+    logger
+        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
+    assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
+  }
+
+  @Test
+  public void test7_SpooledIgnore() throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Ignored Changed File Transfer");
+    final int size = 200;
+    File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
+    directory.mkdirs();
+    File stop = new File(SpooledThread.TMP_R_66_TEST_STOPOUT_TXT);
+    stop.delete();
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Future future = new R66Future(true);
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = true;
+    spooledThread.future = future;
+    spooledThread.start();
+    Thread.sleep(200);
+    logger.warn("First file");
+    final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    logger.warn("First file deleted");
+    totestBig.delete();
+    Thread.sleep(2000);
+    logger.warn("Second file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    logger.warn("Third file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size,
+        "abcdefghij");
+    Thread.sleep(2000);
+    logger.warn("Third file deleted");
+    totestBig.delete();
+    Thread.sleep(2000);
+    generateOutFile(stop.getAbsolutePath(), 10);
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    stop.delete();
+    File all = new File(SpooledThread.SPOOLED_ROOT);
+    FileUtils.forceDeleteRecursiveDir(all);
+    logger
+        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
+    assertEquals(2, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
+  }
+
+  @Test
+  public void test7_SpooledIgnoreSubmit()
+      throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Ignored Changed File Transfer");
+    final int size = 200;
+    File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
+    directory.mkdirs();
+    File stop = new File(SpooledThread.TMP_R_66_TEST_STOPOUT_TXT);
+    stop.delete();
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Future future = new R66Future(true);
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = true;
+    spooledThread.future = future;
+    spooledThread.submit = true;
+    spooledThread.start();
+    Thread.sleep(200);
+    logger.warn("First file");
+    final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    logger.warn("First file deleted");
+    totestBig.delete();
+    Thread.sleep(2000);
+    logger.warn("Second file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(2000);
+    logger.warn("Third file");
+    generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size,
+        "abcdefghij");
+    Thread.sleep(2000);
+    logger.warn("Third file deleted");
+    totestBig.delete();
+    Thread.sleep(2000);
+    generateOutFile(stop.getAbsolutePath(), 10);
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    stop.delete();
+    File all = new File(SpooledThread.SPOOLED_ROOT);
+    FileUtils.forceDeleteRecursiveDir(all);
+    logger
+        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
+    assertEquals(2, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
+  }
+
+  @Test
+  public void test7_SpooledRetry() throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Retry Transfer");
+    final int size = 200;
+    File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
+    directory.mkdirs();
+    File stop = new File(SpooledThread.TMP_R_66_TEST_STOPOUT_TXT);
+    stop.delete();
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Future future = new R66Future(true);
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = false;
+    spooledThread.future = future;
+    spooledThread.host = "hostbs";
+    spooledThread.start();
+    Thread.sleep(200);
+    logger.warn("1rst file");
+    final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(6000);
+    logger.warn("1rst file delete");
+    totestBig.delete();
+    Thread.sleep(2000);
+    generateOutFile(stop.getAbsolutePath(), 10);
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    stop.delete();
+    File all = new File(SpooledThread.SPOOLED_ROOT);
+    FileUtils.forceDeleteRecursiveDir(all);
+    logger
+        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
+    assertEquals(1, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(1, spooledThread.spooledDirectoryTransfer.getError());
+  }
+
+  @Test
+  public void test7_SpooledRetrySubmit()
+      throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Retry Transfer");
+    final int size = 200;
+    File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
+    directory.mkdirs();
+    File stop = new File(SpooledThread.TMP_R_66_TEST_STOPOUT_TXT);
+    stop.delete();
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Future future = new R66Future(true);
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = false;
+    spooledThread.future = future;
+    spooledThread.host = "hostbs";
+    spooledThread.submit = true;
+    spooledThread.start();
+    Thread.sleep(100);
+    logger.warn("1rst file");
+    final File totestBig = generateOutFile(
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
+    Thread.sleep(8000);
+    logger.warn("1rst file delete");
+    totestBig.delete();
+    Thread.sleep(3000);
+    generateOutFile(stop.getAbsolutePath(), 10);
+    future.awaitOrInterruptible();
+    assertTrue(future.isSuccess());
+    stop.delete();
+    File all = new File(SpooledThread.SPOOLED_ROOT);
+    FileUtils.forceDeleteRecursiveDir(all);
+    logger
+        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
+    assertEquals(1, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }
 
   @Test
@@ -564,6 +855,67 @@ public class NetworkClientTest extends TestAbstract {
     totest.delete();
     assertEquals("Success should be total", nb, success);
     assertEquals("Errors should be 0", 0, error);
+  }
+
+  @Test
+  public void test5_DirectTransferWrong() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostbs", "testTask.txt", "rule3",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    Thread.sleep(5000);
+    totest.delete();
+    Thread.sleep(3000);
+    assertEquals("Success should be 0", 0, success);
+    assertEquals("Errors should be 1", 1, error);
+  }
+
+  @Test
+  public void test5_DirectTransferPullWrong() throws Exception {
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostbs", "testTaskNew.txt", "rule4",
+                             "Test RecvDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    Thread.sleep(5000);
+    assertEquals("Success should be 0", 0, success);
+    assertEquals("Errors should be 1", 1, error);
   }
 
   @Test

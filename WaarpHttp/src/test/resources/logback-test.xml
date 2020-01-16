@@ -1,0 +1,62 @@
+<!--
+  ~ This file is part of Waarp Project (named also Waarp or GG).
+  ~
+  ~  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+  ~  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+  ~ individual contributors.
+  ~
+  ~  All Waarp Project is free software: you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or (at your
+  ~ option) any later version.
+  ~
+  ~ Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+  ~ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  ~ A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License along with
+  ~ Waarp . If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<configuration>
+  <appender name="FILE"
+            class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/tmp/testJunit.log</file>
+    <append>true</append>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>/tmp/testJunit.%d{yyyy-MM-dd}.%i.log
+        .zip</fileNamePattern>
+      <maxHistory>30</maxHistory>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>20MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>
+        %date{dd/MM/yyyy/HH:mm:ss.SSS} %level [%logger] [%thread] %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="org.testcontainers" level="INFO"/>
+  <logger name="org.apache.tomcat" level="WARN"/>
+  <logger name="org.apache.http" level="WARN"/>
+  <logger name="com.github.dockerjava" level="WARN"/>
+  <logger name="org.zeroturnaround.exec" level="WARN"/>
+  <logger name="org.eclipse.jetty" level="WARN"/>
+  <logger name="io.netty" level="WARN"/>
+  <logger name="org.waarp" level="DEBUG"/>
+
+  <root level="warn">
+    <appender-ref ref="FILE" />
+    <appender-ref ref="STDOUT"/>
+  </root>
+
+</configuration>

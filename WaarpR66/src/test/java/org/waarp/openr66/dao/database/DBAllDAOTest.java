@@ -71,6 +71,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -80,6 +82,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
   private Connection con;
   private final DAOFactoryTest factoryTest = new DAOFactoryTest();
   protected File configFile = null;
+
+  protected static final Map<String, String> TMPFSMAP =
+      new HashMap<String, String>();
 
   public DAOFactory getDaoFactory() {
     return factoryTest;

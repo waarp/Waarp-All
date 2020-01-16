@@ -431,7 +431,7 @@ public class FileBasedConfiguration {
     final File file = new File(path);
     if (!file.isDirectory()) {
       logger.error(Messages.getString("FileBasedConfiguration.NotDirectory") +
-                   "Http Admin Base"); //$NON-NLS-1$
+                   "Http Admin Base {}", file.getAbsolutePath()); //$NON-NLS-1$
       return false;
     }
     try {

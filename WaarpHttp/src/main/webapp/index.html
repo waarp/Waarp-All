@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+  <title>Resumable.js - Multiple simultaneous, stable and resumable uploads via the HTML5 File API</title>
+  <meta charset="utf-8"/>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+<div id="frame">
+
+  <h1>Resumable.js and Waarp Http support</h1>
+  <h2>Resumable.js</h2>
+  <p>Resumable.js is a JavaScript library providing multiple simultaneous, stable and resumable uploads via
+    the HTML5 File API.</p>
+
+  <p>The library is designed to introduce fault-tolerance into the upload of large files through HTTP. This is
+    done by splitting each files into small chunks; whenever the upload of a chunk fails, uploading is retried
+    until the procedure completes. This allows uploads to automatically resume uploading after a network
+    connection is lost either locally or to the server. Additionally, it allows for users to pause and resume
+    uploads without loosing state.</p>
+
+  <p>Resumable.js relies on the HTML5 File API and the ability to chunks files into smaller pieces. Currently,
+    this means that support is limited to Firefox 4+ and Chrome 11+.</p>
+
+  <p>Information available there: <A href="http://www.resumablejs.com/">http://www.resumablejs.com/</A></p>
+
+  <h2>WaarpHttp</h2>
+  <img src="waarp.jpg" alt="Waarp">
+  <p>Waarp Http is a module that allows to upload files from a browser used by an end user up to a Waarp
+    server. This Waarp server will therefore apply the pre and post tasks to the file received, as if it
+    was sent by another Waarp server.</p>
+  <p>Of course, from end user perspective, it does not take into account pre and post actions, since there
+    is no knowledge of such.</p>
+  <p>Resumable.js and WaarpHttp allow to manage file transfer using a browser from end user in a minimal
+    effort.</p>
+  <h2>Warning</h2>
+  <p>This code is only a demo example. For instance, authentication and rule selection is hard written in
+    the Html code, but one can take this example to allow a full scenario:
+  <ol>
+    <li>Authenticate user</li>
+    <li>Optionnaly select rule to apply on remote Waarp partner (could be hardcoded)</li>
+    <li>Finally select the file(s) to send to the Waarp partner</li>
+  </ol>
+  </p>
+  <hr/>
+
+  <h3>Demo</h3>
+  <script src="jquery.min.js"></script>
+  <script src="resumable.min.js"></script>
+  <script src="crypto-js.min.js"></script>
+  <script src="compute-hash.js"></script>
+  <input type="hidden" name="finalhash" id="finalhash" value="">
+  <script>
+  // Configuration to adapt with real authentication and selection of rule (send) to apply
+        var user = "test";
+        var key = "ef99dfce1fdaa787cef4701368f79cfb";
+        var rulename = "rule3";
+        var comment = "Web Upload";
+        setIdHiddenHash("finalhash"); // Used by compute-hash.js to store the result
+        function queryArgs(file, chunk) {
+          return {"user":user, "key":key, "rulename":rulename, "comment":comment, "sha256":document
+            .getElementById("finalhash").value};
+        }
+  </script>
+
+  <div class="resumable-error">
+    Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a
+    href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a
+    href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.
+  </div>
+
+  <div class="resumable-drop">
+    Drop your files here to upload or <a class="resumable-browse"><u>select from your computer</u></a>
+  </div>
+
+  <div class="resumable-progress">
+    <table>
+      <tr>
+        <td width="100%">
+          <div class="progress-container">
+            <div class="progress-bar"></div>
+          </div>
+        </td>
+        <td class="progress-text" nowrap="nowrap"></td>
+        <td class="progress-pause" nowrap="nowrap">
+          <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link"><img src="resume.png"
+                                                                                             title="Resume upload"/></a>
+          <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link"><img src="pause.png"
+                                                                                           title="Pause upload"/></a>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <ul class="resumable-list"></ul>
+
+  <script>
+  var r = new Resumable({
+            target:'/WaarpHttp/resumable', // Target for Waarp servlet according to Application Web server
+            forceChunkSize: true, // Recommended
+            chunkSize:1*1024*1024, // Might be less but not less than 1024
+            simultaneousUploads:1, // Mandatory
+            testChunks: true, // Not mandatory, one could skip existence of previous chunks
+            throttleProgressCallbacks:1,
+            method: "multipart", // "octet" for url args + chunk in body, "multipart" for standard UPLOAD
+            generateUniqueIdentifier: uuidv4, // Recommended
+            preprocessFile: initSha256, // Recommended
+            query: queryArgs // Recommended
+          });
+        // Resumable.js isn't supported, fall back on a different method
+        if(!r.support) {
+          $('.resumable-error').show();
+        } else {
+          // Show a place for dropping/selecting files
+          $('.resumable-drop').show();
+          r.assignDrop($('.resumable-drop')[0]);
+          r.assignBrowse($('.resumable-browse')[0]);
+
+          // Handle file add event
+          r.on('fileAdded', function(file){
+              // Show progress pabr
+              $('.resumable-progress, .resumable-list').show();
+              // Show pause, hide resume
+              $('.resumable-progress .progress-resume-link').hide();
+              $('.resumable-progress .progress-pause-link').show();
+              // Add the file to the list
+              $('.resumable-list').append('<li class="resumable-file-'+file.uniqueIdentifier+'">Uploading <span class="resumable-file-name"></span> <span class="resumable-file-progress"></span>');
+              $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-name').html(file.fileName);
+              // Actually start the upload
+              r.upload();
+            });
+          r.on('pause', function(){
+              // Show resume, hide pause
+              $('.resumable-progress .progress-resume-link').show();
+              $('.resumable-progress .progress-pause-link').hide();
+            });
+          r.on('complete', function(){
+              // Hide pause/resume when the upload has completed
+              $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
+            });
+          r.on('fileSuccess', function(file,message){
+              // Reflect that the file upload has completed
+              $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(completed)');
+            });
+          r.on('fileError', function(file, message){
+              // Reflect that the file upload has resulted in error
+              $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+            });
+          r.on('fileProgress', function(file){
+              // Handle progress for both the file and the overall upload
+              $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
+              $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+            });
+        }
+  </script>
+
+  <H3>Test Download</H3>
+  <p>Custom use with Promises - jquery.fileDownload.js</p>
+  With jquery.fileDownload.js, uses promises to allow for a very customized experience easily<br/><br/>
+  <script src="jquery.fileDownload.min.js"></script>
+  <table>
+    <tr>
+      <th>File Name</th>
+      <th>Description</th>
+    </tr>
+
+    <tr>
+      <td>
+        <a class="fileDownloadPromise" id="download1"
+           href="">Download test.txt</a>
+      </td>
+      <td>
+        This file download will succeed if the file is previously created in /tmp/R66/out.
+      </td>
+    </tr>
+  </table>
+  <br/>
+  <script>
+    var downloadUrl = "/WaarpHttp/download?user=test&key=ef99dfce1fdaa787cef4701368f79cfb&rulename=rule4&comment=DownloadComment&filename=test.txt&identifier=";
+    var downloadUrl3 = "http://127.0.0.1:8090/WaarpHttp/download?user=test&key=ef99dfce1fdaa787cef4701368f79cfb&rulename=rule4&comment=DownloadComment&filename=test2.bin";
+
+    //With jquery.fileDownload.js
+    //custom use with promises
+    //
+    var dl1 = document.getElementById('download1');
+    dl1.href = downloadUrl+uuidlong();
+    $(document).on("click", "a.fileDownloadPromise", function () {
+      $.fileDownload($(this).prop('href'))
+        .done(function () {
+          console.log("Transfer check starting");
+          var checkUrl = dl1.href;
+          setTimeout(function() {callCheck(checkUrl);}, 1000);
+         })
+        .fail(function () { alert('File download failed!'); });
+
+      return false; //this is critical to stop the click event which will trigger a normal file download
+    });
+  </script>
+  <script src="download.js"></script>
+  <button onclick="download(downloadUrl3+'&identifier='+uuidlong())">Download test2.bin (must be in
+    /tmp/R66/out) using JQuery too (OK with big file)</button>
+  <button id="buttonHash" type="button" disabled='disabled' onclick="checkReceivedFile()">Once download, hit this
+    button</button>
+  <input id="file-input-hash" type="file" name="name" style="display: none;" />
+  <input id="file-received-hash" type="text" name="hash" style="display: none;" />
+  <script>
+    function checkReceivedFile() {
+      $('<input type="file">').on('change', function () {
+             var myfiles = this.files; //save selected files to the array
+             if (myfiles.length > 0) {
+               var file = myfiles[0];
+               var hash = document.getElementById('file-received-hash').value;
+               console.log(file.name+':'+hash);
+               checkHashReceived(file, hash);
+             }
+          }).click();
+    }
+    function checkHashReceived(file, hash) {
+      handlePromiseFiles(file) // Promise on Hash for File
+        .then(function(){
+          var hashCompute = document.getElementById("finalhash").value;
+          if (hash == hashCompute) {
+            alert('Hashes is similar for ' + file.name);
+          } else {
+            alert('Hashes ARE NOT similar for ' + file.name+'\n'+hash+' vs '+hashCompute);
+          }
+          $('#buttonHash').prop('disabled', true);
+          var dl1 = document.getElementById('download1');
+          dl1.href = downloadUrl+uuidlong();})
+    }
+    function callbackOk(url, hash) {
+      console.log('File download OK from '+url+' with Hash SHA256='+hash);
+      document.getElementById('file-received-hash').value = hash;
+      $('#buttonHash').prop('disabled', false);
+    }
+    function callbackError(url, status) {
+      alert('File download error from '+url+' with status '+status);
+    }
+    function callCheck(url) {
+      headRequest(url, {
+        successCallback: callbackOk,
+        failCallback: callbackError,
+        checkInterval: 5000
+       });
+    }
+    function download(url) {
+      console.log("Transfer starting");
+
+      $.fileDownload(url, {
+        checkInterval: 1000,
+        successCallback: function (url, hash) {
+          console.log("Transfer check starting");
+          setTimeout(function() {callCheck(url, hash);}, 1000);
+        },
+        failCallback: function (html, url) {
+            alert('Your file download just failed for this URL:' + url + '\r\n' +
+                    'Here was the resulting error HTML: \r\n' + html);
+        }
+      });
+    }
+  </script>
+</div>
+</body>
+</html>

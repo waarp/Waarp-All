@@ -27,11 +27,25 @@ import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScenarioPostGreSqlIT extends ScenarioBase {
+  protected static final Map<String, String> TMPFSMAP =
+      new HashMap<String, String>();
+
+  static {
+    TMPFSMAP.clear();
+    TMPFSMAP.put("/var/lib/postgresql/data", "rw");
+  }
 
   @ClassRule
-  public static PostgreSQLContainer db = new PostgreSQLContainer();
+  public static PostgreSQLContainer db =
+      (PostgreSQLContainer) new PostgreSQLContainer().withCommand(
+          "postgres -c fsync=false -c synchronous_commit=off -c " +
+          "full_page_writes=false -c wal_level=minimal -c " +
+          "max_wal_senders=0").withTmpFs(TMPFSMAP);
 
   public JdbcDatabaseContainer getJDC() {
     return db;

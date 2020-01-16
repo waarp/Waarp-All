@@ -26,6 +26,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.client.utils.OutputFormat;
+import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -402,7 +403,7 @@ public abstract class AbstractTransfer implements Runnable {
     if (runner.getLocalChannelReference() != null) {
       runner.getLocalChannelReference().setErrorMessage(code.getMesg(), code);
     }
-    taskRunner.setErrorTask(runner.getLocalChannelReference());
+    taskRunner.setErrorTask();
     try {
       taskRunner.forceSaveStatus();
       taskRunner.run();
@@ -531,4 +532,114 @@ public abstract class AbstractTransfer implements Runnable {
     }
     return localChannelReference;
   }
+
+
+  protected static void prepareKoOutputFormat(final R66Future future,
+                                              final R66Result result,
+                                              final OutputFormat outputFormat) {
+    partialOutputFormat(result.getRunner(), outputFormat);
+    if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
+      outputFormat.setValue(FIELDS.status.name(), 1);
+      outputFormat.setValue(FIELDS.statusTxt.name(),
+                            Messages.getString("Transfer.Status") + Messages
+                                .getString(
+                                    "RequestInformation.Warned")); //$NON-NLS-1$
+    } else {
+      outputFormat.setValue(FIELDS.status.name(), 2);
+      outputFormat.setValue(FIELDS.statusTxt.name(),
+                            Messages.getString("Transfer.Status") + Messages
+                                .getString(
+                                    "RequestInformation.Failure")); //$NON-NLS-1$
+    }
+    if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
+      logger.warn(outputFormat.loggerOut(), future.getCause());
+    } else {
+      logger.error(outputFormat.loggerOut(), future.getCause());
+    }
+    outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
+  }
+
+  protected static void prepareKoOutputFormat(final R66Future future,
+                                              final OutputFormat outputFormat) {
+    outputFormat.setValue(FIELDS.status.name(), 2);
+    outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+        .getString("Transfer.FailedNoId")); //$NON-NLS-1$
+    outputFormat.setValue(FIELDS.remote.name(), rhost);
+    logger.error(outputFormat.loggerOut(), future.getCause());
+    outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
+  }
+
+  protected static void prepareOkOutputFormat(final long delay,
+                                              final R66Result result,
+                                              final OutputFormat outputFormat) {
+    if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
+      outputFormat.setValue(FIELDS.status.name(), 1);
+      outputFormat.setValue(FIELDS.statusTxt.name(),
+                            Messages.getString("Transfer.Status") + Messages
+                                .getString(
+                                    "RequestInformation.Warned")); //$NON-NLS-1$
+    } else {
+      outputFormat.setValue(FIELDS.status.name(), 0);
+      outputFormat.setValue(FIELDS.statusTxt.name(),
+                            Messages.getString("Transfer.Status") + Messages
+                                .getString(
+                                    "RequestInformation.Success")); //$NON-NLS-1$
+    }
+    partialOutputFormat(result.getRunner(), outputFormat);
+    outputFormat.setValue("filefinal", result.getFile() != null?
+        result.getFile().toString() : "no file");
+    outputFormat.setValue("delay", delay);
+  }
+
+  private static void partialOutputFormat(final DbTaskRunner runner,
+                                          final OutputFormat outputFormat) {
+    outputFormat.setValue(FIELDS.remote.name(), rhost);
+    outputFormat.setValue(FIELDS.ruleid.name(), runner.getRuleId());
+    outputFormat.setValueString(runner.getJson());
+    outputFormat
+        .setValue(FIELDS.statusCode.name(), runner.getErrorInfo().getCode());
+    outputFormat.setValue(FIELDS.specialid.name(), runner.getSpecialId());
+    outputFormat.setValue(FIELDS.finalPath.name(), runner.getFilename());
+    outputFormat.setValue(FIELDS.requested.name(), runner.getRequested());
+    outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
+    outputFormat.setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
+    outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
+    outputFormat
+        .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());
+  }
+
+  protected static void prepareSubmitKoOutputFormat(final R66Future future,
+                                                    final DbTaskRunner runner,
+                                                    final OutputFormat outputFormat) {
+    outputFormat.setValue(FIELDS.status.name(), 2);
+    if (runner == null) {
+      outputFormat.setValue(FIELDS.statusTxt.name(),
+                            Messages.getString("SubmitTransfer.3") + Messages
+                                .getString(
+                                    "Transfer.FailedNoId")); //$NON-NLS-1$
+      outputFormat.setValue(FIELDS.remote.name(), rhost);
+    } else {
+      outputFormat.setValue(FIELDS.statusTxt.name(),
+                            Messages.getString("SubmitTransfer.3") + Messages
+                                .getString(
+                                    "RequestInformation.Failure")); //$NON-NLS-1$
+      partialOutputFormat(runner, outputFormat);
+    }
+    logger.error(outputFormat.loggerOut(), future.getCause());
+    if (future.getCause() != null) {
+      outputFormat
+          .setValue(FIELDS.error.name(), future.getCause().getMessage());
+    }
+  }
+
+  protected static void prepareSubmitOkOutputFormat(final DbTaskRunner runner,
+                                                    final OutputFormat outputFormat) {
+    outputFormat.setValue(FIELDS.status.name(), 0);
+    outputFormat.setValue(FIELDS.statusTxt.name(),
+                          Messages.getString("SubmitTransfer.3") + Messages
+                              .getString(
+                                  "RequestInformation.Success")); //$NON-NLS-1$
+    partialOutputFormat(runner, outputFormat);
+  }
+
 }

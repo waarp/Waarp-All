@@ -32,8 +32,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DbMariadbDAOTest extends DBAllDAOTest {
+  static {
+    TMPFSMAP.clear();
+    TMPFSMAP.put("/var/lib/mariadb/data", "rw");
+  }
+
   @ClassRule
-  public static MariaDBContainer db = new MariaDBContainer();
+  public static MariaDBContainer db =
+      (MariaDBContainer) new MariaDBContainer().withTmpFs(TMPFSMAP);
   private final String createScript = "mariadb/create.sql";
   private final String populateScript = "mariadb/populate.sql";
   private final String cleanScript = "mariadb/clean.sql";

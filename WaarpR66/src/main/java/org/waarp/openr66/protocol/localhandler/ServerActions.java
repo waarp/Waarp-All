@@ -108,6 +108,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.client.RequestInformation.*;
 import static org.waarp.openr66.context.R66FiniteDualStates.*;
 
 /**
@@ -196,7 +197,7 @@ public class ServerActions extends ConnectionActions {
     final String filename = packet.getFilename();
     packet.clear();
     long id = ILLEGALVALUE;
-    if (request == -1) {
+    if (request == REQUEST_CHECK) {
       try {
         id = Long.parseLong(rulename);
       } catch (final NumberFormatException e) {
@@ -206,7 +207,7 @@ public class ServerActions extends ConnectionActions {
     }
     final boolean isTo = "1".equals(filename);
     ValidPacket validPacket;
-    if (request == -1) {
+    if (request == REQUEST_CHECK) {
       validPacket = informationRequest(id, isTo, rulename, false);
     } else {
       validPacket = informationFile(request, rulename, filename, false);

@@ -57,6 +57,16 @@ public abstract class DbModelH2 extends DbModelAbstract {
     public String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
+
+    @Override
+    public String getCreateTable() {
+      return "CREATE TABLE IF NOT EXISTS ";
+    }
+
+    @Override
+    public String getCreateIndex() {
+      return "CREATE INDEX IF NOT EXISTS ";
+    }
   }
 
   static {
