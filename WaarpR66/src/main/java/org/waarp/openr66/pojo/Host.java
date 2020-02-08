@@ -20,6 +20,9 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -38,32 +41,42 @@ public class Host {
   private static final int DEFAULT_CLIENT_PORT = 0;
 
   @XmlElement(name = XML_AUTHENTIFICATION_HOSTID)
+  @JsonProperty("HOSTID")
   private String hostid;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ADDRESS)
+  @JsonProperty("ADDRESS")
   private String address;
 
   @XmlElement(name = XML_AUTHENTIFICATION_PORT)
+  @JsonProperty("PORT")
   private int port;
 
   @XmlTransient
+  @JsonProperty("HOSTKEY")
   private byte[] hostkey;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ISSSL)
+  @JsonProperty("ISSSL")
   private boolean ssl;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ISCLIENT)
+  @JsonProperty("ISCLIENT")
   private boolean client;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ISPROXIFIED)
+  @JsonProperty("ISPROXIFIED")
   private boolean proxified;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ADMIN)
+  @JsonProperty("ADMINROLE")
   private boolean admin = true;
 
   @XmlElement(name = XML_AUTHENTIFICATION_ISACTIVE)
+  @JsonProperty("ISACTIVE")
   private boolean active = true;
 
+  @JsonProperty("UPDATEDINFO")
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
@@ -140,6 +153,7 @@ public class Host {
   }
 
   @XmlElement(name = XML_AUTHENTIFICATION_KEY)
+  @JsonIgnore
   public String getKey() {
     return new String(hostkey);
   }
