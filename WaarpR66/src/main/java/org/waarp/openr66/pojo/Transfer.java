@@ -27,6 +27,10 @@ import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -77,9 +81,15 @@ public class Transfer {
     public DbTaskRunner.TASKSTEP toLegacy() {
       return DbTaskRunner.TASKSTEP.valueOf(name());
     }
+
+    @JsonValue
+    public int getTaskNo() {
+        return taskNo;
+    }
   }
 
   @XmlElement(name = ID_FIELD)
+  @JsonProperty("SPECIALID")
   private long id = DbConstantR66.ILLEGALVALUE;
 
   /**
@@ -88,69 +98,91 @@ public class Transfer {
    * (RETRIEVE MODE)
    */
   @XmlElement(name = RETRIEVE_MODE_FIELD)
+  @JsonProperty("RETRIEVEMODE")
   private boolean retrieveMode;
 
   @XmlElement(name = ID_RULE_FIELD)
+  @JsonProperty("IDRULE")
   private String rule = "";
 
   @XmlElement(name = TRANSFER_MODE_FIELD)
+  @JsonProperty("MODETRANS")
   private int transferMode = 1;
 
   @XmlElement(name = FILENAME_FIELD)
+  @JsonProperty("FILENAME")
   private String filename = "";
 
   @XmlElement(name = ORIGINAL_NAME_FIELD)
+  @JsonProperty("ORIGINALNAME")
   private String originalName = "";
 
   @XmlElement(name = FILE_INFO_FIELD)
+  @JsonProperty("FILEINFO")
   private String fileInfo = "";
 
   @XmlElement(name = IS_MOVED_FIELD)
-  private boolean isFileMoved;
+  @JsonProperty("ISMOVED")
+  private boolean isMoved;
 
   @XmlElement(name = BLOCK_SIZE_FIELD)
+  @JsonProperty("BLOCKSZ")
   private int blockSize;
 
   @XmlElement(name = OWNER_REQUEST_FIELD)
+  @JsonProperty("OWNERREQ")
   private String ownerRequest = Configuration.configuration.getHostId();
 
   @XmlElement(name = REQUESTER_FIELD)
+  @JsonProperty("REQUESTER")
   private String requester = "";
 
   @XmlElement(name = REQUESTED_FIELD)
+  @JsonProperty("REQUESTED")
   private String requested = "";
 
   @XmlTransient
+  @JsonProperty("TRANSFERINFO")
   private String transferInfo = "";
 
   @XmlElement(name = GLOBAL_STEP_FIELD)
+  @JsonProperty("GLOBALSTEP")
   private TASKSTEP globalStep = TASKSTEP.NOTASK;
 
   @XmlElement(name = GLOBAL_LAST_STEP_FIELD)
+  @JsonProperty("GLOBALLASTSTEP")
   private TASKSTEP lastGlobalStep = TASKSTEP.NOTASK;
 
   @XmlElement(name = STEP_FIELD)
+  @JsonProperty("STEP")
   private int step = -1;
 
   @XmlElement(name = STEP_STATUS_FIELD)
+  @JsonProperty("STEPSTATUS")
   private ErrorCode stepStatus = ErrorCode.Unknown;
 
   @XmlElement(name = INFO_STATUS_FIELD)
+  @JsonProperty("INFOSTATUS")
   private ErrorCode infoStatus = ErrorCode.Unknown;
 
   @XmlElement(name = RANK_FIELD)
+  @JsonProperty("RANK")
   private int rank;
 
   @XmlTransient
+  @JsonProperty("STARTTRANS")
   private Timestamp start = new Timestamp(0);
 
   @XmlTransient
+  @JsonProperty("STOPTRANS")
   private Timestamp stop = new Timestamp(0);
 
   @XmlTransient
+  @JsonProperty("UPDATEDINFO")
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   @XmlElement(name = TRANSFER_START_FIELD)
+  @JsonIgnore
   public long getXmlStart() {
     return start.getTime();
   }
@@ -160,6 +192,7 @@ public class Transfer {
   }
 
   @XmlElement(name = TRANSFER_STOP_FIELD)
+  @JsonIgnore
   public long getXmlStop() {
     return stop.getTime();
   }
@@ -177,7 +210,7 @@ public class Transfer {
    * @param filename
    * @param originalName
    * @param fileInfo
-   * @param isFileMoved
+   * @param isMoved
    * @param blockSize
    * @param retrieveMode
    * @param ownerReq
@@ -195,13 +228,13 @@ public class Transfer {
    * @param updatedInfo
    */
   public Transfer(long id, String rule, int mode, String filename,
-                  String originalName, String fileInfo, boolean isFileMoved,
+                  String originalName, String fileInfo, boolean isMoved,
                   int blockSize, boolean retrieveMode, String ownerReq,
                   String requester, String requested, String transferInfo,
                   TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
                   ErrorCode stepStatus, ErrorCode infoStatus, int rank,
                   Timestamp start, Timestamp stop, UpdatedInfo updatedInfo) {
-    this(id, rule, mode, filename, originalName, fileInfo, isFileMoved,
+    this(id, rule, mode, filename, originalName, fileInfo, isMoved,
          blockSize, retrieveMode, ownerReq, requester, requested, transferInfo,
          globalStep, lastGlobalStep, step, stepStatus, infoStatus, rank, start,
          stop);
@@ -217,7 +250,7 @@ public class Transfer {
    * @param filename
    * @param originalName
    * @param fileInfo
-   * @param isFileMoved
+   * @param isMoved
    * @param blockSize
    * @param retrieveMode
    * @param ownerReq
@@ -234,7 +267,7 @@ public class Transfer {
    * @param stop
    */
   public Transfer(long id, String rule, int mode, String filename,
-                  String originalName, String fileInfo, boolean isFileMoved,
+                  String originalName, String fileInfo, boolean isMoved,
                   int blockSize, boolean retrieveMode, String ownerReq,
                   String requester, String requested, String transferInfo,
                   TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
@@ -247,7 +280,7 @@ public class Transfer {
     this.filename = filename;
     this.originalName = originalName;
     this.fileInfo = fileInfo;
-    this.isFileMoved = isFileMoved;
+    this.isMoved = isMoved;
     this.blockSize = blockSize;
     ownerRequest = ownerReq;
     this.requester = requester;
@@ -369,11 +402,11 @@ public class Transfer {
   }
 
   public boolean getIsMoved() {
-    return isFileMoved;
+    return isMoved;
   }
 
-  public void setIsMoved(boolean isFileMoved) {
-    this.isFileMoved = isFileMoved;
+  public void setIsMoved(boolean isMoved) {
+    this.isMoved = isMoved;
   }
 
   public int getBlockSize() {
