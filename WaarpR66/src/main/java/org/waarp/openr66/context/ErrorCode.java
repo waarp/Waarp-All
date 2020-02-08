@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.context;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import org.waarp.openr66.protocol.configuration.Messages;
 
 /**
@@ -175,6 +177,11 @@ public enum ErrorCode {
 
   ErrorCode(char code) {
     this.code = code;
+  }
+
+  @JsonValue
+  public String getJsonRepr() {
+    return String.valueOf(code)+"  ";
   }
 
   public String getCode() {
