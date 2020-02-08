@@ -20,21 +20,29 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Business data object
  */
 public class Business {
 
+  @JsonProperty("HOSTID")
   private String hostid;
 
+  @JsonProperty("BUSINESS")
   private String business;
 
+  @JsonProperty("ROLES")
   private String roles;
 
+  @JsonProperty("ALIASES")
   private String aliases;
 
+  @JsonProperty("OTHERS")
   private String others;
 
+  @JsonProperty("UPDATEDINFO")
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
