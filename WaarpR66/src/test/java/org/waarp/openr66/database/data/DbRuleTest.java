@@ -23,6 +23,7 @@ package org.waarp.openr66.database.data;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.pojo.Rule;
@@ -36,6 +37,7 @@ import java.util.List;
 
 public class DbRuleTest {
     @Test
+    @Ignore
     public void testJsonSerialisation() {
         List<String> hosts = Arrays.asList("sup1");
         List<RuleTask> tasks = Arrays.asList();
