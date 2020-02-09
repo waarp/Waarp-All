@@ -31,4 +31,13 @@ public class HostTest {
 
 		assertEquals(expected, got);
 	}
+
+	@Test
+	public void testNegativePort() {
+        byte[] rawbytes = { 0xA, 0x2 };
+        Host host = new Host("hostid", "127.0.0.1", -42, rawbytes, false, true, true, true,
+                true, UpdatedInfo.UNKNOWN);
+        
+        assertEquals(-42, host.getPort());
+    }
 }

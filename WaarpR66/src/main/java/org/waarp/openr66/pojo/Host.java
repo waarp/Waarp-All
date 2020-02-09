@@ -99,15 +99,9 @@ public class Host {
     this.hostid = hostid;
     this.hostkey = hostkey;
     // Force client status if unvalid port
-    if (port < 1) {
-      this.address = DEFAULT_CLIENT_ADDRESS;
-      this.port = DEFAULT_CLIENT_PORT;
-      this.client = true;
-    } else {
-      this.address = address;
-      this.port = port;
-      this.client = client;
-    }
+    this.address = address;
+    this.port = port;
+    this.client = client;
     this.ssl = ssl;
     this.proxified = proxified;
     this.admin = admin;
