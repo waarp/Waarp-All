@@ -29,6 +29,10 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,45 +46,59 @@ import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
 public class Rule {
 
   @XmlElement(name = XIDRULE)
+  @JsonProperty("IDRULE")
   private String name;
 
   @XmlElement(name = XMODE)
+  @JsonProperty("MODETRANS")
   private int mode;
 
   @XmlElementWrapper(name = XHOSTIDS)
   @XmlElement(name = XHOSTID)
+  @JsonIgnore
   private List<String> hostids;
 
   @XmlElement(name = XRECVPATH, required = true)
+  @JsonProperty("RECVPATH")
   private String recvPath;
 
   @XmlElement(name = XSENDPATH, required = true)
+  @JsonProperty("SENDPATH")
   private String sendPath;
 
   @XmlElement(name = XARCHIVEPATH, required = true)
+  @JsonProperty("ARCHIVEPATH")
   private String archivePath;
 
   @XmlElement(name = XWORKPATH, required = true)
+  @JsonProperty("WORKPATH")
   private String workPath;
 
   @XmlTransient
+  @JsonIgnore
   private List<RuleTask> rPreTasks;
 
   @XmlTransient
+  @JsonIgnore
   private List<RuleTask> rPostTasks;
 
   @XmlTransient
+  @JsonIgnore
   private List<RuleTask> rErrorTasks;
 
   @XmlTransient
+  @JsonIgnore
   private List<RuleTask> sPreTasks;
 
   @XmlTransient
+  @JsonIgnore
   private List<RuleTask> sPostTasks;
 
   @XmlTransient
+  @JsonIgnore
   private List<RuleTask> sErrorTasks;
 
+  @JsonProperty("UPDATEDINFO")
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
@@ -98,36 +116,42 @@ public class Rule {
 
   @XmlElementDecl(name = XRPRETASKS)
   @XmlElement(name = XRPRETASKS)
+  @JsonIgnore
   public Tasks get_rPreTasks() {
     return new Tasks(rPreTasks);
   }
 
   @XmlElementDecl(name = XRPOSTTASKS)
   @XmlElement(name = XRPOSTTASKS)
+  @JsonIgnore
   public Tasks get_rPostTasks() {
     return new Tasks(rPostTasks);
   }
 
   @XmlElementDecl(name = XRERRORTASKS)
   @XmlElement(name = XRERRORTASKS)
+  @JsonIgnore
   public Tasks get_rErrorTasks() {
     return new Tasks(rErrorTasks);
   }
 
   @XmlElementDecl(name = XSPRETASKS)
   @XmlElement(name = XSPRETASKS)
+  @JsonIgnore
   public Tasks get_sPreTasks() {
     return new Tasks(sPreTasks);
   }
 
   @XmlElementDecl(name = XSPOSTTASKS)
   @XmlElement(name = XSPOSTTASKS)
+  @JsonIgnore
   public Tasks get_sPostTasks() {
     return new Tasks(sPostTasks);
   }
 
   @XmlElementDecl(name = XSERRORTASKS)
   @XmlElement(name = XSERRORTASKS)
+  @JsonIgnore
   public Tasks get_sErrorTasks() {
     return new Tasks(sErrorTasks);
   }
@@ -182,6 +206,7 @@ public class Rule {
     return hostids.contains(hostid);
   }
 
+  @JsonProperty("HOSTIDS")
   public String getXMLHostids() {
     StringBuilder res = new StringBuilder("<hostids>");
     for (final String hostid : hostids) {
@@ -190,26 +215,32 @@ public class Rule {
     return res.append("</hostids>").toString();
   }
 
+  @JsonProperty("RPRETASKS")
   public String getXMLRPreTasks() {
     return getXMLTasks(rPreTasks);
   }
 
+  @JsonProperty("RPOSTTASKS")
   public String getXMLRPostTasks() {
     return getXMLTasks(rPostTasks);
   }
 
+  @JsonProperty("RERRORTASKS")
   public String getXMLRErrorTasks() {
     return getXMLTasks(rErrorTasks);
   }
 
+  @JsonProperty("SPRETASKS")
   public String getXMLSPreTasks() {
     return getXMLTasks(sPreTasks);
   }
 
+  @JsonProperty("SPOSTTASKS")
   public String getXMLSPostTasks() {
     return getXMLTasks(sPostTasks);
   }
 
+  @JsonProperty("SERRORTASKS")
   public String getXMLSErrorTasks() {
     return getXMLTasks(sErrorTasks);
   }
@@ -278,6 +309,7 @@ public class Rule {
     this.workPath = workPath;
   }
 
+  @JsonIgnore
   public List<RuleTask> getRPreTasks() {
     return rPreTasks;
   }
@@ -286,6 +318,7 @@ public class Rule {
     this.rPreTasks = rPreTasks;
   }
 
+  @JsonIgnore
   public List<RuleTask> getRPostTasks() {
     return rPostTasks;
   }
@@ -294,6 +327,7 @@ public class Rule {
     this.rPostTasks = rPostTasks;
   }
 
+  @JsonIgnore
   public List<RuleTask> getRErrorTasks() {
     return rErrorTasks;
   }
@@ -302,6 +336,7 @@ public class Rule {
     this.rErrorTasks = rErrorTasks;
   }
 
+  @JsonIgnore
   public List<RuleTask> getSPreTasks() {
     return sPreTasks;
   }
@@ -310,6 +345,7 @@ public class Rule {
     this.sPreTasks = sPreTasks;
   }
 
+  @JsonIgnore
   public List<RuleTask> getSPostTasks() {
     return sPostTasks;
   }
@@ -318,6 +354,7 @@ public class Rule {
     this.sPostTasks = sPostTasks;
   }
 
+  @JsonIgnore
   public List<RuleTask> getSErrorTasks() {
     return sErrorTasks;
   }
