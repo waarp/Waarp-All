@@ -20,23 +20,32 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Limit data object
  */
 public class Limit {
 
+  @JsonProperty("HOSTID")
   private String hostid;
 
+  @JsonProperty("READGLOBALLIMIT")
   private long readGlobalLimit;
 
+  @JsonProperty("WRITEGLOBALLIMIT")
   private long writeGlobalLimit;
 
+  @JsonProperty("READSESSIONLIMIT")
   private long readSessionLimit;
 
+  @JsonProperty("WRITESESSIONLIMIT")
   private long writeSessionLimit;
 
+  @JsonProperty("DELAYLIMIT")
   private long delayLimit;
 
+  @JsonProperty("UPDATEDINFO")
   private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
 
   /**
