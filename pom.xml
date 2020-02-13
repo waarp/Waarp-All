@@ -194,8 +194,8 @@
 
     <!-- Sonar -->
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-    <jacoco-maven-plugin.version>0.8.4</jacoco-maven-plugin.version>
-    <sonar-maven-plugin.version>3.6.1.1688</sonar-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
+    <sonar-maven-plugin.version>3.7.0.1746</sonar-maven-plugin.version>
     <sonar.sources>src/main/java</sonar.sources>
     <sonar.tests>src/test/java</sonar.tests>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
@@ -206,6 +206,8 @@
     <!-- Tells Sonar where the Jacoco coverage result file is located for Unit Tests -->
     <sonar.jacoco.reportPaths>${jacoco.outputDir}/${jacoco.out.ut.file}
     </sonar.jacoco.reportPaths>
+    <!-- <sonar.coverage.jacoco.xmlReportsPath>${jacoco.outputDir}/${jacoco.out
+    .ut.file}</sonar.coverage.jacoco.xmlReportsPath> -->
     <!-- Jacoco output file for ITs -->
     <jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
     <!-- Tells Sonar where the Jacoco coverage result file is located for Integration Tests -->
@@ -232,7 +234,7 @@
     <!-- Waarp Versions -->
     <waarp.directory.version>test</waarp.directory.version>
     <waarp.module.version>test</waarp.module.version>
-    <waarp.version>3.3.0</waarp.version>
+    <waarp.version>3.3.1</waarp.version>
     <revision>${waarp.version}</revision>
 
     <!-- Dependencies versions -->
@@ -1251,6 +1253,44 @@
             <configuration>
               <updateReleaseInfo>true</updateReleaseInfo>
             </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>coverage</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>report</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>report</id>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
