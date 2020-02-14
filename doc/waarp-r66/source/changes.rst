@@ -8,8 +8,8 @@ Waarp R66 Next (Non publiée)
 Correctifs
 ==========
 
-- [[#9](https://github.com/waarp/Waarp-All/pull/9)] Corrige une régression sur
-  l'API REST v1 introduite dans la version 3.2.0
+- [`#9 <https://github.com/waarp/Waarp-All/pull/9>`__] Corrige une régression
+  sur l'API REST v1 introduite dans la version 3.2.0
 
 
 Waarp R66 3.3.0 (2020-01-18)
