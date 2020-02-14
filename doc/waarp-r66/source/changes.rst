@@ -8,6 +8,9 @@ Waarp R66 Next (Non publiée)
 Correctifs
 ==========
 
+- [`#13 <https://github.com/waarp/Waarp-All/pull/13>`__] Corrige l'oubli du
+  module WaarpPassword dans les autres modules dans les packages
+  `jar-with-dependencies` et en crée un pour WaarpPassword
 - [`#9 <https://github.com/waarp/Waarp-All/pull/9>`__] Corrige une régression
   sur l'API REST v1 introduite dans la version 3.2.0
 - [`#10 <https://github.com/waarp/Waarp-All/pull/10>`__] Corrige une régression
