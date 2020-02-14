@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,11 @@ import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
  */
 @XmlType(name = ROOT)
 @XmlAccessorType(XmlAccessType.FIELD)
+@JsonPropertyOrder({
+    "IDRULE", "MODETRANS", "RECVPATH", "SENDPATH", "ARCHIVEPATH",
+    "WORKPATH", "UPDATEDINFO", "HOSTIDS", "SPRETASKS", "SPOSTASKS", "SERRORTASKS",
+    "RPRETASKS", "RPOSTTASKS", "RERRORTASKS"
+})
 public class Rule {
 
   @XmlElement(name = XIDRULE)
