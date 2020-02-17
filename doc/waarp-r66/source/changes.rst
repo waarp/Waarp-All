@@ -2,7 +2,15 @@
 Liste des changements
 #####################
 
-Waarp R66 Next (Non publiée)
+La procédure de mise à jour est disponible ici: :any:`upgrade`
+
+Non publié
+==========
+
+
+
+
+Waarp R66 3.3.1 (2020-02-17)
 ============================
 
 Correctifs
@@ -21,39 +29,6 @@ Correctifs
 
 Waarp R66 3.3.0 (2020-01-18)
 ============================
-
-Mise à jour
------------
-
-Pour une installation faite à partir des packages, utiliser une des commandes
-suivantes (selon la distribution) :
-
-.. code-block:: bash
-
-   # Avec les dépôts
-   yum install waarp-r66
-
-   # avec le package rpm
-   yum install path/to/waarp-r66-3.2.1-1.el6.noarch.rpm
-
-
-Pour une installation faite à partir les packages autonomes, la procédure est
-la suivante :
-
-1. Si le serveur R66 ou filewatcher a été installé en tant que service, arrêter
-   celui-ci.
-   Pour Windows seulement : désinstaller le service.
-2. Extraire l'archive au même niveau que l'ancienne installation.
-3. Copier le contenu du dossier ``etc/conf.d`` de l'ancienne installation vers le
-   dossier ``etc/conf.d`` de la nouvelle version.
-4. Procéder de même avec le dossier data de l'ancienne installation.
-5. Si le serveur R66 ou filewatcher a été installé en tant que service :
-
-   - Pour windows seulement : réinstaller les services depuis la nouvelle
-     installation.
-   - Pour linux : mettre à jour les chemins du service avec les nouveaux dossiers.
-
-   Enfin, redémarrer les services.
 
 Améliorations
 -------------
@@ -74,39 +49,6 @@ Améliorations
 
 Waarp R66 3.2.0 (2019-10-25)
 ============================
-
-Mise à jour
------------
-
-Pour une installation faite à partir des packages, utiliser une des commandes
-suivantes (selon la distribution) :
-
-.. code-block:: bash
-
-   # Avec les dépôts
-   yum install waarp-r66
-
-   # avec le package rpm
-   yum install path/to/waarp-r66-3.2.0-1.el6.noarch.rpm
-
-
-Pour une installation faite à partir les packages autonomes, la procédure est
-la suivante :
-
-1. Si le serveur R66 ou filewatcher a été installé en tant que service, arrêter
-   celui-ci.
-   Pour Windows seulement : désinstaller le service.
-2. Extraire l'archive au même niveau que l'ancienne installation.
-3. Copier le contenu du dossier ``etc/conf.d`` de l'ancienne installation vers le
-   dossier ``etc/conf.d`` de la nouvelle version.
-4. Procéder de même avec le dossier data de l'ancienne installation.
-5. Si le serveur R66 ou filewatcher a été installé en tant que service :
-
-   - Pour windows seulement : réinstaller les services depuis la nouvelle
-     installation.
-   - Pour linux : mettre à jour les chemins du service avec les nouveaux dossiers.
-
-   Enfin, redémarrer les services.
 
 
 Sécurité
@@ -182,41 +124,6 @@ Dépréciations
 Waarp R66 3.0.12-1 (2019-05-10)
 ===============================
 
-Mise à jour
------------
-
-Pour une installation faite à partir des packages, utiliser une des commandes
-suivantes (selon la distribution) :
-
-.. code-block:: bash
-
-   # Avec les dépôts
-   yum install waarp-r66
-
-   # avec le package rpm
-   yum install path/to/waarp-r66-3.0.12-1.el6.noarch.rpm
-
-
-Pour une installation faite à partir les packages autonomes, la procédure est
-la suivante :
-
-1. Si le serveur R66 ou filewatcher a été installé en tant que service, arrêter
-   celui-ci.
-   Pour Windows seulement : désinstaller le service.
-2. Extraire l'archive au même niveau que l'ancienne installation.
-3. Copier le contenu du dossier ``etc/conf.d`` de l'ancienne installation vers le
-   dossier ``etc/conf.d`` de la nouvelle version.
-4. Procéder de même avec le dossier data de l'ancienne installation.
-5. Si le serveur R66 ou filewatcher a été installé en tant que service :
-
-   - Pour windows seulement : réinstaller les services depuis la nouvelle
-     installation.
-   - Pour linux : mettre à jour les chemins du service avec les nouveaux dossiers.
-
-   Enfin, redémarrer les services.
-
-
-
 Correctifs
 ----------
 
@@ -226,41 +133,6 @@ Correctifs
 
 Waarp R66 3.0.11-1 (2019-02-20)
 ===============================
-
-Mise à jour
------------
-
-Pour une installation faite à partir des packages, utiliser une des commandes
-suivantes (selon la distribution) :
-
-.. code-block:: bash
-
-   # Avec les dépôts
-   yum install waarp-r66
-
-   # avec le package rpm
-   yum install path/to/waarp-r66-3.0.11-1.el6.noarch.rpm
-
-
-Pour une installation daiteà partir les packages autonomes, la procédure est
-la suivante :
-
-1. Si le serveur R66 ou filewatcher a été installé en tant que service, arrêter
-   celui-ci.
-   Pour Windows seulement : désinstaller le service.
-2. Extraire l'archive au même niveau que l'ancienne installation.
-3. Copier le contenu du dossier ``etc/conf.d`` de l'ancienne installation vers le
-   dossier ``etc/conf.d`` de la nouvelle version.
-4. Procéder de même avec le dossier data de l'ancienne installation.
-5. Si le serveur R66 ou filewatcher a été installé en tant que service :
-
-   - Pour windows seulement : réinstaller les services depuis la nouvelle
-     installation.
-   - Pour linux : mettre à jour les chemins du service avec les nouveaux dossiers.
-
-   Enfin, redémarrer les services.
-
-
 
 Correctifs
 ----------
