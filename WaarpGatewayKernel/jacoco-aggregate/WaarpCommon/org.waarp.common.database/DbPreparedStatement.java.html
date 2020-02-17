@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbPreparedStatement.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Kernel</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database</a> &gt; <span class="el_source">DbPreparedStatement.java</span></div><h1>DbPreparedStatement.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database;
+
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Class to handle PrepareStatement
+ */
+public class DbPreparedStatement {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L38">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L39">      WaarpLoggerFactory.getLogger(DbPreparedStatement.class);</span>
+  private static final String SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION =
+      &quot;SQL Exception PreparedStatement no session&quot;;
+  private static final String PREPARED_STATEMENT_NO_SESSION =
+      &quot;PreparedStatement no session&quot;;
+  private static final String PREPARED_STATEMENT_NO_REQUEST =
+      &quot;PreparedStatement no request&quot;;
+
+  /**
+   * Internal PreparedStatement
+   */
+  private PreparedStatement preparedStatement;
+
+  /**
+   * The Associated request
+   */
+  private String request;
+
+  /**
+   * Is this PreparedStatement ready
+   */
+  private boolean isReady;
+
+  /**
+   * The associated resultSet
+   */
+  private ResultSet rs;
+
+  /**
+   * The associated DB session
+   */
+  private final DbSession ls;
+
+  /**
+   * Create a DbPreparedStatement from DbSession object
+   *
+   * @param ls
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public DbPreparedStatement(DbSession ls)
+<span class="nc" id="L80">      throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (ls == null) {</span>
+<span class="nc" id="L82">      logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);</span>
+<span class="nc" id="L83">      throw new WaarpDatabaseNoConnectionException(</span>
+          PREPARED_STATEMENT_NO_SESSION);
+    }
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L87">      logger.debug(&quot;DisActive: &quot; + ls.getAdmin().getServer());</span>
+<span class="nc" id="L88">      ls.checkConnection();</span>
+    }
+<span class="nc" id="L90">    this.ls = ls;</span>
+<span class="nc" id="L91">    rs = null;</span>
+<span class="nc" id="L92">    preparedStatement = null;</span>
+<span class="nc" id="L93">    setReady(false);</span>
+<span class="nc" id="L94">  }</span>
+
+  /**
+   * Create a DbPreparedStatement from DbSession object and a request
+   *
+   * @param ls
+   * @param request
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public DbPreparedStatement(DbSession ls, String request)
+<span class="nc" id="L106">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (ls == null) {</span>
+<span class="nc" id="L108">      logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);</span>
+<span class="nc" id="L109">      throw new WaarpDatabaseNoConnectionException(</span>
+          PREPARED_STATEMENT_NO_SESSION);
+    }
+<span class="nc bnc" id="L112" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L113">      ls.checkConnection();</span>
+    }
+<span class="nc" id="L115">    this.ls = ls;</span>
+<span class="nc" id="L116">    rs = null;</span>
+<span class="nc" id="L117">    setReady(false);</span>
+<span class="nc" id="L118">    preparedStatement = null;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (request == null) {</span>
+<span class="nc" id="L120">      logger.error(PREPARED_STATEMENT_NO_REQUEST);</span>
+<span class="nc" id="L121">      throw new WaarpDatabaseNoConnectionException(</span>
+          PREPARED_STATEMENT_NO_REQUEST);
+    }
+    try {
+<span class="nc" id="L125">      preparedStatement = this.ls.getConn().prepareStatement(request);</span>
+<span class="nc" id="L126">      this.request = request;</span>
+<span class="nc" id="L127">      setReady(true);</span>
+<span class="nc" id="L128">    } catch (final SQLException e) {</span>
+<span class="nc" id="L129">      ls.checkConnection();</span>
+      try {
+<span class="nc" id="L131">        preparedStatement = this.ls.getConn().prepareStatement(request);</span>
+<span class="nc" id="L132">        this.request = request;</span>
+<span class="nc" id="L133">        setReady(true);</span>
+<span class="nc" id="L134">      } catch (final SQLException e1) {</span>
+<span class="nc" id="L135">        logger.error(&quot;SQL Exception PreparedStatement: &quot; + request + ' ' +</span>
+<span class="nc" id="L136">                     e.getMessage());</span>
+<span class="nc" id="L137">        DbSession.error(e);</span>
+<span class="nc" id="L138">        preparedStatement = null;</span>
+<span class="nc" id="L139">        setReady(false);</span>
+<span class="nc" id="L140">        throw new WaarpDatabaseSqlException(&quot;SQL Exception PreparedStatement&quot;,</span>
+                                            e);
+<span class="nc" id="L142">      }</span>
+<span class="nc" id="L143">    }</span>
+<span class="nc" id="L144">  }</span>
+
+  /**
+   * Create a DbPreparedStatement from DbSession object and a request
+   *
+   * @param ls
+   * @param request
+   * @param nbFetch the number of pre fetch rows
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public DbPreparedStatement(DbSession ls, String request, int nbFetch)
+<span class="nc" id="L157">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (ls == null) {</span>
+<span class="nc" id="L159">      logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);</span>
+<span class="nc" id="L160">      throw new WaarpDatabaseNoConnectionException(</span>
+          PREPARED_STATEMENT_NO_SESSION);
+    }
+<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L164">      ls.checkConnection();</span>
+    }
+<span class="nc" id="L166">    this.ls = ls;</span>
+<span class="nc" id="L167">    rs = null;</span>
+<span class="nc" id="L168">    setReady(false);</span>
+<span class="nc" id="L169">    preparedStatement = null;</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (request == null) {</span>
+<span class="nc" id="L171">      logger.error(PREPARED_STATEMENT_NO_REQUEST);</span>
+<span class="nc" id="L172">      throw new WaarpDatabaseNoConnectionException(</span>
+          PREPARED_STATEMENT_NO_SESSION);
+    }
+    try {
+<span class="nc" id="L176">      preparedStatement = this.ls.getConn().prepareStatement(request);</span>
+<span class="nc" id="L177">      this.request = request;</span>
+<span class="nc" id="L178">      preparedStatement.setFetchSize(nbFetch);</span>
+<span class="nc" id="L179">      setReady(true);</span>
+<span class="nc" id="L180">    } catch (final SQLException e) {</span>
+<span class="nc" id="L181">      ls.checkConnection();</span>
+      try {
+<span class="nc" id="L183">        preparedStatement = this.ls.getConn().prepareStatement(request);</span>
+<span class="nc" id="L184">        this.request = request;</span>
+<span class="nc" id="L185">        preparedStatement.setFetchSize(nbFetch);</span>
+<span class="nc" id="L186">        setReady(true);</span>
+<span class="nc" id="L187">      } catch (final SQLException e1) {</span>
+<span class="nc" id="L188">        logger.error(&quot;SQL Exception PreparedStatement: &quot; + request + ' ' +</span>
+<span class="nc" id="L189">                     e.getMessage());</span>
+<span class="nc" id="L190">        DbSession.error(e);</span>
+<span class="nc" id="L191">        preparedStatement = null;</span>
+<span class="nc" id="L192">        setReady(false);</span>
+<span class="nc" id="L193">        throw new WaarpDatabaseSqlException(&quot;SQL Exception PreparedStatement&quot;,</span>
+                                            e);
+<span class="nc" id="L195">      }</span>
+<span class="nc" id="L196">    }</span>
+<span class="nc" id="L197">  }</span>
+
+  /**
+   * Create a preparedStatement from request
+   *
+   * @param requestarg
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public void createPrepareStatement(String requestarg)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc bnc" id="L209" title="All 2 branches missed.">    if (requestarg == null) {</span>
+<span class="nc" id="L210">      logger.error(PREPARED_STATEMENT_NO_REQUEST);</span>
+<span class="nc" id="L211">      throw new WaarpDatabaseNoConnectionException(</span>
+          PREPARED_STATEMENT_NO_REQUEST);
+    }
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (preparedStatement != null) {</span>
+<span class="nc" id="L215">      realClose();</span>
+    }
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (rs != null) {</span>
+<span class="nc" id="L218">      close();</span>
+    }
+<span class="nc bnc" id="L220" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L221">      logger.debug(&quot;DisActive: &quot; + ls.getAdmin().getServer());</span>
+<span class="nc" id="L222">      ls.checkConnection();</span>
+    }
+    try {
+<span class="nc" id="L225">      preparedStatement = ls.getConn().prepareStatement(requestarg);</span>
+<span class="nc" id="L226">      request = requestarg;</span>
+<span class="nc" id="L227">      setReady(true);</span>
+<span class="nc" id="L228">    } catch (final SQLException e) {</span>
+<span class="nc" id="L229">      ls.checkConnection();</span>
+      try {
+<span class="nc" id="L231">        preparedStatement = ls.getConn().prepareStatement(requestarg);</span>
+<span class="nc" id="L232">        request = requestarg;</span>
+<span class="nc" id="L233">        setReady(true);</span>
+<span class="nc" id="L234">      } catch (final SQLException e1) {</span>
+<span class="nc" id="L235">        logger.error(</span>
+            &quot;SQL Exception createPreparedStatement from {}:&quot; + requestarg +
+<span class="nc" id="L237">            ' ' + e.getMessage(), ls.getAdmin().getServer());</span>
+<span class="nc" id="L238">        DbSession.error(e);</span>
+<span class="nc" id="L239">        realClose();</span>
+<span class="nc" id="L240">        preparedStatement = null;</span>
+<span class="nc" id="L241">        setReady(false);</span>
+<span class="nc" id="L242">        throw new WaarpDatabaseSqlException(</span>
+            &quot;SQL Exception createPreparedStatement: &quot; + requestarg, e);
+<span class="nc" id="L244">      }</span>
+<span class="nc" id="L245">    }</span>
+<span class="nc" id="L246">  }</span>
+
+  /**
+   * In case of closing database connection, it is possible to reopen a long
+   * term preparedStatement as it was at
+   * creation.
+   *
+   * @throws WaarpDatabaseSqlException
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public void recreatePreparedStatement()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L258">    createPrepareStatement(request);</span>
+<span class="nc" id="L259">  }</span>
+
+  /**
+   * Execute a Select preparedStatement
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public void executeQuery()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
+<span class="nc" id="L270">      logger.error(&quot;executeQuery no request&quot;);</span>
+<span class="nc" id="L271">      throw new WaarpDatabaseNoConnectionException(&quot;executeQuery no request&quot;);</span>
+    }
+<span class="nc bnc" id="L273" title="All 2 branches missed.">    if (rs != null) {</span>
+<span class="nc" id="L274">      close();</span>
+    }
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L277">      ls.checkConnection();</span>
+<span class="nc" id="L278">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Request cannot be executed since connection was recreated between: &quot; +
+          request);
+    }
+    try {
+<span class="nc" id="L283">      rs = preparedStatement.executeQuery();</span>
+<span class="nc" id="L284">    } catch (final SQLException e) {</span>
+<span class="nc" id="L285">      logger.error(</span>
+<span class="nc" id="L286">          &quot;SQL Exception executeQuery:&quot; + request + ' ' + e.getMessage());</span>
+<span class="nc" id="L287">      DbSession.error(e);</span>
+<span class="nc" id="L288">      close();</span>
+<span class="nc" id="L289">      rs = null;</span>
+<span class="nc" id="L290">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L291">      throw new WaarpDatabaseSqlException(</span>
+          &quot;SQL Exception executeQuery: &quot; + request, e);
+<span class="nc" id="L293">    }</span>
+<span class="nc" id="L294">  }</span>
+
+  /**
+   * Execute the Update/Insert/Delete preparedStatement
+   *
+   * @return the number of row
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public int executeUpdate()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc bnc" id="L306" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
+<span class="nc" id="L307">      logger.error(&quot;executeUpdate no request&quot;);</span>
+<span class="nc" id="L308">      throw new WaarpDatabaseNoConnectionException(&quot;executeUpdate no request&quot;);</span>
+    }
+<span class="nc bnc" id="L310" title="All 2 branches missed.">    if (rs != null) {</span>
+<span class="nc" id="L311">      close();</span>
+    }
+<span class="nc bnc" id="L313" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L314">      ls.checkConnection();</span>
+<span class="nc" id="L315">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Request cannot be executed since connection was recreated between:&quot; +
+          request);
+    }
+    int retour;
+    try {
+<span class="nc" id="L321">      retour = preparedStatement.executeUpdate();</span>
+<span class="nc" id="L322">    } catch (final SQLException e) {</span>
+<span class="nc" id="L323">      logger.error(</span>
+<span class="nc" id="L324">          &quot;SQL Exception executeUpdate:&quot; + request + ' ' + e.getMessage());</span>
+<span class="nc" id="L325">      logger.debug(&quot;SQL Exception full stack trace&quot;, e);</span>
+<span class="nc" id="L326">      DbSession.error(e);</span>
+<span class="nc" id="L327">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L328">      throw new WaarpDatabaseSqlException(</span>
+          &quot;SQL Exception executeUpdate: &quot; + request, e);
+<span class="nc" id="L330">    }</span>
+<span class="nc" id="L331">    return retour;</span>
+  }
+
+  /**
+   * Close the resultSet if any
+   */
+  public void close() {
+<span class="nc bnc" id="L338" title="All 2 branches missed.">    if (rs != null) {</span>
+      try {
+<span class="nc" id="L340">        rs.close();</span>
+<span class="nc" id="L341">      } catch (final SQLException ignored) {</span>
+        // nothing
+<span class="nc" id="L343">      }</span>
+<span class="nc" id="L344">      rs = null;</span>
+    }
+<span class="nc" id="L346">  }</span>
+
+  /**
+   * Really close the preparedStatement and the resultSet if any
+   */
+  public void realClose() {
+<span class="nc" id="L352">    close();</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    if (preparedStatement != null) {</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">      if (ls.isDisActive()) {</span>
+<span class="nc" id="L355">        ls.checkConnectionNoException();</span>
+      }
+      try {
+<span class="nc" id="L358">        preparedStatement.close();</span>
+<span class="nc" id="L359">      } catch (final SQLException e) {</span>
+<span class="nc" id="L360">        ls.checkConnectionNoException();</span>
+<span class="nc" id="L361">      }</span>
+<span class="nc" id="L362">      preparedStatement = null;</span>
+    }
+<span class="nc" id="L364">    setReady(false);</span>
+<span class="nc" id="L365">  }</span>
+
+  /**
+   * Move the cursor to the next result
+   *
+   * @return True if there is a next result, else False
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public boolean getNext()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc bnc" id="L377" title="All 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L378">      logger.error(&quot;SQL ResultSet is Null into getNext&quot;);</span>
+<span class="nc" id="L379">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;SQL ResultSet is Null into getNext&quot;);
+    }
+<span class="nc bnc" id="L382" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L383">      ls.checkConnection();</span>
+<span class="nc" id="L384">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Request cannot be executed since connection was recreated between&quot;);
+    }
+    try {
+<span class="nc" id="L388">      return rs.next();</span>
+<span class="nc" id="L389">    } catch (final SQLException e) {</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">      logger.error(&quot;SQL Exception to getNextRow&quot; +</span>
+                   (request != null? &quot; [&quot; + request + ']' : &quot;&quot;) + ' ' +
+<span class="nc" id="L392">                   e.getMessage());</span>
+<span class="nc" id="L393">      DbSession.error(e);</span>
+<span class="nc" id="L394">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L395">      throw new WaarpDatabaseSqlException(</span>
+          &quot;SQL Exception to getNextRow: &quot; + request, e);
+    }
+  }
+
+  /**
+   * @return The resultSet (can be used in conjunction of getNext())
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public ResultSet getResultSet() throws WaarpDatabaseNoConnectionException {
+<span class="nc bnc" id="L406" title="All 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L407">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;SQL ResultSet is Null into getResultSet&quot;);
+    }
+<span class="nc" id="L410">    return rs;</span>
+  }
+
+  /**
+   * @return The preparedStatement (should be used in conjunction of
+   *     createPreparedStatement)
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public PreparedStatement getPreparedStatement()
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc bnc" id="L421" title="All 2 branches missed.">    if (preparedStatement == null) {</span>
+<span class="nc" id="L422">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;SQL PreparedStatement is Null into getPreparedStatement&quot;);
+    }
+<span class="nc" id="L425">    return preparedStatement;</span>
+  }
+
+  /**
+   * @return the dbSession
+   */
+  public DbSession getDbSession() {
+<span class="nc" id="L432">    return ls;</span>
+  }
+
+  /**
+   * @return the isReady
+   */
+  public boolean isReady() {
+<span class="nc" id="L439">    return isReady;</span>
+  }
+
+  /**
+   * @param isReady the isReady to set
+   */
+  private void setReady(boolean isReady) {
+<span class="nc" id="L446">    this.isReady = isReady;</span>
+<span class="nc" id="L447">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

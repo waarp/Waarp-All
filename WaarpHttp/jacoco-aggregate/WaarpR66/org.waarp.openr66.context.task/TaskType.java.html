@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TaskType.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">TaskType.java</span></div><h1>TaskType.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+
+/**
+ * This enum class references all available tasks.
+ * &lt;p&gt;
+ * If a new task type is to be created, this is the place where it should be
+ * referenced.
+ */
+<span class="fc" id="L33">public enum TaskType {</span>
+<span class="fc" id="L34">  LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,</span>
+<span class="fc" id="L35">  VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,</span>
+<span class="fc" id="L36">  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE;</span>
+
+  private static final String UNVALID_TASK = &quot;Unvalid Task: &quot;;
+
+  private static final String NAME_UNKNOWN = &quot;name unknown: &quot;;
+
+  final int type;
+
+  final String name;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(TaskType.class);</span>
+
+<span class="fc" id="L51">  TaskType() {</span>
+<span class="fc" id="L52">    type = ordinal();</span>
+<span class="fc" id="L53">    name = name();</span>
+<span class="fc" id="L54">  }</span>
+
+  /**
+   * @param type
+   * @param argRule
+   * @param delay
+   * @param session
+   *
+   * @return the corresponding AbstractTask
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public static AbstractTask getTaskFromId(TaskType type, String argRule,
+                                           int delay, R66Session session)
+      throws OpenR66RunnerErrorException {
+<span class="pc bpc" id="L69" title="23 of 25 branches missed.">    switch (type) {</span>
+      case LOG:
+<span class="fc" id="L71">        return new LogTask(argRule, delay,</span>
+<span class="fc" id="L72">                           session.getRunner().getFileInformation(), session);</span>
+      case MOVE:
+<span class="nc" id="L74">        return new MoveTask(argRule, delay,</span>
+<span class="nc" id="L75">                            session.getRunner().getFileInformation(), session);</span>
+      case MOVERENAME:
+<span class="nc" id="L77">        return new MoveRenameTask(argRule, delay,</span>
+<span class="nc" id="L78">                                  session.getRunner().getFileInformation(),</span>
+                                  session);
+      case COPY:
+<span class="nc" id="L81">        return new CopyTask(argRule, delay,</span>
+<span class="nc" id="L82">                            session.getRunner().getFileInformation(), session);</span>
+      case COPYRENAME:
+<span class="nc" id="L84">        return new CopyRenameTask(argRule, delay,</span>
+<span class="nc" id="L85">                                  session.getRunner().getFileInformation(),</span>
+                                  session);
+      case EXEC:
+<span class="nc" id="L88">        return new ExecTask(argRule, delay,</span>
+<span class="nc" id="L89">                            session.getRunner().getFileInformation(), session);</span>
+      case EXECMOVE:
+<span class="nc" id="L91">        return new ExecMoveTask(argRule, delay,</span>
+<span class="nc" id="L92">                                session.getRunner().getFileInformation(),</span>
+                                session);
+      case LINKRENAME:
+<span class="nc" id="L95">        return new LinkRenameTask(argRule, delay,</span>
+<span class="nc" id="L96">                                  session.getRunner().getFileInformation(),</span>
+                                  session);
+      case TRANSFER:
+<span class="nc" id="L99">        return new TransferTask(argRule, delay,</span>
+<span class="nc" id="L100">                                session.getRunner().getFileInformation(),</span>
+                                session);
+      case VALIDFILEPATH:
+<span class="nc" id="L103">        return new ValidFilePathTask(argRule, delay,</span>
+<span class="nc" id="L104">                                     session.getRunner().getFileInformation(),</span>
+                                     session);
+      case DELETE:
+<span class="fc" id="L107">        return new DeleteTask(argRule, delay,</span>
+<span class="fc" id="L108">                              session.getRunner().getFileInformation(),</span>
+                              session);
+      case TAR:
+<span class="nc" id="L111">        return new TarTask(argRule, delay,</span>
+<span class="nc" id="L112">                           session.getRunner().getFileInformation(), session);</span>
+      case ZIP:
+<span class="nc" id="L114">        return new ZipTask(argRule, delay,</span>
+<span class="nc" id="L115">                           session.getRunner().getFileInformation(), session);</span>
+      case EXECOUTPUT:
+<span class="nc" id="L117">        return new ExecOutputTask(argRule, delay,</span>
+<span class="nc" id="L118">                                  session.getRunner().getFileInformation(),</span>
+                                  session);
+      case RESCHEDULE:
+<span class="nc" id="L121">        return new RescheduleTransferTask(argRule, delay, session.getRunner()</span>
+<span class="nc" id="L122">                                                                 .getFileInformation(),</span>
+                                          session);
+      case EXECJAVA:
+<span class="nc" id="L125">        return new ExecJavaTask(argRule, delay,</span>
+<span class="nc" id="L126">                                session.getRunner().getFileInformation(),</span>
+                                session);
+      case TRANSCODE:
+<span class="nc" id="L129">        return new TranscodeTask(argRule, delay,</span>
+<span class="nc" id="L130">                                 session.getRunner().getFileInformation(),</span>
+                                 session);
+      case SNMP:
+<span class="nc" id="L133">        return new SnmpTask(argRule, delay,</span>
+<span class="nc" id="L134">                            session.getRunner().getFileInformation(), session);</span>
+      case FTP:
+<span class="nc" id="L136">        return new FtpTransferTask(argRule, delay,</span>
+<span class="nc" id="L137">                                   session.getRunner().getFileInformation(),</span>
+                                   session);
+      case RENAME:
+<span class="nc" id="L140">        return new RenameTask(argRule, delay,</span>
+<span class="nc" id="L141">                              session.getRunner().getFileInformation(),</span>
+                              session);
+      case RESTART:
+<span class="nc" id="L144">        return new RestartServerTask(argRule, delay,</span>
+<span class="nc" id="L145">                                     session.getRunner().getFileInformation(),</span>
+                                     session);
+      case UNZEROED:
+<span class="nc" id="L148">        return new UnzeroedFileTask(argRule, delay,</span>
+<span class="nc" id="L149">                                    session.getRunner().getFileInformation(),</span>
+                                    session);
+      case CHMOD:
+<span class="nc" id="L152">        return new ChModTask(argRule, delay,</span>
+<span class="nc" id="L153">                             session.getRunner().getFileInformation(), session);</span>
+      case CHKFILE:
+<span class="nc" id="L155">        return new FileCheckTask(argRule, delay,</span>
+<span class="nc" id="L156">                                 session.getRunner().getFileInformation(),</span>
+                                 session);
+      default:
+<span class="nc" id="L159">        logger.error(NAME_UNKNOWN + type.name);</span>
+<span class="nc" id="L160">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
+    }
+  }
+
+  /**
+   * @param name
+   * @param argRule
+   * @param delay
+   * @param session
+   *
+   * @return the corresponding AbstractTask
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public static AbstractTask getTaskFromId(String name, String argRule,
+                                           int delay, R66Session session)
+      throws OpenR66RunnerErrorException {
+    TaskType type;
+    try {
+<span class="fc" id="L179">      type = valueOf(name);</span>
+<span class="nc" id="L180">    } catch (final NullPointerException e) {</span>
+<span class="nc" id="L181">      logger.error(&quot;name empty &quot; + name);</span>
+<span class="nc" id="L182">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="nc" id="L183">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L184">      logger.error(NAME_UNKNOWN + name);</span>
+<span class="nc" id="L185">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="fc" id="L186">    }</span>
+<span class="fc" id="L187">    return getTaskFromId(type, argRule, delay, session);</span>
+  }
+
+  /**
+   * For usage in ExecBusinessTask
+   *
+   * @param name
+   * @param argRule
+   * @param delay
+   * @param session
+   *
+   * @return the corresponding AbstractTask
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public static AbstractTask getTaskFromIdForBusiness(String name,
+                                                      String argRule, int delay,
+                                                      R66Session session)
+      throws OpenR66RunnerErrorException {
+    TaskType type;
+    try {
+<span class="fc" id="L208">      type = valueOf(name);</span>
+<span class="nc" id="L209">    } catch (final NullPointerException e) {</span>
+<span class="nc" id="L210">      logger.error(&quot;name empty &quot; + name);</span>
+<span class="nc" id="L211">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="nc" id="L212">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L213">      logger.error(NAME_UNKNOWN + name);</span>
+<span class="nc" id="L214">      throw new OpenR66RunnerErrorException(UNVALID_TASK + name);</span>
+<span class="fc" id="L215">    }</span>
+<span class="pc bpc" id="L216" title="10 of 12 branches missed.">    switch (type) {</span>
+      case LOG:
+<span class="fc" id="L218">        int newdelay = delay;</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">        if (newdelay == 0) {</span>
+<span class="nc" id="L220">          newdelay = 1;</span>
+        }
+<span class="fc" id="L222">        return new LogTask(argRule, newdelay, &quot;&quot;, session);</span>
+      case EXEC:
+<span class="nc" id="L224">        return new ExecTask(argRule, delay, &quot;&quot;, session);</span>
+      case TRANSFER:
+<span class="nc" id="L226">        return new TransferTask(argRule, delay, &quot;&quot;, session);</span>
+      case TAR:
+<span class="nc" id="L228">        return new TarTask(argRule, delay, &quot;&quot;, session);</span>
+      case ZIP:
+<span class="nc" id="L230">        return new ZipTask(argRule, delay, &quot;&quot;, session);</span>
+      case EXECOUTPUT:
+<span class="nc" id="L232">        return new ExecOutputTask(argRule, delay, &quot;&quot;, session);</span>
+      case EXECJAVA:
+<span class="fc" id="L234">        return new ExecJavaTask(argRule, delay, &quot;&quot;, session);</span>
+      case SNMP:
+<span class="nc" id="L236">        return new SnmpTask(argRule, delay, &quot;&quot;, session);</span>
+      case FTP:
+<span class="nc" id="L238">        return new FtpTransferTask(argRule, delay, &quot;&quot;, session);</span>
+      case RESTART:
+<span class="nc" id="L240">        return new RestartServerTask(argRule, delay, &quot;&quot;, session);</span>
+      case MOVE:
+      case MOVERENAME:
+      case COPY:
+      case COPYRENAME:
+      case EXECMOVE:
+      case LINKRENAME:
+      case VALIDFILEPATH:
+      case DELETE:
+      case RESCHEDULE:
+      case TRANSCODE:
+      case RENAME:
+      case UNZEROED:
+      case CHMOD:
+      case CHKFILE:
+<span class="nc" id="L255">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
+      default:
+<span class="nc" id="L257">        logger.error(NAME_UNKNOWN + type.name);</span>
+<span class="nc" id="L258">        throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TarUtility.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Password Management GUI and Console</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.tar</a> &gt; <span class="el_source">TarUtility.java</span></div><h1>TarUtility.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.tar;
+
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * TAR support
+ */
+public final class TarUtility {
+<span class="fc" id="L43">  private static final File[] FILE_0_LENGTH = {};</span>
+
+  private TarUtility() {
+  }
+
+  /**
+   * Create a new Tar from a root directory
+   *
+   * @param directory the base directory
+   * @param filename the output filename
+   * @param absolute store absolute filepath (from directory) or only
+   *     filename
+   *
+   * @return True if OK
+   */
+  public static boolean createTarFromDirectory(String directory,
+                                               String filename,
+                                               boolean absolute) {
+<span class="fc" id="L61">    final File rootDir = new File(directory);</span>
+<span class="fc" id="L62">    final File saveFile = new File(filename);</span>
+    // recursive call
+    TarArchiveOutputStream taos;
+    try {
+<span class="fc" id="L66">      taos = new TarArchiveOutputStream(new FileOutputStream(saveFile));</span>
+<span class="nc" id="L67">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L68">      return false;</span>
+<span class="fc" id="L69">    }</span>
+<span class="fc" id="L70">    taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);</span>
+    try {
+<span class="fc" id="L72">      recurseFiles(rootDir, rootDir, taos, absolute);</span>
+<span class="nc" id="L73">    } catch (final IOException e2) {</span>
+<span class="nc" id="L74">      FileUtils.close(taos);</span>
+<span class="nc" id="L75">      return false;</span>
+<span class="fc" id="L76">    }</span>
+    try {
+<span class="fc" id="L78">      taos.finish();</span>
+<span class="nc" id="L79">    } catch (final IOException e1) {</span>
+      // ignore
+<span class="fc" id="L81">    }</span>
+<span class="fc" id="L82">    FileUtils.close(taos);</span>
+<span class="fc" id="L83">    return true;</span>
+  }
+
+  /**
+   * Recursive traversal to add files
+   *
+   * @param root
+   * @param file
+   * @param taos
+   * @param absolute
+   *
+   * @throws IOException
+   */
+  private static void recurseFiles(File root, File file,
+                                   TarArchiveOutputStream taos,
+                                   boolean absolute) throws IOException {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">    if (file.isDirectory()) {</span>
+      // recursive call
+<span class="fc" id="L101">      final File[] files = file.listFiles();</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">      for (final File file2 : files) {</span>
+<span class="fc" id="L103">        recurseFiles(root, file2, taos, absolute);</span>
+      }
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    } else if (!file.getName().endsWith(&quot;.tar&quot;) &amp;&amp;</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">               !file.getName().endsWith(&quot;.TAR&quot;)) {</span>
+      String filename;
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">      if (absolute) {</span>
+<span class="nc" id="L109">        filename =</span>
+<span class="nc" id="L110">            file.getAbsolutePath().substring(root.getAbsolutePath().length());</span>
+      } else {
+<span class="fc" id="L112">        filename = file.getName();</span>
+      }
+<span class="fc" id="L114">      final TarArchiveEntry tae = new TarArchiveEntry(filename);</span>
+<span class="fc" id="L115">      tae.setSize(file.length());</span>
+<span class="fc" id="L116">      taos.putArchiveEntry(tae);</span>
+<span class="fc" id="L117">      final FileInputStream fis = new FileInputStream(file);</span>
+<span class="fc" id="L118">      IOUtils.copy(fis, taos);</span>
+<span class="fc" id="L119">      taos.closeArchiveEntry();</span>
+    }
+<span class="fc" id="L121">  }</span>
+
+  /**
+   * Create a new Tar from a list of Files (only name of files will be used)
+   *
+   * @param files list of files to add
+   * @param filename the output filename
+   *
+   * @return True if OK
+   */
+  public static boolean createTarFromFiles(List&lt;File&gt; files, String filename) {
+<span class="fc" id="L132">    return createTarFromFiles(files.toArray(FILE_0_LENGTH), filename);</span>
+  }
+
+  /**
+   * Create a new Tar from an array of Files (only name of files will be used)
+   *
+   * @param files array of files to add
+   * @param filename the output filename
+   *
+   * @return True if OK
+   */
+  public static boolean createTarFromFiles(File[] files, String filename) {
+<span class="fc" id="L144">    final File saveFile = new File(filename);</span>
+    // recursive call
+    TarArchiveOutputStream taos;
+    try {
+<span class="fc" id="L148">      taos = new TarArchiveOutputStream(new FileOutputStream(saveFile));</span>
+<span class="nc" id="L149">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L150">      return false;</span>
+<span class="fc" id="L151">    }</span>
+<span class="fc" id="L152">    taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">    for (final File file : files) {</span>
+      try {
+<span class="fc" id="L155">        addFile(file, taos);</span>
+<span class="nc" id="L156">      } catch (final IOException e) {</span>
+<span class="nc" id="L157">        FileUtils.close(taos);</span>
+<span class="nc" id="L158">        return false;</span>
+<span class="fc" id="L159">      }</span>
+    }
+    try {
+<span class="fc" id="L162">      taos.finish();</span>
+<span class="nc" id="L163">    } catch (final IOException e1) {</span>
+      // ignore
+<span class="fc" id="L165">    }</span>
+<span class="fc" id="L166">    FileUtils.close(taos);</span>
+<span class="fc" id="L167">    return true;</span>
+  }
+
+  /**
+   * Recursive traversal to add files
+   *
+   * @param file
+   * @param taos
+   *
+   * @throws IOException
+   */
+  private static void addFile(File file, TarArchiveOutputStream taos)
+      throws IOException {
+    String filename;
+<span class="fc" id="L181">    filename = file.getName();</span>
+<span class="fc" id="L182">    final TarArchiveEntry tae = new TarArchiveEntry(filename);</span>
+<span class="fc" id="L183">    tae.setSize(file.length());</span>
+<span class="fc" id="L184">    taos.putArchiveEntry(tae);</span>
+<span class="fc" id="L185">    final FileInputStream fis = new FileInputStream(file);</span>
+<span class="fc" id="L186">    IOUtils.copy(fis, taos);</span>
+<span class="fc" id="L187">    taos.closeArchiveEntry();</span>
+<span class="fc" id="L188">  }</span>
+
+  /**
+   * Extract all files from Tar into the specified directory
+   *
+   * @param tarFile
+   * @param directory
+   *
+   * @return the list of extracted filenames
+   *
+   * @throws IOException
+   */
+  public static List&lt;String&gt; unTar(File tarFile, File directory)
+      throws IOException {
+<span class="fc" id="L202">    final List&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L203">    final InputStream inputStream = new FileInputStream(tarFile);</span>
+<span class="fc" id="L204">    final TarArchiveInputStream in = new TarArchiveInputStream(inputStream);</span>
+    try {
+<span class="fc" id="L206">      TarArchiveEntry entry = in.getNextTarEntry();</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">      while (entry != null) {</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        if (entry.isDirectory()) {</span>
+<span class="nc" id="L209">          entry = in.getNextTarEntry();</span>
+<span class="nc" id="L210">          continue;</span>
+        }
+<span class="fc" id="L212">        final File curfile = new File(directory, entry.getName());</span>
+<span class="fc" id="L213">        final File parent = curfile.getParentFile();</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">        if (!parent.exists()) {</span>
+<span class="nc" id="L215">          parent.mkdirs();</span>
+        }
+<span class="fc" id="L217">        final OutputStream out = new FileOutputStream(curfile);</span>
+        try {
+<span class="fc" id="L219">          IOUtils.copy(in, out);</span>
+        } finally {
+<span class="fc" id="L221">          FileUtils.close(out);</span>
+        }
+<span class="fc" id="L223">        result.add(entry.getName());</span>
+<span class="fc" id="L224">        entry = in.getNextTarEntry();</span>
+<span class="fc" id="L225">      }</span>
+    } finally {
+<span class="fc" id="L227">      FileUtils.close(in);</span>
+    }
+<span class="fc" id="L229">    return result;</span>
+  }
+
+  public static void main(String[] args) {
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L234">      SysErrLogger.FAKE_LOGGER.syserr(&quot;You need to provide 3 arguments:\n&quot; +</span>
+                                      &quot;   option filedest.tar \&quot;source\&quot;\n&quot; +
+                                      &quot;   where option=1 means untar and source is a directory\n&quot; +
+                                      &quot;   option=2 means tar and source is a directory\n&quot; +
+                                      &quot;   option=3 means tar and source is a list of files comma separated&quot;);
+<span class="nc" id="L239">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc" id="L241">    final int option = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L242">    final String tarfile = args[1];</span>
+<span class="nc" id="L243">    final String tarsource = args[2];</span>
+    String[] tarfiles;
+<span class="nc bnc" id="L245" title="All 2 branches missed.">    if (option == 3) {</span>
+<span class="nc" id="L246">      tarfiles = args[2].split(&quot;,&quot;);</span>
+<span class="nc" id="L247">      final File[] files = new File[tarfiles.length];</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">      for (int i = 0; i &lt; tarfiles.length; i++) {</span>
+<span class="nc" id="L249">        files[i] = new File(tarfiles[i]);</span>
+      }
+<span class="nc bnc" id="L251" title="All 2 branches missed.">      if (createTarFromFiles(files, tarfile)) {</span>
+<span class="nc" id="L252">        SysErrLogger.FAKE_LOGGER.sysout(&quot;TAR OK from multiple files&quot;);</span>
+      } else {
+<span class="nc" id="L254">        SysErrLogger.FAKE_LOGGER.syserr(&quot;TAR KO from multiple files&quot;);</span>
+      }
+<span class="nc bnc" id="L256" title="All 2 branches missed.">    } else if (option == 2) {</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">      if (createTarFromDirectory(tarsource, tarfile, false)) {</span>
+<span class="nc" id="L258">        SysErrLogger.FAKE_LOGGER.sysout(&quot;TAR OK from directory&quot;);</span>
+      } else {
+<span class="nc" id="L260">        SysErrLogger.FAKE_LOGGER.syserr(&quot;TAR KO from directory&quot;);</span>
+      }
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    } else if (option == 1) {</span>
+<span class="nc" id="L263">      final File tarFile = new File(tarfile);</span>
+<span class="nc" id="L264">      final File directory = new File(tarsource);</span>
+<span class="nc" id="L265">      List&lt;String&gt; result = null;</span>
+      try {
+<span class="nc" id="L267">        result = unTar(tarFile, directory);</span>
+<span class="nc" id="L268">      } catch (final IOException e) {</span>
+<span class="nc" id="L269">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L270">      }</span>
+<span class="nc bnc" id="L271" title="All 4 branches missed.">      if (result == null || result.isEmpty()) {</span>
+<span class="nc" id="L272">        SysErrLogger.FAKE_LOGGER.syserr(&quot;UNTAR KO from directory&quot;);</span>
+      } else {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L275">          SysErrLogger.FAKE_LOGGER.sysout(&quot;File: &quot; + string);</span>
+<span class="nc" id="L276">        }</span>
+      }
+    }
+
+<span class="nc" id="L280">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

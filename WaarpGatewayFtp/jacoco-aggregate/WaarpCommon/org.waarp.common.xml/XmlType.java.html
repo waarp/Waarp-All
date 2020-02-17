@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>XmlType.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.xml</a> &gt; <span class="el_source">XmlType.java</span></div><h1>XmlType.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.xml;
+
+import java.sql.Date;
+import java.sql.Timestamp;
+
+/**
+ * Type of Classes supported in Enum type
+ */
+<span class="fc" id="L28">public enum XmlType {</span>
+<span class="fc" id="L29">  BOOLEAN(Boolean.TYPE), INTEGER(Integer.TYPE), FLOAT(Float.TYPE),</span>
+<span class="fc" id="L30">  CHARACTER(Character.TYPE), BYTE(Byte.TYPE), LONG(Long.TYPE),</span>
+<span class="fc" id="L31">  DOUBLE(Double.TYPE), SHORT(Short.TYPE), SQLDATE(Date.class),</span>
+<span class="fc" id="L32">  TIMESTAMP(Timestamp.class), STRING(String.class), XVAL(XmlValue.class),</span>
+<span class="fc" id="L33">  EMPTY(XmlType.class);</span>
+
+  final Class&lt;?&gt; classType;
+
+  /**
+   * @param classType
+   */
+<span class="fc" id="L40">  XmlType(Class&lt;?&gt; classType) {</span>
+<span class="fc" id="L41">    this.classType = classType;</span>
+<span class="fc" id="L42">  }</span>
+
+  /**
+   * @return the associated Native Java class
+   */
+  public Class&lt;?&gt; getClassType() {
+<span class="fc" id="L48">    return classType;</span>
+  }
+
+  /**
+   * @param value
+   *
+   * @return True if the Object is natively compatible with the internal Type
+   */
+  public boolean isNativelyCompatible(Object value) {
+<span class="fc" id="L57">    final Class&lt;?&gt; type = value.getClass();</span>
+<span class="fc bfc" id="L58" title="All 13 branches covered.">    switch (this) {</span>
+      case BOOLEAN:
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        return type.equals(Boolean.TYPE) ||</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">               Boolean.class.isAssignableFrom(type);</span>
+      case INTEGER:
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        return type.equals(Integer.TYPE) ||</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">               Integer.class.isAssignableFrom(type);</span>
+      case FLOAT:
+<span class="pc bpc" id="L66" title="2 of 4 branches missed.">        return type.equals(Float.TYPE) || Float.class.isAssignableFrom(type);</span>
+      case CHARACTER:
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        return type.equals(Character.TYPE) ||</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">               Character.class.isAssignableFrom(type);</span>
+      case BYTE:
+<span class="pc bpc" id="L71" title="2 of 4 branches missed.">        return type.equals(Byte.TYPE) || Byte.class.isAssignableFrom(type);</span>
+      case LONG:
+<span class="pc bpc" id="L73" title="2 of 4 branches missed.">        return type.equals(Long.TYPE) || Long.class.isAssignableFrom(type);</span>
+      case DOUBLE:
+<span class="pc bpc" id="L75" title="2 of 4 branches missed.">        return type.equals(Double.TYPE) || Double.class.isAssignableFrom(type);</span>
+      case SHORT:
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">        return type.equals(Short.TYPE) || Short.class.isAssignableFrom(type);</span>
+      case SQLDATE:
+<span class="fc" id="L79">        return Date.class.isAssignableFrom(type);</span>
+      case TIMESTAMP:
+<span class="fc" id="L81">        return Timestamp.class.isAssignableFrom(type);</span>
+      case STRING:
+<span class="fc" id="L83">        return String.class.isAssignableFrom(type);</span>
+      case XVAL:
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        return type.isArray() &amp;&amp;</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">               type.getName().contains(XmlValue.class.getName());</span>
+      case EMPTY:
+      default:
+<span class="fc" id="L89">        return false;</span>
+    }
+  }
+
+  public boolean isBoolean() {
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    return this == BOOLEAN;</span>
+  }
+
+  public boolean isInteger() {
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    return this == INTEGER;</span>
+  }
+
+  public boolean isFloat() {
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    return this == FLOAT;</span>
+  }
+
+  public boolean isCharacter() {
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    return this == CHARACTER;</span>
+  }
+
+  public boolean isByte() {
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    return this == BYTE;</span>
+  }
+
+  public boolean isLong() {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">    return this == LONG;</span>
+  }
+
+  public boolean isDouble() {
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    return this == DOUBLE;</span>
+  }
+
+  public boolean isShort() {
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">    return this == SHORT;</span>
+  }
+
+  public boolean isDate() {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    return this == SQLDATE;</span>
+  }
+
+  public boolean isTimestamp() {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    return this == TIMESTAMP;</span>
+  }
+
+  public boolean isString() {
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">    return this == STRING;</span>
+  }
+
+  public boolean isXmlValue() {
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    return this == XVAL;</span>
+  }
+
+  public boolean isEmpty() {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    return this == EMPTY;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

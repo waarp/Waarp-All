@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddDigestJavaTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task.javatask</a> &gt; <span class="el_source">AddDigestJavaTask.java</span></div><h1>AddDigestJavaTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task.javatask;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.task.AbstractExecJavaTask;
+
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Add a digest in the TransferInformation to the current Task.&lt;/br&gt;
+ * This should be called on caller side in pre-task since the transfer
+ * information will be transfered just
+ * after.&lt;/br&gt;
+ * The second argument is -digest followed by one of ADLER32 CRC32 MD2 MD5 SHA1
+ * SHA256 SHA384 SHA512, default
+ * being MD5.&lt;/br&gt;
+ * The third argument, optional, is &quot;-format&quot; followed by a string containing
+ * &quot;#DIGEST#&quot; to be replaced by the
+ * digest and starting with - or +, meaning this will be added at the beginning
+ * or the end of the generated
+ * new string. Default is equivalent to &quot;-format -##DIGEST##&quot;.&lt;/br&gt;
+ * &lt;/br&gt;
+ * To be called as: &lt;task&gt;&lt;type&gt;EXECJAVA&lt;/type&gt;&lt;path&gt;org.waarp.openr66.context.task.javatask.AddDigestJavaTask
+ * -digest ADLER32|CRC32|MD2|MD5|SHA1|SHA256|SHA384|SHA512 [-format
+ * (-/+)##DIGEST##]&lt;/path&gt;&lt;/task&gt;
+ */
+<span class="fc" id="L51">public class AddDigestJavaTask extends AbstractExecJavaTask {</span>
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(AddDigestJavaTask.class);</span>
+
+  private static final String sDIGEST = &quot;#DIGEST#&quot;;
+<span class="fc" id="L59">  private static final Pattern DIGEST_PATTERN =</span>
+<span class="fc" id="L60">      Pattern.compile(sDIGEST, Pattern.LITERAL);</span>
+
+  @Override
+  public void run() {
+<span class="fc" id="L64">    logger.debug(toString());</span>
+<span class="fc" id="L65">    final String[] args = BLANK.split(fullarg);</span>
+    String fileInfo;
+<span class="fc" id="L67">    String format = &quot;-##DIGEST##&quot;;</span>
+<span class="fc" id="L68">    String algo = &quot;MD5&quot;;</span>
+<span class="fc" id="L69">    int way = -1;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">      if (&quot;-format&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L72">        format = args[i + 1];</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (format.charAt(0) == '-') {</span>
+<span class="fc" id="L74">          way = -1;</span>
+<span class="fc" id="L75">          format = format.substring(1);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        } else if (format.charAt(0) == '+') {</span>
+<span class="nc" id="L77">          way = 1;</span>
+<span class="nc" id="L78">          format = format.substring(1);</span>
+        }
+<span class="fc" id="L80">        i++;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">      } else if (&quot;-digest&quot;.equals(args[i])) {</span>
+<span class="fc" id="L82">        algo = args[i + 1].toUpperCase();</span>
+<span class="fc" id="L83">        i++;</span>
+      }
+    }
+    DigestAlgo digest;
+    try {
+<span class="fc" id="L88">      digest = DigestAlgo.valueOf(algo);</span>
+<span class="nc" id="L89">    } catch (final Exception e) {</span>
+<span class="nc" id="L90">      logger.error(&quot;Bad algorithm format: &quot; + algo);</span>
+<span class="nc" id="L91">      status = 3;</span>
+<span class="nc" id="L92">      return;</span>
+<span class="fc" id="L93">    }</span>
+    String key;
+    try {
+<span class="fc" id="L96">      key = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(</span>
+<span class="fc" id="L97">          session.getFile().getTrueFile(), true, digest));</span>
+<span class="nc" id="L98">    } catch (final IOException e1) {</span>
+<span class="nc" id="L99">      logger.error(&quot;Digest not correctly computed: &quot; + algo, e1);</span>
+<span class="nc" id="L100">      status = 4;</span>
+<span class="nc" id="L101">      return;</span>
+<span class="fc" id="L102">    }</span>
+<span class="fc" id="L103">    logger.debug(&quot;Replace Digest in {} way: {} digest: {} key: {}&quot;, format, way,</span>
+                 algo, key);
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    if (way &lt; 0) {</span>
+<span class="fc" id="L106">      fileInfo = DIGEST_PATTERN.matcher(format)</span>
+<span class="fc" id="L107">                               .replaceAll(Matcher.quoteReplacement(key)) +</span>
+<span class="fc" id="L108">                 ' ' + session.getRunner().getFileInformation();</span>
+    } else {
+<span class="nc" id="L110">      fileInfo = session.getRunner().getFileInformation() + ' ' +</span>
+<span class="nc" id="L111">                 DIGEST_PATTERN.matcher(format)</span>
+<span class="nc" id="L112">                               .replaceAll(Matcher.quoteReplacement(key));</span>
+    }
+<span class="fc" id="L114">    session.getRunner().setFileInformation(fileInfo);</span>
+    try {
+<span class="fc" id="L116">      session.getRunner().update();</span>
+<span class="nc" id="L117">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L118">      logger.error(&quot;Digest cannot be saved to fileInformation:&quot; + fileInfo);</span>
+<span class="nc" id="L119">      status = 2;</span>
+<span class="nc" id="L120">      return;</span>
+<span class="fc" id="L121">    }</span>
+<span class="fc" id="L122">    logger.debug(&quot;Digest saved to fileInformation:&quot; + fileInfo);</span>
+<span class="fc" id="L123">    status = 0;</span>
+<span class="fc" id="L124">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

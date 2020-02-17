@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>JsonPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet.json</a> &gt; <span class="el_source">JsonPacket.java</span></div><h1>JsonPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet.json;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+
+import java.io.IOException;
+
+/**
+ * Json Object Command Message class for JsonCommandPacket
+ * &lt;p&gt;
+ * 1 string = comment
+ */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = &quot;@class&quot;)
+<span class="fc" id="L38">public class JsonPacket {</span>
+  /**
+   * @return the ObjectNode corresponding to this object
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public ObjectNode createObjectNode() throws OpenR66ProtocolPacketException {
+    try {
+<span class="nc" id="L46">      final String value = JsonHandler.mapper.writeValueAsString(this);</span>
+<span class="nc" id="L47">      return (ObjectNode) JsonHandler.mapper.readTree(value);</span>
+<span class="nc" id="L48">    } catch (final JsonProcessingException e) {</span>
+<span class="nc" id="L49">      throw new OpenR66ProtocolPacketException(&quot;Json exception&quot;, e);</span>
+<span class="nc" id="L50">    } catch (final IOException e) {</span>
+<span class="nc" id="L51">      throw new OpenR66ProtocolPacketException(&quot;Json exception&quot;, e);</span>
+    }
+  }
+
+  private String comment;
+  private byte requestUserPacket;
+
+  /**
+   * @return the requestUserPacket
+   */
+  public byte getRequestUserPacket() {
+<span class="fc" id="L62">    return requestUserPacket;</span>
+  }
+
+  /**
+   * @param requestUserPacket the requestUserPacket to set
+   */
+  public void setRequestUserPacket(byte requestUserPacket) {
+<span class="fc" id="L69">    this.requestUserPacket = requestUserPacket;</span>
+<span class="fc" id="L70">  }</span>
+
+  /**
+   * Default value to set
+   */
+  public void setRequestUserPacket() {
+<span class="nc" id="L76">    throw new IllegalArgumentException(&quot;Not defined&quot;);</span>
+  }
+
+  /**
+   * @return the comment
+   */
+  public String getComment() {
+<span class="fc" id="L83">    return comment;</span>
+  }
+
+  /**
+   * @param comment the comment to set
+   */
+  public void setComment(String comment) {
+<span class="fc" id="L90">    this.comment = comment;</span>
+<span class="fc" id="L91">  }</span>
+
+  @Override
+  public String toString() {
+<span class="fc" id="L95">    return JsonHandler.writeAsString(this);</span>
+  }
+
+  /**
+   * @param value
+   *
+   * @return the new JsonPacket from buffer
+   *
+   * @throws IOException
+   * @throws JsonMappingException
+   * @throws JsonParseException
+   */
+  public static JsonPacket createFromBuffer(String value)
+      throws JsonParseException, JsonMappingException, IOException {
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L110">      return JsonHandler.mapper.readValue(value, JsonPacket.class);</span>
+    }
+<span class="nc" id="L112">    return null;</span>
+  }
+
+  /**
+   * Set from other Json
+   *
+   * @param json
+   */
+  public void fromJson(JsonPacket json) {
+<span class="fc" id="L121">    comment = json.comment;</span>
+<span class="fc" id="L122">    requestUserPacket = json.requestUserPacket;</span>
+<span class="fc" id="L123">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

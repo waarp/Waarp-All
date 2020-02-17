@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DBLimitDAO.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.dao.database</a> &gt; <span class="el_source">DBLimitDAO.java</span></div><h1>DBLimitDAO.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.dao.database;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.dao.LimitDAO;
+import org.waarp.openr66.pojo.Limit;
+import org.waarp.openr66.pojo.UpdatedInfo;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Implementation of LimitDAO for standard SQL databases
+ */
+public class DBLimitDAO extends StatementExecutor&lt;Limit&gt; implements LimitDAO {
+
+<span class="fc" id="L38">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L39">      WaarpLoggerFactory.getLogger(DBLimitDAO.class);</span>
+
+  protected static final String TABLE = &quot;configuration&quot;;
+
+  public static final String HOSTID_FIELD = &quot;hostid&quot;;
+  public static final String READ_GLOBAL_LIMIT_FIELD = &quot;readgloballimit&quot;;
+  public static final String WRITE_GLOBAL_LIMIT_FIELD = &quot;writegloballimit&quot;;
+  public static final String READ_SESSION_LIMIT_FIELD = &quot;readsessionlimit&quot;;
+  public static final String WRITE_SESSION_LIMIT_FIELD = &quot;writesessionlimit&quot;;
+  public static final String DELAY_LIMIT_FIELD = &quot;delaylimit&quot;;
+  public static final String UPDATED_INFO_FIELD = &quot;updatedinfo&quot;;
+
+  protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
+  protected static final String SQL_DELETE =
+      &quot;DELETE FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+  protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_EXIST =
+      &quot;SELECT 1 FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+  protected static final String SQL_SELECT =
+      &quot;SELECT * FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+  protected static final String SQL_INSERT =
+      &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + HOSTID_FIELD + &quot;, &quot; +
+      READ_GLOBAL_LIMIT_FIELD + &quot;, &quot; + WRITE_GLOBAL_LIMIT_FIELD + &quot;, &quot; +
+      READ_SESSION_LIMIT_FIELD + &quot;, &quot; + WRITE_SESSION_LIMIT_FIELD + &quot;, &quot; +
+      DELAY_LIMIT_FIELD + &quot;, &quot; + UPDATED_INFO_FIELD +
+      &quot;) VALUES (?,?,?,?,?,?,?)&quot;;
+
+  protected static final String SQL_UPDATE =
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + &quot; = ?, &quot; +
+      READ_GLOBAL_LIMIT_FIELD + &quot; = ?, &quot; + WRITE_GLOBAL_LIMIT_FIELD + &quot; = ?, &quot; +
+      READ_SESSION_LIMIT_FIELD + &quot; = ?, &quot; + WRITE_SESSION_LIMIT_FIELD +
+      &quot; = ?, &quot; + DELAY_LIMIT_FIELD + &quot; = ?, &quot; + UPDATED_INFO_FIELD +
+      &quot; = ? WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+
+  public DBLimitDAO(Connection con) {
+<span class="fc" id="L74">    super(con);</span>
+<span class="fc" id="L75">  }</span>
+
+  @Override
+  protected String getId(final Limit e1) {
+<span class="fc" id="L79">    return e1.getHostid();</span>
+  }
+
+  @Override
+  protected String getSelectRequest() {
+<span class="fc" id="L84">    return SQL_SELECT;</span>
+  }
+
+  @Override
+  protected String getGetAllRequest() {
+<span class="fc" id="L89">    return SQL_GET_ALL;</span>
+  }
+
+  @Override
+  protected String getExistRequest() {
+<span class="fc" id="L94">    return SQL_EXIST;</span>
+  }
+
+  @Override
+  protected Object[] getInsertValues(final Limit limit) {
+<span class="fc" id="L99">    return new Object[] {</span>
+<span class="fc" id="L100">        limit.getHostid(), limit.getReadGlobalLimit(),</span>
+<span class="fc" id="L101">        limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),</span>
+<span class="fc" id="L102">        limit.getWriteSessionLimit(), limit.getDelayLimit(),</span>
+<span class="fc" id="L103">        limit.getUpdatedInfo().ordinal()</span>
+    };
+  }
+
+  @Override
+  protected String getInsertRequest() {
+<span class="fc" id="L109">    return SQL_INSERT;</span>
+  }
+
+  @Override
+  protected Object[] getUpdateValues(final Limit limit) {
+<span class="fc" id="L114">    return new Object[] {</span>
+<span class="fc" id="L115">        limit.getHostid(), limit.getReadGlobalLimit(),</span>
+<span class="fc" id="L116">        limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),</span>
+<span class="fc" id="L117">        limit.getWriteSessionLimit(), limit.getDelayLimit(),</span>
+<span class="fc" id="L118">        limit.getUpdatedInfo().ordinal(), limit.getHostid()</span>
+    };
+  }
+
+  @Override
+  protected String getUpdateRequest() {
+<span class="fc" id="L124">    return SQL_UPDATE;</span>
+  }
+
+  @Override
+  protected String getDeleteRequest() {
+<span class="fc" id="L129">    return SQL_DELETE;</span>
+  }
+
+  @Override
+  protected String getDeleteAllRequest() {
+<span class="fc" id="L134">    return SQL_DELETE_ALL;</span>
+  }
+
+  @Override
+  public Limit getFromResultSet(ResultSet set) throws SQLException {
+<span class="fc" id="L139">    return new Limit(set.getString(HOSTID_FIELD),</span>
+<span class="fc" id="L140">                     set.getLong(DELAY_LIMIT_FIELD),</span>
+<span class="fc" id="L141">                     set.getLong(READ_GLOBAL_LIMIT_FIELD),</span>
+<span class="fc" id="L142">                     set.getLong(WRITE_GLOBAL_LIMIT_FIELD),</span>
+<span class="fc" id="L143">                     set.getLong(READ_SESSION_LIMIT_FIELD),</span>
+<span class="fc" id="L144">                     set.getLong(WRITE_SESSION_LIMIT_FIELD),</span>
+<span class="fc" id="L145">                     UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

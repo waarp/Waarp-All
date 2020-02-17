@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpStringUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp XMLEditor</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">WaarpStringUtils.java</span></div><h1>WaarpStringUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import org.dom4j.Node;
+import org.waarp.common.exception.FileTransferException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+/**
+ * Various utilities for reading files, transforming dates, ...
+ */
+public final class WaarpStringUtils {
+  public static final String UTF_8 = &quot;UTF-8&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(WaarpStringUtils.class);</span>
+
+  /**
+   * Format used for Files
+   */
+<span class="fc" id="L56">  public static final Charset UTF8 = Charset.forName(UTF_8);</span>
+
+  private WaarpStringUtils() {
+  }
+
+  /**
+   * Read a file and return its content in String format
+   *
+   * @param filename
+   *
+   * @return the content of the File in String format
+   *
+   * @throws InvalidArgumentException for File not found
+   * @throws FileTransferException for reading exception
+   */
+  public static String readFileException(String filename)
+      throws InvalidArgumentException, FileTransferException {
+<span class="fc" id="L73">    final File file = new File(filename);</span>
+    // Check for size of file
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L76">      throw new FileTransferException(</span>
+<span class="nc" id="L77">          &quot;File is too big for this convenience method (&quot; + file.length() +</span>
+          &quot; bytes).&quot;);
+    }
+    try {
+<span class="fc" id="L81">      return Files.toString(file, Charsets.UTF_8);</span>
+<span class="nc" id="L82">    } catch (IOException e) {</span>
+<span class="nc" id="L83">      logger.error(&quot;Error on File while trying to read: &quot; + filename, e);</span>
+<span class="nc" id="L84">      throw new FileTransferException(&quot;Error on File while trying to read&quot;, e);</span>
+    }
+  }
+
+  /**
+   * Read file and return &quot;&quot; if an error occurs
+   *
+   * @param filename
+   *
+   * @return the string associated with the file, or &quot;&quot; if an error occurs
+   */
+  public static String readFile(String filename) {
+    try {
+<span class="fc" id="L97">      return readFileException(filename);</span>
+<span class="nc" id="L98">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L99">      logger.error(&quot;Error while trying to open: &quot; + filename, e);</span>
+<span class="nc" id="L100">      return &quot;&quot;;</span>
+<span class="nc" id="L101">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L102">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
+<span class="nc" id="L103">      return &quot;&quot;;</span>
+    }
+  }
+
+  /**
+   * Get a date in String and return the corresponding Timestamp
+   *
+   * @param date
+   *
+   * @return the corresponding Timestamp
+   */
+  public static Timestamp fixDate(String date) {
+<span class="nc" id="L115">    Timestamp tdate = null;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (date == null) {</span>
+<span class="nc" id="L117">      return tdate;</span>
+    }
+<span class="nc" id="L119">    String ndate = date.replaceAll(&quot;/|:|\\.| |-&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
+<span class="nc" id="L122">        final int len = ndate.length();</span>
+<span class="nc" id="L123">        ndate += &quot;000000000000000&quot;.substring(len);</span>
+      }
+<span class="nc" id="L125">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
+      try {
+<span class="nc" id="L127">        final Date ddate = format.parse(ndate);</span>
+<span class="nc" id="L128">        tdate = new Timestamp(ddate.getTime());</span>
+<span class="nc" id="L129">      } catch (final ParseException e) {</span>
+<span class="nc" id="L130">        logger.debug(&quot;start&quot;, e);</span>
+<span class="nc" id="L131">      }</span>
+    }
+<span class="nc" id="L133">    return tdate;</span>
+  }
+
+  /**
+   * From a date in String format and a Timestamp, return the Timestamp as
+   * :&lt;br&gt;
+   * if before = null as date&lt;br&gt;
+   * if before != null and before &lt; date, as date&lt;br&gt;
+   * if before != null and before &gt;= date, as before end of day
+   * (23:59:59:9999)
+   *
+   * @param date
+   * @param before
+   *
+   * @return the end date
+   */
+  public static Timestamp fixDate(String date, Timestamp before) {
+<span class="nc" id="L150">    Timestamp tdate = null;</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    if (date == null) {</span>
+<span class="nc" id="L152">      return tdate;</span>
+    }
+<span class="nc" id="L154">    String ndate = date.replaceAll(&quot;/|:|\\.| |-&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
+<span class="nc" id="L157">        final int len = ndate.length();</span>
+<span class="nc" id="L158">        ndate += &quot;000000000000000&quot;.substring(len);</span>
+      }
+<span class="nc" id="L160">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
+      try {
+<span class="nc" id="L162">        Date ddate = format.parse(ndate);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (before != null) {</span>
+<span class="nc" id="L164">          final Date bef = new Date(before.getTime());</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">          if (bef.compareTo(ddate) &gt;= 0) {</span>
+<span class="nc" id="L166">            ddate = new Date(bef.getTime() + 1000 * 3600 * 24 - 1);</span>
+          }
+        }
+<span class="nc" id="L169">        tdate = new Timestamp(ddate.getTime());</span>
+<span class="nc" id="L170">      } catch (final ParseException e) {</span>
+<span class="nc" id="L171">        logger.debug(&quot;start&quot;, e);</span>
+<span class="nc" id="L172">      }</span>
+    }
+<span class="nc" id="L174">    return tdate;</span>
+  }
+
+  public static Timestamp getTodayMidnight() {
+<span class="fc" id="L178">    final GregorianCalendar calendar = new GregorianCalendar();</span>
+<span class="fc" id="L179">    calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="fc" id="L180">    calendar.set(Calendar.MINUTE, 0);</span>
+<span class="fc" id="L181">    calendar.set(Calendar.SECOND, 0);</span>
+<span class="fc" id="L182">    calendar.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L183">    return new Timestamp(calendar.getTimeInMillis());</span>
+  }
+
+  /**
+   * Read a boolean value (0,1,true,false) from a node
+   *
+   * @param node
+   *
+   * @return the corresponding value
+   */
+  public static boolean getBoolean(Node node) {
+<span class="nc" id="L194">    final String val = node.getText();</span>
+    boolean bval;
+    try {
+<span class="nc" id="L197">      final int ival = Integer.parseInt(val);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">      bval = ival == 1;</span>
+<span class="nc" id="L199">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L200">      bval = Boolean.parseBoolean(val);</span>
+<span class="nc" id="L201">    }</span>
+<span class="nc" id="L202">    return bval;</span>
+  }
+
+  /**
+   * Read an integer value from a node
+   *
+   * @param node
+   *
+   * @return the corresponding value
+   *
+   * @throws InvalidArgumentException
+   */
+  public static int getInteger(Node node) throws InvalidArgumentException {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L216">      throw new InvalidArgumentException(&quot;Node empty&quot;);</span>
+    }
+<span class="nc" id="L218">    final String val = node.getText();</span>
+    int ival;
+    try {
+<span class="nc" id="L221">      ival = Integer.parseInt(val);</span>
+<span class="nc" id="L222">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L223">      throw new InvalidArgumentException(&quot;Incorrect value&quot;);</span>
+<span class="nc" id="L224">    }</span>
+<span class="nc" id="L225">    return ival;</span>
+  }
+
+  /**
+   * Make a replacement of first &quot;find&quot; string by &quot;replace&quot; string into the
+   * StringBuilder
+   *
+   * @param builder
+   * @param find
+   * @param replace
+   *
+   * @return True if one element is found
+   */
+  public static boolean replace(StringBuilder builder, String find,
+                                String replace) {
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (find == null) {</span>
+<span class="nc" id="L241">      return false;</span>
+    }
+<span class="nc" id="L243">    final int start = builder.indexOf(find);</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (start == -1) {</span>
+<span class="nc" id="L245">      return false;</span>
+    }
+<span class="nc" id="L247">    final int end = start + find.length();</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    if (replace != null) {</span>
+<span class="nc" id="L249">      builder.replace(start, end, replace);</span>
+    } else {
+<span class="nc" id="L251">      builder.replace(start, end, &quot;&quot;);</span>
+    }
+<span class="nc" id="L253">    return true;</span>
+  }
+
+  /**
+   * Make replacement of all &quot;find&quot; string by &quot;replace&quot; string into the
+   * StringBuilder
+   *
+   * @param builder
+   * @param find
+   * @param replace
+   */
+  public static void replaceAll(StringBuilder builder, String find,
+                                String replace) {
+<span class="nc bnc" id="L266" title="All 2 branches missed.">    while (replace(builder, find, replace)) {</span>
+      // nothing
+    }
+<span class="nc" id="L269">  }</span>
+
+  /**
+   * Build a String with count chars using fillChar
+   *
+   * @param fillChar
+   * @param count
+   *
+   * @return the String of length count filled with fillChar
+   */
+  public static String fillString(char fillChar, int count) {
+<span class="fc" id="L280">    final char[] chars = new char[count];</span>
+<span class="fc" id="L281">    Arrays.fill(chars, fillChar);</span>
+<span class="fc" id="L282">    return new String(chars);</span>
+  }
+
+  /**
+   * Clean the String that could contain '\' or '\n', '\r' into something
+   * compatible with HTML
+   *
+   * @param json
+   *
+   * @return the cleaned String
+   */
+  public static String cleanJsonForHtml(String json) {
+<span class="nc" id="L294">    return json.replaceAll(&quot;([^\\\\])\\\\n&quot;, &quot;$1&quot;)</span>
+<span class="nc" id="L295">               .replaceAll(&quot;([^\\\\])\\\\r&quot;, &quot;$1&quot;)</span>
+<span class="nc" id="L296">               .replaceAll(&quot;([^\\\\])\\\\\&quot;&quot;, &quot;$1&quot;).replace(&quot;\\\\&quot;, &quot;\\\\\\\\&quot;);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

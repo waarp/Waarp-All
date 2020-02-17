@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HmacSha1.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Filesystem</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.crypto</a> &gt; <span class="el_source">HmacSha1.java</span></div><h1>HmacSha1.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.crypto;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+
+/**
+ * This class handles methods to crypt (not decrypt) messages with HmacSha1
+ * algorithm (very efficient:
+ * 136000/s).&lt;br&gt;
+ * &lt;br&gt;
+ * Usage:&lt;br&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;Create a HmacSha1 object: HmacSha1 key = new HmacSha1();&lt;/li&gt;
+ * &lt;li&gt;Create a key:
+ * &lt;ul&gt;
+ * &lt;li&gt;Generate: key.generateKey();&lt;br&gt;
+ * The method key.getSecretKeyInBytes() allow getting the key in Bytes.&lt;/li&gt;
+ * &lt;li&gt;From an external source: key.setSecretKey(arrayOfBytes);&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/li&gt;
+ * &lt;li&gt;To crypt a String in a Base64 format: String myStringCrypt =
+ * key.cryptToString(myString);&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+<span class="fc" id="L44">public class HmacSha1 extends KeyObject {</span>
+  private static final String CANNOT_BE_USED_FOR_HMAC_SHA1 =
+      &quot;Cannot be used for HmacSha1&quot;;
+  private static final int KEY_SIZE = 128;
+  private static final String ALGO = &quot;HmacSHA1&quot;;
+  private static final String INSTANCE = ALGO;
+  public static final String EXTENSION = &quot;hs1&quot;;
+
+  @Override
+  public String getAlgorithm() {
+<span class="fc" id="L54">    return ALGO;</span>
+  }
+
+  @Override
+  public String getInstance() {
+<span class="nc" id="L59">    return INSTANCE;</span>
+  }
+
+  @Override
+  public int getKeySize() {
+<span class="fc" id="L64">    return KEY_SIZE;</span>
+  }
+
+  @Override
+  public String getFileExtension() {
+<span class="nc" id="L69">    return EXTENSION;</span>
+  }
+
+  @Override
+  public Cipher toCrypt() {
+<span class="nc" id="L74">    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);</span>
+  }
+
+  @Override
+  public byte[] crypt(byte[] plaintext) throws Exception {
+<span class="fc" id="L79">    final Mac mac = Mac.getInstance(ALGO);</span>
+<span class="fc" id="L80">    mac.init(secretKey);</span>
+<span class="fc" id="L81">    return mac.doFinal(plaintext);</span>
+  }
+
+  @Override
+  public Cipher toDecrypt() {
+<span class="nc" id="L86">    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);</span>
+  }
+
+  @Override
+  public byte[] decrypt(byte[] ciphertext) throws Exception {
+<span class="nc" id="L91">    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

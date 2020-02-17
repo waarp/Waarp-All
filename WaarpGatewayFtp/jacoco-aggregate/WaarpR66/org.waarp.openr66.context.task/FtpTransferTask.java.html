@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpTransferTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">FtpTransferTask.java</span></div><h1>FtpTransferTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.client.WaarpFtp4jClient;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * Ftp Transfer task: synchronous&lt;br&gt;
+ * &lt;p&gt;
+ * Result of arguments will be as FTP command.&lt;br&gt;
+ * Format is the following:&lt;br&gt;
+ * &quot;-file filepath &lt;br&gt;
+ * -to requestedHost &lt;br&gt;
+ * -port port &lt;br&gt;
+ * -user user &lt;br&gt;
+ * -pwd pwd &lt;br&gt;
+ * [-account account] &lt;br&gt;
+ * [-mode active/passive] &lt;br&gt;
+ * [-ssl no/implicit/explicit]&lt;br&gt;
+ * [-cwd remotepath] &lt;br&gt;
+ * [-digest (crc,md5,sha1)] &lt;br&gt;
+ * [-pre extraCommand1 with ',' as separator of arguments] &lt;br&gt;
+ * -command command from (get,put,append) &lt;br&gt;
+ * [-post extraCommand2 with ',' as separator of arguments]&quot; &lt;br&gt;
+ * &lt;br&gt;
+ * &lt;br&gt;
+ * The order of commands will be:&lt;br&gt;
+ * 1) connection to requestHost on port (if ssl native =&gt; using native ssl
+ * link)&lt;br&gt;
+ * 2) User user&lt;br&gt;
+ * 3) PASS pwd&lt;br&gt;
+ * 4) if account =&gt; ACCT account&lt;br&gt;
+ * 5) if -ssl &amp; auth =&gt; AUTH, PBSZ 0, PROT P &lt;br&gt;
+ * 6) if passive =&gt; PASV&lt;br&gt;
+ * 7) CWD remotepath; if error =&gt; MKD remotepath then CWD remotepath (and
+ * ignoring any error)&lt;br&gt;
+ * 8) if pre =&gt; extraCommand1 with ',' replaced by ' ' (note: do not use
+ * standard commands from FTP like
+ * ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE,MDTM,MLSD,MLST,SIZE,AUTH)
+ * &lt;br&gt;
+ * 9) BINARY (binary format)&lt;br&gt;
+ * 10) if get =&gt; RETR filepath.basename ; if put =&gt; STOR filepath ; if append
+ * =&gt;
+ * APPE filepath.basename&lt;br&gt;
+ * 11) if digest &amp; get/put/append &amp; remote site compatible with XCRC,XMD5,XSHA1
+ * =&gt; FEAT (parsing if found
+ * corresponding XCRC,XMD5,XSHA1) ; then XCRC/XMD5/XSHA1 filepath.basename ;
+ * then locally comparing this
+ * XCRC/XMD5/XSHA1 with the local file&lt;br&gt;
+ * 12) if post =&gt; extraCommand2 with ',' replaced by ' ' (note: do not use
+ * standard commands from FTP like
+ * ACCT,PASS,REIN,USER,APPE,STOR,STOU,RETR,RMD,RNFR,RNTO,ABOR,CWD,CDUP,MODE,PASV,PORT,STRU,TYPE,MDTM,MLSD,MLST,SIZE,AUTH)&lt;br&gt;
+ * 13) QUIT&lt;br&gt;
+ */
+public class FtpTransferTask extends AbstractTask {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L87">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L88">      WaarpLoggerFactory.getLogger(FtpTransferTask.class);</span>
+
+  /**
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public FtpTransferTask(String argRule, int delay, String argTransfer,
+                         R66Session session) {
+<span class="nc" id="L98">    super(TaskType.FTP, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L99">  }</span>
+
+  /**
+   * &quot;-file filepath &lt;br&gt; -to requestedHost &lt;br&gt; -port port &lt;br&gt; -user user &lt;br&gt; -pwd pwd &lt;br&gt; [-account
+   * account] &lt;br&gt; [-mode active/passive] &lt;br&gt; [-ssl no/implicit/explicit]&lt;br&gt; [-cwd remotepath] &lt;br&gt; [-digest
+   * (crc,md5,sha1)] &lt;br&gt; [-pre extraCommand1 with ',' as separator of arguments] &lt;br&gt; -command command from
+   * (get,put,append) &lt;br&gt; [-post extraCommand2 with ',' as separator of arguments]&quot; &lt;br&gt;
+   **/
+
+  @Override
+  /*public void run() {
+    logger.info(&quot;FtpTransfer with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,
+                session);
+    String finalname = argRule;
+    final Object[] argFormat = BLANK.split(argTransfer);
+    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {
+      try {
+        finalname = String.format(finalname, argFormat);
+      } catch (final Exception e) {
+        // ignored error since bad argument in static rule info
+        logger
+            .error(&quot;Bad format in Rule: {&quot; + finalname + &quot;} &quot; + e.getMessage());
+      }
+    }
+
+    final CommandLine cl = new CommandLine(&quot;dummy&quot;);
+    cl.addArguments(finalname, false);
+    final String[] args = cl.getArguments();
+
+    if (args.length &lt; 10) {
+      final OpenR66RunnerErrorException exception =
+          new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;);
+      final R66Result result =
+          new R66Result(exception, session, false, ErrorCode.CommandNotFound,
+                        session.getRunner());
+      logger.error(&quot;Not enough arguments&quot;);
+      futureCompletion.setResult(result);
+      futureCompletion.setFailure(exception);
+      return;
+    }
+    String filepath = null;
+    String filename = null;
+    String requested = null;
+    int port = 21;
+    String user = null;
+    String pwd = null;
+    String acct = null;
+    boolean isPassive = true;
+    int ssl = 0; // -1 native, 1 auth
+    String cwd = null;
+    int digest = 0; // 1 CRC, 2 MD5, 3 SHA1
+    String command;
+    int codeCommand = 0; // -1 get, 1 put, 2 append
+    String preArgs = null;
+    String postArgs = null;
+    for (int i = 0; i &lt; args.length; i++) {
+      args[i] = getReplacedValue(args[i], null);
+    }
+    for (int i = 0; i &lt; args.length; i++) {
+      if (&quot;-file&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        filepath = args[i];
+        filename = new File(filepath).getName();
+      } else if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        requested = args[i];
+      } else if (&quot;-port&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        port = Integer.parseInt(args[i]);
+      } else if (&quot;-user&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        user = args[i];
+      } else if (&quot;-pwd&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        pwd = args[i];
+      } else if (&quot;-account&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        acct = args[i];
+      } else if (&quot;-mode&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        isPassive = &quot;passive&quot;.equalsIgnoreCase(args[i]);
+      } else if (&quot;-ssl&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        if (&quot;implicit&quot;.equalsIgnoreCase(args[i])) {
+          ssl = -1;
+        } else if (&quot;explicit&quot;.equalsIgnoreCase(args[i])) {
+          ssl = 1;
+        } else {
+          ssl = 0;
+        }
+      } else if (&quot;-cwd&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        cwd = args[i];
+      } else if (&quot;-digest&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        if (&quot;crc&quot;.equalsIgnoreCase(args[i])) {
+          digest = 1;
+        } else if (&quot;md5&quot;.equalsIgnoreCase(args[i])) {
+          digest = 2;
+        } else if (&quot;sha1&quot;.equalsIgnoreCase(args[i])) {
+          digest = 3;
+        } else if (&quot;sha256&quot;.equalsIgnoreCase(args[i])) {
+          digest = 4;
+        } else if (&quot;sha384&quot;.equalsIgnoreCase(args[i])) {
+          digest = 5;
+        } else if (&quot;sha512&quot;.equalsIgnoreCase(args[i])) {
+          digest = 6;
+        } else {
+          digest = 0;
+        }
+      } else if (&quot;-pre&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        preArgs = args[i].replace(',', ' ');
+      } else if (&quot;-post&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        postArgs = args[i].replace(',', ' ');
+      } else if (&quot;-command&quot;.equalsIgnoreCase(args[i])) {
+        i++;
+        command = args[i];
+        // get,put,append,list
+        // -1 get, 1 put, 2 append
+        if (&quot;get&quot;.equalsIgnoreCase(command)) {
+          codeCommand = -1;
+        } else if (&quot;put&quot;.equalsIgnoreCase(command)) {
+          codeCommand = 1;
+        } else if (&quot;append&quot;.equalsIgnoreCase(command)) {
+          codeCommand = 2;
+        } else {
+          // error
+          codeCommand = 0;
+        }
+      }
+    }
+    if (filepath == null || requested == null || port &lt;= 0 || user == null ||
+        pwd == null || codeCommand == 0) {
+      final OpenR66RunnerErrorException exception =
+          new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;);
+      final R66Result result =
+          new R66Result(exception, session, false, ErrorCode.CommandNotFound,
+                        session.getRunner());
+      final int code = (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
+                       (port &lt;= 0? 100 : 0) + (user == null? 1000 : 0) +
+                       (pwd == null? 10000 : 0) +
+                       (codeCommand == 0? 100000 : 0);
+      logger.error(&quot;Not enough arguments: &quot; + code);
+      futureCompletion.setResult(result);
+      futureCompletion.setFailure(exception);
+      return;
+    }
+    final WaarpFtp4jClient ftpClient =
+        new WaarpFtp4jClient(requested, port, user, pwd, acct, isPassive, ssl,
+                             5000,
+                             (int) Configuration.configuration.getTimeoutCon());
+    boolean status = false;
+    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {
+      if (ftpClient.connect()) {
+        status = true;
+        break;
+      }
+    }
+    if (!status) {
+      final OpenR66RunnerErrorException exception =
+          new OpenR66RunnerErrorException(&quot;Cannot connect to remote FTP host&quot;);
+      final R66Result result = new R66Result(exception, session, false,
+                                             ErrorCode.ConnectionImpossible,
+                                             session.getRunner());
+      futureCompletion.setResult(result);
+      futureCompletion.setFailure(exception);
+      logger.error(ftpClient.getResult());
+      return;
+    }
+    try {
+      if (cwd != null &amp;&amp; !ftpClient.changeDir(cwd)) {
+        ftpClient.makeDir(cwd);
+        if (!ftpClient.changeDir(cwd)) {
+          logger.warn(&quot;Cannot change od directory: &quot; + cwd);
+        }
+      }
+      if (preArgs != null) {
+        final String[] result = ftpClient.executeCommand(preArgs);
+        for (final String string : result) {
+          logger.debug(&quot;PRE: &quot; + string);
+        }
+      }
+      if (!ftpClient.transferFile(filepath, filename, codeCommand)) {
+        final OpenR66RunnerErrorException exception =
+            new OpenR66RunnerErrorException(
+                &quot;Cannot transfert file from/to remote FTP host&quot;);
+        final R66Result result =
+            new R66Result(exception, session, false, ErrorCode.TransferError,
+                          session.getRunner());
+        futureCompletion.setResult(result);
+        futureCompletion.setFailure(exception);
+        logger.error(ftpClient.getResult());
+        return;
+      }
+      if (digest &gt; 0) {
+        // digest check
+        String params;
+        DigestAlgo algo;
+        switch (digest) {
+          case 1: // CRC
+            params = &quot;XCRC &quot;;
+            algo = DigestAlgo.CRC32;
+            break;
+          case 2: // MD5
+            params = &quot;XMD5 &quot;;
+            algo = DigestAlgo.MD5;
+            break;
+          case 4:
+            params = &quot;XSAH256 &quot;;
+            algo = DigestAlgo.SHA256;
+            break;
+          case 5:
+            params = &quot;XSAH384 &quot;;
+            algo = DigestAlgo.SHA384;
+            break;
+          case 6:
+            params = &quot;XSAH512 &quot;;
+            algo = DigestAlgo.SHA512;
+            break;
+          case 3: // SHA1
+          default:
+            params = &quot;XSHA1 &quot;;
+            algo = DigestAlgo.SHA1;
+            break;
+        }
+        params += filename;
+        String[] values = ftpClient.executeCommand(params);
+        String hashresult = null;
+        if (values != null) {
+          values = BLANK.split(values[0]);
+          hashresult = values.length &gt; 3? values[1] : values[0];
+        }
+        if (hashresult == null) {
+          final OpenR66RunnerErrorException exception =
+              new OpenR66RunnerErrorException(
+                  &quot;Hash cannot be computed while FTP transfer is done&quot;);
+          final R66Result result =
+              new R66Result(exception, session, false, ErrorCode.TransferError,
+                            session.getRunner());
+          futureCompletion.setResult(result);
+          futureCompletion.setFailure(exception);
+          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());
+          return;
+        }
+        // now check locally
+        String hash;
+        try {
+          hash = FilesystemBasedDigest.getHex(
+              FilesystemBasedDigest.getHash(new File(filepath), false, algo));
+        } catch (final IOException e) {
+          hash = null;
+        }
+        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
+          final OpenR66RunnerErrorException exception =
+              new OpenR66RunnerErrorException(
+                  &quot;Hash not equal while FTP transfer is done&quot;);
+          final R66Result result =
+              new R66Result(exception, session, false, ErrorCode.TransferError,
+                            session.getRunner());
+          futureCompletion.setResult(result);
+          futureCompletion.setFailure(exception);
+          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());
+          return;
+        }
+      }
+      if (postArgs != null) {
+        final String[] result = ftpClient.executeCommand(postArgs);
+        for (final String string : result) {
+          logger.debug(&quot;POST: &quot; + string);
+        }
+      }
+    } finally {
+      ftpClient.logout();
+    }
+    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
+                                           session.getRunner());
+    futureCompletion.setResult(result);
+    logger.info(&quot;FTP transfer in     SUCCESS     &quot; +
+                session.getRunner().toShortString() + &quot;     &lt;REMOTE&gt;&quot; +
+                requested + &quot;&lt;/REMOTE&gt;&quot;);
+    futureCompletion.setSuccess();
+  }*/
+
+  public void run() {
+<span class="nc" id="L385">    logger.info(&quot;FtpTransfer with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
+                session);
+<span class="nc" id="L387">    String finalname = argRule;</span>
+<span class="nc" id="L388">    final String[] argFormat = BLANK.split(argTransfer);</span>
+<span class="nc bnc" id="L389" title="All 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
+      try {
+<span class="nc" id="L391">        finalname = String.format(finalname, argFormat);</span>
+<span class="nc" id="L392">      } catch (final Exception e) {</span>
+        // ignored error since bad argument in static rule info
+<span class="nc" id="L394">        logger</span>
+<span class="nc" id="L395">            .error(&quot;Bad format in Rule: {&quot; + finalname + &quot;} &quot; + e.getMessage());</span>
+<span class="nc" id="L396">      }</span>
+    }
+<span class="nc" id="L398">    final String[] args = BLANK.split(finalname);</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="nc" id="L400">      args[i] = getReplacedValue(args[i], null);</span>
+    }
+    final FtpArgs ftpArgs;
+    try {
+<span class="nc" id="L404">      ftpArgs = FtpArgs.getFtpArgs(args);</span>
+<span class="nc" id="L405">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L406">      final OpenR66RunnerErrorException exception =</span>
+          new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;);
+<span class="nc" id="L408">      final R66Result result =</span>
+          new R66Result(exception, session, false, ErrorCode.CommandNotFound,
+<span class="nc" id="L410">                        session.getRunner());</span>
+<span class="nc" id="L411">      logger.error(&quot;Not enough arguments: &quot; + e.getMessage());</span>
+<span class="nc" id="L412">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L413">      futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L414">      return;</span>
+<span class="nc" id="L415">    }</span>
+
+<span class="nc" id="L417">    final WaarpFtp4jClient ftpClient =</span>
+<span class="nc" id="L418">        new WaarpFtp4jClient(ftpArgs.getRequested(), ftpArgs.getPort(),</span>
+<span class="nc" id="L419">                             ftpArgs.getUser(), ftpArgs.getPwd(),</span>
+<span class="nc" id="L420">                             ftpArgs.getAcct(), ftpArgs.isPassive(),</span>
+<span class="nc" id="L421">                             ftpArgs.getSsl(), 5000,</span>
+<span class="nc" id="L422">                             (int) Configuration.configuration.getTimeoutCon());</span>
+<span class="nc" id="L423">    boolean status = false;</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">      if (ftpClient.connect()) {</span>
+<span class="nc" id="L426">        status = true;</span>
+<span class="nc" id="L427">        break;</span>
+      }
+    }
+<span class="nc bnc" id="L430" title="All 2 branches missed.">    if (!status) {</span>
+<span class="nc" id="L431">      final OpenR66RunnerErrorException exception =</span>
+          new OpenR66RunnerErrorException(&quot;Cannot connect to remote FTP host&quot;);
+<span class="nc" id="L433">      final R66Result result = new R66Result(exception, session, false,</span>
+                                             ErrorCode.ConnectionImpossible,
+<span class="nc" id="L435">                                             session.getRunner());</span>
+<span class="nc" id="L436">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L437">      futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L438">      logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L439">      return;</span>
+    }
+    try {
+<span class="nc bnc" id="L442" title="All 4 branches missed.">      if (ftpArgs.getCwd() != null &amp;&amp; !ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L443">        ftpClient.makeDir(ftpArgs.getCwd());</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">        if (!ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L445">          logger.warn(&quot;Cannot change od directory: &quot; + ftpArgs.getCwd());</span>
+        }
+      }
+<span class="nc bnc" id="L448" title="All 2 branches missed.">      if (ftpArgs.getPreArgs() != null) {</span>
+<span class="nc" id="L449">        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L451">          logger.debug(&quot;PRE: &quot; + string);</span>
+        }
+      }
+<span class="nc bnc" id="L454" title="All 2 branches missed.">      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),</span>
+<span class="nc" id="L455">                                  ftpArgs.getCodeCommand())) {</span>
+<span class="nc" id="L456">        final OpenR66RunnerErrorException exception =</span>
+            new OpenR66RunnerErrorException(
+                &quot;Cannot transfert file from/to remote FTP host&quot;);
+<span class="nc" id="L459">        final R66Result result =</span>
+            new R66Result(exception, session, false, ErrorCode.TransferError,
+<span class="nc" id="L461">                          session.getRunner());</span>
+<span class="nc" id="L462">        futureCompletion.setResult(result);</span>
+<span class="nc" id="L463">        futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L464">        logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L465">        return;</span>
+      }
+<span class="nc bnc" id="L467" title="All 2 branches missed.">      if (ftpArgs.getDigest() != null) {</span>
+<span class="nc" id="L468">        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());</span>
+<span class="nc" id="L469">        String hashresult = null;</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">        if (values != null) {</span>
+<span class="nc" id="L471">          values = BLANK.split(values[0]);</span>
+<span class="nc bnc" id="L472" title="All 2 branches missed.">          hashresult = values.length &gt; 3? values[1] : values[0];</span>
+        }
+<span class="nc bnc" id="L474" title="All 2 branches missed.">        if (hashresult == null) {</span>
+<span class="nc" id="L475">          final OpenR66RunnerErrorException exception =</span>
+              new OpenR66RunnerErrorException(
+                  &quot;Hash cannot be computed while FTP transfer is done&quot;);
+<span class="nc" id="L478">          final R66Result result =</span>
+              new R66Result(exception, session, false, ErrorCode.TransferError,
+<span class="nc" id="L480">                            session.getRunner());</span>
+<span class="nc" id="L481">          futureCompletion.setResult(result);</span>
+<span class="nc" id="L482">          futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L483">          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L484">          return;</span>
+        }
+        // now check locally
+        String hash;
+        try {
+<span class="nc" id="L489">          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(</span>
+<span class="nc" id="L490">              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));</span>
+<span class="nc" id="L491">        } catch (final IOException e) {</span>
+<span class="nc" id="L492">          hash = null;</span>
+<span class="nc" id="L493">        }</span>
+<span class="nc bnc" id="L494" title="All 4 branches missed.">        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {</span>
+<span class="nc" id="L495">          final OpenR66RunnerErrorException exception =</span>
+              new OpenR66RunnerErrorException(
+                  &quot;Hash not equal while FTP transfer is done&quot;);
+<span class="nc" id="L498">          final R66Result result =</span>
+              new R66Result(exception, session, false, ErrorCode.TransferError,
+<span class="nc" id="L500">                            session.getRunner());</span>
+<span class="nc" id="L501">          futureCompletion.setResult(result);</span>
+<span class="nc" id="L502">          futureCompletion.setFailure(exception);</span>
+<span class="nc" id="L503">          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L504">          return;</span>
+        }
+      }
+<span class="nc bnc" id="L507" title="All 2 branches missed.">      if (ftpArgs.getPostArgs() != null) {</span>
+<span class="nc" id="L508">        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());</span>
+<span class="nc bnc" id="L509" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L510">          logger.debug(&quot;POST: &quot; + string);</span>
+        }
+      }
+    } finally {
+<span class="nc" id="L514">      ftpClient.logout();</span>
+    }
+<span class="nc" id="L516">    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,</span>
+<span class="nc" id="L517">                                           session.getRunner());</span>
+<span class="nc" id="L518">    futureCompletion.setResult(result);</span>
+<span class="nc" id="L519">    logger.info(&quot;FTP transfer in     SUCCESS     &quot; +</span>
+<span class="nc" id="L520">                session.getRunner().toShortString() + &quot;     &lt;REMOTE&gt;&quot; +</span>
+<span class="nc" id="L521">                ftpArgs.getRequested() + &quot;&lt;/REMOTE&gt;&quot;);</span>
+<span class="nc" id="L522">    futureCompletion.setSuccess();</span>
+<span class="nc" id="L523">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

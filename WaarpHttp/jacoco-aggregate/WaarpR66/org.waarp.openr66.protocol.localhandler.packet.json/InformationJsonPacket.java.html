@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>InformationJsonPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet.json</a> &gt; <span class="el_source">InformationJsonPacket.java</span></div><h1>InformationJsonPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet.json;
+
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+
+/**
+ * Information (on request or on filesystem) JSON packet
+ */
+public class InformationJsonPacket extends JsonPacket {
+
+  protected boolean isIdRequest;
+  protected long id;
+  protected boolean isTo;
+  protected byte request;
+  protected String rulename;
+  protected String filename;
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L39">  public InformationJsonPacket() {</span>
+
+<span class="fc" id="L41">  }</span>
+
+  /**
+   * Constructor for Transfer Request Information
+   *
+   * @param id
+   * @param isTo
+   * @param remoteHost
+   */
+<span class="fc" id="L50">  public InformationJsonPacket(long id, boolean isTo, String remoteHost) {</span>
+<span class="fc" id="L51">    setId(id);</span>
+<span class="fc" id="L52">    setTo(isTo);</span>
+<span class="fc" id="L53">    setRulename(remoteHost);</span>
+<span class="fc" id="L54">    setIdRequest(true);</span>
+<span class="fc" id="L55">    setRequestUserPacket();</span>
+<span class="fc" id="L56">  }</span>
+
+  /**
+   * Constructor for File information
+   *
+   * @param request InformationPacket.ASKENUM ordinal (converted to
+   *     byte)
+   * @param rulename
+   * @param filename
+   */
+<span class="fc" id="L66">  public InformationJsonPacket(byte request, String rulename, String filename) {</span>
+<span class="fc" id="L67">    setRequest(request);</span>
+<span class="fc" id="L68">    setFilename(filename);</span>
+<span class="fc" id="L69">    setRulename(rulename);</span>
+<span class="fc" id="L70">    setIdRequest(false);</span>
+<span class="fc" id="L71">    setRequestUserPacket();</span>
+<span class="fc" id="L72">  }</span>
+
+  /**
+   * @return the isIdRequest
+   */
+  public boolean isIdRequest() {
+<span class="fc" id="L78">    return isIdRequest;</span>
+  }
+
+  /**
+   * @param isIdRequest the isIdRequest to True for Transfer Request,
+   *     else
+   *     for File listing
+   */
+  public void setIdRequest(boolean isIdRequest) {
+<span class="fc" id="L87">    this.isIdRequest = isIdRequest;</span>
+<span class="fc" id="L88">  }</span>
+
+  /**
+   * @return the id
+   */
+  public long getId() {
+<span class="fc" id="L94">    return id;</span>
+  }
+
+  /**
+   * @param id the id to set
+   */
+  public void setId(long id) {
+<span class="fc" id="L101">    this.id = id;</span>
+<span class="fc" id="L102">  }</span>
+
+  /**
+   * @return the isTo for Transfer, determine the way of the transfer as
+   *     requester/requested (isTo true/false)
+   */
+  public boolean isTo() {
+<span class="fc" id="L109">    return isTo;</span>
+  }
+
+  /**
+   * @param isTo the isTo to set
+   */
+  public void setTo(boolean isTo) {
+<span class="fc" id="L116">    this.isTo = isTo;</span>
+<span class="fc" id="L117">  }</span>
+
+  /**
+   * @return the request
+   */
+  public byte getRequest() {
+<span class="fc" id="L123">    return request;</span>
+  }
+
+  /**
+   * @param request the request to set
+   */
+  public void setRequest(byte request) {
+<span class="fc" id="L130">    this.request = request;</span>
+<span class="fc" id="L131">  }</span>
+
+  /**
+   * @return the rulename
+   */
+  public String getRulename() {
+<span class="fc" id="L137">    return rulename;</span>
+  }
+
+  /**
+   * @param rulename the rulename to set (if Transfer and Json
+   *     requester/requested (isTo true/false))
+   */
+  public void setRulename(String rulename) {
+<span class="fc" id="L145">    this.rulename = rulename;</span>
+<span class="fc" id="L146">  }</span>
+
+  /**
+   * @return the filename
+   */
+  public String getFilename() {
+<span class="fc" id="L152">    return filename;</span>
+  }
+
+  /**
+   * @param filename the filename to set
+   */
+  public void setFilename(String filename) {
+<span class="fc" id="L159">    this.filename = filename;</span>
+<span class="fc" id="L160">  }</span>
+
+  @Override
+  public void setRequestUserPacket() {
+<span class="fc" id="L164">    setRequestUserPacket(LocalPacketFactory.INFORMATIONPACKET);</span>
+<span class="fc" id="L165">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RegexFileFilter.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp XMLEditor</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.filemonitor</a> &gt; <span class="el_source">RegexFileFilter.java</span></div><h1>RegexFileFilter.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.filemonitor;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.regex.Pattern;
+
+/**
+ * Example of FileFilter using regex on filename and possible Size
+ */
+public class RegexFileFilter implements FileFilter {
+  public static final String REGEX_XML_EXTENSION = &quot;.*\\.[xX][mM][lL]$&quot;;
+
+  protected final Pattern pattern;
+  protected long minimalSize;
+
+<span class="nc" id="L35">  public RegexFileFilter(String regex) {</span>
+<span class="nc" id="L36">    pattern = Pattern.compile(regex);</span>
+<span class="nc" id="L37">  }</span>
+
+<span class="nc" id="L39">  public RegexFileFilter(String regex, long minimalSize) {</span>
+<span class="nc" id="L40">    pattern = Pattern.compile(regex);</span>
+<span class="nc" id="L41">    this.minimalSize = minimalSize;</span>
+<span class="nc" id="L42">  }</span>
+
+<span class="nc" id="L44">  public RegexFileFilter(long minimalSize) {</span>
+<span class="nc" id="L45">    pattern = null;</span>
+<span class="nc" id="L46">    this.minimalSize = minimalSize;</span>
+<span class="nc" id="L47">  }</span>
+
+  @Override
+  public boolean accept(File pathname) {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">    if (pathname.isFile()) {</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">      if (pattern != null) {</span>
+<span class="nc bnc" id="L53" title="All 4 branches missed.">        return pattern.matcher(pathname.getPath()).matches() &amp;&amp;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">               (minimalSize == 0 || pathname.length() &gt;= minimalSize);</span>
+      }
+<span class="nc bnc" id="L56" title="All 4 branches missed.">      return minimalSize == 0 || pathname.length() &gt;= minimalSize;</span>
+    }
+<span class="nc" id="L58">    return false;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

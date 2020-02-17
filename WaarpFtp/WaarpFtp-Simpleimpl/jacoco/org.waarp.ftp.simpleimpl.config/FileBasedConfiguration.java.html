@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileBasedConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.simpleimpl.config</a> &gt; <span class="el_source">FileBasedConfiguration.java</span></div><h1>FileBasedConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.simpleimpl.config;
+
+import io.netty.handler.traffic.AbstractTrafficShapingHandler;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.file.FileParameterInterface;
+import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.file.filesystembased.specific.FilesystemBasedDirJdkAbstract;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.control.BusinessHandler;
+import org.waarp.ftp.core.data.handler.DataBusinessHandler;
+import org.waarp.ftp.simpleimpl.file.SimpleAuth;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * FtpConfiguration based on a XML file
+ */
+public class FileBasedConfiguration extends FtpConfiguration {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);</span>
+
+  /**
+   * SERVER PASSWORD (shutdown)
+   */
+  private static final String XML_SERVER_PSSWD = &quot;/config/serverpasswd&quot;;
+
+  /**
+   * SERVER PORT
+   */
+  private static final String XML_SERVER_PORT = &quot;/config/serverport&quot;;
+  /**
+   * SERVER ADDRESS if any
+   */
+  private static final String XML_SERVER_ADDRESS = &quot;/config/serveraddress&quot;;
+  /**
+   * Base Directory
+   */
+  private static final String XML_SERVER_HOME = &quot;/config/serverhome&quot;;
+
+  /**
+   * Default number of threads in pool for Server.
+   */
+  private static final String XML_SERVER_THREAD = &quot;/config/serverthread&quot;;
+
+  /**
+   * Default number of threads in pool for Client.
+   */
+  private static final String XML_CLIENT_THREAD = &quot;/config/clientthread&quot;;
+
+  /**
+   * Limit per session
+   */
+  private static final String XML_LIMITSESSION = &quot;/config/sessionlimit&quot;;
+
+  /**
+   * Limit global
+   */
+  private static final String XML_LIMITGLOBAL = &quot;/config/globallimit&quot;;
+
+  /**
+   * Nb of milliseconds after connection is in timeout
+   */
+  private static final String XML_TIMEOUTCON = &quot;/config/timeoutcon&quot;;
+
+  /**
+   * Should a file be deleted when a Store like command is aborted
+   */
+  private static final String XML_DELETEONABORT = &quot;/config/deleteonabort&quot;;
+
+  /**
+   * Should a file MD5 SHA1 be computed using NIO
+   */
+  private static final String XML_USENIO = &quot;/config/usenio&quot;;
+
+  /**
+   * Should a file MD5 be computed using FastMD5
+   */
+  private static final String XML_USEFASTMD5 = &quot;/config/usefastmd5&quot;;
+
+  /**
+   * Size by default of block size for receive/sending files. Should be a
+   * multiple of 8192 (maximum = 64K due to
+   * block limitation to 2 bytes)
+   */
+  private static final String XML_BLOCKSIZE = &quot;/config/blocksize&quot;;
+
+  /**
+   * RANGE of PORT for Passive Mode
+   */
+  private static final String XML_RANGE_PORT_MIN = &quot;/config/rangeport/min&quot;;
+
+  /**
+   * RANGE of PORT for Passive Mode
+   */
+  private static final String XML_RANGE_PORT_MAX = &quot;/config/rangeport/max&quot;;
+
+  /**
+   * Authentication
+   */
+  private static final String XML_AUTHENTIFICATION_FILE = &quot;/config/authentfile&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_BASED = &quot;/authent/entry&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_USER = &quot;user&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_PSSWD = &quot;passwd&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_ACCOUNT = &quot;account&quot;;
+
+  /**
+   * Authentication Fields
+   */
+  private static final String XML_AUTHENTIFICATION_ADMIN = &quot;admin&quot;;
+
+  /**
+   * RANGE of PORT for Passive Mode
+   */
+  private CircularIntValue rangePort;
+
+  /**
+   * All authentications
+   */
+<span class="fc" id="L167">  private final ConcurrentHashMap&lt;String, SimpleAuth&gt; authentications =</span>
+      new ConcurrentHashMap&lt;String, SimpleAuth&gt;();
+
+  /**
+   * @param classtype
+   * @param businessHandler class that will be used for
+   *     BusinessHandler
+   * @param dataBusinessHandler class that will be used for
+   *     DataBusinessHandler
+   * @param fileParameter the FileParameter to use
+   */
+  public FileBasedConfiguration(Class&lt;?&gt; classtype,
+                                Class&lt;? extends BusinessHandler&gt; businessHandler,
+                                Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler,
+                                FileParameterInterface fileParameter) {
+<span class="fc" id="L182">    super(classtype, businessHandler, dataBusinessHandler, fileParameter);</span>
+<span class="fc" id="L183">    computeNbThreads();</span>
+<span class="fc" id="L184">  }</span>
+
+  /**
+   * Initiate the configuration from the xml file
+   *
+   * @param filename
+   *
+   * @return True if OK
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public boolean setConfigurationFromXml(String filename) {
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L198">      document = new SAXReader().read(filename);</span>
+<span class="nc" id="L199">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L200">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
+<span class="nc" id="L201">      return false;</span>
+<span class="fc" id="L202">    }</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L204">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L205">      return false;</span>
+    }
+    Node nodebase;
+    Node node;
+<span class="fc" id="L209">    node = document.selectSingleNode(XML_SERVER_PSSWD);</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L211">      logger.error(&quot;Unable to find Password in Config file: &quot; + filename);</span>
+<span class="nc" id="L212">      return false;</span>
+    }
+<span class="fc" id="L214">    final String passwd = node.getText();</span>
+<span class="fc" id="L215">    setPassword(passwd);</span>
+<span class="fc" id="L216">    node = document.selectSingleNode(XML_SERVER_PORT);</span>
+<span class="fc" id="L217">    int port = 21;</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L219">      port = Integer.parseInt(node.getText());</span>
+    }
+<span class="fc" id="L221">    setServerPort(port);</span>
+<span class="fc" id="L222">    node = document.selectSingleNode(XML_SERVER_ADDRESS);</span>
+<span class="fc" id="L223">    String address = null;</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="nc" id="L225">      address = node.getText();</span>
+    }
+<span class="fc" id="L227">    setServerAddress(address);</span>
+<span class="fc" id="L228">    node = document.selectSingleNode(XML_SERVER_HOME);</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L230">      logger.error(&quot;Unable to find Home in Config file: &quot; + filename);</span>
+<span class="nc" id="L231">      return false;</span>
+    }
+<span class="fc" id="L233">    final String path = node.getText();</span>
+<span class="fc" id="L234">    final File file = new File(path);</span>
+    try {
+<span class="fc" id="L236">      setBaseDirectory(AbstractDir.normalizePath(file.getCanonicalPath()));</span>
+<span class="nc" id="L237">    } catch (final IOException e1) {</span>
+<span class="nc" id="L238">      logger.error(&quot;Unable to set Home in Config file: &quot; + filename);</span>
+<span class="nc" id="L239">      return false;</span>
+<span class="fc" id="L240">    }</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">    if (!file.isDirectory()) {</span>
+<span class="nc" id="L242">      logger.error(&quot;Home is not a directory in Config file: &quot; + filename);</span>
+<span class="nc" id="L243">      return false;</span>
+    }
+<span class="fc" id="L245">    node = document.selectSingleNode(XML_SERVER_THREAD);</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L247">      setServerThread(Integer.parseInt(node.getText()));</span>
+    }
+<span class="fc" id="L249">    node = document.selectSingleNode(XML_CLIENT_THREAD);</span>
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="nc" id="L251">      setClientThread(Integer.parseInt(node.getText()));</span>
+    }
+<span class="pc bpc" id="L253" title="2 of 4 branches missed.">    if (getServerThread() == 0 || getClientThread() == 0) {</span>
+<span class="nc" id="L254">      computeNbThreads();</span>
+    }
+<span class="fc" id="L256">    node = document.selectSingleNode(XML_LIMITGLOBAL);</span>
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L258">      serverGlobalReadLimit = Long.parseLong(node.getText());</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">      if (serverGlobalReadLimit &lt;= 0) {</span>
+<span class="fc" id="L260">        serverGlobalReadLimit = 0;</span>
+      }
+<span class="fc" id="L262">      serverGlobalWriteLimit = serverGlobalReadLimit;</span>
+<span class="fc" id="L263">      logger.warn(&quot;Global Limit: {}&quot;, serverGlobalReadLimit);</span>
+    }
+<span class="fc" id="L265">    node = document.selectSingleNode(XML_LIMITSESSION);</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L267">      serverChannelReadLimit = Long.parseLong(node.getText());</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">      if (serverChannelReadLimit &lt;= 0) {</span>
+<span class="fc" id="L269">        serverChannelReadLimit = 0;</span>
+      }
+<span class="fc" id="L271">      serverChannelWriteLimit = serverChannelReadLimit;</span>
+<span class="fc" id="L272">      logger.warn(&quot;SessionInterface Limit: {}&quot;, serverChannelReadLimit);</span>
+    }
+<span class="fc" id="L274">    delayLimit = AbstractTrafficShapingHandler.DEFAULT_CHECK_INTERVAL;</span>
+<span class="fc" id="L275">    node = document.selectSingleNode(XML_TIMEOUTCON);</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L277">      setTimeoutCon(Integer.parseInt(node.getText()));</span>
+    }
+<span class="fc" id="L279">    node = document.selectSingleNode(XML_DELETEONABORT);</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">      setDeleteOnAbort(Integer.parseInt(node.getText()) == 1);</span>
+    }
+<span class="fc" id="L283">    node = document.selectSingleNode(XML_USENIO);</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L285">      FilesystemBasedFileParameterImpl.useNio =</span>
+<span class="pc bpc" id="L286" title="1 of 2 branches missed.">          Integer.parseInt(node.getText()) == 1;</span>
+    }
+<span class="fc" id="L288">    node = document.selectSingleNode(XML_USEFASTMD5);</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L290">      FilesystemBasedDigest</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">          .setUseFastMd5(Integer.parseInt(node.getText()) == 1);</span>
+    } else {
+<span class="nc" id="L293">      FilesystemBasedDigest.setUseFastMd5(false);</span>
+    }
+<span class="fc" id="L295">    node = document.selectSingleNode(XML_BLOCKSIZE);</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L297">      setBlocksize(Integer.parseInt(node.getText()));</span>
+    }
+<span class="fc" id="L299">    node = document.selectSingleNode(XML_RANGE_PORT_MIN);</span>
+<span class="fc" id="L300">    int min = 100;</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L302">      min = Integer.parseInt(node.getText());</span>
+    }
+<span class="fc" id="L304">    node = document.selectSingleNode(XML_RANGE_PORT_MAX);</span>
+<span class="fc" id="L305">    int max = 65535;</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L307">      max = Integer.parseInt(node.getText());</span>
+    }
+<span class="fc" id="L309">    final CircularIntValue circularIntValue = new CircularIntValue(min, max);</span>
+<span class="fc" id="L310">    setRangePort(circularIntValue);</span>
+    // We use Apache Commons IO
+<span class="fc" id="L312">    FilesystemBasedDirJdkAbstract.ueApacheCommonsIo = true;</span>
+<span class="fc" id="L313">    node = document.selectSingleNode(XML_AUTHENTIFICATION_FILE);</span>
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L315">      logger.error(</span>
+          &quot;Unable to find Authentication file in Config file: &quot; + filename);
+<span class="nc" id="L317">      return false;</span>
+    }
+<span class="fc" id="L319">    final String fileauthent = node.getText();</span>
+<span class="fc" id="L320">    document = null;</span>
+    try {
+<span class="fc" id="L322">      document = new SAXReader().read(fileauthent);</span>
+<span class="nc" id="L323">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L324">      logger.error(&quot;Unable to read the XML Authentication file: &quot; + fileauthent,</span>
+                   e);
+<span class="nc" id="L326">      return false;</span>
+<span class="fc" id="L327">    }</span>
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L329">      logger</span>
+<span class="nc" id="L330">          .error(&quot;Unable to read the XML Authentication file: &quot; + fileauthent);</span>
+<span class="nc" id="L331">      return false;</span>
+    }
+<span class="fc" id="L333">    final List&lt;Node&gt; list = document.selectNodes(XML_AUTHENTIFICATION_BASED);</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">    for (final Node value : list) {</span>
+<span class="fc" id="L335">      nodebase = value;</span>
+<span class="fc" id="L336">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_USER);</span>
+<span class="pc bpc" id="L337" title="1 of 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L338">        continue;</span>
+      }
+<span class="fc" id="L340">      final String user = node.getText();</span>
+<span class="fc" id="L341">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_PSSWD);</span>
+<span class="pc bpc" id="L342" title="1 of 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L343">        continue;</span>
+      }
+<span class="fc" id="L345">      final String userpasswd = node.getText();</span>
+<span class="fc" id="L346">      node = nodebase.selectSingleNode(XML_AUTHENTIFICATION_ADMIN);</span>
+<span class="fc" id="L347">      boolean isAdmin = false;</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">      if (node != null) {</span>
+<span class="fc" id="L349">        isAdmin = &quot;1&quot;.equals(node.getText());</span>
+      }
+<span class="fc" id="L351">      final List&lt;Node&gt; listaccount =</span>
+<span class="fc" id="L352">          nodebase.selectNodes(XML_AUTHENTIFICATION_ACCOUNT);</span>
+<span class="fc" id="L353">      String[] account = null;</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">      if (!listaccount.isEmpty()) {</span>
+<span class="fc" id="L355">        account = new String[listaccount.size()];</span>
+<span class="fc" id="L356">        int i = 0;</span>
+<span class="fc bfc" id="L357" title="All 2 branches covered.">        for (final Node item : listaccount) {</span>
+<span class="fc" id="L358">          node = item;</span>
+<span class="fc" id="L359">          account[i] = node.getText();</span>
+          // logger.debug(&quot;User: {} Acct: {}&quot;, user, account[i])
+<span class="fc" id="L361">          i++;</span>
+<span class="fc" id="L362">        }</span>
+      }
+<span class="fc" id="L364">      final SimpleAuth auth = new SimpleAuth(user, userpasswd, account);</span>
+<span class="fc" id="L365">      auth.setAdmin(isAdmin);</span>
+<span class="fc" id="L366">      authentications.put(user, auth);</span>
+<span class="fc" id="L367">    }</span>
+<span class="fc" id="L368">    return true;</span>
+  }
+
+  /**
+   * @param user
+   *
+   * @return the SimpleAuth if any for this user
+   */
+  public SimpleAuth getSimpleAuth(String user) {
+<span class="fc" id="L377">    return authentications.get(user);</span>
+  }
+
+  /**
+   * @see FtpConfiguration#getNextRangePort()
+   */
+  @Override
+  public int getNextRangePort() {
+<span class="fc" id="L385">    return rangePort.getNext();</span>
+  }
+
+  /**
+   * @param rangePort the range of available ports for Passive
+   *     connections
+   */
+  private void setRangePort(CircularIntValue rangePort) {
+<span class="fc" id="L393">    this.rangePort = rangePort;</span>
+<span class="fc" id="L394">  }</span>
+
+  @Override
+  public void inShutdownProcess() {
+    // nothing to do
+<span class="fc" id="L399">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

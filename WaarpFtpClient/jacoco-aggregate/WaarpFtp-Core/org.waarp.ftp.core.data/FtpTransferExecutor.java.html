@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpTransferExecutor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.data</a> &gt; <span class="el_source">FtpTransferExecutor.java</span></div><h1>FtpTransferExecutor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.data;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.core.command.FtpCommandCode;
+import org.waarp.ftp.core.exception.FtpNoConnectionException;
+import org.waarp.ftp.core.exception.FtpNoFileException;
+import org.waarp.ftp.core.session.FtpSession;
+
+import java.util.List;
+
+/**
+ * Class that implements the execution of the Transfer itself.
+ */
+class FtpTransferExecutor implements Runnable {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(FtpTransferExecutor.class);</span>
+
+  /**
+   * Ftp SessionInterface
+   */
+  private final FtpSession session;
+
+  /**
+   * FtpTransfer
+   */
+  private final FtpTransfer executeTransfer;
+
+  /**
+   * Create an executor and launch it
+   *
+   * @param session
+   * @param executeTransfer
+   */
+<span class="fc" id="L58">  FtpTransferExecutor(FtpSession session, FtpTransfer executeTransfer) {</span>
+<span class="fc" id="L59">    this.session = session;</span>
+<span class="fc" id="L60">    this.executeTransfer = executeTransfer;</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (this.executeTransfer == null) {</span>
+<span class="nc" id="L62">      this.session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+<span class="nc" id="L63">      logger.error(&quot;No Execution to do&quot;);</span>
+    }
+<span class="fc" id="L65">  }</span>
+
+  /**
+   * Internal method, should not be called directly
+   */
+  @Override
+  public void run() {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (executeTransfer == null) {</span>
+<span class="nc" id="L73">      session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+<span class="nc" id="L74">      logger.error(&quot;No Execution to do&quot;);</span>
+<span class="nc" id="L75">      return;</span>
+    }
+    try {
+<span class="fc" id="L78">      runNextCommand();</span>
+<span class="nc" id="L79">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L80">      logger.error(&quot;Executor Interrupted {}&quot;, e.getMessage());</span>
+<span class="fc" id="L81">    }</span>
+<span class="fc" id="L82">  }</span>
+
+  /**
+   * Run the next command or wait for the next
+   *
+   * @throws InterruptedException
+   */
+  private void runNextCommand() throws InterruptedException {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">    if (FtpCommandCode.isStoreLikeCommand(executeTransfer.getCommand())) {</span>
+      // The command is implicitly done by receiving message
+<span class="fc" id="L92">      waitForCommand();</span>
+      // Store set end
+      try {
+<span class="fc" id="L95">        session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+<span class="nc" id="L96">      } catch (final NullPointerException e) {</span>
+        // ignore, due probably to an already clean session
+<span class="pc" id="L98">      }</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">    } else if (FtpCommandCode.isListLikeCommand(executeTransfer.getCommand())) {</span>
+      // No wait for Command since the answer is already there
+<span class="fc" id="L101">      final List&lt;String&gt; list = executeTransfer.getInfo();</span>
+<span class="fc" id="L102">      final StringBuilder builder = new StringBuilder();</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">      for (final String newfileInfo : list) {</span>
+<span class="fc" id="L104">        builder.append(newfileInfo).append(ReplyCode.CRLF);</span>
+<span class="fc" id="L105">      }</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">      if (builder.length() == 0) {</span>
+<span class="nc" id="L107">        builder.append(ReplyCode.CRLF);</span>
+      }
+<span class="fc" id="L109">      final String message = builder.toString();</span>
+<span class="fc" id="L110">      boolean status = false;</span>
+      try {
+<span class="fc" id="L112">        status =</span>
+<span class="fc" id="L113">            session.getDataConn().getDataNetworkHandler().writeMessage(message);</span>
+<span class="nc" id="L114">      } catch (final FtpNoConnectionException e) {</span>
+<span class="nc" id="L115">        logger.error(&quot;No Connection but should not be!&quot;, e);</span>
+<span class="fc" id="L116">      }</span>
+      // Set status for check, no wait for the command
+<span class="fc" id="L118">      executeTransfer.setStatus(status);</span>
+      // must explicitly set the end and no wait
+<span class="fc" id="L120">      session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    } else if (FtpCommandCode.isRetrLikeCommand(executeTransfer.getCommand())) {</span>
+      // The command must be launched
+      try {
+<span class="fc" id="L124">        executeTransfer.getFtpFile().trueRetrieve();</span>
+<span class="nc" id="L125">      } catch (final FtpNoFileException e) {</span>
+        // an error occurs
+<span class="nc" id="L127">        logger.debug(e);</span>
+<span class="nc" id="L128">        session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+<span class="fc" id="L129">      }</span>
+<span class="fc" id="L130">      logger.debug(&quot;wait for end of command&quot;);</span>
+<span class="fc" id="L131">      waitForCommand();</span>
+<span class="fc" id="L132">      logger.debug(&quot;RETR ending&quot;);</span>
+      // RETR set end
+      try {
+<span class="fc" id="L135">        session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+<span class="nc" id="L136">      } catch (final NullPointerException e) {</span>
+        // ignore, due probably to an already clean session
+<span class="pc" id="L138">      }</span>
+    } else {
+      // This is an error as unknown transfer command
+<span class="nc" id="L141">      session.getDataConn().getFtpTransferControl().setEndOfTransfer();</span>
+    }
+<span class="fc" id="L143">  }</span>
+
+  /**
+   * Wait for the command to finish
+   *
+   * @throws InterruptedException
+   */
+  private void waitForCommand() throws InterruptedException {
+<span class="fc" id="L151">    session.getDataConn().getFtpTransferControl().waitForEndOfTransfer();</span>
+<span class="fc" id="L152">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

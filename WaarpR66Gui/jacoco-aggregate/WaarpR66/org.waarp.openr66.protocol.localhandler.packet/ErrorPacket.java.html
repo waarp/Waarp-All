@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ErrorPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">ErrorPacket.java</span></div><h1>ErrorPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * Error Message class for packet
+ * &lt;p&gt;
+ * 2 strings+1 error code: sheader,smiddle,code
+ */
+public class ErrorPacket extends AbstractLocalPacket {
+  public static final int IGNORECODE = 0;
+
+  public static final int CLOSECODE = 1;
+
+  public static final int FORWARDCODE = 2;
+
+  public static final int FORWARDCLOSECODE = 3;
+
+  private final String sheader;
+
+  private final String smiddle;
+
+  private final int code;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new ErrorPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static ErrorPacket createFromBuffer(int headerLength, int middleLength,
+                                             int endLength, ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L60">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L61">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L63">      buf.readBytes(bheader);</span>
+    }
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="fc" id="L66">      buf.readBytes(bmiddle);</span>
+    }
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (endLength != 4) {</span>
+<span class="nc" id="L69">      throw new OpenR66ProtocolPacketException(&quot;Packet not correct&quot;);</span>
+    }
+<span class="fc" id="L71">    return new ErrorPacket(new String(bheader), new String(bmiddle),</span>
+<span class="fc" id="L72">                           buf.readInt());</span>
+  }
+
+  /**
+   * @param header
+   * @param middle
+   * @param code
+   */
+<span class="fc" id="L80">  public ErrorPacket(String header, String middle, int code) {</span>
+<span class="fc" id="L81">    sheader = header;</span>
+<span class="fc" id="L82">    smiddle = middle;</span>
+<span class="fc" id="L83">    this.code = code;</span>
+<span class="fc" id="L84">  }</span>
+
+  @Override
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L89">    end = Unpooled.buffer(4);</span>
+<span class="fc" id="L90">    end.writeInt(code);</span>
+<span class="fc" id="L91">  }</span>
+
+  @Override
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    if (sheader != null) {</span>
+<span class="fc" id="L97">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
+    }
+<span class="fc" id="L99">  }</span>
+
+  @Override
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">    if (smiddle != null) {</span>
+<span class="fc" id="L105">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
+    }
+<span class="fc" id="L107">  }</span>
+
+  @Override
+  public String toString() {
+<span class="fc" id="L111">    return &quot;ErrorPacket:(&quot; + code + ':' + smiddle + &quot;) &quot; + sheader;</span>
+  }
+
+  @Override
+  public byte getType() {
+<span class="fc" id="L116">    return LocalPacketFactory.ERRORPACKET;</span>
+  }
+
+  /**
+   * @return the sheader
+   */
+  public String getSheader() {
+<span class="fc" id="L123">    return sheader;</span>
+  }
+
+  /**
+   * @return the smiddle
+   */
+  public String getSmiddle() {
+<span class="fc" id="L130">    return smiddle;</span>
+  }
+
+  /**
+   * @return the code
+   */
+  public int getCode() {
+<span class="fc" id="L137">    return code;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

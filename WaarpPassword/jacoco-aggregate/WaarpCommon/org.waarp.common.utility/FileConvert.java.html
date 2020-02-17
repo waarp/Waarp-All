@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FileConvert.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Password Management GUI and Console</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">FileConvert.java</span></div><h1>FileConvert.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+/**
+ * Description: Converts Unix files to Dos and vice versa
+ */
+
+import com.google.common.io.Files;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+public class FileConvert extends Thread {
+  /**
+   * Internal Logger
+   */
+  private static volatile WaarpLogger logger;
+
+  private final boolean unix2dos;
+  private final boolean recursive;
+<span class="fc" id="L49">  private File tmpDir = new File(System.getProperty(&quot;java.io.tmpdir&quot;));</span>
+  private final List&lt;File&gt; files;
+
+  /**
+   * @param files list of files
+   * @param unix2dos True for Unix2Dos, False for Dos2Unix
+   * @param recursive True for Recursive from files, else unitary
+   *     files
+   * @param tmpDir if not null, specific tmp directory
+   */
+  public FileConvert(List&lt;File&gt; files, boolean unix2dos, boolean recursive,
+<span class="fc" id="L60">                     File tmpDir) {</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">    if (logger == null) {</span>
+<span class="fc" id="L62">      logger = WaarpLoggerFactory.getLogger(FileConvert.class);</span>
+    }
+<span class="fc" id="L64">    this.files = files;</span>
+<span class="fc" id="L65">    this.unix2dos = unix2dos;</span>
+<span class="fc" id="L66">    this.recursive = recursive;</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">    if (tmpDir != null) {</span>
+<span class="nc" id="L68">      this.tmpDir = tmpDir;</span>
+    }
+<span class="fc" id="L70">  }</span>
+
+  /**
+   * Direct call
+   *
+   * @param args
+   */
+  public static void main(String[] args) {
+<span class="nc" id="L78">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L80">      logger = WaarpLoggerFactory.getLogger(FileConvert.class);</span>
+    }
+
+<span class="nc" id="L83">    final ArrayList&lt;File&gt; files = new ArrayList&lt;File&gt;();</span>
+<span class="nc" id="L84">    boolean unix2dos = false;</span>
+<span class="nc" id="L85">    boolean dos2unix = false;</span>
+<span class="nc" id="L86">    boolean recursive = false;</span>
+<span class="nc" id="L87">    File tmpDir = null;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="nc" id="L89">      if (Pattern</span>
+<span class="nc" id="L90">          .compile(&quot;^-(u|-unix2dos|-unixtodos)$&quot;, Pattern.CASE_INSENSITIVE)</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">          .matcher(args[i]).matches()) {</span>
+<span class="nc" id="L92">        unix2dos = true;</span>
+<span class="nc" id="L93">      } else if (Pattern</span>
+<span class="nc" id="L94">          .compile(&quot;^-(d|-dos2unix|-dostounix)$&quot;, Pattern.CASE_INSENSITIVE)</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">          .matcher(args[i]).matches()) {</span>
+<span class="nc" id="L96">        dos2unix = true;</span>
+<span class="nc" id="L97">      } else if (Pattern.compile(&quot;^-(r|-recursive)$&quot;, Pattern.CASE_INSENSITIVE)</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                        .matcher(args[i]).matches()) {</span>
+<span class="nc" id="L99">        recursive = true;</span>
+<span class="nc" id="L100">      } else if (Pattern.compile(&quot;^-(t|-temporary)$&quot;, Pattern.CASE_INSENSITIVE)</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">                        .matcher(args[i]).matches()) {</span>
+<span class="nc" id="L102">        tmpDir = new File(args[++i]);</span>
+      } else {
+<span class="nc" id="L104">        files.add(new File(args[i]));</span>
+      }
+    }
+<span class="nc bnc" id="L107" title="All 4 branches missed.">    if (unix2dos &amp;&amp; dos2unix) {</span>
+<span class="nc" id="L108">      syntax();</span>
+<span class="nc" id="L109">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc bnc" id="L111" title="All 4 branches missed.">    if (!unix2dos &amp;&amp; !dos2unix) {</span>
+<span class="nc" id="L112">      syntax();</span>
+<span class="nc" id="L113">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc" id="L115">    final FileConvert fileConvert =</span>
+        new FileConvert(files, unix2dos, recursive, tmpDir);
+<span class="nc" id="L117">    fileConvert.run();</span>
+<span class="nc" id="L118">  }</span>
+
+  /**
+   * Use parameters given in instantiation
+   */
+  @Override
+  public void run() {
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">    if (files == null) {</span>
+<span class="nc" id="L126">      return;</span>
+    }
+<span class="fc bfc" id="L128" title="All 2 branches covered.">    for (final File file : files) {</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">      if (file.isDirectory()) {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (recursive) {</span>
+<span class="nc" id="L131">          recursive(file);</span>
+        }
+      } else {
+<span class="fc" id="L134">        convert(file, unix2dos);</span>
+      }
+<span class="fc" id="L136">    }</span>
+<span class="fc" id="L137">  }</span>
+
+  private void recursive(File directory) {
+<span class="nc" id="L140">    final File[] listFiles = directory.listFiles();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    for (final File file : listFiles) {</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (file.isDirectory()) {</span>
+<span class="nc" id="L143">        recursive(file);</span>
+      } else {
+<span class="nc" id="L145">        convert(file, unix2dos);</span>
+      }
+    }
+<span class="nc" id="L148">  }</span>
+
+  private boolean copyFile(File source, File destination) {
+    try {
+<span class="fc" id="L152">      Files.copy(source, destination);</span>
+<span class="fc" id="L153">      return true;</span>
+<span class="nc" id="L154">    } catch (IOException e) {</span>
+<span class="nc" id="L155">      logger.error(&quot;FileConvert copy back in error&quot;, e);</span>
+<span class="nc" id="L156">      return false;</span>
+    }
+  }
+
+  /**
+   * Convert Unix2Dos or Dos2Unix file in place, according to second argument
+   *
+   * @param input File to change
+   * @param unix2dos True for UnixToDos, False for DosToUnix
+   *
+   * @return True if OK
+   */
+  public boolean convert(File input, boolean unix2dos) {
+<span class="fc bfc" id="L169" title="All 2 branches covered.">    if (unix2dos) {</span>
+<span class="fc" id="L170">      logger.info(&quot;unix2Dos conversion of '&quot; + input + &quot;'... &quot;);</span>
+    } else {
+<span class="fc" id="L172">      logger.info(&quot;dos2Unix conversion of '&quot; + input + &quot;'... &quot;);</span>
+    }
+<span class="fc" id="L174">    FileInputStream fis = null;</span>
+<span class="fc" id="L175">    FileOutputStream fos = null;</span>
+<span class="fc" id="L176">    File tmpFile = null;</span>
+    try {
+<span class="fc" id="L178">      fis = new FileInputStream(input);</span>
+<span class="fc" id="L179">      tmpFile =</span>
+<span class="fc" id="L180">          File.createTempFile(&quot;FileConevrt_&quot; + input.getName(), null, tmpDir);</span>
+<span class="fc" id="L181">      fos = new FileOutputStream(tmpFile);</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">      if (unix2dos) {</span>
+<span class="fc" id="L183">        byte pb = -1;</span>
+        byte b;
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        while ((b = (byte) fis.read()) != -1) {</span>
+<span class="pc bpc" id="L186" title="1 of 4 branches missed.">          if (b == 10 &amp;&amp; pb != 13) {</span>
+<span class="fc" id="L187">            fos.write((byte) 13);</span>
+          }
+<span class="fc" id="L189">          fos.write(b);</span>
+<span class="fc" id="L190">          pb = b;</span>
+        }
+<span class="fc" id="L192">      } else {</span>
+        byte b;
+        byte nb;
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        while ((b = (byte) fis.read()) != -1) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">          if (b == 13) {</span>
+<span class="fc" id="L197">            nb = (byte) fis.read();</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">            if (nb == -1) {</span>
+<span class="nc" id="L199">              fos.write(b);</span>
+            } else {
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">              if (nb != 10) {</span>
+<span class="nc" id="L202">                fos.write(b);</span>
+              }
+<span class="fc" id="L204">              fos.write(nb);</span>
+            }
+          } else {
+<span class="fc" id="L207">            fos.write(b);</span>
+          }
+        }
+      }
+<span class="fc" id="L211">      final boolean result = copyFile(tmpFile, input);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">      if (result) {</span>
+<span class="fc" id="L213">        logger.info(&quot;done.&quot;);</span>
+      } else {
+<span class="nc" id="L215">        logger.error(&quot;FileConvert in error during final copy: &quot; + input + ':' +</span>
+                     unix2dos);
+      }
+<span class="fc" id="L218">      return result;</span>
+<span class="nc" id="L219">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L220">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
+<span class="nc" id="L221">      return false;</span>
+<span class="nc" id="L222">    } catch (final IOException e) {</span>
+<span class="nc" id="L223">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
+<span class="nc" id="L224">      return false;</span>
+    } finally {
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">      if (tmpFile != null) {</span>
+<span class="fc" id="L227">        tmpFile.delete();</span>
+      }
+<span class="fc" id="L229">      FileUtils.close(fis);</span>
+<span class="fc" id="L230">      FileUtils.close(fos);</span>
+    }
+  }
+
+  private static void syntax() {
+<span class="nc" id="L235">    logger.error(</span>
+        &quot;Syntax: Covnert -(u|-nix2dos|-unixtodos) | -(d|-dos2unix|-dostounix) -(t|-temporary) directory  -(r|-recursive) file directory&quot;);
+<span class="nc" id="L237">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

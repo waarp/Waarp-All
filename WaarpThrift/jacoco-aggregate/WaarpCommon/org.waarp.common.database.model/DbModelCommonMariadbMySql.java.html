@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelCommonMariadbMySql.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Thrift</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.model</a> &gt; <span class="el_source">DbModelCommonMariadbMySql.java</span></div><h1>DbModelCommonMariadbMySql.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.model;
+
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.DbDataModel;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * MariaDB/MySQL common Database Model implementation
+ */
+<span class="nc" id="L41">public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {</span>
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L46">      WaarpLoggerFactory.getLogger(DbModelCommonMariadbMySql.class);</span>
+
+<span class="nc" id="L48">  protected enum DBType {</span>
+<span class="nc" id="L49">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;), VARCHAR(Types.VARCHAR, &quot; VARCHAR(8096) &quot;),</span>
+    /**
+     * Used in replacement of VARCHAR for MYSQL/MARIADB (limitation of size
+     * if
+     * in Primary Key)
+     */
+<span class="nc" id="L55">    NVARCHAR(Types.VARCHAR, &quot; VARCHAR(255) &quot;),</span>
+<span class="nc" id="L56">    LONGVARCHAR(Types.LONGVARCHAR, &quot; TEXT &quot;), BIT(Types.BIT, &quot; BOOLEAN &quot;),</span>
+<span class="nc" id="L57">    TINYINT(Types.TINYINT, &quot; TINYINT &quot;), SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;),</span>
+<span class="nc" id="L58">    INTEGER(Types.INTEGER, &quot; INTEGER &quot;), BIGINT(Types.BIGINT, &quot; BIGINT &quot;),</span>
+<span class="nc" id="L59">    REAL(Types.REAL, &quot; FLOAT &quot;), DOUBLE(Types.DOUBLE, &quot; DOUBLE &quot;),</span>
+<span class="nc" id="L60">    VARBINARY(Types.VARBINARY, &quot; BLOB &quot;), DATE(Types.DATE, &quot; DATE &quot;),</span>
+<span class="nc" id="L61">    TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP &quot;);</span>
+
+    public final int type;
+
+    public final String constructor;
+
+<span class="nc" id="L67">    DBType(int type, String constructor) {</span>
+<span class="nc" id="L68">      this.type = type;</span>
+<span class="nc" id="L69">      this.constructor = constructor;</span>
+<span class="nc" id="L70">    }</span>
+
+    public static String getType(int sqltype) {
+<span class="nc bnc" id="L73" title="All 15 branches missed.">      switch (sqltype) {</span>
+        case Types.CHAR:
+<span class="nc" id="L75">          return CHAR.constructor;</span>
+        case Types.VARCHAR:
+<span class="nc" id="L77">          return VARCHAR.constructor;</span>
+        case Types.NVARCHAR:
+<span class="nc" id="L79">          return NVARCHAR.constructor;</span>
+        case Types.LONGVARCHAR:
+<span class="nc" id="L81">          return LONGVARCHAR.constructor;</span>
+        case Types.BIT:
+<span class="nc" id="L83">          return BIT.constructor;</span>
+        case Types.TINYINT:
+<span class="nc" id="L85">          return TINYINT.constructor;</span>
+        case Types.SMALLINT:
+<span class="nc" id="L87">          return SMALLINT.constructor;</span>
+        case Types.INTEGER:
+<span class="nc" id="L89">          return INTEGER.constructor;</span>
+        case Types.BIGINT:
+<span class="nc" id="L91">          return BIGINT.constructor;</span>
+        case Types.REAL:
+<span class="nc" id="L93">          return REAL.constructor;</span>
+        case Types.DOUBLE:
+<span class="nc" id="L95">          return DOUBLE.constructor;</span>
+        case Types.VARBINARY:
+<span class="nc" id="L97">          return VARBINARY.constructor;</span>
+        case Types.DATE:
+<span class="nc" id="L99">          return DATE.constructor;</span>
+        case Types.TIMESTAMP:
+<span class="nc" id="L101">          return TIMESTAMP.constructor;</span>
+        default:
+<span class="nc" id="L103">          return null;</span>
+      }
+    }
+  }
+
+<span class="nc" id="L108">  private final ReentrantLock lock = new ReentrantLock();</span>
+
+  @Override
+  public void resetSequence(DbSession session, long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L113">    final String action =</span>
+        &quot;UPDATE Sequences SET seq = &quot; + newvalue + &quot; WHERE name = '&quot; +
+        DbDataModel.fieldseq + '\'';
+<span class="nc" id="L116">    final DbRequest request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L118">      request.query(action);</span>
+<span class="nc" id="L119">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L120">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
+<span class="nc" id="L121">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L122">      logger.warn(&quot;ResetSequence Error&quot;, e);</span>
+    } finally {
+<span class="nc" id="L124">      request.close();</span>
+    }
+<span class="nc" id="L126">    logger.warn(action);</span>
+<span class="nc" id="L127">  }</span>
+
+  @Override
+  public synchronized long nextSequence(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+<span class="nc" id="L133">    lock.lock();</span>
+    try {
+<span class="nc" id="L135">      long result = DbConstant.ILLEGALVALUE;</span>
+<span class="nc" id="L136">      String action =</span>
+          &quot;SELECT seq FROM Sequences WHERE name = '&quot; + DbDataModel.fieldseq +
+          &quot;' FOR UPDATE&quot;;
+<span class="nc" id="L139">      final DbPreparedStatement preparedStatement =</span>
+          new DbPreparedStatement(dbSession);
+      try {
+<span class="nc" id="L142">        dbSession.getConn().setAutoCommit(false);</span>
+<span class="nc" id="L143">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L144">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L145">      }</span>
+      try {
+<span class="nc" id="L147">        preparedStatement.createPrepareStatement(action);</span>
+        // Limit the search
+<span class="nc" id="L149">        preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (preparedStatement.getNext()) {</span>
+          try {
+<span class="nc" id="L152">            result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L153">          } catch (final SQLException e) {</span>
+<span class="nc" id="L154">            throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L155">          }</span>
+        } else {
+<span class="nc" id="L157">          throw new WaarpDatabaseNoDataException(</span>
+              &quot;No sequence found. Must be initialized first&quot;);
+        }
+      } finally {
+<span class="nc" id="L161">        preparedStatement.realClose();</span>
+      }
+<span class="nc" id="L163">      action =</span>
+          &quot;UPDATE Sequences SET seq = &quot; + (result + 1) + &quot; WHERE name = '&quot; +
+          DbDataModel.fieldseq + '\'';
+      try {
+<span class="nc" id="L167">        preparedStatement.createPrepareStatement(action);</span>
+        // Limit the search
+<span class="nc" id="L169">        preparedStatement.executeUpdate();</span>
+      } finally {
+<span class="nc" id="L171">        preparedStatement.realClose();</span>
+      }
+<span class="nc" id="L173">      return result;</span>
+    } finally {
+      try {
+<span class="nc" id="L176">        dbSession.getConn().setAutoCommit(true);</span>
+<span class="nc" id="L177">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L178">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L179">      }</span>
+<span class="nc" id="L180">      lock.unlock();</span>
+    }
+  }
+
+  @Override
+  protected String validConnectionString() {
+<span class="nc" id="L186">    return &quot;select 1 from dual&quot;;</span>
+  }
+
+  @Override
+  public String limitRequest(String allfields, String request, int nb) {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="nc" id="L192">      return request;</span>
+    }
+<span class="nc" id="L194">    return request + &quot; LIMIT &quot; + nb;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

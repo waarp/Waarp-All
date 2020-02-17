@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>Rule.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.pojo</a> &gt; <span class="el_source">Rule.java</span></div><h1>Rule.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.pojo;
+
+import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Rules.Tasks;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementDecl;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
+
+/**
+ * Rule data object
+ */
+@XmlType(name = ROOT)
+@XmlAccessorType(XmlAccessType.FIELD)
+@JsonPropertyOrder({
+    &quot;IDRULE&quot;, &quot;MODETRANS&quot;, &quot;RECVPATH&quot;, &quot;SENDPATH&quot;, &quot;ARCHIVEPATH&quot;,
+    &quot;WORKPATH&quot;, &quot;UPDATEDINFO&quot;, &quot;HOSTIDS&quot;, &quot;SPRETASKS&quot;, &quot;SPOSTASKS&quot;, &quot;SERRORTASKS&quot;,
+    &quot;RPRETASKS&quot;, &quot;RPOSTTASKS&quot;, &quot;RERRORTASKS&quot;
+})
+public class Rule {
+
+  @XmlElement(name = XIDRULE)
+  @JsonProperty(&quot;IDRULE&quot;)
+  private String name;
+
+  @XmlElement(name = XMODE)
+  @JsonProperty(&quot;MODETRANS&quot;)
+  private int mode;
+
+  @XmlElementWrapper(name = XHOSTIDS)
+  @XmlElement(name = XHOSTID)
+  @JsonIgnore
+  private List&lt;String&gt; hostids;
+
+  @XmlElement(name = XRECVPATH, required = true)
+  @JsonProperty(&quot;RECVPATH&quot;)
+  private String recvPath;
+
+  @XmlElement(name = XSENDPATH, required = true)
+  @JsonProperty(&quot;SENDPATH&quot;)
+  private String sendPath;
+
+  @XmlElement(name = XARCHIVEPATH, required = true)
+  @JsonProperty(&quot;ARCHIVEPATH&quot;)
+  private String archivePath;
+
+  @XmlElement(name = XWORKPATH, required = true)
+  @JsonProperty(&quot;WORKPATH&quot;)
+  private String workPath;
+
+  @XmlTransient
+  @JsonIgnore
+  private List&lt;RuleTask&gt; rPreTasks;
+
+  @XmlTransient
+  @JsonIgnore
+  private List&lt;RuleTask&gt; rPostTasks;
+
+  @XmlTransient
+  @JsonIgnore
+  private List&lt;RuleTask&gt; rErrorTasks;
+
+  @XmlTransient
+  @JsonIgnore
+  private List&lt;RuleTask&gt; sPreTasks;
+
+  @XmlTransient
+  @JsonIgnore
+  private List&lt;RuleTask&gt; sPostTasks;
+
+  @XmlTransient
+  @JsonIgnore
+  private List&lt;RuleTask&gt; sErrorTasks;
+
+<span class="fc" id="L107">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
+  private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L113">  public Rule() {</span>
+<span class="fc" id="L114">    hostids = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L115">    rPreTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L116">    rPostTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L117">    rErrorTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L118">    sPreTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L119">    sPostTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L120">    sErrorTasks = new ArrayList&lt;RuleTask&gt;();</span>
+<span class="fc" id="L121">  }</span>
+
+  @XmlElementDecl(name = XRPRETASKS)
+  @XmlElement(name = XRPRETASKS)
+  @JsonIgnore
+  public Tasks get_rPreTasks() {
+<span class="nc" id="L127">    return new Tasks(rPreTasks);</span>
+  }
+
+  @XmlElementDecl(name = XRPOSTTASKS)
+  @XmlElement(name = XRPOSTTASKS)
+  @JsonIgnore
+  public Tasks get_rPostTasks() {
+<span class="nc" id="L134">    return new Tasks(rPostTasks);</span>
+  }
+
+  @XmlElementDecl(name = XRERRORTASKS)
+  @XmlElement(name = XRERRORTASKS)
+  @JsonIgnore
+  public Tasks get_rErrorTasks() {
+<span class="nc" id="L141">    return new Tasks(rErrorTasks);</span>
+  }
+
+  @XmlElementDecl(name = XSPRETASKS)
+  @XmlElement(name = XSPRETASKS)
+  @JsonIgnore
+  public Tasks get_sPreTasks() {
+<span class="nc" id="L148">    return new Tasks(sPreTasks);</span>
+  }
+
+  @XmlElementDecl(name = XSPOSTTASKS)
+  @XmlElement(name = XSPOSTTASKS)
+  @JsonIgnore
+  public Tasks get_sPostTasks() {
+<span class="nc" id="L155">    return new Tasks(sPostTasks);</span>
+  }
+
+  @XmlElementDecl(name = XSERRORTASKS)
+  @XmlElement(name = XSERRORTASKS)
+  @JsonIgnore
+  public Tasks get_sErrorTasks() {
+<span class="nc" id="L162">    return new Tasks(sErrorTasks);</span>
+  }
+
+  public Rule(String name, int mode, List&lt;String&gt; hostids, String recvPath,
+              String sendPath, String archivePath, String workPath,
+              List&lt;RuleTask&gt; rPre, List&lt;RuleTask&gt; rPost, List&lt;RuleTask&gt; rError,
+              List&lt;RuleTask&gt; sPre, List&lt;RuleTask&gt; sPost, List&lt;RuleTask&gt; sError,
+              UpdatedInfo updatedInfo) {
+<span class="fc" id="L170">    this(name, mode, hostids, recvPath, sendPath, archivePath, workPath, rPre,</span>
+         rPost, rError, sPre, sPost, sError);
+<span class="fc" id="L172">    this.updatedInfo = updatedInfo;</span>
+<span class="fc" id="L173">  }</span>
+
+  public Rule(String name, int mode, List&lt;String&gt; hostids, String recvPath,
+              String sendPath, String archivePath, String workPath,
+              List&lt;RuleTask&gt; rPre, List&lt;RuleTask&gt; rPost, List&lt;RuleTask&gt; rError,
+              List&lt;RuleTask&gt; sPre, List&lt;RuleTask&gt; sPost,
+<span class="fc" id="L179">              List&lt;RuleTask&gt; sError) {</span>
+<span class="fc" id="L180">    this.name = name;</span>
+<span class="fc" id="L181">    this.mode = mode;</span>
+<span class="fc" id="L182">    this.hostids = hostids;</span>
+<span class="fc" id="L183">    this.recvPath = recvPath;</span>
+<span class="fc" id="L184">    this.sendPath = sendPath;</span>
+<span class="fc" id="L185">    this.archivePath = archivePath;</span>
+<span class="fc" id="L186">    this.workPath = workPath;</span>
+<span class="fc" id="L187">    rPreTasks = rPre;</span>
+<span class="fc" id="L188">    rPostTasks = rPost;</span>
+<span class="fc" id="L189">    rErrorTasks = rError;</span>
+<span class="fc" id="L190">    sPreTasks = sPre;</span>
+<span class="fc" id="L191">    sPostTasks = sPost;</span>
+<span class="fc" id="L192">    sErrorTasks = sError;</span>
+<span class="fc" id="L193">  }</span>
+
+  public Rule(String name, int mode, List&lt;String&gt; hostids, String recvPath,
+              String sendPath, String archivePath, String workPath) {
+<span class="fc" id="L197">    this(name, mode, hostids, recvPath, sendPath, archivePath, workPath,</span>
+         new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;(),
+         new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;(),
+         new ArrayList&lt;RuleTask&gt;(), new ArrayList&lt;RuleTask&gt;());
+<span class="fc" id="L201">  }</span>
+
+  public Rule(String name, int mode, List&lt;String&gt; hostids) {
+<span class="fc" id="L204">    this(name, mode, hostids, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L205">  }</span>
+
+  public Rule(String name, int mode) {
+<span class="fc" id="L208">    this(name, mode, new ArrayList&lt;String&gt;());</span>
+<span class="fc" id="L209">  }</span>
+
+  public boolean isAuthorized(String hostid) {
+<span class="nc" id="L212">    return hostids.contains(hostid);</span>
+  }
+
+  @JsonProperty(&quot;HOSTIDS&quot;)
+  public String getXMLHostids() {
+<span class="fc" id="L217">    StringBuilder res = new StringBuilder(&quot;&lt;hostids&gt;&quot;);</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">    for (final String hostid : hostids) {</span>
+<span class="fc" id="L219">      res.append(&quot;&lt;hostid&gt;&quot;).append(hostid).append(&quot;&lt;/hostid&gt;&quot;);</span>
+<span class="fc" id="L220">    }</span>
+<span class="fc" id="L221">    return res.append(&quot;&lt;/hostids&gt;&quot;).toString();</span>
+  }
+
+  @JsonProperty(&quot;RPRETASKS&quot;)
+  public String getXMLRPreTasks() {
+<span class="fc" id="L226">    return getXMLTasks(rPreTasks);</span>
+  }
+
+  @JsonProperty(&quot;RPOSTTASKS&quot;)
+  public String getXMLRPostTasks() {
+<span class="fc" id="L231">    return getXMLTasks(rPostTasks);</span>
+  }
+
+  @JsonProperty(&quot;RERRORTASKS&quot;)
+  public String getXMLRErrorTasks() {
+<span class="fc" id="L236">    return getXMLTasks(rErrorTasks);</span>
+  }
+
+  @JsonProperty(&quot;SPRETASKS&quot;)
+  public String getXMLSPreTasks() {
+<span class="fc" id="L241">    return getXMLTasks(sPreTasks);</span>
+  }
+
+  @JsonProperty(&quot;SPOSTTASKS&quot;)
+  public String getXMLSPostTasks() {
+<span class="fc" id="L246">    return getXMLTasks(sPostTasks);</span>
+  }
+
+  @JsonProperty(&quot;SERRORTASKS&quot;)
+  public String getXMLSErrorTasks() {
+<span class="fc" id="L251">    return getXMLTasks(sErrorTasks);</span>
+  }
+
+  private String getXMLTasks(List&lt;RuleTask&gt; tasks) {
+<span class="fc" id="L255">    StringBuilder res = new StringBuilder(&quot;&lt;tasks&gt;&quot;);</span>
+<span class="fc bfc" id="L256" title="All 2 branches covered.">    for (final RuleTask task : tasks) {</span>
+<span class="fc" id="L257">      res.append(task.getXML());</span>
+<span class="fc" id="L258">    }</span>
+<span class="fc" id="L259">    return res.append(&quot;&lt;/tasks&gt;&quot;).toString();</span>
+  }
+
+  public String getName() {
+<span class="fc" id="L263">    return name;</span>
+  }
+
+  public void setName(String name) {
+<span class="nc" id="L267">    this.name = name;</span>
+<span class="nc" id="L268">  }</span>
+
+  public int getMode() {
+<span class="fc" id="L271">    return mode;</span>
+  }
+
+  public void setMode(int mode) {
+<span class="nc" id="L275">    this.mode = mode;</span>
+<span class="nc" id="L276">  }</span>
+
+  public List&lt;String&gt; getHostids() {
+<span class="fc" id="L279">    return hostids;</span>
+  }
+
+  public void setHostids(List&lt;String&gt; hostids) {
+<span class="nc" id="L283">    this.hostids = hostids;</span>
+<span class="nc" id="L284">  }</span>
+
+  public String getRecvPath() {
+<span class="fc" id="L287">    return recvPath;</span>
+  }
+
+  public void setRecvPath(String recvPath) {
+<span class="fc" id="L291">    this.recvPath = recvPath;</span>
+<span class="fc" id="L292">  }</span>
+
+  public String getSendPath() {
+<span class="fc" id="L295">    return sendPath;</span>
+  }
+
+  public void setSendPath(String sendPath) {
+<span class="fc" id="L299">    this.sendPath = sendPath;</span>
+<span class="fc" id="L300">  }</span>
+
+  public String getArchivePath() {
+<span class="fc" id="L303">    return archivePath;</span>
+  }
+
+  public void setArchivePath(String archivePath) {
+<span class="fc" id="L307">    this.archivePath = archivePath;</span>
+<span class="fc" id="L308">  }</span>
+
+  public String getWorkPath() {
+<span class="fc" id="L311">    return workPath;</span>
+  }
+
+  public void setWorkPath(String workPath) {
+<span class="fc" id="L315">    this.workPath = workPath;</span>
+<span class="fc" id="L316">  }</span>
+
+  @JsonIgnore
+  public List&lt;RuleTask&gt; getRPreTasks() {
+<span class="fc" id="L320">    return rPreTasks;</span>
+  }
+
+  public void setRPreTasks(List&lt;RuleTask&gt; rPreTasks) {
+<span class="nc" id="L324">    this.rPreTasks = rPreTasks;</span>
+<span class="nc" id="L325">  }</span>
+
+  @JsonIgnore
+  public List&lt;RuleTask&gt; getRPostTasks() {
+<span class="fc" id="L329">    return rPostTasks;</span>
+  }
+
+  public void setRPostTasks(List&lt;RuleTask&gt; rPostTasks) {
+<span class="nc" id="L333">    this.rPostTasks = rPostTasks;</span>
+<span class="nc" id="L334">  }</span>
+
+  @JsonIgnore
+  public List&lt;RuleTask&gt; getRErrorTasks() {
+<span class="fc" id="L338">    return rErrorTasks;</span>
+  }
+
+  public void setRErrorTasks(List&lt;RuleTask&gt; rErrorTasks) {
+<span class="nc" id="L342">    this.rErrorTasks = rErrorTasks;</span>
+<span class="nc" id="L343">  }</span>
+
+  @JsonIgnore
+  public List&lt;RuleTask&gt; getSPreTasks() {
+<span class="fc" id="L347">    return sPreTasks;</span>
+  }
+
+  public void setSPreTasks(List&lt;RuleTask&gt; sPreTasks) {
+<span class="nc" id="L351">    this.sPreTasks = sPreTasks;</span>
+<span class="nc" id="L352">  }</span>
+
+  @JsonIgnore
+  public List&lt;RuleTask&gt; getSPostTasks() {
+<span class="fc" id="L356">    return sPostTasks;</span>
+  }
+
+  public void setSPostTasks(List&lt;RuleTask&gt; sPostTasks) {
+<span class="nc" id="L360">    this.sPostTasks = sPostTasks;</span>
+<span class="nc" id="L361">  }</span>
+
+  @JsonIgnore
+  public List&lt;RuleTask&gt; getSErrorTasks() {
+<span class="fc" id="L365">    return sErrorTasks;</span>
+  }
+
+  public void setSErrorTasks(List&lt;RuleTask&gt; sErrorTasks) {
+<span class="nc" id="L369">    this.sErrorTasks = sErrorTasks;</span>
+<span class="nc" id="L370">  }</span>
+
+  public UpdatedInfo getUpdatedInfo() {
+<span class="fc" id="L373">    return updatedInfo;</span>
+  }
+
+  public void setUpdatedInfo(UpdatedInfo info) {
+<span class="nc" id="L377">    updatedInfo = info;</span>
+<span class="nc" id="L378">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

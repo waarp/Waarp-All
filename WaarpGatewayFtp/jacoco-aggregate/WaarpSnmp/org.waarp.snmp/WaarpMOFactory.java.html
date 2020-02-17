@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpMOFactory.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpSnmp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.snmp</a> &gt; <span class="el_source">WaarpMOFactory.java</span></div><h1>WaarpMOFactory.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.snmp;
+
+import org.snmp4j.agent.MOAccess;
+import org.snmp4j.agent.mo.MOAccessImpl;
+import org.snmp4j.smi.Counter32;
+import org.snmp4j.smi.Counter64;
+import org.snmp4j.smi.Gauge32;
+import org.snmp4j.smi.Integer32;
+import org.snmp4j.smi.IpAddress;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.Opaque;
+import org.snmp4j.smi.SMIConstants;
+import org.snmp4j.smi.TimeTicks;
+import org.snmp4j.smi.Variable;
+import org.waarp.snmp.interf.WaarpInterfaceVariableFactory;
+import org.waarp.snmp.utils.WaarpDefaultVariableFactory;
+import org.waarp.snmp.utils.WaarpMORow;
+import org.waarp.snmp.utils.WaarpMOScalar;
+
+/**
+ * This class creates and returns ManagedObjects
+ */
+public final class WaarpMOFactory {
+  /**
+   * To be setup to default Factory to be used or kept as null for default one
+   */
+  private static WaarpInterfaceVariableFactory factory;
+
+  /**
+   * Default one
+   */
+<span class="fc" id="L52">  private static final WaarpInterfaceVariableFactory defaultFactory =</span>
+      new WaarpDefaultVariableFactory();
+
+  private WaarpMOFactory() {
+  }
+
+  /**
+   * @param oid
+   * @param value
+   * @param type
+   *
+   * @return an MOScalar according to the argument
+   */
+  public static WaarpMOScalar createReadOnly(OID oid, Object value, int type,
+                                             WaarpMORow row, int mibLevel,
+                                             int entry) {
+<span class="nc" id="L68">    return new WaarpMOScalar(oid, MOAccessImpl.ACCESS_READ_ONLY,</span>
+<span class="nc" id="L69">                             getVariable(oid, value, type, mibLevel, entry),</span>
+                             row);
+  }
+
+  /**
+   * @param oid
+   * @param value
+   * @param type
+   * @param access
+   *
+   * @return an MOScalar according to the argument
+   */
+  public static WaarpMOScalar create(OID oid, Object value, int type,
+                                     MOAccess access, WaarpMORow row,
+                                     int mibLevel, int entry) {
+<span class="fc" id="L84">    return new WaarpMOScalar(oid, access,</span>
+<span class="fc" id="L85">                             getVariable(oid, value, type, mibLevel, entry),</span>
+                             row);
+  }
+
+  /**
+   * Create a Variable using the arguments
+   *
+   * @param oid
+   * @param value
+   * @param type
+   * @param mibLevel
+   * @param entry
+   *
+   * @return a Variable using the arguments
+   */
+  public static Variable getVariable(OID oid, Object value, int type,
+                                     int mibLevel, int entry) {
+    Variable var;
+    WaarpInterfaceVariableFactory vf;
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">    if (getFactory() == null) {</span>
+<span class="nc" id="L105">      vf = defaultFactory;</span>
+    } else {
+<span class="fc" id="L107">      vf = getFactory();</span>
+    }
+<span class="fc" id="L109">    var = vf.getVariable(oid, type, mibLevel, entry);</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    if (value != null) {</span>
+<span class="nc bnc" id="L111" title="All 11 branches missed.">      switch (type) {</span>
+        case SMIConstants.SYNTAX_INTEGER:
+          // case SMIConstants.SYNTAX_INTEGER32:
+<span class="nc" id="L114">          ((Integer32) var).setValue((Integer) value);</span>
+<span class="nc" id="L115">          break;</span>
+        case SMIConstants.SYNTAX_OCTET_STRING:
+          // case SMIConstants.SYNTAX_BITS:
+<span class="nc" id="L118">          ((OctetString) var).setValue(value.toString());</span>
+<span class="nc" id="L119">          break;</span>
+        case SMIConstants.SYNTAX_NULL:
+<span class="nc" id="L121">          break;</span>
+        case SMIConstants.SYNTAX_OBJECT_IDENTIFIER:
+<span class="nc" id="L123">          ((OID) var).setValue(value.toString());</span>
+<span class="nc" id="L124">          break;</span>
+        case SMIConstants.SYNTAX_IPADDRESS:
+<span class="nc" id="L126">          ((IpAddress) var).setValue(value.toString());</span>
+<span class="nc" id="L127">          break;</span>
+        case SMIConstants.SYNTAX_COUNTER32:
+<span class="nc" id="L129">          ((Counter32) var).setValue((Long) value);</span>
+<span class="nc" id="L130">          break;</span>
+        case SMIConstants.SYNTAX_GAUGE32:
+          // case SMIConstants.SYNTAX_UNSIGNED_INTEGER32:
+<span class="nc" id="L133">          ((Gauge32) var).setValue((Long) value);</span>
+<span class="nc" id="L134">          break;</span>
+        case SMIConstants.SYNTAX_TIMETICKS:
+<span class="nc bnc" id="L136" title="All 2 branches missed.">          if (value instanceof TimeTicks) {</span>
+<span class="nc" id="L137">            ((TimeTicks) var).setValue(((TimeTicks) value).toString());</span>
+          } else {
+<span class="nc" id="L139">            ((TimeTicks) var).setValue((Long) value);</span>
+          }
+<span class="nc" id="L141">          break;</span>
+        case SMIConstants.SYNTAX_OPAQUE:
+<span class="nc" id="L143">          ((Opaque) var).setValue((byte[]) value);</span>
+<span class="nc" id="L144">          break;</span>
+        case SMIConstants.SYNTAX_COUNTER64:
+<span class="nc" id="L146">          ((Counter64) var).setValue((Long) value);</span>
+<span class="nc" id="L147">          break;</span>
+        default:
+<span class="nc" id="L149">          throw new IllegalArgumentException(</span>
+<span class="nc" id="L150">              &quot;Unmanaged Type: &quot; + value.getClass());</span>
+      }
+    }
+<span class="fc" id="L153">    return var;</span>
+  }
+
+  /**
+   * Set a Variable value
+   *
+   * @param var
+   * @param value
+   * @param type
+   */
+  public static void setVariable(Variable var, Object value, int type) {
+<span class="fc bfc" id="L164" title="All 2 branches covered.">    if (value != null) {</span>
+<span class="pc bpc" id="L165" title="9 of 11 branches missed.">      switch (type) {</span>
+        case SMIConstants.SYNTAX_INTEGER:
+          // case SMIConstants.SYNTAX_INTEGER32:
+<span class="nc" id="L168">          ((Integer32) var).setValue((Integer) value);</span>
+<span class="nc" id="L169">          break;</span>
+        case SMIConstants.SYNTAX_OCTET_STRING:
+          // case SMIConstants.SYNTAX_BITS:
+<span class="fc" id="L172">          ((OctetString) var).setValue(value.toString());</span>
+<span class="fc" id="L173">          break;</span>
+        case SMIConstants.SYNTAX_NULL:
+<span class="nc" id="L175">          break;</span>
+        case SMIConstants.SYNTAX_OBJECT_IDENTIFIER:
+<span class="fc" id="L177">          ((OID) var).setValue(value.toString());</span>
+<span class="fc" id="L178">          break;</span>
+        case SMIConstants.SYNTAX_IPADDRESS:
+<span class="nc" id="L180">          ((IpAddress) var).setValue(value.toString());</span>
+<span class="nc" id="L181">          break;</span>
+        case SMIConstants.SYNTAX_COUNTER32:
+<span class="nc" id="L183">          ((Counter32) var).setValue((Long) value);</span>
+<span class="nc" id="L184">          break;</span>
+        case SMIConstants.SYNTAX_GAUGE32:
+          // case SMIConstants.SYNTAX_UNSIGNED_INTEGER32:
+<span class="nc" id="L187">          ((Gauge32) var).setValue((Long) value);</span>
+<span class="nc" id="L188">          break;</span>
+        case SMIConstants.SYNTAX_TIMETICKS:
+<span class="nc bnc" id="L190" title="All 2 branches missed.">          if (value instanceof TimeTicks) {</span>
+<span class="nc" id="L191">            ((TimeTicks) var).setValue(((TimeTicks) value).toString());</span>
+          } else {
+<span class="nc" id="L193">            ((TimeTicks) var).setValue((Long) value);</span>
+          }
+<span class="nc" id="L195">          break;</span>
+        case SMIConstants.SYNTAX_OPAQUE:
+<span class="nc" id="L197">          ((Opaque) var).setValue((byte[]) value);</span>
+<span class="nc" id="L198">          break;</span>
+        case SMIConstants.SYNTAX_COUNTER64:
+<span class="nc" id="L200">          ((Counter64) var).setValue((Long) value);</span>
+<span class="nc" id="L201">          break;</span>
+        default:
+<span class="nc" id="L203">          throw new IllegalArgumentException(</span>
+<span class="nc" id="L204">              &quot;Unmanaged Type: &quot; + value.getClass());</span>
+      }
+    }
+<span class="fc" id="L207">  }</span>
+
+  /**
+   * @return the factory
+   */
+  public static WaarpInterfaceVariableFactory getFactory() {
+<span class="fc" id="L213">    return factory;</span>
+  }
+
+  /**
+   * @param factory the factory to set
+   */
+  public static void setFactory(WaarpInterfaceVariableFactory factory) {
+<span class="fc" id="L220">    WaarpMOFactory.factory = factory;</span>
+<span class="fc" id="L221">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

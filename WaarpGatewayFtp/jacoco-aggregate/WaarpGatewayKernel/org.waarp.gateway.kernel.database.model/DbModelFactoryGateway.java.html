@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelFactoryGateway.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.database.model</a> &gt; <span class="el_source">DbModelFactoryGateway.java</span></div><h1>DbModelFactoryGateway.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.database.model;
+
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModel;
+import org.waarp.common.database.model.DbModelFactory;
+import org.waarp.common.database.model.DbType;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.data.DbTransferLog;
+
+import java.sql.SQLException;
+
+/**
+ * Factory to store the Database Model object
+ */
+<span class="nc" id="L41">public class DbModelFactoryGateway extends DbModelFactory {</span>
+
+  /**
+   * Initialize the Database Model according to arguments.
+   *
+   * @param dbdriver
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   * @param write
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public static DbAdmin initialize(String dbdriver, String dbserver,
+                                   String dbuser, String dbpasswd,
+                                   boolean write)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L58">    final DbType type = DbType.getFromDriver(dbdriver);</span>
+    DbModel dbModel;
+<span class="nc bnc" id="L60" title="All 6 branches missed.">    switch (type) {</span>
+      case H2:
+<span class="nc" id="L62">        dbModel = new DbModelH2Kernel(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L63">        break;</span>
+      case Oracle:
+<span class="nc" id="L65">        dbModel = new DbModelOracleKernel(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L66">        break;</span>
+      case PostGreSQL:
+<span class="nc" id="L68">        dbModel = new DbModelPostgresqlKernel();</span>
+<span class="nc" id="L69">        break;</span>
+      case MySQL:
+<span class="nc" id="L71">        dbModel = new DbModelMysqlKernel(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L72">        break;</span>
+      case MariaDB:
+<span class="nc" id="L74">        dbModel = new DbModelMariaDbKernel(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L75">        break;</span>
+      default:
+<span class="nc" id="L77">        throw new WaarpDatabaseNoConnectionException(</span>
+            &quot;TypeDriver unknown: &quot; + type);
+    }
+<span class="nc" id="L80">    return new DbAdmin(dbModel, dbserver, dbuser, dbpasswd, write);</span>
+  }
+
+  public static void resetSequenceMonitoring(final DbSession session,
+                                             final long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L86">    final String action =</span>
+        &quot;ALTER SEQUENCE &quot; + DbTransferLog.fieldseq + &quot; MINVALUE &quot; +
+        (DbConstant.ILLEGALVALUE + 1) + &quot; RESTART WITH &quot; + newvalue;
+<span class="nc" id="L89">    final DbRequest request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L91">      request.query(action);</span>
+<span class="nc" id="L92">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L93">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L94">      return;</span>
+<span class="nc" id="L95">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L96">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L97">      return;</span>
+    } finally {
+<span class="nc" id="L99">      request.close();</span>
+    }
+<span class="nc" id="L101">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L102">  }</span>
+
+  public static long nextSequenceMonitoring(final DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+<span class="fc" id="L107">    long result = DbConstant.ILLEGALVALUE;</span>
+<span class="fc" id="L108">    final String action = &quot;SELECT NEXTVAL('&quot; + DbTransferLog.fieldseq + &quot;')&quot;;</span>
+<span class="fc" id="L109">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="fc" id="L112">      preparedStatement.createPrepareStatement(action);</span>
+      // Limit the search
+<span class="fc" id="L114">      preparedStatement.executeQuery();</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+        try {
+<span class="fc" id="L117">          result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L118">        } catch (final SQLException e) {</span>
+<span class="nc" id="L119">          throw new WaarpDatabaseSqlException(e);</span>
+<span class="fc" id="L120">        }</span>
+<span class="fc" id="L121">        return result;</span>
+      } else {
+<span class="nc" id="L123">        throw new WaarpDatabaseNoDataException(</span>
+            &quot;No sequence found. Must be initialized first&quot;);
+      }
+    } finally {
+<span class="fc" id="L127">      preparedStatement.realClose();</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

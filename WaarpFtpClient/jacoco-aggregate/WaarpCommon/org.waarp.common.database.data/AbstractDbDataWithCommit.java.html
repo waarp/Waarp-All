@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractDbDataWithCommit.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.data</a> &gt; <span class="el_source">AbstractDbDataWithCommit.java</span></div><h1>AbstractDbDataWithCommit.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.data;
+
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+
+/**
+ * Abstract database table implementation with explicit COMMIT.&lt;br&gt;
+ * &lt;br&gt;
+ * &lt;p&gt;
+ * If the connection is in autocommit, this abstract should not be used.&lt;br&gt;
+ * If the connection is not in autocommit, one could use this implementation to
+ * implicitly commit when needed
+ * automatically as should do an autocommit connection.
+ */
+public abstract class AbstractDbDataWithCommit extends AbstractDbData {
+  /**
+   * To be implemented
+   */
+  // public static String table
+  // public static final int NBPRKEY
+  // protected static String selectAllFields
+  // protected static String updateAllFields
+  // protected static String insertAllValues
+  // protected DbValue[] primaryKey
+  // protected DbValue[] otherFields
+  // protected DbValue[] allFields
+
+  private static final String NO_ROW_FOUND = &quot;No row found&quot;;
+
+  /**
+   * Abstract constructor to set the DbSession to use
+   *
+   * @param dbSession
+   */
+  protected AbstractDbDataWithCommit(DbSession dbSession) {
+<span class="nc" id="L57">    super(dbSession);</span>
+<span class="nc" id="L58">    initObject();</span>
+<span class="nc" id="L59">  }</span>
+
+  /**
+   * Insert object into table
+   *
+   * @throws WaarpDatabaseException
+   */
+  @Override
+  public void insert() throws WaarpDatabaseException {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L69">      return;</span>
+    }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L72">      isSaved = true;</span>
+<span class="nc" id="L73">      return;</span>
+    }
+<span class="nc" id="L75">    setToArray();</span>
+<span class="nc" id="L76">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L79">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L80">          &quot;INSERT INTO &quot; + getTable() + &quot; (&quot; + getSelectAllFields() +</span>
+<span class="nc" id="L81">          &quot;) VALUES &quot; + getInsertAllValues());</span>
+<span class="nc" id="L82">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L83">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L85">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L87">      dbSession.commit();</span>
+<span class="nc" id="L88">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L90">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L92">  }</span>
+
+  /**
+   * Update object to table
+   *
+   * @throws WaarpDatabaseException
+   */
+  @Override
+  public void update() throws WaarpDatabaseException {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L102">      return;</span>
+    }
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L105">      isSaved = true;</span>
+<span class="nc" id="L106">      return;</span>
+    }
+<span class="nc" id="L108">    setToArray();</span>
+<span class="nc" id="L109">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L112">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L113">          &quot;UPDATE &quot; + getTable() + &quot; SET &quot; + getUpdateAllFields() + &quot; WHERE &quot; +</span>
+<span class="nc" id="L114">          getWherePrimaryKey());</span>
+<span class="nc" id="L115">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L116">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L118">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L120">      dbSession.commit();</span>
+<span class="nc" id="L121">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L123">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L125">  }</span>
+
+  /**
+   * Delete object from table
+   *
+   * @throws WaarpDatabaseException
+   */
+  @Override
+  public void delete() throws WaarpDatabaseException {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L135">      return;</span>
+    }
+<span class="nc" id="L137">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L140">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L141">          &quot;DELETE FROM &quot; + getTable() + &quot; WHERE &quot; + getWherePrimaryKey());</span>
+<span class="nc" id="L142">      setPrimaryKey();</span>
+<span class="nc" id="L143">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L144">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L146">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L148">      dbSession.commit();</span>
+<span class="nc" id="L149">      isSaved = false;</span>
+    } finally {
+<span class="nc" id="L151">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L153">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

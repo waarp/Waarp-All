@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>IntegerUuid.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.guid</a> &gt; <span class="el_source">IntegerUuid.java</span></div><h1>IntegerUuid.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.guid;
+
+import org.waarp.common.utility.Hexa;
+import org.waarp.common.utility.StringUtils;
+
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * UUID Generator (also Global UUID Generator) but limited to 1 Integer (32
+ * bits) &lt;br&gt;
+ * &lt;br&gt;
+ * Inspired from com.groupon locality-uuid which used combination of internal
+ * counter value - process id -
+ * and Timestamp. see https://github.com/groupon/locality-uuid.java &lt;br&gt;
+ * &lt;br&gt;
+ * But force sequence and take care of errors and improves some performance
+ * issues.&lt;br&gt;
+ * &lt;br&gt;
+ * Limit is about 4000000/s UUID
+ */
+public final class IntegerUuid {
+  /**
+   * Counter part
+   */
+<span class="fc" id="L45">  private static final AtomicInteger COUNTER =</span>
+<span class="fc" id="L46">      new AtomicInteger(StringUtils.RANDOM.nextInt());</span>
+  /**
+   * Byte size of UUID
+   */
+  private static final int UUIDSIZE = 4;
+
+  /**
+   * real UUID
+   */
+  private final byte[] uuid;
+
+  /**
+   * Constructor that generates a new UUID using the current process id, MAC
+   * address, and timestamp
+   */
+<span class="fc" id="L61">  public IntegerUuid() {</span>
+<span class="fc" id="L62">    uuid = new byte[UUIDSIZE];</span>
+    // atomically
+    final int count;
+<span class="fc" id="L65">    synchronized (COUNTER) {</span>
+<span class="fc" id="L66">      count = COUNTER.incrementAndGet();</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">      if (count == Integer.MAX_VALUE) {</span>
+<span class="nc" id="L68">        COUNTER.set(Integer.MIN_VALUE + 1);</span>
+      }
+<span class="fc" id="L70">    }</span>
+<span class="fc" id="L71">    uuid[0] = (byte) (count &gt;&gt; 24);</span>
+<span class="fc" id="L72">    uuid[1] = (byte) (count &gt;&gt; 16);</span>
+<span class="fc" id="L73">    uuid[2] = (byte) (count &gt;&gt; 8);</span>
+<span class="fc" id="L74">    uuid[3] = (byte) count;</span>
+<span class="fc" id="L75">  }</span>
+
+  /**
+   * Constructor that takes a byte array as this UUID's content
+   *
+   * @param bytes UUID content
+   */
+<span class="fc" id="L82">  public IntegerUuid(final byte[] bytes) {</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">    if (bytes.length != UUIDSIZE) {</span>
+<span class="nc" id="L84">      throw new RuntimeException(</span>
+<span class="nc" id="L85">          &quot;Attempted to parse malformed UUID: &quot; + Arrays.toString(bytes));</span>
+    }
+
+<span class="fc" id="L88">    uuid = Arrays.copyOf(bytes, UUIDSIZE);</span>
+<span class="fc" id="L89">  }</span>
+
+<span class="fc" id="L91">  public IntegerUuid(final int value) {</span>
+<span class="fc" id="L92">    uuid = new byte[UUIDSIZE];</span>
+<span class="fc" id="L93">    uuid[0] = (byte) (value &gt;&gt; 24);</span>
+<span class="fc" id="L94">    uuid[1] = (byte) (value &gt;&gt; 16);</span>
+<span class="fc" id="L95">    uuid[2] = (byte) (value &gt;&gt; 8);</span>
+<span class="fc" id="L96">    uuid[3] = (byte) value;</span>
+<span class="fc" id="L97">  }</span>
+
+<span class="fc" id="L99">  public IntegerUuid(final String idsource) {</span>
+<span class="fc" id="L100">    final String id = idsource.trim();</span>
+
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (id.length() != UUIDSIZE * 2) {</span>
+<span class="nc" id="L103">      throw new RuntimeException(&quot;Attempted to parse malformed UUID: &quot; + id);</span>
+    }
+
+<span class="fc" id="L106">    uuid = Hexa.fromHex(id);</span>
+<span class="fc" id="L107">  }</span>
+
+  @Override
+  public String toString() {
+<span class="fc" id="L111">    return Hexa.toHex(uuid);</span>
+  }
+
+  /**
+   * copy the uuid of this UUID, so that it can't be changed, and return it
+   *
+   * @return raw byte array of UUID
+   */
+  public byte[] getBytes() {
+<span class="fc" id="L120">    return Arrays.copyOf(uuid, UUIDSIZE);</span>
+  }
+
+  /**
+   * extract timestamp from raw UUID bytes and return as int
+   *
+   * @return millisecond UTC timestamp from generation of the UUID
+   */
+  public long getTimestamp() {
+    long time;
+<span class="fc" id="L130">    time = ((long) uuid[0] &amp; 0xFF) &lt;&lt; 24;</span>
+<span class="fc" id="L131">    time |= ((long) uuid[2] &amp; 0xFF) &lt;&lt; 16;</span>
+<span class="fc" id="L132">    time |= ((long) uuid[2] &amp; 0xFF) &lt;&lt; 8;</span>
+<span class="fc" id="L133">    time |= (long) uuid[3] &amp; 0xFF;</span>
+<span class="fc" id="L134">    return time;</span>
+  }
+
+  @Override
+  public boolean equals(Object o) {
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (!(o instanceof IntegerUuid)) {</span>
+<span class="nc" id="L140">      return false;</span>
+    }
+<span class="pc bpc" id="L142" title="1 of 4 branches missed.">    return this == o || Arrays.equals(uuid, ((IntegerUuid) o).uuid);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="fc" id="L147">    return Arrays.hashCode(uuid);</span>
+  }
+
+  /**
+   * @return the equivalent UUID as int
+   */
+  public int getInt() {
+<span class="fc" id="L154">    int value = ((int) uuid[0] &amp; 0xFF) &lt;&lt; 24;</span>
+<span class="fc" id="L155">    value |= ((long) uuid[1] &amp; 0xFF) &lt;&lt; 16;</span>
+<span class="fc" id="L156">    value |= ((long) uuid[2] &amp; 0xFF) &lt;&lt; 8;</span>
+<span class="fc" id="L157">    value |= (long) uuid[3] &amp; 0xFF;</span>
+<span class="fc" id="L158">    return value;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

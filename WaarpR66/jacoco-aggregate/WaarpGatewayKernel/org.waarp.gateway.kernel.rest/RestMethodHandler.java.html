@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestMethodHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.rest</a> &gt; <span class="el_source">RestMethodHandler.java</span></div><h1>RestMethodHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.rest;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.exception.HttpMethodNotAllowedRequestException;
+import org.waarp.gateway.kernel.exception.HttpNotFoundRequestException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Rest Method handler (used by Http Rest Handler)
+ */
+public abstract class RestMethodHandler {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L54">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L55">      WaarpLoggerFactory.getLogger(RestMethodHandler.class);</span>
+<span class="fc" id="L56">  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];</span>
+
+  protected final String name;
+  protected final String path;
+  protected final Set&lt;METHOD&gt; methods;
+  protected final boolean isBodyJsonDecode;
+  protected final RestConfiguration restConfiguration;
+
+  /**
+   * @param name name associated with this Method Handler (to enable
+   *     some
+   *     HashMap or Enum
+   *     classification)
+   * @param path associated base Path
+   * @param isBodyJsonDecode Is this method Handler using a Json as
+   *     Body
+   * @param config the associated configuration
+   * @param method the associated methods
+   */
+  protected RestMethodHandler(String name, String path,
+                              boolean isBodyJsonDecode,
+<span class="fc" id="L77">                              RestConfiguration config, METHOD... method) {</span>
+<span class="fc" id="L78">    this.name = name;</span>
+<span class="fc" id="L79">    this.path = path;</span>
+<span class="fc" id="L80">    methods = new HashSet&lt;HttpRestHandler.METHOD&gt;();</span>
+<span class="fc" id="L81">    setMethods(method);</span>
+<span class="fc" id="L82">    setMethods(METHOD.OPTIONS);</span>
+<span class="fc" id="L83">    this.isBodyJsonDecode = isBodyJsonDecode;</span>
+<span class="fc" id="L84">    restConfiguration = config;</span>
+<span class="fc" id="L85">  }</span>
+
+  protected void setMethods(METHOD... method) {
+<span class="fc" id="L88">    Collections.addAll(methods, method);</span>
+<span class="fc" id="L89">  }</span>
+
+  /**
+   * Will assign the intersection of both set of Methods
+   *
+   * @param selectedMethods the selected Methods among available
+   * @param validMethod the validMethod for this handler
+   */
+  protected void setIntersectionMethods(METHOD[] selectedMethods,
+                                        METHOD... validMethod) {
+<span class="fc" id="L99">    final Set&lt;METHOD&gt; set = new HashSet&lt;METHOD&gt;();</span>
+<span class="fc" id="L100">    Collections.addAll(set, validMethod);</span>
+<span class="fc" id="L101">    final Set&lt;METHOD&gt; set2 = new HashSet&lt;METHOD&gt;();</span>
+<span class="fc" id="L102">    Collections.addAll(set2, selectedMethods);</span>
+<span class="fc" id="L103">    set.retainAll(set2);</span>
+<span class="fc" id="L104">    final METHOD[] methodsToSet = set.toArray(METHOD_0_LENGTH);</span>
+<span class="fc" id="L105">    setMethods(methodsToSet);</span>
+<span class="fc" id="L106">  }</span>
+
+  public String getName() {
+<span class="nc" id="L109">    return name;</span>
+  }
+
+  public String getPath() {
+<span class="nc" id="L113">    return path;</span>
+  }
+
+  /**
+   * @param method
+   *
+   * @return True if the Method is valid for this Handler
+   */
+  public boolean isMethodIncluded(METHOD method) {
+<span class="fc" id="L122">    return methods.contains(method);</span>
+  }
+
+  /**
+   * Check the session (arguments, result) vs handler correctness, called
+   * before
+   * any BODY elements but after URI
+   * and HEADER.
+   *
+   * @param handler
+   * @param arguments
+   * @param result
+   *
+   * @throws HttpForbiddenRequestException
+   */
+  public abstract void checkHandlerSessionCorrectness(HttpRestHandler handler,
+                                                      RestArgument arguments,
+                                                      RestArgument result)
+      throws HttpForbiddenRequestException;
+
+  /**
+   * Get a new Http Uploaded File from BODY
+   *
+   * @param handler
+   * @param data
+   * @param arguments
+   * @param result
+   *
+   * @throws HttpIncorrectRequestException
+   */
+  public abstract void getFileUpload(HttpRestHandler handler, FileUpload data,
+                                     RestArgument arguments,
+                                     RestArgument result)
+      throws HttpIncorrectRequestException;
+
+  /**
+   * Get data from BODY (supposedly a Json)
+   *
+   * @param handler
+   * @param body
+   * @param arguments
+   * @param result
+   *
+   * @return the object related to BODY decoding
+   *
+   * @throws HttpIncorrectRequestException
+   */
+  public abstract Object getBody(HttpRestHandler handler, ByteBuf body,
+                                 RestArgument arguments, RestArgument result)
+      throws HttpIncorrectRequestException;
+
+  /**
+   * Called when all Data were passed to the handler
+   *
+   * @param handler
+   * @param arguments
+   * @param result
+   * @param body
+   *
+   * @throws HttpIncorrectRequestException
+   * @throws HttpNotFoundRequestException
+   */
+  public abstract void endParsingRequest(HttpRestHandler handler,
+                                         RestArgument arguments,
+                                         RestArgument result, Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
+             HttpNotFoundRequestException;
+
+  /**
+   * Called when an exception occurs
+   *
+   * @param handler
+   * @param arguments
+   * @param result
+   * @param body
+   * @param exception
+   *
+   * @return the status to used in sendReponse
+   */
+  public HttpResponseStatus handleException(HttpRestHandler handler,
+                                            RestArgument arguments,
+                                            RestArgument result, Object body,
+                                            Exception exception) {
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (exception instanceof HttpInvalidAuthenticationException) {</span>
+<span class="nc" id="L206">      result.setResult(HttpResponseStatus.UNAUTHORIZED);</span>
+<span class="nc" id="L207">      return HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    } else if (exception instanceof HttpForbiddenRequestException) {</span>
+<span class="nc" id="L209">      result.setResult(HttpResponseStatus.FORBIDDEN);</span>
+<span class="nc" id="L210">      return HttpResponseStatus.FORBIDDEN;</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    } else if (exception instanceof HttpIncorrectRequestException) {</span>
+<span class="nc" id="L212">      result.setResult(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L213">      return HttpResponseStatus.BAD_REQUEST;</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    } else if (exception instanceof HttpMethodNotAllowedRequestException) {</span>
+<span class="nc" id="L215">      result.setResult(HttpResponseStatus.METHOD_NOT_ALLOWED);</span>
+<span class="nc" id="L216">      return HttpResponseStatus.METHOD_NOT_ALLOWED;</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    } else if (exception instanceof HttpNotFoundRequestException) {</span>
+<span class="nc" id="L218">      result.setResult(HttpResponseStatus.NOT_FOUND);</span>
+<span class="nc" id="L219">      return HttpResponseStatus.NOT_FOUND;</span>
+    } else {
+<span class="nc" id="L221">      result.setResult(HttpResponseStatus.INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L222">      return HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+    }
+  }
+
+  /**
+   * Send a response (correct or not)
+   *
+   * @param handler
+   * @param ctx
+   * @param arguments
+   * @param result
+   * @param body
+   * @param status
+   *
+   * @return The ChannelFuture if this response will need the channel to be
+   *     closed, else null
+   */
+  public abstract ChannelFuture sendResponse(HttpRestHandler handler,
+                                             ChannelHandlerContext ctx,
+                                             RestArgument arguments,
+                                             RestArgument result, Object body,
+                                             HttpResponseStatus status);
+
+  protected ChannelFuture sendOptionsResponse(HttpRestHandler handler,
+                                              ChannelHandlerContext ctx,
+                                              RestArgument result,
+                                              HttpResponseStatus status) {
+<span class="fc" id="L249">    final String list = result.getAllowOption();</span>
+<span class="fc" id="L250">    final String answer = result.toString();</span>
+<span class="fc" id="L251">    final ByteBuf buffer =</span>
+<span class="fc" id="L252">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L253">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="nc" id="L255">      return ctx.writeAndFlush(response);</span>
+    }
+<span class="fc" id="L257">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="fc" id="L258">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="fc" id="L259">    response.headers().add(HttpHeaderNames.ALLOW, list);</span>
+<span class="fc" id="L260">    logger.debug(&quot;Msg ready&quot;);</span>
+<span class="fc" id="L261">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">    if (handler.isWillClose()) {</span>
+<span class="nc" id="L263">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L264">          .syserr(&quot;Will close session in RestMethodHandler&quot;);</span>
+<span class="nc" id="L265">      return future;</span>
+    }
+<span class="fc" id="L267">    return null;</span>
+  }
+
+  /**
+   * Options command that all handler should implement
+   *
+   * @param handler
+   * @param arguments
+   * @param result
+   */
+  protected void optionsCommand(HttpRestHandler handler, RestArgument arguments,
+                                RestArgument result) {
+<span class="fc" id="L279">    result.setCommand(COMMAND_TYPE.OPTIONS);</span>
+<span class="fc" id="L280">    final METHOD[] realmethods = METHOD.values();</span>
+<span class="fc" id="L281">    final boolean[] allMethods = new boolean[realmethods.length];</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">    for (final METHOD methoditem : methods) {</span>
+<span class="fc" id="L283">      allMethods[methoditem.ordinal()] = true;</span>
+<span class="fc" id="L284">    }</span>
+<span class="fc" id="L285">    StringBuilder allow = null;</span>
+<span class="fc bfc" id="L286" title="All 2 branches covered.">    for (int i = 0; i &lt; allMethods.length; i++) {</span>
+<span class="fc bfc" id="L287" title="All 2 branches covered.">      if (allMethods[i]) {</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">        if (allow == null) {</span>
+<span class="fc" id="L289">          allow = new StringBuilder(realmethods[i].name());</span>
+        } else {
+<span class="fc" id="L291">          allow.append(',').append(realmethods[i].name());</span>
+        }
+      }
+    }
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">    if (allow != null) {</span>
+<span class="fc" id="L296">      result.addOptions(allow.toString(), path, getDetailedAllow());</span>
+    }
+<span class="fc" id="L298">  }</span>
+
+  /**
+   * @return the detail of the method handler
+   */
+  protected abstract ArrayNode getDetailedAllow();
+
+  /**
+   * @return the isBodyJson
+   */
+  public boolean isBodyJsonDecoded() {
+<span class="fc" id="L309">    return isBodyJsonDecode;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

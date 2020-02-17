@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationFileBasedConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.configuration</a> &gt; <span class="el_source">AuthenticationFileBasedConfiguration.java</span></div><h1>AuthenticationFileBasedConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.configuration;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.dom4j.tree.DefaultElement;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.waarp.openr66.configuration.FileBasedElements.*;
+
+/**
+ * Authentication from File support
+ */
+public class AuthenticationFileBasedConfiguration {
+  private static final String CANNOT_READ_KEY_FOR_HOST_ID =
+      &quot;Cannot read key for hostId &quot;;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L56">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L57">      WaarpLoggerFactory.getLogger(AuthenticationFileBasedConfiguration.class);</span>
+
+  private AuthenticationFileBasedConfiguration() {
+  }
+
+  /**
+   * Load Authentication from File
+   *
+   * @param filename
+   *
+   * @return True if OK
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public static boolean loadAuthentication(Configuration config,
+                                           String filename) {
+    Document document;
+    try {
+<span class="fc" id="L74">      document = new SAXReader().read(filename);</span>
+<span class="nc" id="L75">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L76">      logger</span>
+<span class="nc" id="L77">          .error(&quot;Unable to read the XML Authentication file: &quot; + filename, e);</span>
+<span class="nc" id="L78">      return false;</span>
+<span class="fc" id="L79">    }</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L81">      logger.error(&quot;Unable to read the XML Authentication file: &quot; + filename);</span>
+<span class="nc" id="L82">      return false;</span>
+    }
+<span class="fc" id="L84">    XmlValue[] values = XmlUtil.read(document, authentElements);</span>
+<span class="fc" id="L85">    final XmlHash hash = new XmlHash(values);</span>
+<span class="fc" id="L86">    XmlValue value = hash.get(XML_AUTHENTIFICATION_ENTRY);</span>
+<span class="fc" id="L87">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="fc" id="L88">    final Iterator&lt;XmlValue[]&gt; iterator = list.iterator();</span>
+    File key;
+    byte[] byteKeys;
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    while (iterator.hasNext()) {</span>
+<span class="fc" id="L92">      final XmlValue[] subvalues = iterator.next();</span>
+<span class="fc" id="L93">      final XmlHash subHash = new XmlHash(subvalues);</span>
+<span class="fc" id="L94">      value = subHash.get(XML_AUTHENTIFICATION_HOSTID);</span>
+<span class="pc bpc" id="L95" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L96">        continue;</span>
+      }
+<span class="fc" id="L98">      final String refHostId = value.getString();</span>
+<span class="fc" id="L99">      value = subHash.get(XML_AUTHENTIFICATION_KEYFILE);</span>
+<span class="pc bpc" id="L100" title="1 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L101">        value = subHash.get(XML_AUTHENTIFICATION_KEY);</span>
+<span class="pc bpc" id="L102" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+          // Allow empty key
+<span class="nc" id="L104">          byteKeys = null;</span>
+        } else {
+<span class="fc" id="L106">          final String skey = value.getString();</span>
+          // key is crypted
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">          if (!skey.isEmpty()) {</span>
+            try {
+<span class="fc" id="L110">              byteKeys = config.getCryptoKey().decryptHexInBytes(skey);</span>
+<span class="nc" id="L111">            } catch (final Exception e) {</span>
+<span class="nc" id="L112">              logger</span>
+<span class="nc" id="L113">                  .error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId + ':' + skey);</span>
+<span class="nc" id="L114">              continue;</span>
+<span class="fc" id="L115">            }</span>
+          } else {
+<span class="nc" id="L117">            byteKeys = null;</span>
+          }
+<span class="fc" id="L119">        }</span>
+      } else {
+<span class="fc" id="L121">        final String skey = value.getString();</span>
+        // load key from file
+<span class="fc" id="L123">        key = new File(skey);</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">        if (!key.canRead()) {</span>
+<span class="nc" id="L125">          logger.error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId + ':' + skey);</span>
+<span class="nc" id="L126">          continue;</span>
+        }
+        try {
+<span class="fc" id="L129">          byteKeys = config.getCryptoKey().decryptHexFile(key);</span>
+<span class="nc" id="L130">        } catch (final Exception e2) {</span>
+<span class="nc" id="L131">          logger.error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId, e2);</span>
+<span class="nc" id="L132">          continue;</span>
+<span class="fc" id="L133">        }</span>
+      }
+<span class="fc" id="L135">      boolean isAdmin = false;</span>
+<span class="fc" id="L136">      value = subHash.get(XML_AUTHENTIFICATION_ADMIN);</span>
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L138">        isAdmin = value.getBoolean();</span>
+      }
+<span class="fc" id="L140">      value = subHash.get(XML_AUTHENTIFICATION_ADDRESS);</span>
+<span class="pc bpc" id="L141" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L142">        continue;</span>
+      }
+<span class="fc" id="L144">      final String address = value.getString();</span>
+      int port;
+<span class="fc" id="L146">      value = subHash.get(XML_AUTHENTIFICATION_PORT);</span>
+<span class="pc bpc" id="L147" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L148">        port = value.getInteger();</span>
+      } else {
+        continue;
+      }
+<span class="fc" id="L152">      boolean isSsl = false;</span>
+<span class="fc" id="L153">      value = subHash.get(XML_AUTHENTIFICATION_ISSSL);</span>
+<span class="pc bpc" id="L154" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L155">        isSsl = value.getBoolean();</span>
+      }
+<span class="fc" id="L157">      boolean isClient = false;</span>
+<span class="fc" id="L158">      value = subHash.get(XML_AUTHENTIFICATION_ISCLIENT);</span>
+<span class="pc bpc" id="L159" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L160">        isClient = value.getBoolean();</span>
+      }
+<span class="fc" id="L162">      boolean isActive = true;</span>
+<span class="fc" id="L163">      value = subHash.get(XML_AUTHENTIFICATION_ISACTIVE);</span>
+<span class="pc bpc" id="L164" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L165">        isActive = value.getBoolean();</span>
+      }
+<span class="fc" id="L167">      boolean isProxified = false;</span>
+<span class="fc" id="L168">      value = subHash.get(XML_AUTHENTIFICATION_ISPROXIFIED);</span>
+<span class="pc bpc" id="L169" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L170">        isProxified = value.getBoolean();</span>
+      }
+<span class="fc" id="L172">      final DbHostAuth auth =</span>
+          new DbHostAuth(refHostId, address, port, isSsl, byteKeys, isAdmin,
+                         isClient);
+<span class="fc" id="L175">      auth.setActive(isActive);</span>
+<span class="fc" id="L176">      auth.setProxified(isProxified);</span>
+      try {
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (auth.exist()) {</span>
+<span class="fc" id="L179">          auth.update();</span>
+        } else {
+<span class="fc" id="L181">          auth.insert();</span>
+        }
+<span class="nc" id="L183">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L184">        logger.error(&quot;Cannot create Authentication for hostId {}&quot;, refHostId);</span>
+<span class="nc" id="L185">        continue;</span>
+<span class="fc" id="L186">      }</span>
+<span class="fc" id="L187">      logger.debug(&quot;Add {} {}&quot;, refHostId, auth);</span>
+<span class="fc" id="L188">    }</span>
+<span class="fc" id="L189">    hash.clear();</span>
+<span class="fc" id="L190">    return true;</span>
+  }
+
+  /**
+   * Construct a new Element with value
+   *
+   * @param name
+   * @param value
+   *
+   * @return the new Element
+   */
+  private static Element newElement(String name, String value) {
+<span class="fc" id="L202">    final Element node = new DefaultElement(name);</span>
+<span class="fc" id="L203">    node.addText(value);</span>
+<span class="fc" id="L204">    return node;</span>
+  }
+
+  /**
+   * Write all authentication to a file with filename
+   *
+   * @param filename
+   *
+   * @throws OpenR66ProtocolSystemException
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static void writeXML(Configuration config, String filename)
+      throws OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
+             WaarpDatabaseSqlException {
+<span class="fc" id="L219">    final Document document = DocumentHelper.createDocument();</span>
+<span class="fc" id="L220">    final Element root = document.addElement(XML_AUTHENTIFICATION_ROOT);</span>
+<span class="fc" id="L221">    final DbHostAuth[] hosts = DbHostAuth.getAllHosts();</span>
+<span class="fc" id="L222">    logger.debug(&quot;Will write DbHostAuth: &quot; + hosts.length + &quot; in &quot; + filename);</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">    for (final DbHostAuth auth : hosts) {</span>
+<span class="fc" id="L224">      logger.debug(&quot;Will write DbHostAuth: &quot; + auth.getHostid());</span>
+<span class="fc" id="L225">      final Element entry = new DefaultElement(XML_AUTHENTIFICATION_ENTRY);</span>
+<span class="fc" id="L226">      entry.add(newElement(XML_AUTHENTIFICATION_HOSTID, auth.getHostid()));</span>
+<span class="fc" id="L227">      final byte[] key = auth.getHostkey();</span>
+      String encode;
+      try {
+<span class="fc" id="L230">        encode = config.getCryptoKey().cryptToHex(key);</span>
+<span class="nc" id="L231">      } catch (final Exception e) {</span>
+<span class="nc" id="L232">        encode = &quot;&quot;;</span>
+<span class="fc" id="L233">      }</span>
+<span class="fc" id="L234">      entry.add(newElement(XML_AUTHENTIFICATION_KEY, encode));</span>
+<span class="fc" id="L235">      entry.add(newElement(XML_AUTHENTIFICATION_ADMIN,</span>
+<span class="fc" id="L236">                           Boolean.toString(auth.isAdminrole())));</span>
+<span class="fc" id="L237">      entry.add(newElement(XML_AUTHENTIFICATION_ADDRESS, auth.getAddress()));</span>
+<span class="fc" id="L238">      entry.add(newElement(XML_AUTHENTIFICATION_PORT,</span>
+<span class="fc" id="L239">                           Integer.toString(auth.getPort())));</span>
+<span class="fc" id="L240">      entry.add(newElement(XML_AUTHENTIFICATION_ISSSL,</span>
+<span class="fc" id="L241">                           Boolean.toString(auth.isSsl())));</span>
+<span class="fc" id="L242">      entry.add(newElement(XML_AUTHENTIFICATION_ISCLIENT,</span>
+<span class="fc" id="L243">                           Boolean.toString(auth.isClient())));</span>
+<span class="fc" id="L244">      entry.add(newElement(XML_AUTHENTIFICATION_ISACTIVE,</span>
+<span class="fc" id="L245">                           Boolean.toString(auth.isActive())));</span>
+<span class="fc" id="L246">      entry.add(newElement(XML_AUTHENTIFICATION_ISPROXIFIED,</span>
+<span class="fc" id="L247">                           Boolean.toString(auth.isProxified())));</span>
+<span class="fc" id="L248">      root.add(entry);</span>
+    }
+    try {
+<span class="fc" id="L251">      XmlUtil.writeXML(filename, null, document);</span>
+<span class="nc" id="L252">    } catch (final IOException e) {</span>
+<span class="nc" id="L253">      throw new OpenR66ProtocolSystemException(&quot;Cannot write file: &quot; + filename,</span>
+                                               e);
+<span class="fc" id="L255">    }</span>
+<span class="fc" id="L256">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

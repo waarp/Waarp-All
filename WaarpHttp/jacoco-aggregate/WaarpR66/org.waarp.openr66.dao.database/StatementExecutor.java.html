@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>StatementExecutor.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.dao.database</a> &gt; <span class="el_source">StatementExecutor.java</span></div><h1>StatementExecutor.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.dao.database;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.dao.AbstractDAO;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public abstract class StatementExecutor&lt;E&gt; implements AbstractDAO&lt;E&gt; {
+
+<span class="fc" id="L41">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L42">      WaarpLoggerFactory.getLogger(StatementExecutor.class);</span>
+  protected final Connection connection;
+
+  public abstract E getFromResultSet(ResultSet set)
+      throws SQLException, DAOConnectionException;
+
+<span class="fc" id="L48">  protected StatementExecutor(Connection con) {</span>
+<span class="fc" id="L49">    connection = con;</span>
+<span class="fc" id="L50">  }</span>
+
+  public void setParameters(PreparedStatement stm, Object... values)
+      throws SQLException {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">    for (int i = 0; i &lt; values.length; i++) {</span>
+<span class="fc" id="L55">      stm.setObject(i + 1, values[i]);</span>
+    }
+<span class="fc" id="L57">  }</span>
+
+  public void executeUpdate(PreparedStatement stm) throws SQLException {
+    int res;
+<span class="fc" id="L61">    res = stm.executeUpdate();</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">    if (res &lt; 1) {</span>
+<span class="fc" id="L63">      logger.error(&quot;Update failed, no record updated.&quot;);</span>
+      //FIXME should be throw new SQLDataException(&quot;Update failed, no record
+      // updated.&quot;);
+    } else {
+<span class="fc" id="L67">      logger.debug(&quot;{} records updated.&quot;, res);</span>
+    }
+<span class="fc" id="L69">  }</span>
+
+  public void executeAction(PreparedStatement stm) throws SQLException {
+<span class="fc" id="L72">    stm.executeUpdate();</span>
+<span class="fc" id="L73">  }</span>
+
+  public ResultSet executeQuery(PreparedStatement stm) throws SQLException {
+<span class="fc" id="L76">    return stm.executeQuery();</span>
+  }
+
+  public void closeStatement(Statement stm) {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (stm == null) {</span>
+<span class="nc" id="L81">      return;</span>
+    }
+    try {
+<span class="fc" id="L84">      stm.close();</span>
+<span class="nc" id="L85">    } catch (final SQLException e) {</span>
+<span class="nc" id="L86">      logger.warn(&quot;An error occurs while closing the statement.&quot;, e);</span>
+<span class="fc" id="L87">    }</span>
+<span class="fc" id="L88">  }</span>
+
+  public void closeResultSet(ResultSet rs) {
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L92">      return;</span>
+    }
+    try {
+<span class="fc" id="L95">      rs.close();</span>
+<span class="nc" id="L96">    } catch (final SQLException e) {</span>
+<span class="nc" id="L97">      logger.warn(&quot;An error occurs while closing the resultSet.&quot;, e);</span>
+<span class="fc" id="L98">    }</span>
+<span class="fc" id="L99">  }</span>
+
+  public void close() {
+    try {
+<span class="fc" id="L103">      connection.close();</span>
+<span class="nc" id="L104">    } catch (final SQLException e) {</span>
+<span class="nc" id="L105">      logger.warn(&quot;Cannot properly close the database connection&quot;, e);</span>
+<span class="fc" id="L106">    }</span>
+<span class="fc" id="L107">  }</span>
+
+  protected abstract String getId(E e1);
+
+  protected abstract String getSelectRequest();
+
+  protected abstract String getGetAllRequest();
+
+  protected abstract String getExistRequest();
+
+  protected abstract Object[] getInsertValues(E e1);
+
+  protected abstract String getInsertRequest();
+
+  protected abstract Object[] getUpdateValues(E e1);
+
+  protected abstract String getUpdateRequest();
+
+  protected abstract String getDeleteRequest();
+
+  protected abstract String getDeleteAllRequest();
+
+  @Override
+  public void delete(E e1) throws DAOConnectionException, DAONoDataException {
+<span class="fc" id="L131">    PreparedStatement stm = null;</span>
+    try {
+<span class="fc" id="L133">      stm = connection.prepareStatement(getDeleteRequest());</span>
+<span class="fc" id="L134">      setParameters(stm, getId(e1));</span>
+      try {
+<span class="fc" id="L136">        executeAction(stm);</span>
+<span class="nc" id="L137">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L138">        throw new DAONoDataException(e2);</span>
+<span class="fc" id="L139">      }</span>
+<span class="nc" id="L140">    } catch (final SQLException e) {</span>
+<span class="nc" id="L141">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L143">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L145">  }</span>
+
+  @Override
+  public void deleteAll() throws DAOConnectionException {
+<span class="fc" id="L149">    PreparedStatement stm = null;</span>
+    try {
+<span class="fc" id="L151">      stm = connection.prepareStatement(getDeleteAllRequest());</span>
+<span class="fc" id="L152">      executeAction(stm);</span>
+<span class="nc" id="L153">    } catch (final SQLException e) {</span>
+<span class="nc" id="L154">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L156">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L158">  }</span>
+
+  @Override
+  public List&lt;E&gt; getAll() throws DAOConnectionException {
+<span class="fc" id="L162">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
+<span class="fc" id="L163">    PreparedStatement stm = null;</span>
+<span class="fc" id="L164">    ResultSet res = null;</span>
+    try {
+<span class="fc" id="L166">      stm = connection.prepareStatement(getGetAllRequest());</span>
+<span class="fc" id="L167">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">      while (res.next()) {</span>
+<span class="fc" id="L169">        es.add(getFromResultSet(res));</span>
+      }
+<span class="nc" id="L171">    } catch (final SQLException e) {</span>
+<span class="nc" id="L172">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L174">      closeResultSet(res);</span>
+<span class="fc" id="L175">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L177">    return es;</span>
+  }
+
+  @Override
+  public List&lt;E&gt; find(List&lt;Filter&gt; filters) throws DAOConnectionException {
+<span class="fc" id="L182">    final ArrayList&lt;E&gt; es = new ArrayList&lt;E&gt;();</span>
+    // Create the SQL query
+<span class="fc" id="L184">    final StringBuilder query = new StringBuilder(getGetAllRequest());</span>
+<span class="fc" id="L185">    final Object[] params = new Object[filters.size()];</span>
+<span class="fc" id="L186">    final Iterator&lt;Filter&gt; it = filters.listIterator();</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">    if (it.hasNext()) {</span>
+<span class="fc" id="L188">      query.append(&quot; WHERE &quot;);</span>
+    }
+<span class="fc" id="L190">    String prefix = &quot;&quot;;</span>
+<span class="fc" id="L191">    int i = 0;</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">    while (it.hasNext()) {</span>
+<span class="fc" id="L193">      query.append(prefix);</span>
+<span class="fc" id="L194">      final Filter filter = it.next();</span>
+<span class="fc" id="L195">      query.append(filter.key + ' ' + filter.operand + &quot; ?&quot;);</span>
+<span class="fc" id="L196">      params[i] = filter.value;</span>
+<span class="fc" id="L197">      i++;</span>
+<span class="fc" id="L198">      prefix = &quot; AND &quot;;</span>
+<span class="fc" id="L199">    }</span>
+    // Execute query
+<span class="fc" id="L201">    PreparedStatement stm = null;</span>
+<span class="fc" id="L202">    ResultSet res = null;</span>
+    try {
+<span class="fc" id="L204">      stm = connection.prepareStatement(query.toString());</span>
+<span class="fc" id="L205">      setParameters(stm, params);</span>
+<span class="fc" id="L206">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">      while (res.next()) {</span>
+<span class="fc" id="L208">        es.add(getFromResultSet(res));</span>
+      }
+<span class="nc" id="L210">    } catch (final SQLException e) {</span>
+<span class="nc" id="L211">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L213">      closeResultSet(res);</span>
+<span class="fc" id="L214">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L216">    return es;</span>
+  }
+
+  @Override
+  public boolean exist(String id) throws DAOConnectionException {
+<span class="fc" id="L221">    PreparedStatement stm = null;</span>
+<span class="fc" id="L222">    ResultSet res = null;</span>
+    try {
+<span class="fc" id="L224">      stm = connection.prepareStatement(getExistRequest());</span>
+<span class="fc" id="L225">      setParameters(stm, id);</span>
+<span class="fc" id="L226">      res = executeQuery(stm);</span>
+<span class="fc" id="L227">      return res.next();</span>
+<span class="nc" id="L228">    } catch (final SQLException e) {</span>
+<span class="nc" id="L229">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L231">      closeResultSet(res);</span>
+<span class="fc" id="L232">      closeStatement(stm);</span>
+    }
+  }
+
+  @Override
+  public E select(String id) throws DAOConnectionException, DAONoDataException {
+<span class="fc" id="L238">    PreparedStatement stm = null;</span>
+<span class="fc" id="L239">    ResultSet res = null;</span>
+    try {
+<span class="fc" id="L241">      stm = connection.prepareStatement(getSelectRequest());</span>
+<span class="fc" id="L242">      setParameters(stm, id);</span>
+<span class="fc" id="L243">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">      if (res.next()) {</span>
+<span class="fc" id="L245">        return getFromResultSet(res);</span>
+      } else {
+<span class="fc" id="L247">        throw new DAONoDataException(&quot;No &quot; + getClass().getName() + &quot; found&quot;);</span>
+      }
+<span class="nc" id="L249">    } catch (final SQLException e) {</span>
+<span class="nc" id="L250">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L252">      closeResultSet(res);</span>
+<span class="fc" id="L253">      closeStatement(stm);</span>
+    }
+  }
+
+  @Override
+  public void insert(E e1) throws DAOConnectionException {
+<span class="fc" id="L259">    final Object[] params = getInsertValues(e1);</span>
+
+<span class="fc" id="L261">    PreparedStatement stm = null;</span>
+    try {
+<span class="fc" id="L263">      stm = connection.prepareStatement(getInsertRequest());</span>
+<span class="fc" id="L264">      setParameters(stm, params);</span>
+<span class="fc" id="L265">      executeUpdate(stm);</span>
+<span class="fc" id="L266">    } catch (final SQLException e) {</span>
+<span class="fc" id="L267">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L269">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L271">  }</span>
+
+  @Override
+  public void update(E e1) throws DAOConnectionException, DAONoDataException {
+<span class="fc" id="L275">    final Object[] params = getUpdateValues(e1);</span>
+
+<span class="fc" id="L277">    PreparedStatement stm = null;</span>
+    try {
+<span class="fc" id="L279">      stm = connection.prepareStatement(getUpdateRequest());</span>
+<span class="fc" id="L280">      setParameters(stm, params);</span>
+      try {
+<span class="fc" id="L282">        executeUpdate(stm);</span>
+<span class="nc" id="L283">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L284">        throw new DAONoDataException(e2);</span>
+<span class="fc" id="L285">      }</span>
+<span class="nc" id="L286">    } catch (final SQLException e) {</span>
+<span class="nc" id="L287">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L289">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L291">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

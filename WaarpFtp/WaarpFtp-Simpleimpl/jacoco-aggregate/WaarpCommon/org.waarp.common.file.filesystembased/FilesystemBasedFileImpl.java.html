@@ -1,0 +1,772 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FilesystemBasedFileImpl.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.file.filesystembased</a> &gt; <span class="el_source">FilesystemBasedFileImpl.java</span></div><h1>FilesystemBasedFileImpl.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.file.filesystembased;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.exception.FileEndOfTransferException;
+import org.waarp.common.exception.FileTransferException;
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.file.AbstractFile;
+import org.waarp.common.file.DataBlock;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.file.SessionInterface;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
+/**
+ * File implementation for Filesystem Based
+ */
+public abstract class FilesystemBasedFileImpl extends AbstractFile {
+  private static final String ERROR_DURING_GET = &quot;Error during get:&quot;;
+
+  private static final String INTERNAL_ERROR_FILE_IS_NOT_READY =
+      &quot;Internal error, file is not ready&quot;;
+
+  private static final String NO_FILE_IS_READY = &quot;No file is ready&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(FilesystemBasedFileImpl.class);</span>
+
+  /**
+   * SessionInterface
+   */
+  protected final SessionInterface session;
+
+  /**
+   * DirInterface associated with this file at creation. It is not necessary
+   * the
+   * directory that owns this file.
+   */
+  private final FilesystemBasedDirImpl dir;
+
+  /**
+   * {@link FilesystemBasedAuthImpl}
+   */
+  private final FilesystemBasedAuthImpl auth;
+
+  /**
+   * Current file if any
+   */
+  protected String currentFile;
+
+  /**
+   * Is this file in append mode
+   */
+  protected boolean isAppend;
+
+  /**
+   * @param session
+   * @param dir It is not necessary the directory that owns this file.
+   * @param path
+   * @param append
+   *
+   * @throws CommandAbstractException
+   */
+  protected FilesystemBasedFileImpl(SessionInterface session,
+                                    FilesystemBasedDirImpl dir, String path,
+                                    boolean append)
+<span class="fc" id="L100">      throws CommandAbstractException {</span>
+<span class="fc" id="L101">    this.session = session;</span>
+<span class="fc" id="L102">    auth = (FilesystemBasedAuthImpl) session.getAuth();</span>
+<span class="fc" id="L103">    this.dir = dir;</span>
+<span class="fc" id="L104">    currentFile = path;</span>
+<span class="fc" id="L105">    isAppend = append;</span>
+<span class="fc" id="L106">    final File file = getFileFromPath(path);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">    if (append) {</span>
+      try {
+<span class="nc" id="L109">        setPosition(file.length());</span>
+<span class="nc" id="L110">      } catch (final IOException e) {</span>
+        // not ready
+<span class="nc" id="L112">        return;</span>
+<span class="nc" id="L113">      }</span>
+    } else {
+      try {
+<span class="fc" id="L116">        setPosition(0);</span>
+<span class="nc" id="L117">      } catch (final IOException ignored) {</span>
+        // nothing
+<span class="fc" id="L119">      }</span>
+    }
+<span class="fc" id="L121">    isReady = true;</span>
+<span class="fc" id="L122">  }</span>
+
+  /**
+   * Special constructor for possibly external file
+   *
+   * @param session
+   * @param dir It is not necessary the directory that owns this file.
+   * @param path
+   */
+  protected FilesystemBasedFileImpl(SessionInterface session,
+<span class="nc" id="L132">                                    FilesystemBasedDirImpl dir, String path) {</span>
+<span class="nc" id="L133">    this.session = session;</span>
+<span class="nc" id="L134">    auth = (FilesystemBasedAuthImpl) session.getAuth();</span>
+<span class="nc" id="L135">    this.dir = dir;</span>
+<span class="nc" id="L136">    currentFile = path;</span>
+<span class="nc" id="L137">    isReady = true;</span>
+<span class="nc" id="L138">    isAppend = false;</span>
+<span class="nc" id="L139">    position = 0;</span>
+<span class="nc" id="L140">  }</span>
+
+  @Override
+  public void clear() throws CommandAbstractException {
+<span class="nc" id="L144">    super.clear();</span>
+<span class="nc" id="L145">    currentFile = null;</span>
+<span class="nc" id="L146">    isAppend = false;</span>
+<span class="nc" id="L147">  }</span>
+
+  @Override
+  public SessionInterface getSession() {
+<span class="fc" id="L151">    return session;</span>
+  }
+
+  @Override
+  public DirInterface getDir() {
+<span class="fc" id="L156">    return dir;</span>
+  }
+
+  /**
+   * Get the File from this path, checking first its validity
+   *
+   * @param path
+   *
+   * @return the FileInterface
+   *
+   * @throws CommandAbstractException
+   */
+  protected File getFileFromPath(String path) throws CommandAbstractException {
+<span class="fc" id="L169">    final String newdir = getDir().validatePath(path);</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (dir.isAbsolute(newdir)) {</span>
+<span class="nc" id="L171">      return new File(newdir);</span>
+    }
+<span class="fc" id="L173">    final String truedir = auth.getAbsolutePath(newdir);</span>
+<span class="fc" id="L174">    final File file = new File(truedir);</span>
+<span class="fc" id="L175">    logger.debug(&quot;Final File: &quot; + truedir + &quot; CanRead: &quot; + file.canRead());</span>
+<span class="fc" id="L176">    return file;</span>
+  }
+
+  /**
+   * Get the relative path (without mount point)
+   *
+   * @param file
+   *
+   * @return the relative path
+   */
+  protected String getRelativePath(File file) {
+<span class="nc" id="L187">    return auth</span>
+<span class="nc" id="L188">        .getRelativePath(AbstractDir.normalizePath(file.getAbsolutePath()));</span>
+  }
+
+  @Override
+  public boolean isDirectory() throws CommandAbstractException {
+<span class="nc" id="L193">    checkIdentify();</span>
+<span class="nc" id="L194">    final File dir1 = getFileFromPath(currentFile);</span>
+<span class="nc" id="L195">    return dir1.isDirectory();</span>
+  }
+
+  @Override
+  public boolean isFile() throws CommandAbstractException {
+<span class="nc" id="L200">    checkIdentify();</span>
+<span class="nc" id="L201">    return getFileFromPath(currentFile).isFile();</span>
+  }
+
+  @Override
+  public String getFile() throws CommandAbstractException {
+<span class="fc" id="L206">    checkIdentify();</span>
+<span class="fc" id="L207">    return currentFile;</span>
+  }
+
+  @Override
+  public boolean closeFile() throws CommandAbstractException {
+<span class="fc bfc" id="L212" title="All 2 branches covered.">    if (bfileChannelIn != null) {</span>
+<span class="fc" id="L213">      FileUtils.close(bfileChannelIn);</span>
+<span class="fc" id="L214">      bfileChannelIn = null;</span>
+<span class="fc" id="L215">      bbyteBuffer = null;</span>
+    }
+<span class="fc bfc" id="L217" title="All 2 branches covered.">    if (fileOutputStream != null) {</span>
+<span class="fc" id="L218">      FileUtils.close(fileOutputStream);</span>
+<span class="fc" id="L219">      fileOutputStream = null;</span>
+    }
+<span class="fc" id="L221">    position = 0;</span>
+<span class="fc" id="L222">    isReady = false;</span>
+    // Do not clear the filename itself
+<span class="fc" id="L224">    return true;</span>
+  }
+
+  @Override
+  public boolean abortFile() throws CommandAbstractException {
+<span class="nc bnc" id="L229" title="All 2 branches missed.">    if (isInWriting() &amp;&amp; ((FilesystemBasedFileParameterImpl) getSession()</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        .getFileParameter()).deleteOnAbort) {</span>
+<span class="nc" id="L231">      delete();</span>
+    }
+<span class="nc" id="L233">    closeFile();</span>
+<span class="nc" id="L234">    return true;</span>
+  }
+
+  @Override
+  public long length() throws CommandAbstractException {
+<span class="fc" id="L239">    checkIdentify();</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L241">      return -1;</span>
+    }
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">    if (!exists()) {</span>
+<span class="nc" id="L244">      return -1;</span>
+    }
+<span class="fc" id="L246">    return getFileFromPath(currentFile).length();</span>
+  }
+
+  @Override
+  public boolean isInReading() throws CommandAbstractException {
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="fc" id="L252">      return false;</span>
+    }
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    return bfileChannelIn != null;</span>
+  }
+
+  @Override
+  public boolean isInWriting() throws CommandAbstractException {
+<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L260">      return false;</span>
+    }
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    return fileOutputStream != null;</span>
+  }
+
+  @Override
+  public boolean canRead() throws CommandAbstractException {
+<span class="fc" id="L267">    checkIdentify();</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L269">      return false;</span>
+    }
+<span class="fc" id="L271">    return getFileFromPath(currentFile).canRead();</span>
+  }
+
+  @Override
+  public boolean canWrite() throws CommandAbstractException {
+<span class="fc" id="L276">    checkIdentify();</span>
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L278">      return false;</span>
+    }
+<span class="fc" id="L280">    final File file = getFileFromPath(currentFile);</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">    if (file.exists()) {</span>
+<span class="fc" id="L282">      return file.canWrite();</span>
+    }
+<span class="fc" id="L284">    return file.getParentFile().canWrite();</span>
+  }
+
+  @Override
+  public boolean exists() throws CommandAbstractException {
+<span class="fc" id="L289">    checkIdentify();</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L291">      return false;</span>
+    }
+<span class="fc" id="L293">    return getFileFromPath(currentFile).exists();</span>
+  }
+
+  @Override
+  public boolean delete() throws CommandAbstractException {
+<span class="fc" id="L298">    checkIdentify();</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L300">      return false;</span>
+    }
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">    if (!exists()) {</span>
+<span class="nc" id="L303">      return true;</span>
+    }
+<span class="fc" id="L305">    closeFile();</span>
+<span class="fc" id="L306">    return getFileFromPath(currentFile).delete();</span>
+  }
+
+  @Override
+  public boolean renameTo(String path) throws CommandAbstractException {
+<span class="nc" id="L311">    checkIdentify();</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L313">      logger.warn(&quot;File not ready: {}&quot;, this);</span>
+<span class="nc" id="L314">      return false;</span>
+    }
+<span class="nc" id="L316">    final File file = getFileFromPath(currentFile);</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">    if (file.canRead()) {</span>
+<span class="nc" id="L318">      final File newFile = getFileFromPath(path);</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">      if (newFile.exists()) {</span>
+<span class="nc" id="L320">        logger.warn(&quot;Target file already exists: &quot; + newFile.getAbsolutePath());</span>
+<span class="nc" id="L321">        return false;</span>
+      }
+<span class="nc bnc" id="L323" title="All 2 branches missed.">      if (newFile.getAbsolutePath().equals(file.getAbsolutePath())) {</span>
+        // already in the right position
+<span class="nc" id="L325">        isReady = true;</span>
+<span class="nc" id="L326">        return true;</span>
+      }
+<span class="nc bnc" id="L328" title="All 2 branches missed.">      if (newFile.getParentFile().canWrite()) {</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">        if (!file.renameTo(newFile)) {</span>
+<span class="nc" id="L330">          FileOutputStream fileOutputStreamNew = null;</span>
+          try {
+            try {
+<span class="nc" id="L333">              fileOutputStreamNew = new FileOutputStream(newFile);</span>
+<span class="nc" id="L334">            } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L335">              logger.warn(&quot;Cannot find file: &quot; + newFile.getName(), e);</span>
+<span class="nc" id="L336">              return false;</span>
+<span class="nc" id="L337">            }</span>
+<span class="nc" id="L338">            final FileChannel fileChannelOut = fileOutputStreamNew.getChannel();</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">            if (get(fileChannelOut)) {</span>
+<span class="nc" id="L340">              delete();</span>
+            } else {
+<span class="nc" id="L342">              FileUtils.close(fileChannelOut);</span>
+<span class="nc" id="L343">              logger.warn(&quot;Cannot write file: {}&quot;, newFile);</span>
+<span class="nc" id="L344">              return false;</span>
+            }
+          } finally {
+<span class="nc" id="L347">            FileUtils.close(fileOutputStreamNew);</span>
+          }
+        }
+<span class="nc" id="L350">        currentFile = getRelativePath(newFile);</span>
+<span class="nc" id="L351">        isReady = true;</span>
+<span class="nc" id="L352">        logger</span>
+<span class="nc" id="L353">            .debug(&quot;File renamed to: {} and real position: {}&quot;, this, newFile);</span>
+<span class="nc" id="L354">        return true;</span>
+      } else {
+<span class="nc" id="L356">        logger.warn(&quot;Cannot write file: {} from {}&quot;, newFile, file);</span>
+<span class="nc" id="L357">        return false;</span>
+      }
+    }
+<span class="nc" id="L360">    logger.warn(&quot;Cannot read file: {}&quot;, file);</span>
+<span class="nc" id="L361">    return false;</span>
+  }
+
+  @Override
+  public DataBlock readDataBlock()
+      throws FileTransferException, FileEndOfTransferException {
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">    if (isReady) {</span>
+<span class="fc" id="L368">      final DataBlock dataBlock = new DataBlock();</span>
+      ByteBuf buffer;
+<span class="fc" id="L370">      buffer = getBlock(getSession().getBlockSize());</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">      if (buffer != null) {</span>
+<span class="fc" id="L372">        dataBlock.setBlock(buffer);</span>
+<span class="fc bfc" id="L373" title="All 2 branches covered.">        if (dataBlock.getByteCount() &lt; getSession().getBlockSize()) {</span>
+<span class="fc" id="L374">          dataBlock.setEOF(true);</span>
+        }
+<span class="fc" id="L376">        return dataBlock;</span>
+      }
+    }
+<span class="nc" id="L379">    throw new FileTransferException(NO_FILE_IS_READY);</span>
+  }
+
+  @Override
+  public void writeDataBlock(DataBlock dataBlock) throws FileTransferException {
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">    if (isReady) {</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">      if (dataBlock.isEOF()) {</span>
+<span class="nc" id="L386">        writeBlockEnd(dataBlock.getBlock());</span>
+<span class="nc" id="L387">        return;</span>
+      }
+<span class="fc" id="L389">      writeBlock(dataBlock.getBlock());</span>
+<span class="fc" id="L390">      return;</span>
+    }
+<span class="nc" id="L392">    throw new FileTransferException(</span>
+        &quot;No file is ready while trying to write: &quot; + dataBlock);
+  }
+
+  /**
+   * Valid Position of this file
+   */
+  private long position;
+
+  /**
+   * FileOutputStream Out
+   */
+  private FileOutputStream fileOutputStream;
+  /**
+   * FileChannel In
+   */
+  private FileChannel bfileChannelIn;
+
+  /**
+   * Associated ByteBuffer
+   */
+  private ByteBuffer bbyteBuffer;
+
+  /**
+   * Return the current position in the FileInterface. In write mode, it is
+   * the
+   * current file length.
+   *
+   * @return the position
+   */
+  public long getPosition() {
+<span class="nc" id="L423">    return position;</span>
+  }
+
+  /**
+   * Change the position in the file.
+   *
+   * @param position the position to set
+   *
+   * @throws IOException
+   */
+  @Override
+  public void setPosition(long position) throws IOException {
+<span class="fc" id="L435">    this.position = position;</span>
+<span class="pc bpc" id="L436" title="1 of 2 branches missed.">    if (bfileChannelIn != null) {</span>
+<span class="nc" id="L437">      bfileChannelIn = bfileChannelIn.position(position);</span>
+    }
+<span class="pc bpc" id="L439" title="1 of 2 branches missed.">    if (fileOutputStream != null) {</span>
+<span class="nc" id="L440">      FileUtils.close(fileOutputStream);</span>
+<span class="nc" id="L441">      fileOutputStream = getFileOutputStream(true);</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">      if (fileOutputStream == null) {</span>
+<span class="nc" id="L443">        throw new IOException(&quot;File cannot changed of Position&quot;);</span>
+      }
+    }
+<span class="fc" id="L446">  }</span>
+
+  private byte[] reusableBytes;
+
+  /**
+   * Write the current FileInterface with the given ByteBuf. The file is not
+   * limited to 2^32 bytes since this
+   * write operation is in add mode.
+   * &lt;p&gt;
+   * In case of error, the current already written blocks are maintained and
+   * the
+   * position is not changed.
+   *
+   * @param buffer added to the file
+   *
+   * @throws FileTransferException
+   */
+  private void writeBlock(ByteBuf buffer) throws FileTransferException {
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L465">      throw new FileTransferException(NO_FILE_IS_READY);</span>
+    }
+    // An empty buffer is allowed
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">    if (buffer == null) {</span>
+<span class="nc" id="L469">      return;// could do FileEndOfTransfer ?</span>
+    }
+<span class="fc bfc" id="L471" title="All 2 branches covered.">    if (fileOutputStream == null) {</span>
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">      fileOutputStream = getFileOutputStream(position &gt; 0);</span>
+    }
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">    if (fileOutputStream == null) {</span>
+<span class="nc" id="L475">      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);</span>
+    }
+<span class="fc" id="L477">    final int bufferSize = buffer.readableBytes();</span>
+<span class="fc" id="L478">    int start = 0;</span>
+    byte[] newbuf;
+<span class="pc bpc" id="L480" title="1 of 2 branches missed.">    if (buffer.hasArray()) {</span>
+<span class="nc" id="L481">      start = buffer.arrayOffset();</span>
+<span class="nc" id="L482">      newbuf = buffer.array();</span>
+<span class="nc" id="L483">      buffer.readerIndex(buffer.readerIndex() + bufferSize);</span>
+    } else {
+<span class="pc bpc" id="L485" title="1 of 4 branches missed.">      if (reusableBytes == null || reusableBytes.length != bufferSize) {</span>
+<span class="fc" id="L486">        reusableBytes = new byte[bufferSize];</span>
+      }
+<span class="fc" id="L488">      newbuf = reusableBytes;</span>
+<span class="fc" id="L489">      buffer.readBytes(newbuf);</span>
+    }
+    try {
+<span class="fc" id="L492">      fileOutputStream.write(newbuf, start, bufferSize);</span>
+<span class="nc" id="L493">    } catch (final IOException e2) {</span>
+<span class="nc" id="L494">      logger.error(&quot;Error during write:&quot;, e2);</span>
+      try {
+<span class="nc" id="L496">        closeFile();</span>
+<span class="nc" id="L497">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="nc" id="L499">      }</span>
+      // NO this.realFile.delete(); NO DELETE SINCE BY BLOCK IT CAN BE
+      // REDO
+<span class="nc" id="L502">      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);</span>
+<span class="fc" id="L503">    }</span>
+<span class="fc" id="L504">    position += bufferSize;</span>
+<span class="fc" id="L505">  }</span>
+
+  /**
+   * End the Write of the current FileInterface with the given ByteBuf. The
+   * file
+   * is not limited to 2^32 bytes
+   * since this write operation is in add mode.
+   *
+   * @param buffer added to the file
+   *
+   * @throws FileTransferException
+   */
+  private void writeBlockEnd(ByteBuf buffer) throws FileTransferException {
+<span class="nc" id="L518">    writeBlock(buffer);</span>
+    try {
+<span class="nc" id="L520">      closeFile();</span>
+<span class="nc" id="L521">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L522">      throw new FileTransferException(&quot;Close in error&quot;, e);</span>
+<span class="nc" id="L523">    }</span>
+<span class="nc" id="L524">  }</span>
+
+  /**
+   * Get the current block ByteBuf of the current FileInterface. There is
+   * therefore no limitation of the file
+   * size to 2^32 bytes.
+   * &lt;p&gt;
+   * The returned block is limited to sizeblock. If the returned block is less
+   * than sizeblock length, it is the
+   * last block to read.
+   *
+   * @param sizeblock is the limit size for the block array
+   *
+   * @return the resulting block ByteBuf (even empty)
+   *
+   * @throws FileTransferException
+   * @throws FileEndOfTransferException
+   */
+  private ByteBuf getBlock(int sizeblock)
+      throws FileTransferException, FileEndOfTransferException {
+<span class="pc bpc" id="L544" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L545">      throw new FileTransferException(NO_FILE_IS_READY);</span>
+    }
+<span class="fc bfc" id="L547" title="All 2 branches covered.">    if (bfileChannelIn == null) {</span>
+<span class="fc" id="L548">      bfileChannelIn = getFileChannel();</span>
+<span class="pc bpc" id="L549" title="1 of 2 branches missed.">      if (bfileChannelIn != null) {</span>
+<span class="pc bpc" id="L550" title="1 of 2 branches missed.">        if (bbyteBuffer != null) {</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">          if (bbyteBuffer.capacity() != sizeblock) {</span>
+<span class="nc" id="L552">            bbyteBuffer = null;</span>
+<span class="nc" id="L553">            bbyteBuffer = ByteBuffer.allocateDirect(sizeblock);</span>
+          }
+        } else {
+<span class="fc" id="L556">          bbyteBuffer = ByteBuffer.allocateDirect(sizeblock);</span>
+        }
+      }
+    }
+<span class="pc bpc" id="L560" title="1 of 2 branches missed.">    if (bfileChannelIn == null) {</span>
+<span class="nc" id="L561">      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);</span>
+    }
+<span class="fc" id="L563">    int sizeout = 0;</span>
+<span class="fc bfc" id="L564" title="All 2 branches covered.">    while (sizeout &lt; sizeblock) {</span>
+      try {
+<span class="fc" id="L566">        final int sizeread = bfileChannelIn.read(bbyteBuffer);</span>
+<span class="fc bfc" id="L567" title="All 2 branches covered.">        if (sizeread &lt;= 0) {</span>
+<span class="fc" id="L568">          break;</span>
+        }
+<span class="fc" id="L570">        sizeout += sizeread;</span>
+<span class="nc" id="L571">      } catch (final IOException e) {</span>
+<span class="nc" id="L572">        logger.error(ERROR_DURING_GET, e);</span>
+        try {
+<span class="nc" id="L574">          closeFile();</span>
+<span class="nc" id="L575">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="nc" id="L577">        }</span>
+<span class="nc" id="L578">        throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);</span>
+<span class="fc" id="L579">      }</span>
+    }
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">    if (sizeout &lt;= 0) {</span>
+      try {
+<span class="nc" id="L583">        closeFile();</span>
+<span class="nc" id="L584">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="nc" id="L586">      }</span>
+<span class="nc" id="L587">      isReady = false;</span>
+<span class="nc" id="L588">      throw new FileEndOfTransferException(&quot;End of file&quot;);</span>
+    }
+<span class="fc" id="L590">    bbyteBuffer.flip();</span>
+<span class="fc" id="L591">    position += sizeout;</span>
+<span class="fc" id="L592">    final ByteBuf buffer = Unpooled.wrappedBuffer(bbyteBuffer);</span>
+<span class="fc" id="L593">    bbyteBuffer.clear();</span>
+<span class="fc bfc" id="L594" title="All 2 branches covered.">    if (sizeout &lt; sizeblock) {// last block</span>
+      try {
+<span class="fc" id="L596">        closeFile();</span>
+<span class="nc" id="L597">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="fc" id="L599">      }</span>
+<span class="fc" id="L600">      isReady = false;</span>
+    }
+<span class="fc" id="L602">    return buffer;</span>
+  }
+
+  /**
+   * Write the FileInterface to the fileChannelOut, thus bypassing the
+   * limitation of the file size to 2^32
+   * bytes.
+   * &lt;p&gt;
+   * This call closes the fileChannelOut with fileChannelOut.close() if the
+   * operation is in success.
+   *
+   * @param fileChannelOut
+   *
+   * @return True if OK, False in error.
+   */
+  protected boolean get(FileChannel fileChannelOut) {
+<span class="nc bnc" id="L618" title="All 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L619">      return false;</span>
+    }
+<span class="nc" id="L621">    FileChannel fileChannelIn = getFileChannel();</span>
+<span class="nc bnc" id="L622" title="All 2 branches missed.">    if (fileChannelIn == null) {</span>
+<span class="nc" id="L623">      return false;</span>
+    }
+    long size;
+<span class="nc" id="L626">    long transfert = 0;</span>
+    try {
+<span class="nc" id="L628">      size = fileChannelIn.size();</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">      if (size &lt; 0) {</span>
+        try {
+<span class="nc" id="L631">          size = length();</span>
+<span class="nc" id="L632">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L633">          logger.error(ERROR_DURING_GET, e);</span>
+<span class="nc" id="L634">          return false;</span>
+<span class="nc" id="L635">        }</span>
+<span class="nc bnc" id="L636" title="All 2 branches missed.">        if (size &lt; 0) {</span>
+<span class="nc" id="L637">          logger.error(&quot;Error during get, wrong size: &quot; + size);</span>
+<span class="nc" id="L638">          return false;</span>
+        }
+      }
+      long chunkSize;
+<span class="nc bnc" id="L642" title="All 2 branches missed.">      while (transfert &lt; size) {</span>
+<span class="nc" id="L643">        chunkSize = size - transfert;</span>
+<span class="nc" id="L644">        transfert +=</span>
+<span class="nc" id="L645">            fileChannelOut.transferFrom(fileChannelIn, transfert, chunkSize);</span>
+      }
+<span class="nc" id="L647">      fileChannelOut.force(true);</span>
+<span class="nc" id="L648">    } catch (final IOException e) {</span>
+<span class="nc" id="L649">      logger.error(ERROR_DURING_GET, e);</span>
+<span class="nc" id="L650">      return false;</span>
+    } finally {
+<span class="nc" id="L652">      FileUtils.close(fileChannelOut);</span>
+<span class="nc" id="L653">      FileUtils.close(fileChannelIn);</span>
+<span class="nc" id="L654">      fileChannelIn = null;</span>
+    }
+<span class="nc bnc" id="L656" title="All 2 branches missed.">    if (transfert == size) {</span>
+<span class="nc" id="L657">      position += size;</span>
+    }
+<span class="nc bnc" id="L659" title="All 2 branches missed.">    return transfert == size;</span>
+  }
+
+  /**
+   * Returns the FileChannel in In mode associated with the current file.
+   *
+   * @return the FileChannel (IN mode)
+   */
+  protected FileChannel getFileChannel() {
+<span class="pc bpc" id="L668" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L669">      return null;</span>
+    }
+    File trueFile;
+    try {
+<span class="fc" id="L673">      trueFile = getFileFromPath(currentFile);</span>
+<span class="nc" id="L674">    } catch (final CommandAbstractException e1) {</span>
+<span class="nc" id="L675">      return null;</span>
+<span class="fc" id="L676">    }</span>
+<span class="fc" id="L677">    FileChannel fileChannel = null;</span>
+    try {
+      @SuppressWarnings(&quot;resource&quot;)
+<span class="fc" id="L680">      final FileInputStream fileInputStream =//NOSONAR</span>
+          new FileInputStream(trueFile);//NOSONAR
+<span class="fc" id="L682">      fileChannel = fileInputStream.getChannel();</span>
+<span class="pc bpc" id="L683" title="1 of 2 branches missed.">      if (position != 0) {</span>
+<span class="nc" id="L684">        fileChannel = fileChannel.position(position);</span>
+      }
+<span class="nc" id="L686">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L687">      logger.error(&quot;File not found in getFileChannel:&quot;, e);</span>
+<span class="nc" id="L688">      return null;</span>
+<span class="nc" id="L689">    } catch (final IOException e) {</span>
+<span class="nc" id="L690">      FileUtils.close(fileChannel);</span>
+<span class="nc" id="L691">      logger.error(&quot;Change position in getFileChannel:&quot;, e);</span>
+<span class="nc" id="L692">      return null;</span>
+<span class="fc" id="L693">    }</span>
+<span class="fc" id="L694">    return fileChannel;</span>
+  }
+
+  /**
+   * Returns the RandomAccessFile in Out mode associated with the current
+   * file.
+   *
+   * @return the RandomAccessFile (OUT=&quot;rw&quot;)
+   */
+  protected RandomAccessFile getRandomFile() {
+<span class="nc bnc" id="L704" title="All 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L705">      return null;</span>
+    }
+    File trueFile;
+    try {
+<span class="nc" id="L709">      trueFile = getFileFromPath(currentFile);</span>
+<span class="nc" id="L710">    } catch (final CommandAbstractException e1) {</span>
+<span class="nc" id="L711">      return null;</span>
+<span class="nc" id="L712">    }</span>
+    RandomAccessFile raf;
+    try {
+<span class="nc" id="L715">      raf = new RandomAccessFile(trueFile, &quot;rw&quot;);//NOSONAR</span>
+<span class="nc" id="L716">      raf.seek(position);</span>
+<span class="nc" id="L717">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L718">      logger.error(&quot;File not found in getRandomFile:&quot;, e);</span>
+<span class="nc" id="L719">      return null;</span>
+<span class="nc" id="L720">    } catch (final IOException e) {</span>
+<span class="nc" id="L721">      logger.error(&quot;Change position in getRandomFile:&quot;, e);</span>
+<span class="nc" id="L722">      return null;</span>
+<span class="nc" id="L723">    }</span>
+<span class="nc" id="L724">    return raf;</span>
+  }
+
+  /**
+   * Returns the FileOutputStream in Out mode associated with the current
+   * file.
+   *
+   * @param append True if the FileOutputStream should be in append
+   *     mode
+   *
+   * @return the FileOutputStream (OUT)
+   */
+  protected FileOutputStream getFileOutputStream(boolean append) {
+<span class="pc bpc" id="L737" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L738">      return null;</span>
+    }
+    File trueFile;
+    try {
+<span class="fc" id="L742">      trueFile = getFileFromPath(currentFile);</span>
+<span class="nc" id="L743">    } catch (final CommandAbstractException e1) {</span>
+<span class="nc" id="L744">      return null;</span>
+<span class="fc" id="L745">    }</span>
+<span class="pc bpc" id="L746" title="1 of 2 branches missed.">    if (position &gt; 0) {</span>
+<span class="nc bnc" id="L747" title="All 2 branches missed.">      if (trueFile.length() &lt; position) {</span>
+<span class="nc" id="L748">        logger.error(</span>
+            &quot;Cannot Change position in getFileOutputStream: file is smaller than required position&quot;);
+<span class="nc" id="L750">        return null;</span>
+      }
+<span class="nc" id="L752">      final RandomAccessFile raf = getRandomFile();</span>
+      try {
+<span class="nc" id="L754">        raf.setLength(position);</span>
+<span class="nc" id="L755">        FileUtils.close(raf);</span>
+<span class="nc" id="L756">      } catch (final IOException e) {</span>
+<span class="nc" id="L757">        logger.error(&quot;Change position in getFileOutputStream:&quot;, e);</span>
+<span class="nc" id="L758">        return null;</span>
+<span class="nc" id="L759">      }</span>
+<span class="nc" id="L760">      logger.debug(&quot;New size: &quot; + trueFile.length() + &quot; : &quot; + position);</span>
+    }
+    FileOutputStream fos;
+    try {
+<span class="fc" id="L764">      fos = new FileOutputStream(trueFile, append);</span>
+<span class="nc" id="L765">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L766">      logger.error(&quot;File not found in getRandomFile:&quot;, e);</span>
+<span class="nc" id="L767">      return null;</span>
+<span class="fc" id="L768">    }</span>
+<span class="fc" id="L769">    return fos;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

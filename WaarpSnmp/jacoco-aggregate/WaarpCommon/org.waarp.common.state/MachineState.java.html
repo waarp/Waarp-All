@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MachineState.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Snmp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.state</a> &gt; <span class="el_source">MachineState.java</span></div><h1>MachineState.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.state;
+
+import org.waarp.common.exception.IllegalFiniteStateException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.util.EnumSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+/**
+ * This is the base class for the basic support of Finite State Machine in
+ * GoldenGate. One need to implement
+ * an Enum class to use with it. &lt;br&gt;
+ * &lt;br&gt;
+ * Note: the type EnumSet&lt; ? &gt; is in fact of type EnumSet&lt; EnumState &gt;
+ *
+ * @param &lt;E&gt;
+ */
+public class MachineState&lt;E extends Enum&lt;E&gt;&gt; {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(MachineState.class);</span>
+
+  private ConcurrentMap&lt;E, EnumSet&lt;E&gt;&gt; statemap;
+  private E currentState;
+
+  /**
+   * Initialize with an initialState
+   *
+   * @param initialState initial MachineState
+   * @param map the association of state and set of acceptable
+   *     following
+   *     states
+   */
+<span class="fc" id="L57">  public MachineState(E initialState, ConcurrentMap&lt;E, EnumSet&lt;E&gt;&gt; map) {</span>
+<span class="fc" id="L58">    statemap = map;</span>
+<span class="fc" id="L59">    currentState = initialState;</span>
+<span class="fc" id="L60">  }</span>
+
+  /**
+   * Initialize with an initialState but no association (Machine State is
+   * empty)
+   *
+   * @param initialState initial MachineState
+   */
+<span class="fc" id="L68">  public MachineState(E initialState) {</span>
+<span class="fc" id="L69">    statemap = new ConcurrentHashMap&lt;E, EnumSet&lt;E&gt;&gt;();</span>
+<span class="fc" id="L70">    currentState = initialState;</span>
+<span class="fc" id="L71">  }</span>
+
+  /**
+   * Add a new association from one state to a set of acceptable following
+   * states (can replace an existing
+   * association)
+   *
+   * @param state
+   * @param set the new association
+   *
+   * @return the previous association if any
+   */
+  public EnumSet&lt;E&gt; addNewAssociation(E state, EnumSet&lt;E&gt; set) {
+<span class="nc" id="L84">    return statemap.put(state, set);</span>
+  }
+
+  /**
+   * Add a new association from one state to a set of acceptable following
+   * states (can replace an existing
+   * association)
+   *
+   * @param elt
+   *
+   * @return the previous association if any
+   */
+  public EnumSet&lt;E&gt; addNewAssociation(Transition&lt;E&gt; elt) {
+<span class="fc" id="L97">    return statemap.put(elt.getState(), elt.getSet());</span>
+  }
+
+  /**
+   * Remove an association from one state to any acceptable following states
+   *
+   * @param state the state to remove any acceptable following states
+   *
+   * @return the previous association if any
+   */
+  public EnumSet&lt;E&gt; removeAssociation(E state) {
+<span class="nc" id="L108">    return statemap.remove(state);</span>
+  }
+
+  /**
+   * Return the current application state.
+   *
+   * @return the current State
+   */
+  public E getCurrent() {
+<span class="fc" id="L117">    return currentState;</span>
+  }
+
+  /**
+   * Sets the current application state.
+   *
+   * @param desiredState
+   *
+   * @return the requested state, if it was reachable
+   *
+   * @throws IllegalFiniteStateException if the state is not allowed
+   */
+  public E setCurrent(E desiredState) throws IllegalFiniteStateException {
+<span class="fc bfc" id="L130" title="All 2 branches covered.">    if (!isReachable(desiredState)) {</span>
+<span class="fc" id="L131">      logger.debug(</span>
+          &quot;State &quot; + desiredState + &quot; not reachable from: &quot; + currentState);
+<span class="fc" id="L133">      throw new IllegalFiniteStateException(</span>
+          desiredState + &quot; not allowed from &quot; + currentState);
+    }
+<span class="fc" id="L136">    return setAsFinal(desiredState);</span>
+  }
+
+  /**
+   * Sets the current application state, but no exception if not compatible.
+   *
+   * @param desiredState
+   *
+   * @return the requested state, even if it was not reachable
+   */
+  public E setDryCurrent(E desiredState) {
+<span class="nc" id="L147">    return setAsFinal(desiredState);</span>
+  }
+
+  /**
+   * Determine if the given state is allowed to be next.
+   *
+   * @param desiredState desired MachineState
+   *
+   * @return True if the desiredState is valid from currentState
+   */
+  private boolean isReachable(E desiredState) {
+<span class="pc bpc" id="L158" title="2 of 4 branches missed.">    if (currentState == null || statemap == null) {</span>
+<span class="nc" id="L159">      return false;</span>
+    }
+<span class="fc" id="L161">    final EnumSet&lt;?&gt; set = statemap.get(currentState);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">    if (set != null) {</span>
+<span class="fc" id="L163">      return set.contains(desiredState);</span>
+    }
+<span class="nc" id="L165">    return false;</span>
+  }
+
+  /**
+   * Finalizes the new requested state
+   *
+   * @param desiredState
+   *
+   * @return the requested state
+   */
+  private E setAsFinal(E desiredState) {
+<span class="fc" id="L176">    logger.debug(&quot;New State: &quot; + desiredState + &quot; from &quot; + currentState);</span>
+<span class="fc" id="L177">    currentState = desiredState;</span>
+<span class="fc" id="L178">    return currentState;</span>
+  }
+
+  /**
+   * Release the Machine State
+   */
+  public void release() {
+<span class="nc" id="L185">    currentState = null;</span>
+<span class="nc" id="L186">    statemap = null;</span>
+<span class="nc" id="L187">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

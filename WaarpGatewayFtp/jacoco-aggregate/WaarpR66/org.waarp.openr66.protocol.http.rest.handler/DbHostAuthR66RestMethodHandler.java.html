@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbHostAuthR66RestMethodHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.handler</a> &gt; <span class="el_source">DbHostAuthR66RestMethodHandler.java</span></div><h1>DbHostAuthR66RestMethodHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.rest.handler;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.exception.HttpNotFoundRequestException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbHostAuth.Columns;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+
+/**
+ * DbHostAUth Rest handler
+ */
+public class DbHostAuthR66RestMethodHandler
+    extends DataModelRestMethodHandler&lt;DbHostAuth&gt; {
+  private static final String HOST_ID_AS_VARCHAR_IN_URI_AS =
+      &quot;HostId as VARCHAR in URI as &quot;;
+  public static final String BASEURI = &quot;hosts&quot;;
+
+<span class="fc" id="L55">  public enum FILTER_ARGS {</span>
+<span class="fc" id="L56">    HOSTID(&quot;host name&quot;), ADDRESS(&quot;ADDRESS of this partner&quot;),</span>
+<span class="fc" id="L57">    ISSSL(&quot;is Ssl entry&quot;), ISACTIVE(&quot;is Active entry&quot;);</span>
+
+    public final String type;
+
+<span class="fc" id="L61">    FILTER_ARGS(String type) {</span>
+<span class="fc" id="L62">      this.type = type;</span>
+<span class="fc" id="L63">    }</span>
+  }
+
+  /**
+   * @param config
+   * @param method
+   */
+  public DbHostAuthR66RestMethodHandler(RestConfiguration config,
+                                        METHOD... method) {
+<span class="fc" id="L72">    super(BASEURI, config, method);</span>
+<span class="fc" id="L73">  }</span>
+
+  @Override
+  protected DbHostAuth getItem(HttpRestHandler handler, RestArgument arguments,
+                               RestArgument result, Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
+             HttpNotFoundRequestException {
+<span class="nc" id="L80">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="nc" id="L81">    arg.setAll(arguments.getBody());</span>
+    try {
+<span class="nc" id="L83">      final JsonNode node = RestArgument.getId(arg);</span>
+      String id;
+<span class="nc bnc" id="L85" title="All 2 branches missed.">      if (node.isMissingNode()) {</span>
+        // shall not be but continue however
+<span class="nc" id="L87">        id = arg.path(DbHostAuth.Columns.HOSTID.name()).asText();</span>
+      } else {
+<span class="nc" id="L89">        id = node.asText();</span>
+      }
+<span class="nc" id="L91">      return new DbHostAuth(id);</span>
+<span class="nc" id="L92">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L93">      throw new HttpNotFoundRequestException(</span>
+          &quot;Issue while reading from database &quot; + arg + &quot; was &quot; + arguments, e);
+    }
+  }
+
+  @Override
+  protected DbHostAuth createItem(HttpRestHandler handler,
+                                  RestArgument arguments, RestArgument result,
+                                  Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+<span class="nc" id="L103">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="nc" id="L104">    arg.setAll(arguments.getBody());</span>
+    try {
+<span class="nc" id="L106">      return new DbHostAuth(arg);</span>
+<span class="nc" id="L107">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L108">      throw new HttpIncorrectRequestException(</span>
+          &quot;Issue while inserting into database&quot;, e);
+    }
+  }
+
+  @Override
+  protected DbPreparedStatement getPreparedStatement(HttpRestHandler handler,
+                                                     RestArgument arguments,
+                                                     RestArgument result,
+                                                     Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+<span class="fc" id="L119">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L120">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L121">    String host = arg.path(FILTER_ARGS.HOSTID.name()).asText();</span>
+<span class="pc bpc" id="L122" title="2 of 4 branches missed.">    if (host == null || host.isEmpty()) {</span>
+<span class="fc" id="L123">      host = null;</span>
+    }
+<span class="fc" id="L125">    String address = arg.path(FILTER_ARGS.ADDRESS.name()).asText();</span>
+<span class="pc bpc" id="L126" title="2 of 4 branches missed.">    if (address == null || address.isEmpty()) {</span>
+<span class="fc" id="L127">      address = null;</span>
+    }
+<span class="fc" id="L129">    final boolean isssl = arg.path(FILTER_ARGS.ISSSL.name()).asBoolean(false);</span>
+<span class="fc" id="L130">    final boolean isactive =</span>
+<span class="fc" id="L131">        arg.path(FILTER_ARGS.ISACTIVE.name()).asBoolean(false);</span>
+    try {
+<span class="fc" id="L133">      return DbHostAuth</span>
+<span class="fc" id="L134">          .getFilterPrepareStament(handler.getDbSession(), host, address, isssl,</span>
+                                   isactive);
+<span class="nc" id="L136">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L137">      throw new HttpIncorrectRequestException(</span>
+          &quot;Issue while reading from database&quot;, e);
+<span class="nc" id="L139">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L140">      throw new HttpIncorrectRequestException(</span>
+          &quot;Issue while reading from database&quot;, e);
+    }
+  }
+
+  @Override
+  protected DbHostAuth getItemPreparedStatement(DbPreparedStatement statement)
+      throws HttpIncorrectRequestException, HttpNotFoundRequestException {
+    try {
+<span class="nc" id="L149">      return DbHostAuth.getFromStatement(statement);</span>
+<span class="nc" id="L150">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L151">      throw new HttpIncorrectRequestException(</span>
+          &quot;Issue while selecting from database&quot;, e);
+<span class="nc" id="L153">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L154">      throw new HttpNotFoundRequestException(</span>
+          &quot;Issue while selecting from database&quot;, e);
+    }
+  }
+
+  @Override
+  protected ArrayNode getDetailedAllow() {
+<span class="nc" id="L161">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+
+<span class="nc" id="L163">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L164">    node1.put(AbstractDbData.JSON_MODEL, DbHostAuth.class.getSimpleName());</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">    for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
+<span class="nc" id="L166">      node1.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
+    }
+
+    ObjectNode node2;
+    ObjectNode node3;
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="nc" id="L172">      node2 = RestArgument</span>
+<span class="nc" id="L173">          .fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;, COMMAND_TYPE.GET.name(),</span>
+<span class="nc" id="L174">                             JsonHandler.createObjectNode()</span>
+<span class="nc" id="L175">                                        .put(DbHostAuth.Columns.HOSTID.name(),</span>
+                                             HOST_ID_AS_VARCHAR_IN_URI_AS +
+                                             path + &quot;/id&quot;), node1);
+<span class="nc" id="L178">      node.add(node2);</span>
+<span class="nc" id="L179">      node3 = JsonHandler.createObjectNode();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
+<span class="nc" id="L181">        node3.put(arg.name(), arg.type);</span>
+      }
+<span class="nc" id="L183">      node2 = RestArgument</span>
+<span class="nc" id="L184">          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),</span>
+<span class="nc" id="L185">                             node3, JsonHandler.createArrayNode().add(node1));</span>
+<span class="nc" id="L186">      node.add(node2);</span>
+    }
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="nc" id="L189">      node3 = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L190">      node3.put(DbHostAuth.Columns.HOSTID.name(),</span>
+                HOST_ID_AS_VARCHAR_IN_URI_AS + path + &quot;/id&quot;);
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (column.name().equalsIgnoreCase(DbHostAuth.Columns.HOSTID.name())) {</span>
+<span class="nc" id="L194">          continue;</span>
+        }
+<span class="nc" id="L196">        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
+      }
+<span class="nc" id="L198">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
+<span class="nc" id="L199">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
+                                             node1);
+<span class="nc" id="L201">      node.add(node2);</span>
+    }
+<span class="nc bnc" id="L203" title="All 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
+<span class="nc" id="L204">      node3 = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L205">      node3.put(DbHostAuth.Columns.HOSTID.name(),</span>
+                HOST_ID_AS_VARCHAR_IN_URI_AS + path + &quot;/id&quot;);
+<span class="nc" id="L207">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
+<span class="nc" id="L208">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
+                                             node1);
+<span class="nc" id="L210">      node.add(node2);</span>
+    }
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="nc" id="L213">      node3 = JsonHandler.createObjectNode();</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">      for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
+<span class="nc" id="L215">        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
+      }
+<span class="nc" id="L217">      node2 = RestArgument</span>
+<span class="nc" id="L218">          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),</span>
+                             node3, node1);
+<span class="nc" id="L220">      node.add(node2);</span>
+    }
+<span class="nc" id="L222">    node2 = RestArgument</span>
+<span class="nc" id="L223">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+                           null, null);
+<span class="nc" id="L225">    node.add(node2);</span>
+
+<span class="nc" id="L227">    return node;</span>
+  }
+
+  @Override
+  public String getPrimaryPropertyName() {
+<span class="nc" id="L232">    return Columns.HOSTID.name();</span>
+  }
+
+  @Override
+  protected void checkAuthorization(HttpRestHandler handler,
+                                    RestArgument arguments, RestArgument result,
+                                    METHOD method)
+      throws HttpForbiddenRequestException {
+<span class="fc" id="L240">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
+<span class="fc" id="L241">    final R66Session session = r66handler.getServerHandler().getSession();</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {</span>
+<span class="nc" id="L243">      throw new HttpForbiddenRequestException(</span>
+          &quot;Partner must have ConfigAdmin role&quot;);
+    }
+<span class="fc" id="L246">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MariaDBProperties.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.properties</a> &gt; <span class="el_source">MariaDBProperties.java</span></div><h1>MariaDBProperties.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.database.properties;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+/**
+ * MariaDB Database Model
+ */
+public class MariaDBProperties implements DbProperties {
+  private static final String PROTOCOL = &quot;mariadb&quot;;
+
+  private static final String DRIVER_NAME = &quot;org.mariadb.jdbc.Driver&quot;;
+  private static final String VALIDATION_QUERY = &quot;select 1&quot;;
+  private static final String MAX_CONNECTION_QUERY =
+      &quot;select GLOBAL_VALUE &quot; + &quot;from INFORMATION_SCHEMA.SYSTEM_VARIABLES &quot; +
+      &quot;where VARIABLE_NAME LIKE 'max_connections'&quot;;
+
+<span class="nc" id="L40">  public MariaDBProperties() {</span>
+    // nothing
+<span class="nc" id="L42">  }</span>
+
+  public static String getProtocolID() {
+<span class="nc" id="L45">    return PROTOCOL;</span>
+  }
+
+  @Override
+  public String getDriverName() {
+<span class="nc" id="L50">    return DRIVER_NAME;</span>
+  }
+
+  @Override
+  public String getValidationQuery() {
+<span class="nc" id="L55">    return VALIDATION_QUERY;</span>
+  }
+
+  @Override
+  public int getMaximumConnections(Connection connection) throws SQLException {
+<span class="nc" id="L60">    Statement stm = null;</span>
+<span class="nc" id="L61">    ResultSet rs = null;</span>
+    try {
+<span class="nc" id="L63">      stm = connection.createStatement();</span>
+<span class="nc" id="L64">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">      if (!rs.next()) {</span>
+<span class="nc" id="L66">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
+      }
+<span class="nc" id="L68">      return rs.getInt(1);</span>
+    } finally {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">      if (rs != null) {</span>
+        try {
+<span class="nc" id="L72">          rs.close();</span>
+<span class="nc" id="L73">        } catch (SQLException ignored) {</span>
+          // nothing
+<span class="nc" id="L75">        }</span>
+      }
+<span class="nc bnc" id="L77" title="All 2 branches missed.">      if (stm != null) {</span>
+        try {
+<span class="nc" id="L79">          stm.close();</span>
+<span class="nc" id="L80">        } catch (SQLException ignored) {</span>
+          // nothing
+<span class="nc" id="L82">        }</span>
+      }
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbAdmin.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Exec</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database</a> &gt; <span class="el_source">DbAdmin.java</span></div><h1>DbAdmin.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database;
+
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timer;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModel;
+import org.waarp.common.database.model.DbModelFactory;
+import org.waarp.common.database.model.DbType;
+import org.waarp.common.database.model.EmptyDbModel;
+import org.waarp.common.guid.GUID;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpThreadFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Class for access to Database
+ *
+ * Partially deprecated (only in Waarp R66 but not other components)
+ */
+public class DbAdmin {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L51">      WaarpLoggerFactory.getLogger(DbAdmin.class);</span>
+
+  public static final int RETRYNB = 3;
+
+  public static final long WAITFORNETOP = 100;
+
+  /**
+   * Database type
+   */
+  protected final DbType typeDriver;
+
+  /**
+   * DbModel
+   */
+  private final DbModel dbModel;
+
+  /**
+   * DB Server
+   */
+  private final String server;
+
+  /**
+   * DB User
+   */
+  private final String user;
+
+  /**
+   * DB Password
+   */
+  private final String passwd;
+
+  /**
+   * Is this DB Admin Read Only
+   */
+  private boolean isReadOnly;
+
+  /**
+   * session is the Session object for all type of requests
+   */
+  private DbSession session;
+  /**
+   * Number of HttpSession
+   */
+  private static int nbHttpSession;
+
+<span class="nc" id="L96">  protected static final Timer dbSessionTimer =</span>
+      new HashedWheelTimer(new WaarpThreadFactory(&quot;TimerClose&quot;), 50,
+                           TimeUnit.MILLISECONDS, 1024);
+
+  /**
+   * @return the session
+   */
+  public DbSession getSession() {
+<span class="nc" id="L104">    return session;</span>
+  }
+
+  /**
+   * @param session the session to set
+   */
+  public void setSession(DbSession session) {
+<span class="nc" id="L111">    this.session = session;</span>
+<span class="nc" id="L112">  }</span>
+
+  /**
+   * @return True if the connection is ReadOnly
+   */
+  public boolean isReadOnly() {
+<span class="nc" id="L118">    return isReadOnly;</span>
+  }
+
+  /**
+   * Validate connection
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public void validConnection() throws WaarpDatabaseNoConnectionException {
+    try {
+<span class="nc" id="L128">      dbModel.validConnection(getSession());</span>
+<span class="nc" id="L129">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L130">      getSession().setDisActive(true);</span>
+<span class="nc" id="L131">      throw e;</span>
+<span class="nc" id="L132">    }</span>
+<span class="nc" id="L133">    getSession().setDisActive(false);</span>
+<span class="nc" id="L134">  }</span>
+
+  /**
+   * Use a default server for basic connection. Later on, specific connection
+   * to
+   * database for the scheme that
+   * provides access to the table R66DbIndex for one specific Legacy could be
+   * done.
+   * &lt;p&gt;
+   * A this time, only one driver is possible! If a new driver is needed,
+   * then
+   * we need to create a new DbSession
+   * object. Be aware that DbSession.initialize should be call only once for
+   * each driver, whatever the number of
+   * DbSession objects that could be created (=&gt; need a hashtable for
+   * specific
+   * driver when created). Also, don't
+   * know if two drivers at the same time (two different DbSession) is
+   * allowed
+   * by JDBC.
+   *
+   * @param model
+   * @param server
+   * @param user
+   * @param passwd
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public DbAdmin(DbModel model, String server, String user, String passwd)
+<span class="nc" id="L163">      throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc" id="L164">    this.server = server;</span>
+<span class="nc" id="L165">    this.user = user;</span>
+<span class="nc" id="L166">    this.passwd = passwd;</span>
+<span class="nc" id="L167">    dbModel = model;</span>
+<span class="nc" id="L168">    typeDriver = model.getDbType();</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (typeDriver == null) {</span>
+<span class="nc" id="L170">      logger.error(&quot;Cannot find TypeDriver&quot;);</span>
+<span class="nc" id="L171">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;Cannot find database drive&quot;);
+    }
+<span class="nc" id="L174">    setSession(new DbSession(this, false));</span>
+<span class="nc" id="L175">    getSession().setAdmin(this);</span>
+<span class="nc" id="L176">    isReadOnly = false;</span>
+<span class="nc" id="L177">    validConnection();</span>
+<span class="nc" id="L178">    getSession().useConnection(); // default since this is the top connection</span>
+<span class="nc" id="L179">  }</span>
+
+  /**
+   * Use a default server for basic connection. Later on, specific connection
+   * to
+   * database for the scheme that
+   * provides access to the table R66DbIndex for one specific Legacy could be
+   * done.
+   * &lt;p&gt;
+   * A this time, only one driver is possible! If a new driver is needed,
+   * then
+   * we need to create a new DbSession
+   * object. Be aware that DbSession.initialize should be call only once for
+   * each driver, whatever the number of
+   * DbSession objects that could be created (=&gt; need a hashtable for
+   * specific
+   * driver when created). Also, don't
+   * know if two drivers at the same time (two different DbSession) is
+   * allowed
+   * by JDBC.
+   *
+   * @param model
+   * @param server
+   * @param user
+   * @param passwd
+   * @param write
+   *
+   * @throws WaarpDatabaseSqlException
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public DbAdmin(DbModel model, String server, String user, String passwd,
+<span class="nc" id="L210">                 boolean write) throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc" id="L211">    this.server = server;</span>
+<span class="nc" id="L212">    this.user = user;</span>
+<span class="nc" id="L213">    this.passwd = passwd;</span>
+<span class="nc" id="L214">    dbModel = model;</span>
+<span class="nc" id="L215">    typeDriver = model.getDbType();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (typeDriver == null) {</span>
+<span class="nc" id="L217">      logger.error(&quot;Cannot find TypeDriver&quot;);</span>
+<span class="nc" id="L218">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;Cannot find database driver&quot;);
+    }
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (write) {</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">      for (int i = 0; i &lt; RETRYNB; i++) {</span>
+        try {
+<span class="nc" id="L224">          setSession(new DbSession(this, false));</span>
+<span class="nc" id="L225">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L226">          logger.warn(&quot;Attempt of connection in error: &quot; + i, e);</span>
+<span class="nc" id="L227">          continue;</span>
+<span class="nc" id="L228">        }</span>
+<span class="nc" id="L229">        isReadOnly = false;</span>
+<span class="nc" id="L230">        getSession().setAdmin(this);</span>
+<span class="nc" id="L231">        validConnection();</span>
+<span class="nc" id="L232">        getSession().useConnection(); // default since this is the top</span>
+        // connection
+<span class="nc" id="L234">        return;</span>
+      }
+    } else {
+<span class="nc bnc" id="L237" title="All 2 branches missed.">      for (int i = 0; i &lt; RETRYNB; i++) {</span>
+        try {
+<span class="nc" id="L239">          setSession(new DbSession(this, true));</span>
+<span class="nc" id="L240">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L241">          logger.warn(&quot;Attempt of connection in error: &quot; + i, e);</span>
+<span class="nc" id="L242">          continue;</span>
+<span class="nc" id="L243">        }</span>
+<span class="nc" id="L244">        isReadOnly = true;</span>
+<span class="nc" id="L245">        getSession().setAdmin(this);</span>
+<span class="nc" id="L246">        validConnection();</span>
+<span class="nc" id="L247">        getSession().useConnection(); // default since this is the top</span>
+        // connection
+<span class="nc" id="L249">        return;</span>
+      }
+    }
+<span class="nc" id="L252">    setSession(null);</span>
+<span class="nc" id="L253">    logger.error(&quot;Cannot connect to Database!&quot;);</span>
+<span class="nc" id="L254">    throw new WaarpDatabaseNoConnectionException(&quot;Cannot connect to database&quot;);</span>
+  }
+
+  /**
+   * Empty constructor for no Database support (very thin client)
+   */
+<span class="nc" id="L260">  public DbAdmin() {</span>
+    // not true but to enable pseudo database functions
+<span class="nc" id="L262">    typeDriver = DbType.none;</span>
+<span class="nc" id="L263">    DbModelFactory.classLoaded.add(DbType.none.name());</span>
+<span class="nc" id="L264">    dbModel = new EmptyDbModel();</span>
+<span class="nc" id="L265">    server = null;</span>
+<span class="nc" id="L266">    user = null;</span>
+<span class="nc" id="L267">    passwd = null;</span>
+<span class="nc" id="L268">  }</span>
+
+  /**
+   * Close the underlying session. Can be call even for connection given from
+   * the constructor
+   * DbAdmin(Connection, boolean).
+   */
+  public void close() {
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (getSession() != null) {</span>
+<span class="nc" id="L277">      getSession().endUseConnection(); // default since this is the top</span>
+      // connection
+<span class="nc" id="L279">      getSession().forceDisconnect();</span>
+<span class="nc" id="L280">      setSession(null);</span>
+    }
+<span class="nc" id="L282">  }</span>
+
+  /**
+   * Commit on connection (since in autocommit, should not be used)
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public void commit()
+      throws WaarpDatabaseSqlException, WaarpDatabaseNoConnectionException {
+<span class="nc bnc" id="L292" title="All 2 branches missed.">    if (getSession() != null) {</span>
+<span class="nc" id="L293">      getSession().commit();</span>
+    }
+<span class="nc" id="L295">  }</span>
+
+  /**
+   * @return the server
+   */
+  public String getServer() {
+<span class="nc" id="L301">    return server;</span>
+  }
+
+  /**
+   * @return the user
+   */
+  public String getUser() {
+<span class="nc" id="L308">    return user;</span>
+  }
+
+  /**
+   * @return the passwd
+   */
+  public String getPasswd() {
+<span class="nc" id="L315">    return passwd;</span>
+  }
+
+  /**
+   * @return the associated dbModel
+   */
+  public DbModel getDbModel() {
+<span class="nc" id="L322">    return dbModel;</span>
+  }
+
+  /**
+   * @return the typeDriver
+   */
+  public DbType getTypeDriver() {
+<span class="nc" id="L329">    return typeDriver;</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L334">    return &quot;Admin: &quot; + typeDriver.name() + ':' + server + ':' + user + ':' +</span>
+<span class="nc" id="L335">           passwd.length();</span>
+  }
+
+  /**
+   * List all Connection to enable the close call on them
+   */
+<span class="nc" id="L341">  private static final ConcurrentHashMap&lt;GUID, DbSession&gt; listConnection =</span>
+      new ConcurrentHashMap&lt;org.waarp.common.guid.GUID, DbSession&gt;();
+
+  /**
+   * Increment nb of Http Connection
+   */
+  public static void incHttpSession() {
+<span class="nc" id="L348">    nbHttpSession++;</span>
+<span class="nc" id="L349">  }</span>
+
+  /**
+   * Decrement nb of Http Connection
+   */
+  public static void decHttpSession() {
+<span class="nc" id="L355">    nbHttpSession--;</span>
+<span class="nc" id="L356">  }</span>
+
+  /**
+   * @return the nb of Http Connection
+   */
+  public static int getHttpSession() {
+<span class="nc" id="L362">    return nbHttpSession;</span>
+  }
+
+  /**
+   * Add a Connection into the list
+   *
+   * @param id
+   * @param session
+   */
+  public static void addConnection(GUID id, DbSession session) {
+<span class="nc" id="L372">    listConnection.put(id, session);</span>
+<span class="nc" id="L373">  }</span>
+
+  /**
+   * Remove a Connection from the list
+   *
+   * @param id Id of the connection
+   */
+  public static void removeConnection(GUID id) {
+<span class="nc" id="L381">    listConnection.remove(id);</span>
+<span class="nc" id="L382">  }</span>
+
+  /**
+   * @return the number of connection (so number of network channels)
+   */
+  public static int getNbConnection() {
+<span class="nc" id="L388">    return listConnection.size() - 1;</span>
+  }
+
+  /**
+   * Close all database connections
+   */
+  public static void closeAllConnection() {
+<span class="nc bnc" id="L395" title="All 2 branches missed.">    for (final DbSession session : listConnection.values()) {</span>
+<span class="nc" id="L396">      logger.debug(&quot;Close (all) Db Conn: &quot; + session.getInternalId());</span>
+      try {
+<span class="nc" id="L398">        Connection connection = session.getConn();</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">        if (connection != null) {</span>
+<span class="nc" id="L400">          connection.close();</span>
+        }
+<span class="nc" id="L402">      } catch (final SQLException ignored) {</span>
+        // nothing
+<span class="nc" id="L404">      } catch (final ConcurrentModificationException ignored) {</span>
+        // nothing
+<span class="nc" id="L406">      }</span>
+<span class="nc" id="L407">    }</span>
+<span class="nc" id="L408">    listConnection.clear();</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">    for (final DbModel dbModel : DbModelFactory.dbModels) {</span>
+<span class="nc bnc" id="L410" title="All 2 branches missed.">      if (dbModel != null) {</span>
+<span class="nc" id="L411">        dbModel.releaseResources();</span>
+      }
+<span class="nc" id="L413">    }</span>
+<span class="nc" id="L414">    dbSessionTimer.stop();</span>
+<span class="nc" id="L415">  }</span>
+
+  /**
+   * Check all database connections and try to reopen them if disActive
+   */
+  public static void checkAllConnections() {
+<span class="nc bnc" id="L421" title="All 2 branches missed.">    for (final DbSession session : listConnection.values()) {</span>
+      try {
+<span class="nc" id="L423">        session.checkConnection();</span>
+<span class="nc" id="L424">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L425">        logger.error(&quot;Database Connection cannot be reinitialized&quot;);</span>
+<span class="nc" id="L426">      }</span>
+<span class="nc" id="L427">    }</span>
+<span class="nc" id="L428">  }</span>
+
+  /**
+   * @return True if this driver allows Thread Shared Connexion (concurrency
+   *     usage)
+   */
+  public boolean isCompatibleWithThreadSharedConnexion() {
+<span class="nc bnc" id="L435" title="All 8 branches missed.">    return typeDriver != DbType.MariaDB &amp;&amp; typeDriver != DbType.MySQL &amp;&amp;</span>
+           typeDriver != DbType.Oracle &amp;&amp; typeDriver != DbType.none;
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

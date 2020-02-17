@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpDataStructureCodec.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.data.handler</a> &gt; <span class="el_source">FtpDataStructureCodec.java</span></div><h1>FtpDataStructureCodec.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.data.handler;
+
+import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToMessageCodec;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.DataBlock;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
+
+import java.util.List;
+
+/**
+ * Third CODEC :&lt;br&gt;
+ * - encode/decode : takes {@link DataBlock} and transforms it to a {@link
+ * DataBlock}&lt;br&gt;
+ * FILE and RECORD are implemented (DataNetworkHandler will do the real job).
+ * PAGE is not implemented.&lt;br&gt;
+ * Note that real actions are taken in the DataNetworkHandler according to the
+ * implementation of FtpFile.
+ */
+@Sharable
+class FtpDataStructureCodec
+    extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt; {
+  /*
+   * 3.1.2. DATA STRUCTURES In addition to different representation types, FTP allows the structure of a file to
+   * be specified. Three file structures are defined in FTP: file-structure, where there is no internal
+   * structure and the file is considered to be a continuous sequence of data bytes, record-structure, where the
+   * file is made up of sequential records, and page-structure, where the file is made up of independent indexed
+   * pages. FileInterface-structure is the default to be assumed if the STRUcture command has not been used but
+   * both file and record structures must be accepted for &quot;text&quot; files (i.e., files with TYPE ASCII or EBCDIC)
+   * by all FTP implementations. The structure of a file will affect both the transfer mode of a file (see the
+   * Section on Transmission Modes) and the interpretation and storage of the file. The &quot;natural&quot; structure of a
+   * file will depend on which host stores the file. A source-code file will usually be stored on an IBM
+   * Mainframe in fixed length records but on a DEC TOPS-20 as a stream of characters partitioned into lines,
+   * for example by &lt;CRLF&gt;. If the transfer of files between such disparate sites is to be useful, there must be
+   * some way for one site to recognize the other's assumptions about the file. With some sites being naturally
+   * file-oriented and others naturally record-oriented there may be problems if a file with one structure is
+   * sent to a host oriented to the other. If a text file is sent with record-structure to a host which is file
+   * oriented, then that host should apply an internal transformation to the file based on the record structure.
+   * Obviously, this transformation should be useful, but it must also be invertible so that an identical file
+   * may be retrieved using record structure. In the case of a file being sent with file-structure to a
+   * record-oriented host, there exists the question of what criteria the host should use to divide the file
+   * into records which can be processed locally. If this division is necessary, the FTP implementation should
+   * use the end-of-line sequence, &lt;CRLF&gt; for ASCII, or &lt;NL&gt; for EBCDIC text files, as the delimiter. If an FTP
+   * implementation adopts this technique, it must be prepared to reverse the transformation if the file is
+   * retrieved with file-structure. 3.1.2.1. FILE STRUCTURE FileInterface structure is the default to be assumed
+   * if the STRUcture command has not been used. In file-structure there is no internal structure and the file
+   * is considered to be a continuous sequence of data bytes. 3.1.2.2. RECORD STRUCTURE Record structures must
+   * be accepted for &quot;text&quot; files (i.e., files with TYPE ASCII or EBCDIC) by all FTP implementations. In
+   * record-structure the file is made up of sequential records. 3.1.2.3. PAGE STRUCTURE To transmit files that
+   * are discontinuous, FTP defines a page structure. Files of this type are sometimes known as
+   * &quot;random access files&quot; or even as &quot;holey files&quot;. In these files there is sometimes other information
+   * associated with the file as a whole (e.g., a file descriptor), or with a section of the file (e.g., page
+   * access controls), or both. In FTP, the sections of the file are called pages. To provide for various page
+   * sizes and associated information, each page is sent with a page header. The page header has the following
+   * defined fields: Header Length The number of logical bytes in the page header including this byte. The
+   * minimum header length is 4. Page Index The logical page number of this section of the file. This is not the
+   * transmission sequence number of this page, but the index used to identify this page of the file. Data
+   * Length The number of logical bytes in the page data. The minimum data length is 0. Page Type The type of
+   * page this is. The following page types are defined: 0 = Last Page This is used to indicate the end of a
+   * paged structured transmission. The header length must be 4, and the data length must be 0. 1 = Simple Page
+   * This is the normal type for simple paged files with no page level associated control information. The
+   * header length must be 4. 2 = Descriptor Page This type is used to transmit the descriptive information for
+   * the file as a whole. 3 = Access Controlled Page This type includes an additional header field for paged
+   * files with page level access control information. The header length must be 5. Optional Fields Further
+   * header fields may be used to supply per page control information, for example, per page access control. All
+   * fields are one logical byte in length. The logical byte size is specified by the TYPE command. See Appendix
+   * I for further details and a specific case at the page structure. A note of caution about parameters: a file
+   * must be stored and retrieved with the same parameters if the retrieved version is to be identical to the
+   * version originally transmitted. Conversely, FTP implementations must return a file identical to the
+   * original if the parameters used to store and retrieve a file are the same.
+   */
+  /**
+   * Structure of transfer
+   */
+  private TransferStructure structure;
+
+  /**
+   * @param structure
+   */
+<span class="fc" id="L100">  FtpDataStructureCodec(TransferStructure structure) {</span>
+<span class="fc" id="L101">    this.structure = structure;</span>
+<span class="fc" id="L102">  }</span>
+
+  /**
+   * @return the structure
+   */
+  public TransferStructure getStructure() {
+<span class="nc" id="L108">    return structure;</span>
+  }
+
+  /**
+   * @param structure the structure to set
+   */
+  public void setStructure(TransferStructure structure) {
+<span class="fc" id="L115">    this.structure = structure;</span>
+<span class="fc" id="L116">  }</span>
+
+  @Override
+  protected void encode(ChannelHandlerContext ctx, DataBlock msg,
+                        List&lt;Object&gt; out) throws Exception {
+<span class="pc bpc" id="L121" title="3 of 4 branches missed.">    if (structure == TransferStructure.FILE ||</span>
+        structure == TransferStructure.RECORD) {
+<span class="fc" id="L123">      out.add(msg);</span>
+<span class="fc" id="L124">      return;</span>
+    }
+    // Type unimplemented
+<span class="nc" id="L127">    throw new InvalidArgumentException(</span>
+<span class="nc" id="L128">        &quot;Structure unimplemented in &quot; + getClass().getName() + &quot; codec &quot; +</span>
+<span class="nc" id="L129">        structure.name());</span>
+  }
+
+  @Override
+  protected void decode(ChannelHandlerContext ctx, DataBlock msg,
+                        List&lt;Object&gt; out) throws Exception {
+<span class="pc bpc" id="L135" title="3 of 4 branches missed.">    if (structure == TransferStructure.FILE ||</span>
+        structure == TransferStructure.RECORD) {
+<span class="fc" id="L137">      out.add(msg);</span>
+<span class="fc" id="L138">      return;</span>
+    }
+    // Type unimplemented
+<span class="nc" id="L141">    throw new InvalidArgumentException(</span>
+<span class="nc" id="L142">        &quot;Structure unimplemented in &quot; + getClass().getName() + &quot; codec &quot; +</span>
+<span class="nc" id="L143">        structure.name());</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

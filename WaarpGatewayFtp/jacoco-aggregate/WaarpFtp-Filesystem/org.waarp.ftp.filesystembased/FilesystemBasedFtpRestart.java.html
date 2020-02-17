@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FilesystemBasedFtpRestart.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Filesystem</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.filesystembased</a> &gt; <span class="el_source">FilesystemBasedFtpRestart.java</span></div><h1>FilesystemBasedFtpRestart.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.filesystembased;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply502Exception;
+import org.waarp.common.file.filesystembased.FilesystemBasedRestartImpl;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferType;
+import org.waarp.ftp.core.data.FtpDataAsyncConn;
+import org.waarp.ftp.core.session.FtpSession;
+
+/**
+ * Filesystem implementation of a Restart.&lt;br&gt;
+ * Only FILE+STREAM is supported (byte position in file).
+ */
+public class FilesystemBasedFtpRestart extends FilesystemBasedRestartImpl {
+  /**
+   * @param session
+   */
+  public FilesystemBasedFtpRestart(FtpSession session) {
+<span class="fc" id="L40">    super(session);</span>
+<span class="fc" id="L41">  }</span>
+
+  @Override
+  public boolean restartMarker(String marker) throws CommandAbstractException {
+<span class="fc" id="L45">    final FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    if (dataConn.getStructure() == TransferStructure.FILE &amp;&amp;</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        dataConn.getMode() == TransferMode.STREAM &amp;&amp;</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        dataConn.getType() != TransferType.LENGTH) {</span>
+      long newposition;
+<span class="fc" id="L50">      final String[] args = marker.split(&quot; &quot;);</span>
+      try {
+<span class="fc" id="L52">        newposition = Long.parseLong(args[0]);</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (args.length &gt; 1) {</span>
+<span class="nc" id="L54">          limit = Integer.parseInt(args[1]);</span>
+        }
+<span class="nc" id="L56">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L57">        throw new Reply502Exception(</span>
+            &quot;Marker must be length in byte as a position&quot;);
+<span class="fc" id="L59">      }</span>
+<span class="fc" id="L60">      position = newposition;</span>
+<span class="fc" id="L61">      setSet(true);</span>
+<span class="fc" id="L62">      return true;</span>
+    }
+<span class="nc" id="L64">    throw new Reply502Exception(</span>
+        &quot;Marker not implemented for such Mode, Type and Structure&quot;);
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

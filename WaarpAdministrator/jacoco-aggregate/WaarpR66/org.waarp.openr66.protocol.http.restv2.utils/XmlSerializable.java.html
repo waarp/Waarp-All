@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>XmlSerializable.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.utils</a> &gt; <span class="el_source">XmlSerializable.java</span></div><h1>XmlSerializable.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.utils;
+
+import org.waarp.common.role.RoleDefault;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.RuleTask;
+import org.waarp.openr66.pojo.Transfer;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.waarp.openr66.configuration.FileBasedElements.*;
+import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
+import static org.waarp.openr66.database.data.DbHostConfiguration.*;
+
+/**
+ * An interface for POJOs used in XML (de)serialization.
+ * &lt;p&gt;
+ * Classes implementing this interface, as well as their fields' classes *MUST*
+ * be annotated with the required
+ * JAXB annotations to allow the objects to be marshalled and unmarshalled using
+ * JAXB.
+ *
+ * @see javax.xml.bind.Marshaller
+ * @see javax.xml.bind.Unmarshaller
+ */
+@SuppressWarnings(&quot;CanBeFinal&quot;)
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public interface XmlSerializable {
+
+  /**
+   * A POJO representing a list of business ids for XML (de)serialisation
+   * purposes.
+   */
+  @XmlRootElement(name = XML_BUSINESS)
+<span class="nc" id="L65">  final class Businesses implements XmlSerializable {</span>
+    /**
+     * The list of host names.
+     */
+<span class="nc" id="L69">    @XmlElement(name = XML_BUSINESSID)</span>
+    public List&lt;String&gt; business = new ArrayList&lt;String&gt;();
+  }
+
+  /**
+   * A container for a list of roles for XML (de)serialisation purposes.
+   */
+  @XmlRootElement(name = XML_ROLES)
+  final class Roles implements XmlSerializable {
+    /**
+     * The list of roles.
+     */
+<span class="nc" id="L81">    @XmlElement(name = XML_ROLE)</span>
+    public List&lt;RoleEntry&gt; roles = new ArrayList&lt;RoleEntry&gt;();
+
+<span class="nc" id="L84">    public Roles() {</span>
+<span class="nc" id="L85">    }</span>
+
+<span class="nc" id="L87">    public Roles(List&lt;RoleEntry&gt; roles) {</span>
+<span class="nc" id="L88">      this.roles = roles;</span>
+<span class="nc" id="L89">    }</span>
+
+    /**
+     * A POJO representing a role entry for XML (de)serialisation purposes.
+     */
+    @XmlType
+<span class="nc" id="L95">    public static final class RoleEntry {</span>
+      /**
+       * The host's id.
+       */
+      @XmlElement(name = XML_ROLEID)
+      public String hostName;
+
+      /**
+       * The list of allowed actions on the server.
+       */
+<span class="nc" id="L105">      @XmlElement(name = XML_ROLESET)</span>
+      @XmlList
+      public List&lt;RoleDefault.ROLE&gt; roleList =
+          new ArrayList&lt;RoleDefault.ROLE&gt;();
+    }
+  }
+
+  /**
+   * A container for a list of aliases for XML (de)serialisation purposes.
+   */
+  @XmlRootElement(name = XML_ALIASES)
+  final class Aliases implements XmlSerializable {
+    /**
+     * The list of aliases.
+     */
+<span class="nc" id="L120">    @XmlElement(name = XML_ALIAS)</span>
+    public List&lt;AliasEntry&gt; aliases = new ArrayList&lt;AliasEntry&gt;();
+
+<span class="nc" id="L123">    public Aliases() {</span>
+<span class="nc" id="L124">    }</span>
+
+<span class="nc" id="L126">    public Aliases(List&lt;AliasEntry&gt; aliases) {</span>
+<span class="nc" id="L127">      this.aliases = aliases;</span>
+<span class="nc" id="L128">    }</span>
+
+    /**
+     * A POJO representing an alias entry for XML (de)serialisation
+     * purposes.
+     */
+    @XmlType
+<span class="nc" id="L135">    public static final class AliasEntry {</span>
+      /**
+       * The host's id.
+       */
+      @XmlElement(name = XML_REALID)
+      public String hostName;
+
+      /**
+       * The list of the server's known aliases.
+       */
+<span class="nc" id="L145">      @XmlElement(name = XML_ALIASID)</span>
+      @XmlList
+      public List&lt;String&gt; aliasList = new ArrayList&lt;String&gt;();
+    }
+  }
+
+  /**
+   * A container for a list of hosts for XML (de)serialisation purposes.
+   */
+  @XmlRootElement(name = XML_AUTHENTIFICATION_ROOT)
+  final class Hosts implements XmlSerializable {
+    /**
+     * The list of {@link Host}.
+     */
+<span class="nc" id="L159">    @XmlElement(name = XML_AUTHENTIFICATION_ENTRY)</span>
+    public List&lt;Host&gt; hosts = new ArrayList&lt;Host&gt;();
+
+<span class="nc" id="L162">    public Hosts() {</span>
+<span class="nc" id="L163">    }</span>
+
+<span class="nc" id="L165">    public Hosts(List&lt;Host&gt; hosts) {</span>
+<span class="nc" id="L166">      this.hosts = hosts;</span>
+<span class="nc" id="L167">    }</span>
+  }
+
+  /**
+   * A container for a list of rules for XML (de)serialisation purposes.
+   */
+  @XmlRootElement(name = MULTIPLEROOT)
+  final class Rules implements XmlSerializable {
+    /**
+     * The list of rules.
+     */
+<span class="nc" id="L178">    @XmlElement(name = ROOT)</span>
+    public List&lt;Rule&gt; rules = new ArrayList&lt;Rule&gt;();
+
+<span class="nc" id="L181">    public Rules() {</span>
+<span class="nc" id="L182">    }</span>
+
+<span class="nc" id="L184">    public Rules(List&lt;Rule&gt; rules) {</span>
+<span class="nc" id="L185">      this.rules = rules;</span>
+<span class="nc" id="L186">    }</span>
+
+    /**
+     * A POJO representing a list of tasks for XML (de)serialisation
+     * purposes.
+     */
+    @XmlType(name = XTASKS)
+    public static final class Tasks {
+      /**
+       * The list of tasks.
+       */
+      @XmlElementWrapper(name = XTASKS)
+      @XmlElement(name = XTASK)
+      public List&lt;RuleTask&gt; tasks;
+
+<span class="nc" id="L201">      public Tasks() {</span>
+<span class="nc" id="L202">      }</span>
+
+<span class="nc" id="L204">      public Tasks(List&lt;RuleTask&gt; tasks) {</span>
+<span class="nc" id="L205">        this.tasks = tasks;</span>
+<span class="nc" id="L206">      }</span>
+    }
+  }
+
+  /**
+   * container for a list of transfers for XML (de)serialisation purposes.
+   */
+  @XmlRootElement(name = DbTaskRunner.XMLRUNNERS)
+  class Transfers implements XmlSerializable {
+<span class="nc" id="L215">    @XmlElement(name = DbTaskRunner.XMLRUNNER)</span>
+    public List&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();
+
+<span class="nc" id="L218">    public Transfers() {</span>
+<span class="nc" id="L219">    }</span>
+
+<span class="nc" id="L221">    public Transfers(List&lt;Transfer&gt; transfers) {</span>
+<span class="nc" id="L222">      this.transfers = transfers;</span>
+<span class="nc" id="L223">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

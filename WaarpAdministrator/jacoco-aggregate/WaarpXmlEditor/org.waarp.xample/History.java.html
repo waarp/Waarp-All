@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>History.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpXmlEditor</a> &gt; <a href="index.source.html" class="el_package">org.waarp.xample</a> &gt; <span class="el_source">History.java</span></div><h1>History.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.xample;
+
+/*
+ * Copyright (c) 2002 Felix Golubov
+ */
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+/**
+ * A helper class for the XAmple application which holds pathes of accessed XSD
+ * and XML files.
+ *
+ * @author Felix Golubov
+ * @version 1.0
+ */
+
+public class History {
+  public static final int MAX_ITEM_COUNT = 20;
+  public static final int MAX_LABEL_LENGTH = 70;
+
+  ArrayList&lt;History&gt; items;
+  final String path;
+  final String label;
+
+<span class="nc" id="L46">  public History(String path) {</span>
+<span class="nc" id="L47">    this.path = path.replace('\\', '/');</span>
+<span class="nc" id="L48">    label = abbreviatePath(this.path, MAX_LABEL_LENGTH);</span>
+<span class="nc" id="L49">  }</span>
+
+  public static String abbreviatePath(String path, int limitLength) {
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (path.length() &lt;= limitLength) {</span>
+<span class="nc" id="L53">      return path;</span>
+    }
+<span class="nc" id="L55">    int k = path.indexOf('/', 1);</span>
+<span class="nc" id="L56">    final String substring =</span>
+<span class="nc" id="L57">        &quot;...&quot; + path.substring(path.length() - limitLength + 3);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (k &lt; 0) {</span>
+<span class="nc" id="L59">      return substring;</span>
+    }
+<span class="nc" id="L61">    k = path.indexOf('/', k + 1);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (k &lt; 0) {</span>
+<span class="nc" id="L63">      return substring;</span>
+    }
+<span class="nc" id="L65">    final String prefix = path.substring(0, k + 1);</span>
+<span class="nc" id="L66">    String suffix = path.substring(k + 1);</span>
+<span class="nc" id="L67">    k = suffix.indexOf('/', 1);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (k &lt; 0) {</span>
+<span class="nc" id="L69">      return substring;</span>
+    }
+<span class="nc" id="L71">    final int limit = MAX_LABEL_LENGTH - prefix.length() - 3;</span>
+<span class="nc bnc" id="L72" title="All 4 branches missed.">    while (k &gt;= 0 &amp;&amp; suffix.length() &gt; limit) {</span>
+<span class="nc" id="L73">      suffix = suffix.substring(k);</span>
+<span class="nc" id="L74">      k = suffix.indexOf('/', 1);</span>
+    }
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (suffix.length() &lt;= limit) {</span>
+<span class="nc" id="L77">      return prefix + &quot;...&quot; + suffix;</span>
+    } else {
+<span class="nc" id="L79">      return substring;</span>
+    }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    if (!(obj instanceof History)) {</span>
+<span class="nc" id="L86">      return false;</span>
+    }
+<span class="nc" id="L88">    final History history = (History) obj;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (path == null) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      return history.path == null;</span>
+    }
+<span class="nc" id="L92">    return path.equals(history.path);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L97">    return label;</span>
+  }
+
+  public History put(String childPath) {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (items == null) {</span>
+<span class="nc" id="L102">      items = new ArrayList&lt;History&gt;();</span>
+    }
+<span class="nc" id="L104">    History child = new History(childPath);</span>
+<span class="nc" id="L105">    final int index = items.indexOf(child);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (index &gt;= 0) {</span>
+<span class="nc" id="L107">      child = items.remove(index);</span>
+    }
+<span class="nc" id="L109">    items.add(0, child);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    if (items.size() &gt; MAX_ITEM_COUNT) {</span>
+<span class="nc" id="L111">      items.remove(items.size() - 1);</span>
+    }
+<span class="nc" id="L113">    return child;</span>
+  }
+
+  public History getFirstChild() {
+<span class="nc bnc" id="L117" title="All 4 branches missed.">    if (items == null &amp;&amp; items.isEmpty()) {</span>
+<span class="nc" id="L118">      return null;</span>
+    }
+<span class="nc" id="L120">    return items.get(0);</span>
+  }
+
+  public void remove(String childPath) {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (items == null) {</span>
+<span class="nc" id="L125">      items = new ArrayList&lt;History&gt;();</span>
+    }
+<span class="nc" id="L127">    final History child = new History(childPath);</span>
+<span class="nc" id="L128">    final int index = items.indexOf(child);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (index &gt;= 0) {</span>
+<span class="nc" id="L130">      items.remove(index);</span>
+    }
+<span class="nc" id="L132">  }</span>
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L136">    return Arrays.hashCode(new Object[] { items, path, label });</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

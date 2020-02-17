@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>XMLBusinessDAO.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.dao.xml</a> &gt; <span class="el_source">XMLBusinessDAO.java</span></div><h1>XMLBusinessDAO.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.dao.xml;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.waarp.openr66.dao.BusinessDAO;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.pojo.Business;
+import org.xml.sax.SAXException;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.waarp.openr66.dao.DAOFactory.*;
+
+//TODO
+public class XMLBusinessDAO implements BusinessDAO {
+
+  /**
+   * HashTable in case of lack of database
+   */
+  private static final ConcurrentHashMap&lt;String, Business&gt;
+<span class="nc" id="L56">      dbR66BusinessHashMap = new ConcurrentHashMap&lt;String, Business&gt;();</span>
+
+  public static final String HOSTID_FIELD = &quot;hostid&quot;;
+
+  private static final String XML_SELECT = &quot;/authent/entry[hostid=$hostid]&quot;;
+  private static final String XML_GET_ALL = &quot;/authent/entry&quot;;
+
+  private final File file;
+
+<span class="nc" id="L65">  public XMLBusinessDAO(String filePath) throws DAOConnectionException {</span>
+<span class="nc" id="L66">    file = new File(filePath);</span>
+<span class="nc" id="L67">  }</span>
+
+  @Override
+  public void close() {
+    // ignore
+<span class="nc" id="L72">  }</span>
+
+  @Override
+  public void delete(Business business) throws DAOConnectionException {
+<span class="nc" id="L76">    dbR66BusinessHashMap.remove(business.getHostid());</span>
+<span class="nc" id="L77">  }</span>
+
+  @Override
+  public void deleteAll() throws DAOConnectionException {
+<span class="nc" id="L81">    dbR66BusinessHashMap.clear();</span>
+<span class="nc" id="L82">  }</span>
+
+  @Override
+  public List&lt;Business&gt; getAll() throws DAOConnectionException {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="nc" id="L87">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
+    }
+    try {
+<span class="nc" id="L90">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L91">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+      // Setup XPath query
+<span class="nc" id="L93">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L94">      final XPathExpression xpe = xPath.compile(XML_GET_ALL);</span>
+<span class="nc" id="L95">      final NodeList listNode =</span>
+<span class="nc" id="L96">          (NodeList) xpe.evaluate(document, XPathConstants.NODESET);</span>
+      // Iterate through all found nodes
+<span class="nc" id="L98">      final List&lt;Business&gt; res = new ArrayList&lt;Business&gt;(listNode.getLength());</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">      for (int i = 0; i &lt; listNode.getLength(); i++) {</span>
+<span class="nc" id="L100">        final Node node = listNode.item(i);</span>
+<span class="nc" id="L101">        final Business business = getFromNode(node);</span>
+<span class="nc" id="L102">        res.add(business);</span>
+<span class="nc" id="L103">        dbR66BusinessHashMap.put(business.getHostid(), business);</span>
+      }
+<span class="nc" id="L105">      return res;</span>
+<span class="nc" id="L106">    } catch (final SAXException e) {</span>
+<span class="nc" id="L107">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L108">    } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L109">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L110">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L111">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L112">    } catch (final IOException e) {</span>
+<span class="nc" id="L113">      throw new DAOConnectionException(e);</span>
+    }
+  }
+
+  @Override
+  public boolean exist(String hostid) throws DAOConnectionException {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (dbR66BusinessHashMap.containsKey(hostid)) {</span>
+<span class="nc" id="L120">      return true;</span>
+    }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="nc" id="L123">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
+    }
+    try {
+<span class="nc" id="L126">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L127">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+      // Setup XPath variable
+<span class="nc" id="L129">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
+<span class="nc" id="L130">      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);</span>
+      // Setup XPath query
+<span class="nc" id="L132">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L133">      xPath.setXPathVariableResolver(resolver);</span>
+<span class="nc" id="L134">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
+      // Query will return &quot;&quot; if nothing is found
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      return xpe.evaluate(document) != null &amp;&amp;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">             !xpe.evaluate(document).isEmpty();</span>
+<span class="nc" id="L138">    } catch (final SAXException e) {</span>
+<span class="nc" id="L139">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L140">    } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L141">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L142">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L143">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L144">    } catch (final IOException e) {</span>
+<span class="nc" id="L145">      throw new DAOConnectionException(e);</span>
+    }
+  }
+
+  @Override
+  public List&lt;Business&gt; find(List&lt;Filter&gt; fitlers)
+      throws DAOConnectionException {
+<span class="nc" id="L152">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+  }
+
+  @Override
+  public void insert(Business business) throws DAOConnectionException {
+<span class="nc" id="L157">    dbR66BusinessHashMap.put(business.getHostid(), business);</span>
+<span class="nc" id="L158">  }</span>
+
+  @Override
+  public Business select(String hostid)
+      throws DAOConnectionException, DAONoDataException {
+<span class="nc" id="L163">    Business business = dbR66BusinessHashMap.get(hostid);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">    if (business != null) {</span>
+<span class="nc" id="L165">      return business;</span>
+    }
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="nc" id="L168">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
+    }
+    try {
+<span class="nc" id="L171">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L172">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+      // Setup XPath variable
+<span class="nc" id="L174">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
+<span class="nc" id="L175">      resolver.addVariable(new QName(null, HOSTID_FIELD), hostid);</span>
+      // Setup XPath query
+<span class="nc" id="L177">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L178">      xPath.setXPathVariableResolver(resolver);</span>
+<span class="nc" id="L179">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
+      // Retrieve node and instantiate object
+<span class="nc" id="L181">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (node != null) {</span>
+<span class="nc" id="L183">        business = getFromNode(node);</span>
+<span class="nc" id="L184">        dbR66BusinessHashMap.put(business.getHostid(), business);</span>
+<span class="nc" id="L185">        return business;</span>
+      }
+<span class="nc" id="L187">      throw new DAONoDataException(&quot;Business not found&quot;);</span>
+<span class="nc" id="L188">    } catch (final SAXException e) {</span>
+<span class="nc" id="L189">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L190">    } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L191">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L192">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L193">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L194">    } catch (final IOException e) {</span>
+<span class="nc" id="L195">      throw new DAOConnectionException(e);</span>
+    }
+  }
+
+  @Override
+  public void update(Business business) throws DAOConnectionException {
+<span class="nc" id="L201">    dbR66BusinessHashMap.put(business.getHostid(), business);</span>
+<span class="nc" id="L202">  }</span>
+
+  private Business getFromNode(Node parent) {
+<span class="nc" id="L205">    final Business res = new Business();</span>
+
+<span class="nc" id="L207">    final NodeList children = parent.getChildNodes();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
+<span class="nc" id="L209">      final Node node = children.item(j);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">      if (node.getNodeName().equals(HOSTID_FIELD)) {</span>
+<span class="nc" id="L211">        res.setHostid(node.getTextContent());</span>
+      }
+    }
+<span class="nc" id="L214">    return res;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TransferConverter.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.converters</a> &gt; <span class="el_source">TransferConverter.java</span></div><h1>TransferConverter.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.converters;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.joda.time.DateTime;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.ModeTrans;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+
+import javax.ws.rs.InternalServerErrorException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static org.waarp.openr66.dao.database.DBTransferDAO.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.TransferFields.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
+
+/**
+ * A collection of utility methods to convert {@link Transfer} objects to their
+ * corresponding
+ * {@link ObjectNode} and vice-versa.
+ */
+public final class TransferConverter {
+
+  /**
+   * Makes the default constructor of this utility class inaccessible.
+   */
+<span class="nc" id="L61">  private TransferConverter() throws InstantiationException {</span>
+<span class="nc" id="L62">    throw new InstantiationException(</span>
+<span class="nc" id="L63">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ########################### INNER CLASSES ################################
+
+  /**
+   * All the possible ways to order a list of transfer objects.
+   */
+<span class="fc" id="L71">  public enum Order {</span>
+    /**
+     * By transferId, in ascending order.
+     */
+<span class="fc" id="L75">    ascId(ID_FIELD, true),</span>
+    /**
+     * By transferId, in descending order.
+     */
+<span class="fc" id="L79">    descId(ID_FIELD, false),</span>
+    /**
+     * By fileName, in ascending order.
+     */
+<span class="fc" id="L83">    ascFile(ORIGINAL_NAME_FIELD, true),</span>
+    /**
+     * By fileName, in descending order.
+     */
+<span class="fc" id="L87">    descFile(ORIGINAL_NAME_FIELD, false),</span>
+    /**
+     * By starting date, in ascending order.
+     */
+<span class="fc" id="L91">    ascStart(TRANSFER_START_FIELD, true),</span>
+    /**
+     * By starting date, in descending order.
+     */
+<span class="fc" id="L95">    descStart(TRANSFER_START_FIELD, false),</span>
+    /**
+     * By end date, in ascending order.
+     */
+<span class="fc" id="L99">    ascStop(TRANSFER_STOP_FIELD, true),</span>
+    /**
+     * By end date, in descending order.
+     */
+<span class="fc" id="L103">    descStop(TRANSFER_STOP_FIELD, false);</span>
+
+    /**
+     * The name of the database column used for sorting.
+     */
+    public final String column;
+    /**
+     * If the order is ascending or descending.
+     */
+    public final boolean ascend;
+
+<span class="fc" id="L114">    Order(String column, boolean ascend) {</span>
+<span class="fc" id="L115">      this.column = column;</span>
+<span class="fc" id="L116">      this.ascend = ascend;</span>
+<span class="fc" id="L117">    }</span>
+  }
+
+  // ########################## PUBLIC METHODS ################################
+
+  /**
+   * Returns an {@link ObjectNode} representing the {@link Transfer} object
+   * given as parameter.
+   *
+   * @param transfer the Transfer object to serialize
+   *
+   * @return the corresponding ObjectNode
+   */
+  public static ObjectNode transferToNode(Transfer transfer) {
+<span class="nc" id="L131">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="nc" id="L132">    node.put(TRANSFER_ID, transfer.getId());</span>
+<span class="nc" id="L133">    node.put(GLOBAL_STEP, transfer.getGlobalStep().toString());</span>
+<span class="nc" id="L134">    node.put(GLOBAL_LAST_STEP, transfer.getLastGlobalStep().toString());</span>
+<span class="nc" id="L135">    node.put(STEP, transfer.getStep());</span>
+<span class="nc" id="L136">    node.put(RANK, transfer.getRank());</span>
+<span class="nc" id="L137">    node.put(UPDATED_INFO, transfer.getUpdatedInfo().toString());</span>
+<span class="nc" id="L138">    node.put(STEP_STATUS, transfer.getStepStatus().toString());</span>
+<span class="nc" id="L139">    node.put(ERROR_CODE, transfer.getInfoStatus().code);</span>
+<span class="nc" id="L140">    node.put(ERROR_MESSAGE, transfer.getInfoStatus().getMesg());</span>
+<span class="nc" id="L141">    node.put(ORIGINAL_FILENAME, transfer.getOriginalName());</span>
+<span class="nc" id="L142">    node.put(FILENAME, transfer.getFilename());</span>
+<span class="nc" id="L143">    node.put(RULE, transfer.getRule());</span>
+<span class="nc" id="L144">    node.put(BLOCK_SIZE, transfer.getBlockSize());</span>
+<span class="nc" id="L145">    node.put(FILE_INFO, transfer.getFileInfo());</span>
+<span class="nc" id="L146">    node.put(TRANSFER_INFO, transfer.getTransferInfo());</span>
+<span class="nc" id="L147">    node.put(START, new DateTime(transfer.getStart()).toString());</span>
+<span class="nc" id="L148">    node.put(STOP, new DateTime(transfer.getStop()).toString());</span>
+<span class="nc" id="L149">    node.put(REQUESTED, transfer.getRequested());</span>
+<span class="nc" id="L150">    node.put(REQUESTER, transfer.getRequester());</span>
+<span class="nc" id="L151">    node.put(RETRIEVE, transfer.getRetrieveMode());</span>
+
+<span class="nc" id="L153">    return node;</span>
+  }
+
+  /**
+   * Initialize a {@link Transfer} object using the values of the given {@link
+   * ObjectNode}.
+   *
+   * @param object the ObjectNode to convert
+   *
+   * @return the new Transfer object
+   *
+   * @throws RestErrorException if the given ObjectNode does not
+   *     represent a Transfer object
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static Transfer nodeToNewTransfer(ObjectNode object) {
+<span class="nc" id="L170">    final Transfer defaultTransfer =</span>
+        new Transfer(null, null, -1, false, null, null, 65536);
+<span class="nc" id="L172">    defaultTransfer.setRequester(SERVER_NAME);</span>
+<span class="nc" id="L173">    defaultTransfer.setOwnerRequest(SERVER_NAME);</span>
+<span class="nc" id="L174">    defaultTransfer.setBlockSize(65536);</span>
+<span class="nc" id="L175">    defaultTransfer.setTransferInfo(&quot;&quot;);</span>
+<span class="nc" id="L176">    defaultTransfer.setStart(new Timestamp(DateTime.now().getMillis()));</span>
+<span class="nc" id="L177">    final Transfer transfer = parseNode(object, defaultTransfer);</span>
+
+    ModeTrans mode;
+<span class="nc" id="L180">    RuleDAO ruleDAO = null;</span>
+    try {
+<span class="nc" id="L182">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L183">      final Rule rule = ruleDAO.select(transfer.getRule());</span>
+<span class="nc" id="L184">      mode = ModeTrans.fromCode(rule.getMode());</span>
+<span class="nc" id="L185">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L186">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L187">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L188">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L190">      DAOFactory.closeDAO(ruleDAO);</span>
+    }
+
+<span class="nc bnc" id="L193" title="All 4 branches missed.">    transfer.setRetrieveMode(</span>
+        mode == ModeTrans.receive || mode == ModeTrans.receiveMD5);
+<span class="nc" id="L195">    transfer.setTransferMode(mode.code);</span>
+<span class="nc" id="L196">    transfer.setFileInfo(&quot;&quot;);</span>
+<span class="nc" id="L197">    transfer.setStop(transfer.getStart());</span>
+<span class="nc" id="L198">    transfer.setUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+
+<span class="nc" id="L200">    return transfer;</span>
+  }
+
+  // ######################### PRIVATE METHODS ################################
+
+  /**
+   * Tells if the given rule exists in the database.
+   *
+   * @param rule the name of the rule
+   *
+   * @return {@code true} if the rule exists, {@code false} otherwise.
+   */
+  private static boolean ruleExists(String rule) {
+<span class="nc" id="L213">    RuleDAO ruleDAO = null;</span>
+    try {
+<span class="nc" id="L215">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L216">      return ruleDAO.exist(rule);</span>
+<span class="nc" id="L217">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L218">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L220">      DAOFactory.closeDAO(ruleDAO);</span>
+    }
+  }
+
+  /**
+   * Tells if the given host exists in the database.
+   *
+   * @param host the name of the host
+   *
+   * @return {@code true} if the host exists, {@code false} otherwise.
+   */
+  private static boolean hostExists(String host) {
+<span class="nc" id="L232">    HostDAO hostDAO = null;</span>
+    try {
+<span class="nc" id="L234">      hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="nc" id="L235">      return hostDAO.exist(host);</span>
+<span class="nc" id="L236">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L237">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L239">      DAOFactory.closeDAO(hostDAO);</span>
+    }
+  }
+
+  /**
+   * Tells if the given host is allowed to use given rule.
+   *
+   * @param host the name of the host
+   * @param rule the name of the rule
+   *
+   * @return {@code true} if the host is allowed to use the rule, {@code
+   *     false} otherwise
+   */
+  private static boolean canUseRule(String host, String rule) {
+<span class="nc" id="L253">    RuleDAO ruleDAO = null;</span>
+    try {
+<span class="nc" id="L255">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L256">      final List&lt;String&gt; hostIds = ruleDAO.select(rule).getHostids();</span>
+<span class="nc bnc" id="L257" title="All 4 branches missed.">      return !hostIds.isEmpty() &amp;&amp; !hostIds.contains(host);</span>
+<span class="nc" id="L258">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L259">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L260">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L261">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L263">      DAOFactory.closeDAO(ruleDAO);</span>
+    }
+  }
+
+  /**
+   * Returns a list of {@link RestError} corresponding to all the fields
+   * required to initialize a transfer that
+   * are missing from the given {@link Transfer} object. If no fields are
+   * missing, an empty list is returned.
+   *
+   * @param transfer the Transfer object to check.
+   *
+   * @return the list of all missing fields
+   */
+  private static List&lt;RestError&gt; checkRequiredFields(Transfer transfer) {
+<span class="nc" id="L278">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc bnc" id="L279" title="All 4 branches missed.">    if (transfer.getRule() == null || transfer.getRule().isEmpty()) {</span>
+<span class="nc" id="L280">      errors.add(MISSING_FIELD(RULE));</span>
+    }
+<span class="nc bnc" id="L282" title="All 2 branches missed.">    if (transfer.getOriginalName() == null ||</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        transfer.getOriginalName().isEmpty()) {</span>
+<span class="nc" id="L284">      errors.add(MISSING_FIELD(FILENAME));</span>
+    }
+<span class="nc bnc" id="L286" title="All 4 branches missed.">    if (transfer.getRequested() == null || transfer.getRequested().isEmpty()) {</span>
+<span class="nc" id="L287">      errors.add(MISSING_FIELD(REQUESTED));</span>
+    }
+
+<span class="nc" id="L290">    return errors;</span>
+  }
+
+  /**
+   * Fills the fields of the given {@link Transfer} object with the values
+   * extracted from the {@link ObjectNode}
+   * parameter, and returns the result.
+   *
+   * @param object the ObjectNode from which the values should be
+   *     extracted
+   * @param transfer the Transfer object whose fields will be filled
+   *
+   * @return the filled Transfer object
+   *
+   * @throws RestErrorException if the given ObjectNode does not
+   *     represent a Transfer object.
+   */
+  private static Transfer parseNode(ObjectNode object, Transfer transfer) {
+<span class="nc" id="L308">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+
+<span class="nc" id="L310">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
+<span class="nc" id="L312">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L313">      final String name = field.getKey();</span>
+<span class="nc" id="L314">      final JsonNode value = field.getValue();</span>
+
+<span class="nc bnc" id="L316" title="All 2 branches missed.">      if (name.equalsIgnoreCase(RULE)) {</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">          if (ruleExists(value.asText())) {</span>
+<span class="nc" id="L319">            transfer.setRule(value.asText());</span>
+          } else {
+<span class="nc" id="L321">            errors.add(UNKNOWN_RULE(value.asText()));</span>
+          }
+        } else {
+<span class="nc" id="L324">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L326" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(FILENAME)) {</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L328">          transfer.setOriginalName(value.asText());</span>
+<span class="nc" id="L329">          transfer.setFilename(value.asText());</span>
+        } else {
+<span class="nc" id="L331">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L333" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(REQUESTED)) {</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">          if (hostExists(value.asText())) {</span>
+<span class="nc" id="L336">            transfer.setRequested(value.asText());</span>
+          } else {
+<span class="nc" id="L338">            errors.add(UNKNOWN_HOST(value.asText()));</span>
+          }
+        } else {
+<span class="nc" id="L341">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L343" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(BLOCK_SIZE)) {</span>
+<span class="nc bnc" id="L344" title="All 4 branches missed.">        if (value.canConvertToInt() &amp;&amp; value.asInt() &gt; 0) {</span>
+<span class="nc" id="L345">          transfer.setBlockSize(value.asInt());</span>
+        } else {
+<span class="nc" id="L347">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L349" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(FILE_INFO)) {</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L351">          transfer.setFileInfo(value.asText());</span>
+        } else {
+<span class="nc" id="L353">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+<span class="nc bnc" id="L355" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(START)) {</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+          try {
+<span class="nc" id="L358">            final DateTime start = DateTime.parse(value.asText());</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">            if (start.isBeforeNow()) {</span>
+<span class="nc" id="L360">              errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));</span>
+            } else {
+<span class="nc" id="L362">              transfer.setStart(new Timestamp(start.getMillis()));</span>
+            }
+<span class="nc" id="L364">          } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L365">            errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));</span>
+<span class="nc" id="L366">          }</span>
+        } else {
+<span class="nc" id="L368">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+        }
+      }
+<span class="nc" id="L371">    }</span>
+
+    // check that both hosts are allowed to use the transfer rule
+<span class="nc" id="L374">    final String rule = transfer.getRule();</span>
+<span class="nc" id="L375">    final String requested = transfer.getRequested();</span>
+<span class="nc" id="L376">    final String requester = transfer.getRequester();</span>
+<span class="nc bnc" id="L377" title="All 6 branches missed.">    if (rule != null &amp;&amp; !requested.isEmpty() &amp;&amp; canUseRule(requested, rule)) {</span>
+<span class="nc" id="L378">      errors.add(RULE_NOT_ALLOWED(requested, rule));</span>
+    }
+<span class="nc bnc" id="L380" title="All 6 branches missed.">    if (rule != null &amp;&amp; !requester.isEmpty() &amp;&amp; canUseRule(requester, rule)) {</span>
+<span class="nc" id="L381">      errors.add(RULE_NOT_ALLOWED(requester, rule));</span>
+    }
+
+<span class="nc" id="L384">    errors.addAll(checkRequiredFields(transfer));</span>
+
+<span class="nc bnc" id="L386" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L387">      return transfer;</span>
+    } else {
+<span class="nc" id="L389">      throw new RestErrorException(errors);</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

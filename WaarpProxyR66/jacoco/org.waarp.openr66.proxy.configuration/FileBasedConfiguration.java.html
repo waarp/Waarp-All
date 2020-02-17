@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileBasedConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.proxy.configuration</a> &gt; <span class="el_source">FileBasedConfiguration.java</span></div><h1>FileBasedConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.proxy.configuration;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlDecl;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlRootHash;
+import org.waarp.common.xml.XmlType;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.proxy.network.ProxyEntry;
+
+import java.net.InetSocketAddress;
+
+import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.configuration.FileBasedConfiguration.*;
+import static org.waarp.openr66.configuration.FileBasedElements.*;
+
+/**
+ * File Based ConfigurationProxyR66
+ */
+public class FileBasedConfiguration {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);</span>
+
+  /**
+   * SERVER Association entry
+   */
+  private static final String XML_SERVER_PROXY = &quot;serverproxy&quot;;
+  /**
+   * SERVER Listening address
+   */
+  private static final String XML_SERVER_LISTENADDR = &quot;serverlistenaddr&quot;;
+  /**
+   * SERVER Listening port
+   */
+  private static final String XML_SERVER_LISTENPORT = &quot;serverlistenport&quot;;
+  /**
+   * SERVER Listening ssl mode
+   */
+  private static final String XML_SERVER_LISTENSSL = &quot;serverlistenssl&quot;;
+  /**
+   * SERVER Remote address
+   */
+  private static final String XML_SERVER_REMOTEADDR = &quot;serverremoteaddr&quot;;
+  /**
+   * SERVER Remote PORT
+   */
+  private static final String XML_SERVER_REMOTEPORT = &quot;serverremoteport&quot;;
+  /**
+   * SERVER Remote ssl mode
+   */
+  private static final String XML_SERVER_REMOTESSL = &quot;serverremotessl&quot;;
+
+  /**
+   * Structure of the ConfigurationProxyR66 file
+   */
+<span class="fc" id="L86">  private static final XmlDecl[] configServerParamDecls = {</span>
+      // server
+      new XmlDecl(XmlType.BOOLEAN, XML_USESSL),
+      new XmlDecl(XmlType.BOOLEAN, XML_USENOSSL),
+      new XmlDecl(XmlType.BOOLEAN, XML_USEHTTPCOMP),
+      new XmlDecl(XmlType.STRING, XML_SERVER_ADMIN),
+      new XmlDecl(XmlType.STRING, XML_SERVER_PASSWD),
+      new XmlDecl(XmlType.STRING, XML_SERVER_PASSWD_FILE),
+      new XmlDecl(XmlType.STRING, XML_HTTPADMINPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_ADMIN_KEYPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_ADMIN_KEYSTOREPASS),
+      new XmlDecl(XmlType.STRING, XML_PATH_ADMIN_KEYPASS),
+      new XmlDecl(XmlType.LONG, XML_MONITOR_PASTLIMIT),
+      new XmlDecl(XmlType.LONG, XML_MONITOR_MINIMALDELAY),
+      new XmlDecl(XmlType.STRING, XML_MONITOR_SNMP_CONFIG)
+  };
+  /**
+   * Structure of the ConfigurationProxyR66 file
+   */
+<span class="fc" id="L105">  private static final XmlDecl[] configNetworkProxyDecls = {</span>
+      // proxy
+      new XmlDecl(XmlType.STRING, XML_SERVER_LISTENADDR),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_LISTENPORT),
+      new XmlDecl(XmlType.BOOLEAN, XML_SERVER_LISTENSSL),
+      new XmlDecl(XmlType.STRING, XML_SERVER_REMOTEADDR),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_REMOTEPORT),
+      new XmlDecl(XmlType.BOOLEAN, XML_SERVER_REMOTESSL)
+  };
+  /**
+   * Structure of the ConfigurationProxyR66 file
+   */
+<span class="fc" id="L117">  private static final XmlDecl[] configNetworkServerDecls = {</span>
+      // network
+      new XmlDecl(XML_SERVER_PROXY, XmlType.XVAL, XML_SERVER_PROXY,
+                  configNetworkProxyDecls, true),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPPORT),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPSPORT)
+  };
+
+  /**
+   * Structure of the ConfigurationProxyR66 file
+   */
+<span class="fc" id="L128">  private static final XmlDecl[] configDirectoryDecls = {</span>
+      // directory
+      new XmlDecl(XmlType.STRING, XML_SERVER_HOME),
+      new XmlDecl(XmlType.STRING, XML_ARCHIVEPATH),
+      new XmlDecl(XmlType.STRING, XML_CONFIGPATH)
+  };
+
+  /**
+   * Structure of the ConfigurationProxyR66 file
+   */
+<span class="fc" id="L138">  private static final XmlDecl[] configLimitDecls = {</span>
+      // limit
+      new XmlDecl(XmlType.LONG, XML_LIMITSESSION),
+      new XmlDecl(XmlType.LONG, XML_LIMITGLOBAL),
+      new XmlDecl(XmlType.LONG, XML_LIMITDELAY),
+      new XmlDecl(XmlType.LONG, XML_DELAYRETRY),
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_THREAD),
+      new XmlDecl(XmlType.INTEGER, XML_CLIENT_THREAD),
+      new XmlDecl(XmlType.LONG, XML_MEMORY_LIMIT),
+      new XmlDecl(XmlType.BOOLEAN, XML_CSTRT_USECPULIMIT),
+      new XmlDecl(XmlType.BOOLEAN, XML_CSTRT_USECPUJDKLIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_CPULIMIT),
+      new XmlDecl(XmlType.INTEGER, XML_CSTRT_CONNLIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_LOWCPULIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_HIGHCPULIMIT),
+      new XmlDecl(XmlType.DOUBLE, XML_CSTRT_PERCENTDECREASE),
+      new XmlDecl(XmlType.LONG, XML_CSTRT_LIMITLOWBANDWIDTH),
+      new XmlDecl(XmlType.LONG, XML_CSTRT_DELAYTHROTTLE),
+      new XmlDecl(XmlType.LONG, XML_TIMEOUTCON),
+      new XmlDecl(XmlType.BOOLEAN, XML_CHECKVERSION)
+  };
+
+  /**
+   * Global Structure for Server ConfigurationProxyR66
+   */
+<span class="fc" id="L163">  private static final XmlDecl[] configServer = {</span>
+      new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
+                  configIdentityDecls, false),
+      new XmlDecl(XML_SERVER, XmlType.XVAL, XML_ROOT + XML_SERVER,
+                  configServerParamDecls, false),
+      new XmlDecl(XML_NETWORK, XmlType.XVAL, XML_ROOT + XML_NETWORK,
+                  configNetworkServerDecls, false),
+      new XmlDecl(XML_SSL, XmlType.XVAL, XML_ROOT + XML_SSL, configSslDecls,
+                  false),
+      new XmlDecl(XML_DIRECTORY, XmlType.XVAL, XML_ROOT + XML_DIRECTORY,
+                  configDirectoryDecls, false),
+      new XmlDecl(XML_LIMIT, XmlType.XVAL, XML_ROOT + XML_LIMIT,
+                  configLimitDecls, false)
+  };
+
+  private static XmlValue[] configuration;
+  private static XmlHash hashConfig;
+
+  private FileBasedConfiguration() {
+  }
+
+  private static boolean loadServerParam(Configuration config) {
+<span class="fc" id="L185">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_SERVER));</span>
+    try {
+<span class="fc" id="L187">      return org.waarp.openr66.configuration.FileBasedConfiguration</span>
+<span class="fc" id="L188">          .loadServerConfig(config, hashConfigSub);</span>
+    } finally {
+<span class="fc" id="L190">      hashConfigSub.clear();</span>
+<span class="fc" id="L191">      hashConfigSub = null;</span>
+    }
+  }
+
+  private static boolean loadDirectory(Configuration config) {
+<span class="fc" id="L196">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_DIRECTORY));</span>
+    try {
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">      if (loadMinimalDirectory(config, hashConfigSub)) {</span>
+<span class="nc" id="L199">        return false;</span>
+      }
+    } finally {
+<span class="fc" id="L202">      hashConfigSub.clear();</span>
+<span class="fc" id="L203">      hashConfigSub = null;</span>
+    }
+<span class="fc" id="L205">    return true;</span>
+  }
+
+  private static boolean alreadySetLimit;
+
+  private static void loadLimit(Configuration config, boolean updateLimit) {
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">    if (alreadySetLimit) {</span>
+<span class="nc" id="L212">      return;</span>
+    }
+<span class="fc" id="L214">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_LIMIT));</span>
+    try {
+<span class="fc" id="L216">      loadCommonLimit(config, hashConfigSub, updateLimit);</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">      if (config.getRunnerThread() &lt; 10) {</span>
+<span class="nc" id="L218">        config.setRunnerThread(10);</span>
+      }
+<span class="fc" id="L220">      logger.info(&quot;Limit of Runner: {}&quot;, config.getRunnerThread());</span>
+<span class="fc" id="L221">      alreadySetLimit = true;</span>
+    } finally {
+<span class="fc" id="L223">      hashConfigSub.clear();</span>
+    }
+<span class="fc" id="L225">  }</span>
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private static boolean loadNetworkServer(Configuration config) {
+<span class="fc" id="L229">    config.setServerPort(0);</span>
+<span class="fc" id="L230">    config.setServerSslPort(0);</span>
+<span class="fc" id="L231">    XmlValue value = hashConfig.get(XML_SERVER_HTTPPORT);</span>
+<span class="fc" id="L232">    int httpport = 8066;</span>
+<span class="pc bpc" id="L233" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L234">      httpport = value.getInteger();</span>
+    }
+<span class="fc" id="L236">    config.setServerHttpport(httpport);</span>
+<span class="fc" id="L237">    value = hashConfig.get(XML_SERVER_HTTPSPORT);</span>
+<span class="fc" id="L238">    int httpsport = 8067;</span>
+<span class="pc bpc" id="L239" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L240">      httpsport = value.getInteger();</span>
+    }
+<span class="fc" id="L242">    config.setServerHttpsPort(httpsport);</span>
+    // XXX FIXME to change to accept multiple port according to relation local-proxy
+<span class="fc" id="L244">    value = hashConfig.get(XML_SERVER_PROXY);</span>
+<span class="pc bpc" id="L245" title="2 of 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
+<span class="fc" id="L247">        final XmlHash subHash = new XmlHash(xml);</span>
+<span class="fc" id="L248">        value = subHash.get(XML_SERVER_LISTENADDR);</span>
+<span class="pc bpc" id="L249" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L250">          continue;</span>
+        }
+<span class="fc" id="L252">        final String listenaddr = value.getString();</span>
+<span class="fc" id="L253">        value = subHash.get(XML_SERVER_LISTENPORT);</span>
+<span class="pc bpc" id="L254" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L255">          continue;</span>
+        }
+<span class="fc" id="L257">        final int listenport = value.getInteger();</span>
+<span class="fc" id="L258">        value = subHash.get(XML_SERVER_LISTENSSL);</span>
+<span class="pc bpc" id="L259" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L260">          continue;</span>
+        }
+<span class="fc" id="L262">        final boolean listenssl = value.getBoolean();</span>
+<span class="fc" id="L263">        value = subHash.get(XML_SERVER_REMOTEADDR);</span>
+<span class="pc bpc" id="L264" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L265">          continue;</span>
+        }
+<span class="fc" id="L267">        final String remoteaddr = value.getString();</span>
+<span class="fc" id="L268">        value = subHash.get(XML_SERVER_REMOTEPORT);</span>
+<span class="pc bpc" id="L269" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L270">          continue;</span>
+        }
+<span class="fc" id="L272">        final int remoteport = value.getInteger();</span>
+<span class="fc" id="L273">        value = subHash.get(XML_SERVER_REMOTESSL);</span>
+<span class="pc bpc" id="L274" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L275">          continue;</span>
+        }
+<span class="fc" id="L277">        final boolean remotessl = value.getBoolean();</span>
+<span class="fc" id="L278">        final InetSocketAddress local =</span>
+            new InetSocketAddress(listenaddr, listenport);
+<span class="fc" id="L280">        final InetSocketAddress remote =</span>
+            new InetSocketAddress(remoteaddr, remoteport);
+        try {
+<span class="fc" id="L283">          ProxyEntry.add(local, listenssl, remote, remotessl);</span>
+<span class="nc" id="L284">        } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L285">          logger.error(&quot;Issue on configuration: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L286">          return false;</span>
+<span class="fc" id="L287">        }</span>
+<span class="fc" id="L288">      }</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">      if (ProxyEntry.proxyEntries.isEmpty()) {</span>
+<span class="nc" id="L290">        logger.error(&quot;No proxy configuration found&quot;);</span>
+<span class="nc" id="L291">        return false;</span>
+      }
+    } else {
+<span class="nc" id="L294">      logger.error(&quot;No proxy configuration found&quot;);</span>
+<span class="nc" id="L295">      return false;</span>
+    }
+<span class="fc" id="L297">    return true;</span>
+  }
+
+  /**
+   * Load database parameter
+   *
+   * @param config
+   *
+   * @return True if OK
+   */
+  private static boolean loadDatabase(Configuration config) {
+<span class="fc" id="L308">    logger.info(&quot;Unable to find DBDriver in Config file&quot;);</span>
+<span class="fc" id="L309">    admin = new DbAdmin(); // no database support</span>
+<span class="fc" id="L310">    noCommitAdmin = admin;</span>
+<span class="fc" id="L311">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for server
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationProxyFromXml(Configuration config,
+                                                     String filename) {
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L327">      document = new SAXReader().read(filename);</span>
+<span class="nc" id="L328">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L329">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
+<span class="nc" id="L330">      return false;</span>
+<span class="fc" id="L331">    }</span>
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L333">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L334">      return false;</span>
+    }
+<span class="fc" id="L336">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L337">    hashConfig = new XmlHash(configuration);</span>
+<span class="fc" id="L338">    XmlRootHash xmlRootHash = new XmlRootHash(configuration);</span>
+<span class="fc" id="L339">    setXmlRootHash(xmlRootHash);</span>
+    // Now read the configuration
+<span class="pc bpc" id="L341" title="1 of 2 branches missed.">    if (!loadIdentity(config, xmlRootHash)) {</span>
+<span class="nc" id="L342">      logger.error(&quot;Cannot load Identity&quot;);</span>
+<span class="nc" id="L343">      return false;</span>
+    }
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">    if (!loadDatabase(config)) {</span>
+<span class="nc" id="L346">      logger.error(&quot;Cannot load Database configuration&quot;);</span>
+<span class="nc" id="L347">      return false;</span>
+    }
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">    if (!loadServerParam(config)) {</span>
+<span class="nc" id="L350">      logger.error(&quot;Cannot load Server Parameters&quot;);</span>
+<span class="nc" id="L351">      return false;</span>
+    }
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L354">      logger.error(&quot;Cannot load Directory configuration&quot;);</span>
+<span class="nc" id="L355">      return false;</span>
+    }
+<span class="fc" id="L357">    loadLimit(config, false);</span>
+<span class="pc bpc" id="L358" title="2 of 4 branches missed.">    if (config.isUseSSL() &amp;&amp; !loadSsl(config, xmlRootHash)) {</span>
+<span class="nc" id="L359">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L360">      return false;</span>
+    }
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (!loadNetworkServer(config)) {</span>
+<span class="nc" id="L363">      logger.error(&quot;Cannot load Network configuration&quot;);</span>
+<span class="nc" id="L364">      return false;</span>
+    }
+<span class="fc" id="L366">    hashConfig.clear();</span>
+<span class="fc" id="L367">    hashConfig = null;</span>
+<span class="fc" id="L368">    xmlRootHash.clear();</span>
+<span class="fc" id="L369">    configuration = null;</span>
+<span class="fc" id="L370">    return true;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

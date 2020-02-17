@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileMonitorCommandRunnableFuture.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Common</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.filemonitor</a> &gt; <span class="el_source">FileMonitorCommandRunnableFuture.java</span></div><h1>FileMonitorCommandRunnableFuture.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.filemonitor;
+
+import org.waarp.common.filemonitor.FileMonitor.FileItem;
+import org.waarp.common.filemonitor.FileMonitor.Status;
+
+import java.util.Date;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Command run when a new file item is validated
+ */
+public abstract class FileMonitorCommandRunnableFuture implements Runnable {
+  private FileItem fileItem;
+  private Thread currentThread;
+  private FileMonitor monitor;
+
+  /**
+   *
+   */
+<span class="fc" id="L40">  protected FileMonitorCommandRunnableFuture() {</span>
+<span class="fc" id="L41">  }</span>
+
+  public void setMonitor(FileMonitor monitor) {
+<span class="fc" id="L44">    this.monitor = monitor;</span>
+<span class="fc" id="L45">  }</span>
+
+  /**
+   * @param fileItem
+   */
+<span class="nc" id="L50">  protected FileMonitorCommandRunnableFuture(FileItem fileItem) {</span>
+<span class="nc" id="L51">    setFileItem(fileItem);</span>
+<span class="nc" id="L52">  }</span>
+
+  public void setFileItem(FileItem fileItem) {
+<span class="fc" id="L55">    this.fileItem = fileItem;</span>
+<span class="fc" id="L56">  }</span>
+
+  @Override
+  public void run() {
+<span class="nc" id="L60">    currentThread = Thread.currentThread();</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">    if (getFileItem() != null) {</span>
+<span class="nc" id="L62">      run(getFileItem());</span>
+    }
+<span class="nc" id="L64">  }</span>
+
+  /**
+   * @param fileItem fileItem on which the command will be executed.
+   */
+  public abstract void run(FileItem fileItem);
+
+  /**
+   * To be called at the beginning of the primary action (only for
+   * commandValidFile).
+   *
+   * @param ignoreAlreadyUsed
+   */
+  protected void checkReuse(boolean ignoreAlreadyUsed) {
+<span class="pc bpc" id="L78" title="2 of 8 branches missed.">    if (!ignoreAlreadyUsed &amp;&amp; fileItem.used &amp;&amp;</span>
+        fileItem.specialId != ILLEGALVALUE &amp;&amp;
+        fileItem.status == Status.RESTART) {
+<span class="fc" id="L81">      fileItem.used = false;</span>
+    }
+<span class="fc" id="L83">  }</span>
+
+  protected boolean isReuse() {
+<span class="pc bpc" id="L86" title="2 of 6 branches missed.">    return fileItem.status == Status.RESTART &amp;&amp; !fileItem.used &amp;&amp;</span>
+           fileItem.specialId != ILLEGALVALUE;
+  }
+
+  protected boolean isIgnored(boolean ignoreAlreadyUsed) {
+<span class="pc bpc" id="L91" title="1 of 4 branches missed.">    return !ignoreAlreadyUsed &amp;&amp; fileItem.used;</span>
+  }
+
+  /**
+   * To be overriden to adapt to the situation for extra check
+   *
+   * @param fileItem
+   *
+   * @return True if the file has to be run (or re-run), False in other
+   *     conditions (ignored)
+   */
+  protected boolean checkFileItemBusiness(FileItem fileItem) {
+<span class="fc bfc" id="L103" title="All 4 branches covered.">    return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;</span>
+  }
+
+  protected void setValid(FileItem fileItem) {
+<span class="nc" id="L107">    fileItem.specialId = ILLEGALVALUE;</span>
+<span class="nc" id="L108">    fileItem.used = false;</span>
+<span class="nc" id="L109">    fileItem.status = Status.VALID;</span>
+<span class="nc" id="L110">  }</span>
+
+  /**
+   * To be called at the end of the primary action (only for
+   * commandValidFile).
+   *
+   * @param status
+   * @param specialId the specialId associated with the task
+   */
+  protected void finalizeValidFile(boolean status, long specialId) {
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (getMonitor() != null) {</span>
+<span class="fc" id="L121">      final Date date = new Date();</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">      if (date.after(getMonitor().nextDay)) {</span>
+        // midnight is after last check
+<span class="nc" id="L124">        getMonitor().setNextDay();</span>
+<span class="nc" id="L125">        getMonitor().todayok.set(0);</span>
+<span class="nc" id="L126">        getMonitor().todayerror.set(0);</span>
+      }
+    }
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">    if (status) {</span>
+<span class="fc" id="L130">      getFileItem().used = true;</span>
+<span class="fc" id="L131">      getFileItem().status = Status.DONE;</span>
+      // Keep the hash: fileItem.hash = null
+<span class="fc" id="L133">      getFileItem().specialId = specialId;</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">      if (getMonitor() != null) {</span>
+<span class="fc" id="L135">        getMonitor().globalok.incrementAndGet();</span>
+<span class="fc" id="L136">        getMonitor().todayok.incrementAndGet();</span>
+      }
+    } else {
+      // execution in error, will retry later on
+<span class="nc" id="L140">      getFileItem().used = false;</span>
+<span class="nc" id="L141">      getFileItem().status = Status.VALID;</span>
+<span class="nc" id="L142">      getFileItem().hash = null;</span>
+<span class="nc" id="L143">      getFileItem().specialId = specialId;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">      if (getMonitor() != null) {</span>
+<span class="nc" id="L145">        getMonitor().globalerror.incrementAndGet();</span>
+<span class="nc" id="L146">        getMonitor().todayerror.incrementAndGet();</span>
+      }
+    }
+<span class="fc" id="L149">  }</span>
+
+  public void cancel() {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (currentThread != null) {</span>
+<span class="nc" id="L153">      currentThread.interrupt();</span>
+    }
+<span class="nc" id="L155">  }</span>
+
+  /**
+   * @return the fileItem
+   */
+  public FileItem getFileItem() {
+<span class="fc" id="L161">    return fileItem;</span>
+  }
+
+  /**
+   * @return the monitor
+   */
+  public FileMonitor getMonitor() {
+<span class="fc" id="L168">    return monitor;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

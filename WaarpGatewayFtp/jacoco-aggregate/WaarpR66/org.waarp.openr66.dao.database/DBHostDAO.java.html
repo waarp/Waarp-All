@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DBHostDAO.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.dao.database</a> &gt; <span class="el_source">DBHostDAO.java</span></div><h1>DBHostDAO.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.dao.database;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.pojo.UpdatedInfo;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Implementation of HostDAO for standard SQL databases
+ */
+public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO {
+
+<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(DBHostDAO.class);</span>
+
+  protected static final String TABLE = &quot;hosts&quot;;
+
+  public static final String HOSTID_FIELD = &quot;hostid&quot;;
+  public static final String ADDRESS_FIELD = &quot;address&quot;;
+  public static final String PORT_FIELD = &quot;port&quot;;
+  public static final String IS_SSL_FIELD = &quot;isssl&quot;;
+  public static final String IS_CLIENT_FIELD = &quot;isclient&quot;;
+  public static final String IS_ACTIVE_FIELD = &quot;isactive&quot;;
+  public static final String IS_PROXIFIED_FIELD = &quot;isproxified&quot;;
+  public static final String HOSTKEY_FIELD = &quot;hostkey&quot;;
+  public static final String ADMINROLE_FIELD = &quot;adminrole&quot;;
+  public static final String UPDATED_INFO_FIELD = &quot;updatedinfo&quot;;
+
+  protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
+  protected static final String SQL_DELETE =
+      &quot;DELETE FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+  protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
+  protected static final String SQL_EXIST =
+      &quot;SELECT 1 FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+  protected static final String SQL_SELECT =
+      &quot;SELECT * FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+  protected static final String SQL_INSERT =
+      &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + HOSTID_FIELD + &quot;, &quot; + ADDRESS_FIELD +
+      &quot;, &quot; + PORT_FIELD + &quot;, &quot; + IS_SSL_FIELD + &quot;, &quot; + IS_CLIENT_FIELD + &quot;, &quot; +
+      IS_ACTIVE_FIELD + &quot;, &quot; + IS_PROXIFIED_FIELD + &quot;, &quot; + HOSTKEY_FIELD +
+      &quot;, &quot; + ADMINROLE_FIELD + &quot;, &quot; + UPDATED_INFO_FIELD +
+      &quot;) VALUES (?,?,?,?,?,?,?,?,?,?)&quot;;
+  protected static final String SQL_UPDATE =
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + &quot; = ?, &quot; + ADDRESS_FIELD +
+      &quot; = ?, &quot; + PORT_FIELD + &quot; = ?, &quot; + IS_SSL_FIELD + &quot; = ?, &quot; +
+      IS_CLIENT_FIELD + &quot; = ?, &quot; + IS_ACTIVE_FIELD + &quot; = ?, &quot; +
+      IS_PROXIFIED_FIELD + &quot; = ?, &quot; + HOSTKEY_FIELD + &quot; = ?, &quot; +
+      ADMINROLE_FIELD + &quot; = ?, &quot; + UPDATED_INFO_FIELD + &quot; = ? WHERE &quot; +
+      HOSTID_FIELD + &quot; = ?&quot;;
+
+
+  public DBHostDAO(Connection con) throws DAOConnectionException {
+<span class="fc" id="L79">    super(con);</span>
+<span class="fc" id="L80">  }</span>
+
+  @Override
+  protected String getId(final Host e1) {
+<span class="fc" id="L84">    return e1.getHostid();</span>
+  }
+
+  @Override
+  protected String getSelectRequest() {
+<span class="fc" id="L89">    return SQL_SELECT;</span>
+  }
+
+  @Override
+  protected String getGetAllRequest() {
+<span class="fc" id="L94">    return SQL_GET_ALL;</span>
+  }
+
+  @Override
+  protected String getExistRequest() {
+<span class="fc" id="L99">    return SQL_EXIST;</span>
+  }
+
+  @Override
+  protected Object[] getInsertValues(final Host host) {
+<span class="fc" id="L104">    return new Object[] {</span>
+<span class="fc" id="L105">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L106">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L107">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
+    };
+  }
+
+  @Override
+  protected String getInsertRequest() {
+<span class="fc" id="L113">    return SQL_INSERT;</span>
+  }
+
+  @Override
+  protected Object[] getUpdateValues(final Host host) {
+<span class="fc" id="L118">    return new Object[] {</span>
+<span class="fc" id="L119">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L120">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L121">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
+    };
+  }
+
+  @Override
+  protected String getUpdateRequest() {
+<span class="fc" id="L127">    return SQL_UPDATE;</span>
+  }
+
+  @Override
+  protected String getDeleteRequest() {
+<span class="fc" id="L132">    return SQL_DELETE;</span>
+  }
+
+  @Override
+  protected String getDeleteAllRequest() {
+<span class="fc" id="L137">    return SQL_DELETE_ALL;</span>
+  }
+
+  @Override
+  public Host getFromResultSet(ResultSet set) throws SQLException {
+<span class="fc" id="L142">    return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
+<span class="fc" id="L143">                    set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
+<span class="fc" id="L144">                    set.getBoolean(IS_SSL_FIELD),</span>
+<span class="fc" id="L145">                    set.getBoolean(IS_CLIENT_FIELD),</span>
+<span class="fc" id="L146">                    set.getBoolean(IS_PROXIFIED_FIELD),</span>
+<span class="fc" id="L147">                    set.getBoolean(ADMINROLE_FIELD),</span>
+<span class="fc" id="L148">                    set.getBoolean(IS_ACTIVE_FIELD),</span>
+<span class="fc" id="L149">                    UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

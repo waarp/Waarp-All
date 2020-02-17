@@ -1,0 +1,1017 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestArgument.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Gateway Kernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.rest</a> &gt; <span class="el_source">RestArgument.java</span></div><h1>RestArgument.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.rest;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.waarp.common.crypto.HmacSha256;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.role.RoleDefault;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+
+/**
+ * Rest object that contains all arguments or answers once all tasks are
+ * over:&lt;/br&gt;
+ * - ARG_HASBODY, ARG_METHOD, ARG_PATH, ARG_BASEPATH, ARGS_SUBPATH,
+ * ARG_X_AUTH_KEY, ARG_X_AUTH_USER,
+ * ARG_X_AUTH_TIMESTAMP, ARG_X_AUTH_ROLE: root elements (query only)&lt;/br&gt;
+ * - ARG_METHOD, ARG_PATH, ARG_BASEPATH, ARGS_SUBPATH, ARG_X_AUTH_USER,
+ * JSON_STATUSMESSAGE, JSON_STATUSCODE,
+ * JSON_COMMAND: root elements (answer only)&lt;/br&gt;
+ * - ARGS_URI: uri elements (query only)&lt;/br&gt;
+ * - ARGS_HEADER: header elements (query only)&lt;/br&gt;
+ * - ARG_COOKIE: cookie elements&lt;/br&gt;
+ * - ARGS_BODY: body elements (query only)&lt;/br&gt;
+ * - ARGS_ANSWER: answer part (answer only)&lt;/br&gt;
+ */
+public class RestArgument {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L76">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L77">      WaarpLoggerFactory.getLogger(RestArgument.class);</span>
+
+<span class="fc" id="L79">  public enum REST_GROUP {</span>
+    /**
+     * arguments.path(ARGS_URI) main entry for URI arguments
+     */
+<span class="fc" id="L83">    ARGS_URI(&quot;uri&quot;),</span>
+    /**
+     * arguments.path(ARGS_HEADER) main entry for HEADER arguments
+     */
+<span class="fc" id="L87">    ARGS_HEADER(&quot;header&quot;),</span>
+    /**
+     * arguments.path(ARGS_COOKIE) main entry for COOKIE arguments
+     */
+<span class="fc" id="L91">    ARGS_COOKIE(&quot;cookie&quot;),</span>
+    /**
+     * arguments.path(ARGS_BODY) main entry for BODY arguments
+     */
+<span class="fc" id="L95">    ARGS_BODY(&quot;body&quot;),</span>
+    /**
+     * arguments.path(ARGS_ANSWER) main entry for ANSWER arguments
+     */
+<span class="fc" id="L99">    ARGS_ANSWER(&quot;answer&quot;);</span>
+
+    public final String group;
+
+<span class="fc" id="L103">    REST_GROUP(String group) {</span>
+<span class="fc" id="L104">      this.group = group;</span>
+<span class="fc" id="L105">    }</span>
+  }
+
+<span class="fc" id="L108">  public enum REST_ROOT_FIELD {</span>
+    /**
+     * arguments.path(ARG_PATH) = uri path
+     */
+<span class="fc" id="L112">    ARG_PATH(&quot;path&quot;),</span>
+    /**
+     * arguments.path(ARG_BASEPATH).asText() = uri base path
+     */
+<span class="fc" id="L116">    ARG_BASEPATH(&quot;base&quot;),</span>
+    /**
+     * arguments.path(ARGS_SUBPATH) main entry for SUB-PATH arguments&lt;br&gt;
+     * arguments.path(ARGS_SUBPATH).elements() for an iterator or .get(x)
+     * for
+     * xth SUB-PATH argument
+     */
+<span class="fc" id="L123">    ARGS_SUBPATH(&quot;subpath&quot;),</span>
+    /**
+     * arguments.path(ARG_METHOD).asText() = method identified
+     */
+<span class="fc" id="L127">    ARG_METHOD(&quot;X-method&quot;),</span>
+    /**
+     * arguments.path(ARG_HASBODY).asBoolean() = true if the body has
+     * content
+     */
+<span class="fc" id="L132">    ARG_HASBODY(&quot;hasBody&quot;),</span>
+    /**
+     * arguments.path(ARG_X_AUTH_KEY).asText() = Key used
+     */
+<span class="fc" id="L136">    ARG_X_AUTH_KEY(&quot;X-Auth-Key&quot;),</span>
+    /**
+     * arguments.path(ARG_X_AUTH_KEY).asText() = Key used
+     */
+<span class="fc" id="L140">    ARG_X_AUTH_USER(&quot;X-Auth-User&quot;),</span>
+    /**
+     * Internal Key used (not to be passed through wire)
+     */
+<span class="fc" id="L144">    ARG_X_AUTH_INTERNALKEY(&quot;X-Auth-InternalKey&quot;),</span>
+    /**
+     * arguments.path(ARG_X_AUTH_TIMESTAMP).asText() = Timestamp in ISO 8601
+     * format
+     */
+<span class="fc" id="L149">    ARG_X_AUTH_TIMESTAMP(&quot;X-Auth-Timestamp&quot;),</span>
+    /**
+     * arguments.path(ARG_X_AUTH_ROLE).asInt() = Role used
+     */
+<span class="fc" id="L153">    ARG_X_AUTH_ROLE(&quot;X-Auth-Role&quot;), JSON_STATUSCODE(&quot;code&quot;),</span>
+<span class="fc" id="L154">    JSON_STATUSMESSAGE(&quot;message&quot;), JSON_COMMAND(&quot;command&quot;),</span>
+<span class="fc" id="L155">    JSON_DETAIL(&quot;detail&quot;);</span>
+
+    public final String field;
+
+<span class="fc" id="L159">    REST_ROOT_FIELD(String field) {</span>
+<span class="fc" id="L160">      this.field = field;</span>
+<span class="fc" id="L161">    }</span>
+  }
+
+<span class="fc" id="L164">  public enum REST_FIELD {</span>
+<span class="fc" id="L165">    JSON_RESULT(&quot;result&quot;), JSON_PATH(&quot;path&quot;), JSON_JSON(&quot;body&quot;),</span>
+<span class="fc" id="L166">    X_DETAILED_ALLOW(&quot;DetailedAllow&quot;), X_ALLOW_URIS(&quot;UriAllowed&quot;),</span>
+<span class="fc" id="L167">    JSON_ID(&quot;_id&quot;);</span>
+
+    public final String field;
+
+<span class="fc" id="L171">    REST_FIELD(String field) {</span>
+<span class="fc" id="L172">      this.field = field;</span>
+<span class="fc" id="L173">    }</span>
+  }
+
+<span class="fc" id="L176">  public enum DATAMODEL {</span>
+<span class="fc" id="L177">    JSON_COUNT(&quot;count&quot;), JSON_RESULTS(&quot;results&quot;), JSON_FILTER(&quot;filter&quot;),</span>
+<span class="fc" id="L178">    JSON_LIMIT(&quot;limit&quot;);</span>
+
+    public final String field;
+
+<span class="fc" id="L182">    DATAMODEL(String field) {</span>
+<span class="fc" id="L183">      this.field = field;</span>
+<span class="fc" id="L184">    }</span>
+  }
+
+  final ObjectNode arguments;
+
+  /**
+   * Create a RestArgument
+   *
+   * @param emptyArgument might be null, but might be also already
+   *     initialized with some values
+   */
+<span class="fc" id="L195">  public RestArgument(ObjectNode emptyArgument) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">    if (emptyArgument == null) {</span>
+<span class="fc" id="L197">      arguments = JsonHandler.createObjectNode();</span>
+    } else {
+<span class="fc" id="L199">      arguments = emptyArgument;</span>
+    }
+<span class="fc" id="L201">  }</span>
+
+  /**
+   * Clean all internal values
+   */
+  public void clean() {
+<span class="fc" id="L207">    arguments.removeAll();</span>
+<span class="fc" id="L208">  }</span>
+
+  /**
+   * Set values according to the request URI
+   *
+   * @param request
+   */
+  public void setRequest(HttpRequest request) {
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">    arguments.put(REST_ROOT_FIELD.ARG_HASBODY.field,</span>
+                  request instanceof FullHttpRequest &amp;&amp;
+<span class="pc bnc" id="L218" title="All 2 branches missed.">                  ((FullHttpRequest) request).content() !=</span>
+                  Unpooled.EMPTY_BUFFER);
+<span class="fc" id="L220">    arguments.put(REST_ROOT_FIELD.ARG_METHOD.field, request.method().name());</span>
+<span class="fc" id="L221">    final QueryStringDecoder decoderQuery =</span>
+<span class="fc" id="L222">        new QueryStringDecoder(request.uri());</span>
+<span class="fc" id="L223">    final String path = decoderQuery.path();</span>
+<span class="fc" id="L224">    arguments.put(REST_ROOT_FIELD.ARG_PATH.field, path);</span>
+    // compute path main uri
+<span class="fc" id="L226">    String basepath = path;</span>
+<span class="fc" id="L227">    int pos = basepath.indexOf('/');</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">    if (pos &gt;= 0) {</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">      if (pos == 0) {</span>
+<span class="fc" id="L230">        final int pos2 = basepath.indexOf('/', 1);</span>
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (pos2 &lt; 0) {</span>
+<span class="fc" id="L232">          basepath = basepath.substring(1);</span>
+        } else {
+<span class="nc" id="L234">          basepath = basepath.substring(1, pos2);</span>
+        }
+<span class="fc" id="L236">      } else {</span>
+<span class="nc" id="L237">        basepath = basepath.substring(0, pos);</span>
+      }
+    }
+<span class="fc" id="L240">    arguments.put(REST_ROOT_FIELD.ARG_BASEPATH.field, basepath);</span>
+    // compute sub path args
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (pos == 0) {</span>
+<span class="fc" id="L243">      pos = path.indexOf('/', 1);</span>
+    }
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    if (pos &gt;= 0) {</span>
+<span class="nc" id="L246">      int pos2 = path.indexOf('/', pos + 1);</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (pos2 &gt; 0) {</span>
+<span class="nc" id="L248">        final ArrayNode array =</span>
+<span class="nc" id="L249">            arguments.putArray(REST_ROOT_FIELD.ARGS_SUBPATH.field);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        while (pos2 &gt; 0) {</span>
+<span class="nc" id="L251">          array.add(path.substring(pos + 1, pos2));</span>
+<span class="nc" id="L252">          pos = pos2;</span>
+<span class="nc" id="L253">          pos2 = path.indexOf('/', pos + 1);</span>
+        }
+      }
+<span class="nc" id="L256">      pos2 = path.indexOf('?', pos + 1);</span>
+<span class="nc bnc" id="L257" title="All 4 branches missed.">      if (pos2 &gt; 0 &amp;&amp; pos2 &gt; pos + 1) {</span>
+<span class="nc" id="L258">        ArrayNode array =</span>
+<span class="nc" id="L259">            (ArrayNode) arguments.get(REST_ROOT_FIELD.ARGS_SUBPATH.field);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (array == null) {</span>
+<span class="nc" id="L261">          array = arguments.putArray(REST_ROOT_FIELD.ARGS_SUBPATH.field);</span>
+        }
+<span class="nc" id="L263">        array.add(path.substring(pos + 1, pos2));</span>
+<span class="nc" id="L264">      } else {</span>
+<span class="nc" id="L265">        final String last = path.substring(pos + 1);</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        if (!last.isEmpty()) {</span>
+<span class="nc" id="L267">          ArrayNode array =</span>
+<span class="nc" id="L268">              (ArrayNode) arguments.get(REST_ROOT_FIELD.ARGS_SUBPATH.field);</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">          if (array == null) {</span>
+<span class="nc" id="L270">            array = arguments.putArray(REST_ROOT_FIELD.ARGS_SUBPATH.field);</span>
+          }
+<span class="nc" id="L272">          array.add(last);</span>
+        }
+      }
+    }
+<span class="fc" id="L276">    final Map&lt;String, List&lt;String&gt;&gt; map = decoderQuery.parameters();</span>
+<span class="fc" id="L277">    final ObjectNode node = arguments.putObject(REST_GROUP.ARGS_URI.group);</span>
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">    for (final Entry&lt;String, List&lt;String&gt;&gt; entry : map.entrySet()) {</span>
+<span class="nc" id="L279">      final String key = entry.getKey();</span>
+      try {
+<span class="nc" id="L281">        ParametersChecker.checkSanityString(</span>
+<span class="nc" id="L282">            entry.getValue().toArray(ParametersChecker.ZERO_ARRAY_STRING));</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {</span>
+<span class="nc" id="L284">          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field,</span>
+<span class="nc" id="L285">                        entry.getValue().get(0));</span>
+<span class="nc" id="L286">          continue;</span>
+        }
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {</span>
+<span class="nc" id="L289">          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,</span>
+<span class="nc" id="L290">                        entry.getValue().get(0));</span>
+<span class="nc" id="L291">          continue;</span>
+        }
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {</span>
+<span class="nc" id="L294">          arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,</span>
+<span class="nc" id="L295">                        entry.getValue().get(0));</span>
+<span class="nc" id="L296">          continue;</span>
+        }
+<span class="nc" id="L298">        final List&lt;String&gt; list = entry.getValue();</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (list.size() &gt; 1) {</span>
+<span class="nc" id="L300">          final ArrayNode array = node.putArray(key);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">          for (final String val : entry.getValue()) {</span>
+<span class="nc" id="L302">            array.add(val);</span>
+<span class="nc" id="L303">          }</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">        } else if (list.isEmpty()) {</span>
+<span class="nc" id="L305">          node.putNull(key);</span>
+        } else {
+          // 1
+<span class="nc" id="L308">          node.put(key, list.get(0));</span>
+        }
+<span class="nc" id="L310">      } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L311">        logger.error(&quot;Arguments incompatible with Security: &quot; + entry.getKey(),</span>
+                     e);
+<span class="nc" id="L313">      }</span>
+<span class="nc" id="L314">    }</span>
+<span class="fc" id="L315">  }</span>
+
+  /**
+   * Set X_AUTH_USER, Method, Path, Basepath and Cookie from source
+   *
+   * @param source
+   */
+  public void setFromArgument(RestArgument source) {
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">    if (source.arguments.has(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {</span>
+<span class="nc" id="L324">      arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,</span>
+<span class="nc" id="L325">                    source.arguments.get(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)</span>
+<span class="nc" id="L326">                                    .asText());</span>
+    }
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">    if (source.arguments.has(REST_ROOT_FIELD.ARG_METHOD.field)) {</span>
+<span class="fc" id="L329">      arguments.put(REST_ROOT_FIELD.ARG_METHOD.field,</span>
+<span class="fc" id="L330">                    source.arguments.get(REST_ROOT_FIELD.ARG_METHOD.field)</span>
+<span class="fc" id="L331">                                    .asText());</span>
+    }
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">    if (source.arguments.has(REST_ROOT_FIELD.ARG_PATH.field)) {</span>
+<span class="fc" id="L334">      arguments.put(REST_ROOT_FIELD.ARG_PATH.field,</span>
+<span class="fc" id="L335">                    source.arguments.get(REST_ROOT_FIELD.ARG_PATH.field)</span>
+<span class="fc" id="L336">                                    .asText());</span>
+    }
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">    if (source.arguments.has(REST_ROOT_FIELD.ARG_BASEPATH.field)) {</span>
+<span class="fc" id="L339">      arguments.put(REST_ROOT_FIELD.ARG_BASEPATH.field,</span>
+<span class="fc" id="L340">                    source.arguments.get(REST_ROOT_FIELD.ARG_BASEPATH.field)</span>
+<span class="fc" id="L341">                                    .asText());</span>
+    }
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">    if (source.arguments.has(REST_ROOT_FIELD.ARGS_SUBPATH.field)) {</span>
+<span class="nc" id="L344">      arguments.putArray(REST_ROOT_FIELD.ARGS_SUBPATH.field).addAll(</span>
+<span class="nc" id="L345">          (ArrayNode) source.arguments.get(REST_ROOT_FIELD.ARGS_SUBPATH.field));</span>
+    }
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">    if (source.arguments.has(REST_GROUP.ARGS_URI.group)) {</span>
+<span class="fc" id="L348">      arguments.putObject(REST_GROUP.ARGS_URI.group).setAll(</span>
+<span class="fc" id="L349">          (ObjectNode) source.arguments.get(REST_GROUP.ARGS_URI.group));</span>
+    }
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">    if (source.arguments.has(REST_GROUP.ARGS_COOKIE.group)) {</span>
+<span class="nc" id="L352">      arguments.putObject(REST_GROUP.ARGS_COOKIE.group).setAll(</span>
+<span class="nc" id="L353">          (ObjectNode) source.arguments.get(REST_GROUP.ARGS_COOKIE.group));</span>
+    }
+
+<span class="fc" id="L356">    logger.debug(&quot;DEBUG: {}\n {}&quot;, arguments, source);</span>
+<span class="fc" id="L357">  }</span>
+
+  /**
+   * @return the full Path of the URI
+   */
+  public String getUri() {
+<span class="nc" id="L363">    return arguments.path(REST_ROOT_FIELD.ARG_PATH.field).asText();</span>
+  }
+
+  /**
+   * @return the base Path of the URI (first item between '/')
+   */
+  public String getBaseUri() {
+<span class="fc" id="L370">    return arguments.path(REST_ROOT_FIELD.ARG_BASEPATH.field).asText();</span>
+  }
+
+  /**
+   * @return An iterator of JsonNode, which values can be retrieved by
+   *     item.asText()
+   */
+  public Iterator&lt;JsonNode&gt; getSubUri() {
+<span class="nc" id="L378">    return arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).elements();</span>
+  }
+
+  public int getSubUriSize() {
+<span class="fc" id="L382">    return arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).size();</span>
+  }
+
+  public void addSubUriToUriArgs(String name, int rank) {
+<span class="nc" id="L386">    final ObjectNode node = getUriArgs();</span>
+<span class="nc" id="L387">    final JsonNode elt =</span>
+<span class="nc" id="L388">        arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).get(rank);</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">    if (elt != null) {</span>
+<span class="nc" id="L390">      node.set(name, elt);</span>
+    }
+<span class="nc" id="L392">  }</span>
+
+  public void addIdToUriArgs() {
+<span class="nc" id="L395">    addSubUriToUriArgs(REST_FIELD.JSON_ID.field, 0);</span>
+<span class="nc" id="L396">  }</span>
+
+  public JsonNode getId() {
+<span class="nc" id="L399">    return getUriArgs().path(REST_FIELD.JSON_ID.field);</span>
+  }
+
+  public static JsonNode getId(ObjectNode node) {
+<span class="nc" id="L403">    return node.path(REST_FIELD.JSON_ID.field);</span>
+  }
+
+  public long getLimitFromUri() {
+<span class="nc" id="L407">    return getUriArgs().path(DATAMODEL.JSON_LIMIT.field).asLong(100);</span>
+  }
+
+  public String getXAuthKey() {
+<span class="nc" id="L411">    return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field).asText();</span>
+  }
+
+  public String getXAuthUser() {
+<span class="nc" id="L415">    return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_USER.field).asText();</span>
+  }
+
+  public String getXAuthTimestamp() {
+<span class="nc" id="L419">    return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field).asText();</span>
+  }
+
+  public void setXAuthRole(RoleDefault role) {
+<span class="nc" id="L423">    arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_ROLE.field, role.getRoleAsByte());</span>
+<span class="nc" id="L424">  }</span>
+
+  public ROLE getXAuthRole() {
+<span class="nc" id="L427">    final byte role =</span>
+<span class="nc" id="L428">        (byte) arguments.get(REST_ROOT_FIELD.ARG_X_AUTH_ROLE.field).asInt();</span>
+<span class="nc" id="L429">    return ROLE.fromByte(role);</span>
+  }
+
+  /**
+   * @return The ObjectNode containing all couples key/value
+   */
+  public ObjectNode getUriArgs() {
+<span class="nc" id="L436">    JsonNode node = arguments.path(REST_GROUP.ARGS_URI.group);</span>
+<span class="nc bnc" id="L437" title="All 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="nc" id="L438">      node = arguments.putObject(REST_GROUP.ARGS_URI.group);</span>
+    }
+<span class="nc" id="L440">    return (ObjectNode) node;</span>
+  }
+
+  /**
+   * @return the method or null
+   */
+  public METHOD getMethod() {
+<span class="fc" id="L447">    final String text =</span>
+<span class="fc" id="L448">        arguments.path(REST_ROOT_FIELD.ARG_METHOD.field).asText();</span>
+<span class="pc bpc" id="L449" title="2 of 4 branches missed.">    if (text == null || text.isEmpty()) {</span>
+<span class="nc" id="L450">      return METHOD.TRACE;</span>
+    }
+    try {
+<span class="fc" id="L453">      return METHOD.valueOf(text);</span>
+<span class="nc" id="L454">    } catch (final Exception e) {</span>
+<span class="nc" id="L455">      return METHOD.TRACE;</span>
+    }
+  }
+
+  /**
+   * set values from Header into arguments.path(ARGS_HEADER)
+   *
+   * @throws HttpIncorrectRequestException
+   */
+  public void setHeaderArgs(List&lt;Entry&lt;String, String&gt;&gt; list) {
+<span class="nc" id="L465">    ObjectNode node = (ObjectNode) arguments.get(REST_GROUP.ARGS_HEADER.group);</span>
+<span class="nc bnc" id="L466" title="All 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="nc" id="L467">      node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);</span>
+    }
+<span class="nc bnc" id="L469" title="All 2 branches missed.">    for (final Entry&lt;String, String&gt; entry : list) {</span>
+      try {
+<span class="nc" id="L471">        ParametersChecker.checkSanityString(entry.getValue());</span>
+<span class="nc" id="L472">        final String key = entry.getKey();</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">        if (!key.equals(HttpHeaderNames.COOKIE.toString())) {</span>
+<span class="nc bnc" id="L474" title="All 2 branches missed.">          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {</span>
+<span class="nc" id="L475">            arguments</span>
+<span class="nc" id="L476">                .put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field, entry.getValue());</span>
+<span class="nc" id="L477">            continue;</span>
+          }
+<span class="nc bnc" id="L479" title="All 2 branches missed.">          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {</span>
+<span class="nc" id="L480">            arguments</span>
+<span class="nc" id="L481">                .put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field, entry.getValue());</span>
+<span class="nc" id="L482">            continue;</span>
+          }
+<span class="nc" id="L484">          if (key</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">              .equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {</span>
+<span class="nc" id="L486">            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,</span>
+<span class="nc" id="L487">                          entry.getValue());</span>
+<span class="nc" id="L488">            continue;</span>
+          }
+<span class="nc" id="L490">          node.put(key, entry.getValue());</span>
+        }
+<span class="nc" id="L492">      } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L493">        logger.error(&quot;Arguments incompatible with Security: &quot; + entry.getKey(),</span>
+                     e);
+<span class="nc" id="L495">      }</span>
+<span class="nc" id="L496">    }</span>
+<span class="nc" id="L497">  }</span>
+
+  /**
+   * set values from Header into arguments.path(ARGS_HEADER)
+   *
+   * @throws HttpIncorrectRequestException
+   */
+  public void setHeaderArgs(
+      Iterator&lt;Entry&lt;CharSequence, CharSequence&gt;&gt; iterator) {
+<span class="fc" id="L506">    ObjectNode node = (ObjectNode) arguments.get(REST_GROUP.ARGS_HEADER.group);</span>
+<span class="pc bpc" id="L507" title="3 of 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="fc" id="L508">      node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);</span>
+    }
+<span class="fc bfc" id="L510" title="All 2 branches covered.">    while (iterator.hasNext()) {</span>
+<span class="fc" id="L511">      final Entry&lt;CharSequence, CharSequence&gt; entry = iterator.next();</span>
+      try {
+<span class="fc" id="L513">        ParametersChecker.checkSanityString(entry.getValue().toString());</span>
+<span class="fc" id="L514">        final String key = entry.getKey().toString();</span>
+<span class="pc bpc" id="L515" title="1 of 2 branches missed.">        if (!key.equals(HttpHeaderNames.COOKIE.toString())) {</span>
+<span class="pc bpc" id="L516" title="1 of 2 branches missed.">          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {</span>
+<span class="nc" id="L517">            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field,</span>
+<span class="nc" id="L518">                          entry.getValue().toString());</span>
+<span class="nc" id="L519">            continue;</span>
+          }
+<span class="pc bpc" id="L521" title="1 of 2 branches missed.">          if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {</span>
+<span class="nc" id="L522">            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,</span>
+<span class="nc" id="L523">                          entry.getValue().toString());</span>
+<span class="nc" id="L524">            continue;</span>
+          }
+<span class="fc" id="L526">          if (key</span>
+<span class="fc bfc" id="L527" title="All 2 branches covered.">              .equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {</span>
+<span class="fc" id="L528">            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,</span>
+<span class="fc" id="L529">                          entry.getValue().toString());</span>
+<span class="fc" id="L530">            continue;</span>
+          }
+<span class="fc" id="L532">          node.put(key, entry.getValue().toString());</span>
+        }
+<span class="nc" id="L534">      } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L535">        logger.error(&quot;Arguments incompatible with Security: &quot; + entry.getKey(),</span>
+                     e);
+<span class="fc" id="L537">      }</span>
+<span class="fc" id="L538">    }</span>
+<span class="fc" id="L539">  }</span>
+
+  /**
+   * @return The ObjectNode containing all couples key/value
+   */
+  public ObjectNode getHeaderArgs() {
+<span class="nc" id="L545">    JsonNode node = arguments.path(REST_GROUP.ARGS_HEADER.group);</span>
+<span class="nc bnc" id="L546" title="All 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="nc" id="L547">      node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);</span>
+    }
+<span class="nc" id="L549">    return (ObjectNode) node;</span>
+  }
+
+  /**
+   * set method From URI
+   */
+  public void methodFromUri() {
+<span class="fc" id="L556">    final JsonNode node = arguments.path(REST_GROUP.ARGS_URI.group)</span>
+<span class="fc" id="L557">                                   .path(REST_ROOT_FIELD.ARG_METHOD.field);</span>
+<span class="pc bpc" id="L558" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
+      // override
+<span class="nc" id="L560">      arguments.put(REST_ROOT_FIELD.ARG_METHOD.field, node.asText());</span>
+    }
+<span class="fc" id="L562">  }</span>
+
+  /**
+   * set method From Header
+   */
+  public void methodFromHeader() {
+<span class="fc" id="L568">    final JsonNode node = arguments.path(REST_GROUP.ARGS_HEADER.group)</span>
+<span class="fc" id="L569">                                   .path(REST_ROOT_FIELD.ARG_METHOD.field);</span>
+<span class="pc bpc" id="L570" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
+      // override
+<span class="nc" id="L572">      arguments.put(REST_ROOT_FIELD.ARG_METHOD.field, node.asText());</span>
+    }
+<span class="fc" id="L574">  }</span>
+
+  /**
+   * set values from Cookies into arguments.path(ARGS_COOKIE)
+   */
+  public void setCookieArgs(String cookieString) {
+    Set&lt;Cookie&gt; cookies;
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">    if (cookieString == null) {</span>
+<span class="fc" id="L582">      cookies = Collections.emptySet();</span>
+    } else {
+<span class="nc" id="L584">      cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+    }
+<span class="pc bpc" id="L586" title="1 of 2 branches missed.">    if (!cookies.isEmpty()) {</span>
+<span class="nc" id="L587">      final ObjectNode node = arguments.putObject(REST_GROUP.ARGS_COOKIE.group);</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">      for (final Cookie cookie : cookies) {</span>
+        try {
+<span class="nc" id="L590">          ParametersChecker.checkSanityString(cookie.value());</span>
+<span class="nc" id="L591">          node.put(cookie.name(), cookie.value());</span>
+<span class="nc" id="L592">        } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L593">          logger.error(&quot;Arguments incompatible with Security: &quot; + cookie.name(),</span>
+                       e);
+<span class="nc" id="L595">        }</span>
+<span class="nc" id="L596">      }</span>
+    }
+<span class="fc" id="L598">  }</span>
+
+  /**
+   * @return The ObjectNode containing all couples key/value
+   */
+  public ObjectNode getCookieArgs() {
+<span class="fc" id="L604">    JsonNode node = arguments.path(REST_GROUP.ARGS_COOKIE.group);</span>
+<span class="pc bpc" id="L605" title="2 of 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="fc" id="L606">      node = arguments.putObject(REST_GROUP.ARGS_COOKIE.group);</span>
+    }
+<span class="fc" id="L608">    return (ObjectNode) node;</span>
+  }
+
+  /**
+   * @return The ObjectNode containing all couples key/value
+   */
+  public ObjectNode getBody() {
+<span class="nc" id="L615">    JsonNode node = arguments.path(REST_GROUP.ARGS_BODY.group);</span>
+<span class="nc bnc" id="L616" title="All 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="nc" id="L617">      node = arguments.putObject(REST_GROUP.ARGS_BODY.group);</span>
+    }
+<span class="nc" id="L619">    return (ObjectNode) node;</span>
+  }
+
+  /**
+   * @return The ObjectNode containing all couples key/value
+   */
+  public ObjectNode getAnswer() {
+<span class="fc" id="L626">    JsonNode node = arguments.path(REST_GROUP.ARGS_ANSWER.group);</span>
+<span class="pc bpc" id="L627" title="1 of 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="fc" id="L628">      node = arguments.putObject(REST_GROUP.ARGS_ANSWER.group);</span>
+    }
+<span class="fc" id="L630">    return (ObjectNode) node;</span>
+  }
+
+  public void addAnswer(ObjectNode node) {
+<span class="nc" id="L634">    getAnswer().setAll(node);</span>
+<span class="nc" id="L635">  }</span>
+
+  public void setResult(HttpResponseStatus status) {
+<span class="nc" id="L638">    arguments</span>
+<span class="nc" id="L639">        .put(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field, status.reasonPhrase());</span>
+<span class="nc" id="L640">    arguments.put(REST_ROOT_FIELD.JSON_STATUSCODE.field, status.code());</span>
+<span class="nc" id="L641">  }</span>
+
+  /**
+   * @return the Http Status code
+   */
+  public int getStatusCode() {
+<span class="fc" id="L647">    return arguments.path(REST_ROOT_FIELD.JSON_STATUSCODE.field).asInt();</span>
+  }
+
+  /**
+   * @return the Http Status message according to the Http Status code
+   */
+  public String getStatusMessage() {
+<span class="fc" id="L654">    return arguments.path(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field).asText();</span>
+  }
+
+  public void setDetail(String detail) {
+<span class="nc" id="L658">    arguments.put(REST_ROOT_FIELD.JSON_DETAIL.field, detail);</span>
+<span class="nc" id="L659">  }</span>
+
+  /**
+   * @return the detail information on error (mainly)
+   */
+  public String getDetail() {
+<span class="nc" id="L665">    return arguments.path(REST_ROOT_FIELD.JSON_DETAIL.field).asText();</span>
+  }
+
+  public void setCommand(COMMAND_TYPE command) {
+<span class="fc" id="L669">    arguments.put(REST_ROOT_FIELD.JSON_COMMAND.field, command.name());</span>
+<span class="fc" id="L670">  }</span>
+
+  public void setCommand(String cmd) {
+<span class="nc" id="L673">    arguments.put(REST_ROOT_FIELD.JSON_COMMAND.field, cmd);</span>
+<span class="nc" id="L674">  }</span>
+
+  /**
+   * @return the COMMAND field, to be transformed either into COMMAND_TYPE or
+   *     ACTIONS_TYPE
+   */
+  public String getCommandField() {
+<span class="nc" id="L681">    return arguments.path(REST_ROOT_FIELD.JSON_COMMAND.field).asText();</span>
+  }
+
+  /**
+   * @return the COMMAND_TYPE but might be null if not found or if of
+   *     ACTIONS_TYPE
+   */
+  public COMMAND_TYPE getCommand() {
+<span class="nc" id="L689">    final String cmd =</span>
+<span class="nc" id="L690">        arguments.path(REST_ROOT_FIELD.JSON_COMMAND.field).asText();</span>
+<span class="nc bnc" id="L691" title="All 4 branches missed.">    if (cmd != null &amp;&amp; !cmd.isEmpty()) {</span>
+      try {
+<span class="nc" id="L693">        return COMMAND_TYPE.valueOf(cmd);</span>
+<span class="nc" id="L694">      } catch (final Exception e) {</span>
+<span class="nc" id="L695">        return null;</span>
+      }
+    } else {
+<span class="nc" id="L698">      return null;</span>
+    }
+  }
+
+  /**
+   * @param filter the filter used in multi get
+   */
+  public void addFilter(ObjectNode filter) {
+<span class="pc bpc" id="L706" title="1 of 2 branches missed.">    if (filter == null) {</span>
+<span class="fc" id="L707">      filter = JsonHandler.createObjectNode();</span>
+    }
+<span class="fc" id="L709">    getAnswer().putObject(DATAMODEL.JSON_FILTER.field).setAll(filter);</span>
+<span class="fc" id="L710">  }</span>
+
+  /**
+   * @return the filter used in multi get
+   */
+  public ObjectNode getFilter() {
+<span class="fc" id="L716">    return (ObjectNode) getAnswer().path(DATAMODEL.JSON_FILTER.field);</span>
+  }
+
+  /**
+   * @return the array of results (in DataModel multi get)
+   */
+  public ArrayNode getResults() {
+<span class="nc" id="L723">    JsonNode node = getAnswer().path(DATAMODEL.JSON_RESULTS.field);</span>
+<span class="nc bnc" id="L724" title="All 4 branches missed.">    if (node == null || node.isMissingNode()) {</span>
+<span class="nc" id="L725">      node = getAnswer().putArray(DATAMODEL.JSON_RESULTS.field);</span>
+    }
+<span class="nc" id="L727">    return (ArrayNode) node;</span>
+  }
+
+  /**
+   * @param result added to the array of results (in DataModel multi
+   *     get)
+   */
+  public void addResult(ObjectNode result) {
+<span class="nc" id="L735">    getResults().add(result);</span>
+<span class="nc" id="L736">  }</span>
+
+  /**
+   * @param count added to answer if &gt; 0
+   * @param limit added to answer
+   */
+  public void addCountLimit(long count, long limit) {
+<span class="nc" id="L743">    final ObjectNode node = getAnswer();</span>
+<span class="nc bnc" id="L744" title="All 2 branches missed.">    if (count &gt;= 0) {</span>
+<span class="nc" id="L745">      node.put(DATAMODEL.JSON_COUNT.field, count);</span>
+    }
+<span class="nc" id="L747">    node.put(DATAMODEL.JSON_LIMIT.field, limit);</span>
+<span class="nc" id="L748">  }</span>
+
+  /**
+   * @return the count of element (-1 if not found)
+   */
+  public long getCount() {
+<span class="nc" id="L754">    return getAnswer().path(DATAMODEL.JSON_COUNT.field).asLong(-1);</span>
+  }
+
+  public long getLimit() {
+<span class="nc" id="L758">    return getAnswer().path(DATAMODEL.JSON_LIMIT.field).asLong(100);</span>
+  }
+
+  /**
+   * Add options in answer
+   *
+   * @param allow
+   * @param path
+   * @param detailedAllow
+   */
+  public void addOptions(String allow, String path, ArrayNode detailedAllow) {
+<span class="fc" id="L769">    final ObjectNode node = getAnswer();</span>
+<span class="fc" id="L770">    node.put(HttpHeaderNames.ALLOW.toString(), allow);</span>
+<span class="fc" id="L771">    node.put(REST_FIELD.X_ALLOW_URIS.field, path);</span>
+<span class="pc bpc" id="L772" title="1 of 2 branches missed.">    if (detailedAllow != null) {</span>
+<span class="fc" id="L773">      node.putArray(REST_FIELD.X_DETAILED_ALLOW.field).addAll(detailedAllow);</span>
+    }
+<span class="fc" id="L775">  }</span>
+
+  public String getAllowOption() {
+<span class="fc" id="L778">    return getAnswer().path(HttpHeaderNames.ALLOW.toString()).asText();</span>
+  }
+
+  public String getAllowUrisOption() {
+<span class="nc" id="L782">    return getAnswer().path(REST_FIELD.X_ALLOW_URIS.field).asText();</span>
+  }
+
+  public ArrayNode getDetailedAllowOption() {
+<span class="nc" id="L786">    final JsonNode node = getAnswer().path(REST_FIELD.X_DETAILED_ALLOW.field);</span>
+<span class="nc bnc" id="L787" title="All 2 branches missed.">    if (node.isMissingNode()) {</span>
+<span class="nc" id="L788">      return JsonHandler.createArrayNode();</span>
+    } else {
+<span class="nc" id="L790">      return (ArrayNode) node;</span>
+    }
+  }
+
+  /**
+   * The encoder is completed with extra necessary URI part containing
+   * ARG_X_AUTH_TIMESTAMP &amp; ARG_X_AUTH_KEY
+   *
+   * @param hmacSha256 SHA-256 key to create the signature
+   * @param encoder
+   * @param user might be null
+   * @param extraKey might be null
+   *
+   * @return an array of 2 value in order ARG_X_AUTH_TIMESTAMP and
+   *     ARG_X_AUTH_KEY
+   *
+   * @throws HttpInvalidAuthenticationException if the computation of
+   *     the
+   *     authentication failed
+   */
+  public static String[] getBaseAuthent(HmacSha256 hmacSha256,
+                                        QueryStringEncoder encoder, String user,
+                                        String extraKey)
+      throws HttpInvalidAuthenticationException {
+<span class="nc" id="L814">    final QueryStringDecoder decoderQuery =</span>
+<span class="nc" id="L815">        new QueryStringDecoder(encoder.toString());</span>
+<span class="nc" id="L816">    final Map&lt;String, List&lt;String&gt;&gt; map = decoderQuery.parameters();</span>
+<span class="nc" id="L817">    final TreeMap&lt;String, String&gt; treeMap = new TreeMap&lt;String, String&gt;();</span>
+<span class="nc bnc" id="L818" title="All 2 branches missed.">    for (final Entry&lt;String, List&lt;String&gt;&gt; entry : map.entrySet()) {</span>
+<span class="nc" id="L819">      final String keylower = entry.getKey().toLowerCase();</span>
+<span class="nc" id="L820">      final List&lt;String&gt; values = entry.getValue();</span>
+<span class="nc bnc" id="L821" title="All 4 branches missed.">      if (values != null &amp;&amp; !values.isEmpty()) {</span>
+<span class="nc" id="L822">        final String last = values.get(values.size() - 1);</span>
+<span class="nc" id="L823">        treeMap.put(keylower, last);</span>
+      }
+<span class="nc" id="L825">    }</span>
+<span class="nc" id="L826">    final DateTime date = new DateTime();</span>
+<span class="nc" id="L827">    treeMap.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field.toLowerCase(),</span>
+<span class="nc" id="L828">                date.toString());</span>
+<span class="nc bnc" id="L829" title="All 2 branches missed.">    if (user != null) {</span>
+<span class="nc" id="L830">      treeMap.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field.toLowerCase(), user);</span>
+    }
+    try {
+<span class="nc" id="L833">      final String key =</span>
+<span class="nc" id="L834">          computeKey(hmacSha256, extraKey, treeMap, decoderQuery.path());</span>
+<span class="nc" id="L835">      return new String[] { date.toString(), key };</span>
+<span class="nc" id="L836">    } catch (final Exception e) {</span>
+<span class="nc" id="L837">      throw new HttpInvalidAuthenticationException(e);</span>
+    }
+
+  }
+
+  /**
+   * Check Time only (no signature)
+   *
+   * @param maxInterval
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  public void checkTime(long maxInterval)
+      throws HttpInvalidAuthenticationException {
+<span class="nc" id="L851">    final DateTime dateTime = new DateTime();</span>
+<span class="nc" id="L852">    final String date = getXAuthTimestamp();</span>
+<span class="nc bnc" id="L853" title="All 4 branches missed.">    if (date != null &amp;&amp; !date.isEmpty()) {</span>
+<span class="nc" id="L854">      final DateTime received = DateTime.parse(date);</span>
+<span class="nc bnc" id="L855" title="All 2 branches missed.">      if (maxInterval &gt; 0) {</span>
+<span class="nc" id="L856">        final Duration duration = new Duration(received, dateTime);</span>
+<span class="nc bnc" id="L857" title="All 2 branches missed.">        if (Math.abs(duration.getMillis()) &gt;= maxInterval) {</span>
+<span class="nc" id="L858">          throw new HttpInvalidAuthenticationException(</span>
+              &quot;timestamp is not compatible with the maximum delay allowed&quot;);
+        }
+      }
+<span class="nc bnc" id="L862" title="All 2 branches missed.">    } else if (maxInterval &gt; 0) {</span>
+<span class="nc" id="L863">      throw new HttpInvalidAuthenticationException(</span>
+          &quot;timestamp absent while required&quot;);
+    }
+<span class="nc" id="L866">  }</span>
+
+  /**
+   * This implementation of authentication is as follow: if X_AUTH is included
+   * in the URI or Header&lt;br&gt;
+   * 0) Check that timestamp is correct (|curtime - timestamp| &lt; maxinterval)
+   * from ARG_X_AUTH_TIMESTAMP, if
+   * maxInterval is 0, not mandatory&lt;br&gt;
+   * 1) Get all URI args (except ARG_X_AUTH_KEY itself, but including
+   * timestamp), lowered case, in alphabetic
+   * order&lt;br&gt;
+   * 2) Add an extra Key if not null (from ARG_X_AUTH_INTERNALKEY)&lt;br&gt;
+   * 3) Compute an hash (SHA-1 or SHA-256)&lt;br&gt;
+   * 4) Compare this hash with ARG_X_AUTH_KEY&lt;br&gt;
+   *
+   * @param hmacSha256 SHA-256 key to create the signature
+   * @param extraKey will be added as ARG_X_AUTH_INTERNALKEY might be
+   *     null
+   * @param maxInterval ARG_X_AUTH_TIMESTAMP will be tested if value &gt;
+   *     0
+   *
+   * @throws HttpInvalidAuthenticationException if the authentication
+   *     failed
+   */
+  public void checkBaseAuthent(HmacSha256 hmacSha256, String extraKey,
+                               long maxInterval)
+      throws HttpInvalidAuthenticationException {
+<span class="nc" id="L893">    final TreeMap&lt;String, String&gt; treeMap = new TreeMap&lt;String, String&gt;();</span>
+<span class="nc" id="L894">    final String argPath = getUri();</span>
+<span class="nc" id="L895">    final ObjectNode arguri = getUriArgs();</span>
+<span class="nc bnc" id="L896" title="All 2 branches missed.">    if (arguri == null) {</span>
+<span class="nc" id="L897">      throw new HttpInvalidAuthenticationException(&quot;Not enough argument&quot;);</span>
+    }
+<span class="nc" id="L899">    final Iterator&lt;Entry&lt;String, JsonNode&gt;&gt; iterator = arguri.fields();</span>
+<span class="nc" id="L900">    final DateTime dateTime = new DateTime();</span>
+<span class="nc" id="L901">    DateTime received = null;</span>
+<span class="nc bnc" id="L902" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
+<span class="nc" id="L903">      final Entry&lt;String, JsonNode&gt; entry = iterator.next();</span>
+<span class="nc" id="L904">      final String key = entry.getKey();</span>
+<span class="nc bnc" id="L905" title="All 2 branches missed.">      if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {</span>
+<span class="nc" id="L906">        continue;</span>
+      }
+<span class="nc" id="L908">      final JsonNode values = entry.getValue();</span>
+<span class="nc bnc" id="L909" title="All 2 branches missed.">      if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {</span>
+<span class="nc" id="L910">        received = DateTime.parse(values.asText());</span>
+      }
+<span class="nc" id="L912">      final String keylower = key.toLowerCase();</span>
+<span class="nc bnc" id="L913" title="All 2 branches missed.">      if (values != null) {</span>
+        String val;
+<span class="nc bnc" id="L915" title="All 2 branches missed.">        if (values.isArray()) {</span>
+<span class="nc" id="L916">          final JsonNode jsonNode = values.get(values.size() - 1);</span>
+<span class="nc" id="L917">          val = jsonNode.asText();</span>
+<span class="nc" id="L918">        } else {</span>
+<span class="nc" id="L919">          val = values.asText();</span>
+        }
+<span class="nc" id="L921">        treeMap.put(keylower, val);</span>
+      }
+<span class="nc" id="L923">    }</span>
+<span class="nc bnc" id="L924" title="All 2 branches missed.">    if (received == null) {</span>
+<span class="nc" id="L925">      final String date = getXAuthTimestamp();</span>
+<span class="nc" id="L926">      received = DateTime.parse(date);</span>
+<span class="nc" id="L927">      treeMap</span>
+<span class="nc" id="L928">          .put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field.toLowerCase(), date);</span>
+    }
+<span class="nc" id="L930">    final String user = getXAuthUser();</span>
+<span class="nc bnc" id="L931" title="All 4 branches missed.">    if (user != null &amp;&amp; !user.isEmpty()) {</span>
+<span class="nc" id="L932">      treeMap.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field.toLowerCase(), user);</span>
+    }
+<span class="nc bnc" id="L934" title="All 4 branches missed.">    if (maxInterval &gt; 0 &amp;&amp; received != null) {</span>
+<span class="nc" id="L935">      final Duration duration = new Duration(received, dateTime);</span>
+<span class="nc bnc" id="L936" title="All 2 branches missed.">      if (Math.abs(duration.getMillis()) &gt;= maxInterval) {</span>
+<span class="nc" id="L937">        throw new HttpInvalidAuthenticationException(</span>
+            &quot;timestamp is not compatible with the maximum delay allowed&quot;);
+      }
+<span class="nc bnc" id="L940" title="All 2 branches missed.">    } else if (maxInterval &gt; 0) {</span>
+<span class="nc" id="L941">      throw new HttpInvalidAuthenticationException(</span>
+          &quot;timestamp absent while required&quot;);
+    }
+<span class="nc" id="L944">    final String key = computeKey(hmacSha256, extraKey, treeMap, argPath);</span>
+<span class="nc bnc" id="L945" title="All 2 branches missed.">    if (!key.equalsIgnoreCase(getXAuthKey())) {</span>
+<span class="nc" id="L946">      throw new HttpInvalidAuthenticationException(</span>
+          &quot;Invalid Authentication Key&quot;);
+    }
+
+<span class="nc" id="L950">  }</span>
+
+  /**
+   * @param hmacSha256 SHA-256 key to create the signature
+   * @param extraKey might be null
+   * @param treeMap
+   * @param argPath
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected static String computeKey(HmacSha256 hmacSha256, String extraKey,
+                                     TreeMap&lt;String, String&gt; treeMap,
+                                     String argPath)
+      throws HttpInvalidAuthenticationException {
+<span class="nc" id="L964">    final Set&lt;String&gt; keys = treeMap.keySet();</span>
+<span class="nc" id="L965">    final StringBuilder builder = new StringBuilder(argPath);</span>
+<span class="nc bnc" id="L966" title="All 4 branches missed.">    if (!keys.isEmpty() || extraKey != null) {</span>
+<span class="nc" id="L967">      builder.append('?');</span>
+    }
+<span class="nc" id="L969">    boolean first = true;</span>
+<span class="nc bnc" id="L970" title="All 2 branches missed.">    for (final String keylower : keys) {</span>
+<span class="nc bnc" id="L971" title="All 2 branches missed.">      if (first) {</span>
+<span class="nc" id="L972">        first = false;</span>
+      } else {
+<span class="nc" id="L974">        builder.append('&amp;');</span>
+      }
+<span class="nc" id="L976">      builder.append(keylower).append('=').append(treeMap.get(keylower));</span>
+<span class="nc" id="L977">    }</span>
+<span class="nc bnc" id="L978" title="All 2 branches missed.">    if (extraKey != null) {</span>
+<span class="nc bnc" id="L979" title="All 2 branches missed.">      if (!keys.isEmpty()) {</span>
+<span class="nc" id="L980">        builder.append('&amp;');</span>
+      }
+<span class="nc" id="L982">      builder.append(REST_ROOT_FIELD.ARG_X_AUTH_INTERNALKEY.field).append('=')</span>
+<span class="nc" id="L983">             .append(extraKey);</span>
+    }
+    try {
+<span class="nc" id="L986">      return hmacSha256.cryptToHex(builder.toString());</span>
+<span class="nc" id="L987">    } catch (final Exception e) {</span>
+<span class="nc" id="L988">      throw new HttpInvalidAuthenticationException(e);</span>
+    }
+  }
+
+  @Override
+  public String toString() {
+<span class="fc" id="L994">    return JsonHandler.writeAsString(arguments);</span>
+  }
+
+  public String prettyPrint() {
+<span class="nc" id="L998">    return JsonHandler.prettyPrint(arguments);</span>
+  }
+
+  public static ObjectNode fillDetailedAllow(METHOD method, String path,
+                                             String command, ObjectNode body,
+                                             JsonNode result) {
+<span class="fc" id="L1004">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L1005">    final ObjectNode node2 = node.putObject(method.name());</span>
+<span class="fc" id="L1006">    node2.put(REST_FIELD.JSON_PATH.field, '/' + path);</span>
+<span class="fc" id="L1007">    node2.put(REST_ROOT_FIELD.JSON_COMMAND.field, command);</span>
+<span class="fc bfc" id="L1008" title="All 2 branches covered.">    if (body != null) {</span>
+<span class="fc" id="L1009">      node2.set(REST_FIELD.JSON_JSON.field, body);</span>
+    }
+<span class="fc bfc" id="L1011" title="All 2 branches covered.">    if (result != null) {</span>
+<span class="fc" id="L1012">      node2.set(REST_GROUP.ARGS_ANSWER.group, result);</span>
+    }
+<span class="fc" id="L1014">    return node;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

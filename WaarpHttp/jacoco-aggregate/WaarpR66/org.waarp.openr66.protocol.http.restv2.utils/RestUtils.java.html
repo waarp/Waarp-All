@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.utils</a> &gt; <span class="el_source">RestUtils.java</span></div><h1>RestUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.utils;
+
+import io.netty.handler.codec.http.HttpRequest;
+import org.glassfish.jersey.message.internal.AcceptableLanguageTag;
+import org.glassfish.jersey.message.internal.HttpHeaderReader;
+
+import java.text.ParseException;
+import java.util.List;
+import java.util.Locale;
+
+import static javax.ws.rs.core.HttpHeaders.*;
+
+/**
+ * A series of utility methods shared by all handlers of the RESTv2 API.
+ */
+public final class RestUtils {
+
+  /**
+   * Makes the default constructor of this utility class inaccessible.
+   */
+<span class="nc" id="L41">  private RestUtils() throws InstantiationException {</span>
+<span class="nc" id="L42">    throw new InstantiationException(</span>
+<span class="nc" id="L43">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ######################### PUBLIC METHODS #################################
+
+  /**
+   * Returns the language of the given request.
+   *
+   * @param request the HTTP request
+   *
+   * @return the request's language
+   */
+  public static Locale getLocale(HttpRequest request) {
+<span class="nc" id="L56">    final String langHead = request.headers().get(ACCEPT_LANGUAGE);</span>
+
+    try {
+<span class="nc" id="L59">      final List&lt;AcceptableLanguageTag&gt; acceptableLanguages =</span>
+<span class="nc" id="L60">          HttpHeaderReader.readAcceptLanguage(langHead);</span>
+<span class="nc" id="L61">      AcceptableLanguageTag bestMatch = acceptableLanguages.get(0);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">      for (final AcceptableLanguageTag acceptableLanguage : acceptableLanguages) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (acceptableLanguage.getQuality() &gt; bestMatch.getQuality()) {</span>
+<span class="nc" id="L64">          bestMatch = acceptableLanguage;</span>
+        }
+<span class="nc" id="L66">      }</span>
+<span class="nc" id="L67">      return bestMatch.getAsLocale();</span>
+<span class="nc" id="L68">    } catch (final ParseException e) {</span>
+<span class="nc" id="L69">      return Locale.getDefault();</span>
+    }
+  }
+
+  /**
+   * Converts a String into its' corresponding boolean value.
+   *
+   * @param string the String to convert
+   *
+   * @return the corresponding boolean value
+   *
+   * @throws IllegalArgumentException If the String does not represent
+   *     a valid boolean value.
+   */
+  public static boolean stringToBoolean(String string) {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (&quot;true&quot;.equalsIgnoreCase(string)) {</span>
+<span class="nc" id="L85">      return true;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    } else if (&quot;false&quot;.equalsIgnoreCase(string)) {</span>
+<span class="nc" id="L87">      return false;</span>
+    } else {
+<span class="nc" id="L89">      throw new IllegalArgumentException();</span>
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

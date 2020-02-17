@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SnmpConfiguration.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpSnmp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.snmp</a> &gt; <span class="el_source">SnmpConfiguration.java</span></div><h1>SnmpConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.snmp;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.snmp4j.agent.mo.snmp.StorageType;
+import org.snmp4j.agent.mo.snmp.TransportDomains;
+import org.snmp4j.security.AuthMD5;
+import org.snmp4j.security.AuthSHA;
+import org.snmp4j.security.Priv3DES;
+import org.snmp4j.security.PrivAES128;
+import org.snmp4j.security.PrivAES192;
+import org.snmp4j.security.PrivAES256;
+import org.snmp4j.security.PrivDES;
+import org.snmp4j.security.UsmUser;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.TcpAddress;
+import org.snmp4j.smi.TransportIpAddress;
+import org.snmp4j.smi.UdpAddress;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlDecl;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlType;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * SnmpConfiguration class from XML file
+ */
+public final class SnmpConfiguration {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(SnmpConfiguration.class);</span>
+
+  private static final String SNMP_ROOT = &quot;/snmpconfig/&quot;;
+
+  private static final String SNMP_CONFIG = &quot;config&quot;;
+
+  private static final String SNMP_LOCAL_ADDRESS = &quot;localaddress&quot;;
+
+  private static final String SNMP_NBTHREAD = &quot;nbthread&quot;;
+
+  private static final String SNMP_FILTERED = &quot;filtered&quot;;
+
+  private static final String SNMP_USETRAP = &quot;usetrap&quot;;
+
+  private static final String SNMP_TRAPLEVEL = &quot;trapinformlevel&quot;;
+
+<span class="fc" id="L76">  private static final XmlDecl[] configConfigDecls = {</span>
+      new XmlDecl(SNMP_LOCAL_ADDRESS, XmlType.STRING, SNMP_LOCAL_ADDRESS, true),
+      new XmlDecl(XmlType.INTEGER, SNMP_NBTHREAD),
+      new XmlDecl(XmlType.BOOLEAN, SNMP_FILTERED),
+      new XmlDecl(XmlType.BOOLEAN, SNMP_USETRAP),
+      new XmlDecl(XmlType.INTEGER, SNMP_TRAPLEVEL)
+  };
+
+  private static final String SNMP_TARGETS = &quot;targets&quot;;
+
+  private static final String SNMP_TARGET = &quot;target&quot;;
+
+  /**
+   * Static String
+   */
+  static final String NOTIFY = &quot;notify&quot;;
+
+  /**
+   * Static String
+   */
+  static final String V3NOTIFY = &quot;v3notify&quot;;
+
+  /**
+   * Static String
+   */
+  static final String V2C = &quot;v2c&quot;;
+
+  /*
+   * addTargetAddress(org.snmp4j.smi.OctetString name, org.snmp4j.smi.OID transportDomain,
+   * org.snmp4j.smi.OctetString address, int timeout, int retries, org.snmp4j.smi.OctetString tagList, &quot;notify&quot;
+   * org.snmp4j.smi.OctetString params, &quot;v3notify&quot;/&quot;v2c&quot; int storageType) permenant
+   */
+  private static final String SNMP_TARGET_NAME = &quot;name&quot;;
+
+  private static final String SNMP_TARGET_DOMAIN = &quot;domain&quot;;
+
+  private static final String SNMP_TARGET_ADDRESS = &quot;address&quot;;
+
+  private static final String SNMP_TARGET_TIMEOUT = &quot;timeout&quot;;
+
+  private static final String SNMP_TARGET_RETRIES = &quot;retries&quot;;
+
+  private static final String SNMP_TARGET_ISV2 = &quot;isv2&quot;;
+
+<span class="fc" id="L120">  private static final XmlDecl[] configTargetDecls = {</span>
+      new XmlDecl(XmlType.STRING, SNMP_TARGET_NAME),
+      new XmlDecl(XmlType.STRING, SNMP_TARGET_DOMAIN),
+      new XmlDecl(XmlType.STRING, SNMP_TARGET_ADDRESS),
+      new XmlDecl(XmlType.INTEGER, SNMP_TARGET_TIMEOUT),
+      new XmlDecl(XmlType.INTEGER, SNMP_TARGET_RETRIES),
+      new XmlDecl(XmlType.BOOLEAN, SNMP_TARGET_ISV2)
+  };
+
+  /*
+   * org.snmp4j.security.UsmUser.UsmUser(OctetString securityName, OID authenticationProtocol, OctetString
+   * authenticationPassphrase, OID privacyProtocol, OctetString privacyPassphrase)
+   *
+   * Creates a USM user.
+   *
+   * Parameters:
+   *
+   * -securityName the security name of the user (typically the user name).
+   *
+   * -authenticationProtocol the authentication protcol ID to be associated with this user. If set to null, this
+   * user only supports unauthenticated messages.
+   *
+   * -authenticationPassphrase the authentication passphrase. If not null, authenticationProtocol must also be
+   * not null. RFC3414 §11.2 requires passphrases to have a minimum length of 8 bytes. If the length of
+   * authenticationPassphrase is less than 8 bytes an IllegalArgumentException is thrown.
+   *
+   * -privacyProtocol the privacy protcol ID to be associated with this user. If set to null, this user only
+   * supports unencrypted messages.
+   *
+   * -privacyPassphrase the privacy passphrase. If not null, privacyProtocol must also be not null. RFC3414
+   * §11.2 requires passphrases to have a minimum length of 8 bytes. If the length of authenticationPassphrase
+   * is less than 8 bytes an IllegalArgumentException is thrown.
+   */
+  private static final String SNMP_SECURITIES = &quot;securities&quot;;
+
+  private static final String SNMP_SECURITY = &quot;security&quot;;
+
+  private static final String SNMP_SECURITY_NAME = &quot;securityname&quot;;
+
+  private static final String SNMP_SECURITY_AUTH_PROTOCOL =
+      &quot;securityauthprotocol&quot;;
+
+  private static final String SNMP_SECURITY_AUTH_PSSPHRASE = &quot;securityauthpass&quot;;
+
+  private static final String SNMP_SECURITY_PRIV_PROTOCOL =
+      &quot;securityprivprotocol&quot;;
+
+  private static final String SNMP_SECURITY_PRIV_PSSPHRASE = &quot;securityprivpass&quot;;
+
+<span class="fc" id="L169">  private static final XmlDecl[] configSecurityDecls = {</span>
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_NAME),
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PROTOCOL),
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PSSPHRASE),
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_PRIV_PROTOCOL),
+      new XmlDecl(XmlType.STRING, SNMP_SECURITY_PRIV_PSSPHRASE)
+  };
+
+<span class="fc" id="L177">  private static final XmlDecl[] configSNMP = {</span>
+      new XmlDecl(SNMP_CONFIG, XmlType.XVAL, SNMP_ROOT + SNMP_CONFIG,
+                  configConfigDecls, false),
+      new XmlDecl(SNMP_SECURITY, XmlType.XVAL,
+                  SNMP_ROOT + SNMP_SECURITIES + '/' + SNMP_SECURITY,
+                  configSecurityDecls, true),
+      new XmlDecl(SNMP_TARGET, XmlType.XVAL,
+                  SNMP_ROOT + SNMP_TARGETS + '/' + SNMP_TARGET,
+                  configTargetDecls, true)
+  };
+
+  private static XmlValue[] configuration;
+
+  private static XmlHash hashConfig;
+  /**
+   * Address from the configuration for the SNMP Agent listening port
+   */
+  static String[] address;
+  /**
+   * Number of threads to use in SNMP agent
+   */
+<span class="fc" id="L198">  static int nbThread = 4;</span>
+  /**
+   * Do we filter on Targets for SNMP requests
+   */
+  static boolean isFilterAccessEnabled;
+  /**
+   * Do we are using Trap or Inform
+   */
+<span class="fc" id="L206">  static boolean isUsingTrap = true;</span>
+  /**
+   * Level for Trap/Inform from 0 to 4
+   */
+  static int trapLevel;
+  /**
+   * Default address: all in UDP port 161
+   */
+  public static final String DEFAULTADDRESS = &quot;udp:0.0.0.0/161&quot;;
+
+  private SnmpConfiguration() {
+  }
+
+  /**
+   * @return True if the configuration successfully load
+   */
+  private static boolean loadConfig() {
+<span class="fc" id="L223">    XmlValue value = hashConfig.get(SNMP_LOCAL_ADDRESS);</span>
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L225">    final List&lt;String&gt; values = (List&lt;String&gt;) value.getList();</span>
+<span class="fc" id="L226">    final int length = values.size();</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">    if (length == 0) {</span>
+<span class="nc" id="L228">      address = new String[] { DEFAULTADDRESS };</span>
+    } else {
+<span class="fc" id="L230">      address = new String[length];</span>
+<span class="fc" id="L231">      int nb = 0;</span>
+<span class="fc" id="L232">      address = values.toArray(address);</span>
+<span class="fc" id="L233">      final String[] tmp = new String[length];</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">      for (int j = 0; j &lt; length; j++) {</span>
+<span class="pc bpc" id="L235" title="2 of 4 branches missed.">        if (address[j] != null &amp;&amp; !address[j].trim().isEmpty()) {</span>
+<span class="fc" id="L236">          tmp[nb] = address[j];</span>
+<span class="fc" id="L237">          nb++;</span>
+        }
+      }
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">      if (nb == 0) {</span>
+<span class="nc" id="L241">        address = new String[] { DEFAULTADDRESS };</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">      } else if (nb &lt; length) {</span>
+        // less addresses than intended
+<span class="nc" id="L244">        address = new String[nb];</span>
+<span class="nc" id="L245">        System.arraycopy(tmp, 0, address, 0, nb);</span>
+      }
+    }
+<span class="fc" id="L248">    value = hashConfig.get(SNMP_NBTHREAD);</span>
+<span class="pc bpc" id="L249" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L250">      nbThread = value.getInteger();</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">      if (nbThread &lt;= 0) {</span>
+<span class="nc" id="L252">        nbThread = 4;</span>
+      }
+    }
+<span class="fc" id="L255">    value = hashConfig.get(SNMP_FILTERED);</span>
+<span class="pc bpc" id="L256" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L257">      isFilterAccessEnabled = value.getBoolean();</span>
+    }
+<span class="fc" id="L259">    value = hashConfig.get(SNMP_USETRAP);</span>
+<span class="pc bpc" id="L260" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L261">      isUsingTrap = value.getBoolean();</span>
+    }
+<span class="fc" id="L263">    value = hashConfig.get(SNMP_TRAPLEVEL);</span>
+<span class="pc bpc" id="L264" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L265">      trapLevel = value.getInteger();</span>
+    }
+<span class="fc" id="L267">    return true;</span>
+  }
+
+  /**
+   * List of all UsmUser
+   */
+<span class="fc" id="L273">  static final List&lt;UsmUser&gt; listUsmUser = new ArrayList&lt;UsmUser&gt;();</span>
+
+  /**
+   * Protocols for Security
+   */
+<span class="fc" id="L278">  public enum SecurityProtocolList {</span>
+<span class="fc" id="L279">    SHA(AuthSHA.ID), MD5(AuthMD5.ID);</span>
+
+    public final OID oid;
+
+<span class="fc" id="L283">    SecurityProtocolList(OID oid) {</span>
+<span class="fc" id="L284">      this.oid = oid;</span>
+<span class="fc" id="L285">    }</span>
+  }
+
+  /**
+   * Protocol for Privacy
+   */
+<span class="fc" id="L291">  public enum PrivacyProtocolList {</span>
+<span class="fc" id="L292">    P3DES(Priv3DES.ID), PAES128(PrivAES128.ID), PAES192(PrivAES192.ID),</span>
+<span class="fc" id="L293">    PAES256(PrivAES256.ID), PDES(PrivDES.ID);</span>
+
+    public final OID oid;
+
+<span class="fc" id="L297">    PrivacyProtocolList(OID oid) {</span>
+<span class="fc" id="L298">      this.oid = oid;</span>
+<span class="fc" id="L299">    }</span>
+  }
+
+  /**
+   * new XmlDecl(XmlType.STRING, SNMP_SECURITY_NAME), new
+   * XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PROTOCOL),
+   * new XmlDecl(XmlType.STRING, SNMP_SECURITY_AUTH_PASSPHRASE), new
+   * XmlDecl(XmlType.STRING,
+   * SNMP_SECURITY_PRIV_PROTOCOL), new XmlDecl(XmlType.STRING,
+   * SNMP_SECURITY_PRIV_PASSPHRASE)
+   *
+   * @return True if load successfully
+   */
+  private static boolean loadSecurity() {
+    String securityName;
+    String securityProtocol;
+    String securityPassphrase;
+    String securityPrivProtocol;
+    String securityPrivPassphrase;
+<span class="fc" id="L318">    XmlValue value = hashConfig.get(SNMP_SECURITY);</span>
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L320">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">    for (final XmlValue[] xmlValues : list) {</span>
+<span class="fc" id="L322">      securityPassphrase = null;</span>
+<span class="fc" id="L323">      securityPrivPassphrase = null;</span>
+<span class="fc" id="L324">      final XmlHash subHash = new XmlHash(xmlValues);</span>
+<span class="fc" id="L325">      value = subHash.get(SNMP_SECURITY_NAME);</span>
+<span class="pc bpc" id="L326" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L327">        logger.warn(&quot;No Security Name found&quot;);</span>
+<span class="nc" id="L328">        continue;</span>
+      }
+<span class="fc" id="L330">      securityName = value.getString();</span>
+<span class="fc" id="L331">      value = subHash.get(SNMP_SECURITY_AUTH_PROTOCOL);</span>
+<span class="fc" id="L332">      SecurityProtocolList secprot = null;</span>
+<span class="pc bpc" id="L333" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L334">        securityProtocol = value.getString();</span>
+        try {
+<span class="fc" id="L336">          secprot = SecurityProtocolList.valueOf(securityProtocol);</span>
+<span class="nc" id="L337">        } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L338">          logger.warn(&quot;No Security Protocol found for &quot; + securityName);</span>
+<span class="nc" id="L339">          continue;</span>
+<span class="fc" id="L340">        }</span>
+<span class="fc" id="L341">        value = subHash.get(SNMP_SECURITY_AUTH_PSSPHRASE);</span>
+<span class="pc bpc" id="L342" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+          // not allowed
+<span class="nc" id="L344">          securityProtocol = null;</span>
+        } else {
+<span class="fc" id="L346">          securityPassphrase = value.getString();</span>
+        }
+      }
+<span class="fc" id="L349">      value = subHash.get(SNMP_SECURITY_PRIV_PROTOCOL);</span>
+<span class="fc" id="L350">      PrivacyProtocolList privprot = null;</span>
+<span class="pc bpc" id="L351" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L352">        securityPrivProtocol = value.getString();</span>
+        try {
+<span class="fc" id="L354">          privprot = PrivacyProtocolList.valueOf(securityPrivProtocol);</span>
+<span class="nc" id="L355">        } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L356">          logger.warn(&quot;No Security Private Protocol found for &quot; + securityName);</span>
+<span class="nc" id="L357">          continue;</span>
+<span class="fc" id="L358">        }</span>
+<span class="fc" id="L359">        value = subHash.get(SNMP_SECURITY_PRIV_PSSPHRASE);</span>
+<span class="pc bpc" id="L360" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+          // not allowed
+<span class="nc" id="L362">          securityPrivProtocol = null;</span>
+        } else {
+<span class="fc" id="L364">          securityPrivPassphrase = value.getString();</span>
+        }
+      }
+<span class="pc bpc" id="L367" title="2 of 8 branches missed.">      final UsmUser usm = new UsmUser(new OctetString(securityName),</span>
+                                      secprot == null? null : secprot.oid,
+                                      secprot == null? null :
+                                          new OctetString(securityPassphrase),
+                                      privprot == null? null : privprot.oid,
+                                      privprot == null? null : new OctetString(
+                                          securityPrivPassphrase));
+<span class="fc" id="L374">      listUsmUser.add(usm);</span>
+<span class="fc" id="L375">    }</span>
+<span class="fc" id="L376">    return true;</span>
+  }
+
+<span class="fc" id="L379">  private enum TransportDomain {</span>
+<span class="fc" id="L380">    UdpIpv4(TransportDomains.transportDomainUdpIpv4),</span>
+<span class="fc" id="L381">    UdpIpv6(TransportDomains.transportDomainUdpIpv6),</span>
+<span class="fc" id="L382">    UdpIpv4z(TransportDomains.transportDomainUdpIpv4z),</span>
+<span class="fc" id="L383">    UdpIpv6z(TransportDomains.transportDomainUdpIpv6z),</span>
+<span class="fc" id="L384">    TcpIpv4(TransportDomains.transportDomainTcpIpv4),</span>
+<span class="fc" id="L385">    TcpIpv6(TransportDomains.transportDomainTcpIpv6),</span>
+<span class="fc" id="L386">    TcpIpv4z(TransportDomains.transportDomainTcpIpv4z),</span>
+<span class="fc" id="L387">    TcpIpv6z(TransportDomains.transportDomainTcpIpv6z);</span>
+
+    public final OID oid;
+
+<span class="fc" id="L391">    TransportDomain(OID oid) {</span>
+<span class="fc" id="L392">      this.oid = oid;</span>
+<span class="fc" id="L393">    }</span>
+  }
+
+  /**
+   * Target entry
+   */
+  public static class TargetElement {
+    public final OctetString name;
+
+    public final OID transportDomain;
+
+    public final OctetString address;
+
+    public final int timeout;
+
+    public final int retries;
+
+    public final OctetString tagList;
+
+    public final OctetString params;
+
+    public final int storageType;
+
+    /**
+     * @param name
+     * @param transportDomain
+     * @param address
+     * @param timeout
+     * @param retries
+     * @param tagList
+     * @param params
+     * @param storageType
+     */
+    private TargetElement(OctetString name, OID transportDomain,
+                          OctetString address, int timeout, int retries,
+                          OctetString tagList, OctetString params,
+<span class="fc" id="L429">                          int storageType) {</span>
+<span class="fc" id="L430">      this.name = name;</span>
+<span class="fc" id="L431">      this.transportDomain = transportDomain;</span>
+<span class="fc" id="L432">      this.address = address;</span>
+<span class="fc" id="L433">      this.timeout = timeout;</span>
+<span class="fc" id="L434">      this.retries = retries;</span>
+<span class="fc" id="L435">      this.tagList = tagList;</span>
+<span class="fc" id="L436">      this.params = params;</span>
+<span class="fc" id="L437">      this.storageType = storageType;</span>
+<span class="fc" id="L438">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L442">      return &quot;Name: &quot; + name + &quot; TD: &quot; + transportDomain + &quot; Add: &quot; + address +</span>
+             &quot; TO: &quot; + timeout + &quot; RT: &quot; + retries + &quot; TL: &quot; + tagList +
+             &quot; PM: &quot; + params + &quot; ST: &quot; + storageType;
+    }
+  }
+
+  /**
+   * List of Target Element
+   */
+<span class="fc" id="L451">  static final List&lt;TargetElement&gt; listTargetElements =</span>
+      new ArrayList&lt;TargetElement&gt;();
+  /**
+   * Do we use SNMP V2c
+   */
+  static boolean hasV2;
+  /**
+   * Do we use SNMP V3
+   */
+  static boolean hasV3;
+
+  /**
+   * new XmlDecl(XmlType.STRING, SNMP_TARGET_NAME), free name new
+   * XmlDecl(XmlType.STRING, SNMP_TARGET_DOMAIN),
+   * one of (Udp/Tcp)Ipv(4/6)[z] new XmlDecl(XmlType.STRING,
+   * SNMP_TARGET_ADDRESS), new XmlDecl(XmlType.INTEGER,
+   * SNMP_TARGET_TIMEOUT), new XmlDecl(XmlType.INTEGER, SNMP_TARGET_RETRIES),
+   * new XmlDecl(XmlType.BOOLEAN,
+   * SNMP_TARGET_ISV2) True =&gt; v2, else v3
+   * &lt;p&gt;
+   * new OctetString(&quot;notificationV2c&quot;), TransportDomains.transportDomainUdpIpv4,
+   * new OctetString( new
+   * UdpAddress(toAddressV2).getValue()), 200, 1, new OctetString(&quot;notify&quot;),
+   * new
+   * OctetString(&quot;v2c&quot;),
+   * StorageType.permanent
+   * &lt;p&gt;
+   * new OctetString(&quot;notificationV3&quot;), TransportDomains.transportDomainUdpIpv4,
+   * new OctetString( new
+   * UdpAddress(toAddressV3).getValue()), 200, 1, new OctetString(&quot;notify&quot;),
+   * new
+   * OctetString(&quot;v3notify&quot;),
+   * StorageType.permanent
+   *
+   * @return True if successfully loaded
+   */
+  private static boolean loadTarget() {
+    String targetName;
+    String targetDomain;
+    OID oTargetDomain;
+    String targetAddress;
+    int targetTimeout;
+    int targetRetries;
+    String targetParams;
+<span class="fc" id="L495">    XmlValue value = hashConfig.get(SNMP_TARGET);</span>
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L497">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="fc bfc" id="L498" title="All 2 branches covered.">    for (final XmlValue[] xmlValues : list) {</span>
+<span class="fc" id="L499">      final XmlHash subHash = new XmlHash(xmlValues);</span>
+<span class="fc" id="L500">      value = subHash.get(SNMP_TARGET_NAME);</span>
+<span class="pc bpc" id="L501" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L502">        logger.warn(&quot;No Target Name found&quot;);</span>
+<span class="nc" id="L503">        continue;</span>
+      }
+<span class="fc" id="L505">      targetName = value.getString();</span>
+<span class="fc" id="L506">      value = subHash.get(SNMP_TARGET_DOMAIN);</span>
+<span class="pc bpc" id="L507" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L508">        logger.warn(&quot;No Target Domain found for &quot; + targetName);</span>
+<span class="nc" id="L509">        continue;</span>
+      }
+<span class="fc" id="L511">      targetDomain = value.getString();</span>
+      TransportDomain domain;
+      try {
+<span class="fc" id="L514">        domain = TransportDomain.valueOf(targetDomain);</span>
+<span class="fc" id="L515">        oTargetDomain = domain.oid;</span>
+<span class="nc" id="L516">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L517">        logger.warn(&quot;No Target Domain correctly found for &quot; + targetName);</span>
+<span class="nc" id="L518">        continue;</span>
+<span class="fc" id="L519">      }</span>
+<span class="fc" id="L520">      value = subHash.get(SNMP_TARGET_ADDRESS);</span>
+<span class="pc bpc" id="L521" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L522">        logger.warn(&quot;No Target Address found for &quot; + targetName);</span>
+<span class="nc" id="L523">        continue;</span>
+      }
+<span class="fc" id="L525">      targetAddress = value.getString();</span>
+<span class="fc" id="L526">      TransportIpAddress address = null;</span>
+      try {
+<span class="pc bpc" id="L528" title="2 of 3 branches missed.">        switch (domain) {</span>
+          case UdpIpv4:
+          case UdpIpv6:
+          case UdpIpv4z:
+          case UdpIpv6z:
+<span class="fc" id="L533">            address = new UdpAddress(targetAddress);</span>
+<span class="fc" id="L534">            break;</span>
+          case TcpIpv4:
+          case TcpIpv6:
+          case TcpIpv4z:
+          case TcpIpv6z:
+<span class="nc" id="L539">            address = new TcpAddress(targetAddress);</span>
+            break;
+        }
+<span class="nc" id="L542">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L543">        logger.warn(&quot;No Correct Target Address found for &quot; + targetName);</span>
+<span class="nc" id="L544">        continue;</span>
+<span class="fc" id="L545">      }</span>
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">      if (address != null) {</span>
+<span class="fc" id="L547">        logger.debug(&quot;Addr: {} {}&quot;, address.getClass(), targetAddress);</span>
+      }
+<span class="fc" id="L549">      value = subHash.get(SNMP_TARGET_TIMEOUT);</span>
+<span class="pc bpc" id="L550" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L551">        targetTimeout = 200;</span>
+      } else {
+<span class="fc" id="L553">        targetTimeout = value.getInteger();</span>
+      }
+<span class="pc bpc" id="L555" title="1 of 2 branches missed.">      if (targetTimeout &lt;= 100) {</span>
+<span class="nc" id="L556">        targetTimeout = 100;</span>
+      }
+<span class="fc" id="L558">      value = subHash.get(SNMP_TARGET_RETRIES);</span>
+<span class="pc bpc" id="L559" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L560">        targetRetries = 1;</span>
+      } else {
+<span class="fc" id="L562">        targetRetries = value.getInteger();</span>
+      }
+<span class="pc bpc" id="L564" title="1 of 2 branches missed.">      if (targetRetries &lt;= 0) {</span>
+<span class="nc" id="L565">        targetRetries = 1;</span>
+      }
+<span class="fc" id="L567">      value = subHash.get(SNMP_TARGET_ISV2);</span>
+<span class="fc" id="L568">      boolean isV2 = true;</span>
+<span class="pc bpc" id="L569" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L570">        isV2 = true;</span>
+      } else {
+<span class="fc" id="L572">        isV2 = value.getBoolean();</span>
+      }
+<span class="fc bfc" id="L574" title="All 2 branches covered.">      if (isV2) {</span>
+<span class="fc" id="L575">        hasV2 = true;</span>
+<span class="fc" id="L576">        targetParams = V2C;</span>
+      } else {
+<span class="fc" id="L578">        hasV3 = true;</span>
+<span class="fc" id="L579">        targetParams = V3NOTIFY;</span>
+      }
+<span class="fc" id="L581">      final TargetElement element =</span>
+          new TargetElement(new OctetString(targetName), oTargetDomain,
+<span class="fc" id="L583">                            new OctetString(address.getValue()), targetTimeout,</span>
+                            targetRetries, new OctetString(NOTIFY),
+                            new OctetString(targetParams),
+                            StorageType.permanent);
+<span class="fc" id="L587">      listTargetElements.add(element);</span>
+<span class="fc" id="L588">    }</span>
+<span class="fc" id="L589">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for SNMP agent
+   *
+   * @param file
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationFromXml(File file) {
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L603">      document = new SAXReader().read(file);</span>
+<span class="nc" id="L604">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L605">      logger.error(</span>
+<span class="nc" id="L606">          &quot;Unable to read the XML Config file: &quot; + file.getAbsolutePath(), e);</span>
+<span class="nc" id="L607">      return false;</span>
+<span class="fc" id="L608">    }</span>
+<span class="pc bpc" id="L609" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L610">      logger.error(</span>
+<span class="nc" id="L611">          &quot;Unable to read the XML Config file: &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L612">      return false;</span>
+    }
+<span class="fc" id="L614">    configuration = XmlUtil.read(document, configSNMP);</span>
+<span class="fc" id="L615">    hashConfig = new XmlHash(configuration);</span>
+<span class="fc" id="L616">    address = new String[] { DEFAULTADDRESS };</span>
+<span class="fc" id="L617">    nbThread = 4;</span>
+<span class="fc" id="L618">    listUsmUser.clear();</span>
+<span class="fc" id="L619">    listTargetElements.clear();</span>
+    try {
+      // Now read the configuration
+<span class="pc bpc" id="L622" title="1 of 2 branches missed.">      if (!loadConfig()) {</span>
+<span class="nc" id="L623">        return false;</span>
+      }
+<span class="pc bpc" id="L625" title="1 of 2 branches missed.">      if (!loadSecurity()) {</span>
+<span class="nc" id="L626">        return false;</span>
+      }
+<span class="pc bpc" id="L628" title="1 of 2 branches missed.">      if (!loadTarget()) {</span>
+<span class="nc" id="L629">        return false;</span>
+      }
+    } finally {
+<span class="fc" id="L632">      hashConfig.clear();</span>
+<span class="fc" id="L633">      hashConfig = null;</span>
+<span class="fc" id="L634">      configuration = null;</span>
+    }
+<span class="fc" id="L636">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

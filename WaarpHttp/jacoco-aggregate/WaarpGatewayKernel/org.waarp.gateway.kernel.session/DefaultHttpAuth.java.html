@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DefaultHttpAuth.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.session</a> &gt; <span class="el_source">DefaultHttpAuth.java</span></div><h1>DefaultHttpAuth.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.session;
+
+import org.waarp.common.command.NextCommandReply;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.command.exception.Reply502Exception;
+import org.waarp.common.command.exception.Reply530Exception;
+import org.waarp.common.file.SessionInterface;
+
+/**
+ * Allow all default implementation
+ * &lt;p&gt;
+ * If an authentication is needed, then it will have to use an implementation
+ * compatible with the Security of
+ * the IT that needs it.
+ */
+public class DefaultHttpAuth implements HttpAuthInterface {
+  /**
+   * User name
+   */
+<span class="nc" id="L39">  protected String user = &quot;user&quot;;</span>
+
+  /**
+   * Password
+   */
+<span class="nc" id="L44">  protected String password = &quot;password&quot;; // NOSONAR</span>
+
+  /**
+   * Account name
+   */
+<span class="nc" id="L49">  protected String account = &quot;account&quot;;</span>
+
+  /**
+   * Is Identified
+   */
+  protected final boolean isIdentified;
+
+  /**
+   * SessionInterface
+   */
+  protected final SessionInterface session;
+
+  /**
+   * @param session
+   */
+<span class="nc" id="L64">  public DefaultHttpAuth(SessionInterface session) {</span>
+<span class="nc" id="L65">    this.session = session;</span>
+<span class="nc" id="L66">    isIdentified = true;</span>
+<span class="nc" id="L67">  }</span>
+
+  @Override
+  public SessionInterface getSession() {
+<span class="nc" id="L71">    return session;</span>
+  }
+
+  @Override
+  public NextCommandReply setUser(String user)
+      throws Reply421Exception, Reply530Exception {
+<span class="nc" id="L77">    this.user = user;</span>
+<span class="nc" id="L78">    return null;</span>
+  }
+
+  @Override
+  public String getUser() {
+<span class="nc" id="L83">    return user;</span>
+  }
+
+  @Override
+  public NextCommandReply setPassword(String password)
+      throws Reply421Exception, Reply530Exception {
+<span class="nc" id="L89">    this.password = password;</span>
+<span class="nc" id="L90">    return null;</span>
+  }
+
+  @Override
+  public boolean isIdentified() {
+<span class="nc" id="L95">    return isIdentified;</span>
+  }
+
+  @Override
+  public boolean isAdmin() {
+<span class="nc" id="L100">    return false;</span>
+  }
+
+  @Override
+  public boolean isBusinessPathValid(String newPath) {
+<span class="nc" id="L105">    return true;</span>
+  }
+
+  @Override
+  public String getBusinessPath() {
+<span class="nc" id="L110">    return &quot;&quot;;</span>
+  }
+
+  @Override
+  public String getBaseDirectory() {
+<span class="nc" id="L115">    return &quot;/&quot;;</span>
+  }
+
+  @Override
+  public String getRelativePath(String file) {
+<span class="nc" id="L120">    return file;</span>
+  }
+
+  @Override
+  public void clear() {
+    // nothing
+<span class="nc" id="L126">  }</span>
+
+  @Override
+  public String getAccount() {
+<span class="nc" id="L130">    return account;</span>
+  }
+
+  @Override
+  public NextCommandReply setAccount(String account)
+      throws Reply421Exception, Reply530Exception, Reply502Exception {
+<span class="nc" id="L136">    this.account = account;</span>
+<span class="nc" id="L137">    return null;</span>
+  }
+
+  @Override
+  public CommandExecutorInterface getCommandExecutor() {
+    // TO DO Auto-generated method stub
+<span class="nc" id="L143">    return null;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

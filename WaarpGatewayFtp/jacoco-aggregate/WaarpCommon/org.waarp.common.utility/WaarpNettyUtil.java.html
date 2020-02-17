@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpNettyUtil.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">WaarpNettyUtil.java</span></div><h1>WaarpNettyUtil.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import org.waarp.common.logging.SysErrLogger;
+
+/**
+ * Utility class for Netty usage
+ */
+public final class WaarpNettyUtil {
+
+  private static final int TIMEOUT_MILLIS = 1000;
+  private static final int BUFFER_SIZE_1MB = 1048576;
+
+  private WaarpNettyUtil() {
+  }
+
+  /**
+   * Add default configuration for client bootstrap
+   *
+   * @param bootstrap
+   * @param group
+   * @param timeout
+   */
+  public static void setBootstrap(Bootstrap bootstrap, EventLoopGroup group,
+                                  int timeout) {
+<span class="fc" id="L52">    bootstrap.channel(NioSocketChannel.class);</span>
+<span class="fc" id="L53">    bootstrap.group(group);</span>
+<span class="fc" id="L54">    bootstrap.option(ChannelOption.TCP_NODELAY, true);</span>
+<span class="fc" id="L55">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L56">    bootstrap.option(ChannelOption.SO_KEEPALIVE, true);</span>
+<span class="fc" id="L57">    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
+<span class="fc" id="L58">    bootstrap.option(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);</span>
+<span class="fc" id="L59">    bootstrap.option(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);</span>
+<span class="fc" id="L60">    bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
+<span class="fc" id="L61">  }</span>
+
+  /**
+   * Add default configuration for server bootstrap
+   *
+   * @param bootstrap
+   * @param group
+   * @param timeout
+   */
+  public static void setServerBootstrap(ServerBootstrap bootstrap,
+                                        EventLoopGroup group, int timeout) {
+<span class="fc" id="L72">    bootstrap.channel(NioServerSocketChannel.class);</span>
+<span class="fc" id="L73">    bootstrap.group(group);</span>
+    // bootstrap.option(ChannelOption.TCP_NODELAY, true)
+<span class="fc" id="L75">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L76">    bootstrap.childOption(ChannelOption.TCP_NODELAY, true);</span>
+<span class="fc" id="L77">    bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L78">    bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);</span>
+<span class="fc" id="L79">    bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
+<span class="fc" id="L80">    bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);</span>
+<span class="fc" id="L81">    bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);</span>
+<span class="fc" id="L82">    bootstrap</span>
+<span class="fc" id="L83">        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
+<span class="fc" id="L84">  }</span>
+
+  /**
+   * @param future
+   *
+   * @return True if await done, else interruption occurs
+   */
+  public static boolean awaitOrInterrupted(Future&lt;?&gt; future) {
+    try {
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">      while (!Thread.interrupted()) {</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (future.await(TIMEOUT_MILLIS)) {</span>
+<span class="fc" id="L95">          return true;</span>
+        }
+      }
+<span class="nc" id="L98">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L99">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L100">    }</span>
+<span class="nc" id="L101">    return false;</span>
+  }
+
+  /**
+   * @param future
+   * @param timeMilliseconds
+   *
+   * @return True if await done, else interruption occurs
+   */
+  public static boolean awaitOrInterrupted(Future&lt;?&gt; future,
+                                           long timeMilliseconds) {
+    try {
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">      if (future.await(timeMilliseconds)) {</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        return !Thread.interrupted();</span>
+      }
+<span class="nc" id="L116">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L117">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L118">    }</span>
+<span class="nc" id="L119">    return false;</span>
+  }
+
+  /**
+   * @param future
+   *
+   * @return True if await and isSuccess, else interruption or not success
+   *     occurs
+   */
+  public static boolean awaitIsSuccessOfInterrupted(Future&lt;?&gt; future) {
+    try {
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      while (!Thread.interrupted()) {</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
+<span class="fc" id="L132">          return future.isSuccess();</span>
+        }
+      }
+<span class="nc" id="L135">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L136">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L137">    }</span>
+<span class="nc" id="L138">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HmacSha256.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Common</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.crypto</a> &gt; <span class="el_source">HmacSha256.java</span></div><h1>HmacSha256.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.crypto;
+
+import org.waarp.common.exception.CryptoException;
+import org.waarp.common.logging.SysErrLogger;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * This class handles methods to crypt (not decrypt) messages with HmacSha256
+ * algorithm (very efficient:
+ * 105000/s).&lt;br&gt;
+ * &lt;br&gt;
+ * Usage:&lt;br&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;Create a HmacSha256 object: HmacSha256 key = new HmacSha256();&lt;/li&gt;
+ * &lt;li&gt;Create a key:
+ * &lt;ul&gt;
+ * &lt;li&gt;Generate: key.generateKey();&lt;br&gt;
+ * The method key.getSecretKeyInBytes() allow getting the key in Bytes.&lt;/li&gt;
+ * &lt;li&gt;From an external source: key.setSecretKey(arrayOfBytes);&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/li&gt;
+ * &lt;li&gt;To crypt a String in a Base64 format: String myStringCrypt =
+ * key.cryptToString(myString);&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+<span class="fc" id="L49">public class HmacSha256 extends KeyObject {</span>
+  private static final String ERROR = &quot;Error: &quot;;
+  private static final String CANNOT_BE_USED_FOR_HMAC_SHA256 =
+      &quot;Cannot be used for HmacSha256&quot;;
+  private static final int KEY_SIZE = 128;
+  private static final String ALGO = &quot;HmacSHA256&quot;;
+  private static final String INSTANCE = ALGO;
+  public static final String EXTENSION = &quot;hs2&quot;;
+
+  @Override
+  public String getAlgorithm() {
+<span class="fc" id="L60">    return ALGO;</span>
+  }
+
+  @Override
+  public String getInstance() {
+<span class="nc" id="L65">    return INSTANCE;</span>
+  }
+
+  @Override
+  public int getKeySize() {
+<span class="fc" id="L70">    return KEY_SIZE;</span>
+  }
+
+  @Override
+  public String getFileExtension() {
+<span class="nc" id="L75">    return EXTENSION;</span>
+  }
+
+  @Override
+  public Cipher toCrypt() {
+<span class="nc" id="L80">    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);</span>
+  }
+
+  @Override
+  public byte[] crypt(byte[] plaintext) throws Exception {
+<span class="fc" id="L85">    final Mac mac = Mac.getInstance(ALGO);</span>
+<span class="fc" id="L86">    mac.init(secretKey);</span>
+<span class="fc" id="L87">    return mac.doFinal(plaintext);</span>
+  }
+
+  @Override
+  public Cipher toDecrypt() {
+<span class="nc" id="L92">    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);</span>
+  }
+
+  @Override
+  public byte[] decrypt(byte[] ciphertext) throws Exception {
+<span class="nc" id="L97">    throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);</span>
+  }
+
+  /**
+   * Generates a HmacSha256 key and saves it into the file given as argument
+   *
+   * @param args
+   */
+  public static void main(String[] args) {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (args.length == 0) {</span>
+<span class="nc" id="L107">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Filename is needed as argument&quot;);</span>
+    }
+<span class="nc" id="L109">    final HmacSha256 key = new HmacSha256();</span>
+    try {
+<span class="nc" id="L111">      key.generateKey();</span>
+<span class="nc" id="L112">    } catch (final Exception e) {</span>
+<span class="nc" id="L113">      SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());</span>
+<span class="nc" id="L114">      return;</span>
+<span class="nc" id="L115">    }</span>
+    try {
+<span class="nc" id="L117">      key.saveSecretKey(new File(args[0]));</span>
+<span class="nc" id="L118">    } catch (final CryptoException e) {</span>
+<span class="nc" id="L119">      SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());</span>
+<span class="nc" id="L120">      return;</span>
+<span class="nc" id="L121">    } catch (final IOException e) {</span>
+<span class="nc" id="L122">      SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());</span>
+<span class="nc" id="L123">      return;</span>
+<span class="nc" id="L124">    }</span>
+<span class="nc" id="L125">    SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L126">        .sysout(&quot;New HmacSha256 key file is generated: &quot; + args[0]);</span>
+<span class="nc" id="L127">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

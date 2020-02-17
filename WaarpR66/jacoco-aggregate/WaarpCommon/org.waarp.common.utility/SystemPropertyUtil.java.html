@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SystemPropertyUtil.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">SystemPropertyUtil.java</span></div><h1>SystemPropertyUtil.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.logging.SysErrLogger;
+
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.util.Properties;
+
+import static org.waarp.common.digest.WaarpBC.*;
+
+/**
+ * A collection of utility methods to retrieve and parse the values of the Java
+ * system properties.
+ */
+public final class SystemPropertyUtil {
+  // Since logger could be not available yet, one must not declare there a Logger
+
+  private static final String USING_THE_DEFAULT_VALUE2 =
+      &quot;using the default value: &quot;;
+  private static final String FIND_0_9 = &quot;-?[0-9]+&quot;;
+  private static final String USING_THE_DEFAULT_VALUE =
+      USING_THE_DEFAULT_VALUE2;
+  public static final String FILE_ENCODING = &quot;file.encoding&quot;;
+  /**
+   * Maximum Connections to the Database. Waarp will manage by default up
+   * to 10 connections, except if this is set. The minimum value is 2.
+   */
+  public static final String WAARP_DATABASE_CONNECTION_MAX =
+      &quot;waarp.database.connection.max&quot;;
+
+<span class="fc" id="L52">  private static final Properties PROPS = new Properties();</span>
+  private static final String INVALID_PROPERTY = &quot;Invalid property &quot;;
+  private static Platform mOs;
+
+  // Retrieve all system properties at once so that there's no need to deal with
+  // security exceptions from next time. Otherwise, we might end up with logging every
+  // security exceptions on every system property access or introducing more complexity
+  // just because of less verbose logging.
+  static {
+<span class="fc" id="L61">    initializedTlsContext();</span>
+<span class="fc" id="L62">    refresh();</span>
+<span class="fc" id="L63">  }</span>
+
+  /**
+   * Re-retrieves all system properties so that any post-launch properties
+   * updates are retrieved.
+   */
+  public static void refresh() {
+    Properties newProps;
+    try {
+<span class="fc" id="L72">      newProps = System.getProperties();</span>
+<span class="nc" id="L73">    } catch (final SecurityException e) {</span>
+<span class="nc" id="L74">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L75">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+          &quot;Unable to retrieve the system properties; default values will be used: &quot; +
+<span class="nc" id="L77">          e.getMessage());</span>
+<span class="nc" id="L78">      newProps = new Properties();</span>
+<span class="fc" id="L79">    }</span>
+
+<span class="fc" id="L81">    synchronized (PROPS) {</span>
+<span class="fc" id="L82">      PROPS.clear();</span>
+<span class="fc" id="L83">      PROPS.putAll(newProps);</span>
+<span class="fc" id="L84">    }</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">    if (!contains(FILE_ENCODING) ||</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {</span>
+      try {
+<span class="fc" id="L88">        System.setProperty(FILE_ENCODING, WaarpStringUtils.UTF_8);</span>
+<span class="fc" id="L89">        final Field charset = Charset.class.getDeclaredField(&quot;defaultCharset&quot;);</span>
+<span class="fc" id="L90">        charset.setAccessible(true); //NOSONAR</span>
+<span class="fc" id="L91">        charset.set(null, null); //NOSONAR</span>
+<span class="fc" id="L92">        synchronized (PROPS) {</span>
+<span class="fc" id="L93">          PROPS.clear();</span>
+<span class="fc" id="L94">          PROPS.putAll(newProps);</span>
+<span class="fc" id="L95">        }</span>
+<span class="nc" id="L96">      } catch (final Throwable e1) {//NOSONAR</span>
+        // ignore since it is a security issue and -Dfile.encoding=UTF-8 should be used
+<span class="nc" id="L98">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L99">        SysErrLogger.FAKE_LOGGER.syserr(</span>
+            &quot;Issue while trying to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument: &quot; +
+<span class="nc" id="L101">            e1.getMessage());</span>
+<span class="nc" id="L102">        SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L103">            .syserr(&quot;Currently file.encoding is: &quot; + get(FILE_ENCODING));</span>
+<span class="fc" id="L104">      }</span>
+    }
+<span class="fc" id="L106">  }</span>
+
+  /**
+   * @return True if Encoding is Correct
+   */
+  public static boolean isFileEncodingCorrect() {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">    return contains(FILE_ENCODING) &amp;&amp;</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">           WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING));</span>
+  }
+
+  /**
+   * Returns {@code true} if and only if the system property with the
+   * specified
+   * {@code key} exists.
+   */
+  public static boolean contains(String key) {
+<span class="fc" id="L122">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L123">    return PROPS.containsKey(key);</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to
+   * {@code null} if the property access fails.
+   *
+   * @return the property value or {@code null}
+   */
+  public static String get(String key) {
+<span class="fc" id="L134">    return get(key, null);</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static String get(final String key, final String def) {
+<span class="fc" id="L152">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L153">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L155">      return def;</span>
+    }
+
+    try {
+<span class="fc" id="L159">      value = ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L160">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L161">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L162">      return def;</span>
+<span class="fc" id="L163">    }</span>
+
+<span class="fc" id="L165">    return value;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static boolean get(final String key, final boolean def) {
+<span class="fc" id="L183">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L184">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L186">      return def;</span>
+    }
+
+<span class="fc" id="L189">    value = value.trim().toLowerCase();</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">    if (value.isEmpty()) {</span>
+<span class="fc" id="L191">      return true;</span>
+    }
+
+<span class="fc bfc" id="L194" title="All 6 branches covered.">    if (&quot;true&quot;.equals(value) || &quot;yes&quot;.equals(value) || &quot;1&quot;.equals(value)) {</span>
+<span class="fc" id="L195">      return true;</span>
+    }
+
+<span class="pc bpc" id="L198" title="2 of 6 branches missed.">    if (&quot;false&quot;.equals(value) || &quot;no&quot;.equals(value) || &quot;0&quot;.equals(value)) {</span>
+<span class="fc" id="L199">      return false;</span>
+    }
+    try {
+<span class="fc" id="L202">      ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L203">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L204">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L205">      return def;</span>
+<span class="fc" id="L206">    }</span>
+<span class="fc" id="L207">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+        &quot;Unable to parse the boolean system property '&quot; + key + &quot;':&quot; + value +
+        &quot; - &quot; + USING_THE_DEFAULT_VALUE + def);
+
+<span class="fc" id="L211">    return def;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key the system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static int get(final String key, final int def) {
+<span class="fc" id="L229">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L230">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L232">      return def;</span>
+    }
+
+<span class="fc" id="L235">    value = value.trim().toLowerCase();</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">    if (value.matches(FIND_0_9)) {</span>
+      try {
+<span class="fc" id="L238">        return Integer.parseInt(value);</span>
+<span class="nc" id="L239">      } catch (final Exception e) {</span>
+        // Since logger could be not available yet
+        // Ignore
+<span class="nc" id="L242">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+      }
+    }
+    try {
+<span class="fc" id="L246">      ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L247">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L248">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L249">      return def;</span>
+<span class="fc" id="L250">    }</span>
+<span class="fc" id="L251">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+        &quot;Unable to parse the integer system property '&quot; + key + &quot;':&quot; + value +
+        &quot; - &quot; + USING_THE_DEFAULT_VALUE + def);
+
+<span class="fc" id="L255">    return def;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static long get(final String key, final long def) {
+<span class="fc" id="L273">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L274">    String value = PROPS.getProperty(key);</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">    if (value == null) {</span>
+<span class="fc" id="L276">      return def;</span>
+    }
+
+<span class="fc" id="L279">    value = value.trim().toLowerCase();</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">    if (value.matches(FIND_0_9)) {</span>
+      try {
+<span class="fc" id="L282">        return Long.parseLong(value);</span>
+<span class="nc" id="L283">      } catch (final Exception e) {</span>
+        // Since logger could be not available yet
+        // Ignore
+<span class="nc" id="L286">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+      }
+    }
+    try {
+<span class="fc" id="L290">      ParametersChecker.checkSanityString(value);</span>
+<span class="nc" id="L291">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L292">      SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);</span>
+<span class="nc" id="L293">      return def;</span>
+<span class="fc" id="L294">    }</span>
+
+<span class="fc" id="L296">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+        &quot;Unable to parse the long integer system property '&quot; + key + &quot;':&quot; +
+        value + &quot; - &quot; + USING_THE_DEFAULT_VALUE + def);
+
+<span class="fc" id="L300">    return def;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the
+   * specified default value if the property access fails.
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified
+   *     property is not allowed.
+   */
+  public static boolean getBoolean(String key, boolean def) {
+<span class="fc" id="L313">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+
+<span class="fc" id="L315">    String value = PROPS.getProperty(key);</span>
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="fc" id="L317">      return def;</span>
+    }
+
+<span class="nc" id="L320">    value = value.trim().toLowerCase();</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">    if (value.isEmpty()) {</span>
+<span class="nc" id="L322">      return true;</span>
+    }
+
+<span class="nc bnc" id="L325" title="All 6 branches missed.">    if (&quot;true&quot;.equals(value) || &quot;yes&quot;.equals(value) || &quot;1&quot;.equals(value)) {</span>
+<span class="nc" id="L326">      return true;</span>
+    }
+
+<span class="nc bnc" id="L329" title="All 6 branches missed.">    if (&quot;false&quot;.equals(value) || &quot;no&quot;.equals(value) || &quot;0&quot;.equals(value)) {</span>
+<span class="nc" id="L330">      return false;</span>
+    }
+
+<span class="nc" id="L333">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+        &quot;Unable to parse the boolean system property '&quot; + key + &quot;':&quot; + value +
+        &quot; - &quot; + USING_THE_DEFAULT_VALUE2 + def);
+
+<span class="nc" id="L337">    return def;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the
+   * specified default value if the property access fails.
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified
+   *     property is not allowed.
+   */
+  public static int getInt(String key, int def) {
+<span class="fc" id="L350">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+
+<span class="fc" id="L352">    String value = PROPS.getProperty(key);</span>
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="fc" id="L354">      return def;</span>
+    }
+
+<span class="nc" id="L357">    value = value.trim().toLowerCase();</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">    if (value.matches(FIND_0_9)) {</span>
+      try {
+<span class="nc" id="L360">        return Integer.parseInt(value);</span>
+<span class="nc" id="L361">      } catch (final Exception e) {</span>
+        // Ignore
+      }
+    }
+
+<span class="nc" id="L366">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+        &quot;Unable to parse the integer system property '&quot; + key + &quot;':&quot; + value +
+        &quot; - &quot; + USING_THE_DEFAULT_VALUE2 + def);
+
+<span class="nc" id="L370">    return def;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the
+   * specified default value if the property access fails.
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified
+   *     property is not allowed.
+   */
+  public static long getLong(String key, long def) {
+<span class="fc" id="L383">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+
+<span class="fc" id="L385">    String value = PROPS.getProperty(key);</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="fc" id="L387">      return def;</span>
+    }
+
+<span class="nc" id="L390">    value = value.trim().toLowerCase();</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">    if (value.matches(FIND_0_9)) {</span>
+      try {
+<span class="nc" id="L393">        return Long.parseLong(value);</span>
+<span class="nc" id="L394">      } catch (final Exception e) {</span>
+        // Ignore
+      }
+    }
+
+<span class="nc" id="L399">    SysErrLogger.FAKE_LOGGER.syserr(</span>
+        &quot;Unable to parse the long integer system property '&quot; + key + &quot;':&quot; +
+        value + &quot; - &quot; + USING_THE_DEFAULT_VALUE2 + def);
+
+<span class="nc" id="L403">    return def;</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key or def null
+   */
+  public static String getAndSet(String key, String def) {
+<span class="fc" id="L421">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="pc bpc" id="L422" title="1 of 2 branches missed.">    if (def == null) {</span>
+<span class="nc" id="L423">      throw new IllegalArgumentException(&quot;Def cannot be null&quot;);</span>
+    }
+<span class="fc bfc" id="L425" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L426">      System.setProperty(key, def);</span>
+<span class="fc" id="L427">      refresh();</span>
+<span class="fc" id="L428">      return def;</span>
+    }
+<span class="fc" id="L430">    return PROPS.getProperty(key);</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static boolean getAndSet(String key, boolean def) {
+<span class="fc" id="L448">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L450">      System.setProperty(key, Boolean.toString(def));</span>
+<span class="fc" id="L451">      refresh();</span>
+<span class="fc" id="L452">      return def;</span>
+    }
+<span class="fc" id="L454">    return get(key, def);</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static int getAndSet(String key, int def) {
+<span class="fc" id="L472">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc bfc" id="L473" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L474">      System.setProperty(key, Integer.toString(def));</span>
+<span class="fc" id="L475">      refresh();</span>
+<span class="fc" id="L476">      return def;</span>
+    }
+<span class="fc" id="L478">    return get(key, def);</span>
+  }
+
+  /**
+   * Returns the value of the Java system property with the specified {@code
+   * key}, while falling back to the specified
+   * default value if the property access fails.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the property value. {@code def} if there's no such property or if
+   *     an access to the specified property is
+   *     not allowed.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static long getAndSet(String key, long def) {
+<span class="fc" id="L496">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc bfc" id="L497" title="All 2 branches covered.">    if (!PROPS.containsKey(key)) {</span>
+<span class="fc" id="L498">      System.setProperty(key, Long.toString(def));</span>
+<span class="fc" id="L499">      refresh();</span>
+<span class="fc" id="L500">      return def;</span>
+    }
+<span class="fc" id="L502">    return get(key, def);</span>
+  }
+
+  /**
+   * Set the value of the Java system property with the specified {@code key}
+   * to the specified default value.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the ancient value.
+   *
+   * @throws IllegalArgumentException key or def null
+   */
+  public static String set(String key, String def) {
+<span class="fc" id="L517">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="pc bpc" id="L518" title="1 of 2 branches missed.">    if (def == null) {</span>
+<span class="nc" id="L519">      throw new IllegalArgumentException(&quot;Def cannot be null&quot;);</span>
+    }
+<span class="fc" id="L521">    String old = null;</span>
+<span class="fc bfc" id="L522" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L523">      old = PROPS.getProperty(key);</span>
+    }
+<span class="fc" id="L525">    System.setProperty(key, def);</span>
+<span class="fc" id="L526">    refresh();</span>
+<span class="fc" id="L527">    return old;</span>
+  }
+
+  /**
+   * Set the value of the Java system property with the specified {@code key}
+   * to the specified default value.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the ancient value.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static boolean set(String key, boolean def) {
+<span class="fc" id="L542">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L543">    boolean old = false;</span>
+<span class="fc bfc" id="L544" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L545">      old = get(key, def);</span>
+    }
+<span class="fc" id="L547">    System.setProperty(key, Boolean.toString(def));</span>
+<span class="fc" id="L548">    refresh();</span>
+<span class="fc" id="L549">    return old;</span>
+  }
+
+  /**
+   * Set the value of the Java system property with the specified {@code key}
+   * to the specified default value.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the ancient value.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static int set(String key, int def) {
+<span class="fc" id="L564">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L565">    int old = 0;</span>
+<span class="fc bfc" id="L566" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L567">      old = get(key, def);</span>
+    }
+<span class="fc" id="L569">    System.setProperty(key, Integer.toString(def));</span>
+<span class="fc" id="L570">    refresh();</span>
+<span class="fc" id="L571">    return old;</span>
+  }
+
+  /**
+   * Set the value of the Java system property with the specified {@code key}
+   * to the specified default value.
+   *
+   * @param key of system property
+   * @param def the default value
+   *
+   * @return the ancient value.
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static long set(String key, long def) {
+<span class="fc" id="L586">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L587">    long old = 0;</span>
+<span class="fc bfc" id="L588" title="All 2 branches covered.">    if (PROPS.containsKey(key)) {</span>
+<span class="fc" id="L589">      old = get(key, def);</span>
+    }
+<span class="fc" id="L591">    System.setProperty(key, Long.toString(def));</span>
+<span class="fc" id="L592">    refresh();</span>
+<span class="fc" id="L593">    return old;</span>
+  }
+
+  /**
+   * Remove the key of the Java system property with the specified {@code
+   * key}.
+   *
+   * @param key of system property
+   *
+   * @throws IllegalArgumentException key null
+   */
+  public static void clear(String key) {
+<span class="fc" id="L605">    ParametersChecker.checkParameter(&quot;Key&quot;, key);</span>
+<span class="fc" id="L606">    PROPS.remove(key);</span>
+<span class="fc" id="L607">    System.clearProperty(key);</span>
+<span class="fc" id="L608">    refresh();</span>
+<span class="fc" id="L609">  }</span>
+
+  /**
+   * Print to System.out the content of the properties
+   *
+   * @param out the output stream to be used
+   *
+   * @throws IllegalArgumentException out null
+   */
+  public static void debug(PrintStream out) {
+<span class="fc" id="L619">    ParametersChecker.checkParameter(&quot;Out&quot;, out);</span>
+<span class="fc" id="L620">    PROPS.list(out);</span>
+<span class="fc" id="L621">  }</span>
+
+  /**
+   * Inspired from http://commons.apache.org/lang/api-2.4/org/apache/commons/lang/
+   * SystemUtils.html
+   */
+<span class="fc" id="L627">  public enum Platform {</span>
+    /**
+     * Windows
+     */
+<span class="fc" id="L631">    WINDOWS,</span>
+    /**
+     * Mac
+     */
+<span class="fc" id="L635">    MAC,</span>
+    /**
+     * Unix
+     */
+<span class="fc" id="L639">    UNIX,</span>
+    /**
+     * Solaris
+     */
+<span class="fc" id="L643">    SOLARIS,</span>
+    /**
+     * Unsupported
+     */
+<span class="fc" id="L647">    UNSUPPORTED</span>
+  }
+
+  /**
+   * @return the Platform
+   */
+  public static Platform getOS() {
+<span class="fc bfc" id="L654" title="All 2 branches covered.">    if (mOs == null) {</span>
+<span class="fc" id="L655">      mOs = Platform.UNSUPPORTED;</span>
+<span class="fc" id="L656">      String os = &quot;&quot;;</span>
+      try {
+<span class="fc" id="L658">        os = System.getProperty(&quot;os.name&quot;).toLowerCase();</span>
+<span class="nc" id="L659">      } catch (final Exception e) {</span>
+        // ignore
+<span class="nc" id="L661">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L662">      }</span>
+<span class="pc bpc" id="L663" title="1 of 2 branches missed.">      if (os.contains(&quot;win&quot;)) {</span>
+<span class="nc" id="L664">        mOs = Platform.WINDOWS;</span>
+        // Windows
+      }
+<span class="pc bpc" id="L667" title="1 of 2 branches missed.">      if (os.contains(&quot;mac&quot;)) {</span>
+<span class="nc" id="L668">        mOs = Platform.MAC;</span>
+        // Mac
+      }
+<span class="pc bpc" id="L671" title="1 of 2 branches missed.">      if (os.contains(&quot;nux&quot;)) {</span>
+<span class="fc" id="L672">        mOs = Platform.UNIX;</span>
+        // Linux
+      }
+<span class="pc bpc" id="L675" title="1 of 2 branches missed.">      if (os.contains(&quot;nix&quot;)) {</span>
+<span class="nc" id="L676">        mOs = Platform.UNIX;</span>
+        // Unix
+      }
+<span class="pc bpc" id="L679" title="1 of 2 branches missed.">      if (os.contains(&quot;sunos&quot;)) {</span>
+<span class="nc" id="L680">        mOs = Platform.SOLARIS;</span>
+        // Solaris
+      }
+    }
+<span class="fc" id="L684">    return mOs;</span>
+  }
+
+  /**
+   * @return True if Windows
+   */
+  public static boolean isWindows() {
+<span class="pc bpc" id="L691" title="1 of 2 branches missed.">    return getOS() == Platform.WINDOWS;</span>
+  }
+
+  /**
+   * @return True if Mac
+   */
+  public static boolean isMac() {
+<span class="pc bpc" id="L698" title="1 of 2 branches missed.">    return getOS() == Platform.MAC;</span>
+  }
+
+  /**
+   * @return True if Unix
+   */
+  public static boolean isUnix() {
+<span class="pc bpc" id="L705" title="1 of 2 branches missed.">    return getOS() == Platform.UNIX;</span>
+  }
+
+  /**
+   * @return True if Solaris
+   */
+  public static boolean isSolaris() {
+<span class="pc bpc" id="L712" title="1 of 2 branches missed.">    return getOS() == Platform.SOLARIS;</span>
+  }
+
+  public static void debug() {
+<span class="nc" id="L716">    PROPS.list(System.out);//NOSONAR</span>
+<span class="nc" id="L717">  }</span>
+
+  private SystemPropertyUtil() {
+    // Unused
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LocalTransaction.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler</a> &gt; <span class="el_source">LocalTransaction.java</span></div><h1>LocalTransaction.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler;
+
+import io.netty.buffer.ByteBuf;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolShutdownException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.StartupPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * This class handles Local Transaction connections
+ */
+public class LocalTransaction {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L57">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L58">      WaarpLoggerFactory.getLogger(LocalTransaction.class);</span>
+
+  /**
+   * HashMap of LocalChannelReference using LocalChannelId
+   */
+<span class="fc" id="L63">  private final ConcurrentHashMap&lt;Integer, LocalChannelReference&gt;</span>
+      localChannelHashMap =
+      new ConcurrentHashMap&lt;Integer, LocalChannelReference&gt;();
+
+  /**
+   * HashMap of LocalChannelReference using requested_requester_specialId
+   */
+<span class="fc" id="L70">  private final ConcurrentHashMap&lt;String, LocalChannelReference&gt;</span>
+      localChannelHashMapIdBased =
+      new ConcurrentHashMap&lt;String, LocalChannelReference&gt;();
+
+  /**
+   * Constructor
+   */
+<span class="fc" id="L77">  public LocalTransaction() {</span>
+    // EMpty
+<span class="fc" id="L79">  }</span>
+
+  public String hashStatus() {
+<span class="nc" id="L82">    return &quot;LocalTransaction: [localChannelHashMap: &quot; +</span>
+<span class="nc" id="L83">           localChannelHashMap.size() + &quot; localChannelHashMapIdBased: &quot; +</span>
+<span class="nc" id="L84">           localChannelHashMapIdBased.size() + &quot;] &quot;;</span>
+  }
+
+  /**
+   * Get the corresponding LocalChannelReference and set the remoteId if
+   * different
+   *
+   * @param remoteId
+   * @param localId
+   *
+   * @return the LocalChannelReference
+   *
+   * @throws OpenR66ProtocolSystemException
+   */
+  public LocalChannelReference getClient(Integer remoteId, Integer localId)
+      throws OpenR66ProtocolSystemException {
+<span class="fc" id="L100">    final LocalChannelReference localChannelReference = getFromId(localId);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">    if (localChannelReference != null) {</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">      if (localChannelReference.getRemoteId().compareTo(remoteId) != 0) {</span>
+<span class="fc" id="L103">        localChannelReference.setRemoteId(remoteId);</span>
+      }
+<span class="fc" id="L105">      logger.trace(&quot;TRACE ID Found LCR {}&quot;, localChannelReference);</span>
+<span class="fc" id="L106">      return localChannelReference;</span>
+    }
+<span class="fc" id="L108">    throw new OpenR66ProtocolSystemException(</span>
+        &quot;Cannot find LocalChannelReference&quot;);
+  }
+
+  /**
+   * Create a new Client
+   *
+   * @param networkChannelReference
+   * @param remoteId might be set to ChannelUtils.NOCHANNEL (real
+   *     creation)
+   * @param futureRequest might be null (from NetworkChannel Startup)
+   *
+   * @return the LocalChannelReference
+   *
+   * @throws OpenR66ProtocolSystemException
+   * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolNoConnectionException
+   */
+  public LocalChannelReference createNewClient(
+      NetworkChannelReference networkChannelReference, Integer remoteId,
+      R66Future futureRequest, boolean fromSsl)
+      throws OpenR66ProtocolSystemException,
+             OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolNoConnectionException {
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    if (WaarpShutdownHook.isShutdownStarting()) {</span>
+      // Do not try since already locally in shutdown
+<span class="nc" id="L134">      throw new OpenR66ProtocolNoConnectionException(</span>
+          &quot;Cannot create client since the server is in shutdown.&quot;);
+    }
+<span class="fc" id="L137">    final LocalChannelReference localChannelReference =</span>
+        new LocalChannelReference(networkChannelReference, remoteId,
+                                  futureRequest);
+<span class="fc" id="L140">    localChannelHashMap</span>
+<span class="fc" id="L141">        .put(localChannelReference.getLocalId(), localChannelReference);</span>
+<span class="fc" id="L142">    logger.debug(&quot;Db connection done and Create LocalChannel entry: {}&quot;,</span>
+                 localChannelReference);
+    // Now simulate sending first a Startup message
+<span class="fc" id="L145">    StartupPacket startup =</span>
+<span class="fc" id="L146">        new StartupPacket(localChannelReference.getLocalId(), fromSsl);</span>
+    try {
+<span class="fc" id="L148">      localChannelReference.getServerHandler().startup(startup);</span>
+<span class="nc" id="L149">    } catch (OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L150">      throw new OpenR66ProtocolNoConnectionException(e);</span>
+<span class="fc" id="L151">    }</span>
+<span class="fc" id="L152">    return localChannelReference;</span>
+  }
+
+  /**
+   * @param id
+   *
+   * @return the LocalChannelReference
+   */
+  public LocalChannelReference getFromId(Integer id) {
+<span class="fc" id="L161">    return localChannelHashMap.get(id);</span>
+  }
+
+  /**
+   * Remove one local channel
+   *
+   * @param localChannelReference
+   */
+  protected void remove(LocalChannelReference localChannelReference) {
+<span class="fc" id="L170">    logger.debug(&quot;DEBUG remove: &quot; + localChannelReference.getLocalId());</span>
+<span class="fc" id="L171">    localChannelHashMap.remove(localChannelReference.getLocalId());</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">    if (localChannelReference.getRequestId() != null) {</span>
+<span class="fc" id="L173">      localChannelHashMapIdBased.remove(localChannelReference.getRequestId());</span>
+    }
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">    if (localChannelReference.getNetworkChannelObject() != null) {</span>
+<span class="fc" id="L176">      localChannelReference.getNetworkChannelObject()</span>
+<span class="fc" id="L177">                           .remove(localChannelReference);</span>
+    }
+<span class="fc" id="L179">  }</span>
+
+  /**
+   * @param runner
+   * @param lcr
+   */
+  public void setFromId(DbTaskRunner runner, LocalChannelReference lcr) {
+<span class="fc" id="L186">    final String key = runner.getKey();</span>
+<span class="fc" id="L187">    lcr.setRequestId(key);</span>
+<span class="fc" id="L188">    localChannelHashMapIdBased.put(key, lcr);</span>
+<span class="fc" id="L189">  }</span>
+
+  /**
+   * @param key as &quot;requested requester specialId&quot;
+   *
+   * @return the LocalChannelReference
+   */
+  public LocalChannelReference getFromRequest(String key) {
+<span class="fc" id="L197">    return localChannelHashMapIdBased.get(key);</span>
+  }
+
+  /**
+   * @param key as &quot;requested requester specialId&quot;
+   *
+   * @return True if the LocalChannelReference exists
+   */
+  public boolean contained(String key) {
+<span class="nc" id="L206">    return localChannelHashMapIdBased.containsKey(key);</span>
+  }
+
+  /**
+   * @param id
+   *
+   * @return True if the LocalChannelReference exists
+   */
+  public boolean contained(int id) {
+<span class="nc" id="L215">    return localChannelHashMap.containsKey(id);</span>
+  }
+
+  /**
+   * @return the number of active local channels
+   */
+  public int getNumberLocalChannel() {
+<span class="fc" id="L222">    return localChannelHashMap.size();</span>
+  }
+
+  /**
+   * Debug function (while shutdown for instance)
+   */
+  public void debugPrintActiveLocalChannels() {
+<span class="fc" id="L229">    final Collection&lt;LocalChannelReference&gt; collection =</span>
+<span class="fc" id="L230">        localChannelHashMap.values();</span>
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    for (final LocalChannelReference localChannelReference : collection) {</span>
+<span class="nc" id="L232">      logger.debug(&quot;Will close local channel: {}&quot;, localChannelReference);</span>
+<span class="nc" id="L233">      logger.debug(&quot; Containing: {}&quot;,</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                   localChannelReference.getSession() != null?</span>
+<span class="nc" id="L235">                       localChannelReference.getSession() : &quot;no session&quot;);</span>
+<span class="nc" id="L236">    }</span>
+<span class="fc" id="L237">  }</span>
+
+  /**
+   * Informs all remote client that the server is shutting down
+   */
+  public void shutdownLocalChannels() {
+<span class="fc" id="L243">    logger.warn(</span>
+<span class="fc" id="L244">        &quot;Will inform LocalChannels of Shutdown: &quot; + localChannelHashMap.size());</span>
+<span class="fc" id="L245">    final Collection&lt;LocalChannelReference&gt; collection =</span>
+<span class="fc" id="L246">        localChannelHashMap.values();</span>
+<span class="fc" id="L247">    final Iterator&lt;LocalChannelReference&gt; iterator = collection.iterator();</span>
+<span class="fc" id="L248">    final ValidPacket packet = new ValidPacket(&quot;Shutdown forced&quot;, null,</span>
+                                               LocalPacketFactory.SHUTDOWNPACKET);
+<span class="fc" id="L250">    ByteBuf buffer = null;</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">    while (iterator.hasNext()) {</span>
+<span class="fc" id="L252">      final LocalChannelReference localChannelReference = iterator.next();</span>
+<span class="fc" id="L253">      logger.info(&quot;Inform Shutdown {}&quot;, localChannelReference);</span>
+<span class="fc" id="L254">      packet.setSmiddle(null);</span>
+<span class="fc" id="L255">      packet.retain();</span>
+      // If a transfer is running, save the current rank and inform remote
+      // host
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">      if (localChannelReference.getSession() != null) {</span>
+<span class="fc" id="L259">        final R66Session session = localChannelReference.getSession();</span>
+<span class="fc" id="L260">        final DbTaskRunner runner = session.getRunner();</span>
+<span class="pc bpc" id="L261" title="3 of 4 branches missed.">        if (runner != null &amp;&amp; runner.isInTransfer()) {</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">          if (!runner.isSender()) {</span>
+<span class="nc" id="L263">            final int newrank = runner.getRank();</span>
+<span class="nc" id="L264">            packet.setSmiddle(Integer.toString(newrank));</span>
+          }
+          // Save File status
+          try {
+<span class="nc" id="L268">            runner.saveStatus();</span>
+<span class="nc" id="L269">          } catch (final OpenR66RunnerErrorException ignored) {</span>
+            // nothing
+<span class="nc" id="L271">          }</span>
+        }
+<span class="pc bpc" id="L273" title="3 of 4 branches missed.">        if (runner != null &amp;&amp; !runner.isFinished()) {</span>
+<span class="nc" id="L274">          final R66Result result =</span>
+              new R66Result(new OpenR66ProtocolShutdownException(), session,
+                            true, ErrorCode.Shutdown, runner);
+<span class="nc" id="L277">          result.setOther(packet);</span>
+          try {
+<span class="nc" id="L279">            buffer = packet.getLocalPacket(localChannelReference);</span>
+<span class="nc" id="L280">          } catch (final OpenR66ProtocolPacketException ignored) {</span>
+            // ignore
+<span class="nc" id="L282">          }</span>
+<span class="nc" id="L283">          localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);</span>
+<span class="nc" id="L284">          final NetworkPacket message =</span>
+<span class="nc" id="L285">              new NetworkPacket(localChannelReference.getLocalId(),</span>
+<span class="nc" id="L286">                                localChannelReference.getRemoteId(),</span>
+<span class="nc" id="L287">                                packet.getType(), buffer);</span>
+          try {
+<span class="nc" id="L289">            localChannelReference.getNetworkChannel().writeAndFlush(message)</span>
+<span class="nc" id="L290">                                 .await(Configuration.WAITFORNETOP);</span>
+<span class="nc" id="L291">          } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L292">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L293">          }</span>
+          try {
+<span class="nc" id="L295">            session.setFinalizeTransfer(false, result);</span>
+<span class="nc" id="L296">          } catch (final OpenR66RunnerErrorException ignored) {</span>
+            // ignore
+<span class="nc" id="L298">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
+            // ignore
+<span class="nc" id="L300">          }</span>
+        }
+<span class="fc" id="L302">        localChannelReference.close();</span>
+<span class="fc" id="L303">        continue;</span>
+      }
+      try {
+<span class="nc" id="L306">        buffer = packet.getLocalPacket(localChannelReference);</span>
+<span class="nc" id="L307">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L309">      }</span>
+<span class="nc" id="L310">      final NetworkPacket message =</span>
+<span class="nc" id="L311">          new NetworkPacket(localChannelReference.getLocalId(),</span>
+<span class="nc" id="L312">                            localChannelReference.getRemoteId(),</span>
+<span class="nc" id="L313">                            packet.getType(), buffer);</span>
+<span class="nc" id="L314">      localChannelReference.getNetworkChannel().writeAndFlush(message);</span>
+<span class="nc" id="L315">      localChannelReference.close();</span>
+<span class="nc" id="L316">    }</span>
+<span class="fc" id="L317">  }</span>
+
+  /**
+   * Close All Local Channels
+   */
+  public void closeAll() {
+<span class="fc" id="L323">    logger.debug(&quot;close All Local Channels&quot;);</span>
+<span class="fc" id="L324">    Collection&lt;LocalChannelReference&gt; collection = localChannelHashMap.values();</span>
+<span class="pc bpc" id="L325" title="1 of 2 branches missed.">    for (final LocalChannelReference localChannelReference : collection) {</span>
+<span class="nc" id="L326">      logger.info(&quot;Inform Shutdown {}&quot;, localChannelReference);</span>
+<span class="nc" id="L327">      localChannelReference.close();</span>
+<span class="nc" id="L328">    }</span>
+<span class="fc" id="L329">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

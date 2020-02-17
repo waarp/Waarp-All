@@ -1,0 +1,725 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractDbData.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.data</a> &gt; <span class="el_source">AbstractDbData.java</span></div><h1>AbstractDbData.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.data;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+
+/**
+ * Abstract database table implementation without explicit COMMIT.&lt;br&gt;
+ * &lt;br&gt;
+ * &lt;p&gt;
+ * If the connection is in autocommit, this is the right abstract to
+ * extend.&lt;br&gt;
+ * If the connection is not in autocommit, one could use this implementation to
+ * explicitly commit when needed.
+ */
+public abstract class AbstractDbData {
+  private static final String NO_ROW_FOUND = &quot;No row found&quot;;
+  public static final String JSON_MODEL = &quot;@model&quot;;
+
+  /**
+   * UpdatedInfo status
+   */
+<span class="nc" id="L58">  public enum UpdatedInfo {</span>
+    /**
+     * Unknown run status
+     */
+<span class="nc" id="L62">    UNKNOWN,</span>
+    /**
+     * Not updated run status
+     */
+<span class="nc" id="L66">    NOTUPDATED,</span>
+    /**
+     * Interrupted status (stop or cancel)
+     */
+<span class="nc" id="L70">    INTERRUPTED,</span>
+    /**
+     * Updated run status meaning ready to be submitted
+     */
+<span class="nc" id="L74">    TOSUBMIT,</span>
+    /**
+     * In error run status
+     */
+<span class="nc" id="L78">    INERROR,</span>
+    /**
+     * Running status
+     */
+<span class="nc" id="L82">    RUNNING,</span>
+    /**
+     * All done run status
+     */
+<span class="nc" id="L86">    DONE</span>
+  }
+
+  /**
+   * To be implemented
+   */
+  // public static String table
+  // public static final int NBPRKEY
+  // protected static String selectAllFields
+  // protected static String updateAllFields
+  // protected static String insertAllValues
+  protected DbValue[] primaryKey;
+  protected DbValue[] otherFields;
+  protected DbValue[] allFields;
+
+  protected boolean isSaved;
+  /**
+   * The DbSession to use
+   */
+  protected final DbSession dbSession;
+
+  /**
+   * Abstract constructor to set the DbSession to use
+   *
+   * @param dbSession
+   *
+   * Deprecated for Waarp R66
+   */
+<span class="nc" id="L114">  protected AbstractDbData(DbSession dbSession) {</span>
+<span class="nc" id="L115">    this.dbSession = dbSession;</span>
+<span class="nc" id="L116">    initObject();</span>
+<span class="nc" id="L117">  }</span>
+
+  /**
+   * Abstract constructor to set the DbSession to use
+   */
+<span class="nc" id="L122">  protected AbstractDbData() {</span>
+<span class="nc" id="L123">    dbSession = null;</span>
+<span class="nc" id="L124">    initObject();</span>
+<span class="nc" id="L125">  }</span>
+
+  /**
+   * To setup primaryKey, otherFields, allFields. Note this initObject is
+   * called
+   * within constructor of
+   * AbstractDbData. Be careful that no data is actually initialized at this
+   * stage.
+   */
+  protected abstract void initObject();
+
+  /**
+   * @return The Where condition on Primary Key
+   */
+  protected abstract String getWherePrimaryKey();
+
+  /**
+   * Set the primary Key as current value
+   */
+  protected abstract void setPrimaryKey();
+
+  protected abstract String getSelectAllFields();
+
+  protected abstract String getTable();
+
+  protected abstract String getInsertAllValues();
+
+  protected abstract String getUpdateAllFields();
+
+  /**
+   * Test the existence of the current object
+   *
+   * @return True if the object exists
+   *
+   * @throws WaarpDatabaseException
+   */
+  public boolean exist() throws WaarpDatabaseException {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L163">      return false;</span>
+    }
+<span class="nc" id="L165">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L168">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L169">          &quot;SELECT &quot; + primaryKey[0].getColumn() + &quot; FROM &quot; + getTable() +</span>
+<span class="nc" id="L170">          &quot; WHERE &quot; + getWherePrimaryKey());</span>
+<span class="nc" id="L171">      setPrimaryKey();</span>
+<span class="nc" id="L172">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L173">      preparedStatement.executeQuery();</span>
+<span class="nc" id="L174">      return preparedStatement.getNext();</span>
+    } finally {
+<span class="nc" id="L176">      preparedStatement.realClose();</span>
+    }
+  }
+
+  /**
+   * Select object from table
+   *
+   * @throws WaarpDatabaseException
+   */
+  public void select() throws WaarpDatabaseException {
+<span class="nc bnc" id="L186" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L187">      throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+    }
+<span class="nc" id="L189">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L192">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L193">          &quot;SELECT &quot; + getSelectAllFields() + &quot; FROM &quot; + getTable() + &quot; WHERE &quot; +</span>
+<span class="nc" id="L194">          getWherePrimaryKey());</span>
+<span class="nc" id="L195">      setPrimaryKey();</span>
+<span class="nc" id="L196">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L197">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+<span class="nc" id="L199">        getValues(preparedStatement, allFields);</span>
+<span class="nc" id="L200">        isSaved = true;</span>
+      } else {
+<span class="nc" id="L202">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+    } finally {
+<span class="nc" id="L205">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L207">  }</span>
+
+  /**
+   * Insert object into table
+   *
+   * @throws WaarpDatabaseException
+   */
+  public void insert() throws WaarpDatabaseException {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L216">      return;</span>
+    }
+<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L219">      isSaved = true;</span>
+<span class="nc" id="L220">      return;</span>
+    }
+<span class="nc" id="L222">    setToArray();</span>
+<span class="nc" id="L223">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L226">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L227">          &quot;INSERT INTO &quot; + getTable() + &quot; (&quot; + getSelectAllFields() +</span>
+<span class="nc" id="L228">          &quot;) VALUES &quot; + getInsertAllValues());</span>
+<span class="nc" id="L229">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L230">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L232">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L234">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L236">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L238">  }</span>
+
+  /**
+   * Update object to table
+   *
+   * @throws WaarpDatabaseException
+   */
+  public void update() throws WaarpDatabaseException {
+<span class="nc bnc" id="L246" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L247">      return;</span>
+    }
+<span class="nc bnc" id="L249" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L250">      isSaved = true;</span>
+<span class="nc" id="L251">      return;</span>
+    }
+<span class="nc" id="L253">    setToArray();</span>
+<span class="nc" id="L254">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L257">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L258">          &quot;UPDATE &quot; + getTable() + &quot; SET &quot; + getUpdateAllFields() + &quot; WHERE &quot; +</span>
+<span class="nc" id="L259">          getWherePrimaryKey());</span>
+<span class="nc" id="L260">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L261">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L263">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L265">      isSaved = true;</span>
+    } finally {
+<span class="nc" id="L267">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L269">  }</span>
+
+  public DbValue[] getAllFields() {
+<span class="nc" id="L272">    return allFields;</span>
+  }
+
+  /**
+   * Delete object from table
+   *
+   * @throws WaarpDatabaseException
+   */
+  public void delete() throws WaarpDatabaseException {
+<span class="nc bnc" id="L281" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L282">      return;</span>
+    }
+<span class="nc" id="L284">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L287">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L288">          &quot;DELETE FROM &quot; + getTable() + &quot; WHERE &quot; + getWherePrimaryKey());</span>
+<span class="nc" id="L289">      setPrimaryKey();</span>
+<span class="nc" id="L290">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L291">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L293">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+      }
+<span class="nc" id="L295">      isSaved = false;</span>
+    } finally {
+<span class="nc" id="L297">      preparedStatement.realClose();</span>
+    }
+<span class="nc" id="L299">  }</span>
+
+  /**
+   * Change UpdatedInfo status
+   *
+   * @param info
+   */
+  public abstract void changeUpdatedInfo(UpdatedInfo info);
+
+  /**
+   * Internal function to set to Array used to push data to database
+   */
+  protected abstract void setToArray();
+
+  /**
+   * Internal function to retrieve data from Array to pull data from database
+   *
+   * @throws WaarpDatabaseSqlException
+   */
+  protected abstract void setFromArray() throws WaarpDatabaseSqlException;
+
+  /**
+   * Set Value into PreparedStatement
+   *
+   * @param ps
+   * @param value
+   * @param rank &gt;= 1
+   *
+   * @throws WaarpDatabaseSqlException
+   */
+  public static void setTrueValue(PreparedStatement ps, DbValue value, int rank)
+      throws WaarpDatabaseSqlException {
+    try {
+<span class="nc bnc" id="L332" title="All 15 branches missed.">      switch (value.type) {</span>
+        case Types.VARCHAR:
+<span class="nc bnc" id="L334" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L335">            ps.setNull(rank, Types.VARCHAR);</span>
+<span class="nc" id="L336">            break;</span>
+          }
+<span class="nc" id="L338">          ps.setString(rank, (String) value.getValue());</span>
+<span class="nc" id="L339">          break;</span>
+        case Types.LONGVARCHAR:
+<span class="nc bnc" id="L341" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L342">            ps.setNull(rank, Types.LONGVARCHAR);</span>
+<span class="nc" id="L343">            break;</span>
+          }
+<span class="nc" id="L345">          ps.setString(rank, (String) value.getValue());</span>
+<span class="nc" id="L346">          break;</span>
+        case Types.BIT:
+<span class="nc bnc" id="L348" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L349">            ps.setNull(rank, Types.BIT);</span>
+<span class="nc" id="L350">            break;</span>
+          }
+<span class="nc" id="L352">          ps.setBoolean(rank, (Boolean) value.getValue());</span>
+<span class="nc" id="L353">          break;</span>
+        case Types.TINYINT:
+<span class="nc bnc" id="L355" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L356">            ps.setNull(rank, Types.TINYINT);</span>
+<span class="nc" id="L357">            break;</span>
+          }
+<span class="nc" id="L359">          ps.setByte(rank, (Byte) value.getValue());</span>
+<span class="nc" id="L360">          break;</span>
+        case Types.SMALLINT:
+<span class="nc bnc" id="L362" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L363">            ps.setNull(rank, Types.SMALLINT);</span>
+<span class="nc" id="L364">            break;</span>
+          }
+<span class="nc" id="L366">          ps.setShort(rank, (Short) value.getValue());</span>
+<span class="nc" id="L367">          break;</span>
+        case Types.INTEGER:
+<span class="nc bnc" id="L369" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L370">            ps.setNull(rank, Types.INTEGER);</span>
+<span class="nc" id="L371">            break;</span>
+          }
+<span class="nc" id="L373">          ps.setInt(rank, (Integer) value.getValue());</span>
+<span class="nc" id="L374">          break;</span>
+        case Types.BIGINT:
+<span class="nc bnc" id="L376" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L377">            ps.setNull(rank, Types.BIGINT);</span>
+<span class="nc" id="L378">            break;</span>
+          }
+<span class="nc" id="L380">          ps.setLong(rank, (Long) value.getValue());</span>
+<span class="nc" id="L381">          break;</span>
+        case Types.REAL:
+<span class="nc bnc" id="L383" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L384">            ps.setNull(rank, Types.REAL);</span>
+<span class="nc" id="L385">            break;</span>
+          }
+<span class="nc" id="L387">          ps.setFloat(rank, (Float) value.getValue());</span>
+<span class="nc" id="L388">          break;</span>
+        case Types.DOUBLE:
+<span class="nc bnc" id="L390" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L391">            ps.setNull(rank, Types.DOUBLE);</span>
+<span class="nc" id="L392">            break;</span>
+          }
+<span class="nc" id="L394">          ps.setDouble(rank, (Double) value.getValue());</span>
+<span class="nc" id="L395">          break;</span>
+        case Types.VARBINARY:
+<span class="nc bnc" id="L397" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L398">            ps.setNull(rank, Types.VARBINARY);</span>
+<span class="nc" id="L399">            break;</span>
+          }
+<span class="nc" id="L401">          ps.setBytes(rank, (byte[]) value.getValue());</span>
+<span class="nc" id="L402">          break;</span>
+        case Types.DATE:
+<span class="nc bnc" id="L404" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L405">            ps.setNull(rank, Types.DATE);</span>
+<span class="nc" id="L406">            break;</span>
+          }
+<span class="nc" id="L408">          ps.setDate(rank, (Date) value.getValue());</span>
+<span class="nc" id="L409">          break;</span>
+        case Types.TIMESTAMP:
+<span class="nc bnc" id="L411" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L412">            ps.setNull(rank, Types.TIMESTAMP);</span>
+<span class="nc" id="L413">            break;</span>
+          }
+<span class="nc" id="L415">          ps.setTimestamp(rank, (Timestamp) value.getValue());</span>
+<span class="nc" id="L416">          break;</span>
+        case Types.CLOB:
+<span class="nc bnc" id="L418" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L419">            ps.setNull(rank, Types.CLOB);</span>
+<span class="nc" id="L420">            break;</span>
+          }
+<span class="nc" id="L422">          ps.setClob(rank, (Reader) value.getValue());</span>
+<span class="nc" id="L423">          break;</span>
+        case Types.BLOB:
+<span class="nc bnc" id="L425" title="All 2 branches missed.">          if (value.getValue() == null) {</span>
+<span class="nc" id="L426">            ps.setNull(rank, Types.BLOB);</span>
+<span class="nc" id="L427">            break;</span>
+          }
+<span class="nc" id="L429">          ps.setBlob(rank, (InputStream) value.getValue());</span>
+<span class="nc" id="L430">          break;</span>
+        default:
+<span class="nc" id="L432">          throw new WaarpDatabaseSqlException(</span>
+              &quot;Type not supported: &quot; + value.type + &quot; at &quot; + rank);
+      }
+<span class="nc" id="L435">    } catch (final ClassCastException e) {</span>
+<span class="nc" id="L436">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Setting values casting error: &quot; + value.type + &quot; at &quot; + rank, e);
+<span class="nc" id="L438">    } catch (final SQLException e) {</span>
+<span class="nc" id="L439">      DbSession.error(e);</span>
+<span class="nc" id="L440">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Setting values in error: &quot; + value.type + &quot; at &quot; + rank, e);
+<span class="nc" id="L442">    }</span>
+<span class="nc" id="L443">  }</span>
+
+  /**
+   * Set one value to a DbPreparedStatement
+   *
+   * @param preparedStatement
+   * @param value
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  protected void setValue(DbPreparedStatement preparedStatement, DbValue value)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L456">    final PreparedStatement ps = preparedStatement.getPreparedStatement();</span>
+<span class="nc" id="L457">    setTrueValue(ps, value, 1);</span>
+<span class="nc" id="L458">  }</span>
+
+  /**
+   * Set several values to a DbPreparedStatement
+   *
+   * @param preparedStatement
+   * @param values
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  protected void setValues(DbPreparedStatement preparedStatement,
+                           DbValue[] values)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L472">    final PreparedStatement ps = preparedStatement.getPreparedStatement();</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">    for (int i = 0; i &lt; values.length; i++) {</span>
+<span class="nc" id="L474">      final DbValue value = values[i];</span>
+<span class="nc" id="L475">      setTrueValue(ps, value, i + 1);</span>
+    }
+<span class="nc" id="L477">  }</span>
+
+  /**
+   * Get one value into DbValue from ResultSet
+   *
+   * @param rs
+   * @param value
+   *
+   * @throws WaarpDatabaseSqlException
+   */
+  public static void getTrueValue(ResultSet rs, DbValue value)
+      throws WaarpDatabaseSqlException {
+    try {
+<span class="nc bnc" id="L490" title="All 14 branches missed.">      switch (value.type) {</span>
+        case Types.VARCHAR:
+        case Types.LONGVARCHAR:
+<span class="nc" id="L493">          value.setValue(rs.getString(value.getColumn()));</span>
+<span class="nc" id="L494">          break;</span>
+        case Types.BIT:
+<span class="nc" id="L496">          value.setValue(rs.getBoolean(value.getColumn()));</span>
+<span class="nc" id="L497">          break;</span>
+        case Types.TINYINT:
+<span class="nc" id="L499">          value.setValue(rs.getByte(value.getColumn()));</span>
+<span class="nc" id="L500">          break;</span>
+        case Types.SMALLINT:
+<span class="nc" id="L502">          value.setValue(rs.getShort(value.getColumn()));</span>
+<span class="nc" id="L503">          break;</span>
+        case Types.INTEGER:
+<span class="nc" id="L505">          value.setValue(rs.getInt(value.getColumn()));</span>
+<span class="nc" id="L506">          break;</span>
+        case Types.BIGINT:
+<span class="nc" id="L508">          value.setValue(rs.getLong(value.getColumn()));</span>
+<span class="nc" id="L509">          break;</span>
+        case Types.REAL:
+<span class="nc" id="L511">          value.setValue(rs.getFloat(value.getColumn()));</span>
+<span class="nc" id="L512">          break;</span>
+        case Types.DOUBLE:
+<span class="nc" id="L514">          value.setValue(rs.getDouble(value.getColumn()));</span>
+<span class="nc" id="L515">          break;</span>
+        case Types.VARBINARY:
+<span class="nc" id="L517">          value.setValue(rs.getBytes(value.getColumn()));</span>
+<span class="nc" id="L518">          break;</span>
+        case Types.DATE:
+<span class="nc" id="L520">          value.setValue(rs.getDate(value.getColumn()));</span>
+<span class="nc" id="L521">          break;</span>
+        case Types.TIMESTAMP:
+<span class="nc" id="L523">          value.setValue(rs.getTimestamp(value.getColumn()));</span>
+<span class="nc" id="L524">          break;</span>
+        case Types.CLOB:
+<span class="nc" id="L526">          value.setValue(rs.getClob(value.getColumn()).getCharacterStream());</span>
+<span class="nc" id="L527">          break;</span>
+        case Types.BLOB:
+<span class="nc" id="L529">          value.setValue(rs.getBlob(value.getColumn()).getBinaryStream());</span>
+<span class="nc" id="L530">          break;</span>
+        default:
+<span class="nc" id="L532">          throw new WaarpDatabaseSqlException(</span>
+              &quot;Type not supported: &quot; + value.type + &quot; for &quot; +
+<span class="nc" id="L534">              value.getColumn());</span>
+      }
+<span class="nc" id="L536">    } catch (final SQLException e) {</span>
+<span class="nc" id="L537">      DbSession.error(e);</span>
+<span class="nc" id="L538">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Getting values in error: &quot; + value.type + &quot; for &quot; +
+<span class="nc" id="L540">          value.getColumn(), e);</span>
+<span class="nc" id="L541">    }</span>
+<span class="nc" id="L542">  }</span>
+
+  /**
+   * Get one value into DbValue from DbPreparedStatement
+   *
+   * @param preparedStatement
+   * @param value
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  protected void getValue(DbPreparedStatement preparedStatement, DbValue value)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L555">    final ResultSet rs = preparedStatement.getResultSet();</span>
+<span class="nc" id="L556">    getTrueValue(rs, value);</span>
+<span class="nc" id="L557">  }</span>
+
+  /**
+   * Get several values into DbValue from DbPreparedStatement
+   *
+   * @param preparedStatement
+   * @param values
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  protected void getValues(DbPreparedStatement preparedStatement,
+                           DbValue[] values)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L571">    final ResultSet rs = preparedStatement.getResultSet();</span>
+<span class="nc bnc" id="L572" title="All 2 branches missed.">    for (final DbValue value : values) {</span>
+<span class="nc" id="L573">      getTrueValue(rs, value);</span>
+    }
+<span class="nc" id="L575">    setFromArray();</span>
+<span class="nc" id="L576">  }</span>
+
+  /**
+   * Get Values from PreparedStatement
+   *
+   * @param preparedStatement
+   *
+   * @return True if OK, else False
+   */
+  public boolean get(DbPreparedStatement preparedStatement) {
+    try {
+<span class="nc" id="L587">      getValues(preparedStatement, allFields);</span>
+<span class="nc" id="L588">    } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+<span class="nc" id="L589">      return false;</span>
+<span class="nc" id="L590">    } catch (final WaarpDatabaseSqlException e1) {</span>
+<span class="nc" id="L591">      return false;</span>
+<span class="nc" id="L592">    }</span>
+<span class="nc" id="L593">    isSaved = true;</span>
+<span class="nc" id="L594">    return true;</span>
+  }
+
+  /**
+   * @return the runner as Json
+   */
+  public String asJson() {
+<span class="nc" id="L601">    final ObjectNode node = getJson();</span>
+<span class="nc" id="L602">    return JsonHandler.writeAsString(node);</span>
+  }
+
+  /**
+   * Create the equivalent object in Json (no database access)
+   *
+   * @return The ObjectNode Json equivalent
+   */
+  public ObjectNode getJson() {
+<span class="nc" id="L611">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L612">    node.put(JSON_MODEL, getClass().getSimpleName());</span>
+<span class="nc bnc" id="L613" title="All 2 branches missed.">    for (final DbValue value : allFields) {</span>
+<span class="nc bnc" id="L614" title="All 12 branches missed.">      switch (value.type) {</span>
+        case Types.VARCHAR:
+        case Types.LONGVARCHAR:
+<span class="nc" id="L617">          node.put(value.getColumn(), (String) value.getValue());</span>
+<span class="nc" id="L618">          break;</span>
+        case Types.BIT:
+<span class="nc" id="L620">          node.put(value.getColumn(), (Boolean) value.getValue());</span>
+<span class="nc" id="L621">          break;</span>
+        case Types.TINYINT:
+<span class="nc" id="L623">          node.put(value.getColumn(), (Byte) value.getValue());</span>
+<span class="nc" id="L624">          break;</span>
+        case Types.SMALLINT:
+<span class="nc" id="L626">          node.put(value.getColumn(), (Short) value.getValue());</span>
+<span class="nc" id="L627">          break;</span>
+        case Types.INTEGER:
+<span class="nc" id="L629">          node.put(value.getColumn(), (Integer) value.getValue());</span>
+<span class="nc" id="L630">          break;</span>
+        case Types.BIGINT:
+<span class="nc" id="L632">          node.put(value.getColumn(), (Long) value.getValue());</span>
+<span class="nc" id="L633">          break;</span>
+        case Types.REAL:
+<span class="nc" id="L635">          node.put(value.getColumn(), (Float) value.getValue());</span>
+<span class="nc" id="L636">          break;</span>
+        case Types.DOUBLE:
+<span class="nc" id="L638">          node.put(value.getColumn(), (Double) value.getValue());</span>
+<span class="nc" id="L639">          break;</span>
+        case Types.VARBINARY:
+<span class="nc" id="L641">          node.put(value.getColumn(), (byte[]) value.getValue());</span>
+<span class="nc" id="L642">          break;</span>
+        case Types.DATE:
+<span class="nc" id="L644">          node.put(value.getColumn(), ((Date) value.getValue()).getTime());</span>
+<span class="nc" id="L645">          break;</span>
+        case Types.TIMESTAMP:
+<span class="nc" id="L647">          node.put(value.getColumn(), ((Timestamp) value.getValue()).getTime());</span>
+<span class="nc" id="L648">          break;</span>
+        case Types.CLOB:
+        case Types.BLOB:
+        default:
+<span class="nc" id="L652">          node.put(value.getColumn(), &quot;Unsupported type=&quot; + value.type);</span>
+      }
+    }
+<span class="nc" id="L655">    return node;</span>
+  }
+
+  /**
+   * Set the values from the Json node to the current object (no database
+   * access)
+   *
+   * @param node
+   * @param ignorePrimaryKey True will ignore primaryKey from Json
+   *
+   * @throws WaarpDatabaseSqlException
+   */
+  public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
+      throws WaarpDatabaseSqlException {
+<span class="nc" id="L669">    DbValue[] list = allFields;</span>
+<span class="nc bnc" id="L670" title="All 2 branches missed.">    if (ignorePrimaryKey) {</span>
+<span class="nc" id="L671">      list = otherFields;</span>
+    }
+<span class="nc bnc" id="L673" title="All 2 branches missed.">    for (final DbValue value : list) {</span>
+<span class="nc bnc" id="L674" title="All 2 branches missed.">      if (&quot;UPDATEDINFO&quot;.equalsIgnoreCase(value.getColumn())) {</span>
+<span class="nc" id="L675">        continue;</span>
+      }
+<span class="nc" id="L677">      final JsonNode item = node.get(value.getColumn());</span>
+<span class="nc bnc" id="L678" title="All 6 branches missed.">      if (item != null &amp;&amp; !item.isMissingNode() &amp;&amp; !item.isNull()) {</span>
+<span class="nc" id="L679">        isSaved = false;</span>
+<span class="nc bnc" id="L680" title="All 9 branches missed.">        switch (value.type) {</span>
+          case Types.VARCHAR:
+          case Types.LONGVARCHAR:
+<span class="nc" id="L683">            value.setValue(item.asText());</span>
+<span class="nc" id="L684">            break;</span>
+          case Types.BIT:
+<span class="nc" id="L686">            value.setValue(item.asBoolean());</span>
+<span class="nc" id="L687">            break;</span>
+          case Types.TINYINT:
+          case Types.SMALLINT:
+          case Types.INTEGER:
+<span class="nc" id="L691">            value.setValue(item.asInt());</span>
+<span class="nc" id="L692">            break;</span>
+          case Types.BIGINT:
+<span class="nc" id="L694">            value.setValue(item.asLong());</span>
+<span class="nc" id="L695">            break;</span>
+          case Types.REAL:
+          case Types.DOUBLE:
+<span class="nc" id="L698">            value.setValue(item.asDouble());</span>
+<span class="nc" id="L699">            break;</span>
+          case Types.VARBINARY:
+            try {
+<span class="nc" id="L702">              value.setValue(item.binaryValue());</span>
+<span class="nc" id="L703">            } catch (final IOException e) {</span>
+<span class="nc" id="L704">              throw new WaarpDatabaseSqlException(</span>
+                  &quot;Issue while assigning array of bytes&quot;, e);
+<span class="nc" id="L706">            }</span>
+            break;
+          case Types.DATE:
+<span class="nc" id="L709">            value.setValue(new Date(item.asLong()));</span>
+<span class="nc" id="L710">            break;</span>
+          case Types.TIMESTAMP:
+<span class="nc" id="L712">            value.setValue(new Timestamp(item.asLong()));</span>
+<span class="nc" id="L713">            break;</span>
+          case Types.CLOB:
+          case Types.BLOB:
+          default:
+<span class="nc" id="L717">            throw new WaarpDatabaseSqlException(</span>
+                &quot;Unsupported type: &quot; + value.type);
+        }
+      }
+    }
+<span class="nc" id="L722">    setFromArray();</span>
+<span class="nc" id="L723">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

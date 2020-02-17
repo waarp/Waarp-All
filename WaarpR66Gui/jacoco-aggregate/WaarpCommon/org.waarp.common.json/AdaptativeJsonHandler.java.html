@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AdaptativeJsonHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.json</a> &gt; <span class="el_source">AdaptativeJsonHandler.java</span></div><h1>AdaptativeJsonHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.json;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.format.DataFormatDetector;
+import com.fasterxml.jackson.core.format.DataFormatMatcher;
+import com.fasterxml.jackson.core.format.MatchStrength;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import org.waarp.common.logging.SysErrLogger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * JSON handler using adaptative format (Smile or Json - in that order -)
+ */
+public class AdaptativeJsonHandler {
+
+<span class="fc" id="L52">  public enum JsonCodec {</span>
+<span class="fc" id="L53">    SMILE(new SmileFactory()), JSON(new JsonFactory());</span>
+
+    public final JsonFactory factory;
+    public final ObjectMapper mapper;
+
+<span class="fc" id="L58">    JsonCodec(JsonFactory factory) {</span>
+<span class="fc" id="L59">      this.factory = factory;</span>
+<span class="fc" id="L60">      mapper = new ObjectMapper(factory);</span>
+<span class="fc" id="L61">      mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);</span>
+<span class="fc" id="L62">      mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);</span>
+<span class="fc" id="L63">      mapper</span>
+<span class="fc" id="L64">          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);</span>
+<span class="fc" id="L65">      mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);</span>
+<span class="fc" id="L66">    }</span>
+
+    private static List&lt;JsonFactory&gt; getFactories() {
+<span class="fc" id="L69">      final List&lt;JsonFactory&gt; factories = new ArrayList&lt;JsonFactory&gt;();</span>
+<span class="fc" id="L70">      final JsonCodec[] codecs = JsonCodec.values();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">      for (final JsonCodec jsonCodec : codecs) {</span>
+<span class="fc" id="L72">        factories.add(jsonCodec.factory);</span>
+      }
+<span class="fc" id="L74">      return factories;</span>
+    }
+
+    private static HashMap&lt;String, JsonCodec&gt; getHashMap() {
+<span class="fc" id="L78">      final HashMap&lt;String, JsonCodec&gt; hashmap =</span>
+          new HashMap&lt;String, JsonCodec&gt;();
+<span class="fc" id="L80">      final JsonCodec[] codecs = JsonCodec.values();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">      for (final JsonCodec jsonCodec : codecs) {</span>
+<span class="fc" id="L82">        hashmap.put(jsonCodec.factory.getFormatName(), jsonCodec);</span>
+      }
+<span class="fc" id="L84">      return hashmap;</span>
+    }
+  }
+
+  /**
+   * Data Format Detector
+   */
+<span class="fc" id="L91">  private static final DataFormatDetector detector =</span>
+<span class="fc" id="L92">      new DataFormatDetector(JsonCodec.getFactories())</span>
+<span class="fc" id="L93">          .withMinimalMatch(MatchStrength.WEAK_MATCH)</span>
+<span class="fc" id="L94">          .withOptimalMatch(MatchStrength.SOLID_MATCH);</span>
+  /**
+   * HashMap getting Codec from Factory name
+   */
+<span class="fc" id="L98">  private static final HashMap&lt;String, JsonCodec&gt; factoryForName =</span>
+<span class="fc" id="L99">      JsonCodec.getHashMap();</span>
+
+  ObjectMapper mapper;
+  private JsonCodec codec;
+
+<span class="fc" id="L104">  public AdaptativeJsonHandler(JsonCodec codec) {</span>
+<span class="fc" id="L105">    this.codec = codec;</span>
+<span class="fc" id="L106">    mapper = codec.mapper;</span>
+<span class="fc" id="L107">  }</span>
+
+<span class="nc" id="L109">  public AdaptativeJsonHandler(byte[] source) throws IOException {</span>
+<span class="nc" id="L110">    final DataFormatMatcher match = detector.findFormat(source);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (match == null) {</span>
+<span class="nc" id="L112">      codec = JsonCodec.JSON;</span>
+<span class="nc" id="L113">      mapper = JsonCodec.JSON.mapper; // default</span>
+    } else {
+<span class="nc" id="L115">      final JsonCodec codec2 = factoryForName.get(match.getMatchedFormatName());</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      if (codec2 != null) {</span>
+<span class="nc" id="L117">        this.codec = codec2;</span>
+<span class="nc" id="L118">        mapper = codec2.mapper;</span>
+      } else {
+<span class="nc" id="L120">        this.codec = JsonCodec.JSON;</span>
+<span class="nc" id="L121">        mapper = JsonCodec.JSON.mapper; // default</span>
+      }
+    }
+<span class="nc" id="L124">  }</span>
+
+<span class="nc" id="L126">  public AdaptativeJsonHandler(InputStream source) throws IOException {</span>
+<span class="nc" id="L127">    final DataFormatMatcher match = detector.findFormat(source);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (match == null) {</span>
+<span class="nc" id="L129">      codec = JsonCodec.JSON;</span>
+<span class="nc" id="L130">      mapper = JsonCodec.JSON.mapper; // default</span>
+    } else {
+<span class="nc" id="L132">      final JsonCodec codec2 = factoryForName.get(match.getMatchedFormatName());</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (codec != null) {</span>
+<span class="nc" id="L134">        this.codec = codec2;</span>
+<span class="nc" id="L135">        mapper = codec.mapper;</span>
+      } else {
+<span class="nc" id="L137">        this.codec = JsonCodec.JSON;</span>
+<span class="nc" id="L138">        mapper = JsonCodec.JSON.mapper; // default</span>
+      }
+    }
+<span class="nc" id="L141">  }</span>
+
+  /**
+   * Change the JsonCodec: warning, change should be done before any usage to
+   * preserve consistency
+   *
+   * @param codec
+   */
+  public void changeHandler(JsonCodec codec) {
+<span class="nc" id="L150">    this.codec = codec;</span>
+<span class="nc" id="L151">    mapper = codec.mapper;</span>
+<span class="nc" id="L152">  }</span>
+
+  /**
+   * @return the associated codec
+   */
+  public JsonCodec getCodec() {
+<span class="nc" id="L158">    return codec;</span>
+  }
+
+  /**
+   * @return an empty ObjectNode
+   */
+  public final ObjectNode createObjectNode() {
+<span class="fc" id="L165">    return mapper.createObjectNode();</span>
+  }
+
+  /**
+   * @return an empty ArrayNode
+   */
+  public final ArrayNode createArrayNode() {
+<span class="fc" id="L172">    return mapper.createArrayNode();</span>
+  }
+
+  /**
+   * @param value
+   *
+   * @return the objectNode or null if an error occurs
+   */
+  public final ObjectNode getFromString(String value) {
+    try {
+<span class="fc" id="L182">      return (ObjectNode) mapper.readTree(value);</span>
+<span class="nc" id="L183">    } catch (final JsonProcessingException e) {</span>
+<span class="nc" id="L184">      return null;</span>
+<span class="nc" id="L185">    } catch (final IOException e) {</span>
+<span class="nc" id="L186">      return null;</span>
+    }
+  }
+
+  /**
+   * @param object
+   *
+   * @return the Json representation of the object
+   */
+  public final String writeAsString(Object object) {
+    try {
+<span class="fc" id="L197">      return mapper.writeValueAsString(object);</span>
+<span class="nc" id="L198">    } catch (final JsonProcessingException e) {</span>
+<span class="nc" id="L199">      return &quot;{}&quot;;</span>
+    }
+  }
+
+  /**
+   * @param node
+   * @param field
+   *
+   * @return the String if the field exists, else null
+   */
+  public final String getString(ObjectNode node, String field) {
+<span class="nc" id="L210">    return getValue(node, field, (String) null);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   *
+   * @return the String if the field exists, else null
+   */
+  public final String getString(ObjectNode node, Enum&lt;?&gt; field) {
+<span class="nc" id="L220">    return getValue(node, field.name(), (String) null);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the String if the field exists, else defValue
+   */
+  public final String getValue(ObjectNode node, String field, String defValue) {
+<span class="fc" id="L231">    final JsonNode elt = node.get(field);</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">    if (elt != null) {</span>
+<span class="fc" id="L233">      final String val = elt.asText();</span>
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">      if (&quot;null&quot;.equals(val)) {</span>
+<span class="nc" id="L235">        return defValue;</span>
+      }
+<span class="fc" id="L237">      return val;</span>
+    }
+<span class="nc" id="L239">    return defValue;</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Boolean if the field exists, else defValue
+   */
+  public final Boolean getValue(ObjectNode node, String field,
+                                boolean defValue) {
+<span class="fc" id="L251">    return node.path(field).asBoolean(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Double if the field exists, else defValue
+   */
+  public final Double getValue(ObjectNode node, String field, double defValue) {
+<span class="fc" id="L262">    return node.path(field).asDouble(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Long if the field exists, else defValue
+   */
+  public final Long getValue(ObjectNode node, String field, long defValue) {
+<span class="fc" id="L273">    return node.path(field).asLong(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Integer if the field exists, else defValue
+   */
+  public final Integer getValue(ObjectNode node, String field, int defValue) {
+<span class="fc" id="L284">    return node.path(field).asInt(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the byte array if the field exists, else defValue
+   */
+  public final byte[] getValue(ObjectNode node, String field, byte[] defValue) {
+<span class="fc" id="L295">    final JsonNode elt = node.get(field);</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">    if (elt != null) {</span>
+      try {
+<span class="fc" id="L298">        return elt.binaryValue();</span>
+<span class="nc" id="L299">      } catch (final IOException e) {</span>
+<span class="nc" id="L300">        return defValue;</span>
+      }
+    }
+<span class="nc" id="L303">    return defValue;</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, String field, boolean value) {
+<span class="fc" id="L312">    node.put(field, value);</span>
+<span class="fc" id="L313">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, String field, double value) {
+<span class="fc" id="L321">    node.put(field, value);</span>
+<span class="fc" id="L322">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, String field, int value) {
+<span class="fc" id="L330">    node.put(field, value);</span>
+<span class="fc" id="L331">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, String field, long value) {
+<span class="fc" id="L339">    node.put(field, value);</span>
+<span class="fc" id="L340">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, String field, String value) {
+<span class="pc bpc" id="L348" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L349">      return;</span>
+    }
+<span class="fc" id="L351">    node.put(field, value);</span>
+<span class="fc" id="L352">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, String field, byte[] value) {
+<span class="pc bpc" id="L360" title="2 of 4 branches missed.">    if (value == null || value.length == 0) {</span>
+<span class="nc" id="L361">      return;</span>
+    }
+<span class="fc" id="L363">    node.put(field, value);</span>
+<span class="fc" id="L364">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   *
+   * @return True if all fields exist
+   */
+  public final boolean exist(ObjectNode node, String... field) {
+<span class="fc bfc" id="L373" title="All 2 branches covered.">    for (final String string : field) {</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">      if (!node.has(string)) {</span>
+<span class="nc" id="L375">        return false;</span>
+      }
+    }
+<span class="fc" id="L378">    return true;</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the String if the field exists, else defValue
+   */
+  public final String getValue(ObjectNode node, Enum&lt;?&gt; field,
+                               String defValue) {
+<span class="nc" id="L390">    return getValue(node, field.name(), defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Boolean if the field exists, else defValue
+   */
+  public final Boolean getValue(ObjectNode node, Enum&lt;?&gt; field,
+                                boolean defValue) {
+<span class="nc" id="L402">    return node.path(field.name()).asBoolean(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Double if the field exists, else defValue
+   */
+  public final Double getValue(ObjectNode node, Enum&lt;?&gt; field,
+                               double defValue) {
+<span class="nc" id="L414">    return node.path(field.name()).asDouble(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Long if the field exists, else defValue
+   */
+  public final Long getValue(ObjectNode node, Enum&lt;?&gt; field, long defValue) {
+<span class="nc" id="L425">    return node.path(field.name()).asLong(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the Integer if the field exists, else defValue
+   */
+  public final Integer getValue(ObjectNode node, Enum&lt;?&gt; field, int defValue) {
+<span class="nc" id="L436">    return node.path(field.name()).asInt(defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param defValue
+   *
+   * @return the byte array if the field exists, else defValue
+   */
+  public final byte[] getValue(ObjectNode node, Enum&lt;?&gt; field,
+                               byte[] defValue) {
+<span class="nc" id="L448">    return getValue(node, field.name(), defValue);</span>
+  }
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, Enum&lt;?&gt; field, boolean value) {
+<span class="nc" id="L457">    node.put(field.name(), value);</span>
+<span class="nc" id="L458">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, Enum&lt;?&gt; field, double value) {
+<span class="nc" id="L466">    node.put(field.name(), value);</span>
+<span class="nc" id="L467">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, Enum&lt;?&gt; field, int value) {
+<span class="nc" id="L475">    node.put(field.name(), value);</span>
+<span class="nc" id="L476">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, Enum&lt;?&gt; field, long value) {
+<span class="nc" id="L484">    node.put(field.name(), value);</span>
+<span class="nc" id="L485">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, Enum&lt;?&gt; field, String value) {
+<span class="nc bnc" id="L493" title="All 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L494">      return;</span>
+    }
+<span class="nc" id="L496">    node.put(field.name(), value);</span>
+<span class="nc" id="L497">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   * @param value
+   */
+  public final void setValue(ObjectNode node, Enum&lt;?&gt; field, byte[] value) {
+<span class="nc bnc" id="L505" title="All 4 branches missed.">    if (value == null || value.length == 0) {</span>
+<span class="nc" id="L506">      return;</span>
+    }
+<span class="nc" id="L508">    node.put(field.name(), value);</span>
+<span class="nc" id="L509">  }</span>
+
+  /**
+   * @param node
+   * @param field
+   *
+   * @return True if all fields exist
+   */
+  public final boolean exist(ObjectNode node, Enum&lt;?&gt;... field) {
+<span class="nc bnc" id="L518" title="All 2 branches missed.">    for (final Enum&lt;?&gt; enm : field) {</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">      if (!node.has(enm.name())) {</span>
+<span class="nc" id="L520">        return false;</span>
+      }
+    }
+<span class="nc" id="L523">    return true;</span>
+  }
+
+  /**
+   * @param value
+   *
+   * @return the corresponding HashMap
+   */
+  public final Map&lt;String, Object&gt; getMapFromString(String value) {
+<span class="pc bpc" id="L532" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L533">      Map&lt;String, Object&gt; info = null;</span>
+      try {
+<span class="fc" id="L535">        info =</span>
+<span class="fc" id="L536">            mapper.readValue(value, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
+            });
+<span class="nc" id="L538">      } catch (final JsonParseException ignored) {</span>
+<span class="nc" id="L539">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L540">      } catch (final JsonMappingException ignored) {</span>
+<span class="nc" id="L541">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L542">      } catch (final IOException ignored) {</span>
+<span class="nc" id="L543">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="pc" id="L544">      }</span>
+<span class="pc bpc" id="L545" title="1 of 2 branches missed.">      if (info == null) {</span>
+<span class="nc" id="L546">        info = new HashMap&lt;String, Object&gt;();</span>
+      }
+<span class="fc" id="L548">      return info;</span>
+    } else {
+<span class="nc" id="L550">      return new HashMap&lt;String, Object&gt;();</span>
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

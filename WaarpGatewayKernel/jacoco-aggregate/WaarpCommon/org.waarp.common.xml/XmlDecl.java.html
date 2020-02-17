@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>XmlDecl.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Kernel</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.xml</a> &gt; <span class="el_source">XmlDecl.java</span></div><h1>XmlDecl.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.xml;
+
+/**
+ * XmlDecl to declare types, path and name for values from/to XML file/document
+ */
+public class XmlDecl {
+  private final String name;
+
+  private final XmlType type;
+
+  private final String xmlPath;
+
+  private final XmlDecl[] subXml;
+
+  private final boolean isMultiple;
+
+<span class="nc" id="L36">  public XmlDecl(String name, String xmlPath) {</span>
+<span class="nc" id="L37">    this.name = name;</span>
+<span class="nc" id="L38">    type = XmlType.EMPTY;</span>
+<span class="nc" id="L39">    this.xmlPath = xmlPath;</span>
+<span class="nc" id="L40">    isMultiple = false;</span>
+<span class="nc" id="L41">    subXml = null;</span>
+<span class="nc" id="L42">  }</span>
+
+<span class="fc" id="L44">  public XmlDecl(XmlType type, String xmlPath) {</span>
+<span class="fc" id="L45">    name = xmlPath;</span>
+<span class="fc" id="L46">    this.type = type;</span>
+<span class="fc" id="L47">    this.xmlPath = xmlPath;</span>
+<span class="fc" id="L48">    isMultiple = false;</span>
+<span class="fc" id="L49">    subXml = null;</span>
+<span class="fc" id="L50">  }</span>
+
+<span class="nc" id="L52">  public XmlDecl(String name, XmlType type, String xmlPath) {</span>
+<span class="nc" id="L53">    this.name = name;</span>
+<span class="nc" id="L54">    this.type = type;</span>
+<span class="nc" id="L55">    this.xmlPath = xmlPath;</span>
+<span class="nc" id="L56">    isMultiple = false;</span>
+<span class="nc" id="L57">    subXml = null;</span>
+<span class="nc" id="L58">  }</span>
+
+  public XmlDecl(String name, XmlType type, String xmlPath,
+<span class="fc" id="L61">                 boolean isMultiple) {</span>
+<span class="fc" id="L62">    this.name = name;</span>
+<span class="fc" id="L63">    this.type = type;</span>
+<span class="fc" id="L64">    this.xmlPath = xmlPath;</span>
+<span class="fc" id="L65">    this.isMultiple = isMultiple;</span>
+<span class="fc" id="L66">    subXml = null;</span>
+<span class="fc" id="L67">  }</span>
+
+  public XmlDecl(String name, XmlType type, String xmlPath, XmlDecl[] decls,
+<span class="fc" id="L70">                 boolean isMultiple) {</span>
+<span class="fc" id="L71">    this.name = name;</span>
+<span class="fc" id="L72">    this.type = type;</span>
+<span class="fc" id="L73">    this.xmlPath = xmlPath;</span>
+<span class="fc" id="L74">    this.isMultiple = isMultiple;</span>
+<span class="fc" id="L75">    subXml = decls;</span>
+<span class="fc" id="L76">  }</span>
+
+  /**
+   * Get Java field name
+   *
+   * @return the field name
+   */
+  public String getName() {
+<span class="fc" id="L84">    return name;</span>
+  }
+
+  /**
+   * @return the class type
+   */
+  public Class&lt;?&gt; getClassType() {
+<span class="fc" id="L91">    return type.getClassType();</span>
+  }
+
+  /**
+   * @return the internal type
+   */
+  public XmlType getType() {
+<span class="fc" id="L98">    return type;</span>
+  }
+
+  /**
+   * @return the xmlPath
+   */
+  public String getXmlPath() {
+<span class="fc" id="L105">    return xmlPath;</span>
+  }
+
+  /**
+   * @return True if this Decl is a subXml
+   */
+  public boolean isSubXml() {
+<span class="fc bfc" id="L112" title="All 2 branches covered.">    return subXml != null;</span>
+  }
+
+  /**
+   * @return the subXml
+   */
+  public XmlDecl[] getSubXml() {
+<span class="fc" id="L119">    return subXml;</span>
+  }
+
+  /**
+   * @return the subXml size
+   */
+  public int getSubXmlSize() {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (subXml == null) {</span>
+<span class="nc" id="L127">      return 0;</span>
+    }
+<span class="fc" id="L129">    return subXml.length;</span>
+  }
+
+  /**
+   * @return the isMultiple
+   */
+  public boolean isMultiple() {
+<span class="fc" id="L136">    return isMultiple;</span>
+  }
+
+  /**
+   * Check if two XmlDecl are compatible
+   *
+   * @param xmlDecl
+   *
+   * @return True if compatible
+   */
+  public boolean isCompatible(XmlDecl xmlDecl) {
+<span class="pc bpc" id="L147" title="5 of 8 branches missed.">    if ((isMultiple &amp;&amp; xmlDecl.isMultiple ||</span>
+         !isMultiple &amp;&amp; !xmlDecl.isMultiple) &amp;&amp;
+<span class="pc bpc" id="L149" title="3 of 4 branches missed.">        (isSubXml() &amp;&amp; xmlDecl.isSubXml() ||</span>
+<span class="pc bpc" id="L150" title="2 of 4 branches missed.">         !isSubXml() &amp;&amp; !xmlDecl.isSubXml())) {</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">      if (!isSubXml()) {</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        return type == xmlDecl.type;</span>
+      }
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (subXml.length != xmlDecl.subXml.length) {</span>
+<span class="nc" id="L155">        return false;</span>
+      }
+<span class="nc bnc" id="L157" title="All 2 branches missed.">      for (int i = 0; i &lt; subXml.length; i++) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        if (!subXml[i].isCompatible(xmlDecl.subXml[i])) {</span>
+<span class="nc" id="L159">          return false;</span>
+        }
+      }
+<span class="nc" id="L162">      return true;</span>
+    }
+<span class="nc" id="L164">    return false;</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L169">    return &quot;Decl: &quot; + name + &quot; Type: &quot; + type.name() + &quot; XmlPath: &quot; + xmlPath +</span>
+<span class="nc" id="L170">           &quot; isMultiple: &quot; + isMultiple + &quot; isSubXml: &quot; + isSubXml();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

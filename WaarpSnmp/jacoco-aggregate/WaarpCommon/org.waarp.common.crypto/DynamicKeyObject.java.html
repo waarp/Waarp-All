@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DynamicKeyObject.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Snmp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.crypto</a> &gt; <span class="el_source">DynamicKeyObject.java</span></div><h1>DynamicKeyObject.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.crypto;
+
+/**
+ * This class handles methods to encrypt and unencrypt messages with any
+ * available algorithms in the JVM.&lt;br&gt;
+ * &lt;b&gt;AES is the best compromise in term of security and efficiency.&lt;/b&gt; &lt;br&gt;
+ * Usage:&lt;br&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;Create a Key object: DynamicKey key = new DynamicKey(size,algo,instance,extension);&lt;br&gt;
+ * As DynamicKey(56, &quot;DES&quot;, &quot;DES/ECB/PKCS5Padding&quot;, &quot;des&quot;) for DES&lt;br&gt;
+ * or through Enum class INSTANCES (minimal supported size) or INSTANCESMAX
+ * (maximal supported size) as
+ * DynamicKey(INSTANCESMAX.AES,&quot;aes&quot;)&lt;/li&gt;
+ * &lt;li&gt;Create a key:
+ * &lt;ul&gt;
+ * &lt;li&gt;Generate: key.generateKey();&lt;br&gt;
+ * The method key.getSecretKeyInBytes() allow getting the key in Bytes.&lt;/li&gt;
+ * &lt;li&gt;From an external source: key.setSecretKey(arrayOfBytes);&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/li&gt;
+ * &lt;li&gt;To encrypt a String in a Base64 format: String myStringCrypt =
+ * key.cryptToString(myString);&lt;/li&gt;
+ * &lt;li&gt;To unencrypt one string from Base64 format to the original String:
+ * String
+ * myStringDecrypt =
+ * key.decryptStringInString(myStringCrypte);&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class DynamicKeyObject extends KeyObject {
+
+  /**
+   * Minimal key size
+   */
+<span class="fc" id="L53">  public enum INSTANCES {</span>
+<span class="fc" id="L54">    AES(128), // Min 128</span>
+<span class="fc" id="L55">    ARCFOUR(56), // No Max</span>
+<span class="fc" id="L56">    Blowfish(56), // No Max</span>
+<span class="fc" id="L57">    DES(56), // Must be 56 except if Strong Policy is used</span>
+<span class="fc" id="L58">    DESede(112), // 112 or 168 triple DES</span>
+<span class="fc" id="L59">    RC2(56), RC4(56);</span>
+
+    final int size;
+
+<span class="fc" id="L63">    INSTANCES(int size) {</span>
+<span class="fc" id="L64">      this.size = size;</span>
+<span class="fc" id="L65">    }</span>
+  }
+
+  /**
+   * Recommended key size when normal JVM installed (no extension on encrypt
+   * support)
+   */
+<span class="fc" id="L72">  public enum INSTANCESMAX {</span>
+<span class="fc" id="L73">    AES(128), // Min 128</span>
+<span class="fc" id="L74">    ARCFOUR(128), // No Max</span>
+<span class="fc" id="L75">    Blowfish(128), // No Max</span>
+<span class="fc" id="L76">    DES(56), // Must be 56 except if Strong Policy is used</span>
+<span class="fc" id="L77">    DESede(168), // 112 or 168 triple DES</span>
+<span class="fc" id="L78">    RC2(128), RC4(128);</span>
+
+    final int size;
+
+<span class="fc" id="L82">    INSTANCESMAX(int size) {</span>
+<span class="fc" id="L83">      this.size = size;</span>
+<span class="fc" id="L84">    }</span>
+  }
+
+  /**
+   * This value could be between 32 and 128 due to license limitation.
+   */
+  private final int keySize;
+  /**
+   * Short name for the algorithm
+   */
+  private final String algo;
+  /**
+   * Could be the shortname again (default implementation in JVM) or the full
+   * name as DES/ECB/PKCS5Padding
+   */
+  private final String instance;
+  /**
+   * The extension for the file to use when saving the key (note that an extra
+   * file as extension.inf will be
+   * also saved for the extra information)
+   */
+  private final String extension;
+
+  /**
+   * @param kEYSIZE example DES: 56
+   * @param aLGO example DES: DES
+   * @param iNSTANCE example DES: DES/ECB/PKCS5Padding
+   * @param eXTENSION example DES: des
+   */
+  public DynamicKeyObject(int kEYSIZE, String aLGO, String iNSTANCE,
+<span class="fc" id="L114">                          String eXTENSION) {</span>
+<span class="fc" id="L115">    keySize = kEYSIZE;</span>
+<span class="fc" id="L116">    algo = aLGO;</span>
+<span class="fc" id="L117">    instance = iNSTANCE;</span>
+<span class="fc" id="L118">    extension = eXTENSION;</span>
+<span class="fc" id="L119">  }</span>
+
+  /**
+   * @param instance the minimal default instance
+   * @param eXTENSION to use for files
+   */
+<span class="nc" id="L125">  public DynamicKeyObject(INSTANCES instance, String eXTENSION) {</span>
+<span class="nc" id="L126">    keySize = instance.size;</span>
+<span class="nc" id="L127">    algo = instance.name();</span>
+<span class="nc" id="L128">    this.instance = instance.name();</span>
+<span class="nc" id="L129">    extension = eXTENSION;</span>
+<span class="nc" id="L130">  }</span>
+
+  /**
+   * @param instance the maximal default instance
+   * @param eXTENSION to use for files
+   */
+<span class="nc" id="L136">  public DynamicKeyObject(INSTANCESMAX instance, String eXTENSION) {</span>
+<span class="nc" id="L137">    keySize = instance.size;</span>
+<span class="nc" id="L138">    algo = instance.name();</span>
+<span class="nc" id="L139">    this.instance = instance.name();</span>
+<span class="nc" id="L140">    extension = eXTENSION;</span>
+<span class="nc" id="L141">  }</span>
+
+  @Override
+  public String getAlgorithm() {
+<span class="fc" id="L145">    return algo;</span>
+  }
+
+  @Override
+  public String getInstance() {
+<span class="fc" id="L150">    return instance;</span>
+  }
+
+  @Override
+  public int getKeySize() {
+<span class="fc" id="L155">    return keySize;</span>
+  }
+
+  @Override
+  public String getFileExtension() {
+<span class="nc" id="L160">    return extension;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

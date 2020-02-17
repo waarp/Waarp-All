@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FilesystemBasedFtpAuth.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Filesystem</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.filesystembased</a> &gt; <span class="el_source">FilesystemBasedFtpAuth.java</span></div><h1>FilesystemBasedFtpAuth.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.filesystembased;
+
+import org.waarp.common.command.NextCommandReply;
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.command.exception.Reply502Exception;
+import org.waarp.common.command.exception.Reply530Exception;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.filesystembased.FilesystemBasedAuthImpl;
+import org.waarp.ftp.core.file.FtpAuth;
+import org.waarp.ftp.core.session.FtpSession;
+
+/**
+ * Filesystem implementation of a AuthInterface
+ */
+public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
+    implements FtpAuth {
+
+  /**
+   * Account name
+   */
+  protected String account;
+
+  /**
+   * @param session
+   */
+  protected FilesystemBasedFtpAuth(FtpSession session) {
+<span class="fc" id="L47">    super(session);</span>
+<span class="fc" id="L48">  }</span>
+
+  /**
+   * @return the account
+   */
+  @Override
+  public String getAccount() {
+<span class="fc" id="L55">    return account;</span>
+  }
+
+  /**
+   * Set the account according to any implementation and could set the
+   * rootFromAuth. If NOOP is returned,
+   * isIdentifed must be TRUE.
+   *
+   * @param account
+   *
+   * @return (NOOP, 230) if the Account is OK, else return the following
+   *     command
+   *     that must follow and the
+   *     associated reply
+   *
+   * @throws Reply421Exception if there is a problem during the
+   *     authentication
+   * @throws Reply530Exception if there is a problem during the
+   *     authentication
+   * @throws Reply502Exception if there is a problem during the
+   *     authentication
+   */
+  protected abstract NextCommandReply setBusinessAccount(String account)
+      throws Reply421Exception, Reply530Exception, Reply502Exception;
+
+  /**
+   * @param account the account to set
+   *
+   * @return (NOOP, 230) if the Account is OK, else return the following
+   *     command
+   *     that must follow and the
+   *     associated reply
+   *
+   * @throws Reply421Exception if there is a problem during the
+   *     authentication
+   * @throws Reply530Exception if there is a problem during the
+   *     authentication
+   * @throws Reply502Exception
+   */
+  @Override
+  public NextCommandReply setAccount(String account)
+      throws Reply421Exception, Reply530Exception, Reply502Exception {
+<span class="fc" id="L97">    final NextCommandReply next = setBusinessAccount(account);</span>
+<span class="fc" id="L98">    this.account = account;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
+<span class="fc" id="L100">      setRootFromAuth();</span>
+<span class="fc" id="L101">      session.getDir().initAfterIdentification();</span>
+    }
+<span class="fc" id="L103">    return next;</span>
+  }
+
+  /**
+   * Set the root relative Path from current status of Authentication (should
+   * be
+   * the highest level for the
+   * current authentication). If setBusinessRootFromAuth returns null, by
+   * default set /user or /user/account.
+   *
+   * @throws Reply421Exception if the business root is not available
+   */
+  @Override
+  protected void setRootFromAuth() throws Reply421Exception {
+<span class="fc" id="L117">    rootFromAuth = setBusinessRootFromAuth();</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (rootFromAuth == null) {</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">      if (account == null) {</span>
+<span class="nc" id="L120">        rootFromAuth = DirInterface.SEPARATOR + user;</span>
+      } else {
+<span class="nc" id="L122">        rootFromAuth =</span>
+            DirInterface.SEPARATOR + user + DirInterface.SEPARATOR + account;
+      }
+    }
+<span class="fc" id="L126">  }</span>
+
+  /**
+   * Clean object
+   */
+  @Override
+  public void clear() {
+<span class="fc" id="L133">    super.clear();</span>
+<span class="fc" id="L134">    account = null;</span>
+<span class="fc" id="L135">  }</span>
+
+  @Override
+  public String getBaseDirectory() {
+<span class="fc" id="L139">    return ((FtpSession) getSession()).getConfiguration().getBaseDirectory();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

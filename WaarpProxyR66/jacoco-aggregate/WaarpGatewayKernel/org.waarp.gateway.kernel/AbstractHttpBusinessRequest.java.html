@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>AbstractHttpBusinessRequest.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel</a> &gt; <span class="el_source">AbstractHttpBusinessRequest.java</span></div><h1>AbstractHttpBusinessRequest.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ *
+ */
+public abstract class AbstractHttpBusinessRequest {
+  protected final LinkedHashMap&lt;String, AbstractHttpField&gt; fields;
+  protected final HttpPage page;
+
+  /**
+   * Default constructor
+   *
+   * @param fields
+   * @param page
+   */
+  protected AbstractHttpBusinessRequest(
+<span class="nc" id="L39">      LinkedHashMap&lt;String, AbstractHttpField&gt; fields, HttpPage page) {</span>
+<span class="nc" id="L40">    this.fields = fields;</span>
+<span class="nc" id="L41">    this.page = page;</span>
+<span class="nc" id="L42">  }</span>
+
+  /**
+   * @return the Map&lt;String, AbstractHttpField&gt; associated with the
+   *     current request
+   */
+  public Map&lt;String, AbstractHttpField&gt; getMapHttpFields() {
+<span class="nc" id="L49">    return fields;</span>
+  }
+
+  /**
+   * @return the HTML header or null if set through definition
+   */
+  public abstract String getHeader();
+
+  /**
+   * @return the HTML Footer or null if set through definition
+   */
+  public abstract String getFooter();
+
+  /**
+   * @return True if the HTML output will be a Form
+   */
+  public abstract boolean isForm();
+
+  /**
+   * @return the HTML Begin of Form (including URI) or null if set through
+   *     definition
+   */
+  public abstract String getBeginForm();
+
+  /**
+   * @return the HTML End of Form or null if set through definition
+   */
+  public abstract String getEndForm();
+
+  /**
+   * @param field
+   *
+   * @return the HTML field form or null if set standard
+   */
+  public abstract String getFieldForm(AbstractHttpField field);
+
+  /**
+   * @return the HTML Next Field in Form or null if set through definition
+   */
+  public abstract String getNextFieldInForm();
+
+  /**
+   * Called if fieldtovalidate is true
+   *
+   * @param field
+   *
+   * @return True if the field is valid
+   */
+  public abstract boolean isFieldValid(AbstractHttpField field);
+
+  /**
+   * Note that mandatory fields is tested outside of the
+   * AbstractHttpBusinessRequest
+   *
+   * @return True if according to known informations this request is valid
+   */
+  public abstract boolean isRequestValid();
+
+  /**
+   * @return the string that contains the ContentType in HTML format (as
+   *     &quot;text/html&quot;)
+   */
+  public abstract String getContentType();
+
+  /**
+   * Utility mainly used for PUT where the content is coming out of the
+   * decoder
+   *
+   * @return the main FileUpload as AbstractHttpField for the current request
+   */
+  public abstract AbstractHttpField getMainFileUpload();
+
+  /**
+   * Used at the end of the request to release the resources
+   */
+  public void cleanRequest() {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">    for (final AbstractHttpField field : fields.values()) {</span>
+<span class="nc" id="L126">      field.clean();</span>
+<span class="nc" id="L127">    }</span>
+<span class="nc" id="L128">    fields.clear();</span>
+<span class="nc" id="L129">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

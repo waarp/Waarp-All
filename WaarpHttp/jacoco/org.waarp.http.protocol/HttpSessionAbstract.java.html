@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpSessionAbstract.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Http</a> &gt; <a href="index.source.html" class="el_package">org.waarp.http.protocol</a> &gt; <span class="el_source">HttpSessionAbstract.java</span></div><h1>HttpSessionAbstract.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.http.protocol;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.http.protocol.servlet.HttpAuthent;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66BusinessInterface;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import static org.waarp.openr66.context.R66FiniteDualStates.*;
+
+/**
+ * Common part for HttpSession for both download and upload
+ */
+public class HttpSessionAbstract implements HttpSession {
+<span class="fc" id="L47">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L48">      WaarpLoggerFactory.getLogger(HttpSessionAbstract.class);</span>
+
+  protected final R66Session session;
+  protected final HttpAuthent authent;
+
+<span class="fc" id="L53">  public HttpSessionAbstract(final HttpAuthent authent) {</span>
+<span class="fc" id="L54">    this.session = new R66Session();</span>
+<span class="fc" id="L55">    this.authent = authent;</span>
+<span class="fc" id="L56">  }</span>
+
+
+  /**
+   * Method to check authentication
+   *
+   * @param httpSession
+   * @param session
+   * @param authent
+   *
+   * @return the Business associated with this Authent
+   *
+   * @throws IllegalArgumentException
+   */
+  protected R66BusinessInterface checkAuthentR66Business(
+      HttpSession httpSession, R66Session session, final HttpAuthent authent)
+      throws IllegalArgumentException {
+<span class="fc" id="L73">    session.setBusinessObject(</span>
+<span class="fc" id="L74">        Configuration.configuration.getR66BusinessFactory()</span>
+<span class="fc" id="L75">                                   .getBusinessInterface(session));</span>
+<span class="fc" id="L76">    R66BusinessInterface business = session.getBusinessObject();</span>
+<span class="fc" id="L77">    session.newState(R66FiniteDualStates.STARTUP);</span>
+    try {
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">      if (business != null) {</span>
+<span class="nc" id="L80">        business.checkAtStartup(session);</span>
+      }
+<span class="nc" id="L82">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L83">      httpSession.error(e, business);</span>
+<span class="fc" id="L84">    }</span>
+<span class="fc" id="L85">    authent.checkAuthent(this, session);</span>
+    try {
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">      if (business != null) {</span>
+<span class="nc" id="L88">        business.checkAtAuthentication(session);</span>
+      }
+<span class="nc" id="L90">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L91">      httpSession.error(e, business);</span>
+<span class="fc" id="L92">    }</span>
+<span class="fc" id="L93">    session.newState(R66FiniteDualStates.AUTHENTR);</span>
+<span class="fc" id="L94">    session.newState(R66FiniteDualStates.AUTHENTD);</span>
+<span class="fc" id="L95">    return business;</span>
+  }
+
+  /**
+   * Initialize the DbTaskRunner for this user and rulename
+   *
+   * @param user
+   * @param filename
+   * @param rulename
+   * @param identifier
+   * @param comment
+   * @param chunkSize
+   * @param business
+   * @param uploadMode
+   *
+   * @return the DbTaskRunner, potentially new
+   *
+   * @throws IllegalArgumentException
+   */
+  protected DbTaskRunner getDbTaskRunner(final String user,
+                                         final String filename,
+                                         final String rulename,
+                                         final long identifier,
+                                         final String comment,
+                                         final int chunkSize,
+                                         final R66BusinessInterface business,
+                                         boolean uploadMode)
+      throws IllegalArgumentException {
+<span class="fc" id="L123">    session.newState(REQUESTR);</span>
+<span class="fc" id="L124">    session.setBlockSize(chunkSize);</span>
+
+<span class="fc" id="L126">    DbRule rule = null;</span>
+    try {
+<span class="fc" id="L128">      rule = new DbRule(rulename);</span>
+<span class="nc" id="L129">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L130">      error(e, business);</span>
+<span class="nc" id="L131">      throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L132">    }</span>
+<span class="fc" id="L133">    final String requested = Configuration.configuration.getHostId();</span>
+<span class="fc" id="L134">    final String requester = user;</span>
+<span class="fc" id="L135">    DbTaskRunner runner = null;</span>
+    try {
+      // Try to reload it
+<span class="nc" id="L138">      runner =</span>
+          new DbTaskRunner(session, rule, identifier, requester, requested);
+<span class="nc bnc" id="L140" title="All 2 branches missed.">      runner.setSender(!uploadMode);</span>
+<span class="nc" id="L141">      logger.debug(&quot;{} {} {}&quot;, identifier, requester, requested);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (runner.isAllDone()) {</span>
+<span class="nc" id="L143">        error(new IllegalArgumentException(&quot;Already finished&quot;), business);</span>
+      }
+<span class="fc" id="L145">    } catch (WaarpDatabaseNoDataException e) {</span>
+      // Not found so create it
+<span class="fc" id="L147">      Transfer transfer =</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">          new Transfer(requester, rulename, rule.getMode(), !uploadMode,</span>
+                       filename, comment, chunkSize);
+<span class="fc" id="L150">      transfer.setId(identifier);</span>
+<span class="fc" id="L151">      runner = new DbTaskRunner(transfer);</span>
+      try {
+<span class="fc" id="L153">        runner.insert();</span>
+<span class="fc" id="L154">        runner = new DbTaskRunner(identifier, runner.getRequester(),</span>
+<span class="fc" id="L155">                                  runner.getRequested());</span>
+<span class="fc" id="L156">        logger.debug(&quot;{} {} {}&quot;, identifier, requester, requested);</span>
+<span class="fc" id="L157">      } catch (WaarpDatabaseException ex) {</span>
+<span class="nc" id="L158">        error(ex, business);</span>
+<span class="fc" id="L159">      }</span>
+<span class="nc" id="L160">    } catch (WaarpDatabaseException e) {</span>
+<span class="nc" id="L161">      error(e, business);</span>
+<span class="nc" id="L162">      throw new IllegalArgumentException(e);</span>
+<span class="pc" id="L163">    }</span>
+<span class="fc" id="L164">    runner.setOriginalFilename(filename);</span>
+<span class="fc" id="L165">    runner.setFilename(filename);</span>
+    try {
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">      if (runner.restart(false)) {</span>
+<span class="fc" id="L168">        runner.saveStatus();</span>
+      }
+<span class="nc" id="L170">    } catch (final OpenR66RunnerErrorException ignored) {</span>
+      // nothing
+<span class="fc" id="L172">    }</span>
+    try {
+<span class="fc" id="L174">      session.setRunner(runner);</span>
+<span class="fc" id="L175">      session.setFileBeforePreRunner();</span>
+<span class="fc" id="L176">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">      if (runner.getErrorInfo() == ErrorCode.InitOk ||</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">          runner.getErrorInfo() == ErrorCode.PreProcessingOk ||</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">          runner.getErrorInfo() == ErrorCode.TransferOk) {</span>
+<span class="nc" id="L180">        runner.setErrorExecutionStatus(ErrorCode.ExternalOp);</span>
+      }
+      try {
+<span class="fc" id="L183">        runner.saveStatus();</span>
+<span class="nc" id="L184">      } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L185">        logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L186">      }</span>
+<span class="fc" id="L187">      runner.clean();</span>
+<span class="nc" id="L188">      error(e, business);</span>
+<span class="fc" id="L189">    }</span>
+<span class="fc" id="L190">    session.setReady(true);</span>
+<span class="fc" id="L191">    session.newState(REQUESTD);</span>
+    try {
+<span class="fc" id="L193">      runner.saveStatus();</span>
+<span class="nc" id="L194">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L195">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L196">    }</span>
+<span class="fc" id="L197">    return runner;</span>
+  }
+
+  @Override
+  public void error(Exception e, R66BusinessInterface business)
+      throws IllegalArgumentException {
+<span class="fc" id="L203">    logger.error(e);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (business != null) {</span>
+<span class="nc" id="L205">      business.checkAtError(session);</span>
+    }
+<span class="fc" id="L207">    session.newState(R66FiniteDualStates.ERROR);</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">    if (session.getRunner() != null) {</span>
+<span class="fc" id="L209">      DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L210">      runner.setErrorExecutionStatus(ErrorCode.TransferError);</span>
+<span class="fc" id="L211">      runner.setErrorTask();</span>
+      try {
+<span class="fc" id="L213">        runner.run();</span>
+<span class="fc" id="L214">        runner.saveStatus();</span>
+<span class="nc" id="L215">      } catch (OpenR66RunnerErrorException ignore) {</span>
+<span class="nc" id="L216">        logger.debug(ignore);</span>
+<span class="fc" id="L217">      }</span>
+    }
+<span class="fc" id="L219">    throw new IllegalArgumentException(e);</span>
+  }
+
+  /**
+   * Runs pre tasks
+   *
+   * @param business
+   * @param runner
+   *
+   * @throws IllegalArgumentException
+   */
+  protected void preTasks(final R66BusinessInterface business,
+                          final DbTaskRunner runner)
+      throws IllegalArgumentException {
+<span class="fc" id="L233">    runner.reset();</span>
+<span class="fc" id="L234">    runner.changeUpdatedInfo(UpdatedInfo.RUNNING);</span>
+    try {
+<span class="fc" id="L236">      runner.saveStatus();</span>
+<span class="nc" id="L237">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L238">      error(e, business);</span>
+<span class="fc" id="L239">    }</span>
+    // Now create the associated file
+    try {
+<span class="fc" id="L242">      session.setFileBeforePreRunner();</span>
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">      if (runner.getStep() &lt;= TASKSTEP.PRETASK.ordinal()) {</span>
+<span class="fc" id="L244">        runner.setPreTask();</span>
+<span class="fc" id="L245">        runner.saveStatus();</span>
+<span class="fc" id="L246">        runner.run();</span>
+<span class="fc" id="L247">        runner.saveStatus();</span>
+<span class="fc" id="L248">        session.setFileAfterPreRunner(true);</span>
+      }
+<span class="nc" id="L250">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L251">      error(e, business);</span>
+<span class="nc" id="L252">    } catch (CommandAbstractException e) {</span>
+<span class="nc" id="L253">      error(e, business);</span>
+<span class="pc" id="L254">    }</span>
+<span class="fc" id="L255">    session.newState(DATAR);</span>
+    try {
+<span class="fc" id="L257">      runner.saveStatus();</span>
+<span class="nc" id="L258">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L259">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L260">    }</span>
+<span class="fc" id="L261">  }</span>
+
+  /**
+   * Set the transfer to be starting
+   *
+   * @param runner
+   */
+  protected void startTransfer(final DbTaskRunner runner) {
+<span class="fc" id="L269">    runner.setTransferTask(0);</span>
+    try {
+<span class="fc" id="L271">      runner.saveStatus();</span>
+<span class="nc" id="L272">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L273">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L274">    }</span>
+<span class="fc" id="L275">  }</span>
+
+  /**
+   * Run post tasks on finished transfer
+   */
+  protected void runPostTask() {
+<span class="fc" id="L281">    DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L282">    runner.setPostTask();</span>
+    try {
+<span class="fc" id="L284">      session.newState(ENDTRANSFERR);</span>
+<span class="fc" id="L285">      logger.debug(&quot;Post actions {}&quot;, session);</span>
+<span class="fc" id="L286">      runner.run();</span>
+<span class="fc" id="L287">      runner.saveStatus();</span>
+<span class="fc" id="L288">      session.newState(ENDREQUESTS);</span>
+<span class="nc" id="L289">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L290">      error(e, session.getBusinessObject());</span>
+<span class="fc" id="L291">    }</span>
+<span class="fc" id="L292">    session.newState(CLOSEDCHANNEL);</span>
+<span class="fc" id="L293">    session.partialClear();</span>
+<span class="fc" id="L294">    runner.setAllDone();</span>
+    try {
+<span class="fc" id="L296">      runner.saveStatus();</span>
+<span class="nc" id="L297">    } catch (OpenR66RunnerErrorException ignored) {</span>
+      // nothing
+<span class="fc" id="L299">    }</span>
+<span class="fc" id="L300">    runner.clean();</span>
+<span class="fc" id="L301">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

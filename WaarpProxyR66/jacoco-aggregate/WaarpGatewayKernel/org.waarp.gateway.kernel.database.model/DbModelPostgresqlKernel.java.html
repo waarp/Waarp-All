@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelPostgresqlKernel.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.database.model</a> &gt; <span class="el_source">DbModelPostgresqlKernel.java</span></div><h1>DbModelPostgresqlKernel.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.database.model;
+
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelPostgresql;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.data.DbTransferLog;
+
+/**
+ * PostGreSQL Database Model implementation
+ */
+public class DbModelPostgresqlKernel extends DbModelPostgresql {
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+<span class="nc" id="L41">  public DbModelPostgresqlKernel() throws WaarpDatabaseNoConnectionException {</span>
+    // nothing
+<span class="nc" id="L43">  }</span>
+
+  @Override
+  public void createTables(DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L48">    createTableMonitoring(session);</span>
+<span class="nc" id="L49">  }</span>
+
+  public static void createTableMonitoring(final DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+    // Create tables: logs
+<span class="nc" id="L54">    final String createTableH2 = &quot;CREATE TABLE &quot;;</span>
+<span class="nc" id="L55">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="nc" id="L56">    final String notNull = &quot; NOT NULL &quot;;</span>
+
+<span class="nc" id="L58">    final DbRequest request = new DbRequest(session);</span>
+    // TRANSLOG
+<span class="nc" id="L60">    StringBuilder action =</span>
+        new StringBuilder(createTableH2 + DbTransferLog.table + '(');
+<span class="nc" id="L62">    final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
+<span class="nc" id="L64">      action.append(acolumns[i].name())</span>
+<span class="nc" id="L65">            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)</span>
+<span class="nc" id="L66">            .append(&quot;, &quot;);</span>
+    }
+    // Several columns for primary key
+<span class="nc" id="L69">    action.append(&quot; CONSTRAINT TRANSLOG_PK &quot; + primaryKey + '(');</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">    for (int i = DbTransferLog.NBPRKEY; i &gt; 1; i--) {</span>
+<span class="nc" id="L71">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
+    }
+<span class="nc" id="L73">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L74">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L76">      request.query(action.toString());</span>
+<span class="nc" id="L77">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L78">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L79">      return;</span>
+<span class="nc" id="L80">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L81">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX No return
+    } finally {
+<span class="nc" id="L84">      request.close();</span>
+    }
+    // Index TRANSLOG
+<span class="nc" id="L87">    action = new StringBuilder(</span>
+        &quot;CREATE INDEX IDX_TRANSLOG ON &quot; + DbTransferLog.table + '(');
+<span class="nc" id="L89">    final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
+<span class="nc" id="L91">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L93">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
+<span class="nc" id="L94">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L96">      request.query(action.toString());</span>
+<span class="nc" id="L97">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L98">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L99">      return;</span>
+<span class="nc" id="L100">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L101">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX No return
+    } finally {
+<span class="nc" id="L104">      request.close();</span>
+    }
+
+    // cptrunner
+<span class="nc" id="L108">    action = new StringBuilder(</span>
+        &quot;CREATE SEQUENCE &quot; + DbTransferLog.fieldseq + &quot; MINVALUE &quot; +
+        (DbConstant.ILLEGALVALUE + 1) + &quot; RESTART WITH &quot; +
+        (DbConstant.ILLEGALVALUE + 1));
+<span class="nc" id="L112">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L114">      request.query(action.toString());</span>
+<span class="nc" id="L115">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L116">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L117">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L118">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+    } finally {
+<span class="nc" id="L120">      request.close();</span>
+    }
+<span class="nc" id="L122">  }</span>
+
+  @Override
+  public void resetSequence(DbSession session, long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L127">    DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);</span>
+<span class="nc" id="L128">  }</span>
+
+  @Override
+  public long nextSequence(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+<span class="nc" id="L134">    return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);</span>
+  }
+
+  @Override
+  public boolean upgradeDb(DbSession session, String version)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L140">    return false;</span>
+  }
+
+  @Override
+  public boolean needUpgradeDb(DbSession session, String version,
+                               boolean tryFix)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L147">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

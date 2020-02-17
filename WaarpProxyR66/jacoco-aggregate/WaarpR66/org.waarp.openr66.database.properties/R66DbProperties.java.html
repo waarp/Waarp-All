@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>R66DbProperties.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.database.properties</a> &gt; <span class="el_source">R66DbProperties.java</span></div><h1>R66DbProperties.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.database.properties;
+
+import org.waarp.common.database.properties.DbProperties;
+import org.waarp.common.database.properties.H2Properties;
+import org.waarp.common.database.properties.MariaDBProperties;
+import org.waarp.common.database.properties.MySQLProperties;
+import org.waarp.common.database.properties.OracleProperties;
+import org.waarp.common.database.properties.PostgreSQLProperties;
+
+<span class="nc" id="L30">public abstract class R66DbProperties {</span>
+
+  public String getCreateQuery() {
+<span class="nc" id="L33">    final StringBuilder builder = new StringBuilder();</span>
+
+<span class="nc" id="L35">    builder.append(</span>
+        &quot;CREATE TABLE MULTIPLEMONITOR (&quot; + &quot;COUNTCONFIG INTEGER NOT NULL, &quot; +
+        &quot;COUNTHOST INTEGER NOT NULL, &quot; + &quot;COUNTRULE INTEGER NOT NULL, &quot; +
+        &quot;HOSTID VARCHAR(8096) PRIMARY KEY);\n&quot;);
+<span class="nc" id="L39">    builder.append(</span>
+        &quot;CREATE TABLE CONFIGURATION (&quot; + &quot;READGLOBALLIMIT BIGINT NOT NULL, &quot; +
+        &quot;WRITEGLOBALLIMIT BIGINT NOT NULL,&quot; +
+        &quot;READSESSIONLIMIT BIGINT NOT NULL,&quot; +
+        &quot;WRITESESSIONLIMIT BIGINT NOT NULL,&quot; + &quot;DELAYLIMIT BIGINT NOT NULL,&quot; +
+        &quot;UPDATEDINFO INTEGER NOT NULL,&quot; + &quot;HOSTID VARCHAR(8096) PRIMARY KEY);&quot;);
+<span class="nc" id="L45">    builder.append(&quot;CREATE TABLE HOSTCONFIG (&quot; + &quot;BUSINESS TEXT NOT NULL ,&quot; +</span>
+                   &quot;ROLES TEXT NOT NULL ,&quot; + &quot;ALIASES TEXT NOT NULL ,&quot; +
+                   &quot;OTHERS TEXT NOT NULL ,&quot; + &quot;UPDATEDINFO INTEGER NOT NULL ,&quot; +
+                   &quot;HOSTID VARCHAR(8096) PRIMARY KEY);\n&quot;);
+<span class="nc" id="L49">    builder.append(&quot;CREATE TABLE HOSTS (&quot; + &quot;ADDRESS VARCHAR(8096) NOT NULL ,&quot; +</span>
+                   &quot;PORT INTEGER NOT NULL ,&quot; + &quot;ISSSL BOOLEAN NOT NULL ,&quot; +
+                   &quot;HOSTKEY BYTEA NOT NULL ,&quot; + &quot;ADMINROLE BOOLEAN NOT NULL ,&quot; +
+                   &quot;ISCLIENT BOOLEAN NOT NULL ,&quot; +
+                   &quot;ISACTIVE BOOLEAN NOT NULL ,&quot; +
+                   &quot;ISPROXIFIED BOOLEAN NOT NULL ,&quot; +
+                   &quot;UPDATEDINFO INTEGER NOT NULL ,&quot; +
+                   &quot;HOSTID VARCHAR(8096) PRIMARY KEY);\n&quot;);
+<span class="nc" id="L57">    builder.append(</span>
+        &quot;CREATE TABLE RULES (&quot; + &quot;HOSTIDS TEXT ,&quot; + &quot;MODETRANS INTEGER ,&quot; +
+        &quot;RECVPATH VARCHAR(8096),&quot; + &quot;SENDPATH VARCHAR(8096) ,&quot; +
+        &quot;ARCHIVEPATH VARCHAR(8096) ,&quot; + &quot;WORKPATH VARCHAR(8096) ,&quot; +
+        &quot;RPRETASKS TEXT ,&quot; + &quot;RPOSTTASKS TEXT ,&quot; + &quot;RERRORTASKS TEXT ,&quot; +
+        &quot;SPRETASKS TEXT ,&quot; + &quot;SPOSTTASKS TEXT ,&quot; + &quot;SERRORTASKS TEXT ,&quot; +
+        &quot;UPDATEDINFO INTEGER ,&quot; + &quot;IDRULE VARCHAR(8096) PRIMARY KEY);\n&quot;);
+<span class="nc" id="L64">    builder.append(&quot;CREATE TABLE RUNNER (&quot; + &quot;GLOBALSTEP INTEGER NOT NULL ,&quot; +</span>
+                   &quot;GLOBALLASTSTEP INTEGER NOT NULL ,&quot; +
+                   &quot;STEP INTEGER NOT NULL ,&quot; + &quot;RANK INTEGER NOT NULL ,&quot; +
+                   &quot;STEPSTATUS CHAR(3) NOT NULL ,&quot; +
+                   &quot;RETRIEVEMODE BOOLEAN NOT NULL ,&quot; +
+                   &quot;FILENAME VARCHAR(8096) NOT NULL ,&quot; +
+                   &quot;ISMOVED BOOLEAN NOT NULL ,&quot; +
+                   &quot;IDRULE VARCHAR(8096) NOT NULL ,&quot; +
+                   &quot;BLOCKSZ INTEGER NOT NULL ,&quot; +
+                   &quot;ORIGINALNAME VARCHAR(8096) NOT NULL ,&quot; +
+                   &quot;FILEINFO TEXT NOT NULL ,&quot; + &quot;TRANSFERINFO TEXT NOT NULL ,&quot; +
+                   &quot;MODETRANS INTEGER NOT NULL ,&quot; +
+                   &quot;STARTTRANS TIMESTAMP NOT NULL ,&quot; +
+                   &quot;STOPTRANS TIMESTAMP NOT NULL ,&quot; +
+                   &quot;INFOSTATUS CHAR(3) NOT NULL ,&quot; +
+                   &quot;UPDATEDINFO INTEGER NOT NULL ,&quot; +
+                   &quot;OWNERREQ VARCHAR(8096) NOT NULL ,&quot; +
+                   &quot;REQUESTER VARCHAR(8096) NOT NULL ,&quot; +
+                   &quot;REQUESTED VARCHAR(8096) NOT NULL ,&quot; +
+                   &quot;SPECIALID BIGINT NOT NULL ,&quot; +
+                   &quot;CONSTRAINT runner_pk PRIMARY KEY (OWNERREQ, REQUESTER, REQUESTED, SPECIALID));\n&quot;);
+<span class="nc" id="L85">    builder.append(&quot;CREATE INDEX IDX_RUNNER ON RUNNER (&quot; +</span>
+                   &quot;STARTTRANS, OWNERREQ, STEPSTATUS, UPDATEDINFO, GLOBALSTEP, &quot; +
+                   &quot;INFOSTATUS, SPECIALID);\n&quot;);
+<span class="nc" id="L88">    builder.append(</span>
+        &quot;CREATE SEQUENCE RUNSEQ &quot; + &quot;MINVALUE -9223372036854775807 &quot; +
+        &quot;START WITH -9223372036854775807;\n&quot;);
+<span class="nc" id="L91">    return builder.toString();</span>
+
+  }
+
+  public static R66DbProperties getInstance(DbProperties prop) {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">    if (prop instanceof H2Properties) {</span>
+<span class="nc" id="L97">      return new R66H2Properties();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">    } else if (prop instanceof MariaDBProperties) {</span>
+<span class="nc" id="L99">      return new R66MariaDBProperties();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    } else if (prop instanceof MySQLProperties) {</span>
+<span class="nc" id="L101">      return new R66MySQLProperties();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    } else if (prop instanceof PostgreSQLProperties) {</span>
+<span class="nc" id="L103">      return new R66PostgreSQLProperties();</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    } else if (prop instanceof OracleProperties) {</span>
+<span class="nc" id="L105">      return new R66OracleProperties();</span>
+    } else {
+<span class="nc" id="L107">      return null;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

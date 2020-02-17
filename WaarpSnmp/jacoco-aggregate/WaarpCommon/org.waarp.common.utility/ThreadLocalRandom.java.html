@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ThreadLocalRandom.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Snmp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">ThreadLocalRandom.java</span></div><h1>ThreadLocalRandom.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+/*
+ * Written by Doug Lea with assistance from members of JCP JSR-166
+ * Expert Group and released to the public domain, as explained at
+ * http://creativecommons.org/licenses/publicdomain
+ */
+
+import java.util.Random;
+
+/**
+ * A random number generator isolated to the current thread. Like the global
+ * {@link Random} generator used by
+ * the {@link Math} class, a {@code ThreadLocalRandom} is initialized with an
+ * internally generated seed that
+ * may not otherwise be modified. When applicable, use of {@code
+ * ThreadLocalRandom} rather than shared
+ * {@code Random} objects in concurrent programs will typically encounter much
+ * less overhead and contention.
+ * Use of {@code ThreadLocalRandom} is particularly appropriate when multiple
+ * tasks use random numbers in
+ * parallel in thread pools.
+ *
+ * &lt;p&gt;
+ * Usages of this class should typically be of the form: {@code
+ * ThreadLocalRandom.current().nextX(...)} (where
+ * {@code X} is {@code Int}, {@code Long}, etc). When all usages are of this
+ * form, it is never possible to
+ * accidently share a {@code ThreadLocalRandom} across multiple threads.
+ *
+ * &lt;p&gt;
+ * This class also provides additional commonly used bounded random generation
+ * methods.
+ *
+ * @since 1.7
+ */
+<span class="fc" id="L56">public final class ThreadLocalRandom extends Random {</span>
+  // same constants as Random, but must be redeclared because private
+  private static final long MULTIPLIER = 0x5DEECE66DL;
+  private static final long ADDEND = 0xBL;
+  private static final long MASK = (1L &lt;&lt; 48) - 1;
+
+  /**
+   * The random seed. We can't use super.seed.
+   */
+  private long rnd;
+
+  /**
+   * Initialization flag to permit the first and only allowed call to setSeed
+   * (inside Random constructor) to
+   * succeed. We can't allow others since it would cause setting seed in one
+   * part of a program to
+   * unintentionally impact other usages by the thread.
+   */
+  private boolean initialized;
+
+  /**
+   * The actual ThreadLocal
+   */
+<span class="fc" id="L79">  private static final ThreadLocal&lt;ThreadLocalRandom&gt; localRandom =//NOSONAR</span>
+<span class="fc" id="L80">      new ThreadLocal&lt;ThreadLocalRandom&gt;() {</span>
+        @Override
+        protected ThreadLocalRandom initialValue() {
+<span class="fc" id="L83">          return new ThreadLocalRandom();</span>
+        }
+      };//NOSONAR
+
+  /**
+   * Returns the current thread's {@code ThreadLocalRandom}.
+   *
+   * @return the current thread's {@code ThreadLocalRandom}
+   */
+  public static ThreadLocalRandom current() {
+<span class="fc" id="L93">    return localRandom.get();</span>
+  }
+
+  /**
+   * Throws {@code UnsupportedOperationException}. Setting seeds in this
+   * generator is not supported.
+   *
+   * @throws UnsupportedOperationException always
+   */
+  @Override
+  public void setSeed(long seed) {//NOSONAR
+    // We rely on the fact that the superclass no-arg constructor
+    // invokes setSeed exactly once to initialize.
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    if (initialized) {</span>
+<span class="nc" id="L107">      throw new UnsupportedOperationException();</span>
+    }
+<span class="fc" id="L109">    initialized = true;</span>
+<span class="fc" id="L110">    rnd = (seed ^ MULTIPLIER) &amp; MASK;</span>
+<span class="fc" id="L111">  }</span>
+
+  @Override
+  protected int next(int bits) {
+<span class="fc" id="L115">    rnd = rnd * MULTIPLIER + ADDEND &amp; MASK;</span>
+<span class="fc" id="L116">    return (int) (rnd &gt;&gt;&gt; 48 - bits);</span>
+  }
+
+  private static final long serialVersionUID = -5851777807851030925L;
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>KeyObject.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.crypto</a> &gt; <span class="el_source">KeyObject.java</span></div><h1>KeyObject.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.crypto;
+
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.exception.CryptoException;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.Key;
+
+/**
+ * This class handles method to crypt and decrypt using the chosen
+ * algorithm.&lt;br&gt;
+ *
+ * &lt;br&gt;
+ * Usage:&lt;br&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;Create a Key object: KeyObject key = new KeyObject();&lt;/li&gt;
+ * &lt;li&gt;Create a key:
+ * &lt;ul&gt;
+ * &lt;li&gt;Generate: key.generateKey();&lt;br&gt;
+ * The method key.getSecretKeyInBytes() allow getting the key in Bytes.&lt;/li&gt;
+ * &lt;li&gt;From an external source: key.setSecretKey(arrayOfBytes);&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/li&gt;
+ * &lt;li&gt;To crypt a String in a Hex format: String myStringCrypt =
+ * key.cryptToHex(myString);&lt;/li&gt;
+ * &lt;li&gt;To decrypt one string from Hex format to the original String: String
+ * myStringDecrypt =
+ * key.decryptHexInString(myStringCrypte);&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public abstract class KeyObject {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L65">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L66">      WaarpLoggerFactory.getLogger(KeyObject.class);</span>
+
+  /**
+   * The True Key associated with this object
+   */
+  Key secretKey;
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L76">  protected KeyObject() {</span>
+<span class="fc" id="L77">  }</span>
+
+  /**
+   * @return the algorithm used (Java name)
+   */
+  public abstract String getAlgorithm();
+
+  /**
+   * @return the instance used (Java name)
+   */
+  public abstract String getInstance();
+
+  /**
+   * @return the size for the algorithm key
+   */
+  public abstract int getKeySize();
+
+  /**
+   * @return the filename extension to use for this kind of key
+   */
+  public abstract String getFileExtension();
+
+  /**
+   * @return the key associated with this object
+   */
+  public Key getSecretKey() {
+<span class="nc" id="L103">    return secretKey;</span>
+  }
+
+  /**
+   * @return True if this key is ready to be used
+   */
+  public boolean keyReady() {
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    return secretKey != null;</span>
+  }
+
+  /**
+   * Returns the key as an array of bytes in order to be stored somewhere else
+   * and retrieved using the
+   * setSecretKey(byte[] keyData) method.
+   *
+   * @return the key as an array of bytes (or null if not ready)
+   */
+  public byte[] getSecretKeyInBytes() {
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    if (keyReady()) {</span>
+<span class="fc" id="L122">      return secretKey.getEncoded();</span>
+    } else {
+<span class="nc" id="L124">      return null;</span>
+    }
+  }
+
+  /**
+   * Set the secretKey
+   *
+   * @param secretKey
+   */
+  public void setSecretKey(Key secretKey) {
+<span class="nc" id="L134">    this.secretKey = secretKey;</span>
+<span class="nc" id="L135">  }</span>
+
+  /**
+   * Reconstruct a key from an array of bytes
+   */
+  public void setSecretKey(byte[] keyData) {
+<span class="fc" id="L141">    secretKey = new SecretKeySpec(keyData, getAlgorithm());</span>
+<span class="fc" id="L142">  }</span>
+
+  /**
+   * Create a Key from a File
+   *
+   * @param file
+   *
+   * @throws CryptoException
+   * @throws IOException
+   */
+  public void setSecretKey(File file) throws CryptoException, IOException {
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (file.canRead()) {</span>
+<span class="fc" id="L154">      final int len = (int) file.length();</span>
+<span class="fc" id="L155">      final byte[] key = new byte[len];</span>
+      FileInputStream inputStream;
+<span class="fc" id="L157">      inputStream = new FileInputStream(file);</span>
+<span class="fc" id="L158">      final DataInputStream dis = new DataInputStream(inputStream);</span>
+      try {
+<span class="fc" id="L160">        dis.readFully(key);</span>
+      } finally {
+<span class="fc" id="L162">        FileUtils.close(dis);</span>
+      }
+<span class="fc" id="L164">      setSecretKey(key);</span>
+<span class="fc" id="L165">    } else {</span>
+<span class="nc" id="L166">      throw new CryptoException(&quot;Cannot read crypto file: &quot; + file);</span>
+    }
+<span class="fc" id="L168">  }</span>
+
+  /**
+   * Save a Key to a File
+   *
+   * @param file
+   *
+   * @throws CryptoException
+   * @throws IOException
+   */
+  public void saveSecretKey(File file) throws CryptoException, IOException {
+<span class="pc bpc" id="L179" title="4 of 6 branches missed.">    if (keyReady() &amp;&amp; (!file.exists() || file.canWrite())) {</span>
+<span class="fc" id="L180">      final byte[] key = getSecretKeyInBytes();</span>
+<span class="fc" id="L181">      final FileOutputStream outputStream = new FileOutputStream(file);</span>
+      try {
+<span class="fc" id="L183">        outputStream.write(key);</span>
+<span class="fc" id="L184">        outputStream.flush();</span>
+      } finally {
+<span class="fc" id="L186">        FileUtils.close(outputStream);</span>
+      }
+<span class="fc" id="L188">    } else {</span>
+<span class="nc" id="L189">      throw new CryptoException(&quot;Cannot read crypto file&quot;);</span>
+    }
+<span class="fc" id="L191">  }</span>
+
+  /**
+   * Generate a key from nothing
+   *
+   * @throws Exception
+   */
+  public void generateKey() throws Exception {
+    try {
+<span class="fc" id="L200">      final KeyGenerator keyGen = KeyGenerator.getInstance(getAlgorithm());</span>
+<span class="fc" id="L201">      keyGen.init(getKeySize());</span>
+<span class="fc" id="L202">      secretKey = keyGen.generateKey();</span>
+<span class="nc" id="L203">    } catch (final Exception e) {</span>
+<span class="nc" id="L204">      logger.warn(&quot;GenerateKey Error&quot;, e);</span>
+<span class="nc" id="L205">      throw e;</span>
+<span class="fc" id="L206">    }</span>
+<span class="fc" id="L207">  }</span>
+
+  /**
+   * Returns a cipher for encryption associated with the key
+   *
+   * @return the cipher for encryption or null if it fails in case Encryption
+   *     method or key is incorrect
+   */
+  public Cipher toCrypt() {
+    Cipher cipher;
+    try {
+<span class="nc" id="L218">      cipher = Cipher.getInstance(getInstance());</span>
+<span class="nc" id="L219">      cipher.init(Cipher.ENCRYPT_MODE, secretKey);</span>
+<span class="nc" id="L220">    } catch (final Exception e) {</span>
+<span class="nc" id="L221">      logger.warn(&quot;Crypt Error&quot;, e);</span>
+<span class="nc" id="L222">      return null;</span>
+<span class="nc" id="L223">    }</span>
+<span class="nc" id="L224">    return cipher;</span>
+  }
+
+  /**
+   * Crypt one array of bytes and returns the crypted array of bytes
+   *
+   * @param plaintext
+   *
+   * @return the crypted array of bytes
+   *
+   * @throws Exception
+   */
+  public byte[] crypt(byte[] plaintext) throws Exception {
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (!keyReady()) {</span>
+<span class="nc" id="L238">      throw new CryptoException(&quot;Key not Ready&quot;);</span>
+    }
+    try {
+<span class="fc" id="L241">      final Cipher cipher = Cipher.getInstance(getInstance());</span>
+<span class="fc" id="L242">      cipher.init(Cipher.ENCRYPT_MODE, secretKey);</span>
+<span class="fc" id="L243">      return cipher.doFinal(plaintext);</span>
+<span class="nc" id="L244">    } catch (final Exception e) {</span>
+<span class="nc" id="L245">      logger.warn(&quot;Crypt Error&quot;, e);</span>
+<span class="nc" id="L246">      throw e;</span>
+    }
+  }
+
+  /**
+   * Crypt one array of bytes and returns the crypted String as HEX format
+   *
+   * @param plaintext
+   *
+   * @return the crypted String as HEX format
+   *
+   * @throws Exception
+   */
+  public String cryptToHex(byte[] plaintext) throws Exception {
+<span class="fc" id="L260">    final byte[] result = crypt(plaintext);</span>
+<span class="fc" id="L261">    return encodeHex(result);</span>
+  }
+
+  /**
+   * Crypt one String and returns the crypted array of bytes
+   *
+   * @param plaintext
+   *
+   * @return the crypted array of bytes
+   *
+   * @throws Exception
+   */
+  public byte[] crypt(String plaintext) throws Exception {
+<span class="fc" id="L274">    return crypt(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
+  }
+
+  /**
+   * Crypt one String and returns the crypted String as HEX format
+   *
+   * @param plaintext
+   *
+   * @return the crypted String as HEX format
+   *
+   * @throws Exception
+   */
+  public String cryptToHex(String plaintext) throws Exception {
+<span class="fc" id="L287">    return cryptToHex(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
+  }
+
+  /**
+   * Returns a cipher for decryption associated with the key
+   *
+   * @return the cipher for decryption or null if it fails in case Encryption
+   *     method or key is incorrect
+   */
+  public Cipher toDecrypt() {
+    Cipher cipher;
+    try {
+<span class="nc" id="L299">      cipher = Cipher.getInstance(getAlgorithm());</span>
+<span class="nc" id="L300">      cipher.init(Cipher.DECRYPT_MODE, secretKey);</span>
+<span class="nc" id="L301">    } catch (final Exception e) {</span>
+<span class="nc" id="L302">      logger.warn(&quot;Uncrypt Error&quot;, e);</span>
+<span class="nc" id="L303">      return null;</span>
+<span class="nc" id="L304">    }</span>
+<span class="nc" id="L305">    return cipher;</span>
+  }
+
+  /**
+   * Decrypt an array of bytes and returns the uncrypted array of bytes
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted array of bytes
+   *
+   * @throws Exception
+   */
+  public byte[] decrypt(byte[] ciphertext) throws Exception {
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">    if (!keyReady()) {</span>
+<span class="nc" id="L319">      throw new CryptoException(&quot;Key not Ready&quot;);</span>
+    }
+    try {
+<span class="fc" id="L322">      final Cipher cipher = Cipher.getInstance(getAlgorithm());</span>
+<span class="fc" id="L323">      cipher.init(Cipher.DECRYPT_MODE, secretKey);</span>
+<span class="fc" id="L324">      return cipher.doFinal(ciphertext);</span>
+<span class="nc" id="L325">    } catch (final Exception e) {</span>
+<span class="nc" id="L326">      logger.warn(&quot;Decrypt Error&quot;, e);</span>
+<span class="nc" id="L327">      throw e;</span>
+    }
+  }
+
+  /**
+   * Decrypt an array of bytes and returns the uncrypted String
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted array of bytes
+   *
+   * @throws Exception
+   */
+  public String decryptInString(byte[] ciphertext) throws Exception {
+<span class="fc" id="L341">    return new String(decrypt(ciphertext), WaarpStringUtils.UTF8);</span>
+  }
+
+  /**
+   * Decrypt a String as HEX format representing a crypted array of bytes and
+   * returns the uncrypted array of
+   * bytes
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted array of bytes
+   *
+   * @throws Exception
+   */
+  public byte[] decryptHexInBytes(String ciphertext) throws Exception {
+<span class="fc" id="L356">    final byte[] arrayBytes = decodeHex(ciphertext);</span>
+<span class="fc" id="L357">    return decrypt(arrayBytes);</span>
+  }
+
+  /**
+   * Decrypt an array of bytes as HEX format representing a crypted array of
+   * bytes and returns the uncrypted
+   * array of bytes
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted array of bytes
+   *
+   * @throws Exception
+   */
+  public byte[] decryptHexInBytes(byte[] ciphertext) throws Exception {
+<span class="fc" id="L372">    final byte[] arrayBytes =</span>
+<span class="fc" id="L373">        decodeHex(new String(ciphertext, WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L374">    return decrypt(arrayBytes);</span>
+  }
+
+  /**
+   * Decrypt a String as HEX format representing a crypted array of bytes and
+   * returns the uncrypted String
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted String
+   *
+   * @throws Exception
+   */
+  public String decryptHexInString(String ciphertext) throws Exception {
+<span class="fc" id="L388">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
+  }
+
+  /**
+   * Decode from a file containing a HEX crypted string
+   *
+   * @param file
+   *
+   * @return the decoded uncrypted content of the file
+   *
+   * @throws Exception
+   */
+  public byte[] decryptHexFile(File file) throws Exception {
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L402">      throw new IOException(</span>
+          &quot;File too big to be decoded into an array of bytes&quot;);
+    }
+<span class="fc" id="L405">    byte[] byteKeys = new byte[(int) file.length()];</span>
+<span class="fc" id="L406">    FileInputStream inputStream = null;</span>
+<span class="fc" id="L407">    DataInputStream dis = null;</span>
+    try {
+<span class="fc" id="L409">      inputStream = new FileInputStream(file);</span>
+<span class="fc" id="L410">      dis = new DataInputStream(inputStream);</span>
+<span class="fc" id="L411">      dis.readFully(byteKeys);</span>
+<span class="fc" id="L412">      FileUtils.close(dis);</span>
+<span class="fc" id="L413">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
+      // decrypt it
+<span class="fc" id="L415">      byteKeys = decryptHexInBytes(skey);</span>
+<span class="fc" id="L416">      return byteKeys;</span>
+    } finally {
+<span class="fc" id="L418">      FileUtils.close(dis);</span>
+<span class="fc" id="L419">      FileUtils.close(inputStream);</span>
+    }
+  }
+
+  /**
+   * @param encoded
+   *
+   * @return the array of bytes from encoded String (HEX)
+   */
+  public byte[] decodeHex(String encoded) {
+<span class="fc" id="L429">    return FilesystemBasedDigest.getFromHex(encoded);</span>
+  }
+
+  /**
+   * @param bytes
+   *
+   * @return The encoded array of bytes in HEX
+   */
+  public String encodeHex(byte[] bytes) {
+<span class="fc" id="L438">    return FilesystemBasedDigest.getHex(bytes);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

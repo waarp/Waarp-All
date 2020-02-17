@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FHistoryButton.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpXmlEditor</a> &gt; <a href="index.source.html" class="el_package">org.waarp.xample</a> &gt; <span class="el_source">FHistoryButton.java</span></div><h1>FHistoryButton.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.xample;
+
+import com.fg.util.FLoader;
+import com.fg.util.FadingFilter;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.ItemSelectable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
+
+/*
+ * Copyright (c) 2002 Felix Golubov
+ */
+
+/**
+ * A simple button with drop-down menu for the XAmple application.
+ *
+ * @author Felix Golubov
+ * @version 1.0
+ */
+
+public class FHistoryButton extends JComponent
+    implements ItemSelectable, ActionListener {
+  /**
+   *
+   */
+  private static final long serialVersionUID = -5176285056068997723L;
+<span class="nc" id="L67">  final JToggleButton leftButton = new JToggleButton();</span>
+<span class="nc" id="L68">  final Btn rightButton = new Btn();</span>
+<span class="nc" id="L69">  final JPopupMenu popupMenu = new JPopupMenu();</span>
+<span class="nc" id="L70">  transient final ArrayList&lt;History&gt; items = new ArrayList&lt;History&gt;();</span>
+<span class="nc" id="L71">  transient final ArrayList&lt;ItemListener&gt; itemListeners =</span>
+      new ArrayList&lt;ItemListener&gt;(1);
+<span class="nc" id="L73">  transient final ArrayList&lt;ActionListener&gt; actionListeners =</span>
+      new ArrayList&lt;ActionListener&gt;(1);
+
+  public FHistoryButton(ImageIcon icon, String leftTipText,
+<span class="nc" id="L77">                        String rightTipText) {</span>
+<span class="nc" id="L78">    leftButton.setFocusPainted(false);</span>
+<span class="nc" id="L79">    setIcon(icon);</span>
+<span class="nc" id="L80">    final ImageIcon icoArrow = FLoader.getIcon(this, &quot;DropDown.gif&quot;);</span>
+<span class="nc" id="L81">    rightButton.setIcon(icoArrow);</span>
+<span class="nc" id="L82">    rightButton.setDisabledIcon(FadingFilter.fade(icoArrow));</span>
+<span class="nc" id="L83">    leftButton.setToolTipText(leftTipText);</span>
+<span class="nc" id="L84">    rightButton.setToolTipText(rightTipText);</span>
+<span class="nc" id="L85">    popupMenu.addPopupMenuListener(rightButton);</span>
+<span class="nc" id="L86">    leftButton.addActionListener(this);</span>
+<span class="nc" id="L87">    setBorder(BorderFactory.createLineBorder(Color.gray));</span>
+<span class="nc" id="L88">    setLayout(new BorderLayout());</span>
+<span class="nc" id="L89">    add(leftButton, BorderLayout.CENTER);</span>
+<span class="nc" id="L90">    add(rightButton, BorderLayout.EAST);</span>
+<span class="nc" id="L91">    setPreferredSize(new Dimension(44 + 14, 27));</span>
+<span class="nc" id="L92">    setMinimumSize(new Dimension(44 + 14, 27));</span>
+<span class="nc" id="L93">    setMaximumSize(new Dimension(44 + 14, 27));</span>
+<span class="nc" id="L94">    setItems(null);</span>
+<span class="nc" id="L95">  }</span>
+
+  public void setIcon(ImageIcon icon) {
+<span class="nc" id="L98">    leftButton.setIcon(icon);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (icon != null) {</span>
+<span class="nc" id="L100">      leftButton.setDisabledIcon(FadingFilter.fade(icon));</span>
+    }
+<span class="nc" id="L102">  }</span>
+
+  public void setItems(List&lt;History&gt; items) {
+<span class="nc" id="L105">    popupMenu.removeAll();</span>
+<span class="nc" id="L106">    this.items.clear();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (items != null) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="nc" id="L109">        final History item = items.get(i);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (item == null) {</span>
+<span class="nc" id="L111">          continue;</span>
+        }
+<span class="nc" id="L113">        this.items.add(item);</span>
+<span class="nc" id="L114">        final JMenuItem mi = new JMenuItem(item.toString());</span>
+<span class="nc" id="L115">        mi.addActionListener(this);</span>
+<span class="nc" id="L116">        popupMenu.add(mi);</span>
+      }
+    }
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (this.items.isEmpty()) {</span>
+<span class="nc" id="L120">      final JMenuItem mi = new JMenuItem(&quot;&lt; Empty &gt;&quot;);</span>
+<span class="nc" id="L121">      mi.setEnabled(false);</span>
+<span class="nc" id="L122">      popupMenu.add(mi);</span>
+    }
+<span class="nc" id="L124">  }</span>
+
+  @Override
+  public Insets getInsets() {
+<span class="nc" id="L128">    return new Insets(2, 2, 1, 1);</span>
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (e.getSource() instanceof JMenuItem) {</span>
+<span class="nc" id="L134">      final int index = popupMenu.getComponentIndex((Component) e.getSource());</span>
+<span class="nc bnc" id="L135" title="All 4 branches missed.">      if (index &gt;= 0 &amp;&amp; index &lt; items.size()) {</span>
+<span class="nc" id="L136">        final ItemEvent ie =</span>
+<span class="nc" id="L137">            new ItemEvent(this, index, items.get(index), ItemEvent.SELECTED);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        for (int i = 0; i &lt; itemListeners.size(); i++) {</span>
+<span class="nc" id="L139">          final ItemListener l = itemListeners.get(i);</span>
+<span class="nc" id="L140">          l.itemStateChanged(ie);</span>
+        }
+      }
+<span class="nc bnc" id="L143" title="All 2 branches missed.">    } else if (e.getSource() == leftButton) {</span>
+<span class="nc" id="L144">      leftButton.setSelected(false);</span>
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">      for (int i = 0; i &lt; actionListeners.size(); i++) {</span>
+<span class="nc" id="L147">        final ActionListener l = actionListeners.get(i);</span>
+<span class="nc" id="L148">        final ActionEvent ae =</span>
+<span class="nc" id="L149">            new ActionEvent(this, e.getID(), e.getActionCommand());</span>
+<span class="nc" id="L150">        l.actionPerformed(ae);</span>
+      }
+    }
+<span class="nc" id="L153">  }</span>
+
+  @Override
+  public void addItemListener(ItemListener l) {
+<span class="nc bnc" id="L157" title="All 2 branches missed.">    if (!itemListeners.contains(l)) {</span>
+<span class="nc" id="L158">      itemListeners.add(l);</span>
+    }
+<span class="nc" id="L160">  }</span>
+
+  @Override
+  public Object[] getSelectedObjects() {
+<span class="nc" id="L164">    return null;</span>
+  }
+
+  @Override
+  public void removeItemListener(ItemListener l) {
+<span class="nc" id="L169">    itemListeners.remove(l);</span>
+<span class="nc" id="L170">  }</span>
+
+  public void addActionListener(ActionListener l) {
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    if (!actionListeners.contains(l)) {</span>
+<span class="nc" id="L174">      actionListeners.add(l);</span>
+    }
+<span class="nc" id="L176">  }</span>
+
+  public void removeActionListener(ActionListener l) {
+<span class="nc" id="L179">    actionListeners.remove(l);</span>
+<span class="nc" id="L180">  }</span>
+
+  @Override
+  public void setEnabled(boolean enabled) {
+<span class="nc" id="L184">    super.setEnabled(enabled);</span>
+<span class="nc" id="L185">    leftButton.setEnabled(enabled);</span>
+<span class="nc" id="L186">    rightButton.setEnabled(enabled);</span>
+<span class="nc" id="L187">  }</span>
+
+  @Override
+  public void updateUI() {
+<span class="nc" id="L191">    super.updateUI();</span>
+<span class="nc" id="L192">    SwingUtilities.updateComponentTreeUI(popupMenu);</span>
+<span class="nc" id="L193">  }</span>
+
+  class Btn extends JToggleButton implements MouseListener, PopupMenuListener {
+    /**
+     *
+     */
+    private static final long serialVersionUID = -1272417382610945574L;
+    boolean b;
+
+<span class="nc" id="L202">    Btn() {</span>
+<span class="nc" id="L203">      setFocusPainted(false);</span>
+<span class="nc" id="L204">      addMouseListener(this);</span>
+<span class="nc" id="L205">    }</span>
+
+    @Override
+    public Dimension getMinimumSize() {
+<span class="nc" id="L209">      super.getMinimumSize();</span>
+<span class="nc" id="L210">      return new Dimension(14, 27);</span>
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+<span class="nc" id="L215">      super.getPreferredSize();</span>
+<span class="nc" id="L216">      return new Dimension(14, 27);</span>
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      // nothing
+<span class="nc" id="L222">    }</span>
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+<span class="nc bnc" id="L226" title="All 2 branches missed.">      if (!isEnabled()) {</span>
+<span class="nc" id="L227">        return;</span>
+      }
+<span class="nc bnc" id="L229" title="All 2 branches missed.">      if (popupMenu.isShowing()) {</span>
+<span class="nc" id="L230">        b = true;</span>
+      } else {
+<span class="nc" id="L232">        popupMenu</span>
+<span class="nc" id="L233">            .show(FHistoryButton.this, 0, FHistoryButton.this.getSize().height);</span>
+      }
+<span class="nc" id="L235">    }</span>
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+      // nothing
+<span class="nc" id="L240">    }</span>
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+      // nothing
+<span class="nc" id="L245">    }</span>
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+      // nothing
+<span class="nc" id="L250">    }</span>
+
+    @Override
+    public void popupMenuCanceled(PopupMenuEvent e) {
+      // nothing
+<span class="nc" id="L255">    }</span>
+
+    @Override
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+<span class="nc bnc" id="L259" title="All 2 branches missed.">      if (b) {</span>
+<span class="nc" id="L260">        b = false;</span>
+      } else {
+<span class="nc" id="L262">        setSelected(false);</span>
+      }
+<span class="nc" id="L264">    }</span>
+
+    @Override
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+      // nothing
+<span class="nc" id="L269">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MoveTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">MoveTask.java</span></div><h1>MoveTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.R66Session;
+
+import java.io.File;
+
+/**
+ * Move the file (without renaming it)
+ */
+public class MoveTask extends AbstractTask {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L38">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L39">      WaarpLoggerFactory.getLogger(MoveTask.class);</span>
+
+  /**
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public MoveTask(String argRule, int delay, String argTransfer,
+                  R66Session session) {
+<span class="fc" id="L49">    super(TaskType.MOVE, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L50">  }</span>
+
+  @Override
+  public void run() {
+<span class="fc" id="L54">    logger</span>
+<span class="fc" id="L55">        .info(&quot;Move with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;, session);</span>
+<span class="fc" id="L56">    String directory = argRule;</span>
+<span class="fc" id="L57">    directory = getReplacedValue(directory, BLANK.split(argTransfer)).trim()</span>
+<span class="fc" id="L58">                                                                     .replace(</span>
+                                                                         '\\',
+                                                                         '/');
+<span class="fc" id="L61">    final String finalname =</span>
+<span class="fc" id="L62">        directory + DirInterface.SEPARATOR + session.getFile().getBasename();</span>
+<span class="fc" id="L63">    final File from = session.getFile().getTrueFile();</span>
+<span class="fc" id="L64">    final File to = new File(finalname);</span>
+    try {
+<span class="fc" id="L66">      FileUtils.copy(from, to, true, false);</span>
+<span class="nc" id="L67">    } catch (final Reply550Exception e) {</span>
+<span class="nc" id="L68">      logger.error(</span>
+          &quot;Move with &quot; + argRule + ':' + argTransfer + &quot; to &quot; + finalname +
+          &quot; and &quot; + session, e);
+<span class="nc" id="L71">      futureCompletion.setFailure(e);</span>
+<span class="nc" id="L72">      return;</span>
+<span class="fc" id="L73">    }</span>
+<span class="fc" id="L74">    session.getRunner().setFileMoved(finalname, true);</span>
+<span class="fc" id="L75">    futureCompletion.setSuccess();</span>
+
+<span class="fc" id="L77">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

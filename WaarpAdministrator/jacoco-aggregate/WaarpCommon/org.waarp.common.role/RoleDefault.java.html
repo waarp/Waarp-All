@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RoleDefault.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.role</a> &gt; <span class="el_source">RoleDefault.java</span></div><h1>RoleDefault.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.role;
+
+/**
+ * Role to be used in Waarp projects
+ */
+public class RoleDefault {
+<span class="fc" id="L26">  public enum ROLE {</span>
+    /**
+     * No access to any function
+     */
+<span class="fc" id="L30">    NOACCESS(0),</span>
+    /**
+     * Read only access, no action
+     */
+<span class="fc" id="L34">    READONLY(1),</span>
+    /**
+     * Ability to starts transfer
+     */
+<span class="fc" id="L38">    TRANSFER(2),</span>
+    /**
+     * Ability to control rules
+     */
+<span class="fc" id="L42">    RULE(4),</span>
+    /**
+     * Ability to control hosts
+     */
+<span class="fc" id="L46">    HOST(8),</span>
+    /**
+     * Ability to control bandwidth limitation
+     */
+<span class="fc" id="L50">    LIMIT(16),</span>
+    /**
+     * Ability to control the system configuration and to control transfers
+     */
+<span class="fc" id="L54">    SYSTEM(32),</span>
+    /**
+     * Ability to control the logging
+     */
+<span class="fc" id="L58">    LOGCONTROL(64),</span>
+    /**
+     * Unused Role value
+     */
+<span class="fc" id="L62">    UNUSED(-128),</span>
+    /**
+     * Default partner : ability to read and starts transfers
+     */
+<span class="fc" id="L66">    PARTNER(READONLY, TRANSFER),</span>
+    /**
+     * Administrator on configuration (partner, rule, host)
+     */
+<span class="fc" id="L70">    CONFIGADMIN(PARTNER, RULE, HOST),</span>
+    /**
+     * Administrator on all
+     */
+<span class="fc" id="L74">    FULLADMIN(CONFIGADMIN, LIMIT, SYSTEM, LOGCONTROL);</span>
+
+    private byte brole;
+
+<span class="fc" id="L78">    ROLE(int val) {</span>
+<span class="fc" id="L79">      brole = (byte) val;</span>
+<span class="fc" id="L80">    }</span>
+
+<span class="fc" id="L82">    ROLE(ROLE... name) {</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">      for (final ROLE role : name) {</span>
+<span class="fc" id="L84">        this.brole |= role.brole;</span>
+      }
+<span class="fc" id="L86">    }</span>
+
+    public boolean isContained(byte value) {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">      if (this == NOACCESS) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        return value == NOACCESS.brole;</span>
+      }
+<span class="fc bfc" id="L92" title="All 2 branches covered.">      return (value &amp; brole) == brole;</span>
+    }
+
+    public byte getAsByte() {
+<span class="nc" id="L96">      return brole;</span>
+    }
+
+    public static final String toString(byte fromRole) {
+<span class="fc" id="L100">      final StringBuilder result = new StringBuilder(&quot;[ &quot;);</span>
+<span class="fc" id="L101">      final ROLE[] values = ROLE.values();</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">      for (final ROLE role : values) {</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (role.isContained(fromRole)) {</span>
+<span class="fc" id="L104">          result.append(role.name()).append(' ');</span>
+        }
+      }
+<span class="fc" id="L107">      result.append(']');</span>
+<span class="fc" id="L108">      return result.toString();</span>
+    }
+
+    public static final ROLE fromByte(byte role) {
+<span class="nc bnc" id="L112" title="All 9 branches missed.">      switch (role) {</span>
+        case 1:
+<span class="nc" id="L114">          return READONLY;</span>
+        case 2:
+<span class="nc" id="L116">          return TRANSFER;</span>
+        case 4:
+<span class="nc" id="L118">          return RULE;</span>
+        case 8:
+<span class="nc" id="L120">          return HOST;</span>
+        case 16:
+<span class="nc" id="L122">          return LIMIT;</span>
+        case 32:
+<span class="nc" id="L124">          return SYSTEM;</span>
+        case 64:
+<span class="nc" id="L126">          return LOGCONTROL;</span>
+        case -128:
+<span class="nc" id="L128">          return UNUSED;</span>
+        case 0:
+        default:
+<span class="nc" id="L131">          return NOACCESS;</span>
+      }
+    }
+  }
+
+  private byte role;
+
+<span class="fc" id="L138">  public RoleDefault() {</span>
+<span class="fc" id="L139">    role = ROLE.NOACCESS.brole;</span>
+<span class="fc" id="L140">  }</span>
+
+<span class="fc" id="L142">  public RoleDefault(ROLE role) {</span>
+<span class="fc" id="L143">    this.role = role.brole;</span>
+<span class="fc" id="L144">  }</span>
+
+  public byte getRoleAsByte() {
+<span class="fc" id="L147">    return role;</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="fc" id="L152">    return ROLE.toString(role);</span>
+  }
+
+  public RoleDefault addRole(ROLE newrole) {
+<span class="fc" id="L156">    role |= newrole.brole;</span>
+<span class="fc" id="L157">    return this;</span>
+  }
+
+  public RoleDefault setRole(ROLE newrole) {
+<span class="fc" id="L161">    role = newrole.brole;</span>
+<span class="fc" id="L162">    return this;</span>
+  }
+
+  public RoleDefault setRoleDefault(RoleDefault newrole) {
+<span class="fc" id="L166">    role = newrole.role;</span>
+<span class="fc" id="L167">    return this;</span>
+  }
+
+  public void clear() {
+<span class="fc" id="L171">    role = ROLE.NOACCESS.brole;</span>
+<span class="fc" id="L172">  }</span>
+
+  public boolean isContaining(ROLE otherrole) {
+<span class="fc" id="L175">    return otherrole.isContained(role);</span>
+  }
+
+  public boolean hasNoAccess() {
+<span class="fc bfc" id="L179" title="All 2 branches covered.">    return role == ROLE.NOACCESS.brole;</span>
+  }
+
+  public boolean hasReadOnly() {
+<span class="fc" id="L183">    return ROLE.READONLY.isContained(role);</span>
+  }
+
+  public boolean hasTransfer() {
+<span class="fc" id="L187">    return ROLE.TRANSFER.isContained(role);</span>
+  }
+
+  public boolean hasRule() {
+<span class="fc" id="L191">    return ROLE.RULE.isContained(role);</span>
+  }
+
+  public boolean hasHost() {
+<span class="fc" id="L195">    return ROLE.HOST.isContained(role);</span>
+  }
+
+  public boolean hasLimit() {
+<span class="fc" id="L199">    return ROLE.LIMIT.isContained(role);</span>
+  }
+
+  public boolean hasSystem() {
+<span class="fc" id="L203">    return ROLE.SYSTEM.isContained(role);</span>
+  }
+
+  public boolean hasUnused() {
+<span class="fc" id="L207">    return ROLE.UNUSED.isContained(role);</span>
+  }
+
+  public boolean hasLogControl() {
+<span class="fc" id="L211">    return ROLE.LOGCONTROL.isContained(role);</span>
+  }
+
+  public static final boolean hasNoAccess(byte role) {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    return role == ROLE.NOACCESS.brole;</span>
+  }
+
+  public static final boolean hasReadOnly(byte role) {
+<span class="nc" id="L219">    return ROLE.READONLY.isContained(role);</span>
+  }
+
+  public static final boolean hasTransfer(byte role) {
+<span class="nc" id="L223">    return ROLE.TRANSFER.isContained(role);</span>
+  }
+
+  public static final boolean hasRule(byte role) {
+<span class="nc" id="L227">    return ROLE.RULE.isContained(role);</span>
+  }
+
+  public static final boolean hasHost(byte role) {
+<span class="nc" id="L231">    return ROLE.HOST.isContained(role);</span>
+  }
+
+  public static final boolean hasLimit(byte role) {
+<span class="nc" id="L235">    return ROLE.LIMIT.isContained(role);</span>
+  }
+
+  public static final boolean hasSystem(byte role) {
+<span class="nc" id="L239">    return ROLE.SYSTEM.isContained(role);</span>
+  }
+
+  public static final boolean hasUnused(byte role) {
+<span class="nc" id="L243">    return ROLE.UNUSED.isContained(role);</span>
+  }
+
+  public static final boolean hasLogControl(byte role) {
+<span class="nc" id="L247">    return ROLE.LOGCONTROL.isContained(role);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

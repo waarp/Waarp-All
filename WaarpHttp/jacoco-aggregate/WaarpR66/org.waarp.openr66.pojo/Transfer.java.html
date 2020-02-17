@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>Transfer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.pojo</a> &gt; <span class="el_source">Transfer.java</span></div><h1>Transfer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.pojo;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.database.DbConstantR66;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.waarp.openr66.dao.database.DBTransferDAO.*;
+
+/**
+ * Transfer data object
+ */
+@XmlType(name = DbTaskRunner.XMLRUNNER)
+@XmlAccessorType(XmlAccessType.NONE)
+public class Transfer {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(Transfer.class);</span>
+
+<span class="fc" id="L58">  public enum TASKSTEP {</span>
+<span class="fc" id="L59">    NOTASK(0), PRETASK(1), TRANSFERTASK(2), POSTTASK(3), ALLDONETASK(4),</span>
+<span class="fc" id="L60">    ERRORTASK(5);</span>
+
+    private final int taskNo;
+
+<span class="fc" id="L64">    private static final Map&lt;Integer, TASKSTEP&gt; map =</span>
+        new HashMap&lt;Integer, TASKSTEP&gt;();
+
+    static {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">      for (final TASKSTEP task : TASKSTEP.values()) {</span>
+<span class="fc" id="L69">        map.put(task.taskNo, task);</span>
+      }
+<span class="fc" id="L71">    }</span>
+
+<span class="fc" id="L73">    TASKSTEP(final int task) {</span>
+<span class="fc" id="L74">      taskNo = task;</span>
+<span class="fc" id="L75">    }</span>
+
+    public static TASKSTEP valueOf(int taskStep) {
+<span class="fc" id="L78">      return map.get(taskStep);</span>
+    }
+
+    public DbTaskRunner.TASKSTEP toLegacy() {
+<span class="fc" id="L82">      return DbTaskRunner.TASKSTEP.valueOf(name());</span>
+    }
+
+    @JsonValue
+    public int getTaskNo() {
+<span class="fc" id="L87">        return taskNo;</span>
+    }
+  }
+
+<span class="fc" id="L91">  @XmlElement(name = ID_FIELD)</span>
+  @JsonProperty(&quot;SPECIALID&quot;)
+  private long id = DbConstantR66.ILLEGALVALUE;
+
+  /**
+   * True if requester is the sender of the file (SEND MODE) False if
+   * requested is the sender of the file
+   * (RETRIEVE MODE)
+   */
+  @XmlElement(name = RETRIEVE_MODE_FIELD)
+  @JsonProperty(&quot;RETRIEVEMODE&quot;)
+  private boolean retrieveMode;
+
+<span class="fc" id="L104">  @XmlElement(name = ID_RULE_FIELD)</span>
+  @JsonProperty(&quot;IDRULE&quot;)
+  private String rule = &quot;&quot;;
+
+<span class="fc" id="L108">  @XmlElement(name = TRANSFER_MODE_FIELD)</span>
+  @JsonProperty(&quot;MODETRANS&quot;)
+  private int transferMode = 1;
+
+<span class="fc" id="L112">  @XmlElement(name = FILENAME_FIELD)</span>
+  @JsonProperty(&quot;FILENAME&quot;)
+  private String filename = &quot;&quot;;
+
+<span class="fc" id="L116">  @XmlElement(name = ORIGINAL_NAME_FIELD)</span>
+  @JsonProperty(&quot;ORIGINALNAME&quot;)
+  private String originalName = &quot;&quot;;
+
+<span class="fc" id="L120">  @XmlElement(name = FILE_INFO_FIELD)</span>
+  @JsonProperty(&quot;FILEINFO&quot;)
+  private String fileInfo = &quot;&quot;;
+
+  @XmlElement(name = IS_MOVED_FIELD)
+  @JsonProperty(&quot;ISMOVED&quot;)
+  private boolean isMoved;
+
+  @XmlElement(name = BLOCK_SIZE_FIELD)
+  @JsonProperty(&quot;BLOCKSZ&quot;)
+  private int blockSize;
+
+<span class="fc" id="L132">  @XmlElement(name = OWNER_REQUEST_FIELD)</span>
+  @JsonProperty(&quot;OWNERREQ&quot;)
+<span class="fc" id="L134">  private String ownerRequest = Configuration.configuration.getHostId();</span>
+
+<span class="fc" id="L136">  @XmlElement(name = REQUESTER_FIELD)</span>
+  @JsonProperty(&quot;REQUESTER&quot;)
+  private String requester = &quot;&quot;;
+
+<span class="fc" id="L140">  @XmlElement(name = REQUESTED_FIELD)</span>
+  @JsonProperty(&quot;REQUESTED&quot;)
+  private String requested = &quot;&quot;;
+
+<span class="fc" id="L144">  @XmlTransient</span>
+  @JsonProperty(&quot;TRANSFERINFO&quot;)
+  private String transferInfo = &quot;&quot;;
+
+<span class="fc" id="L148">  @XmlElement(name = GLOBAL_STEP_FIELD)</span>
+  @JsonProperty(&quot;GLOBALSTEP&quot;)
+  private TASKSTEP globalStep = TASKSTEP.NOTASK;
+
+<span class="fc" id="L152">  @XmlElement(name = GLOBAL_LAST_STEP_FIELD)</span>
+  @JsonProperty(&quot;GLOBALLASTSTEP&quot;)
+  private TASKSTEP lastGlobalStep = TASKSTEP.NOTASK;
+
+<span class="fc" id="L156">  @XmlElement(name = STEP_FIELD)</span>
+  @JsonProperty(&quot;STEP&quot;)
+  private int step = -1;
+
+<span class="fc" id="L160">  @XmlElement(name = STEP_STATUS_FIELD)</span>
+  @JsonProperty(&quot;STEPSTATUS&quot;)
+  private ErrorCode stepStatus = ErrorCode.Unknown;
+
+<span class="fc" id="L164">  @XmlElement(name = INFO_STATUS_FIELD)</span>
+  @JsonProperty(&quot;INFOSTATUS&quot;)
+  private ErrorCode infoStatus = ErrorCode.Unknown;
+
+  @XmlElement(name = RANK_FIELD)
+  @JsonProperty(&quot;RANK&quot;)
+  private int rank;
+
+<span class="fc" id="L172">  @XmlTransient</span>
+  @JsonProperty(&quot;STARTTRANS&quot;)
+  private Timestamp start = new Timestamp(0);
+
+<span class="fc" id="L176">  @XmlTransient</span>
+  @JsonProperty(&quot;STOPTRANS&quot;)
+  private Timestamp stop = new Timestamp(0);
+
+<span class="fc" id="L180">  @XmlTransient</span>
+  @JsonProperty(&quot;UPDATEDINFO&quot;)
+  private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
+
+  @XmlElement(name = TRANSFER_START_FIELD)
+  @JsonIgnore
+  public long getXmlStart() {
+<span class="nc" id="L187">    return start.getTime();</span>
+  }
+
+  public void setXmlStart(long xml) {
+<span class="nc" id="L191">    start = new Timestamp(xml);</span>
+<span class="nc" id="L192">  }</span>
+
+  @XmlElement(name = TRANSFER_STOP_FIELD)
+  @JsonIgnore
+  public long getXmlStop() {
+<span class="nc" id="L197">    return stop.getTime();</span>
+  }
+
+  public void setXmlStop(long xml) {
+<span class="nc" id="L201">    stop = new Timestamp(xml);</span>
+<span class="nc" id="L202">  }</span>
+
+  /**
+   * Full Constructor to create Transfer from the database
+   *
+   * @param id
+   * @param rule
+   * @param mode
+   * @param filename
+   * @param originalName
+   * @param fileInfo
+   * @param isMoved
+   * @param blockSize
+   * @param retrieveMode
+   * @param ownerReq
+   * @param requester
+   * @param requested
+   * @param transferInfo
+   * @param globalStep
+   * @param lastGlobalStep
+   * @param step
+   * @param stepStatus
+   * @param infoStatus
+   * @param rank
+   * @param start
+   * @param stop
+   * @param updatedInfo
+   */
+  public Transfer(long id, String rule, int mode, String filename,
+                  String originalName, String fileInfo, boolean isMoved,
+                  int blockSize, boolean retrieveMode, String ownerReq,
+                  String requester, String requested, String transferInfo,
+                  TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
+                  ErrorCode stepStatus, ErrorCode infoStatus, int rank,
+                  Timestamp start, Timestamp stop, UpdatedInfo updatedInfo) {
+<span class="fc" id="L237">    this(id, rule, mode, filename, originalName, fileInfo, isMoved,</span>
+         blockSize, retrieveMode, ownerReq, requester, requested, transferInfo,
+         globalStep, lastGlobalStep, step, stepStatus, infoStatus, rank, start,
+         stop);
+<span class="fc" id="L241">    this.updatedInfo = updatedInfo;</span>
+<span class="fc" id="L242">  }</span>
+
+  /**
+   * Constructor to create Transfer from remote requests
+   *
+   * @param id
+   * @param rule
+   * @param mode
+   * @param filename
+   * @param originalName
+   * @param fileInfo
+   * @param isMoved
+   * @param blockSize
+   * @param retrieveMode
+   * @param ownerReq
+   * @param requester
+   * @param requested
+   * @param transferInfo
+   * @param globalStep
+   * @param lastGlobalStep
+   * @param step
+   * @param stepStatus
+   * @param infoStatus
+   * @param rank
+   * @param start
+   * @param stop
+   */
+  public Transfer(long id, String rule, int mode, String filename,
+                  String originalName, String fileInfo, boolean isMoved,
+                  int blockSize, boolean retrieveMode, String ownerReq,
+                  String requester, String requested, String transferInfo,
+                  TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
+                  ErrorCode stepStatus, ErrorCode infoStatus, int rank,
+<span class="fc" id="L275">                  Timestamp start, Timestamp stop) {</span>
+<span class="fc" id="L276">    this.id = id;</span>
+<span class="fc" id="L277">    this.rule = rule;</span>
+<span class="fc" id="L278">    transferMode = mode;</span>
+<span class="fc" id="L279">    this.retrieveMode = retrieveMode;</span>
+<span class="fc" id="L280">    this.filename = filename;</span>
+<span class="fc" id="L281">    this.originalName = originalName;</span>
+<span class="fc" id="L282">    this.fileInfo = fileInfo;</span>
+<span class="fc" id="L283">    this.isMoved = isMoved;</span>
+<span class="fc" id="L284">    this.blockSize = blockSize;</span>
+<span class="fc" id="L285">    ownerRequest = ownerReq;</span>
+<span class="fc" id="L286">    this.requester = requester;</span>
+<span class="fc" id="L287">    this.requested = requested;</span>
+<span class="fc" id="L288">    this.transferInfo = transferInfo;</span>
+<span class="fc" id="L289">    this.globalStep = globalStep;</span>
+<span class="fc" id="L290">    this.lastGlobalStep = lastGlobalStep;</span>
+<span class="fc" id="L291">    this.step = step;</span>
+<span class="fc" id="L292">    this.stepStatus = stepStatus;</span>
+<span class="fc" id="L293">    this.infoStatus = infoStatus;</span>
+<span class="fc" id="L294">    this.rank = rank;</span>
+<span class="fc" id="L295">    this.start = start;</span>
+<span class="fc" id="L296">    this.stop = stop;</span>
+<span class="fc" id="L297">  }</span>
+
+  /**
+   * Constructor to create transfer locally with delayed start time
+   *
+   * @param rule
+   * @param retrieveMode
+   * @param file
+   * @param fileInfo
+   * @param blockSize
+   */
+  public Transfer(String remote, String rule, int ruleMode,
+                  boolean retrieveMode, String file, String fileInfo,
+<span class="fc" id="L310">                  int blockSize, Timestamp start) {</span>
+<span class="fc" id="L311">    ownerRequest = Configuration.configuration.getHostId();</span>
+<span class="fc" id="L312">    requester = Configuration.configuration.getHostId();</span>
+<span class="fc" id="L313">    requested = remote;</span>
+<span class="fc" id="L314">    this.rule = rule;</span>
+<span class="fc" id="L315">    transferMode = ruleMode;</span>
+<span class="fc" id="L316">    this.retrieveMode = retrieveMode;</span>
+<span class="fc" id="L317">    filename = file;</span>
+<span class="fc" id="L318">    originalName = file;</span>
+<span class="fc" id="L319">    this.fileInfo = fileInfo;</span>
+<span class="fc" id="L320">    this.blockSize = blockSize;</span>
+<span class="fc" id="L321">    this.start = start;</span>
+<span class="fc" id="L322">  }</span>
+
+  /**
+   * Constructor to create transfer locally
+   *
+   * @param rule
+   * @param retrieveMode
+   * @param file
+   * @param fileInfo
+   * @param blockSize
+   */
+  public Transfer(String remote, String rule, int ruleMode,
+                  boolean retrieveMode, String file, String fileInfo,
+                  int blockSize) {
+<span class="fc" id="L336">    this(remote, rule, ruleMode, retrieveMode, file, fileInfo, blockSize,</span>
+<span class="fc" id="L337">         new Timestamp(new Date().getTime()));</span>
+<span class="fc" id="L338">  }</span>
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L343">  public Transfer() {</span>
+    // Nothing
+<span class="fc" id="L345">  }</span>
+
+  public long getId() {
+<span class="fc" id="L348">    return id;</span>
+  }
+
+  public void setId(long id) {
+<span class="fc" id="L352">    logger.trace(&quot;TRACE ID {}&quot;, id);</span>
+<span class="fc" id="L353">    this.id = id;</span>
+<span class="fc" id="L354">  }</span>
+
+  public boolean getRetrieveMode() {
+<span class="fc" id="L357">    return retrieveMode;</span>
+  }
+
+  public void setRetrieveMode(boolean retrieveMode) {
+<span class="fc" id="L361">    this.retrieveMode = retrieveMode;</span>
+<span class="fc" id="L362">  }</span>
+
+  public String getRule() {
+<span class="fc" id="L365">    return rule;</span>
+  }
+
+  public void setRule(String rule) {
+<span class="fc" id="L369">    this.rule = rule;</span>
+<span class="fc" id="L370">  }</span>
+
+  public int getTransferMode() {
+<span class="fc" id="L373">    return transferMode;</span>
+  }
+
+  public void setTransferMode(int mode) {
+<span class="fc" id="L377">    transferMode = mode;</span>
+<span class="fc" id="L378">  }</span>
+
+  public String getFilename() {
+<span class="fc" id="L381">    return filename;</span>
+  }
+
+  public void setFilename(String filename) {
+<span class="fc" id="L385">    this.filename = filename;</span>
+<span class="fc" id="L386">  }</span>
+
+  public String getOriginalName() {
+<span class="fc" id="L389">    return originalName;</span>
+  }
+
+  public void setOriginalName(String originalName) {
+<span class="fc" id="L393">    this.originalName = originalName;</span>
+<span class="fc" id="L394">  }</span>
+
+  public String getFileInfo() {
+<span class="fc" id="L397">    return fileInfo;</span>
+  }
+
+  public void setFileInfo(String fileInfo) {
+<span class="fc" id="L401">    this.fileInfo = fileInfo;</span>
+<span class="fc" id="L402">  }</span>
+
+  public boolean getIsMoved() {
+<span class="fc" id="L405">    return isMoved;</span>
+  }
+
+  public void setIsMoved(boolean isMoved) {
+<span class="fc" id="L409">    this.isMoved = isMoved;</span>
+<span class="fc" id="L410">  }</span>
+
+  public int getBlockSize() {
+<span class="fc" id="L413">    return blockSize;</span>
+  }
+
+  public void setBlockSize(int blockSize) {
+<span class="fc" id="L417">    this.blockSize = blockSize;</span>
+<span class="fc" id="L418">  }</span>
+
+  public String getOwnerRequest() {
+<span class="fc" id="L421">    return ownerRequest;</span>
+  }
+
+  public void setOwnerRequest(String ownerRequest) {
+<span class="fc" id="L425">    this.ownerRequest = ownerRequest;</span>
+<span class="fc" id="L426">  }</span>
+
+  public String getRequester() {
+<span class="fc" id="L429">    return requester;</span>
+  }
+
+  public void setRequester(String requester) {
+<span class="fc" id="L433">    this.requester = requester;</span>
+<span class="fc" id="L434">  }</span>
+
+  public String getRequested() {
+<span class="fc" id="L437">    return requested;</span>
+  }
+
+  public void setRequested(String requested) {
+<span class="fc" id="L441">    this.requested = requested;</span>
+<span class="fc" id="L442">  }</span>
+
+  public String getTransferInfo() {
+<span class="fc" id="L445">    return transferInfo;</span>
+  }
+
+  public void setTransferInfo(String transferInfo) {
+<span class="fc" id="L449">    this.transferInfo = transferInfo;</span>
+<span class="fc" id="L450">  }</span>
+
+  public TASKSTEP getGlobalStep() {
+<span class="fc" id="L453">    return globalStep;</span>
+  }
+
+  public void setGlobalStep(TASKSTEP globalStep) {
+<span class="fc" id="L457">    this.globalStep = globalStep;</span>
+<span class="fc" id="L458">  }</span>
+
+  public TASKSTEP getLastGlobalStep() {
+<span class="fc" id="L461">    return lastGlobalStep;</span>
+  }
+
+  public void setLastGlobalStep(TASKSTEP lastGlobalStep) {
+<span class="fc" id="L465">    this.lastGlobalStep = lastGlobalStep;</span>
+<span class="fc" id="L466">  }</span>
+
+  public int getStep() {
+<span class="fc" id="L469">    return step;</span>
+  }
+
+  public void setStep(int step) {
+<span class="fc" id="L473">    this.step = step;</span>
+<span class="fc" id="L474">  }</span>
+
+  public ErrorCode getStepStatus() {
+<span class="fc" id="L477">    return stepStatus;</span>
+  }
+
+  public void setStepStatus(ErrorCode stepStatus) {
+<span class="fc" id="L481">    this.stepStatus = stepStatus;</span>
+<span class="fc" id="L482">  }</span>
+
+  public ErrorCode getInfoStatus() {
+<span class="fc" id="L485">    return infoStatus;</span>
+  }
+
+  public void setInfoStatus(ErrorCode infoStatus) {
+<span class="fc" id="L489">    this.infoStatus = infoStatus;</span>
+<span class="fc" id="L490">  }</span>
+
+  public int getRank() {
+<span class="fc" id="L493">    return rank;</span>
+  }
+
+  public void setRank(int rank) {
+<span class="fc" id="L497">    this.rank = rank;</span>
+<span class="fc" id="L498">  }</span>
+
+  public Timestamp getStart() {
+<span class="fc" id="L501">    return start;</span>
+  }
+
+  public void setStart(Timestamp start) {
+<span class="fc" id="L505">    this.start = start;</span>
+<span class="fc" id="L506">  }</span>
+
+  public Timestamp getStop() {
+<span class="fc" id="L509">    return stop;</span>
+  }
+
+  public void setStop(Timestamp stop) {
+<span class="fc" id="L513">    this.stop = stop;</span>
+<span class="fc" id="L514">  }</span>
+
+  public UpdatedInfo getUpdatedInfo() {
+<span class="fc" id="L517">    return updatedInfo;</span>
+  }
+
+  public void setUpdatedInfo(UpdatedInfo info) {
+<span class="fc" id="L521">    updatedInfo = info;</span>
+<span class="fc" id="L522">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

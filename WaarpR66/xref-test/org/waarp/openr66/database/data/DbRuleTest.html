@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>DbRuleTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../testapidocs/org/waarp/openr66/database/data/DbRuleTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_comment"> * This file is part of Waarp Project (named also Waarp or GG).</em>
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <em class="jxr_comment"> *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author</em>
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <em class="jxr_comment"> *  tags. See the COPYRIGHT.txt in the distribution for a full listing of</em>
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <em class="jxr_comment"> * individual contributors.</em>
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_comment"> *  All Waarp Project is free software: you can redistribute it and/or</em>
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_comment"> * modify it under the terms of the GNU General Public License as published by</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_comment"> * the Free Software Foundation, either version 3 of the License, or (at your</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_comment"> * option) any later version.</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_comment"> * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_comment"> * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_comment"> * A PARTICULAR PURPOSE. See the GNU General Public License for more details.</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_comment"> *  You should have received a copy of the GNU General Public License along with</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_comment"> * Waarp . If not, see &lt;<a href="http://www.gnu.org/licenses/&gt;." target="alexandria_uri">http://www.gnu.org/licenses/&gt;.</a></em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_comment"> */</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">package</strong> org.waarp.openr66.database.data;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.node.ObjectNode;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> com.google.common.collect.ArrayListMultimap;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.junit.Ignore;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.junit.Test;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.json.JsonHandler;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.Rule;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.RuleTask;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.UpdatedInfo;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.junit.Assert.*;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> java.util.Arrays;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="DbRuleTest" href="../../../../../org/waarp/openr66/database/data/DbRuleTest.html#DbRuleTest">DbRuleTest</a> {
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>      @Test
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testJsonSerialisation() {
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>          List&lt;String&gt; hosts = Arrays.asList(<span class="jxr_string">"sup1"</span>);
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>          List&lt;RuleTask&gt; spretasks = <strong class="jxr_keyword">new</strong> ArrayList&lt;RuleTask&gt;();
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>          spretasks.add(<strong class="jxr_keyword">new</strong> RuleTask(<span class="jxr_string">"LOG"</span>, <span class="jxr_string">"spretasks"</span>, 0));
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>          List&lt;RuleTask&gt; sposttasks = <strong class="jxr_keyword">new</strong> ArrayList&lt;RuleTask&gt;();
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>          sposttasks.add(<strong class="jxr_keyword">new</strong> RuleTask(<span class="jxr_string">"LOG"</span>, <span class="jxr_string">"sposttasks"</span>, 0));
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>          List&lt;RuleTask&gt; serrortasks = <strong class="jxr_keyword">new</strong> ArrayList&lt;RuleTask&gt;();
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>          serrortasks.add(<strong class="jxr_keyword">new</strong> RuleTask(<span class="jxr_string">"LOG"</span>, <span class="jxr_string">"serrortasks"</span>, 0));
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>          List&lt;RuleTask&gt; rpretasks = <strong class="jxr_keyword">new</strong> ArrayList&lt;RuleTask&gt;();
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>          rpretasks.add(<strong class="jxr_keyword">new</strong> RuleTask(<span class="jxr_string">"LOG"</span>, <span class="jxr_string">"rpretasks"</span>, 0));
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>          List&lt;RuleTask&gt; rposttasks = <strong class="jxr_keyword">new</strong> ArrayList&lt;RuleTask&gt;();
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>          rposttasks.add(<strong class="jxr_keyword">new</strong> RuleTask(<span class="jxr_string">"LOG"</span>, <span class="jxr_string">"rposttasks"</span>, 0));
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>          List&lt;RuleTask&gt; rerrortasks = <strong class="jxr_keyword">new</strong> ArrayList&lt;RuleTask&gt;();
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>          rerrortasks.add(<strong class="jxr_keyword">new</strong> RuleTask(<span class="jxr_string">"LOG"</span>, <span class="jxr_string">"rerrortasks"</span>, 0));
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  		Rule tested = <strong class="jxr_keyword">new</strong> Rule(<span class="jxr_string">"rulename"</span>, 3, hosts, <span class="jxr_string">"recv-path"</span>, <span class="jxr_string">"send-path"</span>,
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>              <span class="jxr_string">"arch-path"</span>, <span class="jxr_string">"work-path"</span>, rpretasks, rposttasks, rerrortasks,
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>              spretasks, sposttasks, serrortasks, UpdatedInfo.TOSUBMIT);
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>          DbRule dbRule = <strong class="jxr_keyword">new</strong> DbRule(tested);
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>          String expected = <span class="jxr_string">"{"</span> +
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>              <span class="jxr_string">"\&quot;@model\&quot;:\&quot;DbRule\&quot;,"</span> +
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>              <span class="jxr_string">"\&quot;IDRULE\&quot;:\&quot;rulename\&quot;,"</span> +
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>              <span class="jxr_string">"\&quot;MODETRANS\&quot;:3,"</span> +
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>              <span class="jxr_string">"\&quot;RECVPATH\&quot;:\&quot;/recv-path\&quot;,"</span> +
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>              <span class="jxr_string">"\&quot;SENDPATH\&quot;:\&quot;/send-path\&quot;,"</span> +
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>              <span class="jxr_string">"\&quot;ARCHIVEPATH\&quot;:\&quot;/arch-path\&quot;,"</span> +
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>              <span class="jxr_string">"\&quot;WORKPATH\&quot;:\&quot;/work-path\&quot;,"</span> +
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>              <span class="jxr_string">"\&quot;UPDATEDINFO\&quot;:3,"</span> +
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>              <span class="jxr_string">"\&quot;HOSTIDS\&quot;:\&quot;&lt;hostids&gt;&lt;hostid&gt;sup1&lt;/hostid&gt;&lt;/hostids&gt;\&quot;,"</span> +
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>              <span class="jxr_string">"\&quot;SPRETASKS\&quot;:\&quot;&lt;tasks&gt;&lt;task&gt;&lt;type&gt;LOG&lt;/type&gt;&lt;path&gt;spretasks&lt;/path&gt;&lt;delay&gt;0&lt;/delay&gt;&lt;/task&gt;&lt;/tasks&gt;\&quot;,"</span> +
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>              <span class="jxr_string">"\&quot;SERRORTASKS\&quot;:\&quot;&lt;tasks&gt;&lt;task&gt;&lt;type&gt;LOG&lt;/type&gt;&lt;path&gt;serrortasks&lt;/path&gt;&lt;delay&gt;0&lt;/delay&gt;&lt;/task&gt;&lt;/tasks&gt;\&quot;,"</span> +
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>              <span class="jxr_string">"\&quot;RPRETASKS\&quot;:\&quot;&lt;tasks&gt;&lt;task&gt;&lt;type&gt;LOG&lt;/type&gt;&lt;path&gt;rpretasks&lt;/path&gt;&lt;delay&gt;0&lt;/delay&gt;&lt;/task&gt;&lt;/tasks&gt;\&quot;,"</span> +
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>              <span class="jxr_string">"\&quot;RPOSTTASKS\&quot;:\&quot;&lt;tasks&gt;&lt;task&gt;&lt;type&gt;LOG&lt;/type&gt;&lt;path&gt;rposttasks&lt;/path&gt;&lt;delay&gt;0&lt;/delay&gt;&lt;/task&gt;&lt;/tasks&gt;\&quot;,"</span> +
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>              <span class="jxr_string">"\&quot;RERRORTASKS\&quot;:\&quot;&lt;tasks&gt;&lt;task&gt;&lt;type&gt;LOG&lt;/type&gt;&lt;path&gt;rerrortasks&lt;/path&gt;&lt;delay&gt;0&lt;/delay&gt;&lt;/task&gt;&lt;/tasks&gt;\&quot;,"</span> +
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>              <span class="jxr_string">"\&quot;SPOSTTASKS\&quot;:\&quot;&lt;tasks&gt;&lt;task&gt;&lt;type&gt;LOG&lt;/type&gt;&lt;path&gt;sposttasks&lt;/path&gt;&lt;delay&gt;0&lt;/delay&gt;&lt;/task&gt;&lt;/tasks&gt;\&quot;"</span> +
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>              <span class="jxr_string">"}"</span>;
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>          ObjectNode asJson = dbRule.getJson();
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>          String got = JsonHandler.writeAsString(asJson);
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>          assertEquals(expected, got);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>      }
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>
+</body>
+</html>

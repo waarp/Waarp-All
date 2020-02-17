@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpMORow.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpSnmp</a> &gt; <a href="index.source.html" class="el_package">org.waarp.snmp.utils</a> &gt; <span class="el_source">WaarpMORow.java</span></div><h1>WaarpMORow.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.snmp.utils;
+
+import org.snmp4j.agent.DuplicateRegistrationException;
+import org.snmp4j.agent.MOGroup;
+import org.snmp4j.agent.MOServer;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.Variable;
+import org.waarp.snmp.WaarpMOFactory;
+import org.waarp.snmp.interf.WaarpInterfaceMib;
+
+/**
+ * MORow implementation for GoldenGate
+ */
+public class WaarpMORow implements MOGroup {
+  /**
+   * Row access
+   */
+  private WaarpMOScalar[] row;
+  /**
+   * Type access
+   */
+  final int[] type;
+  /**
+   * Base OID
+   */
+  final OID reference;
+  /**
+   * MIB from which this Row is issued
+   */
+  final WaarpInterfaceMib mib;
+  /**
+   * Mib Level entry identification
+   */
+  final int mibLevel;
+
+  /**
+   * @param mib
+   * @param reference
+   * @param entries
+   * @param mibLevel this integer identifies this Row in the MIB
+   */
+  public WaarpMORow(WaarpInterfaceMib mib, OID reference, WaarpEntry[] entries,
+<span class="fc" id="L63">                    int mibLevel) {</span>
+<span class="fc" id="L64">    this.mib = mib;</span>
+<span class="fc" id="L65">    this.reference = reference;</span>
+<span class="fc" id="L66">    this.mibLevel = mibLevel;</span>
+<span class="fc" id="L67">    setRow(new WaarpMOScalar[entries.length]);</span>
+<span class="fc" id="L68">    type = new int[entries.length];</span>
+<span class="fc" id="L69">    final int[] ref = this.reference.getValue();</span>
+<span class="fc" id="L70">    final int[] add = new int[2];</span>
+<span class="fc" id="L71">    add[1] = 0;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">    for (int i = 0; i &lt; entries.length; i++) {</span>
+<span class="fc" id="L73">      final WaarpEntry entry = entries[i];</span>
+<span class="fc" id="L74">      type[i] = entry.smiConstantsType;</span>
+<span class="fc" id="L75">      add[0] = i + 1;</span>
+<span class="fc" id="L76">      final OID oid = new OID(ref, add);</span>
+      // the value is null at the creation, meaning values have to be
+      // setup once just after
+<span class="fc" id="L79">      getRow()[i] = WaarpMOFactory</span>
+<span class="fc" id="L80">          .create(oid, null, entry.smiConstantsType, entry.access, this,</span>
+                  mibLevel, i);
+    }
+<span class="fc" id="L83">  }</span>
+
+  /**
+   * Set a Value in this Row
+   *
+   * @param index
+   * @param value
+   *
+   * @throws IllegalArgumentException
+   */
+  public void setValue(int index, Object value)
+      throws IllegalArgumentException {
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    if (index &gt;= getRow().length) {</span>
+<span class="nc" id="L96">      throw new IllegalArgumentException(&quot;Index exceed Row size&quot;);</span>
+    }
+<span class="fc" id="L98">    final Variable var = getRow()[index].getValue();</span>
+<span class="fc" id="L99">    WaarpMOFactory.setVariable(var, value, type[index]);</span>
+<span class="fc" id="L100">  }</span>
+
+  @Override
+  public void registerMOs(MOServer server, OctetString context)
+      throws DuplicateRegistrationException {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">    for (int i = 0; i &lt; getRow().length; i++) {</span>
+<span class="fc" id="L106">      final WaarpMOScalar scalar = getRow()[i];</span>
+<span class="fc" id="L107">      server.register(scalar, context);</span>
+    }
+<span class="fc" id="L109">  }</span>
+
+  @Override
+  public void unregisterMOs(MOServer server, OctetString context) {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    for (int i = 0; i &lt; getRow().length; i++) {</span>
+<span class="nc" id="L114">      final WaarpMOScalar scalar = getRow()[i];</span>
+<span class="nc" id="L115">      server.unregister(scalar, context);</span>
+    }
+<span class="nc" id="L117">  }</span>
+
+  /**
+   * @return the row
+   */
+  public WaarpMOScalar[] getRow() {
+<span class="fc" id="L123">    return row;</span>
+  }
+
+  /**
+   * @param row the row to set
+   */
+  void setRow(WaarpMOScalar[] row) {
+<span class="fc" id="L130">    this.row = row;</span>
+<span class="fc" id="L131">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

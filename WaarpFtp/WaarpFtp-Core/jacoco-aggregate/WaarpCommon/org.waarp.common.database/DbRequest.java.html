@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbRequest.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Core</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database</a> &gt; <span class="el_source">DbRequest.java</span></div><h1>DbRequest.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database;
+
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+/**
+ * Class to handle request
+ */
+public class DbRequest {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L40">      WaarpLoggerFactory.getLogger(DbRequest.class);</span>
+  private static final String SQL_EXCEPTION_REQUEST = &quot;SQL Exception Request:&quot;;
+  private static final String SQL_EXCEPTION_REQUEST1 = &quot;SQL Exception Request:&quot;;
+
+  /**
+   * Internal Statement
+   */
+  private Statement stmt;
+
+  /**
+   * Internal Result Set
+   */
+  private ResultSet rs;
+
+  /**
+   * Internal DB Session
+   */
+  private final DbSession ls;
+
+  /**
+   * Create a new request from the DbSession
+   *
+   * @param ls
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+<span class="nc" id="L66">  public DbRequest(DbSession ls) throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L68">      ls.checkConnection();</span>
+    }
+<span class="nc" id="L70">    this.ls = ls;</span>
+<span class="nc" id="L71">  }</span>
+
+  /**
+   * Create a statement with some particular options
+   *
+   * @return the new Statement
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  private Statement createStatement()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (ls == null) {</span>
+<span class="nc" id="L84">      throw new WaarpDatabaseNoConnectionException(&quot;No connection&quot;);</span>
+    }
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (ls.getConn() == null) {</span>
+<span class="nc" id="L87">      throw new WaarpDatabaseNoConnectionException(&quot;No connection&quot;);</span>
+    }
+<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L90">      ls.checkConnection();</span>
+    }
+    try {
+<span class="nc" id="L93">      return ls.getConn().createStatement();</span>
+<span class="nc" id="L94">    } catch (final SQLException e) {</span>
+<span class="nc" id="L95">      ls.checkConnection();</span>
+      try {
+<span class="nc" id="L97">        return ls.getConn().createStatement();</span>
+<span class="nc" id="L98">      } catch (final SQLException e1) {</span>
+<span class="nc" id="L99">        throw new WaarpDatabaseSqlException(&quot;Error while Create Statement&quot;, e);</span>
+      }
+    }
+  }
+
+  /**
+   * Execute a SELECT statement and set of Result. The statement must not be
+   * an
+   * update/insert/delete. The
+   * previous statement and resultSet are closed.
+   *
+   * @param select
+   *
+   * @throws WaarpDatabaseSqlException
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public void select(String select)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L117">    close();</span>
+<span class="nc" id="L118">    stmt = createStatement();</span>
+    // or alternatively, if you don't know ahead of time that
+    // the query will be a SELECT...
+    try {
+<span class="nc bnc" id="L122" title="All 2 branches missed.">      if (stmt.execute(select)) {</span>
+<span class="nc" id="L123">        rs = stmt.getResultSet();</span>
+      }
+<span class="nc" id="L125">    } catch (final SQLException e) {</span>
+<span class="nc" id="L126">      logger.error(SQL_EXCEPTION_REQUEST + select + ' ' + e.getMessage());</span>
+<span class="nc" id="L127">      DbSession.error(e);</span>
+<span class="nc" id="L128">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L129">      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);</span>
+<span class="nc" id="L130">    }</span>
+<span class="nc" id="L131">  }</span>
+
+  /**
+   * Execute a SELECT statement and set of Result. The statement must not be
+   * an
+   * update/insert/delete. The
+   * previous statement and resultSet are closed. The timeout is applied if &gt;
+   * 0.
+   *
+   * @param select
+   * @param timeout in seconds
+   *
+   * @throws WaarpDatabaseSqlException
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public void select(String select, int timeout)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L148">    close();</span>
+<span class="nc" id="L149">    stmt = createStatement();</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (timeout &gt; 0) {</span>
+      try {
+<span class="nc" id="L152">        stmt.setQueryTimeout(timeout);</span>
+<span class="nc" id="L153">      } catch (final SQLException e1) {</span>
+        // ignore
+<span class="nc" id="L155">      }</span>
+    }
+    // or alternatively, if you don't know ahead of time that
+    // the query will be a SELECT...
+    try {
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (stmt.execute(select)) {</span>
+<span class="nc" id="L161">        rs = stmt.getResultSet();</span>
+      }
+<span class="nc" id="L163">    } catch (final SQLException e) {</span>
+<span class="nc" id="L164">      logger.error(SQL_EXCEPTION_REQUEST1 + select + ' ' + e.getMessage());</span>
+<span class="nc" id="L165">      DbSession.error(e);</span>
+<span class="nc" id="L166">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L167">      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + select, e);</span>
+<span class="nc" id="L168">    }</span>
+<span class="nc" id="L169">  }</span>
+
+  /**
+   * Execute a UPDATE/INSERT/DELETE statement and returns the number of row.
+   * The
+   * previous statement and
+   * resultSet are closed.
+   *
+   * @param query
+   *
+   * @return the number of row in the query
+   *
+   * @throws WaarpDatabaseSqlException
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public int query(String query)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L186">    close();</span>
+<span class="nc" id="L187">    stmt = createStatement();</span>
+    try {
+<span class="nc" id="L189">      final int rowcount = stmt.executeUpdate(query);</span>
+<span class="nc" id="L190">      logger.debug(&quot;QUERY(&quot; + rowcount + &quot;): {}&quot;, query);</span>
+<span class="nc" id="L191">      return rowcount;</span>
+<span class="nc" id="L192">    } catch (final SQLException e) {</span>
+<span class="nc" id="L193">      logger.error(SQL_EXCEPTION_REQUEST1 + query + ' ' + e.getMessage());</span>
+<span class="nc" id="L194">      DbSession.error(e);</span>
+<span class="nc" id="L195">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L196">      throw new WaarpDatabaseSqlException(SQL_EXCEPTION_REQUEST1 + query, e);</span>
+    }
+  }
+
+  /**
+   * Finished a Request (ready for a new one)
+   */
+  public void close() {
+    // it is a good idea to release
+    // resources in a finally{} block
+    // in reverse-order of their creation
+    // if they are no-longer needed
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    if (rs != null) {</span>
+      try {
+<span class="nc" id="L210">        rs.close();</span>
+<span class="nc" id="L211">      } catch (final SQLException sqlEx) {</span>
+<span class="nc" id="L212">        ls.checkConnectionNoException();</span>
+<span class="nc" id="L213">      } // ignore</span>
+<span class="nc" id="L214">      rs = null;</span>
+    }
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (stmt != null) {</span>
+      try {
+<span class="nc" id="L218">        stmt.close();</span>
+<span class="nc" id="L219">      } catch (final SQLException sqlEx) {</span>
+<span class="nc" id="L220">        ls.checkConnectionNoException();</span>
+<span class="nc" id="L221">      } // ignore</span>
+<span class="nc" id="L222">      stmt = null;</span>
+    }
+<span class="nc" id="L224">  }</span>
+
+  /**
+   * Get the last ID autoincrement from the last request
+   *
+   * @return the long Id or DbConstant.ILLEGALVALUE (Long.MIN_VALUE) if an
+   *     error
+   *     occurs.
+   *
+   * @throws WaarpDatabaseNoDataException
+   */
+  public long getLastId() throws WaarpDatabaseNoDataException {
+<span class="nc" id="L236">    ResultSet rstmp = null;</span>
+<span class="nc" id="L237">    long result = DbConstant.ILLEGALVALUE;</span>
+    try {
+<span class="nc" id="L239">      rstmp = stmt.getGeneratedKeys();</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">      if (rstmp.next()) {</span>
+<span class="nc" id="L241">        result = rstmp.getLong(1);</span>
+      }
+<span class="nc" id="L243">    } catch (final SQLException e) {</span>
+<span class="nc" id="L244">      DbSession.error(e);</span>
+<span class="nc" id="L245">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L246">      throw new WaarpDatabaseNoDataException(&quot;No data found&quot;, e);</span>
+    } finally {
+<span class="nc bnc" id="L248" title="All 2 branches missed.">      if (rstmp != null) {</span>
+        try {
+<span class="nc" id="L250">          rstmp.close();</span>
+<span class="nc" id="L251">        } catch (SQLException e) {</span>
+          // nothing
+<span class="nc" id="L253">        }</span>
+      }
+    }
+<span class="nc" id="L256">    return result;</span>
+  }
+
+  /**
+   * Move the cursor to the next result
+   *
+   * @return True if there is a next result, else False
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public boolean getNext()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L270">      logger.error(&quot;SQL ResultSet is Null into getNext&quot;);</span>
+<span class="nc" id="L271">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;SQL ResultSet is Null into getNext&quot;);
+    }
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (ls.isDisActive()) {</span>
+<span class="nc" id="L275">      ls.checkConnection();</span>
+<span class="nc" id="L276">      throw new WaarpDatabaseSqlException(</span>
+          &quot;Request cannot be executed since connection was recreated between&quot;);
+    }
+    try {
+<span class="nc" id="L280">      return rs.next();</span>
+<span class="nc" id="L281">    } catch (final SQLException e) {</span>
+<span class="nc" id="L282">      logger.warn(&quot;SQL Exception to getNextRow&quot; + ' ' + e.getMessage());</span>
+<span class="nc" id="L283">      DbSession.error(e);</span>
+<span class="nc" id="L284">      ls.checkConnectionNoException();</span>
+<span class="nc" id="L285">      throw new WaarpDatabaseSqlException(&quot;SQL Exception to getNextRow&quot;, e);</span>
+    }
+  }
+
+  /**
+   * @return The resultSet (can be used in conjunction of getNext())
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public ResultSet getResultSet() throws WaarpDatabaseNoConnectionException {
+<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (rs == null) {</span>
+<span class="nc" id="L296">      throw new WaarpDatabaseNoConnectionException(</span>
+          &quot;SQL ResultSet is Null into getResultSet&quot;);
+    }
+<span class="nc" id="L299">    return rs;</span>
+  }
+
+  /**
+   * Test if value is null and create the string for insert/update
+   *
+   * @param value
+   *
+   * @return the string as result
+   */
+  public static String getIsNull(String value) {
+<span class="nc bnc" id="L310" title="All 2 branches missed.">    return value == null? &quot; is NULL&quot; : &quot; = '&quot; + value + '\'';</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

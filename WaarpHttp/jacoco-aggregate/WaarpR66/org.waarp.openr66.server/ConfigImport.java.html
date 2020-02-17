@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ConfigImport.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.server</a> &gt; <span class="el_source">ConfigImport.java</span></div><h1>ConfigImport.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.server;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.openr66.client.AbstractTransfer;
+import org.waarp.openr66.configuration.FileBasedConfiguration;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
+import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.ConfigImportJsonPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Config Import from a local client without database connection
+ */
+public class ConfigImport implements Runnable {
+  /**
+   * Internal Logger
+   */
+  static volatile WaarpLogger logger;
+
+  protected static final String _INFO_ARGS =
+      &quot;Need at least the configuration file as first argument then at least one from\n&quot; +
+      &quot;    -hosts file\n&quot; + &quot;    -rules file\n&quot; +
+      &quot;    -business file (if compatible)\n&quot; +
+      &quot;    -alias file (if compatible)\n&quot; +
+      &quot;    -roles file (if compatible)\n&quot; + &quot;    -purgehosts\n&quot; +
+      &quot;    -purgerules\n&quot; + &quot;    -purgebusiness (if compatible)\n&quot; +
+      &quot;    -purgealias (if compatible)\n&quot; +
+      &quot;    -purgeroles (if compatible)\n&quot; +
+      &quot;    -hostid file transfer id (if compatible)\n&quot; +
+      &quot;    -ruleid file transfer id (if compatible)\n&quot; +
+      &quot;    -businessid file transfer id (if compatible)\n&quot; +
+      &quot;    -aliasid file transfer id (if compatible)\n&quot; +
+      &quot;    -roleid file transfer id (if compatible)\n&quot; +
+      &quot;    -host host (optional)&quot;;
+
+  protected final R66Future future;
+  protected final String host;
+  protected final boolean hostPurge;
+  protected final String rule;
+  protected final boolean rulePurge;
+  protected final String business;
+  protected final boolean businessPurge;
+  protected final String alias;
+  protected final boolean aliasPurge;
+  protected final String role;
+  protected final boolean rolePurge;
+<span class="nc" id="L81">  protected long hostid = ILLEGALVALUE;</span>
+<span class="nc" id="L82">  protected long ruleid = ILLEGALVALUE;</span>
+<span class="nc" id="L83">  protected long businessid = ILLEGALVALUE;</span>
+<span class="nc" id="L84">  protected long aliasid = ILLEGALVALUE;</span>
+<span class="nc" id="L85">  protected long roleid = ILLEGALVALUE;</span>
+  protected final NetworkTransaction networkTransaction;
+  protected DbHostAuth dbhost;
+
+  public ConfigImport(R66Future future, boolean hostPurge, boolean rulePurge,
+                      String host, String rule,
+<span class="nc" id="L91">                      NetworkTransaction networkTransaction) {</span>
+<span class="nc" id="L92">    this.future = future;</span>
+<span class="nc" id="L93">    this.host = host;</span>
+<span class="nc" id="L94">    this.rule = rule;</span>
+<span class="nc" id="L95">    this.hostPurge = hostPurge;</span>
+<span class="nc" id="L96">    this.rulePurge = rulePurge;</span>
+<span class="nc" id="L97">    business = null;</span>
+<span class="nc" id="L98">    businessPurge = false;</span>
+<span class="nc" id="L99">    alias = null;</span>
+<span class="nc" id="L100">    aliasPurge = false;</span>
+<span class="nc" id="L101">    role = null;</span>
+<span class="nc" id="L102">    rolePurge = false;</span>
+<span class="nc" id="L103">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L104">    dbhost = Configuration.configuration.getHostSslAuth();</span>
+<span class="nc" id="L105">  }</span>
+
+  public ConfigImport(R66Future future, boolean hostPurge, boolean rulePurge,
+                      boolean businessPurge, boolean aliasPurge,
+                      boolean rolePurge, String host, String rule,
+                      String business, String alias, String role,
+<span class="nc" id="L111">                      NetworkTransaction networkTransaction) {</span>
+<span class="nc" id="L112">    this.future = future;</span>
+<span class="nc" id="L113">    this.host = host;</span>
+<span class="nc" id="L114">    this.rule = rule;</span>
+<span class="nc" id="L115">    this.hostPurge = hostPurge;</span>
+<span class="nc" id="L116">    this.rulePurge = rulePurge;</span>
+<span class="nc" id="L117">    this.business = business;</span>
+<span class="nc" id="L118">    this.businessPurge = businessPurge;</span>
+<span class="nc" id="L119">    this.alias = alias;</span>
+<span class="nc" id="L120">    this.aliasPurge = aliasPurge;</span>
+<span class="nc" id="L121">    this.role = role;</span>
+<span class="nc" id="L122">    this.rolePurge = rolePurge;</span>
+<span class="nc" id="L123">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L124">    dbhost = Configuration.configuration.getHostSslAuth();</span>
+<span class="nc" id="L125">  }</span>
+
+  /**
+   * Used when the filenames are not compliant with remote filenames.
+   *
+   * @param hostid
+   * @param ruleid
+   * @param businessid
+   * @param aliasid
+   * @param roleid
+   */
+  public void setSpecialIds(long hostid, long ruleid, long businessid,
+                            long aliasid, long roleid) {
+<span class="nc" id="L138">    this.hostid = hostid;</span>
+<span class="nc" id="L139">    this.ruleid = ruleid;</span>
+<span class="nc" id="L140">    this.businessid = businessid;</span>
+<span class="nc" id="L141">    this.aliasid = aliasid;</span>
+<span class="nc" id="L142">    this.roleid = roleid;</span>
+<span class="nc" id="L143">  }</span>
+
+  public void setHost(DbHostAuth host) {
+<span class="nc" id="L146">    dbhost = host;</span>
+<span class="nc" id="L147">  }</span>
+
+  /**
+   * Prior to call this method, the pipeline and NetworkTransaction must have
+   * been initialized. It is the
+   * responsibility of the caller to finish all network resources.
+   */
+  @Override
+  public void run() {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L157">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
+    }
+<span class="nc" id="L159">    LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L160">        AbstractTransfer.tryConnect(dbhost, future, networkTransaction);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L162">      return;</span>
+    }
+<span class="nc" id="L164">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+<span class="nc" id="L165">    final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());</span>
+<span class="nc" id="L166">    logger.debug(&quot;UseJson: &quot; + useJson);</span>
+    AbstractLocalPacket valid;
+<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (useJson) {</span>
+<span class="nc" id="L169">      final ConfigImportJsonPacket node = new ConfigImportJsonPacket();</span>
+<span class="nc" id="L170">      node.setHost(host);</span>
+<span class="nc" id="L171">      node.setRule(rule);</span>
+<span class="nc" id="L172">      node.setBusiness(business);</span>
+<span class="nc" id="L173">      node.setAlias(alias);</span>
+<span class="nc" id="L174">      node.setRoles(role);</span>
+<span class="nc" id="L175">      node.setPurgehost(hostPurge);</span>
+<span class="nc" id="L176">      node.setPurgerule(rulePurge);</span>
+<span class="nc" id="L177">      node.setPurgebusiness(businessPurge);</span>
+<span class="nc" id="L178">      node.setPurgealias(aliasPurge);</span>
+<span class="nc" id="L179">      node.setPurgeroles(rolePurge);</span>
+<span class="nc" id="L180">      node.setHostid(hostid);</span>
+<span class="nc" id="L181">      node.setRuleid(ruleid);</span>
+<span class="nc" id="L182">      node.setBusinessid(businessid);</span>
+<span class="nc" id="L183">      node.setAliasid(aliasid);</span>
+<span class="nc" id="L184">      node.setRolesid(roleid);</span>
+<span class="nc" id="L185">      valid = new JsonCommandPacket(node, LocalPacketFactory.CONFIMPORTPACKET);</span>
+<span class="nc" id="L186">    } else {</span>
+<span class="nc bnc" id="L187" title="All 4 branches missed.">      valid = new ValidPacket((hostPurge? &quot;1 &quot; : &quot;0 &quot;) + host,</span>
+                              (rulePurge? &quot;1 &quot; : &quot;0 &quot;) + rule,
+                              LocalPacketFactory.CONFIMPORTPACKET);
+    }
+<span class="nc" id="L191">    AbstractTransfer</span>
+<span class="nc" id="L192">        .sendValidPacket(dbhost, localChannelReference, valid, future);</span>
+<span class="nc" id="L193">    logger.debug(</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L195">  }</span>
+
+  protected static String shost;
+  protected static String srule;
+  protected static String sbusiness;
+  protected static String salias;
+  protected static String srole;
+  protected static boolean shostpurge;
+  protected static boolean srulepurge;
+  protected static boolean sbusinesspurge;
+  protected static boolean saliaspurge;
+  protected static boolean srolepurge;
+  protected static String stohost;
+<span class="nc" id="L208">  protected static long lhost = ILLEGALVALUE;</span>
+<span class="nc" id="L209">  protected static long lrule = ILLEGALVALUE;</span>
+<span class="nc" id="L210">  protected static long lbusiness = ILLEGALVALUE;</span>
+<span class="nc" id="L211">  protected static long lalias = ILLEGALVALUE;</span>
+<span class="nc" id="L212">  protected static long lrole = ILLEGALVALUE;</span>
+
+  protected static boolean getParams(String[] args) {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L216">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L217">      return false;</span>
+    }
+<span class="nc" id="L219">    if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc" id="L221">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L222">      return false;</span>
+    }
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">      if (&quot;-hosts&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L226">        i++;</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L228">          return false;</span>
+        }
+<span class="nc" id="L230">        shost = args[i];</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      } else if (&quot;-rules&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L232">        i++;</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L234">          return false;</span>
+        }
+<span class="nc" id="L236">        srule = args[i];</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">      } else if (&quot;-business&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L238">        i++;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L240">          return false;</span>
+        }
+<span class="nc" id="L242">        sbusiness = args[i];</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">      } else if (&quot;-alias&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L244">        i++;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L246">          return false;</span>
+        }
+<span class="nc" id="L248">        salias = args[i];</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">      } else if (&quot;-roles&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L250">        i++;</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L252">          return false;</span>
+        }
+<span class="nc" id="L254">        srole = args[i];</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">      } else if (&quot;-purgehosts&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L256">        shostpurge = true;</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">      } else if (&quot;-purgerules&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L258">        srulepurge = true;</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">      } else if (&quot;-purgebusiness&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L260">        sbusinesspurge = true;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">      } else if (&quot;-purgealias&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L262">        saliaspurge = true;</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">      } else if (&quot;-purgeroles&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L264">        srolepurge = true;</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      } else if (&quot;-host&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L266">        i++;</span>
+<span class="nc" id="L267">        stohost = args[i];</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">      } else if (&quot;-hostid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L269">        i++;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L271">          return false;</span>
+        }
+        try {
+<span class="nc" id="L274">          lhost = Long.parseLong(args[i]);</span>
+<span class="nc" id="L275">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L276">          return false;</span>
+<span class="nc" id="L277">        }</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">      } else if (&quot;-ruleid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L279">        i++;</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L281">          return false;</span>
+        }
+        try {
+<span class="nc" id="L284">          lrule = Long.parseLong(args[i]);</span>
+<span class="nc" id="L285">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L286">          return false;</span>
+<span class="nc" id="L287">        }</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">      } else if (&quot;-businessid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L289">        i++;</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L291">          return false;</span>
+        }
+        try {
+<span class="nc" id="L294">          lbusiness = Long.parseLong(args[i]);</span>
+<span class="nc" id="L295">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L296">          return false;</span>
+<span class="nc" id="L297">        }</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">      } else if (&quot;-aliasid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L299">        i++;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L301">          return false;</span>
+        }
+        try {
+<span class="nc" id="L304">          lalias = Long.parseLong(args[i]);</span>
+<span class="nc" id="L305">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L306">          return false;</span>
+<span class="nc" id="L307">        }</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">      } else if (&quot;-roleid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L309">        i++;</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L311">          return false;</span>
+        }
+        try {
+<span class="nc" id="L314">          lrole = Long.parseLong(args[i]);</span>
+<span class="nc" id="L315">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L316">          return false;</span>
+<span class="nc" id="L317">        }</span>
+      }
+    }
+<span class="nc" id="L320">    return true;</span>
+  }
+
+  public static void main(String[] args) {
+<span class="nc" id="L324">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L326">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
+    }
+<span class="nc bnc" id="L328" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L329">      logger.error(&quot;Wrong initialization&quot;);</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L331">        admin.close();</span>
+      }
+<span class="nc" id="L333">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc" id="L335">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L336">    final R66Future future = new R66Future(true);</span>
+
+<span class="nc" id="L338">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L339">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+    try {
+<span class="nc" id="L341">      final ConfigImport transaction =</span>
+          new ConfigImport(future, shostpurge, srulepurge, sbusinesspurge,
+                           saliaspurge, srolepurge, shost, srule, sbusiness,
+                           salias, srole, networkTransaction);
+<span class="nc" id="L345">      transaction.setSpecialIds(lhost, lrule, lbusiness, lalias, lrole);</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (stohost != null) {</span>
+        try {
+<span class="nc" id="L348">          transaction.setHost(new DbHostAuth(stohost));</span>
+<span class="nc" id="L349">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L350">          logger.error(</span>
+              &quot;ConfigImport in     FAILURE since Host is not found: &quot; + stohost,
+              e);
+<span class="nc" id="L353">          networkTransaction.closeAll();</span>
+<span class="nc" id="L354">          System.exit(10);//NOSONAR</span>
+<span class="nc" id="L355">        }</span>
+      } else {
+<span class="nc" id="L357">        stohost = Configuration.configuration.getHostSslId();</span>
+      }
+<span class="nc" id="L359">      transaction.run();</span>
+<span class="nc" id="L360">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L361">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L362">      final long delay = time2 - time1;</span>
+<span class="nc" id="L363">      final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc" id="L365">        final boolean useJson = PartnerConfiguration.useJson(stohost);</span>
+<span class="nc" id="L366">        logger.debug(&quot;UseJson: &quot; + useJson);</span>
+        String message;
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (useJson) {</span>
+<span class="nc bnc" id="L369" title="All 2 branches missed.">          message = result.getOther() != null?</span>
+<span class="nc" id="L370">              ((JsonCommandPacket) result.getOther()).getRequest() : &quot;no file&quot;;</span>
+        } else {
+<span class="nc bnc" id="L372" title="All 2 branches missed.">          message = result.getOther() != null?</span>
+<span class="nc" id="L373">              ((ValidPacket) result.getOther()).getSheader() : &quot;no file&quot;;</span>
+        }
+<span class="nc bnc" id="L375" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L376">          logger.warn(</span>
+              &quot;WARNED on import:     &quot; + message + &quot;     delay: &quot; + delay);
+        } else {
+<span class="nc" id="L379">          logger.warn(</span>
+              &quot;SUCCESS on import:     &quot; + message + &quot;     delay: &quot; + delay);
+        }
+<span class="nc" id="L382">      } else {</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L384">          logger.warn(&quot;ConfigImport is     WARNED&quot;, future.getCause());</span>
+        } else {
+<span class="nc" id="L386">          logger.error(&quot;ConfigImport in     FAILURE&quot;, future.getCause());</span>
+        }
+<span class="nc" id="L388">        networkTransaction.closeAll();</span>
+<span class="nc" id="L389">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+      }
+    } finally {
+<span class="nc" id="L392">      networkTransaction.closeAll();</span>
+<span class="nc" id="L393">      System.exit(0);//NOSONAR</span>
+    }
+<span class="nc" id="L395">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

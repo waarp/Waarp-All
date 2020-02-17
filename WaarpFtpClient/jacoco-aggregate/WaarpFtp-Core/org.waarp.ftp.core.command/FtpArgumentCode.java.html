@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpArgumentCode.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.command</a> &gt; <span class="el_source">FtpArgumentCode.java</span></div><h1>FtpArgumentCode.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.command;
+
+import org.waarp.common.exception.InvalidArgumentException;
+
+import java.nio.charset.Charset;
+
+/**
+ * Definition of all Argument of Parameter commands (MODE, STRU, TYPE)
+ */
+public class FtpArgumentCode {
+
+  private FtpArgumentCode() {
+  }
+
+  /**
+   * Type of transmission
+   *
+   * org.waarp.ftp.core.data TransferType
+   */
+<span class="fc" id="L39">  public enum TransferType {</span>
+    /**
+     * Ascii TransferType
+     */
+<span class="fc" id="L43">    ASCII('A', &quot;ASCII&quot;),</span>
+    /**
+     * Ebcdic TransferType
+     */
+<span class="fc" id="L47">    EBCDIC('E', &quot;ebcdic-cp-us&quot;), // could be ebcdic-cp-LG where LG is</span>
+    // language like fr, gb, ...
+    /**
+     * Image TransferType
+     */
+<span class="fc" id="L52">    IMAGE('I'),</span>
+    /**
+     * Specific Length TransferType
+     */
+<span class="fc" id="L56">    LENGTH('L');</span>
+    /**
+     * TransferType
+     */
+    public final char type;
+
+    /**
+     * Charset Name if any
+     */
+    public final Charset charset;
+
+<span class="fc" id="L67">    TransferType(char type) {</span>
+<span class="fc" id="L68">      this.type = type;</span>
+<span class="fc" id="L69">      charset = Charset.defaultCharset();</span>
+<span class="fc" id="L70">    }</span>
+
+<span class="fc" id="L72">    TransferType(char type, String charsetName) {</span>
+<span class="fc" id="L73">      this.type = type;</span>
+<span class="fc" id="L74">      charset = Charset.forName(charsetName);</span>
+<span class="fc" id="L75">    }</span>
+  }
+
+  /**
+   * SubType of transmission
+   *
+   * org.waarp.ftp.core.data TransferSubType
+   */
+<span class="fc" id="L83">  public enum TransferSubType {</span>
+    /**
+     * Non-print TransferSubType
+     */
+<span class="fc" id="L87">    NONPRINT('N'),</span>
+    /**
+     * Telnet format effectors TransferSubType
+     */
+<span class="fc" id="L91">    TELNET('T'),</span>
+    /**
+     * Carriage Control ASA TransferSubType
+     */
+<span class="fc" id="L95">    CARRIAGE('C');</span>
+    /**
+     * TransferSubType
+     */
+    public final char subtype;
+
+<span class="fc" id="L101">    TransferSubType(char subtype) {</span>
+<span class="fc" id="L102">      this.subtype = subtype;</span>
+<span class="fc" id="L103">    }</span>
+  }
+
+  /**
+   * Structure of transmission
+   *
+   * org.waarp.ftp.core.data TransferStructure
+   */
+<span class="fc" id="L111">  public enum TransferStructure {</span>
+    /**
+     * FileInterface TransferStructure
+     */
+<span class="fc" id="L115">    FILE('F'),</span>
+    /**
+     * Record TransferStructure
+     */
+<span class="fc" id="L119">    RECORD('R'),</span>
+    /**
+     * Page TransferStructure
+     */
+<span class="fc" id="L123">    PAGE('P');</span>
+    /**
+     * TransferStructure
+     */
+    public final char structure;
+
+<span class="fc" id="L129">    TransferStructure(char structure) {</span>
+<span class="fc" id="L130">      this.structure = structure;</span>
+<span class="fc" id="L131">    }</span>
+  }
+
+  /**
+   * Mode of transmission
+   *
+   * org.waarp.ftp.core.data TransferMode
+   */
+<span class="fc" id="L139">  public enum TransferMode {</span>
+    /**
+     * Stream TransferMode
+     */
+<span class="fc" id="L143">    STREAM('S'),</span>
+    /**
+     * Block TransferMode
+     */
+<span class="fc" id="L147">    BLOCK('B'),</span>
+    /**
+     * Compressed TransferMode
+     */
+<span class="fc" id="L151">    COMPRESSED('C');</span>
+    /**
+     * TransferMode
+     */
+    public final char mode;
+
+<span class="fc" id="L157">    TransferMode(char mode) {</span>
+<span class="fc" id="L158">      this.mode = mode;</span>
+<span class="fc" id="L159">    }</span>
+  }
+
+  /**
+   * Get the TransferType according to the char
+   *
+   * @param type
+   *
+   * @return the corresponding TransferType
+   *
+   * @throws InvalidArgumentException if the type is unknown
+   */
+  public static TransferType getTransferType(char type)
+      throws InvalidArgumentException {
+<span class="pc bpc" id="L173" title="3 of 5 branches missed.">    switch (type) {</span>
+      case 'A':
+      case 'a':
+<span class="fc" id="L176">        return TransferType.ASCII;</span>
+      case 'E':
+      case 'e':
+<span class="nc" id="L179">        return TransferType.EBCDIC;</span>
+      case 'I':
+      case 'i':
+<span class="fc" id="L182">        return TransferType.IMAGE;</span>
+      case 'L':
+      case 'l':
+<span class="nc" id="L185">        return TransferType.LENGTH;</span>
+      default:
+<span class="nc" id="L187">        throw new InvalidArgumentException(</span>
+            &quot;Argument for TransferType is not allowed: &quot; + type);
+    }
+  }
+
+  /**
+   * Get the TransferSubType according to the char
+   *
+   * @param subType
+   *
+   * @return the corresponding TransferSubType
+   *
+   * @throws InvalidArgumentException if the TransferSubType is
+   *     unknown
+   */
+  public static TransferSubType getTransferSubType(char subType)
+      throws InvalidArgumentException {
+<span class="nc bnc" id="L204" title="All 4 branches missed.">    switch (subType) {</span>
+      case 'C':
+      case 'c':
+<span class="nc" id="L207">        return TransferSubType.CARRIAGE;</span>
+      case 'N':
+      case 'n':
+<span class="nc" id="L210">        return TransferSubType.NONPRINT;</span>
+      case 'T':
+      case 't':
+<span class="nc" id="L213">        return TransferSubType.TELNET;</span>
+      default:
+<span class="nc" id="L215">        throw new InvalidArgumentException(</span>
+            &quot;Argument for TransferSubType is not allowed: &quot; + subType);
+    }
+  }
+
+  /**
+   * Get the TransferStructure according to the char
+   *
+   * @param structure
+   *
+   * @return the corresponding TransferStructure
+   *
+   * @throws InvalidArgumentException if the TransferStructure is
+   *     unknown
+   */
+  public static TransferStructure getTransferStructure(char structure)
+      throws InvalidArgumentException {
+<span class="pc bpc" id="L232" title="3 of 4 branches missed.">    switch (structure) {</span>
+      case 'P':
+      case 'p':
+<span class="nc" id="L235">        return TransferStructure.PAGE;</span>
+      case 'F':
+      case 'f':
+<span class="fc" id="L238">        return TransferStructure.FILE;</span>
+      case 'R':
+      case 'r':
+<span class="nc" id="L241">        return TransferStructure.RECORD;</span>
+      default:
+<span class="nc" id="L243">        throw new InvalidArgumentException(</span>
+            &quot;Argument for TransferStructure is not allowed: &quot; + structure);
+    }
+  }
+
+  /**
+   * Get the TransferMode according to the char
+   *
+   * @param mode
+   *
+   * @return the corresponding TransferMode
+   *
+   * @throws InvalidArgumentException if the TransferMode is unknown
+   */
+  public static TransferMode getTransferMode(char mode)
+      throws InvalidArgumentException {
+<span class="pc bpc" id="L259" title="3 of 4 branches missed.">    switch (mode) {</span>
+      case 'B':
+      case 'b':
+<span class="nc" id="L262">        return TransferMode.BLOCK;</span>
+      case 'C':
+      case 'c':
+<span class="nc" id="L265">        return TransferMode.COMPRESSED;</span>
+      case 'S':
+      case 's':
+<span class="fc" id="L268">        return TransferMode.STREAM;</span>
+      default:
+<span class="nc" id="L270">        throw new InvalidArgumentException(</span>
+            &quot;Argument for TransferMode is not allowed: &quot; + mode);
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

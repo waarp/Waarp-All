@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>NetworkHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.control</a> &gt; <span class="el_source">NetworkHandler.java</span></div><h1>NetworkHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.control;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelException;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.command.exception.Reply503Exception;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.core.command.AbstractCommand;
+import org.waarp.ftp.core.command.FtpCommandCode;
+import org.waarp.ftp.core.command.access.USER;
+import org.waarp.ftp.core.command.internal.ConnectionCommand;
+import org.waarp.ftp.core.command.internal.IncorrectCommand;
+import org.waarp.ftp.core.control.ftps.FtpsInitializer;
+import org.waarp.ftp.core.data.FtpTransferControl;
+import org.waarp.ftp.core.exception.FtpNoConnectionException;
+import org.waarp.ftp.core.session.FtpSession;
+import org.waarp.ftp.core.utils.FtpChannelUtils;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.RejectedExecutionException;
+
+/**
+ * Main Network Handler (Control part) implementing RFC 959, 775, 2389, 2428,
+ * 3659 and supports XCRC and XMD5
+ * commands.
+ */
+public class NetworkHandler extends SimpleChannelInboundHandler&lt;String&gt; {
+  private static final String INTERNAL_ERROR_DISCONNECT =
+      &quot;Internal error: disconnect&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L66">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L67">      WaarpLoggerFactory.getLogger(NetworkHandler.class);</span>
+
+  /**
+   * Business Handler
+   */
+  private final BusinessHandler businessHandler;
+
+  /**
+   * Internal store for the SessionInterface
+   */
+  private final FtpSession session;
+
+  /**
+   * The associated Channel
+   */
+  private Channel controlChannel;
+  /**
+   * ChannelHandlerContext that could be used whenever needed
+   */
+  private volatile ChannelHandlerContext ctx;
+
+  /**
+   * Constructor from session
+   *
+   * @param session
+   */
+<span class="fc" id="L93">  public NetworkHandler(FtpSession session) {</span>
+<span class="fc" id="L94">    this.session = session;</span>
+<span class="fc" id="L95">    businessHandler = session.getBusinessHandler();</span>
+<span class="fc" id="L96">    businessHandler.setNetworkHandler(this);</span>
+<span class="fc" id="L97">  }</span>
+
+  /**
+   * @return the businessHandler
+   */
+  public BusinessHandler getBusinessHandler() {
+<span class="nc" id="L103">    return businessHandler;</span>
+  }
+
+  /**
+   * @return the session
+   */
+  public FtpSession getFtpSession() {
+<span class="fc" id="L110">    return session;</span>
+  }
+
+  /**
+   * @return the Control Channel
+   */
+  public Channel getControlChannel() {
+<span class="fc" id="L117">    return controlChannel;</span>
+  }
+
+  /**
+   * Run firstly executeChannelClosed.
+   */
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+<span class="pc bpc" id="L125" title="2 of 4 branches missed.">    if (session == null || session.getDataConn() == null ||</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        session.getDataConn().getFtpTransferControl() == null) {</span>
+<span class="nc" id="L127">      super.channelInactive(ctx);</span>
+<span class="nc" id="L128">      return;</span>
+    }
+    // Wait for any command running before closing (bad client sometimes
+    // don't wait for answer)
+<span class="fc" id="L132">    int limit = 100;</span>
+<span class="fc" id="L133">    while (session.getDataConn().getFtpTransferControl()</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">                  .isFtpTransferExecuting()) {</span>
+<span class="nc" id="L135">      Thread.sleep(10);</span>
+<span class="nc" id="L136">      limit--;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">      if (limit &lt;= 0) {</span>
+<span class="nc" id="L138">        logger.warn(&quot;Waiting for transfer finished but 1s is not enough&quot;);</span>
+<span class="nc" id="L139">        break; // wait at most 1s</span>
+      }
+    }
+<span class="fc" id="L142">    businessHandler.executeChannelClosed();</span>
+    // release file and other permanent objects
+<span class="fc" id="L144">    businessHandler.clear();</span>
+<span class="fc" id="L145">    session.clear();</span>
+<span class="fc" id="L146">    super.channelInactive(ctx);</span>
+<span class="fc" id="L147">  }</span>
+
+  /**
+   * Initialize the Handler.
+   */
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+<span class="fc" id="L154">    this.ctx = ctx;</span>
+<span class="fc" id="L155">    final Channel channel = ctx.channel();</span>
+<span class="fc" id="L156">    controlChannel = channel;</span>
+<span class="fc" id="L157">    session.setControlConnected();</span>
+<span class="fc" id="L158">    FtpChannelUtils.addCommandChannel(channel, session.getConfiguration());</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">    if (isStillAlive(ctx)) {</span>
+      // Make the first execution ready
+<span class="fc" id="L161">      final AbstractCommand command = new ConnectionCommand(getFtpSession());</span>
+<span class="fc" id="L162">      session.setNextCommand(command);</span>
+      // This command can change the next Command
+<span class="fc" id="L164">      businessHandler.executeChannelConnected(channel);</span>
+      // Answer ready to continue from first command = Connection
+<span class="fc" id="L166">      messageRunAnswer(ctx);</span>
+<span class="fc" id="L167">      getFtpSession().setReady(true);</span>
+    }
+<span class="fc" id="L169">  }</span>
+
+  /**
+   * If the service is going to shutdown, it sends back a 421 message to the
+   * connection
+   *
+   * @return True if the service is alive, else False if the system is going
+   *     down
+   */
+  private boolean isStillAlive(ChannelHandlerContext ctx) {
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (session.getConfiguration().isShutdown()) {</span>
+<span class="nc" id="L180">      session.setExitErrorCode(&quot;Service is going down: disconnect&quot;);</span>
+<span class="nc" id="L181">      writeFinalAnswer(ctx);</span>
+<span class="nc" id="L182">      return false;</span>
+    }
+<span class="fc" id="L184">    return true;</span>
+  }
+
+  /**
+   * Default exception task: close the current connection after calling
+   * exceptionLocalCaught and writing if
+   * possible the current replyCode.
+   */
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+      throws Exception {
+<span class="nc" id="L195">    this.ctx = ctx;</span>
+<span class="nc" id="L196">    final Channel channel = ctx.channel();</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    if (session == null) {</span>
+      // should not be
+<span class="nc" id="L199">      logger.warn(&quot;NO SESSION&quot;, cause);</span>
+<span class="nc" id="L200">      return;</span>
+    }
+<span class="nc bnc" id="L202" title="All 2 branches missed.">    if (cause instanceof ConnectException) {</span>
+<span class="nc" id="L203">      final ConnectException e2 = (ConnectException) cause;</span>
+<span class="nc" id="L204">      logger.warn(&quot;Connection impossible since {} with Channel {}&quot;,</span>
+<span class="nc" id="L205">                  e2.getMessage(), channel);</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">    } else if (cause instanceof ChannelException) {</span>
+<span class="nc" id="L207">      final ChannelException e2 = (ChannelException) cause;</span>
+<span class="nc" id="L208">      logger.warn(</span>
+          &quot;Connection (example: timeout) impossible since {} with Channel {}&quot;,
+<span class="nc" id="L210">          e2.getMessage(), channel);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    } else if (cause instanceof ClosedChannelException) {</span>
+<span class="nc" id="L212">      logger.debug(&quot;Connection closed before end&quot;);</span>
+<span class="nc" id="L213">      session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">      if (channel.isActive()) {</span>
+<span class="nc" id="L215">        writeFinalAnswer(ctx);</span>
+      }
+<span class="nc" id="L217">      return;</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">    } else if (cause instanceof CommandAbstractException) {</span>
+      // FTP Exception: not close if not necessary
+<span class="nc" id="L220">      final CommandAbstractException e2 = (CommandAbstractException) cause;</span>
+<span class="nc" id="L221">      logger.warn(&quot;Command Error Reply {}&quot;, e2.getMessage());</span>
+<span class="nc" id="L222">      session.setReplyCode(e2);</span>
+<span class="nc" id="L223">      businessHandler.afterRunCommandKo(e2);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      if (channel.isActive()) {</span>
+<span class="nc" id="L225">        writeFinalAnswer(ctx);</span>
+      }
+<span class="nc" id="L227">      return;</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">    } else if (cause instanceof NullPointerException) {</span>
+<span class="nc" id="L229">      final NullPointerException e2 = (NullPointerException) cause;</span>
+<span class="nc" id="L230">      logger.warn(&quot;Null pointer Exception: &quot; + ctx.channel(), e2);</span>
+      try {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        if (session != null) {</span>
+<span class="nc" id="L233">          session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);</span>
+<span class="nc bnc" id="L234" title="All 4 branches missed.">          if (businessHandler != null &amp;&amp; session.getDataConn() != null) {</span>
+<span class="nc" id="L235">            businessHandler.exceptionLocalCaught(cause);</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">            if (channel.isActive()) {</span>
+<span class="nc" id="L237">              writeFinalAnswer(ctx);</span>
+            }
+          }
+        }
+<span class="nc" id="L241">      } catch (final NullPointerException ignored) {</span>
+        // nothing
+<span class="nc" id="L243">      }</span>
+<span class="nc" id="L244">      return;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">    } else if (cause instanceof IOException) {</span>
+<span class="nc" id="L246">      final IOException e2 = (IOException) cause;</span>
+<span class="nc" id="L247">      logger</span>
+<span class="nc" id="L248">          .warn(&quot;Connection aborted since {} with Channel {}&quot;, e2.getMessage(),</span>
+                channel);
+<span class="nc" id="L250">      logger.warn(cause);</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">    } else if (cause instanceof RejectedExecutionException) {</span>
+<span class="nc" id="L252">      logger.debug(&quot;Rejected execution (shutdown) from {}&quot;, channel);</span>
+<span class="nc" id="L253">      return;</span>
+    } else {
+<span class="nc" id="L255">      logger.warn(&quot;Unexpected exception from Outband Ref Channel: &quot; + channel +</span>
+<span class="nc" id="L256">                  &quot; Exception: &quot; + cause.getMessage(), cause);</span>
+    }
+<span class="nc" id="L258">    session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);</span>
+<span class="nc" id="L259">    businessHandler.exceptionLocalCaught(cause);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">    if (channel.isActive()) {</span>
+<span class="nc" id="L261">      writeFinalAnswer(ctx);</span>
+    }
+<span class="nc" id="L263">  }</span>
+
+  /**
+   * Simply call messageRun with the received message
+   */
+  @Override
+  public void channelRead0(ChannelHandlerContext ctx, String e) {
+<span class="fc" id="L270">    this.ctx = ctx;</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">    if (isStillAlive(ctx)) {</span>
+      // First wait for the initialization to be fully done
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">      if (!session.isReady()) {</span>
+<span class="nc" id="L274">        session.setReplyCode(</span>
+            ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION,
+            null);
+<span class="nc" id="L277">        businessHandler.afterRunCommandKo(</span>
+<span class="nc" id="L278">            new Reply421Exception(session.getReplyCode().getMesg()));</span>
+<span class="nc" id="L279">        writeIntermediateAnswer(ctx);</span>
+<span class="nc" id="L280">        return;</span>
+      }
+<span class="fc" id="L282">      AbstractCommand command = FtpCommandCode.getFromLine(getFtpSession(), e);</span>
+<span class="fc" id="L283">      logger.debug(&quot;RECVMSG: {} CMD: {} &quot; + command.getCode(), e,</span>
+<span class="fc" id="L284">                   command.getCommand());</span>
+      // First check if the command is an ABORT, QUIT or STAT
+<span class="fc bfc" id="L286" title="All 2 branches covered.">      if (!FtpCommandCode.isSpecialCommand(command.getCode())) {</span>
+        // Now check if a transfer is on its way: illegal to have at
+        // same time two commands (except ABORT). Wait is at most 100x
+        // RETRYINMS=1s
+<span class="fc" id="L290">        final FtpTransferControl control =</span>
+<span class="fc" id="L291">            session.getDataConn().getFtpTransferControl();</span>
+<span class="fc" id="L292">        final boolean notFinished = control.waitFtpTransferExecuting();</span>
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">        if (notFinished) {</span>
+<span class="nc" id="L294">          session.setReplyCode(ReplyCode.REPLY_503_BAD_SEQUENCE_OF_COMMANDS,</span>
+                               &quot;Previous transfer command is not finished yet&quot;);
+<span class="nc" id="L296">          businessHandler.afterRunCommandKo(</span>
+<span class="nc" id="L297">              new Reply503Exception(session.getReplyCode().getMesg()));</span>
+<span class="nc" id="L298">          writeIntermediateAnswer(ctx);</span>
+<span class="nc" id="L299">          return;</span>
+        }
+      }
+      // Default message
+<span class="fc" id="L303">      session.setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY, null);</span>
+      // Special check for SSL AUTH/PBSZ/PROT/USER/PASS/ACCT
+<span class="fc bfc" id="L305" title="All 2 branches covered.">      if (FtpCommandCode.isSslOrAuthCommand(command.getCode())) {</span>
+<span class="fc" id="L306">        session.setNextCommand(command);</span>
+<span class="fc" id="L307">        messageRunAnswer(ctx);</span>
+<span class="fc" id="L308">        return;</span>
+      }
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">      if (session.getCurrentCommand().isNextCommandValid(command)) {</span>
+<span class="fc" id="L311">        logger.debug(</span>
+<span class="fc" id="L312">            &quot;Previous: &quot; + session.getCurrentCommand().getCode() + &quot; Next: &quot; +</span>
+<span class="fc" id="L313">            command.getCode());</span>
+<span class="fc" id="L314">        session.setNextCommand(command);</span>
+<span class="fc" id="L315">        messageRunAnswer(ctx);</span>
+      } else {
+<span class="nc bnc" id="L317" title="All 2 branches missed.">        if (!session.getAuth().isIdentified()) {</span>
+<span class="nc" id="L318">          session.setReplyCode(ReplyCode.REPLY_530_NOT_LOGGED_IN, null);</span>
+<span class="nc" id="L319">          session.setNextCommand(new USER());</span>
+<span class="nc" id="L320">          writeFinalAnswer(ctx);</span>
+<span class="nc" id="L321">          return;</span>
+        }
+<span class="nc" id="L323">        command = new IncorrectCommand();</span>
+<span class="nc" id="L324">        command.setArgs(getFtpSession(), e, null,</span>
+                        FtpCommandCode.IncorrectSequence);
+<span class="nc" id="L326">        session.setNextCommand(command);</span>
+<span class="nc" id="L327">        messageRunAnswer(ctx);</span>
+      }
+    }
+<span class="fc" id="L330">  }</span>
+
+  /**
+   * Write the current answer and eventually close channel if necessary (421
+   * or
+   * 221)
+   *
+   * @return True if the channel is closed due to the code
+   */
+  private boolean writeFinalAnswer(ChannelHandlerContext ctx) {
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">    if (session.getReplyCode() ==</span>
+        ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION ||
+<span class="fc bfc" id="L342" title="All 2 branches covered.">        session.getReplyCode() ==</span>
+        ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION) {
+<span class="fc" id="L344">      session.getDataConn().getFtpTransferControl().clear();</span>
+<span class="fc" id="L345">      writeIntermediateAnswer(ctx).addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="fc" id="L346">      return true;</span>
+    }
+<span class="fc" id="L348">    writeIntermediateAnswer(ctx);</span>
+<span class="fc" id="L349">    session.setCurrentCommandFinished();</span>
+<span class="fc" id="L350">    return false;</span>
+  }
+
+  /**
+   * Write an intermediate Answer from Business before last answer also set by
+   * the Business
+   *
+   * @return the ChannelFuture associated with the write
+   */
+  public ChannelFuture writeIntermediateAnswer(ChannelHandlerContext ctx) {
+<span class="fc" id="L360">    logger.debug(&quot;Answer: &quot; + session.getAnswer());</span>
+<span class="fc" id="L361">    return ctx.writeAndFlush(session.getAnswer());</span>
+  }
+
+  /**
+   * Write an intermediate Answer from Business before last answer also set by
+   * the Business
+   *
+   * @return the ChannelFuture associated with the write
+   */
+  public ChannelFuture writeIntermediateAnswer() {
+<span class="fc" id="L371">    return writeIntermediateAnswer(ctx);</span>
+  }
+
+  /**
+   * To be extended to inform of an error to SNMP support
+   *
+   * @param error1
+   * @param error2
+   */
+  protected void callForSnmp(String error1, String error2) {
+    // ignore
+<span class="nc" id="L382">  }</span>
+
+  /**
+   * Execute one command and write the following answer
+   */
+  private void messageRunAnswer(final ChannelHandlerContext ctx) {
+<span class="fc" id="L388">    boolean error = false;</span>
+<span class="fc" id="L389">    logger.debug(&quot;Code: &quot; + session.getCurrentCommand().getCode());</span>
+    try {
+<span class="fc" id="L391">      businessHandler.beforeRunCommand();</span>
+<span class="fc" id="L392">      final AbstractCommand command = session.getCurrentCommand();</span>
+<span class="fc" id="L393">      logger.debug(&quot;Run {}&quot;, command.getCommand());</span>
+<span class="fc" id="L394">      command.exec();</span>
+<span class="fc" id="L395">      businessHandler.afterRunCommandOk();</span>
+<span class="fc" id="L396">    } catch (final CommandAbstractException e) {</span>
+<span class="fc" id="L397">      logger.debug(&quot;Command in error&quot;, e);</span>
+<span class="fc" id="L398">      error = true;</span>
+<span class="fc" id="L399">      session.setReplyCode(e);</span>
+<span class="fc" id="L400">      businessHandler.afterRunCommandKo(e);</span>
+<span class="fc" id="L401">    }</span>
+<span class="fc" id="L402">    logger.debug(&quot;Code: &quot; + session.getCurrentCommand().getCode() + &quot; [&quot; +</span>
+<span class="fc" id="L403">                 session.getReplyCode() + ']');</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">    if (error) {</span>
+<span class="pc bpc" id="L405" title="1 of 2 branches missed.">      if (session.getCurrentCommand().getCode() !=</span>
+          FtpCommandCode.INTERNALSHUTDOWN) {
+<span class="fc" id="L407">        writeFinalAnswer(ctx);</span>
+      }
+      // In error so Check that Data is closed
+<span class="pc bpc" id="L410" title="1 of 2 branches missed.">      if (session.getDataConn().isActive()) {</span>
+<span class="nc" id="L411">        logger.debug(&quot;Closing DataChannel while command is in error&quot;);</span>
+        try {
+<span class="nc" id="L413">          session.getDataConn().getCurrentDataChannel().close();</span>
+<span class="nc" id="L414">        } catch (final FtpNoConnectionException e) {</span>
+          // ignore
+<span class="nc" id="L416">        }</span>
+      }
+<span class="fc" id="L418">      return;</span>
+    }
+<span class="fc bfc" id="L420" title="All 2 branches covered.">    if (session.getCurrentCommand().getCode() == FtpCommandCode.AUTH ||</span>
+<span class="pc bpc" id="L421" title="1 of 2 branches missed.">        session.getCurrentCommand().getCode() == FtpCommandCode.CCC) {</span>
+<span class="fc" id="L422">      controlChannel.config().setAutoRead(false);</span>
+<span class="fc" id="L423">      final ChannelFuture future = writeIntermediateAnswer(ctx);</span>
+<span class="fc" id="L424">      session.setCurrentCommandFinished();</span>
+<span class="pc bpc" id="L425" title="1 of 2 branches missed.">      if (session.getCurrentCommand().getCode() == FtpCommandCode.AUTH) {</span>
+<span class="fc" id="L426">        logger.debug(&quot;SSL to be added to pipeline&quot;);</span>
+<span class="fc" id="L427">        ChannelHandler sslHandler = ctx.pipeline().first();</span>
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">        if (sslHandler instanceof SslHandler) {</span>
+<span class="nc" id="L429">          logger.debug(&quot;Already got a SslHandler&quot;);</span>
+        } else {
+<span class="fc" id="L431">          logger.debug(&quot;Add Explicitely SSL support to Command&quot;);</span>
+          // add the SSL support
+<span class="fc" id="L433">          sslHandler = FtpsInitializer.waarpSslContextFactory</span>
+<span class="fc" id="L434">              .initInitializer(true, FtpsInitializer.waarpSslContextFactory</span>
+<span class="fc" id="L435">                  .needClientAuthentication());</span>
+<span class="fc" id="L436">          session.prepareSsl();</span>
+<span class="fc" id="L437">          WaarpSslUtility.addSslHandler(future, ctx.pipeline(), sslHandler,</span>
+<span class="fc" id="L438">                                        new GenericFutureListener&lt;Future&lt;? super Channel&gt;&gt;() {</span>
+                                          @Override
+                                          public void operationComplete(
+                                              Future&lt;? super Channel&gt; future)
+                                              throws Exception {
+<span class="pc bpc" id="L443" title="1 of 2 branches missed.">                                            if (!future.isSuccess()) {</span>
+<span class="nc" id="L444">                                              final String error2 =</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">                                                  future.cause() != null?</span>
+<span class="nc" id="L446">                                                      future.cause()</span>
+<span class="nc" id="L447">                                                            .getMessage() :</span>
+                                                      &quot;During Handshake&quot;;
+<span class="nc" id="L449">                                              logger.error(</span>
+                                                  &quot;Cannot finalize Ssl Command channel &quot; +
+                                                  error2);
+<span class="nc" id="L452">                                              callForSnmp(</span>
+                                                  &quot;SSL Connection Error&quot;,
+                                                  error2);
+<span class="nc" id="L455">                                              session.setSsl(false);</span>
+<span class="nc" id="L456">                                              ctx.close();</span>
+<span class="nc" id="L457">                                            } else {</span>
+<span class="fc" id="L458">                                              logger.debug(</span>
+                                                  &quot;End of initialization of SSL and command channel: &quot; +
+<span class="fc" id="L460">                                                  ctx.channel());</span>
+<span class="fc" id="L461">                                              session.setSsl(true);</span>
+                                            }
+<span class="fc" id="L463">                                          }</span>
+                                        });
+        }
+<span class="pc bnc" id="L466" title="All 2 branches missed.">      } else if (session.getCurrentCommand().getCode() == FtpCommandCode.CCC) {</span>
+<span class="nc" id="L467">        logger.debug(&quot;SSL to be removed from pipeline&quot;);</span>
+        // remove the SSL support
+<span class="nc" id="L469">        session.prepareSsl();</span>
+<span class="nc" id="L470">        WaarpSslUtility.removingSslHandler(future, controlChannel, false);</span>
+      }
+<span class="fc bfc" id="L472" title="All 2 branches covered.">    } else if (session.getCurrentCommand().getCode() !=</span>
+               FtpCommandCode.INTERNALSHUTDOWN) {
+<span class="fc" id="L474">      writeFinalAnswer(ctx);</span>
+    }
+<span class="fc" id="L476">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

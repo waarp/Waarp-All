@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SmileJsonHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Common</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.json</a> &gt; <span class="el_source">SmileJsonHandler.java</span></div><h1>SmileJsonHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.json;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import org.waarp.common.logging.SysErrLogger;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * JSON handler using Smile default format
+ */
+public class SmileJsonHandler extends JsonHandler {
+  /**
+   * JSON SMILE parser
+   */
+<span class="nc" id="L46">  public static final ObjectMapper mapper = new ObjectMapper(new SmileFactory())</span>
+<span class="nc" id="L47">      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)</span>
+<span class="nc" id="L48">      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)</span>
+<span class="nc" id="L49">      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)</span>
+<span class="nc" id="L50">      .configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);</span>
+
+<span class="nc" id="L52">  protected SmileJsonHandler() {</span>
+<span class="nc" id="L53">  }</span>
+
+  /**
+   * @return an empty ObjectNode
+   */
+  public static ObjectNode createObjectNode() {
+<span class="nc" id="L59">    return mapper.createObjectNode();</span>
+  }
+
+  /**
+   * @return an empty ArrayNode
+   */
+  public static ArrayNode createArrayNode() {
+<span class="nc" id="L66">    return mapper.createArrayNode();</span>
+  }
+
+  /**
+   * @param value
+   *
+   * @return the objectNode or null if an error occurs
+   */
+  public static ObjectNode getFromString(String value) {
+    try {
+<span class="nc" id="L76">      return (ObjectNode) mapper.readTree(value);</span>
+<span class="nc" id="L77">    } catch (final JsonProcessingException e) {</span>
+<span class="nc" id="L78">      return null;</span>
+<span class="nc" id="L79">    } catch (final IOException e) {</span>
+<span class="nc" id="L80">      return null;</span>
+    }
+  }
+
+  /**
+   * @param object
+   *
+   * @return the Json representation of the object
+   */
+  public static String writeAsString(Object object) {
+    try {
+<span class="nc" id="L91">      return mapper.writeValueAsString(object);</span>
+<span class="nc" id="L92">    } catch (final JsonProcessingException e) {</span>
+<span class="nc" id="L93">      return &quot;{}&quot;;</span>
+    }
+  }
+
+  /**
+   * @param value
+   *
+   * @return the corresponding HashMap
+   */
+  public static Map&lt;String, Object&gt; getMapFromString(String value) {
+<span class="nc bnc" id="L103" title="All 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L104">      Map&lt;String, Object&gt; info = null;</span>
+      try {
+<span class="nc" id="L106">        info =</span>
+<span class="nc" id="L107">            mapper.readValue(value, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
+            });
+<span class="nc" id="L109">      } catch (final JsonParseException ignored) {</span>
+<span class="nc" id="L110">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L111">      } catch (final JsonMappingException ignored) {</span>
+<span class="nc" id="L112">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L113">      } catch (final IOException ignored) {</span>
+<span class="nc" id="L114">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L115">      }</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      if (info == null) {</span>
+<span class="nc" id="L117">        info = new HashMap&lt;String, Object&gt;();</span>
+      }
+<span class="nc" id="L119">      return info;</span>
+    } else {
+<span class="nc" id="L121">      return new HashMap&lt;String, Object&gt;();</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

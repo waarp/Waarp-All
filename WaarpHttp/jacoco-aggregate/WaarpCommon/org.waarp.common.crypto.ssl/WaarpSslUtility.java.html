@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpSslUtility.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.crypto.ssl</a> &gt; <span class="el_source">WaarpSslUtility.java</span></div><h1>WaarpSslUtility.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.crypto.ssl;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpThreadFactory;
+
+import java.util.NoSuchElementException;
+
+/**
+ * Utilities for SSL support
+ */
+public final class WaarpSslUtility {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L50">      WaarpLoggerFactory.getLogger(WaarpSslUtility.class);</span>
+
+  /**
+   * EventExecutor associated with Ssl utility
+   */
+<span class="fc" id="L55">  private static final EventExecutor SSL_EVENT_EXECUTOR =</span>
+      new DefaultEventExecutor(new WaarpThreadFactory(&quot;SSLEVENT&quot;));
+  /**
+   * ChannelGroup for SSL
+   */
+<span class="fc" id="L60">  private static final ChannelGroup sslChannelGroup =</span>
+      new DefaultChannelGroup(&quot;SslChannelGroup&quot;, SSL_EVENT_EXECUTOR);
+
+  /**
+   * Closing channel with SSL close at first step
+   */
+<span class="fc" id="L66">  public static final ChannelFutureListener SSLCLOSE =</span>
+<span class="fc" id="L67">      new ChannelFutureListener() {</span>
+
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">          if (future.channel().isActive()) {</span>
+<span class="fc" id="L72">            SSLTHREAD thread = new SSLTHREAD(future.channel());</span>
+<span class="fc" id="L73">            thread.start();</span>
+          }
+<span class="fc" id="L75">        }</span>
+      };
+
+  private WaarpSslUtility() {
+  }
+
+  /**
+   * Add the Channel as SSL handshake will start soon
+   *
+   * @param channel
+   */
+  public static void addSslOpenedChannel(Channel channel) {
+<span class="fc" id="L87">    sslChannelGroup.add(channel);</span>
+<span class="fc" id="L88">  }</span>
+
+  /**
+   * Add a SslHandler in a pipeline when the channel is already active
+   *
+   * @param future might be null, condition to start to add the
+   *     handler to
+   *     the pipeline
+   * @param pipeline
+   * @param sslHandler
+   * @param listener action once the handshake is done
+   */
+  @SuppressWarnings({ &quot;unchecked&quot;, &quot;rawtypes&quot; })
+  public static void addSslHandler(ChannelFuture future,
+                                   final ChannelPipeline pipeline,
+                                   final ChannelHandler sslHandler,
+                                   final GenericFutureListener&lt;? extends Future&lt;? super Channel&gt;&gt; listener) {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">    if (future == null) {</span>
+<span class="fc" id="L106">      logger.debug(&quot;Add SslHandler: &quot; + pipeline.channel());</span>
+<span class="fc" id="L107">      pipeline.addFirst(&quot;SSL&quot;, sslHandler);</span>
+<span class="fc" id="L108">      ((SslHandler) sslHandler).handshakeFuture().addListener(listener);</span>
+    } else {
+<span class="fc" id="L110">      future.addListener(new GenericFutureListener() {</span>
+        @Override
+        public void operationComplete(Future future) throws Exception {
+<span class="fc" id="L113">          logger.debug(&quot;Add SslHandler: &quot; + pipeline.channel());</span>
+<span class="fc" id="L114">          pipeline.addFirst(&quot;SSL&quot;, sslHandler);</span>
+<span class="fc" id="L115">          ((SslHandler) sslHandler).handshakeFuture().addListener(listener);</span>
+<span class="fc" id="L116">        }</span>
+      });
+    }
+<span class="fc" id="L119">    logger.debug(&quot;Checked Ssl Handler to be added: &quot; + pipeline.channel());</span>
+<span class="fc" id="L120">  }</span>
+
+  /**
+   * Wait for the handshake on the given channel (better to use addSslHandler
+   * when handler is added after
+   * channel is active)
+   *
+   * @param channel
+   *
+   * @return True if the Handshake is done correctly
+   */
+  public static boolean waitForHandshake(Channel channel) {
+<span class="fc" id="L132">    final ChannelHandler handler = channel.pipeline().first();</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">    if (handler instanceof SslHandler) {</span>
+<span class="fc" id="L134">      logger.debug(&quot;Start handshake SSL: &quot; + channel);</span>
+<span class="fc" id="L135">      final SslHandler sslHandler = (SslHandler) handler;</span>
+      // Get the SslHandler and begin handshake ASAP.
+      // Get notified when SSL handshake is done.
+<span class="fc" id="L138">      final Future&lt;Channel&gt; handshakeFuture = sslHandler.handshakeFuture();</span>
+<span class="fc" id="L139">      WaarpNettyUtil.awaitOrInterrupted(handshakeFuture,</span>
+<span class="fc" id="L140">                                        sslHandler.getHandshakeTimeoutMillis() +</span>
+                                        100);
+<span class="fc" id="L142">      logger.debug(&quot;Handshake: &quot; + handshakeFuture.isSuccess() + &quot;: &quot; + channel,</span>
+<span class="fc" id="L143">                   handshakeFuture.cause());</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">      if (!handshakeFuture.isSuccess()) {</span>
+<span class="nc" id="L145">        channel.close();</span>
+<span class="nc" id="L146">        return false;</span>
+      }
+<span class="fc" id="L148">    } else {</span>
+<span class="fc" id="L149">      logger.info(&quot;SSL Not found but connected: {} {}&quot;,</span>
+<span class="fc" id="L150">                  handler.getClass().getName());</span>
+    }
+<span class="fc" id="L152">    return true;</span>
+  }
+
+  /**
+   * Waiting for the channel to be opened and ready (Client side) (blocking
+   * call)
+   *
+   * @param future a future on connect only
+   *
+   * @return the channel if correctly associated, else return null
+   */
+  public static Channel waitforChannelReady(ChannelFuture future) {
+    // Wait until the connection attempt succeeds or fails.
+<span class="fc" id="L165">    WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">    if (!future.isSuccess()) {</span>
+<span class="nc" id="L167">      logger.error(&quot;Channel not connected&quot;, future.cause());</span>
+<span class="nc" id="L168">      return null;</span>
+    }
+<span class="fc" id="L170">    final Channel channel = future.channel();</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">    if (waitForHandshake(channel)) {</span>
+<span class="fc" id="L172">      return channel;</span>
+    }
+<span class="nc" id="L174">    return null;</span>
+  }
+
+  /**
+   * Utility to force all channels to be closed
+   */
+  public static void forceCloseAllSslChannels() {
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    if (SSL_EVENT_EXECUTOR.isShutdown()) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      for (Channel channel : sslChannelGroup) {</span>
+<span class="nc" id="L183">        closingSslChannel(channel);</span>
+<span class="nc" id="L184">      }</span>
+<span class="nc" id="L185">      WaarpNettyUtil.awaitOrInterrupted(sslChannelGroup.close());</span>
+<span class="nc" id="L186">      SSL_EVENT_EXECUTOR.shutdownGracefully();</span>
+    }
+<span class="fc" id="L188">  }</span>
+
+  /**
+   * Utility method to close a channel in SSL mode correctly (if any)
+   *
+   * @param channel
+   */
+  public static ChannelFuture closingSslChannel(Channel channel) {
+<span class="fc bfc" id="L196" title="All 2 branches covered.">    if (channel.isActive()) {</span>
+<span class="fc" id="L197">      removingSslHandler(null, channel, true);</span>
+<span class="fc" id="L198">      logger</span>
+<span class="fc" id="L199">          .debug(&quot;Close the channel and returns the ChannelFuture: &quot; + channel);</span>
+<span class="fc" id="L200">      return channel.closeFuture();</span>
+    }
+<span class="fc" id="L202">    logger.debug(&quot;Already closed&quot;);</span>
+<span class="fc" id="L203">    return channel.newSucceededFuture();</span>
+  }
+
+  /**
+   * Remove the SslHandler (if any) cleanly
+   *
+   * @param future if not null, wait for this future to be done to
+   *     removed
+   *     the sslhandler
+   * @param channel
+   * @param close True to close the channel, else to only remove it
+   */
+  @SuppressWarnings({ &quot;rawtypes&quot;, &quot;unchecked&quot; })
+  public static void removingSslHandler(ChannelFuture future,
+                                        final Channel channel,
+                                        final boolean close) {
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (channel.isActive()) {</span>
+<span class="fc" id="L220">      channel.config().setAutoRead(true);</span>
+<span class="fc" id="L221">      final ChannelHandler handler = channel.pipeline().first();</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">      if (handler instanceof SslHandler) {</span>
+<span class="fc" id="L223">        final SslHandler sslHandler = (SslHandler) handler;</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (future != null) {</span>
+<span class="nc" id="L225">          future.addListener(new GenericFutureListener() {</span>
+            @Override
+            public void operationComplete(Future future) throws Exception {
+<span class="nc" id="L228">              logger.debug(&quot;Found SslHandler and wait for Ssl.close()&quot;);</span>
+<span class="nc" id="L229">              ChannelHandlerContext cht =</span>
+<span class="nc" id="L230">                  channel.pipeline().context(sslHandler);</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">              if (cht.channel().isActive()) {</span>
+<span class="nc" id="L232">                cht.close().addListener(</span>
+<span class="nc" id="L233">                    new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
+                      @Override
+                      public void operationComplete(Future&lt;? super Void&gt; future)
+                          throws Exception {
+<span class="nc" id="L237">                        logger.debug(&quot;Ssl closed&quot;);</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">                        if (!close) {</span>
+<span class="nc" id="L239">                          channel.pipeline().remove(sslHandler);</span>
+                        } else {
+<span class="nc bnc" id="L241" title="All 2 branches missed.">                          if (channel.isActive()) {</span>
+<span class="nc" id="L242">                            channel.close();</span>
+                          }
+                        }
+<span class="nc" id="L245">                      }</span>
+                    });
+              }
+<span class="nc" id="L248">            }</span>
+          });
+        } else {
+<span class="fc" id="L251">          logger</span>
+<span class="fc" id="L252">              .debug(&quot;Found SslHandler and wait for Ssl.close() : &quot; + channel);</span>
+<span class="fc" id="L253">          ChannelHandlerContext cht = channel.pipeline().context(sslHandler);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">          if (cht.channel().isActive()) {</span>
+<span class="fc" id="L255">            cht.close()</span>
+<span class="fc" id="L256">               .addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
+                 @Override
+                 public void operationComplete(Future&lt;? super Void&gt; future)
+                     throws Exception {
+<span class="fc" id="L260">                   logger.debug(&quot;Ssl closed: &quot; + channel);</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">                   if (!close) {</span>
+<span class="nc" id="L262">                     channel.pipeline().remove(sslHandler);</span>
+                   } else {
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">                     if (channel.isActive()) {</span>
+<span class="nc" id="L265">                       channel.close();</span>
+                     }
+                   }
+<span class="fc" id="L268">                 }</span>
+               });
+          }
+        }
+<span class="fc" id="L272">      } else {</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (channel.isActive()) {</span>
+<span class="fc" id="L274">          channel.close();</span>
+        }
+      }
+    }
+<span class="fc" id="L278">  }</span>
+
+  /**
+   * Wait for the channel with SSL to be closed
+   *
+   * @param channel
+   * @param delay
+   *
+   * @return True if an error occurs as an interruption
+   */
+  public static boolean waitForClosingSslChannel(Channel channel, long delay) {
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    if (!WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay)) {</span>
+      try {
+<span class="nc" id="L291">        channel.pipeline().remove(WaarpSslHandler.class);</span>
+<span class="nc" id="L292">        logger.debug(&quot;try to close anyway&quot;);</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        if (channel.isActive()) {</span>
+<span class="nc" id="L294">          WaarpNettyUtil.awaitOrInterrupted(channel.close(), delay);</span>
+        }
+<span class="nc" id="L296">        return false;</span>
+<span class="nc" id="L297">      } catch (final NoSuchElementException e) {</span>
+        // ignore
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (channel.isActive()) {</span>
+<span class="nc" id="L300">          WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay);</span>
+        }
+      }
+    }
+<span class="fc" id="L304">    return true;</span>
+  }
+
+  /**
+   * Thread used to ensure we are not in IO thread when waiting
+   */
+  private static class SSLTHREAD extends Thread {
+    private final Channel channel;
+
+    /**
+     * @param channel
+     */
+<span class="fc" id="L316">    private SSLTHREAD(Channel channel) {</span>
+<span class="fc" id="L317">      this.channel = channel;</span>
+<span class="fc" id="L318">      setDaemon(true);</span>
+<span class="fc" id="L319">      setName(&quot;SSLTHREAD_&quot; + getName());</span>
+<span class="fc" id="L320">    }</span>
+
+    @Override
+    public void run() {
+<span class="fc" id="L324">      closingSslChannel(channel);</span>
+<span class="fc" id="L325">    }</span>
+
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

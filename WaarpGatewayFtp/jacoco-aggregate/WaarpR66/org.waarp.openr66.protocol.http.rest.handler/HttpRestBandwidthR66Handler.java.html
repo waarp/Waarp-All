@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestBandwidthR66Handler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.handler</a> &gt; <span class="el_source">HttpRestBandwidthR66Handler.java</span></div><h1>HttpRestBandwidthR66Handler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.rest.handler;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
+import org.waarp.openr66.protocol.localhandler.ServerActions;
+import org.waarp.openr66.protocol.localhandler.packet.json.BandwidthJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+
+/**
+ * Bandwidth Http REST interface: http://host/bandwidth?... +
+ * BandwidthJsonPacket as GET or PUT
+ */
+public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
+
+  public static final String BASEURI = &quot;bandwidth&quot;;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L54">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L55">      WaarpLoggerFactory.getLogger(HttpRestBandwidthR66Handler.class);</span>
+
+  public HttpRestBandwidthR66Handler(RestConfiguration config,
+                                     METHOD... methods) {
+<span class="fc" id="L59">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L60">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
+<span class="fc" id="L61">  }</span>
+
+  @Override
+  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
+                                RestArgument result, Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+<span class="fc" id="L67">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L69">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    }
+<span class="fc" id="L71">    handler.setWillClose(false);</span>
+<span class="fc" id="L72">    final ServerActions serverHandler =</span>
+<span class="fc" id="L73">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+    // now action according to body
+<span class="fc" id="L75">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (json == null) {</span>
+<span class="fc" id="L77">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="fc" id="L78">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L79">      return;</span>
+    }
+<span class="nc" id="L81">    result.getAnswer()</span>
+<span class="nc" id="L82">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Bandwidth.name());</span>
+    try {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (json instanceof BandwidthJsonPacket) {//</span>
+        // setter, writeglobal, readglobal, writesession, readsession
+<span class="nc" id="L86">        final BandwidthJsonPacket node = (BandwidthJsonPacket) json;</span>
+<span class="nc" id="L87">        final boolean setter = node.isSetter();</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        if (setter &amp;&amp; arguments.getMethod() != METHOD.PUT) {</span>
+          // wrong
+<span class="nc" id="L90">          result.setDetail(&quot;Setter should be requested with a PUT method&quot;);</span>
+<span class="nc" id="L91">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
+<span class="nc" id="L92">          return;</span>
+<span class="nc bnc" id="L93" title="All 4 branches missed.">        } else if (!setter &amp;&amp; arguments.getMethod() != METHOD.GET) {</span>
+          // wrong
+<span class="nc" id="L95">          result.setDetail(&quot;Getter should not be requested with a GET method&quot;);</span>
+<span class="nc" id="L96">          setError(handler, result, HttpResponseStatus.CONFLICT);</span>
+<span class="nc" id="L97">          return;</span>
+        }
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (setter) {</span>
+<span class="nc" id="L100">          result.setCommand(ACTIONS_TYPE.SetBandwidth.name());</span>
+        } else {
+<span class="nc" id="L102">          result.setCommand(ACTIONS_TYPE.GetBandwidth.name());</span>
+        }
+        // request of current values or set new values
+<span class="nc" id="L105">        final long[] lresult = serverHandler</span>
+<span class="nc" id="L106">            .bandwidth(setter, node.getWriteglobal(), node.getReadglobal(),</span>
+<span class="nc" id="L107">                       node.getWritesession(), node.getReadsession());</span>
+        // Now answer
+<span class="nc" id="L109">        node.setWriteglobal(lresult[0]);</span>
+<span class="nc" id="L110">        node.setReadglobal(lresult[1]);</span>
+<span class="nc" id="L111">        node.setWritesession(lresult[2]);</span>
+<span class="nc" id="L112">        node.setReadsession(lresult[3]);</span>
+<span class="nc" id="L113">        setOk(handler, result, json, HttpResponseStatus.OK);</span>
+<span class="nc" id="L114">      } else {</span>
+<span class="nc" id="L115">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
+<span class="nc" id="L116">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L117">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+      }
+<span class="nc" id="L119">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L120">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L121">    }</span>
+<span class="nc" id="L122">  }</span>
+
+  @Override
+  protected ArrayNode getDetailedAllow() {
+<span class="nc" id="L126">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+
+<span class="nc" id="L128">    final BandwidthJsonPacket node3 = new BandwidthJsonPacket();</span>
+<span class="nc" id="L129">    node3.setComment(&quot;Bandwidth getter (GET)&quot;);</span>
+<span class="nc" id="L130">    node3.setRequestUserPacket();</span>
+    ObjectNode node2;
+<span class="nc" id="L132">    final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+    try {
+<span class="nc" id="L134">      node1.add(node3.createObjectNode());</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (methods.contains(METHOD.GET)) {</span>
+<span class="nc" id="L136">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="nc" id="L137">                                               ACTIONS_TYPE.GetBandwidth.name(),</span>
+<span class="nc" id="L138">                                               node3.createObjectNode(), node1);</span>
+<span class="nc" id="L139">        node.add(node2);</span>
+      }
+<span class="nc" id="L141">    } catch (final OpenR66ProtocolPacketException ignored) {</span>
+      // ignore
+<span class="nc" id="L143">    }</span>
+
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="nc" id="L146">      node3.setComment(&quot;Bandwidth setter (PUT)&quot;);</span>
+      try {
+<span class="nc" id="L148">        node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="nc" id="L149">                                               ACTIONS_TYPE.SetBandwidth.name(),</span>
+<span class="nc" id="L150">                                               node3.createObjectNode(), node1);</span>
+<span class="nc" id="L151">        node.add(node2);</span>
+<span class="nc" id="L152">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L154">      }</span>
+    }
+<span class="nc" id="L156">    node2 = RestArgument</span>
+<span class="nc" id="L157">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+                           null, null);
+<span class="nc" id="L159">    node.add(node2);</span>
+
+<span class="nc" id="L161">    return node;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

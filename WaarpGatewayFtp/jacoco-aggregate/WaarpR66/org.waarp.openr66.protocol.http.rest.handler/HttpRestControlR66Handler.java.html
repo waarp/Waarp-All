@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestControlR66Handler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.handler</a> &gt; <span class="el_source">HttpRestControlR66Handler.java</span></div><h1>HttpRestControlR66Handler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.rest.handler;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
+import org.waarp.openr66.protocol.localhandler.ServerActions;
+import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.InformationJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.RestartTransferJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.StopOrCancelJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.TransferRequestJsonPacket;
+
+import java.util.Date;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Transfer Http REST interface: http://host/control?... + InformationJsonPacket
+ * (should be on Transfer only)
+ * RestartTransferJsonPacket StopOrCancelJsonPacket TransferRequestJsonPacket as
+ * GET PUT PUT POST
+ */
+public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
+
+  public static final String BASEURI = &quot;control&quot;;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L69">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L70">      WaarpLoggerFactory.getLogger(HttpRestControlR66Handler.class);</span>
+
+  public HttpRestControlR66Handler(RestConfiguration config,
+                                   METHOD... methods) {
+<span class="fc" id="L74">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L75">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT, METHOD.POST);</span>
+<span class="fc" id="L76">  }</span>
+
+  @Override
+  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
+                                RestArgument result, Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+<span class="fc" id="L82">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L84">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    }
+<span class="fc" id="L86">    handler.setWillClose(false);</span>
+<span class="fc" id="L87">    final ServerActions serverHandler =</span>
+<span class="fc" id="L88">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+<span class="fc" id="L89">    final R66Session session = serverHandler.getSession();</span>
+    // now action according to body
+<span class="fc" id="L91">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    if (json == null) {</span>
+<span class="fc" id="L93">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="fc" id="L94">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L95">      return;</span>
+    }
+<span class="nc" id="L97">    result.getAnswer()</span>
+<span class="nc" id="L98">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Control.name());</span>
+<span class="nc" id="L99">    final METHOD method = arguments.getMethod();</span>
+    try {
+<span class="nc bnc" id="L101" title="All 4 branches missed.">      if (json instanceof InformationJsonPacket &amp;&amp; method == METHOD.GET) {//</span>
+<span class="nc" id="L102">        final InformationJsonPacket node = (InformationJsonPacket) json;</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (node.isIdRequest()) {</span>
+<span class="nc" id="L104">          result.setCommand(ACTIONS_TYPE.GetTransferInformation.name());</span>
+          ValidPacket validPacket;
+<span class="nc bnc" id="L106" title="All 2 branches missed.">          if (node.isIdRequest()) {</span>
+<span class="nc" id="L107">            validPacket = serverHandler</span>
+<span class="nc" id="L108">                .informationRequest(node.getId(), node.isTo(),</span>
+<span class="nc" id="L109">                                    node.getRulename(), true);</span>
+          } else {
+<span class="nc" id="L111">            validPacket = serverHandler</span>
+<span class="nc" id="L112">                .informationFile(node.getRequest(), node.getRulename(),</span>
+<span class="nc" id="L113">                                 node.getFilename(), true);</span>
+          }
+<span class="nc bnc" id="L115" title="All 2 branches missed.">          if (validPacket != null) {</span>
+<span class="nc" id="L116">            final ObjectNode resp =</span>
+<span class="nc" id="L117">                JsonHandler.getFromString(validPacket.getSheader());</span>
+<span class="nc" id="L118">            handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="nc" id="L119">            result.setResult(HttpResponseStatus.OK);</span>
+<span class="nc" id="L120">            result.getResults().add(resp);</span>
+<span class="nc" id="L121">          } else {</span>
+<span class="nc" id="L122">            result.setDetail(&quot;Error during information request&quot;);</span>
+<span class="nc" id="L123">            setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+          }
+<span class="nc" id="L125">        } else {</span>
+<span class="nc" id="L126">          result.setCommand(ACTIONS_TYPE.GetInformation.name());</span>
+<span class="nc" id="L127">          result.setDetail(</span>
+              &quot;Error: FileInformation is not applicable with URI &quot; + BASEURI);
+<span class="nc" id="L129">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+        }
+<span class="nc bnc" id="L131" title="All 4 branches missed.">      } else if (json instanceof RestartTransferJsonPacket &amp;&amp;</span>
+                 method == METHOD.PUT) {//
+<span class="nc" id="L133">        result.setCommand(ACTIONS_TYPE.RestartTransfer.name());</span>
+<span class="nc" id="L134">        final RestartTransferJsonPacket node = (RestartTransferJsonPacket) json;</span>
+<span class="nc" id="L135">        final R66Result r66result = serverHandler</span>
+<span class="nc" id="L136">            .requestRestart(node.getRequested(), node.getRequester(),</span>
+<span class="nc" id="L137">                            node.getSpecialid(), node.getRestarttime());</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (serverHandler.isCodeValid(r66result.getCode())) {</span>
+<span class="nc" id="L139">          result.setDetail(&quot;Restart Transfer done&quot;);</span>
+<span class="nc" id="L140">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
+        } else {
+<span class="nc" id="L142">          result.setDetail(&quot;Restart Transfer in error&quot;);</span>
+<span class="nc" id="L143">          setError(handler, result, node, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+        }
+<span class="nc bnc" id="L145" title="All 4 branches missed.">      } else if (json instanceof StopOrCancelJsonPacket &amp;&amp;</span>
+                 method == METHOD.PUT) {//
+<span class="nc" id="L147">        result.setCommand(ACTIONS_TYPE.StopOrCancelTransfer.name());</span>
+<span class="nc" id="L148">        final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;</span>
+        R66Result resulttest;
+<span class="nc bnc" id="L150" title="All 4 branches missed.">        if (node.getRequested() == null || node.getRequester() == null ||</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            node.getSpecialid() == ILLEGALVALUE) {</span>
+<span class="nc" id="L152">          final ErrorCode code = ErrorCode.CommandNotFound;</span>
+<span class="nc" id="L153">          resulttest = new R66Result(session, true, code, session.getRunner());</span>
+<span class="nc" id="L154">          result.setDetail(&quot;Not enough argument passed to identify a transfer&quot;);</span>
+<span class="nc" id="L155">          setError(handler, result, node, HttpResponseStatus.NOT_FOUND);</span>
+<span class="nc" id="L156">        } else {</span>
+<span class="nc" id="L157">          final String reqd = node.getRequested();</span>
+<span class="nc" id="L158">          final String reqr = node.getRequester();</span>
+<span class="nc" id="L159">          final long id = node.getSpecialid();</span>
+<span class="nc" id="L160">          resulttest = serverHandler</span>
+<span class="nc" id="L161">              .stopOrCancel(node.getRequestUserPacket(), reqd, reqr, id);</span>
+<span class="nc" id="L162">          result.setDetail(resulttest.getCode().getMesg());</span>
+<span class="nc" id="L163">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
+        }
+<span class="nc bnc" id="L165" title="All 4 branches missed.">      } else if (json instanceof TransferRequestJsonPacket &amp;&amp;</span>
+                 method == METHOD.POST) {
+<span class="nc" id="L167">        result.setCommand(ACTIONS_TYPE.CreateTransfer.name());</span>
+<span class="nc" id="L168">        final TransferRequestJsonPacket node = (TransferRequestJsonPacket) json;</span>
+<span class="nc" id="L169">        final R66Result r66result = serverHandler.transferRequest(node);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (serverHandler.isCodeValid(r66result.getCode())) {</span>
+<span class="nc" id="L171">          result.setDetail(&quot;New Transfer registered&quot;);</span>
+<span class="nc" id="L172">          setOk(handler, result, node, HttpResponseStatus.OK);</span>
+        } else {
+<span class="nc" id="L174">          result.setDetail(&quot;New Transfer cannot be registered&quot;);</span>
+<span class="nc" id="L175">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+        }
+<span class="nc" id="L177">      } else {</span>
+<span class="nc" id="L178">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
+<span class="nc" id="L179">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L180">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+      }
+<span class="nc" id="L182">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L183">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L184">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L185">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L186">    } catch (final OpenR66ProtocolNoDataException e) {</span>
+<span class="nc" id="L187">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L188">    }</span>
+<span class="nc" id="L189">  }</span>
+
+  @Override
+  protected ArrayNode getDetailedAllow() {
+<span class="nc" id="L193">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+
+<span class="nc bnc" id="L195" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="nc" id="L196">      final InformationJsonPacket node3 =</span>
+          new InformationJsonPacket(Long.MIN_VALUE, false, &quot;remoteHost&quot;);
+<span class="nc" id="L198">      node3.setComment(&quot;Information on Transfer request (GET)&quot;);</span>
+<span class="nc" id="L199">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L200">      final ObjectNode node1b = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L201">      node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
+<span class="nc" id="L203">        node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
+      }
+<span class="nc" id="L205">      node1.add(node1b);</span>
+      ObjectNode node2;
+      try {
+<span class="nc" id="L208">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+                                               ACTIONS_TYPE.GetTransferInformation
+<span class="nc" id="L210">                                                   .name(),</span>
+<span class="nc" id="L211">                                               node3.createObjectNode(), node1);</span>
+<span class="nc" id="L212">        node.add(node2);</span>
+<span class="nc" id="L213">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L215">      }</span>
+    }
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="nc" id="L218">      final RestartTransferJsonPacket node4 = new RestartTransferJsonPacket();</span>
+<span class="nc" id="L219">      node4.setRequestUserPacket();</span>
+<span class="nc" id="L220">      node4.setComment(&quot;Restart Transfer request (PUT)&quot;);</span>
+<span class="nc" id="L221">      node4.setRequested(&quot;Requested host&quot;);</span>
+<span class="nc" id="L222">      node4.setRequester(&quot;Requester host&quot;);</span>
+<span class="nc" id="L223">      node4.setRestarttime(new Date());</span>
+<span class="nc" id="L224">      ArrayNode node1 = JsonHandler.createArrayNode();</span>
+      try {
+<span class="nc" id="L226">        node1.add(node4.createObjectNode());</span>
+<span class="nc" id="L227">        final ObjectNode node2 = RestArgument</span>
+<span class="nc" id="L228">            .fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="nc" id="L229">                               ACTIONS_TYPE.RestartTransfer.name(),</span>
+<span class="nc" id="L230">                               node4.createObjectNode(), node1);</span>
+<span class="nc" id="L231">        node.add(node2);</span>
+<span class="nc" id="L232">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L234">      }</span>
+<span class="nc" id="L235">      final StopOrCancelJsonPacket node5 = new StopOrCancelJsonPacket();</span>
+<span class="nc" id="L236">      node5.setRequestUserPacket();</span>
+<span class="nc" id="L237">      node5.setComment(&quot;Stop Or Cancel request (PUT)&quot;);</span>
+<span class="nc" id="L238">      node5.setRequested(&quot;Requested host&quot;);</span>
+<span class="nc" id="L239">      node5.setRequester(&quot;Requester host&quot;);</span>
+<span class="nc" id="L240">      node1 = JsonHandler.createArrayNode();</span>
+      try {
+<span class="nc" id="L242">        node1.add(node5.createObjectNode());</span>
+<span class="nc" id="L243">        final ObjectNode node2 = RestArgument</span>
+<span class="nc" id="L244">            .fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="nc" id="L245">                               ACTIONS_TYPE.StopOrCancelTransfer.name(),</span>
+<span class="nc" id="L246">                               node5.createObjectNode(), node1);</span>
+<span class="nc" id="L247">        node.add(node2);</span>
+<span class="nc" id="L248">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L250">      }</span>
+    }
+<span class="nc bnc" id="L252" title="All 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="nc" id="L253">      final TransferRequestJsonPacket node6 = new TransferRequestJsonPacket();</span>
+<span class="nc" id="L254">      node6.setRequestUserPacket();</span>
+<span class="nc" id="L255">      node6.setComment(&quot;Transfer Request (POST)&quot;);</span>
+<span class="nc" id="L256">      node6.setFilename(&quot;Filename&quot;);</span>
+<span class="nc" id="L257">      node6.setFileInformation(&quot;File information&quot;);</span>
+<span class="nc" id="L258">      node6.setRequested(&quot;Requested host&quot;);</span>
+<span class="nc" id="L259">      node6.setRulename(&quot;Rulename&quot;);</span>
+<span class="nc" id="L260">      node6.setStart(new Date());</span>
+<span class="nc" id="L261">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+      try {
+<span class="nc" id="L263">        node1.add(node6.createObjectNode());</span>
+<span class="nc" id="L264">        final ObjectNode node2 = RestArgument</span>
+<span class="nc" id="L265">            .fillDetailedAllow(METHOD.POST, path,</span>
+<span class="nc" id="L266">                               ACTIONS_TYPE.CreateTransfer.name(),</span>
+<span class="nc" id="L267">                               node6.createObjectNode(), node1);</span>
+<span class="nc" id="L268">        node.add(node2);</span>
+<span class="nc" id="L269">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L271">      }</span>
+    }
+
+<span class="nc" id="L274">    final ObjectNode node2 = RestArgument</span>
+<span class="nc" id="L275">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+                           null, null);
+<span class="nc" id="L277">    node.add(node2);</span>
+
+<span class="nc" id="L279">    return node;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

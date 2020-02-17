@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ChModTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">ChModTask.java</span></div><h1>ChModTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
+
+import java.io.File;
+import java.util.regex.Pattern;
+
+/**
+ * This task allows to change the mode of the file (as in Unix CHMOD command)
+ * according to the following
+ * argument:&lt;br&gt;
+ * - the full path is get from the current file&lt;br&gt;
+ * - the arg path is transformed as usual (static and dynamic from information
+ * transfer)&lt;br&gt;
+ * - this final path arg should be of the form [ua][+-=][rwx] where multiple
+ * elements could be specified,
+ * separated by blank character&lt;br&gt;
+ * - u/a meaning user(Waarp system user)/all (group and other do not exist in
+ * Java), +/-/= meaning
+ * add/remove/set (set means all other values are removed), r/w/x meaning
+ * Read/Write/Execute&lt;br&gt;
+ * &lt;br&gt;
+ * For instance, the final path arg could be:&lt;br&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;u=rwx a=r&lt;/li&gt;
+ * &lt;li&gt;ua+rw&lt;/li&gt;
+ * &lt;li&gt;u=rw a-wx&lt;/li&gt;
+ * &lt;li&gt;a+rw&lt;/li&gt;
+ * &lt;/ul&gt;
+ * Current access mode for the application will be applied as default &quot;user&quot;
+ * access mode, and no access mode
+ * (-rwx) will be the default for &quot;all&quot; access mode.&lt;br&gt;
+ * If several access mode are set in sequence, the result will be the sum of the
+ * results, step by step.&lt;br&gt;
+ * &quot;a=r a+w a-r&quot; will result in a=w (first step is r--, second step is rw-,
+ * third step is -w-)
+ */
+public class ChModTask extends AbstractTask {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L65">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L66">      WaarpLoggerFactory.getLogger(ChModTask.class);</span>
+<span class="fc" id="L67">  private static final Pattern BLANK = Pattern.compile(&quot; &quot;);</span>
+
+  /**
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public ChModTask(String argRule, int delay, String argTransfer,
+                   R66Session session) {
+<span class="fc" id="L77">    super(TaskType.CHMOD, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L78">  }</span>
+
+  @Override
+  public void run() {
+<span class="fc" id="L82">    String finalname = argRule;</span>
+<span class="fc" id="L83">    finalname = AbstractDir</span>
+<span class="fc" id="L84">        .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)))</span>
+<span class="fc" id="L85">        .trim().toLowerCase();</span>
+<span class="fc" id="L86">    logger.info(&quot;ChMod with arg &quot; + finalname + &quot; from {}&quot;, session);</span>
+<span class="fc" id="L87">    final File file = session.getFile().getTrueFile();</span>
+    boolean user;
+    boolean all;
+<span class="fc" id="L90">    boolean isall = false;</span>
+    boolean ur;
+    boolean uw;
+    boolean ux;
+<span class="fc" id="L94">    boolean ar = false;</span>
+<span class="fc" id="L95">    boolean aw = false;</span>
+<span class="fc" id="L96">    boolean ax = false;</span>
+<span class="fc" id="L97">    ur = file.canRead();</span>
+<span class="fc" id="L98">    uw = file.canWrite();</span>
+<span class="fc" id="L99">    ux = file.canExecute();</span>
+<span class="fc" id="L100">    final String[] chmods = BLANK.split(finalname);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">    for (final String chmod : chmods) {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">      user = chmod.indexOf('u') &gt;= 0;</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">      all = chmod.indexOf('a') &gt;= 0;</span>
+<span class="pc bpc" id="L104" title="3 of 4 branches missed.">      if (!user &amp;&amp; !all) {</span>
+        // ignore
+<span class="nc" id="L106">        continue;</span>
+      }
+<span class="fc" id="L108">      isall |= all;</span>
+<span class="fc" id="L109">      boolean isp = false;</span>
+<span class="fc" id="L110">      boolean ism = false;</span>
+<span class="fc" id="L111">      boolean ise = false;</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">      if (chmod.indexOf('=') &gt;= 0) {</span>
+<span class="fc" id="L113">        ise = true;</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">      } else if (chmod.indexOf('+') &gt;= 0) {</span>
+<span class="nc" id="L115">        isp = true;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      } else if (chmod.indexOf('-') &gt;= 0) {</span>
+<span class="nc" id="L117">        ism = true;</span>
+      } else {
+        // ignore
+        continue;
+      }
+      boolean isr, isw, isx;
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">      isr = chmod.indexOf('r') &gt;= 0;</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      isw = chmod.indexOf('w') &gt;= 0;</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">      isx = chmod.indexOf('x') &gt;= 0;</span>
+<span class="pc bpc" id="L126" title="5 of 6 branches missed.">      if (!isr &amp;&amp; !isw &amp;&amp; !isx) {</span>
+        // ignore
+<span class="nc" id="L128">        continue;</span>
+      }
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      if (user) {</span>
+<span class="pc bpc" id="L131" title="14 of 16 branches missed.">        ur = ise &amp;&amp; isr || isp &amp;&amp; (isr || ur) || ism &amp;&amp; !isr &amp;&amp; ur;</span>
+<span class="pc bpc" id="L132" title="14 of 16 branches missed.">        uw = ise &amp;&amp; isw || isp &amp;&amp; (isw || uw) || ism &amp;&amp; !isw &amp;&amp; uw;</span>
+<span class="pc bpc" id="L133" title="12 of 16 branches missed.">        ux = ise &amp;&amp; isx || isp &amp;&amp; (isx || ux) || ism &amp;&amp; !isx &amp;&amp; ux;</span>
+      }
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">      if (all) {</span>
+<span class="nc bnc" id="L136" title="All 16 branches missed.">        ar = ise &amp;&amp; isr || isp &amp;&amp; (isr || ar) || ism &amp;&amp; !isr &amp;&amp; ar;</span>
+<span class="nc bnc" id="L137" title="All 16 branches missed.">        aw = ise &amp;&amp; isw || isp &amp;&amp; (isw || aw) || ism &amp;&amp; !isw &amp;&amp; aw;</span>
+<span class="nc bnc" id="L138" title="All 16 branches missed.">        ax = ise &amp;&amp; isx || isp &amp;&amp; (isx || ax) || ism &amp;&amp; !isx &amp;&amp; ax;</span>
+      }
+    }
+<span class="fc" id="L141">    boolean result = true;</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (isall) {</span>
+<span class="nc" id="L143">      result &amp;= file.setReadable(ar, false);</span>
+<span class="nc" id="L144">      result &amp;= file.setWritable(aw, false);</span>
+<span class="nc" id="L145">      result &amp;= file.setExecutable(ax, false);</span>
+    }
+<span class="fc" id="L147">    result &amp;= file.setReadable(ur, true);</span>
+<span class="fc" id="L148">    result &amp;= file.setWritable(uw, true);</span>
+<span class="fc" id="L149">    result &amp;= file.setExecutable(ux, true);</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (result) {</span>
+<span class="fc" id="L151">      futureCompletion.setSuccess();</span>
+    } else {
+<span class="nc" id="L153">      logger.error(</span>
+          &quot;ChMod &quot; + finalname + &quot; on file : &quot; + file + &quot;     &quot; + session);
+<span class="nc" id="L155">      futureCompletion.setFailure(</span>
+          new OpenR66RunnerException(&quot;Chmod not fully applied on File&quot;));
+    }
+<span class="fc" id="L158">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

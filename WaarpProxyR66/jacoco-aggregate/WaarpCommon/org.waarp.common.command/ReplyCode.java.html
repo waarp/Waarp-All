@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ReplyCode.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.command</a> &gt; <span class="el_source">ReplyCode.java</span></div><h1>ReplyCode.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.command;
+
+import org.waarp.common.exception.InvalidArgumentException;
+
+/**
+ * Reply code references by different RFC.
+ */
+<span class="nc" id="L27">public enum ReplyCode {</span>
+  /**
+   * unofficial reply code for no value
+   */
+<span class="nc" id="L31">  REPLY_000_SPECIAL_NOSTATUS(0),</span>
+  /**
+   * 110 Restart marker reply. In this case, the text is exact and not left to
+   * the particular implementation),
+   * it must read: MARK yyyy (mmmm Where yyyy is User-process data stream
+   * marker, and mmmm server's equivalent
+   * marker (note the spaces between markers and &quot;=&quot;).
+   */
+<span class="nc" id="L39">  REPLY_110_RESTART_MARKER_REPLY(110),</span>
+
+  /**
+   * 120 Service ready in nnn minutes.
+   */
+<span class="nc" id="L44">  REPLY_120_SERVICE_READY_IN_NNN_MINUTES(120),</span>
+
+  /**
+   * 125 Data connection already open), transfer starting.
+   */
+<span class="nc" id="L49">  REPLY_125_DATA_CONNECTION_ALREADY_OPEN(125),</span>
+
+  /**
+   * 150 File status okay), about to open data connection.
+   */
+<span class="nc" id="L54">  REPLY_150_FILE_STATUS_OKAY(150),</span>
+
+  /**
+   * 200 Command okay.
+   */
+<span class="nc" id="L59">  REPLY_200_COMMAND_OKAY(200),</span>
+
+  /**
+   * 202 Command not implemented, superfluous at this site.
+   */
+<span class="nc" id="L64">  REPLY_202_COMMAND_NOT_IMPLEMENTED(202),</span>
+
+  /**
+   * 211 System status, or system help reply.
+   */
+<span class="nc" id="L69">  REPLY_211_SYSTEM_STATUS_REPLY(211),</span>
+
+  /**
+   * 212 Directory status.
+   */
+<span class="nc" id="L74">  REPLY_212_DIRECTORY_STATUS(212),</span>
+
+  /**
+   * 213 File status.
+   */
+<span class="nc" id="L79">  REPLY_213_FILE_STATUS(213),</span>
+
+  /**
+   * 214 Help message. On how to use the server or the meaning of a particular
+   * non-standard command. This reply
+   * is useful only to the human user.
+   */
+<span class="nc" id="L86">  REPLY_214_HELP_MESSAGE(214,</span>
+                         &quot;This FTP server refers to RFC 959, RFC 775, RFC 2389 and RFC 3659&quot;),
+
+  /**
+   * 215 NAME system type. Where NAME is an official system name from the list
+   * in the Assigned Numbers document.
+   */
+<span class="nc" id="L93">  REPLY_215_NAME_SYSTEM_TYPE(215),</span>
+
+  /**
+   * 220 Service ready for new user.
+   */
+<span class="nc" id="L98">  REPLY_220_SERVICE_READY(220),</span>
+
+  /**
+   * Service closing control connection. Logged out if appropriate.
+   */
+<span class="nc" id="L103">  REPLY_221_CLOSING_CONTROL_CONNECTION(221),</span>
+
+  /**
+   * 225 Data connection open), no transfer in progress.
+   */
+<span class="nc" id="L108">  REPLY_225_DATA_CONNECTION_OPEN_NO_TRANSFER_IN_PROGRESS(225),</span>
+
+  /**
+   * Closing data connection. Requested file action successful (for example,
+   * file transfer or file abort).
+   */
+<span class="nc" id="L114">  REPLY_226_CLOSING_DATA_CONNECTION(226),</span>
+
+  /**
+   * 227 Entering Passive Mode (h1,h2,h3,h4,p1,p2).
+   */
+<span class="nc" id="L119">  REPLY_227_ENTERING_PASSIVE_MODE(227),</span>
+
+  /**
+   * 229 Entering Extended Passive Mode (|n|addr|port|).
+   */
+<span class="nc" id="L124">  REPLY_229_ENTERING_PASSIVE_MODE(229),</span>
+
+  /**
+   * 230 User logged in, proceed.
+   */
+<span class="nc" id="L129">  REPLY_230_USER_LOGGED_IN(230),</span>
+
+  /**
+   * 232 User logged in, authorized by security data exchange.
+   */
+<span class="nc" id="L134">  REPLY_232_USER_LOGGED_IN(232),</span>
+
+  /**
+   * 234 Security data exchange complete.
+   */
+<span class="nc" id="L139">  REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE(234),</span>
+
+  /**
+   * 250 Requested file action okay, completed.
+   */
+<span class="nc" id="L144">  REPLY_250_REQUESTED_FILE_ACTION_OKAY(250),</span>
+
+  /**
+   * 257 &quot;PATHNAME&quot; created.
+   */
+<span class="nc" id="L149">  REPLY_257_PATHNAME_CREATED(257),</span>
+
+  /**
+   * 331 User name okay, need password.
+   */
+<span class="nc" id="L154">  REPLY_331_USER_NAME_OKAY_NEED_PASSWORD(331),</span>
+
+  /**
+   * 332 Need account for login.
+   */
+<span class="nc" id="L159">  REPLY_332_NEED_ACCOUNT_FOR_LOGIN(332),</span>
+
+  /**
+   * 350 Requested file action pending further information.
+   */
+<span class="nc" id="L164">  REPLY_350_REQUESTED_FILE_ACTION_PENDING_FURTHER_INFORMATION(350),</span>
+
+  /**
+   * 421 Service not available, closing control connection. This may be a
+   * reply
+   * to any command if the service
+   * knows it must shut down.
+   */
+<span class="nc" id="L172">  REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION(421),</span>
+
+  /**
+   * 425 Can't open data connection.
+   */
+<span class="nc" id="L177">  REPLY_425_CANT_OPEN_DATA_CONNECTION(425),</span>
+
+  /**
+   * 426 Connection closed), transfer aborted.
+   */
+<span class="nc" id="L182">  REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED(426),</span>
+
+  /**
+   * 431 Need some unavailable resource to process security.
+   */
+<span class="nc" id="L187">  REPLY_431_NEED_UNAVAILABLE_RESOURCE_TO_PROCESS_SECURITY(431),</span>
+
+  /**
+   * 450 Requested file action not taken. File unavailable (e.g., file busy).
+   */
+<span class="nc" id="L192">  REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN(450),</span>
+
+  /**
+   * 451 Requested action aborted: local error in processing.
+   */
+<span class="nc" id="L197">  REPLY_451_REQUESTED_ACTION_ABORTED(451),</span>
+
+  /**
+   * 452 Requested action not taken. Insufficient storage space in system.
+   */
+<span class="nc" id="L202">  REPLY_452_REQUESTED_ACTION_NOT_TAKEN(452),</span>
+
+  /**
+   * 500 Syntax error, command unrecognized. This may include errors such as
+   * command line too long.
+   */
+<span class="nc" id="L208">  REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED(500),</span>
+
+  /**
+   * 501 Syntax error in parameters or arguments.
+   */
+<span class="nc" id="L213">  REPLY_501_SYNTAX_ERROR_IN_PARAMETERS_OR_ARGUMENTS(501),</span>
+
+  /**
+   * 502 Command not implemented.
+   */
+<span class="nc" id="L218">  REPLY_502_COMMAND_NOT_IMPLEMENTED(502),</span>
+
+  /**
+   * 503 Bad sequence of commands.
+   */
+<span class="nc" id="L223">  REPLY_503_BAD_SEQUENCE_OF_COMMANDS(503),</span>
+
+  /**
+   * 504 Command not implemented for that parameter.
+   */
+<span class="nc" id="L228">  REPLY_504_COMMAND_NOT_IMPLEMENTED_FOR_THAT_PARAMETER(504),</span>
+
+  /**
+   * 522 Extended Port Failure - unknown network protocol.
+   */
+<span class="nc" id="L233">  REPLY_522_EXTENDED_PORT_FAILURE_UNKNOWN_NETWORK_PROTOCOL(522),</span>
+
+  /**
+   * 530 Not logged in.
+   */
+<span class="nc" id="L238">  REPLY_530_NOT_LOGGED_IN(530),</span>
+
+  /**
+   * 532 Need account for storing files.
+   */
+<span class="nc" id="L243">  REPLY_532_NEED_ACCOUNT_FOR_STORING_FILES(532),</span>
+
+  /**
+   * 533 Command protection level denied for policy reasons.
+   */
+<span class="nc" id="L248">  REPLY_533_COMMAND_PROTECTION_LEVEL_DENIED_FOR_POLICY_REASONS(533),</span>
+
+  /**
+   * 534 Request denied for policy reasons.
+   */
+<span class="nc" id="L253">  REPLY_534_REQUEST_DENIED_FOR_POLICY_REASONS(534),</span>
+
+  /**
+   * 535 Failed security check (hash, sequence, etc).
+   */
+<span class="nc" id="L258">  REPLY_535_FAILED_SECURITY_CHECK(535),</span>
+
+  /**
+   * 536 Requested PROT level not supported by mechanism.
+   */
+<span class="nc" id="L263">  REPLY_536_REQUESTED_PROT_LEVEL_NOT_SUPPORTED(536),</span>
+
+  /**
+   * 550 Requested action not taken. File unavailable (e.g., file not found,
+   * no
+   * access).
+   */
+<span class="nc" id="L270">  REPLY_550_REQUESTED_ACTION_NOT_TAKEN(550),</span>
+
+  /**
+   * 551 Requested action aborted: page type unknown.
+   */
+<span class="nc" id="L275">  REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN(551),</span>
+
+  /**
+   * 552 Requested file action aborted. Exceeded storage allocation (for
+   * current
+   * directory or dataset).
+   */
+<span class="nc" id="L282">  REPLY_552_REQUESTED_FILE_ACTION_ABORTED_EXCEEDED_STORAGE(552),</span>
+
+  /**
+   * 553 Requested action not taken. File name not allowed.
+   */
+<span class="nc" id="L287">  REPLY_553_REQUESTED_ACTION_NOT_TAKEN_FILE_NAME_NOT_ALLOWED(553);</span>
+
+  /**
+   * Numerical code
+   */
+  private final int code;
+
+  /**
+   * Message associated
+   */
+  private final String mesg;
+
+  /**
+   * LF
+   */
+  public static final String LF = &quot;\n&quot;;
+
+  /**
+   * CR NUL
+   */
+  public static final String CRNUL = &quot;\r\0&quot;;
+
+  /**
+   * CR LF&lt;br&gt;
+   * A User Telnet MUST be able to send any of the forms: CR LF, CR NUL, and
+   * LF.
+   * A User Telnet on an ASCII host
+   * SHOULD have a user-controllable mode to send either CR LF or CR NUL when
+   * the user presses the &quot;end-of-line&quot;
+   * key, and CR LF SHOULD be the default.
+   */
+  public static final String CRLF = &quot;\r\n&quot;;
+
+  /**
+   * Construct a Reply code from specific message
+   *
+   * @param code
+   * @param mesg
+   */
+<span class="nc" id="L326">  ReplyCode(int code, String mesg) {</span>
+<span class="nc" id="L327">    this.code = code;</span>
+<span class="nc" id="L328">    this.mesg = getFinalMsg(code, mesg);</span>
+<span class="nc" id="L329">  }</span>
+
+  /**
+   * Return the final message formatted as needed from the code and the
+   * message
+   *
+   * @param code
+   * @param msg
+   *
+   * @return the final formatted message
+   */
+  public static String getFinalMsg(int code, String msg) {
+<span class="nc" id="L341">    final StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L342">    builder.append(code);</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">    if (msg.indexOf('\n') == -1) {</span>
+<span class="nc" id="L344">      builder.append(' ').append(msg).append(CRLF);</span>
+    } else {
+<span class="nc" id="L346">      final String[] lines = msg.split(&quot;\n&quot;);</span>
+      // first line
+<span class="nc" id="L348">      builder.append('-').append(lines[0]).append(CRLF);</span>
+      // next lines
+<span class="nc bnc" id="L350" title="All 2 branches missed.">      for (int i = 1; i &lt; lines.length - 1; i++) {</span>
+<span class="nc" id="L351">        final int firstBlank = lines[i].indexOf(' ');</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">        if (firstBlank &gt; 0) {</span>
+<span class="nc" id="L353">          final String firstParam = lines[i].substring(0, firstBlank);</span>
+<span class="nc" id="L354">          boolean isInt = false;</span>
+          try {
+<span class="nc" id="L356">            Integer.parseInt(firstParam);</span>
+<span class="nc" id="L357">            isInt = true;</span>
+<span class="nc" id="L358">          } catch (final NumberFormatException e) {</span>
+            // not a number
+<span class="nc" id="L360">          }</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">          if (isInt) {</span>
+<span class="nc" id="L362">            builder.append(&quot;  &quot;);</span>
+          }
+        }
+<span class="nc" id="L365">        builder.append(lines[i]).append(CRLF);</span>
+      }
+      // last line
+<span class="nc" id="L368">      builder.append(code).append(' ').append(lines[lines.length - 1])</span>
+<span class="nc" id="L369">             .append(CRLF);</span>
+    }
+<span class="nc" id="L371">    return builder.toString();</span>
+  }
+
+  /**
+   * Construct a Reply Code from its name in Enum structure
+   *
+   * @param code
+   */
+<span class="nc" id="L379">  ReplyCode(int code) {</span>
+<span class="nc" id="L380">    this.code = code;</span>
+<span class="nc" id="L381">    mesg = name().substring(6).replace('_', ' ') + CRLF;</span>
+<span class="nc" id="L382">  }</span>
+
+  /**
+   * @return the code
+   */
+  public int getCode() {
+<span class="nc" id="L388">    return code;</span>
+  }
+
+  /**
+   * @return the mesg
+   */
+  public String getMesg() {
+<span class="nc" id="L395">    return mesg;</span>
+  }
+
+  /**
+   * @param code
+   *
+   * @return the associated ReplyCode from the given numerical code
+   *
+   * @throws InvalidArgumentException
+   */
+  public static ReplyCode getReplyCode(int code)
+      throws InvalidArgumentException {
+<span class="nc bnc" id="L407" title="All 50 branches missed.">    switch (code) {</span>
+      case 0:
+<span class="nc" id="L409">        return REPLY_000_SPECIAL_NOSTATUS;</span>
+      case 110:
+<span class="nc" id="L411">        return REPLY_110_RESTART_MARKER_REPLY;</span>
+      case 120:
+<span class="nc" id="L413">        return REPLY_120_SERVICE_READY_IN_NNN_MINUTES;</span>
+      case 125:
+<span class="nc" id="L415">        return REPLY_125_DATA_CONNECTION_ALREADY_OPEN;</span>
+      case 150:
+<span class="nc" id="L417">        return REPLY_150_FILE_STATUS_OKAY;</span>
+      case 200:
+<span class="nc" id="L419">        return REPLY_200_COMMAND_OKAY;</span>
+      case 202:
+<span class="nc" id="L421">        return REPLY_202_COMMAND_NOT_IMPLEMENTED;</span>
+      case 211:
+<span class="nc" id="L423">        return REPLY_211_SYSTEM_STATUS_REPLY;</span>
+      case 212:
+<span class="nc" id="L425">        return REPLY_212_DIRECTORY_STATUS;</span>
+      case 213:
+<span class="nc" id="L427">        return REPLY_213_FILE_STATUS;</span>
+      case 214:
+<span class="nc" id="L429">        return REPLY_214_HELP_MESSAGE;</span>
+      case 215:
+<span class="nc" id="L431">        return REPLY_215_NAME_SYSTEM_TYPE;</span>
+      case 220:
+<span class="nc" id="L433">        return REPLY_220_SERVICE_READY;</span>
+      case 221:
+<span class="nc" id="L435">        return REPLY_221_CLOSING_CONTROL_CONNECTION;</span>
+      case 225:
+<span class="nc" id="L437">        return REPLY_225_DATA_CONNECTION_OPEN_NO_TRANSFER_IN_PROGRESS;</span>
+      case 226:
+<span class="nc" id="L439">        return REPLY_226_CLOSING_DATA_CONNECTION;</span>
+      case 227:
+<span class="nc" id="L441">        return REPLY_227_ENTERING_PASSIVE_MODE;</span>
+      case 229:
+<span class="nc" id="L443">        return REPLY_229_ENTERING_PASSIVE_MODE;</span>
+      case 230:
+<span class="nc" id="L445">        return REPLY_230_USER_LOGGED_IN;</span>
+      case 232:
+<span class="nc" id="L447">        return REPLY_232_USER_LOGGED_IN;</span>
+      case 234:
+<span class="nc" id="L449">        return REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE;</span>
+      case 250:
+<span class="nc" id="L451">        return REPLY_250_REQUESTED_FILE_ACTION_OKAY;</span>
+      case 257:
+<span class="nc" id="L453">        return REPLY_257_PATHNAME_CREATED;</span>
+      case 331:
+<span class="nc" id="L455">        return REPLY_331_USER_NAME_OKAY_NEED_PASSWORD;</span>
+      case 332:
+<span class="nc" id="L457">        return REPLY_332_NEED_ACCOUNT_FOR_LOGIN;</span>
+      case 350:
+<span class="nc" id="L459">        return REPLY_350_REQUESTED_FILE_ACTION_PENDING_FURTHER_INFORMATION;</span>
+      case 421:
+<span class="nc" id="L461">        return REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION;</span>
+      case 425:
+<span class="nc" id="L463">        return REPLY_425_CANT_OPEN_DATA_CONNECTION;</span>
+      case 426:
+<span class="nc" id="L465">        return REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED;</span>
+      case 431:
+<span class="nc" id="L467">        return REPLY_431_NEED_UNAVAILABLE_RESOURCE_TO_PROCESS_SECURITY;</span>
+      case 450:
+<span class="nc" id="L469">        return REPLY_450_REQUESTED_FILE_ACTION_NOT_TAKEN;</span>
+      case 451:
+<span class="nc" id="L471">        return REPLY_451_REQUESTED_ACTION_ABORTED;</span>
+      case 452:
+<span class="nc" id="L473">        return REPLY_452_REQUESTED_ACTION_NOT_TAKEN;</span>
+      case 500:
+<span class="nc" id="L475">        return REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED;</span>
+      case 501:
+<span class="nc" id="L477">        return REPLY_501_SYNTAX_ERROR_IN_PARAMETERS_OR_ARGUMENTS;</span>
+      case 502:
+<span class="nc" id="L479">        return REPLY_502_COMMAND_NOT_IMPLEMENTED;</span>
+      case 503:
+<span class="nc" id="L481">        return REPLY_503_BAD_SEQUENCE_OF_COMMANDS;</span>
+      case 504:
+<span class="nc" id="L483">        return REPLY_504_COMMAND_NOT_IMPLEMENTED_FOR_THAT_PARAMETER;</span>
+      case 522:
+<span class="nc" id="L485">        return REPLY_522_EXTENDED_PORT_FAILURE_UNKNOWN_NETWORK_PROTOCOL;</span>
+      case 530:
+<span class="nc" id="L487">        return REPLY_530_NOT_LOGGED_IN;</span>
+      case 532:
+<span class="nc" id="L489">        return REPLY_532_NEED_ACCOUNT_FOR_STORING_FILES;</span>
+      case 533:
+<span class="nc" id="L491">        return REPLY_533_COMMAND_PROTECTION_LEVEL_DENIED_FOR_POLICY_REASONS;</span>
+      case 534:
+<span class="nc" id="L493">        return REPLY_534_REQUEST_DENIED_FOR_POLICY_REASONS;</span>
+      case 535:
+<span class="nc" id="L495">        return REPLY_535_FAILED_SECURITY_CHECK;</span>
+      case 536:
+<span class="nc" id="L497">        return REPLY_536_REQUESTED_PROT_LEVEL_NOT_SUPPORTED;</span>
+      case 550:
+<span class="nc" id="L499">        return REPLY_550_REQUESTED_ACTION_NOT_TAKEN;</span>
+      case 551:
+<span class="nc" id="L501">        return REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN;</span>
+      case 552:
+<span class="nc" id="L503">        return REPLY_552_REQUESTED_FILE_ACTION_ABORTED_EXCEEDED_STORAGE;</span>
+      case 553:
+<span class="nc" id="L505">        return REPLY_553_REQUESTED_ACTION_NOT_TAKEN_FILE_NAME_NOT_ALLOWED;</span>
+      default:
+<span class="nc" id="L507">        throw new InvalidArgumentException(&quot;Unknown ReplyCode &quot; + code);</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

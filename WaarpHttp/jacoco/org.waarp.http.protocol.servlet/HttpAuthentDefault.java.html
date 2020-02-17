@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpAuthentDefault.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Http</a> &gt; <a href="index.source.html" class="el_package">org.waarp.http.protocol.servlet</a> &gt; <span class="el_source">HttpAuthentDefault.java</span></div><h1>HttpAuthentDefault.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.http.protocol.servlet;
+
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.command.exception.Reply530Exception;
+import org.waarp.http.protocol.HttpSession;
+import org.waarp.openr66.context.R66Session;
+
+import java.util.Map;
+
+/**
+ * Default implementation of HttpAuthent based on standard Waarp R66
+ * authentication
+ */
+public class HttpAuthentDefault implements HttpAuthent {
+  private static final String FIELD_USER = &quot;user&quot;;
+  private static final String FIELD_KEY = &quot;key&quot;;
+
+  /**
+   * Package protected for the tests
+   */
+  protected String user;
+  protected byte[] key;
+
+  /**
+   * Empty for instantiation from class name
+   */
+<span class="fc" id="L47">  public HttpAuthentDefault() {</span>
+    // Empty
+<span class="fc" id="L49">  }</span>
+
+  @Override
+  public void initializeAuthent(Map&lt;String, String&gt; arguments) {
+<span class="fc" id="L53">    user = arguments.get(FIELD_USER);</span>
+<span class="fc" id="L54">    String skey = arguments.get(FIELD_KEY);</span>
+<span class="fc" id="L55">    key = org.waarp.common.digest.FilesystemBasedDigest.getFromHex(skey);</span>
+<span class="fc" id="L56">  }</span>
+
+  @Override
+  public void checkAuthent(final HttpSession httpSession,
+                           final R66Session session)
+      throws IllegalArgumentException {
+    try {
+<span class="fc" id="L63">      session.getAuth().connection(user, key, false);</span>
+<span class="fc" id="L64">    } catch (Reply530Exception e) {</span>
+<span class="nc" id="L65">      httpSession.error(e, session.getBusinessObject());</span>
+<span class="nc" id="L66">    } catch (Reply421Exception e) {</span>
+<span class="nc" id="L67">      httpSession.error(e, session.getBusinessObject());</span>
+<span class="pc" id="L68">    }</span>
+<span class="fc" id="L69">  }</span>
+
+  @Override
+  public String getUserId() {
+<span class="fc" id="L73">    return user;</span>
+  }
+
+  @Override
+  public void finalizeTransfer(final HttpSession httpSession,
+                               final R66Session session)
+      throws IllegalArgumentException {
+    // Do nothing
+<span class="fc" id="L81">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

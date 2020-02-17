@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>R66Result.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context</a> &gt; <span class="el_source">R66Result.java</span></div><h1>R66Result.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context;
+
+import org.waarp.openr66.context.filesystem.R66File;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.exception.OpenR66Exception;
+
+/**
+ * This class is the result for every operations in OpenR66.
+ */
+public class R66Result {
+  /**
+   * The exception associated in case of error (if any exception)
+   */
+  private OpenR66Exception exception;
+  /**
+   * The file if any
+   */
+  private R66File file;
+  /**
+   * The runner if any
+   */
+  private DbTaskRunner runner;
+  /**
+   * Does this result already have been transfered to the remote server
+   */
+  private boolean isAnswered;
+  /**
+   * The code (error or not)
+   */
+  private ErrorCode code;
+  /**
+   * Any other object for special operations (test or shutdown for instance)
+   */
+  private Object other;
+
+  /**
+   * @param exception
+   * @param session
+   * @param isAnswered
+   * @param code
+   * @param runner
+   */
+  public R66Result(OpenR66Exception exception, R66Session session,
+<span class="fc" id="L63">                   boolean isAnswered, ErrorCode code, DbTaskRunner runner) {</span>
+<span class="fc" id="L64">    setException(exception);</span>
+<span class="fc" id="L65">    setRunner(runner);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">    if (session != null) {</span>
+<span class="fc" id="L67">      setFile(session.getFile());</span>
+<span class="fc" id="L68">      setRunner(session.getRunner());</span>
+    }
+<span class="fc" id="L70">    setAnswered(isAnswered);</span>
+<span class="fc" id="L71">    setCode(code);</span>
+<span class="fc" id="L72">  }</span>
+
+  /**
+   * @param session
+   * @param isAnswered
+   * @param code
+   * @param runner
+   */
+  public R66Result(R66Session session, boolean isAnswered, ErrorCode code,
+<span class="fc" id="L81">                   DbTaskRunner runner) {</span>
+<span class="fc" id="L82">    setRunner(runner);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">    if (session != null) {</span>
+<span class="fc" id="L84">      setFile(session.getFile());</span>
+<span class="fc" id="L85">      setRunner(session.getRunner());</span>
+    }
+<span class="fc" id="L87">    setAnswered(isAnswered);</span>
+<span class="fc" id="L88">    setCode(code);</span>
+<span class="fc" id="L89">  }</span>
+
+  @Override
+  public String toString() {
+<span class="fc bfc" id="L93" title="All 2 branches covered.">    return (getException() != null? &quot;Exception: &quot; + getException() : &quot;&quot;) +</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">           (getFile() != null? getFile().toString() : &quot; no file&quot;) + &quot;     &quot; +</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">           (getRunner() != null? getRunner().toShortString() : &quot; no runner&quot;) +</span>
+<span class="fc" id="L96">           &quot; isAnswered: &quot; + isAnswered() + &quot; Code: &quot; + getCode().getMesg();</span>
+  }
+
+  /**
+   * @return the associated message with this Result
+   */
+  public String getMessage() {
+<span class="fc bfc" id="L103" title="All 2 branches covered.">    if (getException() != null) {</span>
+<span class="fc" id="L104">      return getException().getMessage();</span>
+    } else {
+<span class="fc" id="L106">      return getCode().getMesg();</span>
+    }
+  }
+
+  /**
+   * @return the exception
+   */
+  public OpenR66Exception getException() {
+<span class="fc" id="L114">    return exception;</span>
+  }
+
+  /**
+   * @param exception the exception to set
+   */
+  public void setException(OpenR66Exception exception) {
+<span class="fc" id="L121">    this.exception = exception;</span>
+<span class="fc" id="L122">  }</span>
+
+  /**
+   * @return the file
+   */
+  public R66File getFile() {
+<span class="fc" id="L128">    return file;</span>
+  }
+
+  /**
+   * @param file the file to set
+   */
+  public void setFile(R66File file) {
+<span class="fc" id="L135">    this.file = file;</span>
+<span class="fc" id="L136">  }</span>
+
+  /**
+   * @return the runner
+   */
+  public DbTaskRunner getRunner() {
+<span class="fc" id="L142">    return runner;</span>
+  }
+
+  /**
+   * @param runner the runner to set
+   */
+  public void setRunner(DbTaskRunner runner) {
+<span class="fc" id="L149">    this.runner = runner;</span>
+<span class="fc" id="L150">  }</span>
+
+  /**
+   * @return the isAnswered
+   */
+  public boolean isAnswered() {
+<span class="fc" id="L156">    return isAnswered;</span>
+  }
+
+  /**
+   * @param isAnswered the isAnswered to set
+   */
+  public void setAnswered(boolean isAnswered) {
+<span class="fc" id="L163">    this.isAnswered = isAnswered;</span>
+<span class="fc" id="L164">  }</span>
+
+  /**
+   * @return the code
+   */
+  public ErrorCode getCode() {
+<span class="fc" id="L170">    return code;</span>
+  }
+
+  /**
+   * @param code the code to set
+   */
+  public void setCode(ErrorCode code) {
+<span class="fc" id="L177">    this.code = code;</span>
+<span class="fc" id="L178">  }</span>
+
+  /**
+   * @return the other
+   */
+  public Object getOther() {
+<span class="fc" id="L184">    return other;</span>
+  }
+
+  /**
+   * @param other the other to set
+   */
+  public void setOther(Object other) {
+<span class="fc" id="L191">    this.other = other;</span>
+<span class="fc" id="L192">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

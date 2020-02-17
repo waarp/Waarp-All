@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbModelMariadb.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Common</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.model</a> &gt; <span class="el_source">DbModelMariadb.java</span></div><h1>DbModelMariadb.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.model;
+
+import org.mariadb.jdbc.Driver;
+import org.mariadb.jdbc.MariaDbDataSource;
+import org.waarp.common.database.DbConnectionPool;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Timer;
+
+/**
+ * MariaDB Database Model implementation
+ */
+public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(DbModelMariadb.class);</span>
+
+<span class="nc" id="L46">  private static final DbType type = DbType.MariaDB;</span>
+
+<span class="nc" id="L48">  protected static class DbTypeResolverMariadDb</span>
+      extends DbModelAbstract.DbTypeResolver {
+
+    @Override
+    public String getType(final int sqlType) {
+<span class="nc" id="L53">      return DBType.getType(sqlType);</span>
+    }
+
+    @Override
+    public String getCreateTable() {
+<span class="nc" id="L58">      return &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+    }
+
+    @Override
+    public String getCreateIndex() {
+<span class="nc" id="L63">      return &quot;CREATE INDEX IF NOT EXISTS &quot;;</span>
+    }
+
+  }
+
+  static {
+<span class="nc" id="L69">    dbTypeResolver = new DbTypeResolverMariadDb();</span>
+<span class="nc" id="L70">  }</span>
+
+  protected MariaDbDataSource mysqlConnectionPoolDataSource;
+  protected DbConnectionPool pool;
+
+  @Override
+  public DbType getDbType() {
+<span class="nc" id="L77">    return type;</span>
+  }
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   * @param timer
+   * @param delay
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  protected DbModelMariadb(String dbserver, String dbuser, String dbpasswd,
+                           Timer timer, long delay)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L94">    this();</span>
+<span class="nc" id="L95">    mysqlConnectionPoolDataSource = new MariaDbDataSource();</span>
+    try {
+<span class="nc" id="L97">      mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
+<span class="nc" id="L98">    } catch (final SQLException e) {</span>
+<span class="nc" id="L99">      throw new WaarpDatabaseNoConnectionException(&quot;Url setting is wrong&quot;, e);</span>
+<span class="nc" id="L100">    }</span>
+
+    try {
+<span class="nc" id="L103">      mysqlConnectionPoolDataSource.setUser(dbuser);</span>
+<span class="nc" id="L104">      mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="nc" id="L105">    } catch (final SQLException e) {</span>
+<span class="nc" id="L106">      throw new WaarpDatabaseNoConnectionException(&quot;Wrong username or password&quot;,</span>
+                                                   e);
+<span class="nc" id="L108">    }</span>
+    // Create a pool with no limit
+<span class="nc bnc" id="L110" title="All 4 branches missed.">    if (timer != null &amp;&amp; delay != 0) {</span>
+<span class="nc" id="L111">      pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);</span>
+    } else {
+<span class="nc" id="L113">      pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
+    }
+
+<span class="nc" id="L116">    logger.info(</span>
+<span class="nc" id="L117">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
+<span class="nc" id="L118">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
+<span class="nc" id="L119">  }</span>
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  protected DbModelMariadb(String dbserver, String dbuser, String dbpasswd)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L132">    this(dbserver, dbuser, dbpasswd, null, 0);</span>
+<span class="nc" id="L133">  }</span>
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+<span class="nc" id="L140">  protected DbModelMariadb() throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="nc" id="L142">      return;</span>
+    }
+    try {
+<span class="nc" id="L145">      DriverManager.registerDriver(new Driver());</span>
+<span class="nc" id="L146">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="nc" id="L147">    } catch (final SQLException e) {</span>
+      // SQLException
+<span class="nc" id="L149">      logger.error(</span>
+<span class="nc" id="L150">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
+<span class="nc" id="L151">      DbSession.error(e);</span>
+<span class="nc" id="L152">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L153">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
+<span class="nc" id="L154">    }</span>
+<span class="nc" id="L155">  }</span>
+
+  @Override
+  public Connection getDbConnection(String server, String user, String passwd)
+      throws SQLException {
+<span class="nc" id="L160">    synchronized (this) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (pool != null) {</span>
+        try {
+<span class="nc" id="L163">          return pool.getConnection();</span>
+<span class="nc" id="L164">        } catch (final SQLException e) {</span>
+          // try to renew the pool
+<span class="nc" id="L166">          mysqlConnectionPoolDataSource = new MariaDbDataSource();</span>
+<span class="nc" id="L167">          mysqlConnectionPoolDataSource.setUrl(server);</span>
+<span class="nc" id="L168">          mysqlConnectionPoolDataSource.setUser(user);</span>
+<span class="nc" id="L169">          mysqlConnectionPoolDataSource.setPassword(passwd);</span>
+<span class="nc" id="L170">          pool.resetPoolDataSource(mysqlConnectionPoolDataSource);</span>
+          try {
+<span class="nc" id="L172">            return pool.getConnection();</span>
+<span class="nc" id="L173">          } catch (final SQLException e2) {</span>
+<span class="nc" id="L174">            pool.dispose();</span>
+<span class="nc" id="L175">            pool = null;</span>
+<span class="nc" id="L176">            return super.getDbConnection(server, user, passwd);</span>
+          }
+        }
+      }
+<span class="nc" id="L180">    }</span>
+<span class="nc" id="L181">    return super.getDbConnection(server, user, passwd);</span>
+  }
+
+  @Override
+  public void releaseResources() {
+<span class="nc bnc" id="L186" title="All 2 branches missed.">    if (pool != null) {</span>
+      try {
+<span class="nc" id="L188">        pool.dispose();</span>
+<span class="nc" id="L189">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L190">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L191">      }</span>
+    }
+<span class="nc" id="L193">    pool = null;</span>
+<span class="nc" id="L194">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

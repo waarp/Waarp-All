@@ -1,0 +1,999 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FXBasicView.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpXmlEditor</a> &gt; <a href="index.source.html" class="el_package">com.fg.xmleditor</a> &gt; <span class="el_source">FXBasicView.java</span></div><h1>FXBasicView.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright (c) 2002 Felix Golubov
+ */
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3)
+// Source File Name: FXBasicView.java
+
+package com.fg.xmleditor;
+
+import com.fg.ftree.FBasicNode;
+import com.fg.ftree.FTree;
+import com.fg.ftree.FTreeActionEvent;
+import com.fg.ftree.FTreeActionListener;
+import com.fg.ftree.FTreeEditorEvent;
+import com.fg.ftree.FTreeEditorListener;
+import com.fg.ftree.FTreeExpansBarListener;
+import com.fg.ftree.FTreeExpansionListener;
+import com.fg.ftree.FTreeNodeEvent;
+import com.fg.ftree.FTreeSelectionListener;
+import com.fg.ftree.GgFTree;
+import com.fg.ftreenodes.FAbstractToggleNode;
+import com.fg.ftreenodes.FToggleControl;
+import com.fg.ftreenodes.FToggleNode;
+import com.fg.ftreenodes.FToggleSwitchNode;
+import com.fg.ftreenodes.ICellControl;
+import com.fg.util.FLoader;
+import org.apache.xerces.impl.xs.psvi.XSParticle;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Vector;
+
+/*
+ * @author Felix Golubov
+ * @version 1.0 Fix to get a different FTree implementation
+ */
+// Referenced classes of package com.fg.xmleditor:
+// FXModelStatusListener, FXModel, FXDocumentModelImpl, FXStatusEvent,
+// FXViewStatusListener, XSRef, NSQualifiersDialog, SearchDialog
+
+public class FXBasicView extends JComponent implements FXModelStatusListener {
+  /**
+   *
+   */
+  private static final long serialVersionUID = 4353436426114132650L;
+  transient FXModel model;
+  final FTree tree;
+  final JTextField mouseInfo;
+  final JTextArea errorInfoArea;
+  final JTextArea nodesInfoArea;
+  transient final Vector&lt;FXViewStatusListener&gt; viewListeners;
+  transient final InnerListener innerListener;
+  boolean insert;
+  boolean remove;
+  boolean moveUp;
+  boolean moveDown;
+  final JPopupMenu popup;
+  final JMenuItem mSelect;
+  final JMenuItem mUnselect;
+  final JMenuItem mInsBefore;
+  final JMenuItem mInsAfter;
+  final JMenuItem mRemove;
+  final JMenuItem mMoveUp;
+  final JMenuItem mMoveDown;
+  final JMenuItem mFindInvalid;
+  final JMenuItem mFindNode;
+  final JMenuItem mNS;
+  SearchDialog searchDialog;
+
+<span class="nc" id="L110">  public FXBasicView(FXModel model) {</span>
+<span class="nc" id="L111">    this.model = null;</span>
+<span class="nc" id="L112">    viewListeners = new Vector&lt;FXViewStatusListener&gt;();</span>
+<span class="nc" id="L113">    innerListener = new InnerListener();</span>
+<span class="nc" id="L114">    insert = false;</span>
+<span class="nc" id="L115">    remove = false;</span>
+<span class="nc" id="L116">    moveUp = false;</span>
+<span class="nc" id="L117">    moveDown = false;</span>
+<span class="nc" id="L118">    popup = new JPopupMenu();</span>
+<span class="nc" id="L119">    mSelect = new JMenuItem(&quot;Select Node&quot;);</span>
+<span class="nc" id="L120">    mUnselect = new JMenuItem(&quot;Unselect Node&quot;);</span>
+<span class="nc" id="L121">    mInsBefore = new JMenuItem(&quot;Insert Node Before&quot;);</span>
+<span class="nc" id="L122">    mInsAfter = new JMenuItem(&quot;Insert Node After&quot;);</span>
+<span class="nc" id="L123">    mRemove = new JMenuItem(&quot;Remove Node&quot;);</span>
+<span class="nc" id="L124">    mMoveUp = new JMenuItem(&quot;Move Node Up&quot;);</span>
+<span class="nc" id="L125">    mMoveDown = new JMenuItem(&quot;Move Node Down&quot;);</span>
+<span class="nc" id="L126">    mFindInvalid = new JMenuItem(&quot;Find Invalid Node&quot;);</span>
+<span class="nc" id="L127">    mFindNode = new JMenuItem(&quot;Find Node&quot;);</span>
+<span class="nc" id="L128">    mNS = new JMenuItem(&quot;Edit NS Qualifiers&quot;);</span>
+<span class="nc" id="L129">    searchDialog = null;</span>
+<span class="nc" id="L130">    setLayout(new BorderLayout());</span>
+<span class="nc" id="L131">    final JSplitPane mainSplitPane = new JSplitPane(0);</span>
+<span class="nc" id="L132">    mainSplitPane.setResizeWeight(0.80000000000000004D);</span>
+<span class="nc" id="L133">    mainSplitPane.setDividerSize(8);</span>
+<span class="nc" id="L134">    mainSplitPane.setDoubleBuffered(false);</span>
+<span class="nc" id="L135">    add(mainSplitPane, &quot;Center&quot;);</span>
+<span class="nc" id="L136">    final JScrollPane sp = new JScrollPane();</span>
+<span class="nc" id="L137">    tree = new GgFTree();</span>
+<span class="nc" id="L138">    setFXModel(model);</span>
+<span class="nc" id="L139">    final Insets insets = tree.getInsets();</span>
+<span class="nc" id="L140">    insets.top = 20;</span>
+<span class="nc" id="L141">    tree.setInsets(insets);</span>
+<span class="nc" id="L142">    sp.getViewport().add(tree, null);</span>
+<span class="nc" id="L143">    mainSplitPane.add(sp, &quot;left&quot;);</span>
+<span class="nc" id="L144">    final JPanel infoPanel = new JPanel(new BorderLayout());</span>
+<span class="nc" id="L145">    final JSplitPane infoSplitPane = new JSplitPane(1);</span>
+<span class="nc" id="L146">    infoSplitPane.setResizeWeight(0.5D);</span>
+<span class="nc" id="L147">    infoSplitPane.setDividerSize(8);</span>
+<span class="nc" id="L148">    final JScrollPane nodesInfoAreaSP = new JScrollPane();</span>
+<span class="nc" id="L149">    nodesInfoAreaSP.setHorizontalScrollBarPolicy(31);</span>
+<span class="nc" id="L150">    nodesInfoArea = new JTextArea();</span>
+<span class="nc" id="L151">    nodesInfoArea.setLineWrap(true);</span>
+<span class="nc" id="L152">    nodesInfoArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L153">    nodesInfoArea.setEditable(false);</span>
+<span class="nc" id="L154">    nodesInfoAreaSP.getViewport().add(nodesInfoArea, null);</span>
+<span class="nc" id="L155">    infoSplitPane.add(nodesInfoAreaSP, &quot;left&quot;);</span>
+<span class="nc" id="L156">    final JScrollPane errorInfoAreaSP = new JScrollPane();</span>
+<span class="nc" id="L157">    errorInfoAreaSP.setHorizontalScrollBarPolicy(31);</span>
+<span class="nc" id="L158">    errorInfoArea = new JTextArea();</span>
+<span class="nc" id="L159">    errorInfoArea.setLineWrap(true);</span>
+<span class="nc" id="L160">    errorInfoArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L161">    errorInfoArea.setEditable(false);</span>
+<span class="nc" id="L162">    errorInfoAreaSP.getViewport().add(errorInfoArea, null);</span>
+<span class="nc" id="L163">    infoSplitPane.add(errorInfoAreaSP, &quot;right&quot;);</span>
+<span class="nc" id="L164">    infoPanel.add(infoSplitPane, &quot;Center&quot;);</span>
+<span class="nc" id="L165">    mouseInfo = new JTextField(&quot;  Folder:&quot;);</span>
+<span class="nc" id="L166">    mouseInfo.setEditable(false);</span>
+<span class="nc" id="L167">    mouseInfo.setBorder(BorderFactory.createLineBorder(Color.gray));</span>
+<span class="nc" id="L168">    infoPanel.add(mouseInfo, &quot;South&quot;);</span>
+<span class="nc" id="L169">    mainSplitPane.add(infoPanel, &quot;right&quot;);</span>
+<span class="nc" id="L170">    setBackground(new Color(230, 230, 230));</span>
+<span class="nc" id="L171">    tree.setCellsLeftInset(5);</span>
+<span class="nc" id="L172">    tree.addFTreeExpansionListener(innerListener);</span>
+<span class="nc" id="L173">    tree.addFTreeExpansBarListener(innerListener);</span>
+<span class="nc" id="L174">    tree.addFTreeEditorListener(innerListener);</span>
+<span class="nc" id="L175">    tree.addFTreeActionListener(innerListener);</span>
+<span class="nc" id="L176">    tree.addFTreeSelectionListener(innerListener);</span>
+<span class="nc" id="L177">    tree.addMouseListener(innerListener);</span>
+<span class="nc" id="L178">    createPopupMenu();</span>
+<span class="nc" id="L179">  }</span>
+
+  public FXBasicView() {
+<span class="nc" id="L182">    this(null);</span>
+<span class="nc" id="L183">  }</span>
+
+  public static void stopCellEditing(JComponent editor) {
+<span class="nc" id="L186">    FTree.stopCellEditing(editor);</span>
+<span class="nc" id="L187">  }</span>
+
+  public static void cancelCellEditing(JComponent editor) {
+<span class="nc" id="L190">    FTree.cancelCellEditing(editor);</span>
+<span class="nc" id="L191">  }</span>
+
+  public static void cellEditorValueChanged(JComponent editor, Object event) {
+<span class="nc" id="L194">    FTree.cellEditorValueChanged(editor, event);</span>
+<span class="nc" id="L195">  }</span>
+
+  static boolean hasValue(FToggleNode node) {
+<span class="nc" id="L198">    final XSRef ref = (XSRef) node.getAssociate();</span>
+<span class="nc" id="L199">    return ref.hasValue();</span>
+  }
+
+  @Override
+  public void newDocumentLoaded(FXStatusEvent e) {
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (e.getStatus()) {</span>
+<span class="nc" id="L205">      tree.setNodeExpanded(model.getRoot(), true);</span>
+    }
+<span class="nc" id="L207">    clearEditorFlags();</span>
+<span class="nc" id="L208">    nodesInfoArea.setText(&quot;&quot;);</span>
+<span class="nc" id="L209">  }</span>
+
+  void clearEditorFlags() {
+<span class="nc" id="L212">    setInsert(false);</span>
+<span class="nc" id="L213">    setRemove(false);</span>
+<span class="nc" id="L214">    setMoveUp(false);</span>
+<span class="nc" id="L215">    setMoveDown(false);</span>
+<span class="nc" id="L216">  }</span>
+
+  void setInsert(boolean insert) {
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (insert == this.insert) {</span>
+<span class="nc" id="L220">      return;</span>
+    }
+<span class="nc" id="L222">    this.insert = insert;</span>
+<span class="nc" id="L223">    final FXStatusEvent e = new FXStatusEvent(this, this.insert);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    for (int i = 0; i &lt; viewListeners.size(); i++) {</span>
+<span class="nc" id="L225">      final FXViewStatusListener fxl = viewListeners.get(i);</span>
+<span class="nc" id="L226">      fxl.canInsertStatusChanged(e);</span>
+    }
+
+<span class="nc" id="L229">  }</span>
+
+  void setRemove(boolean remove) {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    if (remove == this.remove) {</span>
+<span class="nc" id="L233">      return;</span>
+    }
+<span class="nc" id="L235">    this.remove = remove;</span>
+<span class="nc" id="L236">    final FXStatusEvent e = new FXStatusEvent(this, this.remove);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">    for (int i = 0; i &lt; viewListeners.size(); i++) {</span>
+<span class="nc" id="L238">      final FXViewStatusListener fxl = viewListeners.get(i);</span>
+<span class="nc" id="L239">      fxl.canRemoveStatusChanged(e);</span>
+    }
+
+<span class="nc" id="L242">  }</span>
+
+  void setMoveUp(boolean moveUp) {
+<span class="nc bnc" id="L245" title="All 2 branches missed.">    if (moveUp == this.moveUp) {</span>
+<span class="nc" id="L246">      return;</span>
+    }
+<span class="nc" id="L248">    this.moveUp = moveUp;</span>
+<span class="nc" id="L249">    final FXStatusEvent e = new FXStatusEvent(this, this.moveUp);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">    for (int i = 0; i &lt; viewListeners.size(); i++) {</span>
+<span class="nc" id="L251">      final FXViewStatusListener fxl = viewListeners.get(i);</span>
+<span class="nc" id="L252">      fxl.canMoveUpStatusChanged(e);</span>
+    }
+
+<span class="nc" id="L255">  }</span>
+
+  void setMoveDown(boolean moveDown) {
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (moveDown == this.moveDown) {</span>
+<span class="nc" id="L259">      return;</span>
+    }
+<span class="nc" id="L261">    this.moveDown = moveDown;</span>
+<span class="nc" id="L262">    final FXStatusEvent e = new FXStatusEvent(this, this.moveDown);</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">    for (int i = 0; i &lt; viewListeners.size(); i++) {</span>
+<span class="nc" id="L264">      final FXViewStatusListener fxl = viewListeners.get(i);</span>
+<span class="nc" id="L265">      fxl.canMoveDownStatusChanged(e);</span>
+    }
+
+<span class="nc" id="L268">  }</span>
+
+  @Override
+  public void docValidityStatusChanged(FXStatusEvent fxstatusevent) {
+    // nothing
+<span class="nc" id="L273">  }</span>
+
+  public FXModel getFXModel() {
+<span class="nc" id="L276">    return model;</span>
+  }
+
+  public void setFXModel(FXModel newModel) {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">    if (model != null) {</span>
+<span class="nc" id="L281">      model.removeModelStatusListener(this);</span>
+    }
+<span class="nc bnc" id="L283" title="All 2 branches missed.">    if (newModel == null) {</span>
+<span class="nc" id="L284">      newModel = new FXDocumentModelImpl();</span>
+    }
+<span class="nc" id="L286">    model = newModel;</span>
+<span class="nc" id="L287">    model.addModelStatusListener(this);</span>
+<span class="nc" id="L288">    tree.setTreeModel(model);</span>
+<span class="nc" id="L289">  }</span>
+
+  public FTree getTree() {
+<span class="nc" id="L292">    return tree;</span>
+  }
+
+  @Override
+  public void updateUI() {
+<span class="nc" id="L297">    super.updateUI();</span>
+<span class="nc" id="L298">    SwingUtilities.updateComponentTreeUI(popup);</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">    if (searchDialog != null) {</span>
+<span class="nc" id="L300">      SwingUtilities.updateComponentTreeUI(searchDialog);</span>
+    }
+<span class="nc" id="L302">  }</span>
+
+  void createPopupMenu() {
+<span class="nc" id="L305">    mSelect.setIcon(FLoader.getIcon(this, &quot;SelectNode.gif&quot;));</span>
+<span class="nc" id="L306">    mSelect.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (innerListener.treeNode != null) {</span>
+<span class="nc" id="L311">          tree.setSelectedPath(innerListener.treeNode.getPath());</span>
+        }
+<span class="nc" id="L313">      }</span>
+
+    });
+<span class="nc" id="L316">    popup.add(mSelect);</span>
+<span class="nc" id="L317">    mUnselect.setIcon(FLoader.getIcon(this, &quot;UnselectNode.gif&quot;));</span>
+<span class="nc" id="L318">    mUnselect.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L322">        tree.setSelectedPath(null);</span>
+<span class="nc" id="L323">      }</span>
+
+    });
+<span class="nc" id="L326">    popup.add(mUnselect);</span>
+<span class="nc" id="L327">    popup.addSeparator();</span>
+<span class="nc" id="L328">    mInsBefore.setIcon(FLoader.getIcon(this, &quot;InsNodeBefore.gif&quot;));</span>
+<span class="nc" id="L329">    mInsBefore.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L333">        insertNodeBefore();</span>
+<span class="nc" id="L334">      }</span>
+
+    });
+<span class="nc" id="L337">    popup.add(mInsBefore);</span>
+<span class="nc" id="L338">    mInsAfter.setIcon(FLoader.getIcon(this, &quot;InsNodeAfter.gif&quot;));</span>
+<span class="nc" id="L339">    mInsAfter.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L343">        insertNodeAfter();</span>
+<span class="nc" id="L344">      }</span>
+
+    });
+<span class="nc" id="L347">    popup.add(mInsAfter);</span>
+<span class="nc" id="L348">    popup.addSeparator();</span>
+<span class="nc" id="L349">    mRemove.setIcon(FLoader.getIcon(this, &quot;RemoveNode.gif&quot;));</span>
+<span class="nc" id="L350">    mRemove.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L354">        removeNode();</span>
+<span class="nc" id="L355">      }</span>
+
+    });
+<span class="nc" id="L358">    popup.add(mRemove);</span>
+<span class="nc" id="L359">    popup.addSeparator();</span>
+<span class="nc" id="L360">    mMoveUp.setIcon(FLoader.getIcon(this, &quot;MoveNodeUp.gif&quot;));</span>
+<span class="nc" id="L361">    mMoveUp.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L365">        moveNodeUp();</span>
+<span class="nc" id="L366">      }</span>
+
+    });
+<span class="nc" id="L369">    popup.add(mMoveUp);</span>
+<span class="nc" id="L370">    mMoveDown.setIcon(FLoader.getIcon(this, &quot;MoveNodeDown.gif&quot;));</span>
+<span class="nc" id="L371">    mMoveDown.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L375">        moveNodeDown();</span>
+<span class="nc" id="L376">      }</span>
+
+    });
+<span class="nc" id="L379">    popup.add(mMoveDown);</span>
+<span class="nc" id="L380">    popup.addSeparator();</span>
+<span class="nc" id="L381">    mNS.setIcon(FLoader.getIcon(this, &quot;NSQualifiers.gif&quot;));</span>
+<span class="nc" id="L382">    mNS.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L386">        showNSQualifiersDialog();</span>
+<span class="nc" id="L387">      }</span>
+
+    });
+<span class="nc" id="L390">    popup.add(mNS);</span>
+<span class="nc" id="L391">    popup.addSeparator();</span>
+<span class="nc" id="L392">    mFindInvalid.setIcon(FLoader.getIcon(this, &quot;FindInvalidNode.gif&quot;));</span>
+<span class="nc" id="L393">    mFindInvalid.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L397">        showInvalidNode();</span>
+<span class="nc" id="L398">      }</span>
+
+    });
+<span class="nc" id="L401">    popup.add(mFindInvalid);</span>
+<span class="nc" id="L402">    mFindNode.setIcon(FLoader.getIcon(this, &quot;FindNode.gif&quot;));</span>
+<span class="nc" id="L403">    mFindNode.addActionListener(new ActionListener() {</span>
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L407">        showSearchDialog();</span>
+<span class="nc" id="L408">      }</span>
+
+    });
+<span class="nc" id="L411">    popup.add(mFindNode);</span>
+<span class="nc" id="L412">  }</span>
+
+  public void addExternalDialog(String id, JDialog dialog) {
+<span class="nc" id="L415">    tree.addDialog(id, dialog);</span>
+<span class="nc" id="L416">  }</span>
+
+  public void removeExternalDialog(String id) {
+<span class="nc" id="L419">    tree.removeDialog(id);</span>
+<span class="nc" id="L420">  }</span>
+
+  public void removeAllExternalDialogs() {
+<span class="nc" id="L423">    tree.removeAllDialogs();</span>
+<span class="nc" id="L424">  }</span>
+
+  @Override
+  public void setBackground(Color color) {
+<span class="nc" id="L428">    super.setBackground(color);</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (tree != null) {</span>
+<span class="nc" id="L430">      tree.setBackground(color);</span>
+<span class="nc bnc" id="L431" title="All 2 branches missed.">      if (tree.isShowing()) {</span>
+<span class="nc" id="L432">        tree.repaint();</span>
+      }
+    }
+<span class="nc" id="L435">  }</span>
+
+  public boolean isReducedView() {
+<span class="nc" id="L438">    return tree.isReducedView();</span>
+  }
+
+  public void setReducedView(boolean reduced) {
+<span class="nc" id="L442">    tree.setReducedView(reduced);</span>
+<span class="nc" id="L443">    final FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L445">      return;</span>
+    }
+<span class="nc" id="L447">    final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L448" title="All 2 branches missed.">    if (parent != null) {</span>
+<span class="nc" id="L449">      setEditorFlags(parent, node);</span>
+    }
+<span class="nc" id="L451">  }</span>
+
+  void setEditorFlags(FToggleNode parent, FToggleNode node) {
+<span class="nc" id="L454">    final int count = parent.getRealChildCount();</span>
+<span class="nc" id="L455">    final XSRef ref = (XSRef) parent.getAssociate();</span>
+<span class="nc bnc" id="L456" title="All 2 branches missed.">    final boolean b = !tree.isReducedView();</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">    if (ref.isArray()) {</span>
+<span class="nc" id="L458">      final XSParticle particle = ref.getParticle();</span>
+<span class="nc" id="L459">      final int minOccurs = Math.max(particle.getMinOccurs(), 1);</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">      final int maxOccurs = particle.getMaxOccursUnbounded()? 0x7fffffff :</span>
+<span class="nc" id="L461">          particle.getMaxOccurs();</span>
+<span class="nc bnc" id="L462" title="All 4 branches missed.">      setInsert(b &amp;&amp; count &lt; maxOccurs);</span>
+<span class="nc bnc" id="L463" title="All 4 branches missed.">      setRemove(b &amp;&amp; count &gt; minOccurs);</span>
+<span class="nc bnc" id="L464" title="All 4 branches missed.">      setMoveUp(b &amp;&amp; node != parent.getRealChildAt(0));</span>
+<span class="nc bnc" id="L465" title="All 4 branches missed.">      setMoveDown(b &amp;&amp; node != parent.getRealChildAt(count - 1));</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">    } else if (ref.in(16)) {</span>
+<span class="nc bnc" id="L467" title="All 4 branches missed.">      setMoveUp(b &amp;&amp; node != parent.getRealChildAt(0));</span>
+<span class="nc bnc" id="L468" title="All 4 branches missed.">      setMoveDown(b &amp;&amp; node != parent.getRealChildAt(count - 1));</span>
+    }
+<span class="nc" id="L470">  }</span>
+
+  public boolean stopEditing() {
+<span class="nc" id="L473">    return tree.stopEditing();</span>
+  }
+
+  public boolean cancelEditing() {
+<span class="nc" id="L477">    return tree.cancelEditing();</span>
+  }
+
+  public void showInfoMessage(String message) {
+<span class="nc" id="L481">    nodesInfoArea.setText(message);</span>
+<span class="nc" id="L482">  }</span>
+
+  public void showErrorMessage(String message) {
+<span class="nc" id="L485">    errorInfoArea.setText(message);</span>
+<span class="nc" id="L486">  }</span>
+
+  public void addViewStatusListener(FXViewStatusListener l) {
+<span class="nc bnc" id="L489" title="All 2 branches missed.">    if (!viewListeners.contains(l)) {</span>
+<span class="nc" id="L490">      viewListeners.addElement(l);</span>
+    }
+<span class="nc" id="L492">  }</span>
+
+  public void removeViewStatusListener(FXViewStatusListener l) {
+<span class="nc" id="L495">    viewListeners.removeElement(l);</span>
+<span class="nc" id="L496">  }</span>
+
+  public boolean hasDocument() {
+<span class="nc bnc" id="L499" title="All 2 branches missed.">    return model.getRoot() != null;</span>
+  }
+
+  public boolean isDocChanged() {
+<span class="nc" id="L503">    return model.isDocumentChanged();</span>
+  }
+
+  public boolean isDocValid() {
+<span class="nc" id="L507">    return model.isDocumentValid();</span>
+  }
+
+  public boolean canInsert() {
+<span class="nc" id="L511">    return insert;</span>
+  }
+
+  public boolean canRemove() {
+<span class="nc" id="L515">    return remove;</span>
+  }
+
+  public boolean canMoveUp() {
+<span class="nc" id="L519">    return moveUp;</span>
+  }
+
+  public boolean canMoveDown() {
+<span class="nc" id="L523">    return moveDown;</span>
+  }
+
+  public void insertNodeBefore() {
+<span class="nc bnc" id="L527" title="All 2 branches missed.">    if (!canInsert()) {</span>
+<span class="nc" id="L528">      return;</span>
+    }
+<span class="nc" id="L530">    final FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L531" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L532">      return;</span>
+    }
+<span class="nc" id="L534">    final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (parent == null) {</span>
+<span class="nc" id="L536">      return;</span>
+    }
+<span class="nc" id="L538">    final int index = parent.getIndex(node);</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">    if (model.insertInstance(parent, index) != null) {</span>
+<span class="nc" id="L540">      tree.setSelectedPath(node.getPath());</span>
+<span class="nc" id="L541">      setEditorFlags(parent, node);</span>
+    }
+<span class="nc" id="L543">  }</span>
+
+  public void insertNodeAfter() {
+<span class="nc bnc" id="L546" title="All 2 branches missed.">    if (!canInsert()) {</span>
+<span class="nc" id="L547">      return;</span>
+    }
+<span class="nc" id="L549">    final FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L551">      return;</span>
+    }
+<span class="nc" id="L553">    final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">    if (parent == null) {</span>
+<span class="nc" id="L555">      return;</span>
+    }
+<span class="nc" id="L557">    final int index = parent.getIndex(node);</span>
+<span class="nc bnc" id="L558" title="All 2 branches missed.">    if (model.insertInstance(parent, index + 1) != null) {</span>
+<span class="nc" id="L559">      tree.setSelectedPath(node.getPath());</span>
+<span class="nc" id="L560">      setEditorFlags(parent, node);</span>
+    }
+<span class="nc" id="L562">  }</span>
+
+  public void removeNode() {
+<span class="nc bnc" id="L565" title="All 2 branches missed.">    if (!canRemove()) {</span>
+<span class="nc" id="L566">      return;</span>
+    }
+<span class="nc" id="L568">    FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L570">      return;</span>
+    }
+<span class="nc" id="L572">    final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L573" title="All 2 branches missed.">    if (parent == null) {</span>
+<span class="nc" id="L574">      return;</span>
+    }
+<span class="nc" id="L576">    final int index = model.removeInstance(node);</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">    if (index &lt; 0) {</span>
+<span class="nc" id="L578">      return;</span>
+    }
+<span class="nc bnc" id="L580" title="All 2 branches missed.">    if (index &gt;= parent.getRealChildCount()) {</span>
+<span class="nc" id="L581">      node = (FToggleNode) parent.getRealChildAt(index - 1);</span>
+    } else {
+<span class="nc" id="L583">      node = (FToggleNode) parent.getRealChildAt(index);</span>
+    }
+<span class="nc" id="L585">    tree.setSelectedPath(node.getPath());</span>
+<span class="nc" id="L586">    setEditorFlags(parent, node);</span>
+<span class="nc" id="L587">  }</span>
+
+  public void moveNodeUp() {
+<span class="nc bnc" id="L590" title="All 2 branches missed.">    if (!canMoveUp()) {</span>
+<span class="nc" id="L591">      return;</span>
+    }
+<span class="nc" id="L593">    final FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L594" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L595">      return;</span>
+    }
+<span class="nc" id="L597">    final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L598" title="All 2 branches missed.">    if (parent != null) {</span>
+<span class="nc" id="L599">      final int index = parent.getIndex(node);</span>
+<span class="nc" id="L600">      parent.remove(index);</span>
+<span class="nc" id="L601">      parent.insert(node, index - 1);</span>
+<span class="nc" id="L602">      model.fireTreeModelDataChanged(true);</span>
+<span class="nc" id="L603">      tree.setSelectedPath(node.getPath());</span>
+<span class="nc" id="L604">      setEditorFlags(parent, node);</span>
+    }
+<span class="nc" id="L606">  }</span>
+
+  public void moveNodeDown() {
+<span class="nc bnc" id="L609" title="All 2 branches missed.">    if (!canMoveDown()) {</span>
+<span class="nc" id="L610">      return;</span>
+    }
+<span class="nc" id="L612">    final FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L613" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L614">      return;</span>
+    }
+<span class="nc" id="L616">    final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L617" title="All 2 branches missed.">    if (parent != null) {</span>
+<span class="nc" id="L618">      final int index = parent.getIndex(node);</span>
+<span class="nc" id="L619">      parent.remove(index);</span>
+<span class="nc" id="L620">      parent.insert(node, index + 1);</span>
+<span class="nc" id="L621">      model.fireTreeModelDataChanged(true);</span>
+<span class="nc" id="L622">      tree.setSelectedPath(node.getPath());</span>
+<span class="nc" id="L623">      setEditorFlags(parent, node);</span>
+    }
+<span class="nc" id="L625">  }</span>
+
+  void setDialogLocation(JDialog dlg) {
+<span class="nc" id="L628">    final Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();</span>
+<span class="nc" id="L629">    final Dimension size = getSize();</span>
+<span class="nc" id="L630">    final Dimension dlgSize = dlg.getSize();</span>
+<span class="nc" id="L631">    int x = getLocationOnScreen().x + (size.width - dlgSize.width) / 2;</span>
+<span class="nc bnc" id="L632" title="All 2 branches missed.">    if (x &lt; 0) {</span>
+<span class="nc" id="L633">      x = 0;</span>
+    }
+<span class="nc bnc" id="L635" title="All 2 branches missed.">    if (x + dlgSize.width &gt; scrSize.width) {</span>
+<span class="nc" id="L636">      x = scrSize.width - dlgSize.width;</span>
+    }
+<span class="nc" id="L638">    int y = getLocationOnScreen().y + (size.height - dlgSize.height) / 2;</span>
+<span class="nc bnc" id="L639" title="All 2 branches missed.">    if (y &lt; 0) {</span>
+<span class="nc" id="L640">      y = 0;</span>
+    }
+<span class="nc bnc" id="L642" title="All 2 branches missed.">    if (y + dlgSize.height &gt; scrSize.height) {</span>
+<span class="nc" id="L643">      y = scrSize.height - dlgSize.height;</span>
+    }
+<span class="nc" id="L645">    dlg.setLocation(x, y);</span>
+<span class="nc" id="L646">  }</span>
+
+  public void showNSQualifiersDialog() {
+<span class="nc" id="L649">    final Frame frame =</span>
+<span class="nc" id="L650">        (Frame) SwingUtilities.getAncestorOfClass(Frame.class, this);</span>
+<span class="nc" id="L651">    final NSQualifiersDialog dlg = new NSQualifiersDialog(frame, model);</span>
+<span class="nc" id="L652">    setDialogLocation(dlg);</span>
+<span class="nc" id="L653">    dlg.setVisible(true);</span>
+<span class="nc" id="L654">  }</span>
+
+  int[] createPath(FBasicNode treeNode) {
+<span class="nc" id="L657">    final Vector&lt;FBasicNode&gt; v = new Vector&lt;FBasicNode&gt;();</span>
+<span class="nc bnc" id="L658" title="All 2 branches missed.">    for (FBasicNode node = treeNode; node != null;</span>
+<span class="nc" id="L659">         node = (FBasicNode) node.getParent()) {</span>
+<span class="nc" id="L660">      v.add(0, node);</span>
+    }
+
+<span class="nc" id="L663">    final int[] path = new int[v.size()];</span>
+<span class="nc" id="L664">    FBasicNode parent = v.get(0);</span>
+<span class="nc bnc" id="L665" title="All 2 branches missed.">    for (int i = 1; i &lt; v.size(); i++) {</span>
+<span class="nc" id="L666">      final FBasicNode child = v.get(i);</span>
+<span class="nc" id="L667">      path[i - 1] = parent.getIndex(child);</span>
+<span class="nc" id="L668">      parent = child;</span>
+    }
+
+<span class="nc" id="L671">    path[path.length - 1] = 0;</span>
+<span class="nc" id="L672">    return path;</span>
+  }
+
+  FToggleNode getInvalidNode(FToggleNode parent, int[] startPath, int level) {
+<span class="nc" id="L676">    final int startIndex = startPath[level];</span>
+    FToggleNode node;
+<span class="nc bnc" id="L678" title="All 2 branches missed.">    for (int i = startIndex; i &lt; parent.getRealChildCount(); i++) {</span>
+<span class="nc" id="L679">      final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);</span>
+<span class="nc bnc" id="L680" title="All 2 branches missed.">      if (child.isToggleSelected() &amp;&amp;</span>
+<span class="nc bnc" id="L681" title="All 4 branches missed.">          (!child.getChildrenValidity() || !child.getNodeValidity())) {</span>
+<span class="nc bnc" id="L682" title="All 4 branches missed.">        if (i == startIndex &amp;&amp; level + 1 &lt; startPath.length) {</span>
+<span class="nc" id="L683">          node = getInvalidNode(child, startPath, level + 1);</span>
+        } else {
+<span class="nc" id="L685">          node = getInvalidNode(child);</span>
+        }
+<span class="nc bnc" id="L687" title="All 2 branches missed.">        if (node != null) {</span>
+<span class="nc" id="L688">          return node;</span>
+        }
+      }
+    }
+
+<span class="nc" id="L693">    return null;</span>
+  }
+
+  FToggleNode getInvalidNode(FToggleNode parent) {
+    getInvalidNode:
+    while (true) {
+<span class="nc bnc" id="L699" title="All 2 branches missed.">      if (!parent.getNodeValidity()) {</span>
+<span class="nc" id="L700">        return parent;</span>
+      }
+<span class="nc bnc" id="L702" title="All 2 branches missed.">      for (int i = 0; i &lt; parent.getRealChildCount(); i++) {</span>
+<span class="nc" id="L703">        final FToggleNode child = (FToggleNode) parent.getRealChildAt(i);</span>
+<span class="nc bnc" id="L704" title="All 2 branches missed.">        if (child.isToggleSelected() &amp;&amp;</span>
+<span class="nc bnc" id="L705" title="All 4 branches missed.">            (!child.getChildrenValidity() || !child.getNodeValidity())) {</span>
+<span class="nc" id="L706">          parent = child;</span>
+<span class="nc" id="L707">          continue getInvalidNode;</span>
+        }
+      }
+
+<span class="nc" id="L711">      return parent;</span>
+    }
+  }
+
+  public void showInvalidNode() {
+<span class="nc bnc" id="L716" title="All 4 branches missed.">    if (!hasDocument() || isDocValid()) {</span>
+<span class="nc" id="L717">      return;</span>
+    }
+<span class="nc" id="L719">    FToggleNode node = null;</span>
+<span class="nc" id="L720">    final FToggleNode rootNode = (FToggleNode) tree.getRoot();</span>
+<span class="nc" id="L721">    FToggleNode startNode = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L722" title="All 2 branches missed.">    if (startNode != null) {</span>
+<span class="nc" id="L723">      startNode = (FToggleNode) startNode.getSubstituteNode();</span>
+    }
+<span class="nc bnc" id="L725" title="All 2 branches missed.">    if (startNode != null) {</span>
+<span class="nc" id="L726">      final int[] startPath = createPath(startNode);</span>
+<span class="nc" id="L727">      node = getInvalidNode(rootNode, startPath, 0);</span>
+    }
+<span class="nc bnc" id="L729" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L730">      node = getInvalidNode(rootNode);</span>
+    }
+<span class="nc bnc" id="L732" title="All 2 branches missed.">    if (node != null) {</span>
+<span class="nc bnc" id="L733" title="All 2 branches missed.">      if (node.getParent() instanceof FToggleSwitchNode) {</span>
+<span class="nc" id="L734">        node = (FToggleNode) node.getParent();</span>
+      }
+<span class="nc" id="L736">      final Object[] path = node.getPath();</span>
+<span class="nc" id="L737">      tree.makeVisible(path);</span>
+<span class="nc" id="L738">      tree.setSelectedPath(path);</span>
+    }
+<span class="nc" id="L740">  }</span>
+
+  public void showSearchDialog() {
+<span class="nc bnc" id="L743" title="All 2 branches missed.">    if (searchDialog == null) {</span>
+<span class="nc" id="L744">      final Frame frame =</span>
+<span class="nc" id="L745">          (Frame) SwingUtilities.getAncestorOfClass(Frame.class, this);</span>
+<span class="nc" id="L746">      searchDialog = new SearchDialog(frame, this);</span>
+<span class="nc" id="L747">      searchDialog.pack();</span>
+<span class="nc" id="L748">      setDialogLocation(searchDialog);</span>
+    }
+<span class="nc" id="L750">    searchDialog.setVisible(true);</span>
+<span class="nc" id="L751">  }</span>
+
+  class InnerListener implements FTreeExpansionListener, FTreeExpansBarListener,
+                                 FTreeEditorListener, FTreeActionListener,
+                                 FTreeSelectionListener, MouseListener {
+
+    FToggleNode treeNode;
+
+<span class="nc" id="L759">    InnerListener() {</span>
+<span class="nc" id="L760">      treeNode = null;</span>
+<span class="nc" id="L761">    }</span>
+
+    @Override
+    public void nodeWillExpand(FTreeNodeEvent e) {
+<span class="nc" id="L765">      FToggleNode node = (FToggleNode) e.getTreeNode();</span>
+<span class="nc" id="L766">      node = (FToggleNode) node.getSubstituteNode();</span>
+<span class="nc bnc" id="L767" title="All 4 branches missed.">      if (node != null &amp;&amp; model.populateNode(node)) {</span>
+<span class="nc" id="L768">        final Object[] selPath = tree.getSelectedPath();</span>
+<span class="nc" id="L769">        model.fireTreeModelDataChanged(true);</span>
+<span class="nc" id="L770">        tree.setSelectedPath(selPath);</span>
+      }
+<span class="nc" id="L772">    }</span>
+
+    @Override
+    public void nodeWillCollapse(FTreeNodeEvent ftreenodeevent) {
+      // nothing
+<span class="nc" id="L777">    }</span>
+
+    @Override
+    public void nodeExpanded(FTreeNodeEvent e) {
+<span class="nc bnc" id="L781" title="All 2 branches missed.">      if (isSelectedNodeShowingChanged(e)) {</span>
+<span class="nc" id="L782">        selectedNodeShown();</span>
+      }
+<span class="nc" id="L784">    }</span>
+
+    boolean isSelectedNodeShowingChanged(FTreeNodeEvent expansionEvent) {
+<span class="nc" id="L787">      final FToggleNode selNode = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L788" title="All 2 branches missed.">      if (selNode == null) {</span>
+<span class="nc" id="L789">        return false;</span>
+      }
+<span class="nc" id="L791">      final FToggleNode node = (FToggleNode) expansionEvent.getTreeNode();</span>
+      FToggleNode curr;
+<span class="nc" id="L793">      for (curr = (FToggleNode) selNode.getParent();</span>
+<span class="nc bnc" id="L794" title="All 4 branches missed.">           curr != node &amp;&amp; curr != null;</span>
+<span class="nc" id="L795">           curr = (FToggleNode) curr.getParent()) {</span>
+<span class="nc bnc" id="L796" title="All 2 branches missed.">        if (!tree.isNodeExpanded(curr)) {</span>
+<span class="nc" id="L797">          return false;</span>
+        }
+      }
+
+<span class="nc bnc" id="L801" title="All 2 branches missed.">      return curr != null;</span>
+    }
+
+    void selectedNodeShown() {
+<span class="nc" id="L805">      FToggleNode node = (FToggleNode) tree.getSelectedNode();</span>
+<span class="nc bnc" id="L806" title="All 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L807">        return;</span>
+      }
+<span class="nc" id="L809">      final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc bnc" id="L810" title="All 2 branches missed.">      if (parent != null) {</span>
+<span class="nc" id="L811">        setEditorFlags(parent, node);</span>
+      }
+<span class="nc" id="L813">      node = (FToggleNode) node.getSubstituteNode();</span>
+<span class="nc bnc" id="L814" title="All 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L815">        return;</span>
+      }
+<span class="nc" id="L817">      nodesInfoArea.setText(model.getNodeMessage(node));</span>
+<span class="nc bnc" id="L818" title="All 2 branches missed.">      if (hasValue(node)) {</span>
+<span class="nc" id="L819">        final String errMessage =</span>
+<span class="nc" id="L820">            model.getValidityMessage(node, node.getValue());</span>
+<span class="nc bnc" id="L821" title="All 2 branches missed.">        if (errMessage != null) {</span>
+<span class="nc" id="L822">          errorInfoArea.setText(&quot;Error: &quot; + errMessage);</span>
+        } else {
+<span class="nc" id="L824">          errorInfoArea.setText(&quot;OK&quot;);</span>
+        }
+<span class="nc" id="L826">      } else {</span>
+<span class="nc" id="L827">        errorInfoArea.setText(&quot;&quot;);</span>
+      }
+<span class="nc" id="L829">    }</span>
+
+    @Override
+    public void nodeCollapsed(FTreeNodeEvent e) {
+<span class="nc bnc" id="L833" title="All 2 branches missed.">      if (isSelectedNodeShowingChanged(e)) {</span>
+<span class="nc" id="L834">        selectedNodeHidden();</span>
+      }
+<span class="nc" id="L836">    }</span>
+
+    void selectedNodeHidden() {
+<span class="nc" id="L839">      clearEditorFlags();</span>
+<span class="nc" id="L840">      nodesInfoArea.setText(&quot;&quot;);</span>
+<span class="nc" id="L841">      errorInfoArea.setText(&quot;&quot;);</span>
+<span class="nc" id="L842">    }</span>
+
+    @Override
+    public void enteredExpansBar(FTreeNodeEvent e) {
+<span class="nc" id="L846">      final FToggleNode node = (FToggleNode) e.getTreeNode();</span>
+<span class="nc" id="L847">      final FToggleNode parent = (FToggleNode) node.getParent();</span>
+<span class="nc" id="L848">      String text = &quot;  Folder: &quot;;</span>
+<span class="nc bnc" id="L849" title="All 2 branches missed.">      if (parent != null) {</span>
+<span class="nc" id="L850">        final XSRef ref = (XSRef) parent.getAssociate();</span>
+<span class="nc bnc" id="L851" title="All 2 branches missed.">        if (ref.isArray()) {</span>
+<span class="nc" id="L852">          text = &quot;  Folder: #&quot; + (parent.getIndex(node) + 1) + ' ';</span>
+        }
+      }
+<span class="nc" id="L855">      text += node.getLabelText();</span>
+<span class="nc" id="L856">      final FAbstractToggleNode subNode = node.getSubstituteNode();</span>
+<span class="nc bnc" id="L857" title="All 4 branches missed.">      if (subNode != null &amp;&amp; subNode != node) {</span>
+<span class="nc" id="L858">        text = text + ' ' + subNode.getLabelText();</span>
+      }
+<span class="nc bnc" id="L860" title="All 2 branches missed.">      if (node.getValue() != null) {</span>
+<span class="nc" id="L861">        text = text + &quot;     &quot; + node.getValue();</span>
+      }
+<span class="nc" id="L863">      mouseInfo.setText(text);</span>
+<span class="nc" id="L864">      mouseInfo.setCaretPosition(0);</span>
+<span class="nc" id="L865">    }</span>
+
+    @Override
+    public void exitedExpansBar(FTreeNodeEvent e) {
+<span class="nc" id="L869">      mouseInfo.setText(&quot;  Folder:&quot;);</span>
+<span class="nc" id="L870">    }</span>
+
+    @Override
+    public void cellEditingStarted(FTreeEditorEvent ftreeeditorevent) {
+      // nothing
+<span class="nc" id="L875">    }</span>
+
+    @Override
+    public void cellEditingWillStop(FTreeEditorEvent e) {
+<span class="nc bnc" id="L879" title="All 2 branches missed.">      if (e.isCanceled()) {</span>
+<span class="nc" id="L880">        return;</span>
+      }
+<span class="nc" id="L882">      FToggleNode node = (FToggleNode) e.getTreeNode();</span>
+<span class="nc" id="L883">      node = (FToggleNode) node.getSubstituteNode();</span>
+<span class="nc bnc" id="L884" title="All 6 branches missed.">      if (node == null || !hasValue(node) || !node.isEditable()) {</span>
+<span class="nc" id="L885">        return;</span>
+      }
+<span class="nc" id="L887">      final JComponent editor = e.getEditor();</span>
+<span class="nc bnc" id="L888" title="All 2 branches missed.">      if (editor == null) {</span>
+<span class="nc" id="L889">        return;</span>
+      }
+<span class="nc" id="L891">      final JComponent extraControl =</span>
+<span class="nc" id="L892">          ((FToggleControl) editor).getExtraControl();</span>
+<span class="nc bnc" id="L893" title="All 2 branches missed.">      if (extraControl instanceof ICellControl) {</span>
+<span class="nc" id="L894">        final Object newValue = ((ICellControl) extraControl).getData();</span>
+<span class="nc" id="L895">        final Object oldValue = node.getValue();</span>
+<span class="nc bnc" id="L896" title="All 2 branches missed.">        if (!equal(oldValue, newValue)) {</span>
+<span class="nc" id="L897">          model.setNodeValue(node, newValue);</span>
+        }
+      }
+<span class="nc" id="L900">    }</span>
+
+    boolean equal(Object a, Object b) {
+<span class="nc bnc" id="L903" title="All 8 branches missed.">      return a == null &amp;&amp; b == null || a != null &amp;&amp; a.equals(b);</span>
+    }
+
+    @Override
+    public void cellEditingStopped(FTreeEditorEvent e) {
+<span class="nc bnc" id="L908" title="All 2 branches missed.">      if (e.isCanceled()) {</span>
+<span class="nc" id="L909">        selectedNodeShown();</span>
+      }
+<span class="nc" id="L911">    }</span>
+
+    @Override
+    public void cellEditorValueChanged(FTreeEditorEvent e) {
+<span class="nc" id="L915">      FToggleNode node = (FToggleNode) e.getTreeNode();</span>
+<span class="nc" id="L916">      node = (FToggleNode) node.getSubstituteNode();</span>
+<span class="nc bnc" id="L917" title="All 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L918">        return;</span>
+      }
+<span class="nc" id="L920">      final Object editor = e.getEditor();</span>
+<span class="nc bnc" id="L921" title="All 2 branches missed.">      if (!(editor instanceof ICellControl)) {</span>
+<span class="nc" id="L922">        return;</span>
+      }
+<span class="nc" id="L924">      final Object obj = ((ICellControl) editor).getData();</span>
+<span class="nc bnc" id="L925" title="All 2 branches missed.">      final String editorValue = obj != null? obj.toString() : &quot;&quot;;</span>
+<span class="nc" id="L926">      final String errMessage = model.getValidityMessage(node, editorValue);</span>
+<span class="nc bnc" id="L927" title="All 2 branches missed.">      if (errMessage != null) {</span>
+<span class="nc" id="L928">        errorInfoArea.setText(&quot;Error: &quot; + errMessage);</span>
+      } else {
+<span class="nc" id="L930">        errorInfoArea.setText(&quot;OK&quot;);</span>
+      }
+<span class="nc" id="L932">    }</span>
+
+    @Override
+    public void treeActionPerformed(FTreeActionEvent e) {
+<span class="nc bnc" id="L936" title="All 2 branches missed.">      if (e.containsAction(1)) {</span>
+<span class="nc" id="L937">        final FToggleNode node = (FToggleNode) e.getTreeNode();</span>
+<span class="nc" id="L938">        model.toggleSelectionChanged(node);</span>
+      }
+<span class="nc" id="L940">    }</span>
+
+    @Override
+    public void nodeSelected(FTreeNodeEvent e) {
+<span class="nc" id="L944">      selectedNodeShown();</span>
+<span class="nc" id="L945">    }</span>
+
+    @Override
+    public void nodeUnselected(FTreeNodeEvent e) {
+<span class="nc" id="L949">      selectedNodeHidden();</span>
+<span class="nc" id="L950">    }</span>
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+<span class="nc" id="L954">      showPopup(e);</span>
+<span class="nc" id="L955">    }</span>
+
+    void showPopup(MouseEvent e) {
+<span class="nc bnc" id="L958" title="All 2 branches missed.">      if (e.isPopupTrigger()) {</span>
+<span class="nc" id="L959">        treeNode = (FToggleNode) tree.getNodeAt(e.getX(), e.getY());</span>
+<span class="nc bnc" id="L960" title="All 2 branches missed.">        final boolean b =</span>
+<span class="nc bnc" id="L961" title="All 2 branches missed.">            treeNode != null &amp;&amp; treeNode == tree.getSelectedNode();</span>
+<span class="nc bnc" id="L962" title="All 2 branches missed.">        mSelect.setEnabled(</span>
+<span class="nc bnc" id="L963" title="All 2 branches missed.">            treeNode != null &amp;&amp; treeNode != tree.getSelectedNode() &amp;&amp;</span>
+<span class="nc bnc" id="L964" title="All 4 branches missed.">            treeNode.isToggleSelected() &amp;&amp; treeNode.isPathSelected());</span>
+<span class="nc" id="L965">        mUnselect.setEnabled(b);</span>
+<span class="nc bnc" id="L966" title="All 4 branches missed.">        mInsBefore.setEnabled(b &amp;&amp; canInsert());</span>
+<span class="nc bnc" id="L967" title="All 4 branches missed.">        mInsAfter.setEnabled(b &amp;&amp; canInsert());</span>
+<span class="nc bnc" id="L968" title="All 4 branches missed.">        mRemove.setEnabled(b &amp;&amp; canRemove());</span>
+<span class="nc bnc" id="L969" title="All 4 branches missed.">        mMoveUp.setEnabled(b &amp;&amp; canMoveUp());</span>
+<span class="nc bnc" id="L970" title="All 4 branches missed.">        mMoveDown.setEnabled(b &amp;&amp; canMoveDown());</span>
+<span class="nc" id="L971">        mNS.setEnabled(hasDocument());</span>
+<span class="nc bnc" id="L972" title="All 4 branches missed.">        mFindInvalid.setEnabled(hasDocument() &amp;&amp; !isDocValid());</span>
+<span class="nc" id="L973">        mFindNode.setEnabled(hasDocument());</span>
+<span class="nc" id="L974">        popup.show(tree, e.getX(), e.getY());</span>
+      }
+<span class="nc" id="L976">    }</span>
+
+    @Override
+    public void mouseClicked(MouseEvent mouseevent) {
+      // nothing
+<span class="nc" id="L981">    }</span>
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+<span class="nc" id="L985">      showPopup(e);</span>
+<span class="nc" id="L986">    }</span>
+
+    @Override
+    public void mouseEntered(MouseEvent mouseevent) {
+      // nothing
+<span class="nc" id="L991">    }</span>
+
+    @Override
+    public void mouseExited(MouseEvent mouseevent) {
+      // nothing
+<span class="nc" id="L996">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

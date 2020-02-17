@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FilesystemBasedAuthImpl.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.file.filesystembased</a> &gt; <span class="el_source">FilesystemBasedAuthImpl.java</span></div><h1>FilesystemBasedAuthImpl.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.file.filesystembased;
+
+import org.waarp.common.command.NextCommandReply;
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.command.exception.Reply530Exception;
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.file.AuthInterface;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.SessionInterface;
+
+import java.util.regex.Pattern;
+
+/**
+ * Authentication implementation for Filesystem Based
+ */
+public abstract class FilesystemBasedAuthImpl implements AuthInterface {
+  /**
+   * DOUBLE SLASH pattern
+   */
+<span class="fc" id="L40">  private static final Pattern DOUBLE_SLASH = Pattern.compile(&quot;//&quot;);</span>
+  /**
+   * User name
+   */
+  protected String user;
+
+  /**
+   * Password
+   */
+  protected String password;
+
+  /**
+   * Is Identified
+   */
+  protected boolean isIdentified;
+
+  /**
+   * SessionInterface
+   */
+  protected final SessionInterface session;
+
+  /**
+   * Relative Path after Authentication
+   */
+  protected String rootFromAuth;
+
+  /**
+   * @param session
+   */
+<span class="fc" id="L69">  protected FilesystemBasedAuthImpl(SessionInterface session) {</span>
+<span class="fc" id="L70">    this.session = session;</span>
+<span class="fc" id="L71">    isIdentified = false;</span>
+<span class="fc" id="L72">  }</span>
+
+  /**
+   * @return the session
+   */
+  @Override
+  public SessionInterface getSession() {
+<span class="fc" id="L79">    return session;</span>
+  }
+
+  /**
+   * Set the user according to any implementation and could set the
+   * rootFromAuth. If NOOP is returned,
+   * isIdentifed must be TRUE.
+   *
+   * @param user
+   *
+   * @return (NOOP, 230) if the user is OK, else return the following command
+   *     that must follow (usually PASS) and
+   *     the associated reply
+   *
+   * @throws Reply421Exception if there is a problem during the
+   *     authentication
+   * @throws Reply530Exception if there is a problem during the
+   *     authentication
+   */
+  protected abstract NextCommandReply setBusinessUser(String user)
+      throws Reply421Exception, Reply530Exception;
+
+  /**
+   * @param user the user to set
+   *
+   * @return (NOOP, 230) if the user is OK, else return the following command
+   *     that must follow (usually PASS) and
+   *     the associated reply
+   *
+   * @throws Reply421Exception if there is a problem during the
+   *     authentication
+   * @throws Reply530Exception if there is a problem during the
+   *     authentication
+   */
+  @Override
+  public NextCommandReply setUser(String user)
+      throws Reply421Exception, Reply530Exception {
+<span class="nc" id="L116">    final NextCommandReply next = setBusinessUser(user);</span>
+<span class="nc" id="L117">    this.user = user;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
+<span class="nc" id="L119">      setRootFromAuth();</span>
+<span class="nc" id="L120">      session.getDir().initAfterIdentification();</span>
+    }
+<span class="nc" id="L122">    return next;</span>
+  }
+
+  /**
+   * @return the user
+   */
+  @Override
+  public String getUser() {
+<span class="fc" id="L130">    return user;</span>
+  }
+
+  /**
+   * Set the password according to any implementation and could set the
+   * rootFromAuth. If NOOP is returned,
+   * isIdentifed must be TRUE.
+   *
+   * @param password
+   *
+   * @return (NOOP, 230) if the Password is OK, else return the following
+   *     command that must follow (usually ACCT)
+   *     and the associated reply
+   *
+   * @throws Reply421Exception if there is a problem during the
+   *     authentication
+   * @throws Reply530Exception if there is a problem during the
+   *     authentication
+   */
+  protected abstract NextCommandReply setBusinessPassword(String password)
+      throws Reply421Exception, Reply530Exception;
+
+  /**
+   * @param password the password to set
+   *
+   * @return (NOOP, 230) if the Password is OK, else return the following
+   *     command that must follow (usually ACCT)
+   *     and the associated reply
+   *
+   * @throws Reply421Exception if there is a problem during the
+   *     authentication
+   * @throws Reply530Exception if there is a problem during the
+   *     authentication
+   */
+  @Override
+  public NextCommandReply setPassword(String password)
+      throws Reply421Exception, Reply530Exception {
+<span class="nc" id="L167">    final NextCommandReply next = setBusinessPassword(password);</span>
+<span class="nc" id="L168">    this.password = password;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (next.reply == ReplyCode.REPLY_230_USER_LOGGED_IN) {</span>
+<span class="nc" id="L170">      setRootFromAuth();</span>
+<span class="nc" id="L171">      session.getDir().initAfterIdentification();</span>
+    }
+<span class="nc" id="L173">    return next;</span>
+  }
+
+  /**
+   * Set the Authentication to Identified or Not
+   *
+   * @param isIdentified
+   */
+  protected void setIsIdentified(boolean isIdentified) {
+<span class="fc" id="L182">    this.isIdentified = isIdentified;</span>
+<span class="fc" id="L183">  }</span>
+
+  /**
+   * Is the current Authentication OK for full identification. It must be true
+   * after a correct sequence of
+   * identification: At most, it is true when setAccount is OK. It could be
+   * positive before (user name only,
+   * user+password only).&lt;br&gt;
+   * In the current implementation, as USER+PASS+ACCT are needed, it will be
+   * true only after a correct ACCT.
+   *
+   * @return True if the user has a positive login, else False
+   */
+  @Override
+  public boolean isIdentified() {
+<span class="fc" id="L198">    return isIdentified;</span>
+  }
+
+  /**
+   * @return the root relative path from authentication if any or null if the
+   *     default is used (default is /user
+   *     or /user/account)
+   *
+   * @throws Reply421Exception if the business root is not available
+   */
+  protected abstract String setBusinessRootFromAuth() throws Reply421Exception;
+
+  /**
+   * Set the root relative Path from current status of Authentication (should
+   * be
+   * the highest level for the
+   * current authentication). If setBusinessRootFromAuth returns null, by
+   * default set /user or /user/account.
+   *
+   * @throws Reply421Exception if the business root is not available
+   */
+  protected void setRootFromAuth() throws Reply421Exception {
+<span class="nc" id="L220">    rootFromAuth = setBusinessRootFromAuth();</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (rootFromAuth == null) {</span>
+<span class="nc" id="L222">      rootFromAuth = DirInterface.SEPARATOR + user;</span>
+    }
+<span class="nc" id="L224">  }</span>
+
+  @Override
+  public String getBusinessPath() {
+<span class="fc" id="L228">    return rootFromAuth;</span>
+  }
+
+  /**
+   * Business implementation of clean
+   */
+  protected abstract void businessClean();
+
+  /**
+   * Clean object
+   */
+  @Override
+  public void clear() {
+<span class="fc" id="L241">    businessClean();</span>
+<span class="fc" id="L242">    user = null;</span>
+<span class="fc" id="L243">    password = null;</span>
+<span class="fc" id="L244">    rootFromAuth = null;</span>
+<span class="fc" id="L245">    isIdentified = false;</span>
+<span class="fc" id="L246">  }</span>
+
+  /**
+   * Return the full path as a String (with mount point).
+   *
+   * @param path relative path including business one (may be null or
+   *     empty)
+   *
+   * @return the full path as a String
+   */
+  public String getAbsolutePath(String path) {
+<span class="pc bpc" id="L257" title="1 of 4 branches missed.">    if (path == null || path.isEmpty()) {</span>
+<span class="fc" id="L258">      return getBaseDirectory();</span>
+    }
+<span class="fc" id="L260">    return AbstractDir</span>
+<span class="fc" id="L261">        .normalizePath(getBaseDirectory() + DirInterface.SEPARATOR + path);</span>
+  }
+
+  /**
+   * Return the relative path from a file (without mount point)
+   *
+   * @param file (full path with mount point)
+   *
+   * @return the relative path from a file
+   */
+  @Override
+  public String getRelativePath(String file) {
+    // Work around Windows path '\'
+<span class="fc" id="L274">    return DOUBLE_SLASH.matcher(</span>
+<span class="fc" id="L275">        file.replaceFirst(AbstractDir.normalizePath(getBaseDirectory()), &quot;&quot;))</span>
+<span class="fc" id="L276">                       .replaceAll(&quot;/&quot;);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

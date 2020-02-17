@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestPacket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">RequestPacket.java</span></div><h1>RequestPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * Request class
+ * &lt;p&gt;
+ * header = &quot;rulename MODETRANS&quot; middle = way+&quot;FILENAME BLOCKSIZE RANK specialId
+ * code (optional length)&quot; end =
+ * &quot;fileInformation&quot;
+ * &lt;p&gt;
+ * or
+ * &lt;p&gt;
+ * header = &quot;{rule:rulename, mode:MODETRANS}&quot; middle = way{filename:FILENAME,
+ * block:BLOCKSIZE, rank:RANK,
+ * id:specialId, code:code, length:length}&quot; end = &quot;fileInformation&quot;
+ */
+public class RequestPacket extends AbstractLocalPacket {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(RequestPacket.class);</span>
+  private static final String NOT_ENOUGH_DATA = &quot;Not enough data&quot;;
+
+<span class="fc" id="L55">  public enum TRANSFERMODE {</span>
+<span class="fc" id="L56">    UNKNOWNMODE, SENDMODE, RECVMODE, SENDMD5MODE, RECVMD5MODE, SENDTHROUGHMODE,</span>
+<span class="fc" id="L57">    RECVTHROUGHMODE, SENDMD5THROUGHMODE, RECVMD5THROUGHMODE</span>
+  }
+
+<span class="fc" id="L60">  protected enum FIELDS {</span>
+<span class="fc" id="L61">    rule, mode, filename, block, rank, id, code, length, limit</span>
+  }
+
+  protected static final byte REQVALIDATE = 0;
+
+  protected static final byte REQANSWERVALIDATE = 1;
+
+  protected final String rulename;
+
+  protected final int mode;
+
+  protected String filename;
+
+  protected final int blocksize;
+
+  protected int rank;
+
+  protected long specialId;
+
+  protected byte way;
+
+  protected char code;
+
+  protected long originalSize;
+
+  protected long limit;
+
+  protected final String fileInformation;
+
+<span class="fc" id="L90">  protected String separator = PartnerConfiguration.getSEPARATOR_FIELD();</span>
+
+  /**
+   * @param mode
+   *
+   * @return the same mode (RECV or SEND) in MD5 version
+   */
+  public static final int getModeMD5(int mode) {
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    switch (mode) {</span>
+      case 1:
+      case 2:
+      case 5:
+      case 6:
+<span class="fc" id="L103">        return mode + 2;</span>
+      default:
+        // nothing
+    }
+<span class="nc" id="L107">    return mode;</span>
+  }
+
+  /**
+   * @param mode
+   *
+   * @return true if this mode is a RECV(MD5) mode
+   */
+  public static final boolean isRecvMode(int mode) {
+<span class="fc bfc" id="L116" title="All 2 branches covered.">    return mode == TRANSFERMODE.RECVMODE.ordinal() ||</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">           mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">           mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">           mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();</span>
+  }
+
+  /**
+   * @param mode
+   * @param isRequested
+   *
+   * @return True if this mode is a THROUGH (MD5) mode
+   */
+  public static final boolean isSendThroughMode(int mode, boolean isRequested) {
+<span class="fc bfc" id="L129" title="All 6 branches covered.">    return !isRequested &amp;&amp; isSendThroughMode(mode) ||</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">           isRequested &amp;&amp; isRecvThroughMode(mode);</span>
+  }
+
+  /**
+   * @param mode
+   *
+   * @return True if this mode is a SEND THROUGH (MD5) mode
+   */
+  public static final boolean isSendThroughMode(int mode) {
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    return mode == TRANSFERMODE.SENDTHROUGHMODE.ordinal() ||</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">           mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal();</span>
+  }
+
+  /**
+   * @param mode
+   * @param isRequested
+   *
+   * @return True if this mode is a THROUGH (MD5) mode
+   */
+  public static final boolean isRecvThroughMode(int mode, boolean isRequested) {
+<span class="fc bfc" id="L150" title="All 6 branches covered.">    return !isRequested &amp;&amp; isRecvThroughMode(mode) ||</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">           isRequested &amp;&amp; isSendThroughMode(mode);</span>
+  }
+
+  /**
+   * @param mode
+   *
+   * @return True if this mode is a RECV THROUGH (MD5) mode
+   */
+  public static final boolean isRecvThroughMode(int mode) {
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">    return mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">           mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();</span>
+  }
+
+  public static final boolean isSendMode(int mode) {
+<span class="fc bfc" id="L165" title="All 2 branches covered.">    return !isRecvMode(mode);</span>
+  }
+
+  /**
+   * @param mode
+   *
+   * @return True if this mode is a THROUGH mode (with or without MD5)
+   */
+  public static final boolean isThroughMode(int mode) {
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">    return mode &gt;= TRANSFERMODE.SENDTHROUGHMODE.ordinal() &amp;&amp;</span>
+<span class="pc bnc" id="L175" title="All 2 branches missed.">           mode &lt;= TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();</span>
+  }
+
+  /**
+   * @param mode
+   *
+   * @return true if this mode is a MD5 mode
+   */
+  public static final boolean isMD5Mode(int mode) {
+<span class="fc bfc" id="L184" title="All 2 branches covered.">    return mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">           mode == TRANSFERMODE.SENDMD5MODE.ordinal() ||</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">           mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal() ||</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">           mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();</span>
+  }
+
+  /**
+   * @param mode1
+   * @param mode2
+   *
+   * @return true if both modes are compatible (both send, or both recv)
+   */
+  public static final boolean isCompatibleMode(int mode1, int mode2) {
+<span class="fc bfc" id="L197" title="All 4 branches covered.">    return isRecvMode(mode1) &amp;&amp; isRecvMode(mode2) ||</span>
+<span class="fc bfc" id="L198" title="All 4 branches covered.">           !isRecvMode(mode1) &amp;&amp; !isRecvMode(mode2);</span>
+  }
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new RequestPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static RequestPacket createFromBuffer(int headerLength,
+                                               int middleLength, int endLength,
+                                               ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L216">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">    if (middleLength &lt;= 1) {</span>
+<span class="nc" id="L219">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="fc" id="L221">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L222">    final byte[] bmiddle = new byte[middleLength - 1];// valid is not in bmiddle</span>
+<span class="fc" id="L223">    final byte[] bend = new byte[endLength];</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L225">      buf.readBytes(bheader);</span>
+    }
+<span class="fc" id="L227">    final byte valid = buf.readByte();</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">    if (middleLength &gt; 1) {</span>
+<span class="fc" id="L229">      buf.readBytes(bmiddle);</span>
+    }
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="fc" id="L232">      buf.readBytes(bend);</span>
+    }
+<span class="fc" id="L234">    final String sheader = new String(bheader);</span>
+<span class="fc" id="L235">    final String smiddle = new String(bmiddle);</span>
+<span class="fc" id="L236">    final String send = new String(bend);</span>
+
+    // check if JSON on header since it will directly starts with a JSON, in contrary to middle
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">    if (sheader.startsWith(PartnerConfiguration.BAR_JSON_FIELD)) {</span>
+      // JSON
+<span class="fc" id="L241">      logger.debug(&quot;Request is using JSON&quot;);</span>
+<span class="fc" id="L242">      final ObjectNode map = JsonHandler.getFromString(sheader);</span>
+<span class="fc" id="L243">      final ObjectNode map2 = JsonHandler.getFromString(smiddle);</span>
+<span class="fc" id="L244">      return new RequestPacket(map.path(FIELDS.rule.name()).asText(),</span>
+<span class="fc" id="L245">                               map.path(FIELDS.mode.name()).asInt(),</span>
+<span class="fc" id="L246">                               map2.path(FIELDS.filename.name()).asText(),</span>
+<span class="fc" id="L247">                               map2.path(FIELDS.block.name()).asInt(),</span>
+<span class="fc" id="L248">                               map2.path(FIELDS.rank.name()).asInt(),</span>
+<span class="fc" id="L249">                               map2.path(FIELDS.id.name()).asLong(), valid,</span>
+                               send,
+<span class="fc" id="L251">                               (char) map2.path(FIELDS.code.name()).asInt(),</span>
+<span class="fc" id="L252">                               map2.path(FIELDS.length.name()).asLong(),</span>
+                               // Get speed if it exists if not speed is set to 0
+<span class="fc" id="L254">                               map2.path(FIELDS.limit.name()).asLong(0),</span>
+                               PartnerConfiguration.BAR_JSON_FIELD);
+    }
+
+<span class="nc" id="L258">    final String[] aheader =</span>
+<span class="nc" id="L259">        sheader.split(PartnerConfiguration.BLANK_SEPARATOR_FIELD);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">    if (aheader.length != 2) {</span>
+<span class="nc" id="L261">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+    // FIX to check both ' ' and SEPARATOR_FIELD
+<span class="nc" id="L264">    String[] amiddle = smiddle.split(PartnerConfiguration.BAR_SEPARATOR_FIELD);</span>
+<span class="nc" id="L265">    String sep = PartnerConfiguration.BAR_SEPARATOR_FIELD;</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">    if (amiddle.length &lt; 5) {</span>
+<span class="nc" id="L267">      amiddle = smiddle.split(PartnerConfiguration.BLANK_SEPARATOR_FIELD);</span>
+<span class="nc" id="L268">      sep = PartnerConfiguration.BLANK_SEPARATOR_FIELD;</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">      if (amiddle.length &lt; 5) {</span>
+<span class="nc" id="L270">        throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+      }
+    }
+<span class="nc" id="L273">    int blocksize = Integer.parseInt(amiddle[1]);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (blocksize &lt; 100) {</span>
+<span class="nc" id="L275">      blocksize = Configuration.configuration.getBlockSize();</span>
+    }
+<span class="nc" id="L277">    final int rank = Integer.parseInt(amiddle[2]);</span>
+<span class="nc" id="L278">    final long specialId = Long.parseLong(amiddle[3]);</span>
+<span class="nc" id="L279">    final char code = amiddle[4].charAt(0);</span>
+<span class="nc" id="L280">    long originalSize = -1;</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">    if (amiddle.length &gt; 5) {</span>
+<span class="nc" id="L282">      originalSize = Long.parseLong(amiddle[5]);</span>
+    }
+<span class="nc" id="L284">    return new RequestPacket(aheader[0], Integer.parseInt(aheader[1]),</span>
+                             amiddle[0], blocksize, rank, specialId, valid,
+                             send, code, originalSize, sep);
+  }
+
+  /**
+   * @param rulename
+   * @param mode
+   * @param filename
+   * @param blocksize
+   * @param rank
+   * @param specialId
+   * @param valid
+   * @param fileInformation
+   * @param code
+   * @param originalSize
+   */
+  private RequestPacket(String rulename, int mode, String filename,
+                        int blocksize, int rank, long specialId, byte valid,
+                        String fileInformation, char code, long originalSize,
+<span class="fc" id="L304">                        String separator) {</span>
+<span class="fc" id="L305">    this.rulename = rulename;</span>
+<span class="fc" id="L306">    this.mode = mode;</span>
+<span class="fc" id="L307">    this.filename = filename;</span>
+<span class="fc bfc" id="L308" title="All 2 branches covered.">    if (blocksize &lt; 100) {</span>
+<span class="fc" id="L309">      this.blocksize = Configuration.configuration.getBlockSize();</span>
+    } else {
+<span class="fc" id="L311">      this.blocksize = blocksize;</span>
+    }
+<span class="fc" id="L313">    this.rank = rank;</span>
+<span class="fc" id="L314">    this.specialId = specialId;</span>
+<span class="fc" id="L315">    way = valid;</span>
+<span class="fc" id="L316">    this.fileInformation = fileInformation;</span>
+<span class="fc" id="L317">    this.code = code;</span>
+<span class="fc" id="L318">    this.originalSize = originalSize;</span>
+<span class="fc" id="L319">    this.separator = separator;</span>
+<span class="fc" id="L320">  }</span>
+
+  /**
+   * @param rulename
+   * @param mode
+   * @param filename
+   * @param blocksize
+   * @param rank
+   * @param specialId
+   * @param fileInformation
+   */
+  public RequestPacket(String rulename, int mode, String filename,
+                       int blocksize, int rank, long specialId,
+                       String fileInformation, long originalSize,
+                       String separator) {
+<span class="fc" id="L335">    this(rulename, mode, filename, blocksize, rank, specialId, REQVALIDATE,</span>
+         fileInformation, ErrorCode.InitOk.code, originalSize, separator);
+<span class="fc" id="L337">  }</span>
+
+  /**
+   * Create a Request packet with a speed negociation
+   */
+  private RequestPacket(String rulename, int mode, String filename,
+                        int blocksize, int rank, long specialId, byte valid,
+                        String fileInformation, char code, long originalSize,
+                        long limit, String separator) {
+<span class="fc" id="L346">    this(rulename, mode, filename, blocksize, rank, specialId, valid,</span>
+         fileInformation, code, originalSize, separator);
+<span class="fc" id="L348">    this.limit = limit;</span>
+<span class="fc" id="L349">  }</span>
+
+  @Override
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (fileInformation != null) {</span>
+<span class="fc" id="L355">      end = Unpooled.wrappedBuffer(fileInformation.getBytes());</span>
+    }
+<span class="fc" id="L357">  }</span>
+
+  @Override
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L362" title="2 of 4 branches missed.">    if (rulename == null || mode &lt;= 0) {</span>
+<span class="nc" id="L363">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="pc bpc" id="L365" title="2 of 4 branches missed.">    if (lcr.getPartner() != null &amp;&amp; lcr.getPartner().useJson()) {</span>
+<span class="fc" id="L366">      logger.debug(&quot;Request will use JSON &quot; + lcr.getPartner());</span>
+<span class="fc" id="L367">      final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L368">      JsonHandler.setValue(node, FIELDS.rule, rulename);</span>
+<span class="fc" id="L369">      JsonHandler.setValue(node, FIELDS.mode, mode);</span>
+<span class="fc" id="L370">      header =</span>
+<span class="fc" id="L371">          Unpooled.wrappedBuffer(JsonHandler.writeAsString(node).getBytes());</span>
+<span class="fc" id="L372">    } else {</span>
+<span class="nc" id="L373">      header = Unpooled.wrappedBuffer(rulename.getBytes(),</span>
+                                      PartnerConfiguration.BLANK_SEPARATOR_FIELD
+<span class="nc" id="L375">                                          .getBytes(),</span>
+<span class="nc" id="L376">                                      Integer.toString(mode).getBytes());</span>
+    }
+<span class="fc" id="L378">  }</span>
+
+  @Override
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L383" title="1 of 2 branches missed.">    if (filename == null) {</span>
+<span class="nc" id="L384">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+    }
+<span class="fc" id="L386">    final byte[] away = new byte[1];</span>
+<span class="fc" id="L387">    away[0] = way;</span>
+<span class="pc bpc" id="L388" title="2 of 4 branches missed.">    if (lcr.getPartner() != null &amp;&amp; lcr.getPartner().useJson()) {</span>
+<span class="fc" id="L389">      logger.debug(&quot;Request {} will use JSON {}&quot;, specialId, lcr.getPartner());</span>
+<span class="fc" id="L390">      final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L391">      JsonHandler.setValue(node, FIELDS.filename, filename);</span>
+<span class="fc" id="L392">      JsonHandler.setValue(node, FIELDS.block, blocksize);</span>
+<span class="fc" id="L393">      JsonHandler.setValue(node, FIELDS.rank, rank);</span>
+<span class="fc" id="L394">      JsonHandler.setValue(node, FIELDS.id, specialId);</span>
+<span class="fc" id="L395">      JsonHandler.setValue(node, FIELDS.code, code);</span>
+<span class="fc" id="L396">      JsonHandler.setValue(node, FIELDS.length, originalSize);</span>
+      // Add limit if specified
+<span class="fc" id="L398">      JsonHandler.setValue(node, FIELDS.limit, limit);</span>
+<span class="fc" id="L399">      middle = Unpooled</span>
+<span class="fc" id="L400">          .wrappedBuffer(away, JsonHandler.writeAsString(node).getBytes());</span>
+<span class="fc" id="L401">    } else {</span>
+<span class="nc" id="L402">      middle = Unpooled</span>
+<span class="nc" id="L403">          .wrappedBuffer(away, filename.getBytes(), separator.getBytes(),</span>
+<span class="nc" id="L404">                         Integer.toString(blocksize).getBytes(),</span>
+<span class="nc" id="L405">                         separator.getBytes(),</span>
+<span class="nc" id="L406">                         Integer.toString(rank).getBytes(),</span>
+<span class="nc" id="L407">                         separator.getBytes(),</span>
+<span class="nc" id="L408">                         Long.toString(specialId).getBytes(),</span>
+<span class="nc" id="L409">                         separator.getBytes(),</span>
+<span class="nc" id="L410">                         Character.toString(code).getBytes(),</span>
+<span class="nc" id="L411">                         separator.getBytes(),</span>
+<span class="nc" id="L412">                         Long.toString(originalSize).getBytes());</span>
+    }
+<span class="fc" id="L414">  }</span>
+
+  @Override
+  public byte getType() {
+<span class="fc" id="L418">    return LocalPacketFactory.REQUESTPACKET;</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L423">    return &quot;RequestPacket: &quot; + specialId + &quot; : &quot; + rulename + &quot; : &quot; + mode +</span>
+           &quot; :  &quot; + filename + &quot; : &quot; + fileInformation + &quot; : &quot; + blocksize +
+           &quot; : &quot; + rank + &quot; : &quot; + way + &quot; : &quot; + code + &quot; : &quot; + originalSize +
+           &quot; : &quot; + limit;
+  }
+
+  /**
+   * @return the rulename
+   */
+  public String getRulename() {
+<span class="fc" id="L433">    return rulename;</span>
+  }
+
+  /**
+   * @return the filename
+   */
+  public String getFilename() {
+<span class="fc" id="L440">    return filename;</span>
+  }
+
+  /**
+   * @return the mode
+   */
+  public int getMode() {
+<span class="fc" id="L447">    return mode;</span>
+  }
+
+  /**
+   * @return True if this packet concerns a Retrieve operation
+   */
+  public boolean isRetrieve() {
+<span class="nc" id="L454">    return isRecvMode(mode);</span>
+  }
+
+  /**
+   * @return the fileInformation
+   */
+  public String getFileInformation() {
+<span class="fc" id="L461">    return fileInformation;</span>
+  }
+
+  /**
+   * @return the blocksize
+   */
+  public int getBlocksize() {
+<span class="fc" id="L468">    return blocksize;</span>
+  }
+
+  /**
+   * @return the rank
+   */
+  public int getRank() {
+<span class="fc" id="L475">    return rank;</span>
+  }
+
+  /**
+   * @param rank the rank to set
+   */
+  public void setRank(int rank) {
+<span class="fc" id="L482">    this.rank = rank;</span>
+<span class="fc" id="L483">  }</span>
+
+  /**
+   * @return the originalSize
+   */
+  public long getOriginalSize() {
+<span class="fc" id="L489">    return originalSize;</span>
+  }
+
+  /**
+   * @param originalSize the originalSize to set
+   */
+  public void setOriginalSize(long originalSize) {
+<span class="fc" id="L496">    this.originalSize = originalSize;</span>
+<span class="fc" id="L497">  }</span>
+
+  /**
+   * @param specialId the specialId to set
+   */
+  public void setSpecialId(long specialId) {
+<span class="fc" id="L503">    this.specialId = specialId;</span>
+<span class="fc" id="L504">  }</span>
+
+  /**
+   * @return the specialId
+   */
+  public long getSpecialId() {
+<span class="fc" id="L510">    return specialId;</span>
+  }
+
+  /**
+   * @return True if this packet is to be validated
+   */
+  public boolean isToValidate() {
+<span class="fc bfc" id="L517" title="All 2 branches covered.">    return way == REQVALIDATE;</span>
+  }
+
+  /**
+   * Validate the request
+   */
+  public void validate() {
+<span class="fc" id="L524">    way = REQANSWERVALIDATE;</span>
+<span class="fc" id="L525">    middle = null;</span>
+<span class="fc" id="L526">  }</span>
+
+  /**
+   * @param filename the filename to set
+   */
+  public void setFilename(String filename) {
+<span class="fc" id="L532">    this.filename = filename;</span>
+<span class="fc" id="L533">  }</span>
+
+  /**
+   * @return the code
+   */
+  public char getCode() {
+<span class="fc" id="L539">    return code;</span>
+  }
+
+  /**
+   * @param code the code to set
+   */
+  public void setCode(char code) {
+<span class="nc" id="L546">    this.code = code;</span>
+<span class="nc" id="L547">  }</span>
+
+  public long getLimit() {
+<span class="fc" id="L550">    return limit;</span>
+  }
+
+  public void setLimit(long limit) {
+<span class="fc" id="L554">    this.limit = limit;</span>
+<span class="fc" id="L555">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

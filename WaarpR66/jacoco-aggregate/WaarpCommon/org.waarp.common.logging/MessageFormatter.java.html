@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MessageFormatter.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.logging</a> &gt; <span class="el_source">MessageFormatter.java</span></div><h1>MessageFormatter.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2013 The Netty Project
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the &quot;License&quot;); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+/**
+ * Copyright (c) 2004-2011 QOS.ch
+ * All rights reserved.
+ * &lt;p&gt;
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * &quot;Software&quot;), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * &lt;p&gt;
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * &lt;p&gt;
+ * THE SOFTWARE IS PROVIDED &quot;AS  IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+package org.waarp.common.logging;
+
+import org.waarp.common.utility.ParametersChecker;
+
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
+
+// contributors: lizongbo: proposed special treatment of array parameter values
+// Joern Huxhorn: pointed out double[] omission, suggested deep array copy
+
+/**
+ * Formats messages according to very simple substitution rules. Substitutions
+ * can be made 1, 2 or more
+ * arguments.
+ * &lt;p/&gt;
+ * &lt;p/&gt;
+ * For example,
+ * &lt;p/&gt;
+ *
+ * &lt;pre&gt;
+ * MessageFormatter.format(&amp;quot;Hi {}.&amp;quot;, &amp;quot;there&amp;quot;)
+ * &lt;/pre&gt;
+ * &lt;p/&gt;
+ * will return the string &quot;Hi there.&quot;.
+ * &lt;p/&gt;
+ * The {} pair is called the &lt;em&gt;formatting anchor&lt;/em&gt;. It serves to designate
+ * the location where arguments
+ * need to be substituted within the message pattern.
+ * &lt;p/&gt;
+ * In case your message contains the '{' or the '}' character, you do not have
+ * to do anything special unless
+ * the '}' character immediately follows '{'. For example,
+ * &lt;p/&gt;
+ *
+ * &lt;pre&gt;
+ * MessageFormatter.format(&amp;quot;Set {1,2,3} is not equal to {}.&amp;quot;, &amp;quot;1,2&amp;quot;);
+ * &lt;/pre&gt;
+ * &lt;p/&gt;
+ * will return the string &quot;Set {1,2,3} is not equal to 1,2.&quot;.
+ * &lt;p/&gt;
+ * &lt;p/&gt;
+ * If for whatever reason you need to place the string &quot;{}&quot; in the message
+ * without its &lt;em&gt;formatting
+ * anchor&lt;/em&gt; meaning, then you need to escape the '{' character with '\',
+ * that
+ * is the backslash character.
+ * Only the '{' character should be escaped. There is no need to escape the '}'
+ * character. For example,
+ * &lt;p/&gt;
+ *
+ * &lt;pre&gt;
+ * MessageFormatter.format(&amp;quot;Set \\{} is not equal to {}.&amp;quot;, &amp;quot;1,2&amp;quot;);
+ * &lt;/pre&gt;
+ * &lt;p/&gt;
+ * will return the string &quot;Set {} is not equal to 1,2.&quot;.
+ * &lt;p/&gt;
+ * &lt;p/&gt;
+ * The escaping behavior just described can be overridden by escaping the
+ * escape
+ * character '\'. Calling
+ * &lt;p/&gt;
+ *
+ * &lt;pre&gt;
+ * MessageFormatter.format(&amp;quot;File name is C:\\\\{}.&amp;quot;, &amp;quot;file.zip&amp;quot;);
+ * &lt;/pre&gt;
+ * &lt;p/&gt;
+ * will return the string &quot;File name is C:\file.zip&quot;.
+ * &lt;p/&gt;
+ * &lt;p/&gt;
+ * The formatting conventions are different than those of {@link MessageFormat}
+ * which ships with the Java
+ * platform. This is justified by the fact that SLF4J's implementation is 10
+ * times faster than that of
+ * {@link MessageFormat}. This local performance difference is both measurable
+ * and significant in the larger
+ * context of the complete logging processing chain.
+ * &lt;p/&gt;
+ * &lt;p/&gt;
+ * See also {@link #format(String, Object)}, {@link #format(String, Object,
+ * Object)} and
+ * {@link #arrayFormat(String, Object[])} methods for more details.
+ */
+final class MessageFormatter {
+
+  static final char DELIM_START = '{';
+  static final char DELIM_STOP = '}';
+  static final String DELIM_STR = &quot;{}&quot;;
+  private static final char ESCAPE_CHAR = '\\';
+
+  /**
+   * Performs single argument substitution for the 'messagePattern' passed as
+   * parameter.
+   * &lt;p/&gt;
+   * For example,
+   * &lt;p/&gt;
+   *
+   * &lt;pre&gt;
+   * MessageFormatter.format(&amp;quot;Hi {}.&amp;quot;, &amp;quot;there&amp;quot;);
+   * &lt;/pre&gt;
+   * &lt;p/&gt;
+   * will return the string &quot;Hi there.&quot;.
+   * &lt;p/&gt;
+   *
+   * @param messagePattern The message pattern which will be parsed
+   *     and
+   *     formatted
+   * @param arg The argument to be substituted in place of the
+   *     formatting
+   *     anchor
+   *
+   * @return The formatted message
+   */
+  static FormattingTuple format(final String messagePattern, final Object arg) {
+<span class="fc" id="L170">    return arrayFormat(messagePattern, new Object[] { arg });</span>
+  }
+
+  /**
+   * Performs a two argument substitution for the 'messagePattern' passed as
+   * parameter.
+   * &lt;p/&gt;
+   * For example,
+   * &lt;p/&gt;
+   *
+   * &lt;pre&gt;
+   * MessageFormatter.format(&amp;quot;Hi {}. My name is {}.&amp;quot;, &amp;quot;Alice&amp;quot;, &amp;quot;Bob&amp;quot;);
+   * &lt;/pre&gt;
+   * &lt;p/&gt;
+   * will return the string &quot;Hi Alice. My name is Bob.&quot;.
+   *
+   * @param messagePattern The message pattern which will be parsed
+   *     and
+   *     formatted
+   * @param argA The argument to be substituted in place of the first
+   *     formatting anchor
+   * @param argB The argument to be substituted in place of the second
+   *     formatting anchor
+   *
+   * @return The formatted message
+   */
+  static FormattingTuple format(final String messagePattern, final Object argA,
+                                final Object argB) {
+<span class="fc" id="L198">    return arrayFormat(messagePattern, new Object[] { argA, argB });</span>
+  }
+
+  static Throwable getThrowableCandidate(final Object[] argArray) {
+<span class="fc bfc" id="L202" title="All 4 branches covered.">    if (argArray == null || argArray.length == 0) {</span>
+<span class="fc" id="L203">      return null;</span>
+    }
+
+<span class="fc" id="L206">    final Object lastEntry = argArray[argArray.length - 1];</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">    if (lastEntry instanceof Throwable) {</span>
+<span class="nc" id="L208">      return (Throwable) lastEntry;</span>
+    }
+<span class="fc" id="L210">    return null;</span>
+  }
+
+  /**
+   * Same principle as the {@link #format(String, Object)} and {@link
+   * #format(String, Object, Object)} methods
+   * except that any number of arguments can be passed in an array.
+   *
+   * @param messagePattern The message pattern which will be parsed
+   *     and
+   *     formatted
+   * @param argArray An array of arguments to be substituted in place
+   *     of
+   *     formatting anchors
+   *
+   * @return The formatted message
+   */
+  static FormattingTuple arrayFormat(final String messagePattern,
+                                     final Object[] argArray) {
+
+<span class="fc" id="L230">    final Throwable throwableCandidate = getThrowableCandidate(argArray);</span>
+
+<span class="fc bfc" id="L232" title="All 2 branches covered.">    if (messagePattern == null) {</span>
+<span class="fc" id="L233">      return new FormattingTuple(null, argArray, throwableCandidate);</span>
+    }
+
+<span class="fc bfc" id="L236" title="All 2 branches covered.">    if (argArray == null) {</span>
+<span class="fc" id="L237">      return new FormattingTuple(messagePattern);</span>
+    }
+
+<span class="fc" id="L240">    int i = 0;</span>
+    int j;
+<span class="fc" id="L242">    final StringBuilder sbuild =</span>
+<span class="fc" id="L243">        new StringBuilder(messagePattern.length() + 50);</span>
+
+    int l;
+<span class="fc bfc" id="L246" title="All 2 branches covered.">    for (l = 0; l &lt; argArray.length; l++) {</span>
+
+<span class="fc" id="L248">      j = messagePattern.indexOf(DELIM_STR, i);</span>
+
+<span class="fc bfc" id="L250" title="All 2 branches covered.">      if (j == -1) {</span>
+        // no more variables
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        if (i == 0) {</span>
+          // this is a simple string
+<span class="fc" id="L254">          return new FormattingTuple(messagePattern, argArray,</span>
+                                     throwableCandidate);
+        } else {
+          // add the tail string which contains no variables and return the result.
+<span class="fc" id="L258">          sbuild.append(messagePattern.substring(i));</span>
+<span class="fc" id="L259">          return new FormattingTuple(sbuild.toString(), argArray,</span>
+                                     throwableCandidate);
+        }
+      } else {
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">        if (isEscapedDelimeter(messagePattern, j)) {</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">          if (!isDoubleEscaped(messagePattern, j)) {</span>
+<span class="nc" id="L265">            l--;</span>
+            // DELIM_START was escaped, thus should not be incremented
+<span class="nc" id="L267">            sbuild.append(messagePattern, i, j - 1).append(DELIM_START);</span>
+<span class="nc" id="L268">            i = j + 1;</span>
+          } else {
+            // The escape character preceding the delimiter start is
+            // itself escaped: &quot;abc x:\\{}&quot;
+            // we have to consume one backward slash
+<span class="nc" id="L273">            sbuild.append(messagePattern, i, j - 1);</span>
+<span class="nc" id="L274">            deeplyAppendParameter(sbuild, argArray[l],</span>
+                                  new HashMap&lt;Object[], Void&gt;());
+<span class="nc" id="L276">            i = j + 2;</span>
+          }
+        } else {
+          // normal case
+<span class="fc" id="L280">          sbuild.append(messagePattern, i, j);</span>
+<span class="fc" id="L281">          deeplyAppendParameter(sbuild, argArray[l],</span>
+                                new HashMap&lt;Object[], Void&gt;());
+<span class="fc" id="L283">          i = j + 2;</span>
+        }
+      }
+    }
+    // append the characters following the last {} pair.
+<span class="fc" id="L288">    sbuild.append(messagePattern.substring(i));</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    if (l &lt; argArray.length - 1) {</span>
+<span class="nc" id="L290">      return new FormattingTuple(sbuild.toString(), argArray,</span>
+                                 throwableCandidate);
+    } else {
+<span class="fc" id="L293">      return new FormattingTuple(sbuild.toString(), argArray, null);</span>
+    }
+  }
+
+  static boolean isEscapedDelimeter(final String messagePattern,
+                                    final int delimeterStartIndex) {
+<span class="fc" id="L299">    ParametersChecker</span>
+<span class="fc" id="L300">        .checkParameterNullOnly(&quot;Must not be null&quot;, messagePattern);</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">    if (delimeterStartIndex == 0) {</span>
+<span class="fc" id="L302">      return false;</span>
+    }
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">    return messagePattern.charAt(delimeterStartIndex - 1) == ESCAPE_CHAR;</span>
+  }
+
+  static boolean isDoubleEscaped(final String messagePattern,
+                                 final int delimeterStartIndex) {
+<span class="fc" id="L309">    ParametersChecker</span>
+<span class="fc" id="L310">        .checkParameterNullOnly(&quot;Must not be null&quot;, messagePattern);</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">    return delimeterStartIndex &gt;= 2 &amp;&amp;</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">           delimeterStartIndex - 2 &gt; messagePattern.length() &amp;&amp;</span>
+<span class="pc bnc" id="L313" title="All 2 branches missed.">           messagePattern.charAt(delimeterStartIndex - 2) == ESCAPE_CHAR;</span>
+  }
+
+  // special treatment of array values was suggested by 'lizongbo'
+  static void deeplyAppendParameter(final StringBuilder sbuild, final Object o,
+                                    final Map&lt;Object[], Void&gt; seenMap) {
+<span class="fc bfc" id="L319" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="fc" id="L320">      sbuild.append(&quot;null&quot;);</span>
+<span class="fc" id="L321">      return;</span>
+    }
+<span class="fc bfc" id="L323" title="All 2 branches covered.">    if (!o.getClass().isArray()) {</span>
+<span class="fc" id="L324">      safeObjectAppend(sbuild, o);</span>
+    } else {
+      // check for primitive array types because they
+      // unfortunately cannot be cast to Object[]
+<span class="fc bfc" id="L328" title="All 2 branches covered.">      if (o instanceof boolean[]) {</span>
+<span class="fc" id="L329">        booleanArrayAppend(sbuild, (boolean[]) o);</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">      } else if (o instanceof byte[]) {</span>
+<span class="fc" id="L331">        byteArrayAppend(sbuild, (byte[]) o);</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">      } else if (o instanceof char[]) {</span>
+<span class="fc" id="L333">        charArrayAppend(sbuild, (char[]) o);</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">      } else if (o instanceof short[]) {</span>
+<span class="fc" id="L335">        shortArrayAppend(sbuild, (short[]) o);</span>
+<span class="fc bfc" id="L336" title="All 2 branches covered.">      } else if (o instanceof int[]) {</span>
+<span class="fc" id="L337">        intArrayAppend(sbuild, (int[]) o);</span>
+<span class="fc bfc" id="L338" title="All 2 branches covered.">      } else if (o instanceof long[]) {</span>
+<span class="fc" id="L339">        longArrayAppend(sbuild, (long[]) o);</span>
+<span class="fc bfc" id="L340" title="All 2 branches covered.">      } else if (o instanceof float[]) {</span>
+<span class="fc" id="L341">        floatArrayAppend(sbuild, (float[]) o);</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">      } else if (o instanceof double[]) {</span>
+<span class="fc" id="L343">        doubleArrayAppend(sbuild, (double[]) o);</span>
+      } else {
+<span class="fc" id="L345">        objectArrayAppend(sbuild, (Object[]) o, seenMap);</span>
+      }
+    }
+<span class="fc" id="L348">  }</span>
+
+  private static void safeObjectAppend(final StringBuilder sbuild,
+                                       final Object o) {
+    try {
+<span class="fc" id="L353">      final String oAsString = o.toString();</span>
+<span class="fc" id="L354">      sbuild.append(oAsString);</span>
+<span class="nc" id="L355">    } catch (final Exception t) {</span>
+<span class="nc" id="L356">      SysErrLogger.FAKE_LOGGER.ignoreLog(t);</span>
+<span class="nc" id="L357">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+          &quot;SLF4J: Failed toString() invocation on an object of type [&quot; +
+<span class="nc" id="L359">          o.getClass().getName() + ']' + t.getMessage());</span>
+<span class="nc" id="L360">      sbuild.append(&quot;[FAILED toString()]&quot;);</span>
+<span class="fc" id="L361">    }</span>
+<span class="fc" id="L362">  }</span>
+
+  private static void objectArrayAppend(final StringBuilder sbuild,
+                                        final Object[] a,
+                                        final Map&lt;Object[], Void&gt; seenMap) {
+<span class="fc" id="L367">    sbuild.append('[');</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">    if (!seenMap.containsKey(a)) {</span>
+<span class="fc" id="L369">      seenMap.put(a, null);</span>
+<span class="fc" id="L370">      final int len = a.length;</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">      for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L372">        deeplyAppendParameter(sbuild, a[i], seenMap);</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">        if (i != len - 1) {</span>
+<span class="nc" id="L374">          sbuild.append(&quot;, &quot;);</span>
+        }
+      }
+      // allow repeats in siblings
+<span class="fc" id="L378">      seenMap.remove(a);</span>
+<span class="fc" id="L379">    } else {</span>
+<span class="nc" id="L380">      sbuild.append(&quot;...&quot;);</span>
+    }
+<span class="fc" id="L382">    sbuild.append(']');</span>
+<span class="fc" id="L383">  }</span>
+
+  private static void booleanArrayAppend(final StringBuilder sbuild,
+                                         final boolean[] a) {
+<span class="fc" id="L387">    sbuild.append('[');</span>
+<span class="fc" id="L388">    final int len = a.length;</span>
+<span class="fc bfc" id="L389" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L390">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L392">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L395">    sbuild.append(']');</span>
+<span class="fc" id="L396">  }</span>
+
+  private static void byteArrayAppend(final StringBuilder sbuild,
+                                      final byte[] a) {
+<span class="fc" id="L400">    sbuild.append('[');</span>
+<span class="fc" id="L401">    final int len = a.length;</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L403">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L404" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L405">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L408">    sbuild.append(']');</span>
+<span class="fc" id="L409">  }</span>
+
+  private static void charArrayAppend(final StringBuilder sbuild,
+                                      final char[] a) {
+<span class="fc" id="L413">    sbuild.append('[');</span>
+<span class="fc" id="L414">    final int len = a.length;</span>
+<span class="fc bfc" id="L415" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L416">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L418">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L421">    sbuild.append(']');</span>
+<span class="fc" id="L422">  }</span>
+
+  private static void shortArrayAppend(final StringBuilder sbuild,
+                                       final short[] a) {
+<span class="fc" id="L426">    sbuild.append('[');</span>
+<span class="fc" id="L427">    final int len = a.length;</span>
+<span class="fc bfc" id="L428" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L429">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L430" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L431">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L434">    sbuild.append(']');</span>
+<span class="fc" id="L435">  }</span>
+
+  private static void intArrayAppend(final StringBuilder sbuild,
+                                     final int[] a) {
+<span class="fc" id="L439">    sbuild.append('[');</span>
+<span class="fc" id="L440">    final int len = a.length;</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L442">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L443" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L444">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L447">    sbuild.append(']');</span>
+<span class="fc" id="L448">  }</span>
+
+  private static void longArrayAppend(final StringBuilder sbuild,
+                                      final long[] a) {
+<span class="fc" id="L452">    sbuild.append('[');</span>
+<span class="fc" id="L453">    final int len = a.length;</span>
+<span class="fc bfc" id="L454" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L455">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L457">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L460">    sbuild.append(']');</span>
+<span class="fc" id="L461">  }</span>
+
+  private static void floatArrayAppend(final StringBuilder sbuild,
+                                       final float[] a) {
+<span class="fc" id="L465">    sbuild.append('[');</span>
+<span class="fc" id="L466">    final int len = a.length;</span>
+<span class="fc bfc" id="L467" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L468">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L470">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L473">    sbuild.append(']');</span>
+<span class="fc" id="L474">  }</span>
+
+  private static void doubleArrayAppend(final StringBuilder sbuild,
+                                        final double[] a) {
+<span class="fc" id="L478">    sbuild.append('[');</span>
+<span class="fc" id="L479">    final int len = a.length;</span>
+<span class="fc bfc" id="L480" title="All 2 branches covered.">    for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L481">      sbuild.append(a[i]);</span>
+<span class="pc bpc" id="L482" title="1 of 2 branches missed.">      if (i != len - 1) {</span>
+<span class="nc" id="L483">        sbuild.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="fc" id="L486">    sbuild.append(']');</span>
+<span class="fc" id="L487">  }</span>
+
+  private MessageFormatter() {
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

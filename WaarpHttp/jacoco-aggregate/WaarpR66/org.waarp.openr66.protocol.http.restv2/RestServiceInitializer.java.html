@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestServiceInitializer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2</a> &gt; <span class="el_source">RestServiceInitializer.java</span></div><h1>RestServiceInitializer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2;
+
+import io.cdap.http.ChannelPipelineModifier;
+import io.cdap.http.NettyHttpService;
+import io.cdap.http.SSLConfig;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsConfigBuilder;
+import io.netty.handler.codec.http.cors.CorsHandler;
+import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.AbstractRestDbHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostConfigHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostIdHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostsHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.LimitsHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.RuleIdHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.RulesHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.ServerHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.TransferIdHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.TransfersHandler;
+import org.waarp.openr66.protocol.http.restv2.resthandlers.RestExceptionHandler;
+import org.waarp.openr66.protocol.http.restv2.resthandlers.RestHandlerHook;
+import org.waarp.openr66.protocol.http.restv2.resthandlers.RestSignatureHandler;
+import org.waarp.openr66.protocol.http.restv2.resthandlers.RestVersionHandler;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
+import static io.netty.handler.codec.http.HttpMethod.*;
+import static org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * This class is called to initialize the RESTv2 API.
+ */
+public final class RestServiceInitializer {
+
+  private static final String ROUTER = &quot;router&quot;;
+
+  /**
+   * The logger for all unexpected errors during the service initialization.
+   */
+<span class="fc" id="L71">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L72">      WaarpLoggerFactory.getLogger(RestServiceInitializer.class);</span>
+
+  /**
+   * This is the {@link NettyHttpService} in charge of handling the RESTv2
+   * API.
+   */
+  private static NettyHttpService restService;
+
+  /**
+   * This is a static class that should never be instantiated with a
+   * constructor.
+   */
+<span class="nc" id="L84">  private RestServiceInitializer() {</span>
+<span class="nc" id="L85">    throw new UnsupportedOperationException(</span>
+<span class="nc" id="L86">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  /**
+   * The list of all {@link AbstractRestDbHandler} used by the API.
+   */
+<span class="fc" id="L92">  public static final Collection&lt;AbstractRestDbHandler&gt; handlers =</span>
+      new ArrayList&lt;AbstractRestDbHandler&gt;();
+
+  /**
+   * Fills the list of {@link AbstractRestDbHandler} with all handlers
+   * activated in the API configuration.
+   *
+   * @param config The REST API configuration object.
+   */
+  private static void initHandlers(RestConfiguration config) {
+<span class="fc" id="L102">    final byte hostsCRUD = config.getResthandlersCrud()[DbHostAuth.ordinal()];</span>
+<span class="fc" id="L103">    final byte rulesCRUD = config.getResthandlersCrud()[DbRule.ordinal()];</span>
+<span class="fc" id="L104">    final byte transferCRUD =</span>
+<span class="fc" id="L105">        config.getResthandlersCrud()[DbTaskRunner.ordinal()];</span>
+<span class="fc" id="L106">    final byte configCRUD =</span>
+<span class="fc" id="L107">        config.getResthandlersCrud()[DbHostConfiguration.ordinal()];</span>
+<span class="fc" id="L108">    final byte limitCRUD = config.getResthandlersCrud()[Bandwidth.ordinal()];</span>
+<span class="fc" id="L109">    final int serverCRUD = config.getResthandlersCrud()[Business.ordinal()] +</span>
+<span class="fc" id="L110">                           config.getResthandlersCrud()[Config.ordinal()] +</span>
+<span class="fc" id="L111">                           config.getResthandlersCrud()[Information.ordinal()] +</span>
+<span class="fc" id="L112">                           config.getResthandlersCrud()[Log.ordinal()] +</span>
+<span class="fc" id="L113">                           config.getResthandlersCrud()[Server.ordinal()] +</span>
+<span class="fc" id="L114">                           config.getResthandlersCrud()[Control.ordinal()];</span>
+
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (hostsCRUD != 0) {</span>
+<span class="fc" id="L117">      handlers.add(new HostsHandler(hostsCRUD));</span>
+<span class="fc" id="L118">      handlers.add(new HostIdHandler(hostsCRUD));</span>
+    }
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (rulesCRUD != 0) {</span>
+<span class="fc" id="L121">      handlers.add(new RulesHandler(rulesCRUD));</span>
+<span class="fc" id="L122">      handlers.add(new RuleIdHandler(rulesCRUD));</span>
+    }
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">    if (transferCRUD != 0) {</span>
+<span class="fc" id="L125">      handlers.add(new TransfersHandler(transferCRUD));</span>
+<span class="fc" id="L126">      handlers.add(new TransferIdHandler(transferCRUD));</span>
+    }
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (configCRUD != 0) {</span>
+<span class="fc" id="L129">      handlers.add(new HostConfigHandler(configCRUD));</span>
+    }
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">    if (limitCRUD != 0) {</span>
+<span class="fc" id="L132">      handlers.add(new LimitsHandler(limitCRUD));</span>
+    }
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">    if (serverCRUD != 0) {</span>
+<span class="fc" id="L135">      handlers.add(new ServerHandler(config.getResthandlersCrud()));</span>
+    }
+<span class="fc" id="L137">  }</span>
+
+  /**
+   * Builds and returns a {@link CorsConfig} to be used by the {@link
+   * CorsHandler} to allow the REST API to
+   * support CORS.
+   *
+   * @return The configuration used for dealing with CORS requests.
+   */
+  private static CorsConfig corsConfig() {
+<span class="fc" id="L147">    final CorsConfigBuilder builder = CorsConfigBuilder.forAnyOrigin();</span>
+
+<span class="fc" id="L149">    builder.exposeHeaders(ALLOW, &quot;transferURI&quot;, &quot;hostURI&quot;, &quot;ruleURI&quot;);</span>
+<span class="fc" id="L150">    builder.allowedRequestHeaders(AUTHORIZATION, AUTH_USER, AUTH_TIMESTAMP,</span>
+                                  AUTH_SIGNATURE, CONTENT_TYPE);
+<span class="fc" id="L152">    builder.allowedRequestMethods(GET, POST, PUT, DELETE, OPTIONS);</span>
+<span class="fc" id="L153">    builder.maxAge(600);</span>
+<span class="fc" id="L154">    return builder.build();</span>
+  }
+
+  /**
+   * Initializes the RESTv2 service with the given {@link RestConfiguration}.
+   *
+   * @param config The REST API configuration object.
+   */
+  public static void initRestService(final RestConfiguration config) {
+<span class="fc" id="L163">    initHandlers(config);</span>
+
+<span class="fc" id="L165">    final NettyHttpService.Builder restServiceBuilder =</span>
+<span class="fc" id="L166">        NettyHttpService.builder(&quot;R66_RESTv2&quot;).setPort(config.getRestPort())</span>
+<span class="fc" id="L167">                        .setHost(config.getRestAddress())</span>
+<span class="fc" id="L168">                        .setHttpHandlers(handlers).setHandlerHooks(Collections</span>
+<span class="fc" id="L169">                                                                       .singleton(</span>
+                                                                           new RestHandlerHook(
+                                                                               config
+<span class="fc" id="L172">                                                                                   .isRestAuthenticated(),</span>
+                                                                               config
+<span class="fc" id="L174">                                                                                   .getHmacSha256(),</span>
+                                                                               config
+<span class="fc" id="L176">                                                                                   .getRestTimeLimit())))</span>
+<span class="fc" id="L177">                        .setExceptionHandler(new RestExceptionHandler())</span>
+<span class="fc" id="L178">                        .setExecThreadKeepAliveSeconds(-1L)</span>
+<span class="fc" id="L179">                        .setChannelPipelineModifier(</span>
+<span class="fc" id="L180">                            new ChannelPipelineModifier() {</span>
+                              @Override
+                              public void modify(
+                                  ChannelPipeline channelPipeline) {
+<span class="fc" id="L184">                                channelPipeline.addBefore(ROUTER, &quot;aggregator&quot;,</span>
+                                                          new HttpObjectAggregator(
+                                                              Integer.MAX_VALUE));
+<span class="fc" id="L187">                                channelPipeline.addBefore(ROUTER,</span>
+                                                          RestVersionHandler.HANDLER_NAME,
+                                                          new RestVersionHandler(
+                                                              config));
+<span class="fc" id="L191">                                channelPipeline</span>
+<span class="fc" id="L192">                                    .addBefore(RestVersionHandler.HANDLER_NAME,</span>
+                                               &quot;cors&quot;,
+<span class="fc" id="L194">                                               new CorsHandler(corsConfig()));</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">                                if (config.isRestAuthenticated() &amp;&amp;</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                                    config.isRestSignature()) {</span>
+<span class="nc" id="L197">                                  channelPipeline.addAfter(ROUTER, &quot;signature&quot;,</span>
+                                                           new RestSignatureHandler(
+                                                               config
+<span class="nc" id="L200">                                                                   .getHmacSha256()));</span>
+                                }
+
+                                // Removes the HTTP compressor which causes problems
+                                // on systems running java6 or earlier
+<span class="fc" id="L205">                                final double JRE_version = Double.parseDouble(</span>
+<span class="fc" id="L206">                                    System.getProperty(</span>
+                                        &quot;java.specification.version&quot;));
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">                                if (JRE_version &lt;= 1.6) {</span>
+<span class="nc" id="L209">                                  logger.info(</span>
+                                      &quot;Removed REST HTTP compressor due to incompatibility &quot; +
+                                      &quot;with the Java Runtime version&quot;);
+<span class="nc" id="L212">                                  channelPipeline.remove(&quot;compressor&quot;);</span>
+                                }
+<span class="fc" id="L214">                              }</span>
+                            });
+
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">    if (config.isRestSsl()) {</span>
+      final WaarpSecureKeyStore keyStore =
+<span class="nc" id="L219">          NetworkSslServerInitializer.getWaarpSecureKeyStore();</span>
+<span class="nc" id="L220">      final String keyStoreFilename = keyStore.getKeyStoreFilename();</span>
+<span class="nc" id="L221">      final String keyStorePass = new String(keyStore.getKeyStorePassword());</span>
+<span class="nc" id="L222">      final String certificatePassword =</span>
+<span class="nc" id="L223">          new String(keyStore.getCertificatePassword());</span>
+
+<span class="nc" id="L225">      restServiceBuilder.enableSSL(</span>
+<span class="nc" id="L226">          SSLConfig.builder(new File(keyStoreFilename), keyStorePass)</span>
+<span class="nc" id="L227">                   .setCertificatePassword(certificatePassword).build());</span>
+    }
+
+<span class="fc" id="L230">    restService = restServiceBuilder.build();</span>
+    try {
+<span class="fc" id="L232">      restService.start();</span>
+<span class="nc" id="L233">    } catch (final Throwable t) {</span>
+<span class="nc" id="L234">      logger.error(t);</span>
+<span class="nc" id="L235">      throw new ExceptionInInitializerError(</span>
+          &quot;FATAL ERROR_TASK : Failed to initialize RESTv2 service&quot;);
+<span class="fc" id="L237">    }</span>
+<span class="fc" id="L238">  }</span>
+
+  /**
+   * Stops the REST service.
+   */
+  public static void stopRestService() {
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (restService != null) {</span>
+      try {
+<span class="nc" id="L246">        restService.stop();</span>
+<span class="nc" id="L247">      } catch (final Throwable e) {</span>
+<span class="nc" id="L248">        logger.error(&quot;Exception caught during RESTv2 service shutdown&quot;, e);</span>
+<span class="nc" id="L249">      }</span>
+    } else {
+<span class="nc" id="L251">      logger.warn(&quot;Error RESTv2 service is not running, cannot stop&quot;);</span>
+    }
+<span class="nc" id="L253">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

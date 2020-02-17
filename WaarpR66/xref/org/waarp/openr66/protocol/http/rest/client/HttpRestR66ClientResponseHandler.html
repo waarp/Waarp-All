@@ -419,50 +419,51 @@
 <a class="jxr_linenumber" name="L411" href="#L411">411</a>             logger.warn(<span class="jxr_string">"Error"</span>, e2);
 <a class="jxr_linenumber" name="L412" href="#L412">412</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> HttpIncorrectRequestException(e2);
 <a class="jxr_linenumber" name="L413" href="#L413">413</a>           }
-<a class="jxr_linenumber" name="L414" href="#L414">414</a>           cumulativeBody = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L415" href="#L415">415</a>         }
-<a class="jxr_linenumber" name="L416" href="#L416">416</a>         actionFromResponse(ctx.channel());
-<a class="jxr_linenumber" name="L417" href="#L417">417</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L418" href="#L418">418</a>         <strong class="jxr_keyword">final</strong> ByteBuf content = chunk.content();
-<a class="jxr_linenumber" name="L419" href="#L419">419</a>         <strong class="jxr_keyword">if</strong> (content != <strong class="jxr_keyword">null</strong> &amp;&amp; content.isReadable()) {
-<a class="jxr_linenumber" name="L420" href="#L420">420</a>           content.retain();
-<a class="jxr_linenumber" name="L421" href="#L421">421</a>           <strong class="jxr_keyword">if</strong> (cumulativeBody != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L422" href="#L422">422</a>             cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);
-<a class="jxr_linenumber" name="L423" href="#L423">423</a>           } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L424" href="#L424">424</a>             cumulativeBody = content;
-<a class="jxr_linenumber" name="L425" href="#L425">425</a>           }
-<a class="jxr_linenumber" name="L426" href="#L426">426</a>         }
-<a class="jxr_linenumber" name="L427" href="#L427">427</a>       }
-<a class="jxr_linenumber" name="L428" href="#L428">428</a>     }
-<a class="jxr_linenumber" name="L429" href="#L429">429</a>   }
-<a class="jxr_linenumber" name="L430" href="#L430">430</a> 
-<a class="jxr_linenumber" name="L431" href="#L431">431</a>   @Override
-<a class="jxr_linenumber" name="L432" href="#L432">432</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-<a class="jxr_linenumber" name="L433" href="#L433">433</a>       <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L434" href="#L434">434</a>     <strong class="jxr_keyword">final</strong> RestFuture restFuture =
-<a class="jxr_linenumber" name="L435" href="#L435">435</a>         ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)
-<a class="jxr_linenumber" name="L436" href="#L436">436</a>            .get();
-<a class="jxr_linenumber" name="L437" href="#L437">437</a>     <strong class="jxr_keyword">if</strong> (cause instanceof ClosedChannelException) {
-<a class="jxr_linenumber" name="L438" href="#L438">438</a>       logger.debug(<span class="jxr_string">"Close before ending"</span>);
-<a class="jxr_linenumber" name="L439" href="#L439">439</a>       restFuture.setFailure(cause);
-<a class="jxr_linenumber" name="L440" href="#L440">440</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L441" href="#L441">441</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (cause instanceof ConnectException) {
-<a class="jxr_linenumber" name="L442" href="#L442">442</a>       <strong class="jxr_keyword">if</strong> (ctx.channel().isActive()) {
-<a class="jxr_linenumber" name="L443" href="#L443">443</a>         logger.debug(<span class="jxr_string">"Will close"</span>);
-<a class="jxr_linenumber" name="L444" href="#L444">444</a>         restFuture.setFailure(cause);
-<a class="jxr_linenumber" name="L445" href="#L445">445</a>         WaarpSslUtility.closingSslChannel(ctx.channel());
-<a class="jxr_linenumber" name="L446" href="#L446">446</a>       }
-<a class="jxr_linenumber" name="L447" href="#L447">447</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L448" href="#L448">448</a>     }
-<a class="jxr_linenumber" name="L449" href="#L449">449</a>     logger.warn(<span class="jxr_string">"Error"</span>, cause);
-<a class="jxr_linenumber" name="L450" href="#L450">450</a>     <strong class="jxr_keyword">if</strong> (ctx.channel() != <strong class="jxr_keyword">null</strong> &amp;&amp; restFuture != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L451" href="#L451">451</a>       restFuture.setFailure(cause);
-<a class="jxr_linenumber" name="L452" href="#L452">452</a>     }
-<a class="jxr_linenumber" name="L453" href="#L453">453</a>     logger.debug(<span class="jxr_string">"Will close"</span>);
-<a class="jxr_linenumber" name="L454" href="#L454">454</a>     WaarpSslUtility.closingSslChannel(ctx.channel());
-<a class="jxr_linenumber" name="L455" href="#L455">455</a>   }
-<a class="jxr_linenumber" name="L456" href="#L456">456</a> 
-<a class="jxr_linenumber" name="L457" href="#L457">457</a> }
+<a class="jxr_linenumber" name="L414" href="#L414">414</a>           cumulativeBody.release();
+<a class="jxr_linenumber" name="L415" href="#L415">415</a>           cumulativeBody = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>         }
+<a class="jxr_linenumber" name="L417" href="#L417">417</a>         actionFromResponse(ctx.channel());
+<a class="jxr_linenumber" name="L418" href="#L418">418</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>         <strong class="jxr_keyword">final</strong> ByteBuf content = chunk.content();
+<a class="jxr_linenumber" name="L420" href="#L420">420</a>         <strong class="jxr_keyword">if</strong> (content != <strong class="jxr_keyword">null</strong> &amp;&amp; content.isReadable()) {
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>           content.retain();
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>           <strong class="jxr_keyword">if</strong> (cumulativeBody != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L423" href="#L423">423</a>             cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>           } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L425" href="#L425">425</a>             cumulativeBody = content;
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>           }
+<a class="jxr_linenumber" name="L427" href="#L427">427</a>         }
+<a class="jxr_linenumber" name="L428" href="#L428">428</a>       }
+<a class="jxr_linenumber" name="L429" href="#L429">429</a>     }
+<a class="jxr_linenumber" name="L430" href="#L430">430</a>   }
+<a class="jxr_linenumber" name="L431" href="#L431">431</a> 
+<a class="jxr_linenumber" name="L432" href="#L432">432</a>   @Override
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+<a class="jxr_linenumber" name="L434" href="#L434">434</a>       <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>     <strong class="jxr_keyword">final</strong> RestFuture restFuture =
+<a class="jxr_linenumber" name="L436" href="#L436">436</a>         ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)
+<a class="jxr_linenumber" name="L437" href="#L437">437</a>            .get();
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>     <strong class="jxr_keyword">if</strong> (cause instanceof ClosedChannelException) {
+<a class="jxr_linenumber" name="L439" href="#L439">439</a>       logger.debug(<span class="jxr_string">"Close before ending"</span>);
+<a class="jxr_linenumber" name="L440" href="#L440">440</a>       restFuture.setFailure(cause);
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L442" href="#L442">442</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (cause instanceof ConnectException) {
+<a class="jxr_linenumber" name="L443" href="#L443">443</a>       <strong class="jxr_keyword">if</strong> (ctx.channel().isActive()) {
+<a class="jxr_linenumber" name="L444" href="#L444">444</a>         logger.debug(<span class="jxr_string">"Will close"</span>);
+<a class="jxr_linenumber" name="L445" href="#L445">445</a>         restFuture.setFailure(cause);
+<a class="jxr_linenumber" name="L446" href="#L446">446</a>         WaarpSslUtility.closingSslChannel(ctx.channel());
+<a class="jxr_linenumber" name="L447" href="#L447">447</a>       }
+<a class="jxr_linenumber" name="L448" href="#L448">448</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L449" href="#L449">449</a>     }
+<a class="jxr_linenumber" name="L450" href="#L450">450</a>     logger.warn(<span class="jxr_string">"Error"</span>, cause);
+<a class="jxr_linenumber" name="L451" href="#L451">451</a>     <strong class="jxr_keyword">if</strong> (ctx.channel() != <strong class="jxr_keyword">null</strong> &amp;&amp; restFuture != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L452" href="#L452">452</a>       restFuture.setFailure(cause);
+<a class="jxr_linenumber" name="L453" href="#L453">453</a>     }
+<a class="jxr_linenumber" name="L454" href="#L454">454</a>     logger.debug(<span class="jxr_string">"Will close"</span>);
+<a class="jxr_linenumber" name="L455" href="#L455">455</a>     WaarpSslUtility.closingSslChannel(ctx.channel());
+<a class="jxr_linenumber" name="L456" href="#L456">456</a>   }
+<a class="jxr_linenumber" name="L457" href="#L457">457</a> 
+<a class="jxr_linenumber" name="L458" href="#L458">458</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

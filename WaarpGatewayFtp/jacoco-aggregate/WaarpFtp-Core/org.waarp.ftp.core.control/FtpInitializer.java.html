@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpInitializer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.control</a> &gt; <span class="el_source">FtpInitializer.java</span></div><h1>FtpInitializer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.control;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.session.FtpSession;
+
+/**
+ * Pipeline factory for Control command connection
+ */
+public class FtpInitializer extends ChannelInitializer&lt;SocketChannel&gt; {
+  /**
+   * CRLF, CRNUL, LF delimiters
+   */
+<span class="fc" id="L41">  protected static final ByteBuf[] delimiter = {</span>
+<span class="fc" id="L42">      Unpooled.wrappedBuffer(ReplyCode.CRLF.getBytes(WaarpStringUtils.UTF8)),</span>
+<span class="fc" id="L43">      Unpooled.wrappedBuffer(ReplyCode.CRNUL.getBytes(WaarpStringUtils.UTF8)),</span>
+<span class="fc" id="L44">      Unpooled.wrappedBuffer(ReplyCode.LF.getBytes(WaarpStringUtils.UTF8))</span>
+  };
+
+<span class="fc" id="L47">  protected static final FtpControlStringDecoder ftpControlStringDecoder =</span>
+      new FtpControlStringDecoder(WaarpStringUtils.UTF8);
+
+<span class="fc" id="L50">  protected static final FtpControlStringEncoder ftpControlStringEncoder =</span>
+      new FtpControlStringEncoder(WaarpStringUtils.UTF8);
+
+  /**
+   * Business Handler Class if any (Target Mode only)
+   */
+  protected final Class&lt;? extends BusinessHandler&gt; businessHandler;
+
+  /**
+   * Configuration
+   */
+  protected final FtpConfiguration configuration;
+
+  /**
+   * Constructor which Initializes some data for Server only
+   *
+   * @param businessHandler
+   * @param configuration
+   */
+  public FtpInitializer(Class&lt;? extends BusinessHandler&gt; businessHandler,
+<span class="fc" id="L70">                        FtpConfiguration configuration) {</span>
+<span class="fc" id="L71">    this.businessHandler = businessHandler;</span>
+<span class="fc" id="L72">    this.configuration = configuration;</span>
+<span class="fc" id="L73">  }</span>
+
+  /**
+   * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
+   */
+  @Override
+  public void initChannel(SocketChannel ch) throws Exception {
+<span class="fc" id="L80">    final ChannelPipeline pipeline = ch.pipeline();</span>
+    // Add the text line codec combination first,
+<span class="fc" id="L82">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, delimiter));</span>
+<span class="fc" id="L83">    pipeline.addLast(&quot;decoder&quot;, ftpControlStringDecoder);</span>
+<span class="fc" id="L84">    pipeline.addLast(&quot;encoder&quot;, ftpControlStringEncoder);</span>
+    // Threaded execution for business logic
+<span class="fc" id="L86">    final EventExecutorGroup executorGroup =</span>
+<span class="fc" id="L87">        configuration.getFtpInternalConfiguration().getExecutor();</span>
+    // and then business logic. New one on every connection
+<span class="fc" id="L89">    final BusinessHandler newbusiness =</span>
+<span class="fc" id="L90">        businessHandler.getDeclaredConstructor().newInstance();</span>
+<span class="fc" id="L91">    final NetworkHandler newNetworkHandler =</span>
+        new NetworkHandler(new FtpSession(configuration, newbusiness));
+<span class="fc" id="L93">    pipeline.addLast(executorGroup, &quot;handler&quot;, newNetworkHandler);</span>
+<span class="fc" id="L94">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

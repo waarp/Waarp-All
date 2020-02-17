@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SoftReferenceCacheEntry.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Password Management GUI and Console</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.lru</a> &gt; <span class="el_source">SoftReferenceCacheEntry.java</span></div><h1>SoftReferenceCacheEntry.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.lru;
+
+import java.lang.ref.SoftReference;
+
+/**
+ * Cache entry which uses SoftReference to store value
+ *
+ * @author Damian Momot
+ */
+class SoftReferenceCacheEntry&lt;V&gt; implements InterfaceLruCacheEntry&lt;V&gt; {
+
+  private final SoftReference&lt;V&gt; valueReference;
+
+  private long expirationTime;
+
+  /**
+   * Creates LruCacheEntry with desired ttl
+   *
+   * @param value
+   * @param ttl time to live in milliseconds
+   *
+   * @throws IllegalArgumentException if ttl is not positive
+   */
+<span class="fc" id="L43">  SoftReferenceCacheEntry(V value, long ttl) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">    if (ttl &lt;= 0) {</span>
+<span class="fc" id="L45">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
+    }
+
+<span class="fc" id="L48">    valueReference = new SoftReference&lt;V&gt;(value);</span>
+<span class="fc" id="L49">    expirationTime = System.currentTimeMillis() + ttl;</span>
+<span class="fc" id="L50">  }</span>
+
+  /**
+   * Returns value if entry is valid, null otherwise.
+   * &lt;p&gt;
+   * Entry is invalid if SoftReference is cleared or entry has expired
+   *
+   * @return value if entry is valid
+   */
+  @Override
+  public V getValue() {
+<span class="fc" id="L61">    V value = null;</span>
+
+    // check expiration time
+<span class="fc bfc" id="L64" title="All 2 branches covered.">    if (System.currentTimeMillis() &lt;= expirationTime) {</span>
+<span class="fc" id="L65">      value = valueReference.get();</span>
+    }
+
+<span class="fc" id="L68">    return value;</span>
+  }
+
+  @Override
+  public boolean isStillValid(long timeRef) {
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    return timeRef &lt;= expirationTime;</span>
+  }
+
+  @Override
+  public boolean resetTime(long ttl) {
+<span class="fc" id="L78">    expirationTime = System.currentTimeMillis() + ttl;</span>
+<span class="fc" id="L79">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

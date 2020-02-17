@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileBasedSslConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.simpleimpl.config</a> &gt; <span class="el_source">FileBasedSslConfiguration.java</span></div><h1>FileBasedSslConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.simpleimpl.config;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
+import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.exception.CryptoException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlDecl;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlType;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.control.ftps.FtpsInitializer;
+
+/**
+ * FtpConfiguration based on a XML file
+ */
+public class FileBasedSslConfiguration {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L46">      WaarpLoggerFactory.getLogger(FileBasedSslConfiguration.class);</span>
+
+  /**
+   * SERVER SSL STOREKEY PATH
+   */
+  private static final String XML_PATH_KEYPATH = &quot;keypath&quot;;
+
+  /**
+   * SERVER SSL KEY PASS
+   */
+  private static final String XML_PATH_KEYPASS = &quot;keypass&quot;;
+
+  /**
+   * SERVER SSL STOREKEY PASS
+   */
+  private static final String XML_PATH_KEYSTOREPASS = &quot;keystorepass&quot;;
+
+  /**
+   * SERVER SSL TRUSTSTOREKEY PATH
+   */
+  private static final String XML_PATH_TRUSTKEYPATH = &quot;trustkeypath&quot;;
+
+  /**
+   * SERVER SSL TRUSTSTOREKEY PASS
+   */
+  private static final String XML_PATH_TRUSTKEYSTOREPASS = &quot;trustkeystorepass&quot;;
+
+  /**
+   * SERVER SSL Use TrustStore for Client Authentication
+   */
+  private static final String XML_USECLIENT_AUTHENT =
+      &quot;trustuseclientauthenticate&quot;;
+
+  /**
+   * Structure of the Configuration file
+   */
+<span class="fc" id="L82">  private static final XmlDecl[] configSslDecls = {</span>
+      // ssl
+      new XmlDecl(XmlType.STRING, XML_PATH_KEYPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_KEYSTOREPASS),
+      new XmlDecl(XmlType.STRING, XML_PATH_KEYPASS),
+      new XmlDecl(XmlType.STRING, XML_PATH_TRUSTKEYPATH),
+      new XmlDecl(XmlType.STRING, XML_PATH_TRUSTKEYSTOREPASS),
+      new XmlDecl(XmlType.BOOLEAN, XML_USECLIENT_AUTHENT)
+  };
+  /**
+   * Overall structure of the Configuration file
+   */
+  private static final String XML_ROOT = &quot;/config/&quot;;
+  private static final String XML_SSL = &quot;ssl&quot;;
+  /**
+   * Global Structure for Server Configuration
+   */
+<span class="fc" id="L99">  private static final XmlDecl[] configServer = {</span>
+      new XmlDecl(XML_SSL, XmlType.XVAL, XML_ROOT + XML_SSL, configSslDecls,
+                  false)
+  };
+  private static XmlValue[] configuration;
+  private static XmlHash hashConfig;
+
+  private FileBasedSslConfiguration() {
+  }
+
+  protected static boolean loadSsl(FtpConfiguration config) {
+    // StoreKey for Server
+<span class="fc" id="L111">    XmlValue value = hashConfig.get(XML_PATH_KEYPATH);</span>
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L113">      logger.info(&quot;Unable to find Key Path&quot;);</span>
+      try {
+<span class="nc" id="L115">        FtpsInitializer.waarpSecureKeyStore =</span>
+            new WaarpSecureKeyStore(&quot;secret&quot;, &quot;secret&quot;);
+<span class="nc" id="L117">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L118">        logger.error(&quot;Bad SecureKeyStore construction&quot;);</span>
+<span class="nc" id="L119">        return false;</span>
+<span class="nc" id="L120">      }</span>
+    } else {
+<span class="fc" id="L122">      final String keypath = value.getString();</span>
+<span class="pc bpc" id="L123" title="2 of 4 branches missed.">      if (keypath == null || keypath.length() == 0) {</span>
+<span class="nc" id="L124">        logger.error(&quot;Bad Key Path&quot;);</span>
+<span class="nc" id="L125">        return false;</span>
+      }
+<span class="fc" id="L127">      value = hashConfig.get(XML_PATH_KEYSTOREPASS);</span>
+<span class="pc bpc" id="L128" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L129">        logger.error(&quot;Unable to find KeyStore Passwd&quot;);</span>
+<span class="nc" id="L130">        return false;</span>
+      }
+<span class="fc" id="L132">      final String keystorepass = value.getString();</span>
+<span class="pc bpc" id="L133" title="2 of 4 branches missed.">      if (keystorepass == null || keystorepass.length() == 0) {</span>
+<span class="nc" id="L134">        logger.error(&quot;Bad KeyStore Passwd&quot;);</span>
+<span class="nc" id="L135">        return false;</span>
+      }
+<span class="fc" id="L137">      value = hashConfig.get(XML_PATH_KEYPASS);</span>
+<span class="pc bpc" id="L138" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L139">        logger.error(&quot;Unable to find Key Passwd&quot;);</span>
+<span class="nc" id="L140">        return false;</span>
+      }
+<span class="fc" id="L142">      final String keypass = value.getString();</span>
+<span class="pc bpc" id="L143" title="2 of 4 branches missed.">      if (keypass == null || keypass.length() == 0) {</span>
+<span class="nc" id="L144">        logger.error(&quot;Bad Key Passwd&quot;);</span>
+<span class="nc" id="L145">        return false;</span>
+      }
+      try {
+<span class="fc" id="L148">        FtpsInitializer.waarpSecureKeyStore =</span>
+            new WaarpSecureKeyStore(keypath, keystorepass, keypass);
+<span class="nc" id="L150">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L151">        logger.error(&quot;Bad SecureKeyStore construction&quot;);</span>
+<span class="nc" id="L152">        return false;</span>
+<span class="fc" id="L153">      }</span>
+
+    }
+    // TrustedKey for OpenR66 server
+<span class="fc" id="L157">    value = hashConfig.get(XML_PATH_TRUSTKEYPATH);</span>
+<span class="pc bpc" id="L158" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L159">      logger.info(&quot;Unable to find TRUST Key Path&quot;);</span>
+<span class="nc" id="L160">      FtpsInitializer.waarpSecureKeyStore.initEmptyTrustStore();</span>
+    } else {
+<span class="fc" id="L162">      final String keypath = value.getString();</span>
+<span class="pc bpc" id="L163" title="2 of 4 branches missed.">      if (keypath == null || keypath.length() == 0) {</span>
+<span class="nc" id="L164">        logger.error(&quot;Bad TRUST Key Path&quot;);</span>
+<span class="nc" id="L165">        return false;</span>
+      }
+<span class="fc" id="L167">      value = hashConfig.get(XML_PATH_TRUSTKEYSTOREPASS);</span>
+<span class="pc bpc" id="L168" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L169">        logger.error(&quot;Unable to find TRUST KeyStore Passwd&quot;);</span>
+<span class="nc" id="L170">        return false;</span>
+      }
+<span class="fc" id="L172">      final String keystorepass = value.getString();</span>
+<span class="pc bpc" id="L173" title="2 of 4 branches missed.">      if (keystorepass == null || keystorepass.length() == 0) {</span>
+<span class="nc" id="L174">        logger.error(&quot;Bad TRUST KeyStore Passwd&quot;);</span>
+<span class="nc" id="L175">        return false;</span>
+      }
+<span class="fc" id="L177">      boolean useClientAuthent = false;</span>
+<span class="fc" id="L178">      value = hashConfig.get(XML_USECLIENT_AUTHENT);</span>
+<span class="pc bpc" id="L179" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L180">        useClientAuthent = value.getBoolean();</span>
+      }
+      try {
+<span class="fc" id="L183">        FtpsInitializer.waarpSecureKeyStore</span>
+<span class="fc" id="L184">            .initTrustStore(keypath, keystorepass, useClientAuthent);</span>
+<span class="nc" id="L185">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L186">        logger.error(&quot;Bad TrustKeyStore construction&quot;);</span>
+<span class="nc" id="L187">        return false;</span>
+<span class="fc" id="L188">      }</span>
+    }
+<span class="fc" id="L190">    FtpsInitializer.waarpSslContextFactory =</span>
+        new WaarpSslContextFactory(FtpsInitializer.waarpSecureKeyStore);
+<span class="fc" id="L192">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for server
+   *
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationServerFromXml(FtpConfiguration config,
+                                                      String filename) {
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L207">      document = new SAXReader().read(filename);</span>
+<span class="nc" id="L208">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L209">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename, e);</span>
+<span class="nc" id="L210">      return false;</span>
+<span class="fc" id="L211">    }</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L213">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
+<span class="nc" id="L214">      return false;</span>
+    }
+<span class="fc" id="L216">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L217">    hashConfig = new XmlHash(configuration);</span>
+    // Now read the configuration
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (!loadSsl(config)) {</span>
+<span class="nc" id="L220">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L221">      return false;</span>
+    }
+<span class="fc" id="L223">    hashConfig.clear();</span>
+<span class="fc" id="L224">    hashConfig = null;</span>
+<span class="fc" id="L225">    configuration = null;</span>
+<span class="fc" id="L226">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

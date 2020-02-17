@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LocalPacketCodec.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">LocalPacketCodec.java</span></div><h1>LocalPacketCodec.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageCodec;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+
+import java.util.List;
+
+/**
+ * Local Packet Decoder
+ */
+<span class="nc" id="L34">public class LocalPacketCodec extends ByteToMessageCodec&lt;AbstractLocalPacket&gt; {</span>
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L38">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L39">      WaarpLoggerFactory.getLogger(LocalPacketCodec.class);</span>
+
+  @Override
+  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
+                        List&lt;Object&gt; out) throws Exception {
+    // Make sure if the length field was received.
+<span class="nc bnc" id="L45" title="All 2 branches missed.">    if (buf.readableBytes() &lt; 4) {</span>
+      // The length field was not received yet - return null.
+      // This method will be invoked again when more packets are
+      // received and appended to the buffer.
+<span class="nc" id="L49">      return;</span>
+    }
+<span class="nc" id="L51">    final AbstractLocalPacket newbuf = decodeNetworkPacket(buf);</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (newbuf != null) {</span>
+<span class="nc" id="L53">      out.add(newbuf);</span>
+    }
+<span class="nc" id="L55">  }</span>
+
+  public static AbstractLocalPacket decodeNetworkPacket(ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+    // Mark the current buffer position
+<span class="fc" id="L60">    buf.markReaderIndex();</span>
+    // Read the length field
+<span class="fc" id="L62">    final int length = buf.readInt();</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
+<span class="nc" id="L64">      buf.resetReaderIndex();</span>
+<span class="nc" id="L65">      return null;</span>
+    }
+    // Now we can read the header
+    // Header: Header length field (4 bytes) = Middle length field (4
+    // bytes), End length field (4 bytes), type field (1 byte), ...
+<span class="fc" id="L70">    final int middleLength = buf.readInt();</span>
+<span class="fc" id="L71">    final int endLength = buf.readInt();</span>
+    // check if the packet is complete
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
+<span class="nc" id="L74">      buf.resetReaderIndex();</span>
+<span class="nc" id="L75">      return null;</span>
+    }
+    // createPacketFromByteBuf read the buffer
+<span class="fc" id="L78">    final AbstractLocalPacket rv = LocalPacketFactory</span>
+<span class="fc" id="L79">        .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);</span>
+<span class="fc" id="L80">    logger.trace(&quot;received local packet {}&quot;, rv.getType());</span>
+<span class="fc" id="L81">    return rv;</span>
+  }
+
+  @Override
+  protected void encode(ChannelHandlerContext ctx, AbstractLocalPacket msg,
+                        ByteBuf out) throws Exception {
+<span class="nc" id="L87">    logger.trace(&quot;sending local packet {}&quot;, msg.getType());</span>
+<span class="nc" id="L88">    final ByteBuf buf = msg.getLocalPacket(null);</span>
+<span class="nc" id="L89">    out.writeBytes(buf);</span>
+<span class="nc" id="L90">    buf.release();</span>
+<span class="nc" id="L91">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

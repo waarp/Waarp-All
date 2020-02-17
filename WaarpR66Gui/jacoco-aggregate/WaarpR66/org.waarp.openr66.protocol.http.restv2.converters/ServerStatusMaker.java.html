@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ServerStatusMaker.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.converters</a> &gt; <span class="el_source">ServerStatusMaker.java</span></div><h1>ServerStatusMaker.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.converters;
+
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
+import org.waarp.openr66.protocol.localhandler.Monitoring;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * A POJO representing the general status of the R66 server.
+ */
+public final class ServerStatusMaker {
+
+  /**
+   * Date of the last time the server status was requested.
+   */
+  private static volatile DateTime lastRun;
+
+  /**
+   * Makes the default constructor of this utility class inaccessible.
+   */
+<span class="nc" id="L45">  private ServerStatusMaker() throws InstantiationException {</span>
+<span class="nc" id="L46">    throw new InstantiationException(</span>
+<span class="nc" id="L47">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ########################## PUBLIC METHODS ################################
+
+  /**
+   * Creates an {@link ObjectNode} listing general information about the R66
+   * server. The {@link Period}
+   * parameters specifies the time period on which the information is
+   * collected.
+   *
+   * @param period the time period analysed
+   *
+   * @return the server status ObjectNode
+   */
+  public static ObjectNode exportAsJson(Period period) {
+<span class="fc" id="L63">    final int seconds = period.toStandardSeconds().getSeconds();</span>
+<span class="fc" id="L64">    final Monitoring mon = configuration.getMonitoring();</span>
+<span class="fc" id="L65">    mon.run(seconds, true);</span>
+<span class="fc" id="L66">    final ObjectNode server = new ObjectNode(JsonNodeFactory.instance);</span>
+
+<span class="fc" id="L68">    server.put(&quot;serverName&quot;, SERVER_NAME);</span>
+<span class="fc" id="L69">    server.put(&quot;date&quot;, DateTime.now().toString());</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    server.put(&quot;lastRun&quot;, lastRun == null? null : lastRun.toString());</span>
+<span class="fc" id="L71">    server.put(&quot;fromDate&quot;, DateTime.now().minus(period).toString());</span>
+<span class="fc" id="L72">    server.put(&quot;secondsRunning&quot;, mon.secondsRunning);</span>
+<span class="fc" id="L73">    server.put(&quot;networkConnections&quot;, mon.nbNetworkConnection);</span>
+<span class="fc" id="L74">    server.put(&quot;nbThreads&quot;, mon.nbThread);</span>
+<span class="fc" id="L75">    server.put(&quot;inBandwidth&quot;, mon.bandwidthIn);</span>
+<span class="fc" id="L76">    server.put(&quot;outBandwidth&quot;, mon.bandwidthOut);</span>
+
+<span class="fc" id="L78">    final ObjectNode overall = server.putObject(&quot;overall&quot;);</span>
+<span class="fc" id="L79">    overall.put(&quot;allTransfers&quot;, mon.nbCountStepAllTransfer);</span>
+<span class="fc" id="L80">    overall.put(&quot;unknown&quot;, mon.nbCountInfoUnknown);</span>
+<span class="fc" id="L81">    overall.put(&quot;notUpdated&quot;, mon.nbCountInfoNotUpdated);</span>
+<span class="fc" id="L82">    overall.put(&quot;interrupted&quot;, mon.nbCountInfoInterrupted);</span>
+<span class="fc" id="L83">    overall.put(&quot;toSubmit&quot;, mon.nbCountInfoToSubmit);</span>
+<span class="fc" id="L84">    overall.put(&quot;inError&quot;, mon.nbCountInfoError);</span>
+<span class="fc" id="L85">    overall.put(&quot;running&quot;, mon.nbCountInfoRunning);</span>
+<span class="fc" id="L86">    overall.put(&quot;done&quot;, mon.nbCountInfoDone);</span>
+<span class="fc" id="L87">    overall.put(&quot;runningIn&quot;, mon.nbInActiveTransfer);</span>
+<span class="fc" id="L88">    overall.put(&quot;runningOut&quot;, mon.nbOutActiveTransfer);</span>
+<span class="fc" id="L89">    overall.put(&quot;lastRunningIn&quot;,</span>
+<span class="fc" id="L90">                new DateTime(mon.lastInActiveTransfer).toString());</span>
+<span class="fc" id="L91">    overall.put(&quot;lastRunningOut&quot;,</span>
+<span class="fc" id="L92">                new DateTime(mon.lastOutActiveTransfer).toString());</span>
+<span class="fc" id="L93">    overall.put(&quot;allIn&quot;, mon.nbInTotalTransfer);</span>
+<span class="fc" id="L94">    overall.put(&quot;allOut&quot;, mon.nbOutTotalTransfer);</span>
+<span class="fc" id="L95">    overall.put(&quot;errorsIn&quot;, mon.nbInErrorTransfer);</span>
+<span class="fc" id="L96">    overall.put(&quot;errorsOut&quot;, mon.nbOutErrorTransfer);</span>
+
+<span class="fc" id="L98">    final ObjectNode globalSteps = server.putObject(&quot;globalSteps&quot;);</span>
+<span class="fc" id="L99">    globalSteps.put(&quot;noTask&quot;, mon.nbCountStepNotask);</span>
+<span class="fc" id="L100">    globalSteps.put(&quot;preTask&quot;, mon.nbCountStepPretask);</span>
+<span class="fc" id="L101">    globalSteps.put(&quot;transferTask&quot;, mon.nbCountStepTransfer);</span>
+<span class="fc" id="L102">    globalSteps.put(&quot;postTask&quot;, mon.nbCountStepPosttask);</span>
+<span class="fc" id="L103">    globalSteps.put(&quot;allDoneTask&quot;, mon.nbCountStepAllDone);</span>
+<span class="fc" id="L104">    globalSteps.put(&quot;errorTask&quot;, mon.nbCountStepError);</span>
+
+<span class="fc" id="L106">    final ObjectNode runningSteps = server.putObject(&quot;runningSteps&quot;);</span>
+<span class="fc" id="L107">    runningSteps.put(&quot;allRunning&quot;, mon.nbCountAllRunningStep);</span>
+<span class="fc" id="L108">    runningSteps.put(&quot;running&quot;, mon.nbCountRunningStep);</span>
+<span class="fc" id="L109">    runningSteps.put(&quot;initOK&quot;, mon.nbCountInitOkStep);</span>
+<span class="fc" id="L110">    runningSteps.put(&quot;preProcessingOk&quot;, mon.nbCountPreProcessingOkStep);</span>
+<span class="fc" id="L111">    runningSteps.put(&quot;transferOk&quot;, mon.nbCountTransferOkStep);</span>
+<span class="fc" id="L112">    runningSteps.put(&quot;postProcessingOk&quot;, mon.nbCountPostProcessingOkStep);</span>
+<span class="fc" id="L113">    runningSteps.put(&quot;completeOk&quot;, mon.nbCountCompleteOkStep);</span>
+
+<span class="fc" id="L115">    final ObjectNode errors = server.putObject(&quot;errors&quot;);</span>
+<span class="fc" id="L116">    errors.put(&quot;connectionImpossible&quot;, mon.nbCountStatusConnectionImpossible);</span>
+<span class="fc" id="L117">    errors.put(&quot;serverOverloaded&quot;, mon.nbCountStatusServerOverloaded);</span>
+<span class="fc" id="L118">    errors.put(&quot;badAuthent&quot;, mon.nbCountStatusBadAuthent);</span>
+<span class="fc" id="L119">    errors.put(&quot;externalOp&quot;, mon.nbCountStatusExternalOp);</span>
+<span class="fc" id="L120">    errors.put(&quot;transferError&quot;, mon.nbCountStatusTransferError);</span>
+<span class="fc" id="L121">    errors.put(&quot;md5Error&quot;, mon.nbCountStatusMD5Error);</span>
+<span class="fc" id="L122">    errors.put(&quot;disconnection&quot;, mon.nbCountStatusDisconnection);</span>
+<span class="fc" id="L123">    errors.put(&quot;finalOp&quot;, mon.nbCountStatusFinalOp);</span>
+<span class="fc" id="L124">    errors.put(&quot;unimplemented&quot;, mon.nbCountStatusUnimplemented);</span>
+<span class="fc" id="L125">    errors.put(&quot;internal&quot;, mon.nbCountStatusInternal);</span>
+<span class="fc" id="L126">    errors.put(&quot;warning&quot;, mon.nbCountStatusWarning);</span>
+<span class="fc" id="L127">    errors.put(&quot;queryAlreadyFinished&quot;, mon.nbCountStatusQueryAlreadyFinished);</span>
+<span class="fc" id="L128">    errors.put(&quot;queryStillRunning&quot;, mon.nbCountStatusQueryStillRunning);</span>
+<span class="fc" id="L129">    errors.put(&quot;unknownHost&quot;, mon.nbCountStatusNotKnownHost);</span>
+<span class="fc" id="L130">    errors.put(&quot;remotelyUnknown&quot;, mon.nbCountStatusQueryRemotelyUnknown);</span>
+<span class="fc" id="L131">    errors.put(&quot;commandNotFound&quot;, mon.nbCountStatusCommandNotFound);</span>
+<span class="fc" id="L132">    errors.put(&quot;passThroughMode&quot;, mon.nbCountStatusPassThroughMode);</span>
+<span class="fc" id="L133">    errors.put(&quot;remoteShutdown&quot;, mon.nbCountStatusRemoteShutdown);</span>
+<span class="fc" id="L134">    errors.put(&quot;shutdown&quot;, mon.nbCountStatusShutdown);</span>
+<span class="fc" id="L135">    errors.put(&quot;remoteError&quot;, mon.nbCountStatusRemoteError);</span>
+<span class="fc" id="L136">    errors.put(&quot;stopped&quot;, mon.nbCountStatusStopped);</span>
+<span class="fc" id="L137">    errors.put(&quot;canceled&quot;, mon.nbCountStatusCanceled);</span>
+<span class="fc" id="L138">    errors.put(&quot;fileNotFound&quot;, mon.nbCountStatusFileNotFound);</span>
+<span class="fc" id="L139">    errors.put(&quot;unknown&quot;, mon.nbCountStatusUnknown);</span>
+
+<span class="fc" id="L141">    lastRun = DateTime.now();</span>
+
+<span class="fc" id="L143">    return server;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,2627 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpSslHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.adminssl</a> &gt; <span class="el_source">HttpSslHandler.java</span></div><h1>HttpSslHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.adminssl;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.handler.traffic.TrafficCounter;
+import org.waarp.common.command.exception.Reply421Exception;
+import org.waarp.common.command.exception.Reply530Exception;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.exception.FileTransferException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.ThreadLocalRandom;
+import org.waarp.common.utility.Version;
+import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
+import org.waarp.openr66.client.Message;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.SpooledInformTask;
+import org.waarp.openr66.database.DbConstantR66;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbHostConfiguration;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.exception.OpenR66Exception;
+import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.LocalServerHandler;
+import org.waarp.openr66.protocol.localhandler.ServerActions;
+import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket.TRANSFERMODE;
+import org.waarp.openr66.protocol.localhandler.packet.TestPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.NbAndSpecialId;
+import org.waarp.openr66.protocol.utils.R66Future;
+import org.waarp.openr66.protocol.utils.TransferUtils;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ *
+ */
+<span class="fc" id="L110">public class HttpSslHandler</span>
+    extends SimpleChannelInboundHandler&lt;FullHttpRequest&gt; {
+  private static final String XXXLEVEL4XXX = &quot;XXXLEVEL4XXX&quot;;
+  private static final String XXXLEVEL3XXX = &quot;XXXLEVEL3XXX&quot;;
+  private static final String XXXLEVEL2XXX = &quot;XXXLEVEL2XXX&quot;;
+  private static final String XXXLEVEL1XXX = &quot;XXXLEVEL1XXX&quot;;
+  private static final String OPEN_R66_WEB_ERROR = &quot;OpenR66 Web Error {}&quot;;
+  private static final String HTTP_SSL_HANDLER_MOPS = &quot;HttpSslHandler.MOPS&quot;;
+  private static final String HTTP_SSL_HANDLER_LANG_IS =
+      &quot;HttpSslHandler.LangIs&quot;;
+  private static final String HTTP_SSL_HANDLER_17 = &quot;HttpSslHandler.17&quot;;
+  private static final String EXPORT_ERROR = &quot;Export error: {}&quot;;
+  private static final String CHECKED = &quot;checked&quot;;
+  private static final String HTTP_SSL_HANDLER_NOT_ACTIVE =
+      &quot;HttpSslHandler.NotActive&quot;;
+  private static final String HTTP_SSL_HANDLER_ACTIVE = &quot;HttpSslHandler.Active&quot;;
+  private static final String AN_ERROR_OCCURS_WHILE_ACCESSING_A_RUNNER =
+      &quot;An error occurs while accessing a Runner: {}&quot;;
+  private static final String ADDRESS = &quot;address&quot;;
+  private static final String CREATE = &quot;Create&quot;;
+  private static final String ERROR2 = &quot;error&quot;;
+  private static final String TRANSFER2 = &quot;transfer&quot;;
+  private static final String PENDING2 = &quot;pending&quot;;
+  private static final String START2 = &quot;start&quot;;
+  private static final String STOPID2 = &quot;stopid&quot;;
+  private static final String STARTID2 = &quot;startid&quot;;
+  private static final String FILTER = &quot;Filter&quot;;
+  private static final String ACTION = &quot;ACTION&quot;;
+  private static final String HTTP_SSL_HANDLER_3 = &quot;HttpSslHandler.3&quot;;
+  private static final String BR_B = &quot;&lt;br&gt;&lt;b&gt;&quot;;
+  private static final String B_CENTER_P = &quot;&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;&quot;;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L144">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L145">      WaarpLoggerFactory.getLogger(HttpSslHandler.class);</span>
+  /**
+   * Session Management
+   */
+<span class="fc" id="L149">  protected static final ConcurrentHashMap&lt;String, R66Session&gt; sessions =</span>
+      new ConcurrentHashMap&lt;String, R66Session&gt;();
+<span class="fc" id="L151">  static final ConcurrentHashMap&lt;String, DbSession&gt; dbSessions =</span>
+      new ConcurrentHashMap&lt;String, DbSession&gt;();
+<span class="fc" id="L153">  protected static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();</span>
+
+<span class="fc" id="L155">  protected R66Session authentHttp = new R66Session();</span>
+
+  protected FullHttpRequest request;
+  protected boolean newSession;
+  protected volatile Cookie admin;
+<span class="fc" id="L160">  protected final StringBuilder responseContent = new StringBuilder();</span>
+  protected String uriRequest;
+  protected Map&lt;String, List&lt;String&gt;&gt; params;
+<span class="fc" id="L163">  protected String lang = Messages.getSlocale();</span>
+  protected boolean forceClose;
+  protected boolean shutdown;
+
+  protected static final String R66SESSION = &quot;R66SESSION&quot;;
+  protected static final String I18NEXT = &quot;i18next&quot;;
+
+<span class="fc" id="L170">  private enum REQUEST {</span>
+<span class="fc" id="L171">    Logon(&quot;Logon.html&quot;), Logout(&quot;Logon.html&quot;), index(&quot;index.html&quot;),</span>
+<span class="fc" id="L172">    error(&quot;error.html&quot;), unallowed(&quot;NotAllowed.html&quot;),</span>
+<span class="fc" id="L173">    Transfers(&quot;Transfers.html&quot;),</span>
+<span class="fc" id="L174">    Listing(&quot;Listing_head.html&quot;, &quot;Listing_body0.html&quot;, &quot;Listing_body.html&quot;,</span>
+            &quot;Listing_body1.html&quot;, &quot;Listing_end.html&quot;),
+<span class="fc" id="L176">    CancelRestart(&quot;CancelRestart_head.html&quot;, &quot;CancelRestart_body0.html&quot;,</span>
+                  &quot;CancelRestart_body.html&quot;, &quot;CancelRestart_body1.html&quot;,
+<span class="fc" id="L178">                  &quot;CancelRestart_end.html&quot;), Export(&quot;Export.html&quot;),</span>
+<span class="fc" id="L179">    Hosts(&quot;Hosts_head.html&quot;, &quot;Hosts_body0.html&quot;, &quot;Hosts_body.html&quot;,</span>
+          &quot;Hosts_body1.html&quot;, &quot;Hosts_end.html&quot;),
+<span class="fc" id="L181">    Rules(&quot;Rules_head.html&quot;, &quot;Rules_body0.html&quot;, &quot;Rules_body.html&quot;,</span>
+<span class="fc" id="L182">          &quot;Rules_body1.html&quot;, &quot;Rules_end.html&quot;), System(&quot;System.html&quot;),</span>
+<span class="fc" id="L183">    SystemLimited(&quot;SystemLimited.html&quot;), Spooled(&quot;Spooled.html&quot;),</span>
+<span class="fc" id="L184">    SpooledDetailed(&quot;Spooled.html&quot;);</span>
+
+    private final String header;
+    private final String headerBody;
+    private final String body;
+    private final String endBody;
+    private final String end;
+
+    /**
+     * Constructor for a unique file
+     *
+     * @param uniquefile
+     */
+<span class="fc" id="L197">    REQUEST(String uniquefile) {</span>
+<span class="fc" id="L198">      header = uniquefile;</span>
+<span class="fc" id="L199">      headerBody = null;</span>
+<span class="fc" id="L200">      body = null;</span>
+<span class="fc" id="L201">      endBody = null;</span>
+<span class="fc" id="L202">      end = null;</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * @param header
+     * @param headerBody
+     * @param body
+     * @param endBody
+     * @param end
+     */
+    REQUEST(String header, String headerBody, String body, String endBody,
+<span class="fc" id="L213">            String end) {</span>
+<span class="fc" id="L214">      this.header = header;</span>
+<span class="fc" id="L215">      this.headerBody = headerBody;</span>
+<span class="fc" id="L216">      this.body = body;</span>
+<span class="fc" id="L217">      this.endBody = endBody;</span>
+<span class="fc" id="L218">      this.end = end;</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Reader for a unique file
+     *
+     * @return the content of the unique file
+     */
+    public String readFileUnique(HttpSslHandler handler) {
+<span class="fc" id="L227">      return handler.readFileHeader(</span>
+<span class="fc" id="L228">          Configuration.configuration.getHttpBasePath() + header);</span>
+    }
+
+    public String readHeader(HttpSslHandler handler) {
+<span class="fc" id="L232">      return handler.readFileHeader(</span>
+<span class="fc" id="L233">          Configuration.configuration.getHttpBasePath() + header);</span>
+    }
+
+    public String readBodyHeader() {
+<span class="fc" id="L237">      return WaarpStringUtils</span>
+<span class="fc" id="L238">          .readFile(Configuration.configuration.getHttpBasePath() + headerBody);</span>
+    }
+
+    public String readBody() {
+<span class="fc" id="L242">      return WaarpStringUtils</span>
+<span class="fc" id="L243">          .readFile(Configuration.configuration.getHttpBasePath() + body);</span>
+    }
+
+    public String readBodyEnd() {
+<span class="fc" id="L247">      return WaarpStringUtils</span>
+<span class="fc" id="L248">          .readFile(Configuration.configuration.getHttpBasePath() + endBody);</span>
+    }
+
+    public String readEnd() {
+<span class="fc" id="L252">      return WaarpStringUtils</span>
+<span class="fc" id="L253">          .readFile(Configuration.configuration.getHttpBasePath() + end);</span>
+    }
+  }
+
+<span class="fc" id="L257">  protected enum REPLACEMENT {</span>
+<span class="fc" id="L258">    XXXHOSTIDXXX, XXXADMINXXX, XXXVERSIONXXX, XXXBANDWIDTHXXX,</span>
+<span class="fc" id="L259">    XXXBANDWIDTHINXXX, XXXBANDWIDTHOUTXXX, XXXXSESSIONLIMITRXXX,</span>
+<span class="fc" id="L260">    XXXXSESSIONLIMITWXXX, XXXXCHANNELLIMITRXXX, XXXXCHANNELLIMITWXXX,</span>
+<span class="fc" id="L261">    XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX, XXXXDELATRAFFICXXX, XXXLOCALXXX,</span>
+<span class="fc" id="L262">    XXXNETWORKXXX, XXXNBTRANSFERSXXX, XXXERRORMESGXXX, XXXXBUSINESSXXX,</span>
+<span class="fc" id="L263">    XXXXROLESXXX, XXXXALIASESXXX, XXXXOTHERXXX, XXXLIMITROWXXX, XXXREFRESHXXX,</span>
+<span class="fc" id="L264">    XXXLANGXXX, XXXCURLANGENXXX, XXXCURLANGFRXXX, XXXCURSYSLANGENXXX,</span>
+<span class="fc" id="L265">    XXXCURSYSLANGFRXXX</span>
+  }
+
+  public static final String sLIMITROW = &quot;LIMITROW&quot;;
+  static final String XXXRESULTXXX = &quot;XXXRESULTXXX&quot;;
+
+<span class="fc" id="L271">  private int limitRow = 48; // better if it can</span>
+  // be divided by 4
+  private int refresh;
+
+  /**
+   * The Database connection attached to this NetworkChannelReference shared
+   * among all associated LocalChannels
+   * in the session
+   */
+  DbSession dbSession;
+  /**
+   * Does this dbSession is private and so should be closed
+   */
+  boolean isPrivateDbSession;
+
+  public static String hashStatus() {
+<span class="nc" id="L287">    return &quot;HttpSslHandler: [sessions: &quot; + sessions.size() + &quot; dbSessions: &quot; +</span>
+<span class="nc" id="L288">           dbSessions.size() + &quot;] &quot;;</span>
+  }
+
+  String readFileHeader(String filename) {
+    String value;
+    try {
+<span class="fc" id="L294">      value = WaarpStringUtils.readFileException(filename);</span>
+<span class="nc" id="L295">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L296">      logger.error(&quot;Error while trying to open: &quot; + filename, e);</span>
+<span class="nc" id="L297">      return &quot;&quot;;</span>
+<span class="nc" id="L298">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L299">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
+<span class="nc" id="L300">      return &quot;&quot;;</span>
+<span class="fc" id="L301">    }</span>
+<span class="fc" id="L302">    final StringBuilder builder = new StringBuilder(value);</span>
+<span class="fc" id="L303">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCALXXX.toString(),</span>
+<span class="fc" id="L304">                             Configuration.configuration.getLocalTransaction()</span>
+<span class="fc" id="L305">                                                        .getNumberLocalChannel() +</span>
+<span class="fc" id="L306">                             &quot; Thread(&quot; + Thread.activeCount() + ')');</span>
+<span class="fc" id="L307">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETWORKXXX.toString(),</span>
+<span class="fc" id="L308">                             Integer.toString(DbAdmin.getNbConnection() -</span>
+<span class="fc" id="L309">                                              Configuration.getNbDbSession()));</span>
+<span class="fc" id="L310">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNBTRANSFERSXXX.toString(),</span>
+<span class="fc" id="L311">                             Long.toString(Configuration.configuration</span>
+<span class="fc" id="L312">                                               .getMonitoring().nbCountAllRunningStep));</span>
+<span class="fc" id="L313">    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),</span>
+<span class="fc" id="L314">                                Configuration.configuration.getHostId());</span>
+<span class="fc bfc" id="L315" title="All 2 branches covered.">    if (authentHttp.isAuthenticated()) {</span>
+<span class="fc" id="L316">      WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),</span>
+<span class="fc" id="L317">                               Messages.getString(</span>
+                                   &quot;HttpSslHandler.1&quot;)); //$NON-NLS-1$
+    } else {
+<span class="fc" id="L320">      WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),</span>
+<span class="fc" id="L321">                               Messages.getString(</span>
+                                   &quot;HttpSslHandler.0&quot;)); //$NON-NLS-1$
+    }
+<span class="fc" id="L324">    final TrafficCounter trafficCounter =</span>
+<span class="fc" id="L325">        Configuration.configuration.getGlobalTrafficShapingHandler()</span>
+<span class="fc" id="L326">                                   .trafficCounter();</span>
+<span class="fc" id="L327">    final long read = trafficCounter.lastReadThroughput();</span>
+<span class="fc" id="L328">    final long write = trafficCounter.lastWriteThroughput();</span>
+<span class="fc" id="L329">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),</span>
+<span class="fc" id="L330">                             Messages.getString(&quot;HttpSslHandler.IN&quot;) +</span>
+                             (read &gt;&gt; 20) + //$NON-NLS-1$
+<span class="fc" id="L332">                             Messages.getString(HTTP_SSL_HANDLER_MOPS) +</span>
+                             //$NON-NLS-1$
+<span class="fc" id="L334">                             Messages.getString(&quot;HttpSslHandler.OUT&quot;) +</span>
+                             //$NON-NLS-1$
+<span class="fc" id="L336">                             (write &gt;&gt; 20) + Messages.getString(</span>
+                                 HTTP_SSL_HANDLER_MOPS)); //$NON-NLS-1$
+<span class="fc" id="L338">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHINXXX.toString(),</span>
+<span class="fc" id="L339">                             (read &gt;&gt; 20) + Messages.getString(</span>
+                                 HTTP_SSL_HANDLER_MOPS)); //$NON-NLS-1$
+<span class="fc" id="L341">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHOUTXXX.toString(),</span>
+<span class="fc" id="L342">                             (write &gt;&gt; 20) + Messages.getString(</span>
+                                 HTTP_SSL_HANDLER_MOPS)); //$NON-NLS-1$
+<span class="fc" id="L344">    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXLIMITROWXXX.toString(),</span>
+<span class="fc" id="L345">                                String.valueOf(getLimitRow()));</span>
+<span class="fc" id="L346">    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXREFRESHXXX.toString(),</span>
+<span class="fc" id="L347">                                String.valueOf(getRefresh() / 1000));</span>
+<span class="fc" id="L348">    WaarpStringUtils</span>
+<span class="fc" id="L349">        .replaceAll(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);</span>
+<span class="fc" id="L350">    return builder.toString();</span>
+  }
+
+  protected String getTrimValue(String varname) {
+<span class="fc" id="L354">    final List&lt;String&gt; varlist = params.get(varname);</span>
+<span class="pc bpc" id="L355" title="2 of 4 branches missed.">    if (varlist != null &amp;&amp; !varlist.isEmpty()) {</span>
+<span class="fc" id="L356">      String value = params.get(varname).get(0).trim();</span>
+<span class="fc bfc" id="L357" title="All 2 branches covered.">      if (value.isEmpty()) {</span>
+<span class="fc" id="L358">        value = null;</span>
+      }
+<span class="fc" id="L360">      return value;</span>
+    }
+<span class="nc" id="L362">    return null;</span>
+  }
+
+  String getValue(String varname) {
+<span class="fc" id="L366">    return params.get(varname).get(0);</span>
+  }
+
+  private String index() {
+<span class="fc" id="L370">    final String index = REQUEST.index.readFileUnique(this);</span>
+<span class="fc" id="L371">    final StringBuilder builder = new StringBuilder(index);</span>
+<span class="fc" id="L372">    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),</span>
+<span class="fc" id="L373">                                Configuration.configuration.getHostId());</span>
+<span class="fc" id="L374">    WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXADMINXXX.toString(),</span>
+<span class="fc" id="L375">                                Messages.getString(</span>
+                                    &quot;HttpSslHandler.2&quot;)); //$NON-NLS-1$
+<span class="fc" id="L377">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(),</span>
+<span class="fc" id="L378">                             Version.fullIdentifier());</span>
+<span class="fc" id="L379">    return builder.toString();</span>
+  }
+
+  protected String error(String mesg) {
+<span class="nc" id="L383">    final String index = REQUEST.error.readFileUnique(this);</span>
+<span class="nc" id="L384">    return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);</span>
+  }
+
+  private String unallowed(String mesg) {
+<span class="nc" id="L388">    final String index = REQUEST.unallowed.readFileUnique(this);</span>
+<span class="nc bnc" id="L389" title="All 4 branches missed.">    if (index == null || index.isEmpty()) {</span>
+<span class="nc" id="L390">      return error(mesg);</span>
+    }
+<span class="nc" id="L392">    return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);</span>
+  }
+
+  protected String logon() {
+<span class="fc" id="L396">    return REQUEST.Logon.readFileUnique(this);</span>
+  }
+
+  private String transfers() {
+<span class="fc" id="L400">    return REQUEST.Transfers.readFileUnique(this);</span>
+  }
+
+  String resetOptionTransfer(String header, String startid, String stopid,
+                             String start, String stop, String rule, String req,
+                             boolean pending, boolean transfer, boolean error,
+                             boolean done, boolean all) {
+<span class="fc" id="L407">    final StringBuilder builder = new StringBuilder(header);</span>
+<span class="fc" id="L408">    WaarpStringUtils.replace(builder, &quot;XXXSTARTIDXXX&quot;, startid);</span>
+<span class="fc" id="L409">    WaarpStringUtils.replace(builder, &quot;XXXSTOPIDXXX&quot;, stopid);</span>
+<span class="fc" id="L410">    WaarpStringUtils.replace(builder, &quot;XXXSTARTXXX&quot;, start);</span>
+<span class="fc" id="L411">    WaarpStringUtils.replace(builder, &quot;XXXSTOPXXX&quot;, stop);</span>
+<span class="fc" id="L412">    WaarpStringUtils.replace(builder, &quot;XXXRULEXXX&quot;, rule);</span>
+<span class="fc" id="L413">    WaarpStringUtils.replace(builder, &quot;XXXREQXXX&quot;, req);</span>
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXPENDXXX&quot;, pending? CHECKED : &quot;&quot;);</span>
+<span class="pc bpc" id="L415" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXTRANSXXX&quot;, transfer? CHECKED : &quot;&quot;);</span>
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXERRXXX&quot;, error? CHECKED : &quot;&quot;);</span>
+<span class="fc bfc" id="L417" title="All 2 branches covered.">    WaarpStringUtils.replace(builder, &quot;XXXDONEXXX&quot;, done? CHECKED : &quot;&quot;);</span>
+<span class="fc bfc" id="L418" title="All 2 branches covered.">    WaarpStringUtils.replace(builder, &quot;XXXALLXXX&quot;, all? CHECKED : &quot;&quot;);</span>
+<span class="fc" id="L419">    return builder.toString();</span>
+  }
+
+  String checkAuthorizedToSeeAll() {
+<span class="fc" id="L423">    boolean seeAll = false;</span>
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">    if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {</span>
+      DbHostConfiguration dbhc;
+      try {
+<span class="fc" id="L427">        dbhc = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L428">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L429">        return null;</span>
+<span class="fc" id="L430">      }</span>
+<span class="pc bpc" id="L431" title="2 of 4 branches missed.">      seeAll = dbhc != null &amp;&amp; dbhc.isSeeAllId(authentHttp.getAuth().getUser());</span>
+    }
+<span class="pc bpc" id="L433" title="1 of 2 branches missed.">    if (seeAll) {</span>
+<span class="nc" id="L434">      return &quot;*&quot;;</span>
+    }
+<span class="fc" id="L436">    return null;</span>
+  }
+
+  private String listing0() {
+<span class="fc" id="L440">    getParams();</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">    if (params == null) {</span>
+<span class="fc" id="L442">      String head = REQUEST.Listing.readHeader(this);</span>
+<span class="fc" id="L443">      head =</span>
+<span class="fc" id="L444">          resetOptionTransfer(head, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false, false,</span>
+                              false, true);
+<span class="fc" id="L446">      final String end = REQUEST.Listing.readEnd().replace(XXXRESULTXXX, &quot;&quot;);</span>
+<span class="fc" id="L447">      return head + end;</span>
+    }
+<span class="fc" id="L449">    String head = REQUEST.Listing.readHeader(this);</span>
+    String body0;
+    String body;
+    String body1;
+<span class="fc" id="L453">    body0 = body1 = body = &quot;&quot;;</span>
+<span class="fc" id="L454">    StringBuilder endText = new StringBuilder();</span>
+<span class="fc" id="L455">    final List&lt;String&gt; parms = params.get(ACTION);</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">    if (parms != null) {</span>
+<span class="fc" id="L457">      body0 = REQUEST.Listing.readBodyHeader();</span>
+<span class="fc" id="L458">      final String parm = parms.get(0);</span>
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">      final boolean isNotReload = !&quot;Reload&quot;.equalsIgnoreCase(parm);</span>
+<span class="pc bpc" id="L460" title="3 of 4 branches missed.">      if (FILTER.equalsIgnoreCase(parm) || !isNotReload) {</span>
+<span class="fc" id="L461">        String startid = getTrimValue(STARTID2);</span>
+<span class="fc" id="L462">        String stopid = getTrimValue(STOPID2);</span>
+<span class="pc bpc" id="L463" title="4 of 6 branches missed.">        if (isNotReload &amp;&amp; startid != null &amp;&amp; stopid == null) {</span>
+<span class="nc" id="L464">          stopid = Long.MAX_VALUE + &quot;&quot;;</span>
+        }
+<span class="pc bpc" id="L466" title="4 of 6 branches missed.">        if (isNotReload &amp;&amp; stopid != null &amp;&amp; startid == null) {</span>
+<span class="nc" id="L467">          startid = (DbConstantR66.ILLEGALVALUE + 1) + &quot;&quot;;</span>
+        }
+<span class="fc" id="L469">        String start = getValue(START2);</span>
+<span class="fc" id="L470">        String stop = getValue(&quot;stop&quot;);</span>
+<span class="fc" id="L471">        final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="fc" id="L472">        final String req = getTrimValue(&quot;req&quot;);</span>
+        boolean pending;
+        boolean transfer;
+        boolean error;
+        boolean done;
+        boolean all;
+<span class="fc" id="L478">        pending = params.containsKey(PENDING2);</span>
+<span class="fc" id="L479">        transfer = params.containsKey(TRANSFER2);</span>
+<span class="fc" id="L480">        error = params.containsKey(ERROR2);</span>
+<span class="fc" id="L481">        done = params.containsKey(&quot;done&quot;);</span>
+<span class="fc" id="L482">        all = params.containsKey(&quot;all&quot;);</span>
+<span class="pc bpc" id="L483" title="7 of 8 branches missed.">        if (pending &amp;&amp; transfer &amp;&amp; error &amp;&amp; done) {</span>
+<span class="nc" id="L484">          all = true;</span>
+<span class="pc bpc" id="L485" title="4 of 8 branches missed.">        } else if (!(pending || transfer || error || done)) {</span>
+<span class="fc" id="L486">          all = true;</span>
+        }
+<span class="fc" id="L488">        final Timestamp tstart = WaarpStringUtils.fixDate(start);</span>
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">        if (tstart != null) {</span>
+<span class="nc" id="L490">          start = tstart.toString();</span>
+        }
+<span class="fc" id="L492">        final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">        if (tstop != null) {</span>
+<span class="nc" id="L494">          stop = tstop.toString();</span>
+        }
+<span class="fc" id="L496">        Long idstart = null;</span>
+<span class="fc" id="L497">        body = REQUEST.Listing.readBody();</span>
+<span class="fc" id="L498">        final String seeAll = checkAuthorizedToSeeAll();</span>
+<span class="fc" id="L499">        DbPreparedStatement preparedStatement = null;</span>
+        try {
+<span class="fc" id="L501">          preparedStatement = DbTaskRunner</span>
+<span class="fc" id="L502">              .getFilterPrepareStatement(dbSession, getLimitRow(), false,</span>
+                                         startid, stopid, tstart, tstop, rule,
+                                         req, pending, transfer, error, done,
+                                         all, seeAll);
+<span class="fc" id="L506">          preparedStatement.executeQuery();</span>
+<span class="fc" id="L507">          final StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L508">          int i = 0;</span>
+<span class="pc bpc" id="L509" title="1 of 2 branches missed.">          while (preparedStatement.getNext()) {</span>
+            try {
+<span class="nc" id="L511">              i++;</span>
+<span class="nc" id="L512">              final DbTaskRunner taskRunner =</span>
+<span class="nc" id="L513">                  DbTaskRunner.getFromStatement(preparedStatement);</span>
+<span class="nc bnc" id="L514" title="All 2 branches missed.">              if (isNotReload) {</span>
+<span class="nc" id="L515">                final long specid = taskRunner.getSpecialId();</span>
+<span class="nc bnc" id="L516" title="All 4 branches missed.">                if (idstart == null || idstart &gt; specid) {</span>
+<span class="nc" id="L517">                  idstart = specid;</span>
+                }
+              }
+<span class="nc" id="L520">              final LocalChannelReference lcr =</span>
+<span class="nc" id="L521">                  Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L522">                                             .getFromRequest(</span>
+<span class="nc" id="L523">                                                 taskRunner.getKey());</span>
+<span class="nc bnc" id="L524" title="All 2 branches missed.">              builder.append(taskRunner.toSpecializedHtml(authentHttp, body,</span>
+                                                          lcr != null? Messages
+<span class="nc" id="L526">                                                              .getString(</span>
+                                                                  HTTP_SSL_HANDLER_ACTIVE) :
+                                                              Messages
+<span class="nc" id="L529">                                                                  .getString(</span>
+                                                                      HTTP_SSL_HANDLER_NOT_ACTIVE)));
+<span class="nc bnc" id="L531" title="All 2 branches missed.">              if (i &gt; getLimitRow()) {</span>
+<span class="nc" id="L532">                break;</span>
+              }
+<span class="nc" id="L534">            } catch (final WaarpDatabaseException e) {</span>
+              // try to continue if possible
+<span class="nc" id="L536">              logger.warn(AN_ERROR_OCCURS_WHILE_ACCESSING_A_RUNNER,</span>
+<span class="nc" id="L537">                          e.getMessage());</span>
+<span class="nc" id="L538">              endText.append(e.getMessage()).append(&quot;&lt;/BR&gt;&quot;);</span>
+<span class="nc" id="L539">            }</span>
+          }
+<span class="fc" id="L541">          preparedStatement.realClose();</span>
+<span class="fc" id="L542">          body = builder.toString();</span>
+<span class="nc" id="L543">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L544" title="All 2 branches missed.">          if (preparedStatement != null) {</span>
+<span class="nc" id="L545">            preparedStatement.realClose();</span>
+          }
+<span class="nc" id="L547">          logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="fc" id="L548">        }</span>
+<span class="pc bpc" id="L549" title="2 of 4 branches missed.">        head = resetOptionTransfer(head, startid == null?</span>
+<span class="pc bpc" id="L550" title="3 of 6 branches missed.">                                       idstart != null? idstart.toString() : &quot;&quot; : startid,</span>
+                                   stopid == null? &quot;&quot; : stopid, start, stop,
+                                   rule == null? &quot;&quot; : rule,
+                                   req == null? &quot;&quot; : req, pending, transfer,
+                                   error, done, all);
+<span class="fc" id="L555">      } else {</span>
+<span class="nc" id="L556">        head = resetOptionTransfer(head, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false,</span>
+                                   false, false, true);
+      }
+<span class="fc" id="L559">      body1 = REQUEST.Listing.readBodyEnd();</span>
+<span class="fc" id="L560">    } else {</span>
+<span class="nc" id="L561">      head =</span>
+<span class="nc" id="L562">          resetOptionTransfer(head, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false, false,</span>
+                              false, true);
+    }
+<span class="fc" id="L565">    final String end =</span>
+<span class="fc" id="L566">        REQUEST.Listing.readEnd().replace(XXXRESULTXXX, endText.toString());</span>
+<span class="fc" id="L567">    return head + body0 + body + body1 + end;</span>
+  }
+
+  private String cancelRestart0() {
+<span class="fc" id="L571">    getParams();</span>
+<span class="fc bfc" id="L572" title="All 2 branches covered.">    if (params == null) {</span>
+<span class="fc" id="L573">      String head = REQUEST.CancelRestart.readHeader(this);</span>
+<span class="fc" id="L574">      head =</span>
+<span class="fc" id="L575">          resetOptionTransfer(head, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false, false,</span>
+                              false, true);
+      String end;
+<span class="fc" id="L578">      end = REQUEST.CancelRestart.readEnd();</span>
+<span class="fc" id="L579">      return head + end;</span>
+    }
+<span class="fc" id="L581">    String head = REQUEST.CancelRestart.readHeader(this);</span>
+    String body0;
+    String body;
+    String body1;
+<span class="fc" id="L585">    body0 = body1 = body = &quot;&quot;;</span>
+<span class="fc" id="L586">    final List&lt;String&gt; parms = params.get(ACTION);</span>
+<span class="fc" id="L587">    final String seeAll = checkAuthorizedToSeeAll();</span>
+<span class="pc bpc" id="L588" title="1 of 2 branches missed.">    if (parms != null) {</span>
+<span class="fc" id="L589">      body0 = REQUEST.CancelRestart.readBodyHeader();</span>
+<span class="fc" id="L590">      final String parm = parms.get(0);</span>
+<span class="pc bpc" id="L591" title="1 of 2 branches missed.">      final boolean isNotReload = !&quot;Reload&quot;.equalsIgnoreCase(parm);</span>
+<span class="pc bpc" id="L592" title="3 of 4 branches missed.">      if (FILTER.equalsIgnoreCase(parm) || !isNotReload) {</span>
+<span class="fc" id="L593">        String startid = getTrimValue(STARTID2);</span>
+<span class="fc" id="L594">        String stopid = getTrimValue(STOPID2);</span>
+<span class="pc bpc" id="L595" title="4 of 6 branches missed.">        if (isNotReload &amp;&amp; startid != null &amp;&amp; stopid == null) {</span>
+<span class="nc" id="L596">          stopid = Long.MAX_VALUE + &quot;&quot;;</span>
+        }
+<span class="pc bpc" id="L598" title="4 of 6 branches missed.">        if (isNotReload &amp;&amp; stopid != null &amp;&amp; startid == null) {</span>
+<span class="nc" id="L599">          startid = (DbConstantR66.ILLEGALVALUE + 1) + &quot;&quot;;</span>
+        }
+<span class="fc" id="L601">        String start = getValue(START2);</span>
+<span class="fc" id="L602">        String stop = getValue(&quot;stop&quot;);</span>
+<span class="fc" id="L603">        final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="fc" id="L604">        final String req = getTrimValue(&quot;req&quot;);</span>
+        boolean pending;
+        boolean transfer;
+        boolean error;
+        boolean done;
+        boolean all;
+<span class="fc" id="L610">        pending = params.containsKey(PENDING2);</span>
+<span class="fc" id="L611">        transfer = params.containsKey(TRANSFER2);</span>
+<span class="fc" id="L612">        error = params.containsKey(ERROR2);</span>
+<span class="fc" id="L613">        done = params.containsKey(&quot;done&quot;);</span>
+<span class="fc" id="L614">        all = params.containsKey(&quot;all&quot;);</span>
+<span class="pc bpc" id="L615" title="7 of 8 branches missed.">        if (pending &amp;&amp; transfer &amp;&amp; error &amp;&amp; done) {</span>
+<span class="nc" id="L616">          all = true;</span>
+<span class="pc bpc" id="L617" title="4 of 8 branches missed.">        } else if (!(pending || transfer || error || done)) {</span>
+<span class="fc" id="L618">          all = true;</span>
+        }
+<span class="fc" id="L620">        final Timestamp tstart = WaarpStringUtils.fixDate(start);</span>
+<span class="pc bpc" id="L621" title="1 of 2 branches missed.">        if (tstart != null) {</span>
+<span class="nc" id="L622">          start = tstart.toString();</span>
+        }
+<span class="fc" id="L624">        final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);</span>
+<span class="pc bpc" id="L625" title="1 of 2 branches missed.">        if (tstop != null) {</span>
+<span class="nc" id="L626">          stop = tstop.toString();</span>
+        }
+<span class="fc" id="L628">        body = REQUEST.CancelRestart.readBody();</span>
+<span class="fc" id="L629">        Long idstart = null;</span>
+<span class="fc" id="L630">        DbPreparedStatement preparedStatement = null;</span>
+        try {
+<span class="fc" id="L632">          preparedStatement = DbTaskRunner</span>
+<span class="fc" id="L633">              .getFilterPrepareStatement(dbSession, getLimitRow(), false,</span>
+                                         startid, stopid, tstart, tstop, rule,
+                                         req, pending, transfer, error, done,
+                                         all, seeAll);
+<span class="fc" id="L637">          preparedStatement.executeQuery();</span>
+<span class="fc" id="L638">          final StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L639">          int i = 0;</span>
+<span class="pc bpc" id="L640" title="1 of 2 branches missed.">          while (preparedStatement.getNext()) {</span>
+            try {
+<span class="nc" id="L642">              i++;</span>
+<span class="nc" id="L643">              final DbTaskRunner taskRunner =</span>
+<span class="nc" id="L644">                  DbTaskRunner.getFromStatement(preparedStatement);</span>
+<span class="nc bnc" id="L645" title="All 2 branches missed.">              if (isNotReload) {</span>
+<span class="nc" id="L646">                final long specid = taskRunner.getSpecialId();</span>
+<span class="nc bnc" id="L647" title="All 4 branches missed.">                if (idstart == null || idstart &gt; specid) {</span>
+<span class="nc" id="L648">                  idstart = specid;</span>
+                }
+              }
+<span class="nc" id="L651">              final LocalChannelReference lcr =</span>
+<span class="nc" id="L652">                  Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L653">                                             .getFromRequest(</span>
+<span class="nc" id="L654">                                                 taskRunner.getKey());</span>
+<span class="nc bnc" id="L655" title="All 2 branches missed.">              builder.append(taskRunner.toSpecializedHtml(authentHttp, body,</span>
+                                                          lcr != null? Messages
+<span class="nc" id="L657">                                                              .getString(</span>
+                                                                  HTTP_SSL_HANDLER_ACTIVE) :
+                                                              Messages
+<span class="nc" id="L660">                                                                  .getString(</span>
+                                                                      HTTP_SSL_HANDLER_NOT_ACTIVE)));
+<span class="nc bnc" id="L662" title="All 2 branches missed.">              if (i &gt; getLimitRow()) {</span>
+<span class="nc" id="L663">                break;</span>
+              }
+<span class="nc" id="L665">            } catch (final WaarpDatabaseException e) {</span>
+              // try to continue if possible
+<span class="nc" id="L667">              logger.warn(AN_ERROR_OCCURS_WHILE_ACCESSING_A_RUNNER,</span>
+<span class="nc" id="L668">                          e.getMessage());</span>
+<span class="nc" id="L669">              continue;</span>
+<span class="nc" id="L670">            }</span>
+          }
+<span class="fc" id="L672">          preparedStatement.realClose();</span>
+<span class="fc" id="L673">          body = builder.toString();</span>
+<span class="nc" id="L674">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L675" title="All 2 branches missed.">          if (preparedStatement != null) {</span>
+<span class="nc" id="L676">            preparedStatement.realClose();</span>
+          }
+<span class="nc" id="L678">          logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="fc" id="L679">        }</span>
+<span class="pc bpc" id="L680" title="2 of 4 branches missed.">        head = resetOptionTransfer(head, startid == null?</span>
+<span class="pc bpc" id="L681" title="3 of 6 branches missed.">                                       idstart != null? idstart.toString() : &quot;&quot; : startid,</span>
+                                   stopid == null? &quot;&quot; : stopid, start, stop,
+                                   rule == null? &quot;&quot; : rule,
+                                   req == null? &quot;&quot; : req, pending, transfer,
+                                   error, done, all);
+<span class="fc" id="L686">        body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="pc bnc" id="L687" title="All 2 branches missed.">      } else if (&quot;RestartAll&quot;.equalsIgnoreCase(parm) ||</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">                 &quot;StopAll&quot;.equalsIgnoreCase(parm) ||</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">                 &quot;StopCleanAll&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc bnc" id="L690" title="All 2 branches missed.">        final boolean stopcommand = &quot;StopAll&quot;.equalsIgnoreCase(parm) ||</span>
+<span class="nc bnc" id="L691" title="All 2 branches missed.">                                    &quot;StopCleanAll&quot;.equalsIgnoreCase(parm);</span>
+<span class="nc" id="L692">        final String startid = getTrimValue(STARTID2);</span>
+<span class="nc" id="L693">        final String stopid = getTrimValue(STOPID2);</span>
+<span class="nc" id="L694">        String start = getValue(START2);</span>
+<span class="nc" id="L695">        String stop = getValue(&quot;stop&quot;);</span>
+<span class="nc" id="L696">        final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="nc" id="L697">        final String req = getTrimValue(&quot;req&quot;);</span>
+        boolean pending;
+        boolean transfer;
+        boolean error;
+        boolean done;
+        boolean all;
+<span class="nc" id="L703">        pending = params.containsKey(PENDING2);</span>
+<span class="nc" id="L704">        transfer = params.containsKey(TRANSFER2);</span>
+<span class="nc" id="L705">        error = params.containsKey(ERROR2);</span>
+<span class="nc" id="L706">        done = false;</span>
+<span class="nc" id="L707">        all = false;</span>
+<span class="nc bnc" id="L708" title="All 8 branches missed.">        if (pending &amp;&amp; transfer &amp;&amp; error &amp;&amp; done) {</span>
+<span class="nc" id="L709">          all = true;</span>
+<span class="nc bnc" id="L710" title="All 8 branches missed.">        } else if (!(pending || transfer || error || done)) {</span>
+<span class="nc" id="L711">          all = true;</span>
+<span class="nc" id="L712">          pending = true;</span>
+<span class="nc" id="L713">          transfer = true;</span>
+<span class="nc" id="L714">          error = true;</span>
+        }
+<span class="nc" id="L716">        final Timestamp tstart = WaarpStringUtils.fixDate(start);</span>
+<span class="nc bnc" id="L717" title="All 2 branches missed.">        if (tstart != null) {</span>
+<span class="nc" id="L718">          start = tstart.toString();</span>
+        }
+<span class="nc" id="L720">        final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);</span>
+<span class="nc bnc" id="L721" title="All 2 branches missed.">        if (tstop != null) {</span>
+<span class="nc" id="L722">          stop = tstop.toString();</span>
+        }
+<span class="nc bnc" id="L724" title="All 8 branches missed.">        head = resetOptionTransfer(head, startid == null? &quot;&quot; : startid,</span>
+                                   stopid == null? &quot;&quot; : stopid, start, stop,
+                                   rule == null? &quot;&quot; : rule,
+                                   req == null? &quot;&quot; : req, pending, transfer,
+                                   error, done, all);
+<span class="nc" id="L729">        body = REQUEST.CancelRestart.readBody();</span>
+<span class="nc" id="L730">        final StringBuilder builder = new StringBuilder();</span>
+<span class="nc bnc" id="L731" title="All 2 branches missed.">        if (stopcommand) {</span>
+<span class="nc bnc" id="L732" title="All 2 branches missed.">          if (&quot;StopCleanAll&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L733">            TransferUtils</span>
+<span class="nc" id="L734">                .cleanSelectedTransfers(dbSession, 0, builder, authentHttp,</span>
+                                        body, startid, stopid, tstart, tstop,
+                                        rule, req, pending, transfer, error,
+                                        seeAll);
+          } else {
+<span class="nc" id="L739">            TransferUtils</span>
+<span class="nc" id="L740">                .stopSelectedTransfers(dbSession, 0, builder, authentHttp, body,</span>
+                                       startid, stopid, tstart, tstop, rule,
+                                       req, pending, transfer, error, seeAll);
+          }
+        } else {
+<span class="nc" id="L745">          DbPreparedStatement preparedStatement = null;</span>
+          try {
+<span class="nc" id="L747">            preparedStatement = DbTaskRunner</span>
+<span class="nc" id="L748">                .getFilterPrepareStatement(dbSession, 0, false, startid, stopid,</span>
+                                           tstart, tstop, rule, req, pending,
+                                           transfer, error, done, all, seeAll);
+<span class="nc" id="L751">            preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">            while (preparedStatement.getNext()) {</span>
+              try {
+<span class="nc" id="L754">                final DbTaskRunner taskRunner =</span>
+<span class="nc" id="L755">                    DbTaskRunner.getFromStatement(preparedStatement);</span>
+<span class="nc" id="L756">                final LocalChannelReference lcr =</span>
+<span class="nc" id="L757">                    Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L758">                                               .getFromRequest(</span>
+<span class="nc" id="L759">                                                   taskRunner.getKey());</span>
+<span class="nc" id="L760">                final R66Result finalResult =</span>
+<span class="nc" id="L761">                    TransferUtils.restartTransfer(taskRunner, lcr);</span>
+<span class="nc" id="L762">                final ErrorCode result = finalResult.getCode();</span>
+<span class="nc" id="L763">                final ErrorCode last = taskRunner.getErrorInfo();</span>
+<span class="nc" id="L764">                taskRunner.setErrorExecutionStatus(result);</span>
+<span class="nc bnc" id="L765" title="All 2 branches missed.">                builder.append(taskRunner.toSpecializedHtml(authentHttp, body,</span>
+                                                            lcr != null?
+                                                                Messages
+<span class="nc" id="L768">                                                                    .getString(</span>
+                                                                        HTTP_SSL_HANDLER_ACTIVE) :
+                                                                Messages
+<span class="nc" id="L771">                                                                    .getString(</span>
+                                                                        HTTP_SSL_HANDLER_NOT_ACTIVE)));
+<span class="nc" id="L773">                taskRunner.setErrorExecutionStatus(last);</span>
+<span class="nc" id="L774">              } catch (final WaarpDatabaseException e) {</span>
+                // try to continue if possible
+<span class="nc" id="L776">                logger.warn(AN_ERROR_OCCURS_WHILE_ACCESSING_A_RUNNER,</span>
+<span class="nc" id="L777">                            e.getMessage());</span>
+<span class="nc" id="L778">                continue;</span>
+<span class="nc" id="L779">              }</span>
+            }
+<span class="nc" id="L781">            preparedStatement.realClose();</span>
+<span class="nc" id="L782">          } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L783" title="All 2 branches missed.">            if (preparedStatement != null) {</span>
+<span class="nc" id="L784">              preparedStatement.realClose();</span>
+            }
+<span class="nc" id="L786">            logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="nc" id="L787">          }</span>
+        }
+<span class="nc bnc" id="L789" title="All 2 branches missed.">        if (builder != null) {</span>
+<span class="nc" id="L790">          body = builder.toString();</span>
+        }
+<span class="nc" id="L792">        body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="nc bnc" id="L793" title="All 2 branches missed.">      } else if (&quot;Cancel&quot;.equalsIgnoreCase(parm) ||</span>
+<span class="nc bnc" id="L794" title="All 2 branches missed.">                 &quot;CancelClean&quot;.equalsIgnoreCase(parm) ||</span>
+<span class="nc bnc" id="L795" title="All 2 branches missed.">                 &quot;Stop&quot;.equalsIgnoreCase(parm)) {</span>
+        // Cancel or Stop
+<span class="nc" id="L797">        final boolean stop = &quot;Stop&quot;.equalsIgnoreCase(parm);</span>
+<span class="nc" id="L798">        final String specid = getValue(&quot;specid&quot;);</span>
+<span class="nc" id="L799">        final String reqd = getValue(&quot;reqd&quot;);</span>
+<span class="nc" id="L800">        final String reqr = getValue(&quot;reqr&quot;);</span>
+<span class="nc" id="L801">        final LocalChannelReference lcr =</span>
+<span class="nc" id="L802">            Configuration.configuration.getLocalTransaction().getFromRequest(</span>
+                reqd + ' ' + reqr + ' ' + specid);
+        // stop the current transfer
+        ErrorCode result;
+        long lspecid;
+        try {
+<span class="nc" id="L808">          lspecid = Long.parseLong(specid);</span>
+<span class="nc" id="L809">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L810">          body = &quot;&quot;;</span>
+<span class="nc" id="L811">          body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="nc" id="L812">          body1 += BR_B + parm +</span>
+<span class="nc" id="L813">                   Messages.getString(HTTP_SSL_HANDLER_3); //$NON-NLS-2$</span>
+          String end;
+<span class="nc" id="L815">          end = REQUEST.CancelRestart.readEnd();</span>
+<span class="nc" id="L816">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L817">        }</span>
+<span class="nc" id="L818">        DbTaskRunner taskRunner = null;</span>
+        try {
+<span class="nc" id="L820">          taskRunner = new DbTaskRunner(authentHttp, null, lspecid, reqr, reqd);</span>
+<span class="nc" id="L821">        } catch (final WaarpDatabaseException ignored) {</span>
+          // nothing
+<span class="nc" id="L823">        }</span>
+<span class="nc bnc" id="L824" title="All 2 branches missed.">        if (taskRunner == null) {</span>
+<span class="nc" id="L825">          body = &quot;&quot;;</span>
+<span class="nc" id="L826">          body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="nc" id="L827">          body1 += BR_B + parm +</span>
+<span class="nc" id="L828">                   Messages.getString(HTTP_SSL_HANDLER_3); //$NON-NLS-2$</span>
+          String end;
+<span class="nc" id="L830">          end = REQUEST.CancelRestart.readEnd();</span>
+<span class="nc" id="L831">          return head + body0 + body + body1 + end;</span>
+        }
+<span class="nc bnc" id="L833" title="All 2 branches missed.">        final ErrorCode code =</span>
+            stop? ErrorCode.StoppedTransfer : ErrorCode.CanceledTransfer;
+<span class="nc bnc" id="L835" title="All 2 branches missed.">        if (lcr != null) {</span>
+<span class="nc" id="L836">          final int rank = taskRunner.getRank();</span>
+<span class="nc" id="L837">          lcr.sessionNewState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L838">          final ErrorPacket error =</span>
+<span class="nc" id="L839">              new ErrorPacket(&quot;Transfer &quot; + parm + ' ' + rank, code.getCode(),</span>
+                              ErrorPacket.FORWARDCLOSECODE);
+          try {
+            // inform local instead of remote
+<span class="nc" id="L843">            LocalServerHandler.channelRead0(lcr, error);</span>
+<span class="nc" id="L844">          } catch (final Exception ignored) {</span>
+            // nothing
+<span class="nc" id="L846">          }</span>
+<span class="nc" id="L847">          result = ErrorCode.CompleteOk;</span>
+<span class="nc" id="L848">        } else {</span>
+          // Transfer is not running
+          // But is the database saying the contrary
+<span class="nc" id="L851">          result = ErrorCode.TransferOk;</span>
+<span class="nc bnc" id="L852" title="All 4 branches missed.">          if (taskRunner != null &amp;&amp; taskRunner.stopOrCancelRunner(code)) {</span>
+<span class="nc" id="L853">            result = ErrorCode.CompleteOk;</span>
+          }
+        }
+<span class="nc bnc" id="L856" title="All 2 branches missed.">        if (taskRunner != null) {</span>
+<span class="nc bnc" id="L857" title="All 2 branches missed.">          if (&quot;CancelClean&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L858">            TransferUtils.cleanOneTransfer(taskRunner, null, authentHttp, null);</span>
+          }
+<span class="nc" id="L860">          body = REQUEST.CancelRestart.readBody();</span>
+<span class="nc bnc" id="L861" title="All 2 branches missed.">          body = taskRunner.toSpecializedHtml(authentHttp, body, lcr != null?</span>
+<span class="nc" id="L862">              Messages.getString(HTTP_SSL_HANDLER_ACTIVE)</span>
+              //$NON-NLS-1$
+<span class="nc" id="L864">              : Messages.getString(HTTP_SSL_HANDLER_NOT_ACTIVE)); //$NON-NLS-1$</span>
+<span class="nc" id="L865">          String tstart = taskRunner.getStart().toString();</span>
+<span class="nc" id="L866">          String tstop = taskRunner.getStop().toString();</span>
+<span class="nc" id="L867">          head = resetOptionTransfer(head, String</span>
+<span class="nc" id="L868">                                         .valueOf(taskRunner.getSpecialId() - 1), String.valueOf(</span>
+<span class="nc" id="L869">              taskRunner.getSpecialId() + 1), tstart, tstop,</span>
+<span class="nc" id="L870">                                     taskRunner.getRuleId(),</span>
+<span class="nc" id="L871">                                     taskRunner.getRequested(), false, false,</span>
+                                     false, false, true);
+        }
+<span class="nc" id="L874">        body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="nc bnc" id="L875" title="All 2 branches missed.">        body1 += BR_B + (result == ErrorCode.CompleteOk?</span>
+<span class="nc" id="L876">            parm + Messages.getString(&quot;HttpSslHandler.5&quot;) :</span>
+            //$NON-NLS-2$
+<span class="nc" id="L878">            parm + Messages.getString(&quot;HttpSslHandler.4&quot;)) +</span>
+                 &quot;&lt;/b&gt;&quot;; //$NON-NLS-1$
+<span class="nc bnc" id="L880" title="All 2 branches missed.">      } else if (&quot;Restart&quot;.equalsIgnoreCase(parm)) {</span>
+        // Restart
+<span class="nc" id="L882">        final String specid = getValue(&quot;specid&quot;);</span>
+<span class="nc" id="L883">        final String reqd = getValue(&quot;reqd&quot;);</span>
+<span class="nc" id="L884">        final String reqr = getValue(&quot;reqr&quot;);</span>
+        long lspecid;
+        try {
+<span class="nc" id="L887">          lspecid = Long.parseLong(specid);</span>
+<span class="nc" id="L888">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L889">          body = &quot;&quot;;</span>
+<span class="nc" id="L890">          body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="nc" id="L891">          body1 += BR_B + parm +</span>
+<span class="nc" id="L892">                   Messages.getString(HTTP_SSL_HANDLER_3); //$NON-NLS-2$</span>
+          String end;
+<span class="nc" id="L894">          end = REQUEST.CancelRestart.readEnd();</span>
+<span class="nc" id="L895">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L896">        }</span>
+        DbTaskRunner taskRunner;
+        String comment;
+        try {
+<span class="nc" id="L900">          taskRunner = new DbTaskRunner(authentHttp, null, lspecid, reqr, reqd);</span>
+<span class="nc" id="L901">          final LocalChannelReference lcr =</span>
+<span class="nc" id="L902">              Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L903">                                         .getFromRequest(taskRunner.getKey());</span>
+<span class="nc" id="L904">          final R66Result finalResult =</span>
+<span class="nc" id="L905">              TransferUtils.restartTransfer(taskRunner, lcr);</span>
+<span class="nc" id="L906">          comment = (String) finalResult.getOther();</span>
+<span class="nc" id="L907">          body = REQUEST.CancelRestart.readBody();</span>
+<span class="nc bnc" id="L908" title="All 2 branches missed.">          body = taskRunner.toSpecializedHtml(authentHttp, body, lcr != null?</span>
+<span class="nc" id="L909">              Messages.getString(HTTP_SSL_HANDLER_ACTIVE)</span>
+              //$NON-NLS-1$
+<span class="nc" id="L911">              : Messages.getString(HTTP_SSL_HANDLER_NOT_ACTIVE)); //$NON-NLS-1$</span>
+<span class="nc" id="L912">          String tstart = taskRunner.getStart().toString();</span>
+<span class="nc" id="L913">          String tstop = taskRunner.getStop().toString();</span>
+<span class="nc" id="L914">          head = resetOptionTransfer(head, String</span>
+<span class="nc" id="L915">                                         .valueOf(taskRunner.getSpecialId() - 1), String.valueOf(</span>
+<span class="nc" id="L916">              taskRunner.getSpecialId() + 1), tstart, tstop,</span>
+<span class="nc" id="L917">                                     taskRunner.getRuleId(),</span>
+<span class="nc" id="L918">                                     taskRunner.getRequested(), false, false,</span>
+                                     false, false, true);
+<span class="nc" id="L920">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L921">          body = &quot;&quot;;</span>
+<span class="nc" id="L922">          comment = Messages.getString(&quot;ErrorCode.17&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L923">        }</span>
+<span class="nc" id="L924">        body1 = REQUEST.CancelRestart.readBodyEnd();</span>
+<span class="nc" id="L925">        body1 += BR_B + comment + &quot;&lt;/b&gt;&quot;;</span>
+<span class="nc" id="L926">      } else {</span>
+<span class="nc" id="L927">        head = resetOptionTransfer(head, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false,</span>
+                                   false, false, true);
+      }
+<span class="fc" id="L930">    } else {</span>
+<span class="nc" id="L931">      head =</span>
+<span class="nc" id="L932">          resetOptionTransfer(head, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false, false,</span>
+                              false, true);
+    }
+    String end;
+<span class="fc" id="L936">    end = REQUEST.CancelRestart.readEnd();</span>
+<span class="fc" id="L937">    return head + body0 + body + body1 + end;</span>
+  }
+
+  private String export0() {
+<span class="fc" id="L941">    getParams();</span>
+<span class="fc bfc" id="L942" title="All 2 branches covered.">    if (params == null) {</span>
+<span class="fc" id="L943">      String body = REQUEST.Export.readFileUnique(this);</span>
+<span class="fc" id="L944">      body =</span>
+<span class="fc" id="L945">          resetOptionTransfer(body, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, false, false, false,</span>
+                              true, false);
+<span class="fc" id="L947">      return body.replace(XXXRESULTXXX, &quot;&quot;);</span>
+    }
+<span class="fc" id="L949">    String body = REQUEST.Export.readFileUnique(this);</span>
+<span class="fc" id="L950">    String start = getValue(START2);</span>
+<span class="fc" id="L951">    String stop = getValue(&quot;stop&quot;);</span>
+<span class="fc" id="L952">    final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="fc" id="L953">    final String req = getTrimValue(&quot;req&quot;);</span>
+    boolean pending;
+    boolean transfer;
+    boolean error;
+    boolean done;
+    boolean all;
+<span class="fc" id="L959">    pending = params.containsKey(PENDING2);</span>
+<span class="fc" id="L960">    transfer = params.containsKey(TRANSFER2);</span>
+<span class="fc" id="L961">    error = params.containsKey(ERROR2);</span>
+<span class="fc" id="L962">    done = params.containsKey(&quot;done&quot;);</span>
+<span class="fc" id="L963">    all = params.containsKey(&quot;all&quot;);</span>
+<span class="fc" id="L964">    boolean toPurge = params.containsKey(&quot;purge&quot;);</span>
+<span class="pc bpc" id="L965" title="1 of 2 branches missed.">    if (toPurge) {</span>
+<span class="nc" id="L966">      transfer = false;</span>
+    }
+<span class="pc bpc" id="L968" title="7 of 8 branches missed.">    if (pending &amp;&amp; transfer &amp;&amp; error &amp;&amp; done) {</span>
+<span class="nc" id="L969">      all = true;</span>
+<span class="pc bpc" id="L970" title="4 of 8 branches missed.">    } else if (!(pending || transfer || error || done)) {</span>
+<span class="nc" id="L971">      all = true;</span>
+    }
+<span class="fc" id="L973">    final Timestamp tstart = WaarpStringUtils.fixDate(start);</span>
+<span class="pc bpc" id="L974" title="1 of 2 branches missed.">    if (tstart != null) {</span>
+<span class="nc" id="L975">      start = tstart.toString();</span>
+    }
+<span class="fc" id="L977">    final Timestamp tstop = WaarpStringUtils.fixDate(stop, tstart);</span>
+<span class="pc bpc" id="L978" title="1 of 2 branches missed.">    if (tstop != null) {</span>
+<span class="nc" id="L979">      stop = tstop.toString();</span>
+    }
+<span class="pc bpc" id="L981" title="2 of 4 branches missed.">    body =</span>
+<span class="fc" id="L982">        resetOptionTransfer(body, &quot;&quot;, &quot;&quot;, start, stop, rule == null? &quot;&quot; : rule,</span>
+                            req == null? &quot;&quot; : req, pending, transfer, error,
+                            done, all);
+<span class="fc" id="L985">    boolean isexported = true;</span>
+    // clean a bit the database before exporting
+    try {
+<span class="fc" id="L988">      DbTaskRunner.changeFinishedToDone();</span>
+<span class="nc" id="L989">    } catch (final WaarpDatabaseNoConnectionException e2) {</span>
+      // should not be
+<span class="fc" id="L991">    }</span>
+    // create export of log and optionally purge them from database
+<span class="fc" id="L993">    DbPreparedStatement getValid = null;</span>
+<span class="fc" id="L994">    NbAndSpecialId nbAndSpecialId = null;</span>
+<span class="fc" id="L995">    final String filename = Configuration.configuration.getBaseDirectory() +</span>
+<span class="fc" id="L996">                            Configuration.configuration.getArchivePath() +</span>
+                            DirInterface.SEPARATOR +
+<span class="fc" id="L998">                            Configuration.configuration.getHostId() + '_' +</span>
+<span class="fc" id="L999">                            System.currentTimeMillis() + &quot;_runners.xml&quot;;</span>
+<span class="fc" id="L1000">    String errorMsg = &quot;&quot;;</span>
+<span class="fc" id="L1001">    final String seeAll = checkAuthorizedToSeeAll();</span>
+    try {
+<span class="fc" id="L1003">      getValid = DbTaskRunner</span>
+<span class="fc" id="L1004">          .getFilterPrepareStatement(dbSession, 0, // 0 means no limit</span>
+                                     true, null, null, tstart, tstop, rule, req,
+                                     pending, transfer, error, done, all,
+                                     seeAll);
+<span class="fc" id="L1008">      nbAndSpecialId = DbTaskRunner.writeXMLWriter(getValid, filename);</span>
+<span class="nc" id="L1009">    } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+<span class="nc" id="L1010">      isexported = false;</span>
+<span class="nc" id="L1011">      toPurge = false;</span>
+<span class="nc" id="L1012">      logger.warn(EXPORT_ERROR, e1.getMessage());</span>
+<span class="nc" id="L1013">      errorMsg = e1.getMessage();</span>
+<span class="nc" id="L1014">    } catch (final WaarpDatabaseSqlException e1) {</span>
+<span class="nc" id="L1015">      isexported = false;</span>
+<span class="nc" id="L1016">      toPurge = false;</span>
+<span class="nc" id="L1017">      logger.warn(EXPORT_ERROR, e1.getMessage());</span>
+<span class="nc" id="L1018">      errorMsg = e1.getMessage();</span>
+<span class="nc" id="L1019">    } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L1020">      isexported = false;</span>
+<span class="nc" id="L1021">      toPurge = false;</span>
+<span class="nc" id="L1022">      logger.warn(EXPORT_ERROR, e.getMessage());</span>
+<span class="nc" id="L1023">      errorMsg = e.getMessage();</span>
+    } finally {
+<span class="pc bpc" id="L1025" title="1 of 2 branches missed.">      if (getValid != null) {</span>
+<span class="fc" id="L1026">        getValid.realClose();</span>
+      }
+    }
+<span class="fc" id="L1029">    int purge = 0;</span>
+<span class="pc bpc" id="L1030" title="2 of 4 branches missed.">    if (isexported &amp;&amp; nbAndSpecialId != null) {</span>
+<span class="pc bpc" id="L1031" title="1 of 2 branches missed.">      if (nbAndSpecialId.nb &lt;= 0) {</span>
+<span class="fc" id="L1032">        return body.replace(XXXRESULTXXX, Messages</span>
+<span class="fc" id="L1033">            .getString(&quot;HttpSslHandler.7&quot;)); //$NON-NLS-1$</span>
+      }
+      // in case of purge
+<span class="nc bnc" id="L1036" title="All 4 branches missed.">      if (isexported &amp;&amp; toPurge) {</span>
+        // purge with same filter all runners where globallasttep
+        // is ALLDONE or ERROR
+        // but getting the higher Special first
+<span class="nc" id="L1040">        final String stopId = Long.toString(nbAndSpecialId.higherSpecialId);</span>
+        try {
+<span class="nc" id="L1042">          purge = DbTaskRunner</span>
+<span class="nc" id="L1043">              .purgeLogPrepareStatement(dbSession, null, stopId, tstart, tstop,</span>
+                                        rule, req, pending, transfer, error,
+                                        done, all);
+<span class="nc" id="L1046">        } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+          // nothing
+<span class="nc" id="L1048">        } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L1049">          logger.warn(&quot;Purge error: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1050">        }</span>
+      }
+    }
+<span class="nc bnc" id="L1053" title="All 2 branches missed.">    return body.replace(XXXRESULTXXX, &quot;Export &quot; + (isexported?</span>
+<span class="nc" id="L1054">        &quot;&lt;B&gt;&quot; + Messages.getString(&quot;HttpSslHandler.8&quot;) + //$NON-NLS-2$</span>
+<span class="nc" id="L1055">        filename + Messages.getString(&quot;HttpSslHandler.9&quot;) + nbAndSpecialId.nb +</span>
+<span class="nc" id="L1056">        Messages.getString(&quot;HttpSslHandler.10&quot;)</span>
+        //$NON-NLS-1$ //$NON-NLS-2$
+<span class="nc" id="L1058">        + purge + Messages.getString(&quot;HttpSslHandler.11&quot;) + &quot;&lt;/B&gt;&quot; :</span>
+        //$NON-NLS-1$
+<span class="nc" id="L1060">        &quot;&lt;B&gt;&quot; + Messages.getString(&quot;HttpSslHandler.12&quot;))) + &quot;&lt;/B&gt;&quot; +</span>
+           errorMsg; //$NON-NLS-1$
+  }
+
+  String resetOptionHosts(String header, String host, String addr, boolean ssl,
+                          boolean active) {
+<span class="fc" id="L1066">    final StringBuilder builder = new StringBuilder(header);</span>
+<span class="fc" id="L1067">    WaarpStringUtils.replace(builder, &quot;XXXFHOSTXXX&quot;, host);</span>
+<span class="fc" id="L1068">    WaarpStringUtils.replace(builder, &quot;XXXFADDRXXX&quot;, addr);</span>
+<span class="pc bpc" id="L1069" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXFSSLXXX&quot;, ssl? CHECKED : &quot;&quot;);</span>
+<span class="pc bpc" id="L1070" title="1 of 2 branches missed.">    WaarpStringUtils.replace(builder, &quot;XXXFACTIVXXX&quot;, active? CHECKED : &quot;&quot;);</span>
+<span class="fc" id="L1071">    return builder.toString();</span>
+  }
+
+  private String hosts0() {
+<span class="fc" id="L1075">    getParams();</span>
+<span class="fc" id="L1076">    String head = REQUEST.Hosts.readHeader(this);</span>
+    String end;
+<span class="fc" id="L1078">    end = REQUEST.Hosts.readEnd();</span>
+<span class="fc bfc" id="L1079" title="All 2 branches covered.">    if (params == null) {</span>
+<span class="fc" id="L1080">      head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="fc" id="L1081">      return head + end;</span>
+    }
+    String body0;
+    String body;
+    String body1;
+<span class="fc" id="L1086">    body0 = body1 = body = &quot;&quot;;</span>
+<span class="fc" id="L1087">    final List&lt;String&gt; parms = params.get(ACTION);</span>
+<span class="pc bpc" id="L1088" title="1 of 2 branches missed.">    if (parms != null) {</span>
+<span class="fc" id="L1089">      body0 = REQUEST.Hosts.readBodyHeader();</span>
+<span class="fc" id="L1090">      final String parm = parms.get(0);</span>
+<span class="pc bpc" id="L1091" title="1 of 2 branches missed.">      if (CREATE.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1092">        final String host = getTrimValue(&quot;host&quot;);</span>
+<span class="nc" id="L1093">        final String addr = getTrimValue(ADDRESS);</span>
+<span class="nc" id="L1094">        final String port = getTrimValue(&quot;port&quot;);</span>
+<span class="nc" id="L1095">        final String key = getTrimValue(&quot;hostkey&quot;);</span>
+        boolean ssl;
+        boolean admin;
+        boolean isclient;
+        boolean isactive;
+        boolean isproxified;
+<span class="nc" id="L1101">        ssl = params.containsKey(&quot;ssl&quot;);</span>
+<span class="nc" id="L1102">        admin = params.containsKey(&quot;admin&quot;);</span>
+<span class="nc" id="L1103">        isclient = params.containsKey(&quot;isclient&quot;);</span>
+<span class="nc" id="L1104">        isactive = params.containsKey(&quot;isactive&quot;);</span>
+<span class="nc" id="L1105">        isproxified = params.containsKey(&quot;isproxified&quot;);</span>
+<span class="nc bnc" id="L1106" title="All 8 branches missed.">        if (host == null || addr == null || port == null || key == null) {</span>
+<span class="nc" id="L1107">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1108">          body = Messages.getString(&quot;HttpSslHandler.13&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L1109">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, ssl, isactive);</span>
+<span class="nc" id="L1110">          return head + body0 + body + body1 + end;</span>
+        }
+        int iport;
+        try {
+<span class="nc" id="L1114">          iport = Integer.parseInt(port);</span>
+<span class="nc" id="L1115">        } catch (final NumberFormatException e1) {</span>
+<span class="nc" id="L1116">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1117">          body = Messages.getString(&quot;HttpSslHandler.14&quot;) + e1.getMessage() +</span>
+                 B_CENTER_P; //$NON-NLS-1$
+<span class="nc" id="L1119">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, ssl, isactive);</span>
+<span class="nc" id="L1120">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1121">        }</span>
+<span class="nc" id="L1122">        final DbHostAuth dbhost = new DbHostAuth(host, addr, iport, ssl,</span>
+<span class="nc" id="L1123">                                                 key.getBytes(</span>
+                                                     WaarpStringUtils.UTF8),
+                                                 admin, isclient);
+<span class="nc" id="L1126">        dbhost.setActive(isactive);</span>
+<span class="nc" id="L1127">        dbhost.setProxified(isproxified);</span>
+        try {
+<span class="nc" id="L1129">          dbhost.insert();</span>
+<span class="nc" id="L1130">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1131">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1132">          body = Messages.getString(&quot;HttpSslHandler.14&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1135">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, ssl, isactive);</span>
+<span class="nc" id="L1136">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1137">        }</span>
+<span class="nc" id="L1138">        head = resetOptionHosts(head, host, addr, ssl, isactive);</span>
+<span class="nc" id="L1139">        body = REQUEST.Hosts.readBody();</span>
+<span class="nc" id="L1140">        body = dbhost.toSpecializedHtml(authentHttp, body, false);</span>
+<span class="pc bpc" id="L1141" title="1 of 2 branches missed.">      } else if (FILTER.equalsIgnoreCase(parm)) {</span>
+<span class="fc" id="L1142">        final String host = getTrimValue(&quot;host&quot;);</span>
+<span class="fc" id="L1143">        final String addr = getTrimValue(ADDRESS);</span>
+<span class="fc" id="L1144">        final boolean ssl = params.containsKey(&quot;ssl&quot;);</span>
+<span class="fc" id="L1145">        final boolean isactive = params.containsKey(&quot;active&quot;);</span>
+<span class="pc bpc" id="L1146" title="2 of 4 branches missed.">        head = resetOptionHosts(head, host == null? &quot;&quot; : host,</span>
+                                addr == null? &quot;&quot; : addr, ssl, isactive);
+<span class="fc" id="L1148">        body = REQUEST.Hosts.readBody();</span>
+<span class="fc" id="L1149">        DbPreparedStatement preparedStatement = null;</span>
+        try {
+<span class="fc" id="L1151">          preparedStatement = DbHostAuth</span>
+<span class="fc" id="L1152">              .getFilterPrepareStament(dbSession, host, addr, ssl, isactive);</span>
+<span class="fc" id="L1153">          preparedStatement.executeQuery();</span>
+<span class="fc" id="L1154">          final StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L1155">          int i = 0;</span>
+<span class="fc bfc" id="L1156" title="All 2 branches covered.">          while (preparedStatement.getNext()) {</span>
+<span class="fc" id="L1157">            i++;</span>
+<span class="fc" id="L1158">            final DbHostAuth dbhost =</span>
+<span class="fc" id="L1159">                DbHostAuth.getFromStatement(preparedStatement);</span>
+<span class="fc" id="L1160">            builder.append(dbhost.toSpecializedHtml(authentHttp, body, false));</span>
+<span class="pc bpc" id="L1161" title="1 of 2 branches missed.">            if (i &gt; getLimitRow()) {</span>
+<span class="nc" id="L1162">              break;</span>
+            }
+<span class="fc" id="L1164">          }</span>
+<span class="fc" id="L1165">          preparedStatement.realClose();</span>
+<span class="fc" id="L1166">          body = builder.toString();</span>
+<span class="nc" id="L1167">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L1168" title="All 2 branches missed.">          if (preparedStatement != null) {</span>
+<span class="nc" id="L1169">            preparedStatement.realClose();</span>
+          }
+<span class="nc" id="L1171">          logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="fc" id="L1172">        }</span>
+<span class="fc" id="L1173">        body1 = REQUEST.Hosts.readBodyEnd();</span>
+<span class="pc bnc" id="L1174" title="All 2 branches missed.">      } else if (&quot;Update&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1175">        final String host = getTrimValue(&quot;host&quot;);</span>
+<span class="nc" id="L1176">        final String addr = getTrimValue(ADDRESS);</span>
+<span class="nc" id="L1177">        final String port = getTrimValue(&quot;port&quot;);</span>
+<span class="nc" id="L1178">        final String key = getTrimValue(&quot;hostkey&quot;);</span>
+        boolean ssl;
+        boolean admin;
+        boolean isclient;
+        boolean isactive;
+        boolean isproxified;
+<span class="nc" id="L1184">        ssl = params.containsKey(&quot;ssl&quot;);</span>
+<span class="nc" id="L1185">        admin = params.containsKey(&quot;admin&quot;);</span>
+<span class="nc" id="L1186">        isclient = params.containsKey(&quot;isclient&quot;);</span>
+<span class="nc" id="L1187">        isactive = params.containsKey(&quot;isactive&quot;);</span>
+<span class="nc" id="L1188">        isproxified = params.containsKey(&quot;isproxified&quot;);</span>
+<span class="nc bnc" id="L1189" title="All 8 branches missed.">        if (host == null || addr == null || port == null || key == null) {</span>
+<span class="nc" id="L1190">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1191">          body = Messages.getString(&quot;HttpSslHandler.15&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L1192">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, ssl, isactive);</span>
+<span class="nc" id="L1193">          return head + body0 + body + body1 + end;</span>
+        }
+        int iport;
+        try {
+<span class="nc" id="L1197">          iport = Integer.parseInt(port);</span>
+<span class="nc" id="L1198">        } catch (final NumberFormatException e1) {</span>
+<span class="nc" id="L1199">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1200">          body = Messages.getString(&quot;HttpSslHandler.16&quot;) + e1.getMessage() +</span>
+                 B_CENTER_P; //$NON-NLS-1$
+<span class="nc" id="L1202">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, ssl, isactive);</span>
+<span class="nc" id="L1203">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1204">        }</span>
+<span class="nc" id="L1205">        final DbHostAuth dbhost = new DbHostAuth(host, addr, iport, ssl,</span>
+<span class="nc" id="L1206">                                                 key.getBytes(</span>
+                                                     WaarpStringUtils.UTF8),
+                                                 admin, isclient);
+<span class="nc" id="L1209">        dbhost.setActive(isactive);</span>
+<span class="nc" id="L1210">        dbhost.setProxified(isproxified);</span>
+        try {
+<span class="nc bnc" id="L1212" title="All 2 branches missed.">          if (dbhost.exist()) {</span>
+<span class="nc" id="L1213">            dbhost.update();</span>
+          } else {
+<span class="nc" id="L1215">            dbhost.insert();</span>
+          }
+<span class="nc" id="L1217">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1218">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1219">          body = Messages.getString(&quot;HttpSslHandler.16&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1222">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, ssl, isactive);</span>
+<span class="nc" id="L1223">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1224">        }</span>
+<span class="nc" id="L1225">        head = resetOptionHosts(head, host, addr, ssl, isactive);</span>
+<span class="nc" id="L1226">        body = REQUEST.Hosts.readBody();</span>
+<span class="nc" id="L1227">        body = dbhost.toSpecializedHtml(authentHttp, body, false);</span>
+<span class="nc bnc" id="L1228" title="All 2 branches missed.">      } else if (&quot;TestConn&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1229">        final String host = getTrimValue(&quot;host&quot;);</span>
+<span class="nc bnc" id="L1230" title="All 4 branches missed.">        if (host == null || host.isEmpty()) {</span>
+<span class="nc" id="L1231">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1232">          body = Messages.getString(HTTP_SSL_HANDLER_17); //$NON-NLS-1$</span>
+<span class="nc" id="L1233">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="nc" id="L1234">          return head + body0 + body + body1 + end;</span>
+        }
+        DbHostAuth dbhost;
+        try {
+<span class="nc" id="L1238">          dbhost = new DbHostAuth(host);</span>
+<span class="nc" id="L1239">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1240">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1241">          body = Messages.getString(HTTP_SSL_HANDLER_17) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1244">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="nc" id="L1245">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1246">        }</span>
+<span class="nc" id="L1247">        final R66Future result = new R66Future(true);</span>
+<span class="nc" id="L1248">        final TestPacket packet = new TestPacket(&quot;MSG&quot;, &quot;CheckConnection&quot;, 100);</span>
+<span class="nc" id="L1249">        final Message transaction = new Message(</span>
+<span class="nc" id="L1250">            Configuration.configuration.getInternalRunner()</span>
+<span class="nc" id="L1251">                                       .getNetworkTransaction(), result, dbhost,</span>
+            packet);
+<span class="nc" id="L1253">        transaction.run();</span>
+<span class="nc" id="L1254">        result.awaitOrInterruptible();</span>
+<span class="nc" id="L1255">        head =</span>
+<span class="nc" id="L1256">            resetOptionHosts(head, &quot;&quot;, &quot;&quot;, dbhost.isSsl(), dbhost.isActive());</span>
+<span class="nc" id="L1257">        body = REQUEST.Hosts.readBody();</span>
+<span class="nc bnc" id="L1258" title="All 2 branches missed.">        if (result.isSuccess()) {</span>
+<span class="nc" id="L1259">          body = dbhost.toSpecializedHtml(authentHttp, body, false);</span>
+<span class="nc" id="L1260">          body += Messages.getString(&quot;HttpSslHandler.18&quot;); //$NON-NLS-1$</span>
+        } else {
+<span class="nc" id="L1262">          body = dbhost.toSpecializedHtml(authentHttp, body, false);</span>
+<span class="nc" id="L1263">          body += Messages.getString(&quot;HttpSslHandler.19&quot;)//$NON-NLS-1$</span>
+<span class="nc" id="L1264">                  + result.getResult().getCode().getMesg() + B_CENTER_P;</span>
+        }
+<span class="nc bnc" id="L1266" title="All 2 branches missed.">      } else if (&quot;CloseConn&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1267">        final String host = getTrimValue(&quot;host&quot;);</span>
+<span class="nc bnc" id="L1268" title="All 4 branches missed.">        if (host == null || host.isEmpty()) {</span>
+<span class="nc" id="L1269">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1270">          body = Messages.getString(HTTP_SSL_HANDLER_17); //$NON-NLS-1$</span>
+<span class="nc" id="L1271">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="nc" id="L1272">          return head + body0 + body + body1 + end;</span>
+        }
+        DbHostAuth dbhost;
+        try {
+<span class="nc" id="L1276">          dbhost = new DbHostAuth(host);</span>
+<span class="nc" id="L1277">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1278">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1279">          body = Messages.getString(HTTP_SSL_HANDLER_17) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1282">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="nc" id="L1283">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1284">        }</span>
+<span class="nc" id="L1285">        body = REQUEST.Hosts.readBody();</span>
+<span class="nc" id="L1286">        final boolean resultShutDown = NetworkTransaction</span>
+<span class="nc" id="L1287">            .shuttingdownNetworkChannelsPerHostID(dbhost.getHostid());</span>
+<span class="nc" id="L1288">        head =</span>
+<span class="nc" id="L1289">            resetOptionHosts(head, &quot;&quot;, &quot;&quot;, dbhost.isSsl(), dbhost.isActive());</span>
+<span class="nc bnc" id="L1290" title="All 2 branches missed.">        if (resultShutDown) {</span>
+<span class="nc" id="L1291">          body = dbhost.toSpecializedHtml(authentHttp, body, false);</span>
+<span class="nc" id="L1292">          body += Messages.getString(&quot;HttpSslHandler.21&quot;); //$NON-NLS-1$</span>
+        } else {
+<span class="nc" id="L1294">          body = dbhost.toSpecializedHtml(authentHttp, body, false);</span>
+<span class="nc" id="L1295">          body += Messages.getString(&quot;HttpSslHandler.22&quot;); //$NON-NLS-1$</span>
+        }
+<span class="nc bnc" id="L1297" title="All 2 branches missed.">      } else if (&quot;Delete&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1298">        final String host = getTrimValue(&quot;host&quot;);</span>
+<span class="nc bnc" id="L1299" title="All 4 branches missed.">        if (host == null || host.isEmpty()) {</span>
+<span class="nc" id="L1300">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1301">          body = Messages.getString(&quot;HttpSslHandler.23&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L1302">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="nc" id="L1303">          return head + body0 + body + body1 + end;</span>
+        }
+        DbHostAuth dbhost;
+        try {
+<span class="nc" id="L1307">          dbhost = new DbHostAuth(host);</span>
+<span class="nc" id="L1308">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1309">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1310">          body = Messages.getString(&quot;HttpSslHandler.24&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1313">          head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+<span class="nc" id="L1314">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1315">        }</span>
+        try {
+<span class="nc" id="L1317">          dbhost.delete();</span>
+<span class="nc" id="L1318">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1319">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1320">          body = Messages.getString(&quot;HttpSslHandler.24&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1323">          head =</span>
+<span class="nc" id="L1324">              resetOptionHosts(head, &quot;&quot;, &quot;&quot;, dbhost.isSsl(), dbhost.isActive());</span>
+<span class="nc" id="L1325">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1326">        }</span>
+<span class="nc" id="L1327">        body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1328">        body = Messages.getString(&quot;HttpSslHandler.25&quot;) + host +</span>
+               B_CENTER_P; //$NON-NLS-1$
+<span class="nc" id="L1330">        head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, dbhost.isActive());</span>
+<span class="nc" id="L1331">        return head + body0 + body + body1 + end;</span>
+      } else {
+<span class="nc" id="L1333">        head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+      }
+<span class="fc" id="L1335">      body1 = REQUEST.Hosts.readBodyEnd();</span>
+<span class="fc" id="L1336">    } else {</span>
+<span class="nc" id="L1337">      head = resetOptionHosts(head, &quot;&quot;, &quot;&quot;, false, true);</span>
+    }
+<span class="fc" id="L1339">    return head + body0 + body + body1 + end;</span>
+  }
+
+  private void createExport(String body, StringBuilder builder, String rule,
+                            int mode, int limit, int start) {
+<span class="fc" id="L1344">    DbPreparedStatement preparedStatement = null;</span>
+    try {
+<span class="fc" id="L1346">      preparedStatement = DbRule.getFilterPrepareStament(dbSession, rule, mode);</span>
+<span class="fc" id="L1347">      preparedStatement.executeQuery();</span>
+<span class="fc" id="L1348">      int i = 0;</span>
+<span class="fc bfc" id="L1349" title="All 2 branches covered.">      while (preparedStatement.getNext()) {</span>
+<span class="fc" id="L1350">        final DbRule dbrule = DbRule.getFromStatement(preparedStatement);</span>
+<span class="fc" id="L1351">        String temp = dbrule.toSpecializedHtml(authentHttp, body);</span>
+<span class="fc" id="L1352">        temp = temp.replace(&quot;XXXRANKXXX&quot;, String.valueOf(start + i));</span>
+<span class="fc" id="L1353">        builder.append(temp);</span>
+<span class="fc" id="L1354">        i++;</span>
+<span class="pc bpc" id="L1355" title="1 of 2 branches missed.">        if (i &gt; limit) {</span>
+<span class="nc" id="L1356">          break;</span>
+        }
+<span class="fc" id="L1358">      }</span>
+<span class="fc" id="L1359">      preparedStatement.realClose();</span>
+<span class="nc" id="L1360">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc bnc" id="L1361" title="All 2 branches missed.">      if (preparedStatement != null) {</span>
+<span class="nc" id="L1362">        preparedStatement.realClose();</span>
+      }
+<span class="nc" id="L1364">      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="fc" id="L1365">    }</span>
+<span class="fc" id="L1366">  }</span>
+
+  String resetOptionRules(String header, String rule,
+                          RequestPacket.TRANSFERMODE mode, int gmode) {
+<span class="fc" id="L1370">    final StringBuilder builder = new StringBuilder(header);</span>
+<span class="fc" id="L1371">    WaarpStringUtils.replace(builder, &quot;XXXRULEXXX&quot;, rule);</span>
+<span class="pc bpc" id="L1372" title="1 of 2 branches missed.">    if (mode != null) {</span>
+<span class="nc bnc" id="L1373" title="All 9 branches missed.">      switch (mode) {</span>
+        case RECVMODE:
+<span class="nc" id="L1375">          WaarpStringUtils.replace(builder, &quot;XXXRECVXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1376">          break;</span>
+        case SENDMODE:
+<span class="nc" id="L1378">          WaarpStringUtils.replace(builder, &quot;XXXSENDXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1379">          break;</span>
+        case RECVMD5MODE:
+<span class="nc" id="L1381">          WaarpStringUtils.replace(builder, &quot;XXXRECVMXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1382">          break;</span>
+        case SENDMD5MODE:
+<span class="nc" id="L1384">          WaarpStringUtils.replace(builder, &quot;XXXSENDMXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1385">          break;</span>
+        case RECVTHROUGHMODE:
+<span class="nc" id="L1387">          WaarpStringUtils.replace(builder, &quot;XXXRECVTXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1388">          break;</span>
+        case SENDTHROUGHMODE:
+<span class="nc" id="L1390">          WaarpStringUtils.replace(builder, &quot;XXXSENDTXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1391">          break;</span>
+        case RECVMD5THROUGHMODE:
+<span class="nc" id="L1393">          WaarpStringUtils.replace(builder, &quot;XXXRECVMTXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1394">          break;</span>
+        case SENDMD5THROUGHMODE:
+<span class="nc" id="L1396">          WaarpStringUtils.replace(builder, &quot;XXXSENDMTXXX&quot;, CHECKED);</span>
+<span class="nc" id="L1397">          break;</span>
+        default:
+          break;
+      }
+    }
+<span class="pc bpc" id="L1402" title="1 of 2 branches missed.">    if (gmode == -1) {// All Recv</span>
+<span class="nc" id="L1403">      WaarpStringUtils.replace(builder, &quot;XXXARECVXXX&quot;, CHECKED);</span>
+<span class="pc bpc" id="L1404" title="1 of 2 branches missed.">    } else if (gmode == -2) {// All Send</span>
+<span class="nc" id="L1405">      WaarpStringUtils.replace(builder, &quot;XXXASENDXXX&quot;, CHECKED);</span>
+<span class="pc bpc" id="L1406" title="1 of 2 branches missed.">    } else if (gmode == -3) {// All</span>
+<span class="fc" id="L1407">      WaarpStringUtils.replace(builder, &quot;XXXALLXXX&quot;, CHECKED);</span>
+    }
+<span class="fc" id="L1409">    return builder.toString();</span>
+  }
+
+  private String rules0() {
+<span class="fc" id="L1413">    getParams();</span>
+<span class="fc" id="L1414">    String head = REQUEST.Rules.readHeader(this);</span>
+    String end;
+<span class="fc" id="L1416">    end = REQUEST.Rules.readEnd();</span>
+<span class="fc bfc" id="L1417" title="All 2 branches covered.">    if (params == null) {</span>
+<span class="fc" id="L1418">      head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="fc" id="L1419">      return head + end;</span>
+    }
+    String body0;
+    String body;
+    String body1;
+<span class="fc" id="L1424">    body0 = body1 = body = &quot;&quot;;</span>
+<span class="fc" id="L1425">    final List&lt;String&gt; parms = params.get(ACTION);</span>
+<span class="pc bpc" id="L1426" title="1 of 2 branches missed.">    if (parms != null) {</span>
+<span class="fc" id="L1427">      body0 = REQUEST.Rules.readBodyHeader();</span>
+<span class="fc" id="L1428">      final String parm = parms.get(0);</span>
+<span class="pc bpc" id="L1429" title="2 of 4 branches missed.">      if (CREATE.equalsIgnoreCase(parm) || &quot;Update&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1430">        final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="nc" id="L1431">        final String hostids = getTrimValue(&quot;hostids&quot;);</span>
+<span class="nc" id="L1432">        final String recvp = getTrimValue(&quot;recvp&quot;);</span>
+<span class="nc" id="L1433">        final String sendp = getTrimValue(&quot;sendp&quot;);</span>
+<span class="nc" id="L1434">        final String archp = getTrimValue(&quot;archp&quot;);</span>
+<span class="nc" id="L1435">        final String workp = getTrimValue(&quot;workp&quot;);</span>
+<span class="nc" id="L1436">        final String rpre = getTrimValue(&quot;rpre&quot;);</span>
+<span class="nc" id="L1437">        final String rpost = getTrimValue(&quot;rpost&quot;);</span>
+<span class="nc" id="L1438">        final String rerr = getTrimValue(&quot;rerr&quot;);</span>
+<span class="nc" id="L1439">        final String spre = getTrimValue(&quot;spre&quot;);</span>
+<span class="nc" id="L1440">        final String spost = getTrimValue(&quot;spost&quot;);</span>
+<span class="nc" id="L1441">        final String serr = getTrimValue(&quot;serr&quot;);</span>
+<span class="nc" id="L1442">        final String mode = getTrimValue(&quot;mode&quot;);</span>
+<span class="nc bnc" id="L1443" title="All 4 branches missed.">        if (rule == null || mode == null) {</span>
+<span class="nc" id="L1444">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1445">          body = Messages.getString(&quot;HttpSslHandler.26&quot;) + parm + Messages</span>
+<span class="nc" id="L1446">              .getString(&quot;HttpSslHandler.27&quot;); //$NON-NLS-1$ //$NON-NLS-2$</span>
+<span class="nc" id="L1447">          head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="nc" id="L1448">          return head + body0 + body + body1 + end;</span>
+        }
+<span class="nc" id="L1450">        int gmode = 0;</span>
+
+<span class="nc" id="L1452">        TRANSFERMODE tmode = null;</span>
+<span class="nc bnc" id="L1453" title="All 2 branches missed.">        if (&quot;send&quot;.equals(mode)) {</span>
+<span class="nc" id="L1454">          tmode = RequestPacket.TRANSFERMODE.SENDMODE;</span>
+<span class="nc" id="L1455">          gmode = -2;</span>
+<span class="nc bnc" id="L1456" title="All 2 branches missed.">        } else if (&quot;recv&quot;.equals(mode)) {</span>
+<span class="nc" id="L1457">          tmode = RequestPacket.TRANSFERMODE.RECVMODE;</span>
+<span class="nc" id="L1458">          gmode = -1;</span>
+<span class="nc bnc" id="L1459" title="All 2 branches missed.">        } else if (&quot;sendmd5&quot;.equals(mode)) {</span>
+<span class="nc" id="L1460">          tmode = RequestPacket.TRANSFERMODE.SENDMD5MODE;</span>
+<span class="nc" id="L1461">          gmode = -2;</span>
+<span class="nc bnc" id="L1462" title="All 2 branches missed.">        } else if (&quot;recvmd5&quot;.equals(mode)) {</span>
+<span class="nc" id="L1463">          tmode = RequestPacket.TRANSFERMODE.RECVMD5MODE;</span>
+<span class="nc" id="L1464">          gmode = -1;</span>
+<span class="nc bnc" id="L1465" title="All 2 branches missed.">        } else if (&quot;sendth&quot;.equals(mode)) {</span>
+<span class="nc" id="L1466">          tmode = RequestPacket.TRANSFERMODE.SENDTHROUGHMODE;</span>
+<span class="nc" id="L1467">          gmode = -2;</span>
+<span class="nc bnc" id="L1468" title="All 2 branches missed.">        } else if (&quot;recvth&quot;.equals(mode)) {</span>
+<span class="nc" id="L1469">          tmode = RequestPacket.TRANSFERMODE.RECVTHROUGHMODE;</span>
+<span class="nc" id="L1470">          gmode = -1;</span>
+<span class="nc bnc" id="L1471" title="All 2 branches missed.">        } else if (&quot;sendthmd5&quot;.equals(mode)) {</span>
+<span class="nc" id="L1472">          tmode = RequestPacket.TRANSFERMODE.SENDMD5THROUGHMODE;</span>
+<span class="nc" id="L1473">          gmode = -2;</span>
+<span class="nc bnc" id="L1474" title="All 2 branches missed.">        } else if (&quot;recvthmd5&quot;.equals(mode)) {</span>
+<span class="nc" id="L1475">          tmode = RequestPacket.TRANSFERMODE.RECVMD5THROUGHMODE;</span>
+<span class="nc" id="L1476">          gmode = -1;</span>
+        }
+<span class="nc" id="L1478">        head = resetOptionRules(head, rule, tmode, gmode);</span>
+<span class="nc" id="L1479">        logger.debug(&quot;Recv UpdOrInsert: &quot; + rule + ':' + hostids + ':' +</span>
+<span class="nc" id="L1480">                     tmode.ordinal() + ':' + recvp + ':' + sendp + ':' + archp +</span>
+                     ':' + workp + ':' + rpre + ':' + rpost + ':' + rerr + ':' +
+                     spre + ':' + spost + ':' + serr);
+<span class="nc" id="L1483">        final DbRule dbrule =</span>
+<span class="nc" id="L1484">            new DbRule(rule, hostids, tmode.ordinal(), recvp, sendp, archp,</span>
+                       workp, rpre, rpost, rerr, spre, spost, serr);
+        try {
+<span class="nc bnc" id="L1487" title="All 2 branches missed.">          if (CREATE.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1488">            dbrule.insert();</span>
+          } else {
+<span class="nc bnc" id="L1490" title="All 2 branches missed.">            if (dbrule.exist()) {</span>
+<span class="nc" id="L1491">              dbrule.update();</span>
+            } else {
+<span class="nc" id="L1493">              dbrule.insert();</span>
+            }
+          }
+<span class="nc" id="L1496">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1497">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1498">          body = Messages.getString(&quot;HttpSslHandler.28&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1501">          head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="nc" id="L1502">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1503">        }</span>
+<span class="nc" id="L1504">        body = REQUEST.Rules.readBody();</span>
+<span class="nc" id="L1505">        body = dbrule.toSpecializedHtml(authentHttp, body);</span>
+<span class="pc bpc" id="L1506" title="1 of 2 branches missed.">      } else if (FILTER.equalsIgnoreCase(parm)) {</span>
+<span class="fc" id="L1507">        final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="fc" id="L1508">        final String mode = getTrimValue(&quot;mode&quot;);</span>
+        TRANSFERMODE tmode;
+<span class="fc" id="L1510">        int gmode = 0;</span>
+<span class="pc bpc" id="L1511" title="1 of 2 branches missed.">        if (&quot;all&quot;.equals(mode)) {</span>
+<span class="fc" id="L1512">          gmode = -3;</span>
+<span class="nc bnc" id="L1513" title="All 2 branches missed.">        } else if (&quot;send&quot;.equals(mode)) {</span>
+<span class="nc" id="L1514">          gmode = -2;</span>
+<span class="nc bnc" id="L1515" title="All 2 branches missed.">        } else if (&quot;recv&quot;.equals(mode)) {</span>
+<span class="nc" id="L1516">          gmode = -1;</span>
+        }
+<span class="pc bpc" id="L1518" title="1 of 2 branches missed.">        head = resetOptionRules(head, rule == null? &quot;&quot; : rule, null, gmode);</span>
+<span class="fc" id="L1519">        body = REQUEST.Rules.readBody();</span>
+<span class="fc" id="L1520">        final StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L1521">        boolean specific = false;</span>
+<span class="fc" id="L1522">        int start = 1;</span>
+<span class="pc bpc" id="L1523" title="1 of 2 branches missed.">        if (params.containsKey(&quot;send&quot;)) {</span>
+<span class="nc" id="L1524">          tmode = RequestPacket.TRANSFERMODE.SENDMODE;</span>
+<span class="nc bnc" id="L1525" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1526">          specific = true;</span>
+<span class="nc" id="L1527">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1528">                       RequestPacket.TRANSFERMODE.SENDMODE.ordinal(),</span>
+<span class="nc" id="L1529">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1530">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1532" title="1 of 2 branches missed.">        if (params.containsKey(&quot;recv&quot;)) {</span>
+<span class="nc" id="L1533">          tmode = RequestPacket.TRANSFERMODE.RECVMODE;</span>
+<span class="nc bnc" id="L1534" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1535">          specific = true;</span>
+<span class="nc" id="L1536">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1537">                       RequestPacket.TRANSFERMODE.RECVMODE.ordinal(),</span>
+<span class="nc" id="L1538">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1539">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1541" title="1 of 2 branches missed.">        if (params.containsKey(&quot;sendmd5&quot;)) {</span>
+<span class="nc" id="L1542">          tmode = RequestPacket.TRANSFERMODE.SENDMD5MODE;</span>
+<span class="nc bnc" id="L1543" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1544">          specific = true;</span>
+<span class="nc" id="L1545">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1546">                       RequestPacket.TRANSFERMODE.SENDMD5MODE.ordinal(),</span>
+<span class="nc" id="L1547">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1548">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1550" title="1 of 2 branches missed.">        if (params.containsKey(&quot;recvmd5&quot;)) {</span>
+<span class="nc" id="L1551">          tmode = RequestPacket.TRANSFERMODE.RECVMD5MODE;</span>
+<span class="nc bnc" id="L1552" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1553">          specific = true;</span>
+<span class="nc" id="L1554">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1555">                       RequestPacket.TRANSFERMODE.RECVMD5MODE.ordinal(),</span>
+<span class="nc" id="L1556">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1557">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1559" title="1 of 2 branches missed.">        if (params.containsKey(&quot;sendth&quot;)) {</span>
+<span class="nc" id="L1560">          tmode = RequestPacket.TRANSFERMODE.SENDTHROUGHMODE;</span>
+<span class="nc bnc" id="L1561" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1562">          specific = true;</span>
+<span class="nc" id="L1563">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1564">                       RequestPacket.TRANSFERMODE.SENDTHROUGHMODE.ordinal(),</span>
+<span class="nc" id="L1565">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1566">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1568" title="1 of 2 branches missed.">        if (params.containsKey(&quot;recvth&quot;)) {</span>
+<span class="nc" id="L1569">          tmode = RequestPacket.TRANSFERMODE.RECVTHROUGHMODE;</span>
+<span class="nc bnc" id="L1570" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1571">          specific = true;</span>
+<span class="nc" id="L1572">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1573">                       RequestPacket.TRANSFERMODE.RECVTHROUGHMODE.ordinal(),</span>
+<span class="nc" id="L1574">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1575">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1577" title="1 of 2 branches missed.">        if (params.containsKey(&quot;sendthmd5&quot;)) {</span>
+<span class="nc" id="L1578">          tmode = RequestPacket.TRANSFERMODE.SENDMD5THROUGHMODE;</span>
+<span class="nc bnc" id="L1579" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1580">          specific = true;</span>
+<span class="nc" id="L1581">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1582">                       RequestPacket.TRANSFERMODE.SENDMD5THROUGHMODE.ordinal(),</span>
+<span class="nc" id="L1583">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1584">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1586" title="1 of 2 branches missed.">        if (params.containsKey(&quot;recvthmd5&quot;)) {</span>
+<span class="nc" id="L1587">          tmode = RequestPacket.TRANSFERMODE.RECVMD5THROUGHMODE;</span>
+<span class="nc bnc" id="L1588" title="All 2 branches missed.">          head = resetOptionRules(head, rule == null? &quot;&quot; : rule, tmode, gmode);</span>
+<span class="nc" id="L1589">          specific = true;</span>
+<span class="nc" id="L1590">          createExport(body, builder, rule,</span>
+<span class="nc" id="L1591">                       RequestPacket.TRANSFERMODE.RECVMD5THROUGHMODE.ordinal(),</span>
+<span class="nc" id="L1592">                       getLimitRow() / 4, start);</span>
+<span class="nc" id="L1593">          start += getLimitRow() / 4 + 1;</span>
+        }
+<span class="pc bpc" id="L1595" title="1 of 2 branches missed.">        if (!specific) {</span>
+<span class="pc bpc" id="L1596" title="1 of 2 branches missed.">          if (gmode == -1) {</span>
+            // recv
+<span class="nc" id="L1598">            createExport(body, builder, rule,</span>
+<span class="nc" id="L1599">                         RequestPacket.TRANSFERMODE.RECVMODE.ordinal(),</span>
+<span class="nc" id="L1600">                         getLimitRow() / 4, start);</span>
+<span class="nc" id="L1601">            start += getLimitRow() / 4 + 1;</span>
+<span class="nc" id="L1602">            createExport(body, builder, rule,</span>
+<span class="nc" id="L1603">                         RequestPacket.TRANSFERMODE.RECVMD5MODE.ordinal(),</span>
+<span class="nc" id="L1604">                         getLimitRow() / 4, start);</span>
+<span class="nc" id="L1605">            start += getLimitRow() / 4 + 1;</span>
+<span class="nc" id="L1606">            createExport(body, builder, rule,</span>
+<span class="nc" id="L1607">                         RequestPacket.TRANSFERMODE.RECVTHROUGHMODE.ordinal(),</span>
+<span class="nc" id="L1608">                         getLimitRow() / 4, start);</span>
+<span class="nc" id="L1609">            start += getLimitRow() / 4 + 1;</span>
+<span class="nc" id="L1610">            createExport(body, builder, rule,</span>
+                         RequestPacket.TRANSFERMODE.RECVMD5THROUGHMODE
+<span class="nc" id="L1612">                             .ordinal(), getLimitRow() / 4, start);</span>
+<span class="nc" id="L1613">            start += getLimitRow() / 4 + 1;</span>
+<span class="pc bpc" id="L1614" title="1 of 2 branches missed.">          } else if (gmode == -2) {</span>
+            // send
+<span class="nc" id="L1616">            createExport(body, builder, rule,</span>
+<span class="nc" id="L1617">                         RequestPacket.TRANSFERMODE.SENDMODE.ordinal(),</span>
+<span class="nc" id="L1618">                         getLimitRow() / 4, start);</span>
+<span class="nc" id="L1619">            start += getLimitRow() / 4 + 1;</span>
+<span class="nc" id="L1620">            createExport(body, builder, rule,</span>
+<span class="nc" id="L1621">                         RequestPacket.TRANSFERMODE.SENDMD5MODE.ordinal(),</span>
+<span class="nc" id="L1622">                         getLimitRow() / 4, start);</span>
+<span class="nc" id="L1623">            start += getLimitRow() / 4 + 1;</span>
+<span class="nc" id="L1624">            createExport(body, builder, rule,</span>
+<span class="nc" id="L1625">                         RequestPacket.TRANSFERMODE.SENDTHROUGHMODE.ordinal(),</span>
+<span class="nc" id="L1626">                         getLimitRow() / 4, start);</span>
+<span class="nc" id="L1627">            start += getLimitRow() / 4 + 1;</span>
+<span class="nc" id="L1628">            createExport(body, builder, rule,</span>
+                         RequestPacket.TRANSFERMODE.SENDMD5THROUGHMODE
+<span class="nc" id="L1630">                             .ordinal(), getLimitRow() / 4, start);</span>
+<span class="nc" id="L1631">            start += getLimitRow() / 4 + 1;</span>
+          } else {
+            // all
+<span class="fc" id="L1634">            createExport(body, builder, rule, -1, getLimitRow(), start);</span>
+<span class="fc" id="L1635">            start += getLimitRow() + 1;</span>
+          }
+        }
+<span class="fc" id="L1638">        body = builder.toString();</span>
+<span class="fc" id="L1639">        body1 = REQUEST.Rules.readBodyEnd();</span>
+<span class="pc bnc" id="L1640" title="All 2 branches missed.">      } else if (&quot;Delete&quot;.equalsIgnoreCase(parm)) {</span>
+<span class="nc" id="L1641">        final String rule = getTrimValue(&quot;rule&quot;);</span>
+<span class="nc bnc" id="L1642" title="All 4 branches missed.">        if (rule == null || rule.isEmpty()) {</span>
+<span class="nc" id="L1643">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1644">          body = Messages.getString(&quot;HttpSslHandler.29&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L1645">          head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="nc" id="L1646">          return head + body0 + body + body1 + end;</span>
+        }
+        DbRule dbrule;
+        try {
+<span class="nc" id="L1650">          dbrule = new DbRule(rule);</span>
+<span class="nc" id="L1651">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1652">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1653">          body = Messages.getString(&quot;HttpSslHandler.30&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1656">          head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="nc" id="L1657">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1658">        }</span>
+        try {
+<span class="nc" id="L1660">          dbrule.delete();</span>
+<span class="nc" id="L1661">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1662">          body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1663">          body = Messages.getString(&quot;HttpSslHandler.30&quot;) + e.getMessage()</span>
+                 //$NON-NLS-1$
+                 + B_CENTER_P;
+<span class="nc" id="L1666">          head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="nc" id="L1667">          return head + body0 + body + body1 + end;</span>
+<span class="nc" id="L1668">        }</span>
+<span class="nc" id="L1669">        body0 = body1 = body = &quot;&quot;;</span>
+<span class="nc" id="L1670">        body = Messages.getString(&quot;HttpSslHandler.31&quot;) + rule +</span>
+               B_CENTER_P; //$NON-NLS-1$
+<span class="nc" id="L1672">        head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+<span class="nc" id="L1673">        return head + body0 + body + body1 + end;</span>
+      } else {
+<span class="nc" id="L1675">        head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+      }
+<span class="fc" id="L1677">      body1 = REQUEST.Rules.readBodyEnd();</span>
+<span class="fc" id="L1678">    } else {</span>
+<span class="nc" id="L1679">      head = resetOptionRules(head, &quot;&quot;, null, -3);</span>
+    }
+<span class="fc" id="L1681">    return head + body0 + body + body1 + end;</span>
+  }
+
+  private String spooled0(boolean detailed) {
+    // XXXSPOOLEDXXX
+<span class="fc" id="L1686">    final String spooled = REQUEST.Spooled.readFileUnique(this);</span>
+    String uri;
+<span class="pc bpc" id="L1688" title="1 of 2 branches missed.">    if (detailed) {</span>
+<span class="nc" id="L1689">      uri = &quot;SpooledDetailed.html&quot;;</span>
+    } else {
+<span class="fc" id="L1691">      uri = &quot;Spooled.html&quot;;</span>
+    }
+<span class="fc" id="L1693">    final QueryStringDecoder queryStringDecoder =</span>
+<span class="fc" id="L1694">        new QueryStringDecoder(request.uri());</span>
+<span class="fc" id="L1695">    params = queryStringDecoder.parameters();</span>
+<span class="fc" id="L1696">    String name = null;</span>
+<span class="pc bpc" id="L1697" title="1 of 2 branches missed.">    if (params.containsKey(&quot;name&quot;)) {</span>
+<span class="nc" id="L1698">      name = getTrimValue(&quot;name&quot;);</span>
+    }
+<span class="fc" id="L1700">    int istatus = 0;</span>
+<span class="pc bpc" id="L1701" title="1 of 2 branches missed.">    if (params.containsKey(&quot;status&quot;)) {</span>
+<span class="nc" id="L1702">      final String status = getTrimValue(&quot;status&quot;);</span>
+      try {
+<span class="nc" id="L1704">        istatus = Integer.parseInt(status);</span>
+<span class="nc" id="L1705">      } catch (final NumberFormatException e1) {</span>
+<span class="nc" id="L1706">        istatus = 0;</span>
+<span class="nc" id="L1707">      }</span>
+    }
+<span class="pc bpc" id="L1709" title="3 of 4 branches missed.">    if (name != null &amp;&amp; !name.isEmpty()) {</span>
+      // name is specified
+<span class="nc" id="L1711">      uri = request.uri();</span>
+<span class="nc bnc" id="L1712" title="All 2 branches missed.">      if (istatus != 0) {</span>
+<span class="nc" id="L1713">        uri += &quot;&amp;status=&quot; + istatus;</span>
+      }
+<span class="nc" id="L1715">      final StringBuilder builder =</span>
+<span class="nc" id="L1716">          SpooledInformTask.buildSpooledUniqueTable(uri, name);</span>
+<span class="nc" id="L1717">      return spooled.replace(&quot;XXXSPOOLEDXXX&quot;, builder.toString());</span>
+    } else {
+<span class="pc bpc" id="L1719" title="1 of 2 branches missed.">      if (istatus != 0) {</span>
+<span class="nc" id="L1720">        uri += &quot;&amp;status=&quot; + istatus;</span>
+      }
+<span class="fc" id="L1722">      final StringBuilder builder =</span>
+<span class="fc" id="L1723">          SpooledInformTask.buildSpooledTable(detailed, istatus, uri);</span>
+<span class="fc" id="L1724">      return spooled.replace(&quot;XXXSPOOLEDXXX&quot;, builder.toString());</span>
+    }
+  }
+
+  /**
+   * Applied current lang to system page
+   *
+   * @param builder
+   */
+  protected void langHandle(StringBuilder builder) {
+    // i18n: add here any new languages
+<span class="fc" id="L1735">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(),</span>
+<span class="pc bpc" id="L1736" title="1 of 2 branches missed.">                             &quot;en&quot;.equalsIgnoreCase(lang)? CHECKED : &quot;&quot;);</span>
+<span class="fc" id="L1737">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGFRXXX.name(),</span>
+<span class="pc bpc" id="L1738" title="1 of 2 branches missed.">                             &quot;fr&quot;.equalsIgnoreCase(lang)? CHECKED : &quot;&quot;);</span>
+<span class="fc" id="L1739">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGENXXX.name(),</span>
+<span class="pc bpc" id="L1740" title="1 of 2 branches missed.">                             &quot;en&quot;.equalsIgnoreCase(Messages.getSlocale())?</span>
+                                 CHECKED : &quot;&quot;);
+<span class="fc" id="L1742">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGFRXXX.name(),</span>
+<span class="pc bpc" id="L1743" title="1 of 2 branches missed.">                             &quot;fr&quot;.equalsIgnoreCase(Messages.getSlocale())?</span>
+                                 CHECKED : &quot;&quot;);
+<span class="fc" id="L1745">  }</span>
+
+  private String systemLimitedSource0() {
+<span class="nc" id="L1748">    final String system = REQUEST.SystemLimited.readFileUnique(this);</span>
+<span class="nc bnc" id="L1749" title="All 4 branches missed.">    if (system == null || system.isEmpty()) {</span>
+<span class="nc" id="L1750">      return REQUEST.System.readFileUnique(this);</span>
+    }
+<span class="nc" id="L1752">    return system;</span>
+  }
+
+  String systemLimited() {
+<span class="nc" id="L1756">    getParams();</span>
+    DbHostConfiguration config;
+    try {
+<span class="nc" id="L1759">      config = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L1760">    } catch (final WaarpDatabaseException e2) {</span>
+<span class="nc" id="L1761">      config =</span>
+<span class="nc" id="L1762">          new DbHostConfiguration(Configuration.configuration.getHostId(), &quot;&quot;,</span>
+                                  &quot;&quot;, &quot;&quot;, &quot;&quot;);
+      try {
+<span class="nc" id="L1765">        config.insert();</span>
+<span class="nc" id="L1766">      } catch (final WaarpDatabaseException ignored) {</span>
+        // nothing
+<span class="nc" id="L1768">      }</span>
+<span class="nc" id="L1769">    }</span>
+<span class="nc bnc" id="L1770" title="All 2 branches missed.">    if (params == null) {</span>
+<span class="nc" id="L1771">      final String system = systemLimitedSource0();</span>
+<span class="nc" id="L1772">      final StringBuilder builder = new StringBuilder(system);</span>
+<span class="nc" id="L1773">      replaceStringSystem(config, builder);</span>
+<span class="nc" id="L1774">      langHandle(builder);</span>
+<span class="nc" id="L1775">      return builder.toString();</span>
+    }
+<span class="nc" id="L1777">    String extraInformation = null;</span>
+<span class="nc bnc" id="L1778" title="All 2 branches missed.">    if (params.containsKey(ACTION)) {</span>
+<span class="nc" id="L1779">      final List&lt;String&gt; action = params.get(ACTION);</span>
+<span class="nc bnc" id="L1780" title="All 2 branches missed.">      for (final String act : action) {</span>
+<span class="nc bnc" id="L1781" title="All 2 branches missed.">        if (&quot;Language&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1782">          lang = getTrimValue(&quot;change&quot;);</span>
+<span class="nc" id="L1783">          extraInformation =</span>
+<span class="nc" id="L1784">              Messages.getString(HTTP_SSL_HANDLER_LANG_IS) + &quot;Web: &quot; + lang +</span>
+              &quot; OpenR66: &quot; //$NON-NLS-1$
+<span class="nc" id="L1786">              + Messages.getSlocale();</span>
+<span class="nc bnc" id="L1787" title="All 2 branches missed.">        } else if (&quot;Disconnect&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1788">          String logon = logon();</span>
+<span class="nc" id="L1789">          logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),</span>
+                                   Messages
+<span class="nc" id="L1791">                                       .getString(&quot;HttpSslHandler.DisActive&quot;));</span>
+<span class="nc" id="L1792">          newSession = true;</span>
+<span class="nc" id="L1793">          clearSession();</span>
+<span class="nc" id="L1794">          forceClose = true;</span>
+<span class="nc" id="L1795">          return logon;</span>
+        }
+<span class="nc" id="L1797">      }</span>
+    }
+<span class="nc" id="L1799">    final String system = systemLimitedSource0();</span>
+<span class="nc" id="L1800">    final StringBuilder builder = new StringBuilder(system);</span>
+<span class="nc" id="L1801">    replaceStringSystem(config, builder);</span>
+<span class="nc" id="L1802">    langHandle(builder);</span>
+<span class="nc bnc" id="L1803" title="All 2 branches missed.">    if (extraInformation != null) {</span>
+<span class="nc" id="L1804">      builder.append(extraInformation);</span>
+    }
+<span class="nc" id="L1806">    return builder.toString();</span>
+  }
+
+  /**
+   * @param config
+   * @param builder
+   */
+  void replaceStringSystem(DbHostConfiguration config, StringBuilder builder) {
+<span class="fc" id="L1814">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXBUSINESSXXX.toString(),</span>
+<span class="fc" id="L1815">                             config.getBusiness());</span>
+<span class="fc" id="L1816">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXROLESXXX.toString(),</span>
+<span class="fc" id="L1817">                             config.getRoles());</span>
+<span class="fc" id="L1818">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXALIASESXXX.toString(),</span>
+<span class="fc" id="L1819">                             config.getAliases());</span>
+<span class="fc" id="L1820">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXOTHERXXX.toString(),</span>
+<span class="fc" id="L1821">                             config.getOthers());</span>
+<span class="fc" id="L1822">    WaarpStringUtils</span>
+<span class="fc" id="L1823">        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),</span>
+<span class="fc" id="L1824">                 Long.toString(</span>
+<span class="fc" id="L1825">                     Configuration.configuration.getServerChannelWriteLimit()));</span>
+<span class="fc" id="L1826">    WaarpStringUtils</span>
+<span class="fc" id="L1827">        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),</span>
+<span class="fc" id="L1828">                 Long.toString(</span>
+<span class="fc" id="L1829">                     Configuration.configuration.getServerChannelReadLimit()));</span>
+<span class="fc" id="L1830">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELATRAFFICXXX.toString(),</span>
+<span class="fc" id="L1831">                             Long.toString(</span>
+<span class="fc" id="L1832">                                 Configuration.configuration.getDelayLimit()));</span>
+<span class="fc" id="L1833">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),</span>
+<span class="fc" id="L1834">                             Long.toString(Configuration.configuration</span>
+<span class="fc" id="L1835">                                               .getDelayCommander()));</span>
+<span class="fc" id="L1836">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),</span>
+<span class="fc" id="L1837">                             Long.toString(</span>
+<span class="fc" id="L1838">                                 Configuration.configuration.getDelayRetry()));</span>
+<span class="fc" id="L1839">    WaarpStringUtils</span>
+<span class="fc" id="L1840">        .replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),</span>
+<span class="fc" id="L1841">                 Long.toString(</span>
+<span class="fc" id="L1842">                     Configuration.configuration.getServerGlobalWriteLimit()));</span>
+<span class="fc" id="L1843">    WaarpStringUtils</span>
+<span class="fc" id="L1844">        .replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),</span>
+<span class="fc" id="L1845">                 Long.toString(</span>
+<span class="fc" id="L1846">                     Configuration.configuration.getServerGlobalReadLimit()));</span>
+<span class="fc" id="L1847">    WaarpStringUtils.replace(builder, &quot;XXXBLOCKXXX&quot;,</span>
+<span class="pc bpc" id="L1848" title="1 of 2 branches missed.">                             Configuration.configuration.isShutdown()? CHECKED :</span>
+                                 &quot;&quot;);
+<span class="pc bpc" id="L1850" title="4 of 5 branches missed.">    switch (WaarpLoggerFactory.getLogLevel()) {</span>
+      case DEBUG:
+<span class="nc" id="L1852">        WaarpStringUtils.replace(builder, XXXLEVEL1XXX, CHECKED);</span>
+<span class="nc" id="L1853">        WaarpStringUtils.replace(builder, XXXLEVEL2XXX, &quot;&quot;);</span>
+<span class="nc" id="L1854">        WaarpStringUtils.replace(builder, XXXLEVEL3XXX, &quot;&quot;);</span>
+<span class="nc" id="L1855">        WaarpStringUtils.replace(builder, XXXLEVEL4XXX, &quot;&quot;);</span>
+<span class="nc" id="L1856">        break;</span>
+      case INFO:
+<span class="nc" id="L1858">        WaarpStringUtils.replace(builder, XXXLEVEL1XXX, &quot;&quot;);</span>
+<span class="nc" id="L1859">        WaarpStringUtils.replace(builder, XXXLEVEL2XXX, CHECKED);</span>
+<span class="nc" id="L1860">        WaarpStringUtils.replace(builder, XXXLEVEL3XXX, &quot;&quot;);</span>
+<span class="nc" id="L1861">        WaarpStringUtils.replace(builder, XXXLEVEL4XXX, &quot;&quot;);</span>
+<span class="nc" id="L1862">        break;</span>
+      case WARN:
+<span class="fc" id="L1864">        WaarpStringUtils.replace(builder, XXXLEVEL1XXX, &quot;&quot;);</span>
+<span class="fc" id="L1865">        WaarpStringUtils.replace(builder, XXXLEVEL2XXX, &quot;&quot;);</span>
+<span class="fc" id="L1866">        WaarpStringUtils.replace(builder, XXXLEVEL3XXX, CHECKED);</span>
+<span class="fc" id="L1867">        WaarpStringUtils.replace(builder, XXXLEVEL4XXX, &quot;&quot;);</span>
+<span class="fc" id="L1868">        break;</span>
+      case ERROR:
+<span class="nc" id="L1870">        WaarpStringUtils.replace(builder, XXXLEVEL1XXX, &quot;&quot;);</span>
+<span class="nc" id="L1871">        WaarpStringUtils.replace(builder, XXXLEVEL2XXX, &quot;&quot;);</span>
+<span class="nc" id="L1872">        WaarpStringUtils.replace(builder, XXXLEVEL3XXX, &quot;&quot;);</span>
+<span class="nc" id="L1873">        WaarpStringUtils.replace(builder, XXXLEVEL4XXX, CHECKED);</span>
+<span class="nc" id="L1874">        break;</span>
+      default:
+<span class="nc" id="L1876">        WaarpStringUtils.replace(builder, XXXLEVEL1XXX, &quot;&quot;);</span>
+<span class="nc" id="L1877">        WaarpStringUtils.replace(builder, XXXLEVEL2XXX, &quot;&quot;);</span>
+<span class="nc" id="L1878">        WaarpStringUtils.replace(builder, XXXLEVEL3XXX, &quot;&quot;);</span>
+<span class="nc" id="L1879">        WaarpStringUtils.replace(builder, XXXLEVEL4XXX, &quot;&quot;);</span>
+        break;
+
+    }
+<span class="fc" id="L1883">  }</span>
+
+  String logout() {
+<span class="fc" id="L1886">    String logon = logon();</span>
+<span class="fc" id="L1887">    logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),</span>
+<span class="fc" id="L1888">                             Messages.getString(&quot;HttpSslHandler.Disconnected&quot;));</span>
+<span class="fc" id="L1889">    newSession = true;</span>
+<span class="fc" id="L1890">    clearSession();</span>
+<span class="fc" id="L1891">    forceClose = true;</span>
+<span class="fc" id="L1892">    return logon;</span>
+  }
+
+  private String system0() {
+<span class="fc" id="L1896">    getParams();</span>
+    DbHostConfiguration config;
+    try {
+<span class="fc" id="L1899">      config = new DbHostConfiguration(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L1900">    } catch (final WaarpDatabaseException e2) {</span>
+<span class="nc" id="L1901">      config =</span>
+<span class="nc" id="L1902">          new DbHostConfiguration(Configuration.configuration.getHostId(), &quot;&quot;,</span>
+                                  &quot;&quot;, &quot;&quot;, &quot;&quot;);
+      try {
+<span class="nc" id="L1905">        config.insert();</span>
+<span class="nc" id="L1906">      } catch (final WaarpDatabaseException ignored) {</span>
+        // nothing
+<span class="nc" id="L1908">      }</span>
+<span class="fc" id="L1909">    }</span>
+<span class="pc bpc" id="L1910" title="1 of 2 branches missed.">    if (params == null) {</span>
+<span class="fc" id="L1911">      final String system = REQUEST.System.readFileUnique(this);</span>
+<span class="fc" id="L1912">      final StringBuilder builder = new StringBuilder(system);</span>
+<span class="fc" id="L1913">      replaceStringSystem(config, builder);</span>
+<span class="fc" id="L1914">      langHandle(builder);</span>
+<span class="fc" id="L1915">      return builder.toString();</span>
+    }
+<span class="nc" id="L1917">    String extraInformation = null;</span>
+<span class="nc bnc" id="L1918" title="All 2 branches missed.">    if (params.containsKey(ACTION)) {</span>
+<span class="nc" id="L1919">      final List&lt;String&gt; action = params.get(ACTION);</span>
+<span class="nc bnc" id="L1920" title="All 2 branches missed.">      for (final String act : action) {</span>
+<span class="nc bnc" id="L1921" title="All 2 branches missed.">        if (&quot;Language&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1922">          lang = getTrimValue(&quot;change&quot;);</span>
+<span class="nc" id="L1923">          final String sys = getTrimValue(&quot;changesys&quot;);</span>
+<span class="nc" id="L1924">          Messages.init(new Locale(sys));</span>
+<span class="nc" id="L1925">          extraInformation =</span>
+<span class="nc" id="L1926">              Messages.getString(HTTP_SSL_HANDLER_LANG_IS) + &quot;Web: &quot; + lang +</span>
+              &quot; OpenR66: &quot; //$NON-NLS-1$
+<span class="nc" id="L1928">              + Messages.getSlocale();</span>
+<span class="nc bnc" id="L1929" title="All 2 branches missed.">        } else if (&quot;Level&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1930">          final String loglevel = getTrimValue(&quot;loglevel&quot;);</span>
+<span class="nc" id="L1931">          WaarpLogLevel level = WaarpLogLevel.WARN;</span>
+<span class="nc bnc" id="L1932" title="All 2 branches missed.">          if (&quot;debug&quot;.equalsIgnoreCase(loglevel)) {</span>
+<span class="nc" id="L1933">            level = WaarpLogLevel.DEBUG;</span>
+<span class="nc bnc" id="L1934" title="All 2 branches missed.">          } else if (&quot;info&quot;.equalsIgnoreCase(loglevel)) {</span>
+<span class="nc" id="L1935">            level = WaarpLogLevel.INFO;</span>
+<span class="nc bnc" id="L1936" title="All 2 branches missed.">          } else if (&quot;warn&quot;.equalsIgnoreCase(loglevel)) {</span>
+<span class="nc" id="L1937">            level = WaarpLogLevel.WARN;</span>
+<span class="nc bnc" id="L1938" title="All 2 branches missed.">          } else if (ERROR2.equalsIgnoreCase(loglevel)) {</span>
+<span class="nc" id="L1939">            level = WaarpLogLevel.ERROR;</span>
+          }
+<span class="nc" id="L1941">          WaarpLoggerFactory.setLogLevel(level);</span>
+<span class="nc" id="L1942">          extraInformation = Messages.getString(HTTP_SSL_HANDLER_LANG_IS) +</span>
+<span class="nc" id="L1943">                             level.name(); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L1944" title="All 2 branches missed.">        } else if (&quot;ExportConfig&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1945">          final String directory =</span>
+<span class="nc" id="L1946">              Configuration.configuration.getBaseDirectory() +</span>
+              DirInterface.SEPARATOR +
+<span class="nc" id="L1948">              Configuration.configuration.getArchivePath();</span>
+<span class="nc" id="L1949">          extraInformation =</span>
+<span class="nc" id="L1950">              Messages.getString(&quot;HttpSslHandler.ExportDir&quot;) + directory +</span>
+              &quot;&lt;br&gt;&quot;; //$NON-NLS-1$
+<span class="nc" id="L1952">          final String[] filenames = ServerActions</span>
+<span class="nc" id="L1953">              .staticConfigExport(directory, true, true, true, true, true);</span>
+          // hosts, rules, business, alias, roles
+<span class="nc bnc" id="L1955" title="All 2 branches missed.">          if (filenames[0] != null) {</span>
+<span class="nc" id="L1956">            extraInformation +=</span>
+<span class="nc" id="L1957">                Messages.getString(&quot;HttpSslHandler.33&quot;); //$NON-NLS-1$</span>
+          }
+<span class="nc bnc" id="L1959" title="All 2 branches missed.">          if (filenames[1] != null) {</span>
+<span class="nc" id="L1960">            extraInformation +=</span>
+<span class="nc" id="L1961">                Messages.getString(&quot;HttpSslHandler.32&quot;); //$NON-NLS-1$</span>
+          }
+<span class="nc bnc" id="L1963" title="All 2 branches missed.">          if (filenames[2] != null) {</span>
+<span class="nc" id="L1964">            extraInformation +=</span>
+<span class="nc" id="L1965">                Messages.getString(&quot;HttpSslHandler.44&quot;); //$NON-NLS-1$</span>
+          }
+<span class="nc bnc" id="L1967" title="All 2 branches missed.">          if (filenames[3] != null) {</span>
+<span class="nc" id="L1968">            extraInformation +=</span>
+<span class="nc" id="L1969">                Messages.getString(&quot;HttpSslHandler.45&quot;); //$NON-NLS-1$</span>
+          }
+<span class="nc bnc" id="L1971" title="All 2 branches missed.">          if (filenames[4] != null) {</span>
+<span class="nc" id="L1972">            extraInformation +=</span>
+<span class="nc" id="L1973">                Messages.getString(&quot;HttpSslHandler.46&quot;); //$NON-NLS-1$</span>
+          }
+<span class="nc bnc" id="L1975" title="All 2 branches missed.">        } else if (&quot;Disconnect&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1976">          return logout();</span>
+<span class="nc bnc" id="L1977" title="All 2 branches missed.">        } else if (&quot;Block&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L1978">          final boolean block = params.containsKey(&quot;blocking&quot;);</span>
+<span class="nc bnc" id="L1979" title="All 2 branches missed.">          if (block) {</span>
+<span class="nc" id="L1980">            extraInformation =</span>
+<span class="nc" id="L1981">                Messages.getString(&quot;HttpSslHandler.34&quot;); //$NON-NLS-1$</span>
+          } else {
+<span class="nc" id="L1983">            extraInformation =</span>
+<span class="nc" id="L1984">                Messages.getString(&quot;HttpSslHandler.35&quot;); //$NON-NLS-1$</span>
+          }
+<span class="nc" id="L1986">          Configuration.configuration.setShutdown(block);</span>
+<span class="nc bnc" id="L1987" title="All 2 branches missed.">        } else if (&quot;Shutdown&quot;.equalsIgnoreCase(act)) {</span>
+          String error;
+<span class="nc" id="L1989">          if (Configuration.configuration</span>
+<span class="nc bnc" id="L1990" title="All 2 branches missed.">                  .getShutdownConfiguration().serviceFuture != null) {</span>
+<span class="nc" id="L1991">            error =</span>
+<span class="nc" id="L1992">                error(Messages.getString(&quot;HttpSslHandler.38&quot;)); //$NON-NLS-1$</span>
+          } else {
+<span class="nc" id="L1994">            error =</span>
+<span class="nc" id="L1995">                error(Messages.getString(&quot;HttpSslHandler.37&quot;)); //$NON-NLS-1$</span>
+          }
+<span class="nc" id="L1997">          WaarpShutdownHook.setRestart(false);</span>
+<span class="nc" id="L1998">          newSession = true;</span>
+<span class="nc" id="L1999">          clearSession();</span>
+<span class="nc" id="L2000">          forceClose = true;</span>
+<span class="nc" id="L2001">          shutdown = true;</span>
+<span class="nc" id="L2002">          return error;</span>
+<span class="nc bnc" id="L2003" title="All 2 branches missed.">        } else if (&quot;Restart&quot;.equalsIgnoreCase(act)) {</span>
+          String error;
+<span class="nc" id="L2005">          if (Configuration.configuration</span>
+<span class="nc bnc" id="L2006" title="All 2 branches missed.">                  .getShutdownConfiguration().serviceFuture != null) {</span>
+<span class="nc" id="L2007">            error =</span>
+<span class="nc" id="L2008">                error(Messages.getString(&quot;HttpSslHandler.38&quot;)); //$NON-NLS-1$</span>
+          } else {
+<span class="nc" id="L2010">            error = error(Messages.getString(&quot;HttpSslHandler.39&quot;)</span>
+                          //$NON-NLS-1$
+<span class="nc" id="L2012">                          + Configuration.configuration.getTimeoutCon() * 2 /</span>
+                            1000 + Messages
+<span class="nc" id="L2014">                              .getString(&quot;HttpSslHandler.40&quot;)); //$NON-NLS-1$</span>
+          }
+<span class="nc" id="L2016">          error = error.replace(&quot;XXXRELOADHTTPXXX&quot;,</span>
+                                &quot;HTTP-EQUIV=\&quot;refresh\&quot; CONTENT=\&quot;&quot; +
+<span class="nc" id="L2018">                                Configuration.configuration.getTimeoutCon() *</span>
+                                2 / 1000 + '&quot;');
+<span class="nc" id="L2020">          WaarpShutdownHook.setRestart(true);</span>
+<span class="nc" id="L2021">          newSession = true;</span>
+<span class="nc" id="L2022">          clearSession();</span>
+<span class="nc" id="L2023">          forceClose = true;</span>
+<span class="nc" id="L2024">          shutdown = true;</span>
+<span class="nc" id="L2025">          return error;</span>
+<span class="nc bnc" id="L2026" title="All 2 branches missed.">        } else if (&quot;Validate&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L2027">          final String bsessionr = getTrimValue(&quot;BSESSR&quot;);</span>
+<span class="nc" id="L2028">          long lsessionr =</span>
+<span class="nc" id="L2029">              Configuration.configuration.getServerChannelReadLimit();</span>
+          long lglobalr;
+          long lsessionw;
+          long lglobalw;
+          long delay;
+          try {
+<span class="nc bnc" id="L2035" title="All 2 branches missed.">            if (bsessionr != null) {</span>
+<span class="nc" id="L2036">              lsessionr = (Long.parseLong(bsessionr) / 10) * 10;</span>
+            }
+<span class="nc" id="L2038">            final String bglobalr = getTrimValue(&quot;BGLOBR&quot;);</span>
+<span class="nc" id="L2039">            lglobalr = Configuration.configuration.getServerGlobalReadLimit();</span>
+<span class="nc bnc" id="L2040" title="All 2 branches missed.">            if (bglobalr != null) {</span>
+<span class="nc" id="L2041">              lglobalr = (Long.parseLong(bglobalr) / 10) * 10;</span>
+            }
+<span class="nc" id="L2043">            final String bsessionw = getTrimValue(&quot;BSESSW&quot;);</span>
+<span class="nc" id="L2044">            lsessionw =</span>
+<span class="nc" id="L2045">                Configuration.configuration.getServerChannelWriteLimit();</span>
+<span class="nc bnc" id="L2046" title="All 2 branches missed.">            if (bsessionw != null) {</span>
+<span class="nc" id="L2047">              lsessionw = (Long.parseLong(bsessionw) / 10) * 10;</span>
+            }
+<span class="nc" id="L2049">            final String bglobalw = getTrimValue(&quot;BGLOBW&quot;);</span>
+<span class="nc" id="L2050">            lglobalw = Configuration.configuration.getServerGlobalWriteLimit();</span>
+<span class="nc bnc" id="L2051" title="All 2 branches missed.">            if (bglobalw != null) {</span>
+<span class="nc" id="L2052">              lglobalw = (Long.parseLong(bglobalw) / 10) * 10;</span>
+            }
+<span class="nc" id="L2054">            final String dtra = getTrimValue(&quot;DTRA&quot;);</span>
+<span class="nc" id="L2055">            delay = Configuration.configuration.getDelayLimit();</span>
+<span class="nc bnc" id="L2056" title="All 2 branches missed.">            if (dtra != null) {</span>
+<span class="nc" id="L2057">              delay = (Long.parseLong(dtra) / 10) * 10;</span>
+<span class="nc bnc" id="L2058" title="All 2 branches missed.">              if (delay &lt; 100) {</span>
+<span class="nc" id="L2059">                delay = 100;</span>
+              }
+            }
+<span class="nc" id="L2062">            Configuration.configuration</span>
+<span class="nc" id="L2063">                .changeNetworkLimit(lglobalw, lglobalr, lsessionw, lsessionr,</span>
+                                    delay);
+<span class="nc" id="L2065">            final String dcomm = getTrimValue(&quot;DCOM&quot;);</span>
+<span class="nc bnc" id="L2066" title="All 2 branches missed.">            if (dcomm != null) {</span>
+<span class="nc" id="L2067">              Configuration.configuration</span>
+<span class="nc" id="L2068">                  .setDelayCommander(Long.parseLong(dcomm));</span>
+<span class="nc bnc" id="L2069" title="All 2 branches missed.">              if (Configuration.configuration.getDelayCommander() &lt;= 100) {</span>
+<span class="nc" id="L2070">                Configuration.configuration.setDelayCommander(100);</span>
+              }
+<span class="nc" id="L2072">              Configuration.configuration.reloadCommanderDelay();</span>
+            }
+<span class="nc" id="L2074">            final String dret = getTrimValue(&quot;DRET&quot;);</span>
+<span class="nc bnc" id="L2075" title="All 2 branches missed.">            if (dret != null) {</span>
+<span class="nc" id="L2076">              Configuration.configuration.setDelayRetry(Long.parseLong(dret));</span>
+<span class="nc bnc" id="L2077" title="All 2 branches missed.">              if (Configuration.configuration.getDelayRetry() &lt;= 1000) {</span>
+<span class="nc" id="L2078">                Configuration.configuration.setDelayRetry(1000);</span>
+              }
+            }
+<span class="nc" id="L2081">            extraInformation =</span>
+<span class="nc" id="L2082">                Messages.getString(&quot;HttpSslHandler.41&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L2083">          } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L2084">            extraInformation =</span>
+<span class="nc" id="L2085">                Messages.getString(&quot;HttpSslHandler.42&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L2086">          }</span>
+<span class="nc bnc" id="L2087" title="All 2 branches missed.">        } else if (&quot;Data.HostConfig&quot;.equalsIgnoreCase(act)) {</span>
+<span class="nc" id="L2088">          config.setBusiness(getTrimValue(&quot;BUSINESS&quot;));</span>
+<span class="nc" id="L2089">          config.setRoles(getTrimValue(&quot;ROLES&quot;));</span>
+<span class="nc" id="L2090">          config.setAliases(getTrimValue(&quot;ALIASES&quot;));</span>
+<span class="nc" id="L2091">          config.setOthers(getTrimValue(&quot;OTHER&quot;));</span>
+          try {
+<span class="nc" id="L2093">            config.update();</span>
+<span class="nc" id="L2094">            extraInformation =</span>
+<span class="nc" id="L2095">                Messages.getString(&quot;HttpSslHandler.41&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L2096">          } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L2097">            extraInformation =</span>
+<span class="nc" id="L2098">                Messages.getString(&quot;HttpSslHandler.43&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L2099">          }</span>
+        }
+<span class="nc" id="L2101">      }</span>
+    }
+<span class="nc" id="L2103">    final String system = REQUEST.System.readFileUnique(this);</span>
+<span class="nc" id="L2104">    final StringBuilder builder = new StringBuilder(system);</span>
+<span class="nc" id="L2105">    replaceStringSystem(config, builder);</span>
+<span class="nc" id="L2106">    langHandle(builder);</span>
+<span class="nc bnc" id="L2107" title="All 2 branches missed.">    if (extraInformation != null) {</span>
+<span class="nc" id="L2108">      builder.append(extraInformation);</span>
+    }
+<span class="nc" id="L2110">    return builder.toString();</span>
+  }
+
+  private void getParams() {
+<span class="fc bfc" id="L2114" title="All 2 branches covered.">    if (request.method() == HttpMethod.GET) {</span>
+<span class="fc" id="L2115">      params = null;</span>
+<span class="pc bpc" id="L2116" title="1 of 2 branches missed.">    } else if (request.method() == HttpMethod.POST) {</span>
+<span class="fc" id="L2117">      final ByteBuf content = request.content();</span>
+<span class="pc bpc" id="L2118" title="1 of 2 branches missed.">      if (content.isReadable()) {</span>
+<span class="fc" id="L2119">        final String param = content.toString(WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L2120">        final QueryStringDecoder queryStringDecoder2 =</span>
+            new QueryStringDecoder(&quot;/?&quot; + param);
+<span class="fc" id="L2122">        params = queryStringDecoder2.parameters();</span>
+<span class="fc" id="L2123">        boolean invalidEntry = false;</span>
+<span class="fc bfc" id="L2124" title="All 2 branches covered.">        for (Entry&lt;String, List&lt;String&gt;&gt; paramCheck : params.entrySet()) {</span>
+          try {
+<span class="fc" id="L2126">            ParametersChecker.checkSanityString(paramCheck.getValue().toArray(</span>
+                ParametersChecker.ZERO_ARRAY_STRING));
+<span class="nc" id="L2128">          } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L2129">            logger.error(</span>
+<span class="nc" id="L2130">                &quot;Arguments incompatible with Security: &quot; + paramCheck.getKey(),</span>
+                e);
+<span class="nc" id="L2132">            invalidEntry = true;</span>
+<span class="fc" id="L2133">          }</span>
+<span class="fc" id="L2134">        }</span>
+<span class="pc bpc" id="L2135" title="1 of 2 branches missed.">        if (invalidEntry) {</span>
+<span class="nc bnc" id="L2136" title="All 2 branches missed.">          for (Entry&lt;String, List&lt;String&gt;&gt; paramCheck : params.entrySet()) {</span>
+<span class="nc" id="L2137">            paramCheck.getValue().clear();</span>
+<span class="nc" id="L2138">          }</span>
+<span class="nc" id="L2139">          params.clear();</span>
+<span class="nc" id="L2140">          params = null;</span>
+<span class="nc" id="L2141">          logger.error(&quot;No parameter validated since security issue found&quot;);</span>
+<span class="nc" id="L2142">          return;</span>
+        }
+<span class="fc bfc" id="L2144" title="All 2 branches covered.">        if (params.containsKey(sLIMITROW)) {</span>
+<span class="fc" id="L2145">          final String snb = getTrimValue(sLIMITROW);</span>
+<span class="pc bpc" id="L2146" title="1 of 2 branches missed.">          if (snb != null) {</span>
+            try {
+<span class="fc" id="L2148">              final int old = getLimitRow();</span>
+<span class="fc" id="L2149">              setLimitRow(Integer.parseInt(snb));</span>
+<span class="pc bpc" id="L2150" title="1 of 2 branches missed.">              if (getLimitRow() &lt; 5) {</span>
+<span class="nc" id="L2151">                setLimitRow(old);</span>
+              }
+<span class="nc" id="L2153">            } catch (final Exception ignored) {</span>
+              // nothing
+<span class="fc" id="L2155">            }</span>
+          }
+        }
+<span class="fc" id="L2158">      } else {</span>
+<span class="nc" id="L2159">        params = null;</span>
+      }
+    }
+<span class="fc" id="L2162">  }</span>
+
+  private void clearSession() {
+<span class="fc bfc" id="L2165" title="All 2 branches covered.">    if (admin != null) {</span>
+<span class="fc" id="L2166">      final R66Session lsession = sessions.remove(admin.value());</span>
+<span class="fc" id="L2167">      final DbSession ldbsession = dbSessions.remove(admin.value());</span>
+<span class="fc" id="L2168">      admin = null;</span>
+<span class="pc bpc" id="L2169" title="1 of 2 branches missed.">      if (lsession != null) {</span>
+<span class="fc" id="L2170">        lsession.setStatus(75);</span>
+<span class="fc" id="L2171">        lsession.clear();</span>
+      }
+<span class="pc bpc" id="L2173" title="1 of 2 branches missed.">      if (ldbsession != null) {</span>
+<span class="fc" id="L2174">        ldbsession.forceDisconnect();</span>
+<span class="fc" id="L2175">        DbAdmin.decHttpSession();</span>
+      }
+    }
+<span class="fc" id="L2178">  }</span>
+
+  private void checkAuthent(ChannelHandlerContext ctx) {
+<span class="fc" id="L2181">    newSession = true;</span>
+<span class="fc bfc" id="L2182" title="All 2 branches covered.">    if (request.method() == HttpMethod.GET) {</span>
+<span class="fc" id="L2183">      String logon = logon();</span>
+<span class="fc" id="L2184">      logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), &quot;&quot;);</span>
+<span class="fc" id="L2185">      responseContent.append(logon);</span>
+<span class="fc" id="L2186">      clearSession();</span>
+<span class="fc" id="L2187">      writeResponse(ctx);</span>
+<span class="fc" id="L2188">      return;</span>
+<span class="pc bpc" id="L2189" title="1 of 2 branches missed.">    } else if (request.method() == HttpMethod.POST) {</span>
+<span class="fc" id="L2190">      getParams();</span>
+<span class="pc bpc" id="L2191" title="1 of 2 branches missed.">      if (params == null) {</span>
+<span class="nc" id="L2192">        String logon = logon();</span>
+<span class="nc" id="L2193">        logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),</span>
+                                 Messages
+<span class="nc" id="L2195">                                     .getString(&quot;HttpSslHandler.EmptyLogin&quot;));</span>
+<span class="nc" id="L2196">        responseContent.append(logon);</span>
+<span class="nc" id="L2197">        clearSession();</span>
+<span class="nc" id="L2198">        writeResponse(ctx);</span>
+<span class="nc" id="L2199">        return;</span>
+      }
+    }
+<span class="fc" id="L2202">    boolean getMenu = false;</span>
+<span class="pc bpc" id="L2203" title="1 of 2 branches missed.">    if (params.containsKey(&quot;Logon&quot;)) {</span>
+<span class="fc" id="L2204">      String name = null;</span>
+<span class="fc" id="L2205">      String password = null;</span>
+      List&lt;String&gt; values;
+<span class="pc bpc" id="L2207" title="1 of 2 branches missed.">      if (!params.isEmpty()) {</span>
+        // get values
+<span class="pc bpc" id="L2209" title="1 of 2 branches missed.">        if (params.containsKey(&quot;name&quot;)) {</span>
+<span class="fc" id="L2210">          values = params.get(&quot;name&quot;);</span>
+<span class="pc bpc" id="L2211" title="1 of 2 branches missed.">          if (values != null) {</span>
+<span class="fc" id="L2212">            name = values.get(0);</span>
+<span class="pc bpc" id="L2213" title="2 of 4 branches missed.">            if (name == null || name.isEmpty()) {</span>
+<span class="nc" id="L2214">              getMenu = true;</span>
+            }
+          }
+        } else {
+<span class="nc" id="L2218">          getMenu = true;</span>
+        }
+        // search the nb param
+<span class="pc bpc" id="L2221" title="2 of 4 branches missed.">        if (!getMenu &amp;&amp; params.containsKey(&quot;passwd&quot;)) {</span>
+<span class="fc" id="L2222">          values = params.get(&quot;passwd&quot;);</span>
+<span class="pc bpc" id="L2223" title="1 of 2 branches missed.">          if (values != null) {</span>
+<span class="fc" id="L2224">            password = values.get(0);</span>
+<span class="pc bpc" id="L2225" title="2 of 4 branches missed.">            getMenu = password == null || password.isEmpty();</span>
+          } else {
+<span class="nc" id="L2227">            getMenu = true;</span>
+          }
+        } else {
+<span class="nc" id="L2230">          getMenu = true;</span>
+        }
+      } else {
+<span class="nc" id="L2233">        getMenu = true;</span>
+      }
+<span class="pc bpc" id="L2235" title="1 of 2 branches missed.">      if (!getMenu) {</span>
+<span class="fc" id="L2236">        logger.debug(</span>
+<span class="fc" id="L2237">            &quot;Name? &quot; + name.equals(Configuration.configuration.getAdminName()) +</span>
+            &quot; Passwd? &quot; + Arrays
+<span class="fc" id="L2239">                .equals(password.getBytes(WaarpStringUtils.UTF8),</span>
+<span class="fc" id="L2240">                        Configuration.configuration.getServerAdminKey()));</span>
+<span class="pc bpc" id="L2241" title="1 of 2 branches missed.">        if (name.equals(Configuration.configuration.getAdminName()) &amp;&amp; Arrays</span>
+<span class="pc bpc" id="L2242" title="1 of 2 branches missed.">            .equals(password.getBytes(WaarpStringUtils.UTF8),</span>
+<span class="fc" id="L2243">                    Configuration.configuration.getServerAdminKey())) {</span>
+<span class="fc" id="L2244">          authentHttp.getAuth().specialNoSessionAuth(true,</span>
+                                                     Configuration.configuration
+<span class="fc" id="L2246">                                                         .getHostId());</span>
+<span class="fc" id="L2247">          authentHttp.setStatus(70);</span>
+        } else {
+          try {
+<span class="nc" id="L2250">            authentHttp.getAuth().connectionHttps(name, FilesystemBasedDigest</span>
+<span class="nc" id="L2251">                .passwdCrypt(password.getBytes(WaarpStringUtils.UTF8)));</span>
+<span class="nc" id="L2252">          } catch (final Reply530Exception e1) {</span>
+<span class="nc" id="L2253">            getMenu = true;</span>
+<span class="nc" id="L2254">          } catch (final Reply421Exception e1) {</span>
+<span class="nc" id="L2255">            getMenu = true;</span>
+<span class="nc" id="L2256">          }</span>
+        }
+<span class="pc bpc" id="L2258" title="1 of 2 branches missed.">        if (!authentHttp.isAuthenticated()) {</span>
+<span class="nc" id="L2259">          authentHttp.setStatus(71);</span>
+<span class="nc" id="L2260">          logger.debug(&quot;Still not authenticated: {}&quot;, authentHttp);</span>
+<span class="nc" id="L2261">          getMenu = true;</span>
+        }
+<span class="fc" id="L2263">        logger.debug(</span>
+<span class="fc" id="L2264">            &quot;Identified: &quot; + authentHttp.getAuth().isIdentified() + ':' +</span>
+<span class="fc" id="L2265">            authentHttp.isAuthenticated());</span>
+      }
+<span class="fc" id="L2267">    } else {</span>
+<span class="nc" id="L2268">      getMenu = true;</span>
+    }
+<span class="pc bpc" id="L2270" title="1 of 2 branches missed.">    if (getMenu) {</span>
+<span class="nc" id="L2271">      String logon = logon();</span>
+<span class="nc" id="L2272">      logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),</span>
+<span class="nc" id="L2273">                               Messages.getString(&quot;HttpSslHandler.BadLogin&quot;));</span>
+<span class="nc" id="L2274">      responseContent.append(logon);</span>
+<span class="nc" id="L2275">      clearSession();</span>
+<span class="nc" id="L2276">    } else {</span>
+      // load DbSession
+<span class="pc bpc" id="L2278" title="1 of 2 branches missed.">      if (dbSession != null) {</span>
+<span class="nc" id="L2279">        clearSession();</span>
+<span class="nc" id="L2280">        dbSession = null;</span>
+      }
+<span class="pc bpc" id="L2282" title="1 of 2 branches missed.">      if (dbSession == null) {</span>
+        try {
+<span class="fc" id="L2284">          dbSession = new DbSession(DbConstantR66.admin, false);</span>
+<span class="fc" id="L2285">          DbAdmin.incHttpSession();</span>
+<span class="fc" id="L2286">          isPrivateDbSession = true;</span>
+<span class="nc" id="L2287">        } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+          // Cannot connect so use default connection
+<span class="nc" id="L2289">          logger.warn(&quot;Use default database connection&quot;);</span>
+<span class="nc" id="L2290">          dbSession = DbConstantR66.admin.getSession();</span>
+<span class="fc" id="L2291">        }</span>
+      }
+<span class="fc" id="L2293">      final String index = index();</span>
+<span class="fc" id="L2294">      responseContent.append(index);</span>
+<span class="fc" id="L2295">      clearSession();</span>
+<span class="fc" id="L2296">      admin = new DefaultCookie(</span>
+<span class="fc" id="L2297">          R66SESSION + Configuration.configuration.getHostId(),</span>
+<span class="fc" id="L2298">          Configuration.configuration.getHostId() +</span>
+<span class="fc" id="L2299">          Long.toHexString(RANDOM.nextLong()));</span>
+<span class="fc" id="L2300">      sessions.put(admin.value(), authentHttp);</span>
+<span class="fc" id="L2301">      authentHttp.setStatus(72);</span>
+<span class="pc bpc" id="L2302" title="1 of 2 branches missed.">      if (isPrivateDbSession) {</span>
+<span class="fc" id="L2303">        dbSessions.put(admin.value(), dbSession);</span>
+      }
+<span class="fc" id="L2305">      logger.debug(&quot;CreateSession: &quot; + uriRequest + &quot;:{}&quot;, admin);</span>
+    }
+<span class="fc" id="L2307">    writeResponse(ctx);</span>
+<span class="fc" id="L2308">  }</span>
+
+  @Override
+  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
+      throws Exception {
+<span class="fc" id="L2313">    final FullHttpRequest request = this.request = msg;</span>
+<span class="fc" id="L2314">    final QueryStringDecoder queryStringDecoder =</span>
+<span class="fc" id="L2315">        new QueryStringDecoder(request.uri());</span>
+<span class="fc" id="L2316">    uriRequest = queryStringDecoder.path();</span>
+<span class="fc" id="L2317">    logger.debug(&quot;Msg: &quot; + uriRequest);</span>
+<span class="fc bfc" id="L2318" title="All 4 branches covered.">    if (uriRequest.contains(&quot;gre/&quot;) || uriRequest.contains(&quot;img/&quot;) ||</span>
+<span class="pc bpc" id="L2319" title="1 of 4 branches missed.">        uriRequest.contains(&quot;res/&quot;) || uriRequest.contains(&quot;favicon.ico&quot;)) {</span>
+<span class="fc" id="L2320">      HttpWriteCacheEnable.writeFile(request, ctx, Configuration.configuration</span>
+<span class="fc" id="L2321">                                                       .getHttpBasePath() +</span>
+                                                   uriRequest, R66SESSION +
+                                                               Configuration.configuration
+<span class="fc" id="L2324">                                                                   .getHostId());</span>
+<span class="fc" id="L2325">      return;</span>
+    }
+<span class="fc" id="L2327">    checkSession(ctx.channel());</span>
+<span class="fc bfc" id="L2328" title="All 2 branches covered.">    if (!authentHttp.isAuthenticated()) {</span>
+<span class="fc" id="L2329">      logger.debug(&quot;Not Authent: &quot; + uriRequest + &quot;:{}&quot;, authentHttp);</span>
+<span class="fc" id="L2330">      checkAuthent(ctx);</span>
+<span class="fc" id="L2331">      return;</span>
+    }
+<span class="fc" id="L2333">    String find = uriRequest;</span>
+<span class="pc bpc" id="L2334" title="1 of 2 branches missed.">    if (uriRequest.charAt(0) == '/') {</span>
+<span class="fc" id="L2335">      find = uriRequest.substring(1);</span>
+    }
+<span class="fc" id="L2337">    REQUEST req = REQUEST.index;</span>
+<span class="pc bpc" id="L2338" title="1 of 2 branches missed.">    if (find.length() != 0) {</span>
+<span class="fc" id="L2339">      find = find.substring(0, find.indexOf('.'));</span>
+      try {
+<span class="fc" id="L2341">        req = REQUEST.valueOf(find);</span>
+<span class="nc" id="L2342">      } catch (final IllegalArgumentException e1) {</span>
+<span class="nc" id="L2343">        req = REQUEST.index;</span>
+<span class="nc" id="L2344">        logger.debug(&quot;NotFound: &quot; + find + ':' + uriRequest);</span>
+<span class="fc" id="L2345">      }</span>
+    }
+<span class="pc bpc" id="L2347" title="1 of 11 branches missed.">    switch (req) {</span>
+      case CancelRestart:
+<span class="pc bpc" id="L2349" title="1 of 2 branches missed.">        if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {</span>
+<span class="fc" id="L2350">          responseContent.append(cancelRestart0());</span>
+        } else {
+<span class="nc" id="L2352">          responseContent.append(unallowed(</span>
+<span class="nc" id="L2353">              Messages.getString(&quot;HttpSslHandler.CancelRestartUnallowed&quot;)));</span>
+        }
+<span class="nc" id="L2355">        break;</span>
+      case Export:
+<span class="pc bpc" id="L2357" title="1 of 2 branches missed.">        if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {</span>
+<span class="fc" id="L2358">          responseContent.append(export0());</span>
+        } else {
+<span class="nc" id="L2360">          responseContent.append(</span>
+<span class="nc" id="L2361">              unallowed(Messages.getString(&quot;HttpSslHandler.ExportUnallowed&quot;)));</span>
+        }
+<span class="nc" id="L2363">        break;</span>
+      case Hosts:
+<span class="pc bpc" id="L2365" title="1 of 2 branches missed.">        if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {</span>
+<span class="fc" id="L2366">          responseContent.append(hosts0());</span>
+        } else {
+<span class="nc" id="L2368">          responseContent.append(</span>
+<span class="nc" id="L2369">              unallowed(Messages.getString(&quot;HttpSslHandler.HostUnallowed&quot;)));</span>
+        }
+<span class="nc" id="L2371">        break;</span>
+      case Listing:
+<span class="fc" id="L2373">        responseContent.append(listing0());</span>
+<span class="fc" id="L2374">        break;</span>
+      case Logout:
+<span class="fc" id="L2376">        responseContent.append(logout());</span>
+<span class="fc" id="L2377">        break;</span>
+      case Rules:
+<span class="pc bpc" id="L2379" title="1 of 2 branches missed.">        if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {</span>
+<span class="fc" id="L2380">          responseContent.append(rules0());</span>
+        } else {
+<span class="nc" id="L2382">          responseContent.append(</span>
+<span class="nc" id="L2383">              unallowed(Messages.getString(&quot;HttpSslHandler.RulesUnallowed&quot;)));</span>
+        }
+<span class="nc" id="L2385">        break;</span>
+      case System:
+<span class="pc bpc" id="L2387" title="1 of 2 branches missed.">        if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {</span>
+<span class="fc" id="L2388">          responseContent.append(system0());</span>
+        } else {
+<span class="nc" id="L2390">          responseContent.append(systemLimited());</span>
+        }
+<span class="nc" id="L2392">        break;</span>
+      case Transfers:
+<span class="fc" id="L2394">        responseContent.append(transfers());</span>
+<span class="fc" id="L2395">        break;</span>
+      case Spooled:
+<span class="fc" id="L2397">        responseContent.append(spooled0(false));</span>
+<span class="fc" id="L2398">        break;</span>
+      case SpooledDetailed:
+<span class="nc" id="L2400">        responseContent.append(spooled0(true));</span>
+<span class="nc" id="L2401">        break;</span>
+      default:
+<span class="fc" id="L2403">        responseContent.append(index());</span>
+        break;
+    }
+<span class="fc" id="L2406">    writeResponse(ctx);</span>
+<span class="fc" id="L2407">  }</span>
+
+  void checkSession(Channel channel) {
+<span class="fc" id="L2410">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="pc bpc" id="L2411" title="1 of 2 branches missed.">    if (cookieString != null) {</span>
+<span class="fc" id="L2412">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="pc bpc" id="L2413" title="1 of 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+<span class="fc bfc" id="L2414" title="All 2 branches covered.">        for (final Cookie elt : cookies) {</span>
+<span class="fc bfc" id="L2415" title="All 2 branches covered.">          if (elt.name().equalsIgnoreCase(</span>
+<span class="fc" id="L2416">              R66SESSION + Configuration.configuration.getHostId())) {</span>
+<span class="fc" id="L2417">            logger.debug(&quot;Found session: &quot; + elt);</span>
+<span class="fc" id="L2418">            admin = elt;</span>
+<span class="fc" id="L2419">            final R66Session session = sessions.get(admin.value());</span>
+<span class="pc bpc" id="L2420" title="1 of 2 branches missed.">            if (session != null) {</span>
+<span class="fc" id="L2421">              authentHttp = session;</span>
+<span class="fc" id="L2422">              authentHttp.setStatus(73);</span>
+            } else {
+<span class="nc" id="L2424">              admin = null;</span>
+<span class="nc" id="L2425">              continue;</span>
+            }
+<span class="fc" id="L2427">            final DbSession dbSession = dbSessions.get(admin.value());</span>
+<span class="pc bpc" id="L2428" title="1 of 2 branches missed.">            if (dbSession != null) {</span>
+<span class="pc bpc" id="L2429" title="1 of 2 branches missed.">              if (dbSession.isDisActive()) {</span>
+<span class="nc" id="L2430">                clearSession();</span>
+              }
+<span class="fc" id="L2432">              this.dbSession = dbSession;</span>
+            } else {
+<span class="nc" id="L2434">              admin = null;</span>
+<span class="nc" id="L2435">              continue;</span>
+            }
+<span class="pc bpc" id="L2437" title="1 of 2 branches missed.">          } else if (elt.name().equalsIgnoreCase(I18NEXT)) {</span>
+<span class="fc" id="L2438">            logger.debug(&quot;Found i18next: &quot; + elt);</span>
+<span class="fc" id="L2439">            lang = elt.value();</span>
+          }
+<span class="fc" id="L2441">        }</span>
+      }
+    }
+<span class="fc bfc" id="L2444" title="All 2 branches covered.">    if (admin == null) {</span>
+<span class="fc" id="L2445">      logger.debug(&quot;NoSession: &quot; + uriRequest + &quot;:{}&quot;, admin);</span>
+    }
+<span class="fc" id="L2447">  }</span>
+
+  private void handleCookies(HttpResponse response) {
+<span class="fc" id="L2450">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="fc" id="L2451">    boolean i18nextFound = false;</span>
+<span class="fc bfc" id="L2452" title="All 2 branches covered.">    if (cookieString != null) {</span>
+<span class="fc" id="L2453">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="pc bpc" id="L2454" title="1 of 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+        // Reset the sessions if necessary.
+<span class="fc" id="L2456">        boolean findSession = false;</span>
+<span class="fc bfc" id="L2457" title="All 2 branches covered.">        for (final Cookie cookie : cookies) {</span>
+<span class="fc bfc" id="L2458" title="All 2 branches covered.">          if (cookie.name().equalsIgnoreCase(</span>
+<span class="fc" id="L2459">              R66SESSION + Configuration.configuration.getHostId())) {</span>
+<span class="fc bfc" id="L2460" title="All 2 branches covered.">            if (newSession) {</span>
+<span class="fc" id="L2461">              findSession = false;</span>
+            } else {
+<span class="fc" id="L2463">              findSession = true;</span>
+<span class="fc" id="L2464">              response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="fc" id="L2465">                                     ServerCookieEncoder.LAX.encode(cookie));</span>
+            }
+<span class="pc bpc" id="L2467" title="1 of 2 branches missed.">          } else if (cookie.name().equalsIgnoreCase(I18NEXT)) {</span>
+<span class="fc" id="L2468">            i18nextFound = true;</span>
+<span class="fc" id="L2469">            cookie.setValue(lang);</span>
+<span class="fc" id="L2470">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="fc" id="L2471">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+          } else {
+<span class="nc" id="L2473">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L2474">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+          }
+<span class="fc" id="L2476">        }</span>
+<span class="pc bpc" id="L2477" title="1 of 2 branches missed.">        if (!i18nextFound) {</span>
+<span class="nc" id="L2478">          final Cookie cookie = new DefaultCookie(I18NEXT, lang);</span>
+<span class="nc" id="L2479">          response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L2480">                                 ServerCookieEncoder.LAX.encode(cookie));</span>
+        }
+<span class="fc" id="L2482">        newSession = false;</span>
+<span class="fc bfc" id="L2483" title="All 4 branches covered.">        if (!findSession &amp;&amp; admin != null) {</span>
+<span class="fc" id="L2484">          response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="fc" id="L2485">                                 ServerCookieEncoder.LAX.encode(admin));</span>
+<span class="fc" id="L2486">          logger.debug(&quot;AddSession: &quot; + uriRequest + &quot;:{}&quot;, admin);</span>
+        }
+      }
+<span class="fc" id="L2489">    } else {</span>
+<span class="fc" id="L2490">      final Cookie cookie = new DefaultCookie(I18NEXT, lang);</span>
+<span class="fc" id="L2491">      response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="fc" id="L2492">                             ServerCookieEncoder.LAX.encode(cookie));</span>
+<span class="pc bpc" id="L2493" title="1 of 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L2494">        logger.debug(&quot;AddSession: &quot; + uriRequest + &quot;:{}&quot;, admin);</span>
+<span class="nc" id="L2495">        response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L2496">                               ServerCookieEncoder.LAX.encode(admin));</span>
+      }
+    }
+<span class="fc" id="L2499">  }</span>
+
+  /**
+   * Write the response
+   *
+   * @param ctx
+   */
+  protected void writeResponse(ChannelHandlerContext ctx) {
+    // Convert the response content to a ByteBuf.
+<span class="fc" id="L2508">    final ByteBuf buf = Unpooled</span>
+<span class="fc" id="L2509">        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L2510">    responseContent.setLength(0);</span>
+
+    // Decide whether to close the connection or not.
+<span class="fc" id="L2513">    final boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
+<span class="pc bpc" id="L2514" title="2 of 6 branches missed.">    final boolean close = HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(</span>
+<span class="fc" id="L2515">        request.headers().get(HttpHeaderNames.CONNECTION)) || !keepAlive ||</span>
+                          forceClose;
+
+    // Build the response object.
+<span class="fc" id="L2519">    final FullHttpResponse response =</span>
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+                                    buf);
+<span class="fc" id="L2522">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="fc" id="L2523">                           response.content().readableBytes());</span>
+<span class="fc" id="L2524">    response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+<span class="pc bpc" id="L2525" title="1 of 2 branches missed.">    if (keepAlive) {</span>
+<span class="fc" id="L2526">      response.headers()</span>
+<span class="fc" id="L2527">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+    }
+<span class="fc bfc" id="L2529" title="All 2 branches covered.">    if (!close) {</span>
+      // There's no need to add 'Content-Length' header
+      // if this is the last response.
+<span class="fc" id="L2532">      response.headers().set(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="fc" id="L2533">                             String.valueOf(buf.readableBytes()));</span>
+    }
+
+<span class="fc" id="L2536">    handleCookies(response);</span>
+
+    // Write the response.
+<span class="fc" id="L2539">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+    // Close the connection after the write operation is done if necessary.
+<span class="fc bfc" id="L2541" title="All 2 branches covered.">    if (close) {</span>
+<span class="fc" id="L2542">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
+    }
+<span class="pc bpc" id="L2544" title="1 of 2 branches missed.">    if (shutdown) {</span>
+<span class="nc" id="L2545">      ChannelUtils.startShutdown();</span>
+    }
+<span class="fc" id="L2547">  }</span>
+
+  /**
+   * Send an error and close
+   *
+   * @param ctx
+   * @param status
+   */
+  void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+<span class="nc" id="L2556">    responseContent.setLength(0);</span>
+<span class="nc" id="L2557">    responseContent.append(error(status.toString()));</span>
+<span class="nc" id="L2558">    final FullHttpResponse response =</span>
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled
+<span class="nc" id="L2560">            .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L2561">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="nc" id="L2562">                           response.content().readableBytes());</span>
+<span class="nc" id="L2563">    response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+<span class="nc" id="L2564">    responseContent.setLength(0);</span>
+<span class="nc" id="L2565">    clearSession();</span>
+    // Close the connection as soon as the error message is sent.
+<span class="nc" id="L2567">    ctx.writeAndFlush(response).addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="nc" id="L2568">  }</span>
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+      throws Exception {
+<span class="nc" id="L2573">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
+<span class="nc" id="L2574">        .getExceptionFromTrappedException(ctx.channel(), cause);</span>
+<span class="nc bnc" id="L2575" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc bnc" id="L2576" title="All 2 branches missed.">      if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {</span>
+<span class="nc bnc" id="L2577" title="All 2 branches missed.">        if (cause instanceof IOException) {</span>
+          // Nothing to do
+<span class="nc" id="L2579">          return;</span>
+        }
+<span class="nc" id="L2581">        logger.warn(&quot;Exception in HttpSslHandler {}&quot;, exception.getMessage());</span>
+      }
+<span class="nc bnc" id="L2583" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L2584">        sendError(ctx, HttpResponseStatus.BAD_REQUEST);</span>
+      }
+    } else {
+      // Nothing to do
+    }
+<span class="nc" id="L2589">  }</span>
+
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+<span class="fc" id="L2593">    final Channel channel = ctx.channel();</span>
+<span class="fc" id="L2594">    Configuration.configuration.getHttpChannelGroup().add(channel);</span>
+<span class="fc" id="L2595">    super.channelActive(ctx);</span>
+<span class="fc" id="L2596">  }</span>
+
+  /**
+   * @return the lIMITROW
+   */
+  public int getLimitRow() {
+<span class="fc" id="L2602">    return limitRow;</span>
+  }
+
+  /**
+   * @param lIMITROW the lIMITROW to set
+   */
+  void setLimitRow(int lIMITROW) {
+<span class="fc" id="L2609">    limitRow = lIMITROW;</span>
+<span class="fc" id="L2610">  }</span>
+
+  /**
+   * @return the rEFRESH
+   */
+  public int getRefresh() {
+<span class="fc" id="L2616">    return refresh;</span>
+  }
+
+  /**
+   * @param rEFRESH the rEFRESH to set
+   */
+  void setRefresh(int rEFRESH) {
+<span class="nc" id="L2623">    refresh = rEFRESH;</span>
+<span class="nc" id="L2624">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

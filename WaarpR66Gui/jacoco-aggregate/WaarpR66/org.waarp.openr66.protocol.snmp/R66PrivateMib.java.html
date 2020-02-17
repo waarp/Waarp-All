@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>R66PrivateMib.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.snmp</a> &gt; <span class="el_source">R66PrivateMib.java</span></div><h1>R66PrivateMib.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.snmp;
+
+import org.snmp4j.agent.DuplicateRegistrationException;
+import org.snmp4j.agent.MOScope;
+import org.snmp4j.mp.SnmpConstants;
+import org.snmp4j.smi.Gauge32;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.TimeTicks;
+import org.snmp4j.smi.VariableBinding;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket.TRANSFERMODE;
+import org.waarp.openr66.protocol.utils.Version;
+import org.waarp.snmp.r66.WaarpPrivateMib;
+import org.waarp.snmp.utils.MemoryGauge32;
+import org.waarp.snmp.utils.MemoryGauge32.MemoryType;
+import org.waarp.snmp.utils.WaarpMORow;
+import org.waarp.snmp.utils.WaarpMOScalar;
+import org.waarp.snmp.utils.WaarpUptime;
+
+/**
+ * Waarp OpenR66 Private MIB implementation
+ */
+public class R66PrivateMib extends WaarpPrivateMib {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L50">      WaarpLoggerFactory.getLogger(R66PrivateMib.class);</span>
+
+  /**
+   * @param sysdesc
+   * @param port
+   * @param smiPrivateCodeFinal
+   * @param typeWaarpObject
+   * @param scontactName
+   * @param stextualName
+   * @param saddress
+   * @param iservice
+   */
+  public R66PrivateMib(String sysdesc, int port, int smiPrivateCodeFinal,
+                       int typeWaarpObject, String scontactName,
+                       String stextualName, String saddress, int iservice) {
+<span class="fc" id="L65">    super(sysdesc, port, smiPrivateCodeFinal, typeWaarpObject, scontactName,</span>
+          stextualName, saddress, iservice);
+<span class="fc" id="L67">  }</span>
+
+  @Override
+  protected void agentRegisterWaarpMib() throws DuplicateRegistrationException {
+<span class="fc" id="L71">    logger.debug(&quot;registerGGMib&quot;);</span>
+    // register Static info
+<span class="fc" id="L73">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
+<span class="fc" id="L74">                             MibLevel.staticInfo.ordinal());</span>
+<span class="fc" id="L75">    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(), &quot;Waarp OpenR66&quot;);</span>
+<span class="fc" id="L76">    rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),</span>
+<span class="fc" id="L77">                     Configuration.configuration.getHostId());</span>
+<span class="fc" id="L78">    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);</span>
+<span class="fc" id="L79">    rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),</span>
+                     &quot;Waarp OpenR66: File Transfer Monitor&quot;);
+<span class="fc" id="L81">    rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),</span>
+                     &quot;http://waarp.github.com/Waarp&quot;);
+<span class="fc" id="L83">    rowInfo.setValue(WaarpDefinitionIndex.applApplicationProtocol.ordinal(),</span>
+                     applicationProtocol);
+
+<span class="fc" id="L86">    rowInfo.registerMOs(agent.getServer(), null);</span>
+    // register General info
+<span class="fc" id="L88">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
+<span class="fc" id="L89">                               MibLevel.globalInfo.ordinal());</span>
+<span class="fc" id="L90">    WaarpMOScalar memoryScalar =</span>
+<span class="fc" id="L91">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
+<span class="fc" id="L92">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
+<span class="fc" id="L93">    memoryScalar =</span>
+<span class="fc" id="L94">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
+<span class="fc" id="L95">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
+<span class="fc" id="L96">    memoryScalar =</span>
+<span class="fc" id="L97">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
+<span class="fc" id="L98">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
+<span class="fc" id="L99">    rowGlobal.registerMOs(agent.getServer(), null);</span>
+    // setup UpTime to SysUpTime and change status
+<span class="fc" id="L101">    scalarUptime =</span>
+<span class="fc" id="L102">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
+<span class="fc" id="L103">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
+<span class="fc" id="L104">    changeStatus(OperStatus.restarting);</span>
+<span class="fc" id="L105">    changeStatus(OperStatus.up);</span>
+    // register Detailed info
+<span class="fc" id="L107">    rowDetailed =</span>
+        new WaarpMORow(this, rootOIDWaarpDetailed, WaarpDetailedValues,
+<span class="fc" id="L109">                       MibLevel.detailedInfo.ordinal());</span>
+<span class="fc" id="L110">    rowDetailed.registerMOs(agent.getServer(), null);</span>
+    // register Error info
+<span class="fc" id="L112">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
+<span class="fc" id="L113">                              MibLevel.errorInfo.ordinal());</span>
+<span class="fc" id="L114">    rowError.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L115">  }</span>
+
+  /**
+   * Send a notification (trap or inform) for Shutdown event
+   *
+   * @param message
+   * @param message2
+   */
+  public void notifyStartStop(String message, String message2) {
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">    if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L125">      return;</span>
+    }
+<span class="fc" id="L127">    notify(NotificationElements.TrapShutdown, message, message2);</span>
+<span class="fc" id="L128">  }</span>
+
+  /**
+   * Send a notification (trap or inform) for Error event
+   *
+   * @param message
+   * @param message2
+   */
+  public void notifyError(String message, String message2) {
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L138">      return;</span>
+    }
+<span class="fc" id="L140">    notify(NotificationElements.TrapError, message, message2);</span>
+<span class="fc" id="L141">  }</span>
+
+  /**
+   * Send a notification (trap or inform) for Server Overloaded event
+   *
+   * @param message
+   * @param message2
+   */
+  public void notifyOverloaded(String message, String message2) {
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L151">      return;</span>
+    }
+<span class="fc" id="L153">    notify(NotificationElements.TrapOverloaded, message, message2);</span>
+<span class="fc" id="L154">  }</span>
+
+  /**
+   * Send a notification (trap or inform) for Warning event
+   *
+   * @param message
+   * @param message2
+   */
+  public void notifyWarning(String message, String message2) {
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L164">      return;</span>
+    }
+<span class="fc" id="L166">    notify(NotificationElements.TrapWarning, message, message2);</span>
+<span class="fc" id="L167">  }</span>
+
+  /**
+   * Send a notification (trap or inform)
+   *
+   * @param message
+   * @param runner
+   */
+  public void notifyInternalTask(String message, DbTaskRunner runner) {
+    try {
+<span class="fc" id="L177">      long delay =</span>
+<span class="fc" id="L178">          (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">      if (delay &lt; 0) {</span>
+<span class="nc" id="L180">        delay = 0;</span>
+      }
+<span class="fc" id="L182">      agent.getNotificationOriginator().notify(new OctetString(&quot;public&quot;),</span>
+                                               NotificationElements.InfoTask
+<span class="fc" id="L184">                                                   .getOID(rootOIDWaarpNotif),</span>
+                                               new VariableBinding[] {
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L188">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               1),
+                                                       new OctetString(
+                                                           NotificationElements.InfoTask
+<span class="fc" id="L193">                                                               .name())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L196">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               1),
+                                                       new OctetString(
+                                                           message)),
+                                                   // Start of Task
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L204">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.globalStepInfo
+<span class="fc" id="L207">                                                                   .getOID()),</span>
+                                                       new Gauge32(runner
+<span class="fc" id="L209">                                                                       .getGloballaststep())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L212">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.stepInfo
+<span class="fc" id="L215">                                                                   .getOID()),</span>
+                                                       new Gauge32(
+<span class="fc" id="L217">                                                           runner.getStep() +</span>
+                                                           1)),
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L221">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.rankFileInfo
+<span class="fc" id="L224">                                                                   .getOID()),</span>
+                                                       new Gauge32(
+<span class="fc" id="L226">                                                           runner.getRank())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L229">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.stepStatusInfo
+<span class="fc" id="L232">                                                                   .getOID()),</span>
+                                                       new OctetString(
+<span class="fc" id="L234">                                                           runner.getStatus()</span>
+<span class="fc" id="L235">                                                                 .getMesg())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L238">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.filenameInfo
+<span class="fc" id="L241">                                                                   .getOID()),</span>
+                                                       new OctetString(runner
+<span class="fc" id="L243">                                                                           .getFilename())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L246">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.originalNameInfo
+<span class="fc" id="L249">                                                                   .getOID()),</span>
+                                                       new OctetString(runner
+<span class="fc" id="L251">                                                                           .getOriginalFilename())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L254">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.idRuleInfo
+<span class="fc" id="L257">                                                                   .getOID()),</span>
+                                                       new OctetString(
+<span class="fc" id="L259">                                                           runner.getRuleId())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L262">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.modeTransInfo
+<span class="fc" id="L265">                                                                   .getOID()),</span>
+                                                       new OctetString(
+                                                           TRANSFERMODE
+<span class="fc" id="L268">                                                               .values()[runner</span>
+<span class="fc" id="L269">                                                               .getMode()]</span>
+<span class="fc" id="L270">                                                               .name())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L273">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.retrieveModeInfo
+<span class="fc" id="L276">                                                                   .getOID()),</span>
+                                                       new OctetString(
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">                                                           runner.isSender()?</span>
+                                                               &quot;Sender&quot; :
+                                                               &quot;Receiver&quot;)),
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L283">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.startTransInfo
+<span class="fc" id="L286">                                                                   .getOID()),</span>
+                                                       new TimeTicks(delay)),
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L290">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.infoStatusInfo
+<span class="fc" id="L293">                                                                   .getOID()),</span>
+                                                       new OctetString(
+<span class="fc" id="L295">                                                           runner.getErrorInfo()</span>
+<span class="fc" id="L296">                                                                 .getMesg())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L299">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.requesterInfo
+<span class="fc" id="L302">                                                                   .getOID()),</span>
+                                                       new OctetString(runner
+<span class="fc" id="L304">                                                                           .getRequester())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L307">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.requestedInfo
+<span class="fc" id="L310">                                                                   .getOID()),</span>
+                                                       new OctetString(runner
+<span class="fc" id="L312">                                                                           .getRequested())),</span>
+                                                   new VariableBinding(
+                                                       NotificationElements.InfoTask
+<span class="fc" id="L315">                                                           .getOID(</span>
+                                                               rootOIDWaarpNotif,
+                                                               NotificationTasks.specialIdInfo
+<span class="fc" id="L318">                                                                   .getOID()),</span>
+                                                       new OctetString(String
+<span class="fc" id="L320">                                                                           .valueOf(</span>
+                                                                               runner
+<span class="fc" id="L322">                                                                                   .getSpecialId()))),</span>
+                                                   // End of Task
+                                                   new VariableBinding(
+                                                       SnmpConstants.sysDescr,
+<span class="fc" id="L326">                                                       snmpv2.getDescr()),</span>
+                                                   new VariableBinding(
+                                                       SnmpConstants.sysObjectID,
+<span class="fc" id="L329">                                                       snmpv2.getObjectID()),</span>
+                                                   new VariableBinding(
+                                                       SnmpConstants.sysContact,
+<span class="fc" id="L332">                                                       snmpv2.getContact()),</span>
+                                                   new VariableBinding(
+                                                       SnmpConstants.sysName,
+<span class="fc" id="L335">                                                       snmpv2.getName()),</span>
+                                                   new VariableBinding(
+                                                       SnmpConstants.sysLocation,
+<span class="fc" id="L338">                                                       snmpv2.getLocation())</span>
+                                               });
+<span class="nc" id="L340">    } catch (final NullPointerException ignored) {</span>
+      // nothing
+<span class="fc" id="L342">    }</span>
+<span class="fc" id="L343">  }</span>
+
+  /**
+   * Send a notification (trap or inform) for Warning/Error event on a single
+   * Transfer Task
+   *
+   * @param message
+   * @param runner
+   */
+  public void notifyInfoTask(String message, DbTaskRunner runner) {
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">    if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L354">      return;</span>
+    }
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L357">      logger.debug(</span>
+          &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
+<span class="nc" id="L359">          runner.toShortString());</span>
+    }
+<span class="fc" id="L361">    notifyInternalTask(message, runner);</span>
+<span class="fc" id="L362">  }</span>
+
+  /**
+   * Send a notification (trap or inform) for all events on a single Transfer
+   * Task
+   *
+   * @param message
+   * @param runner
+   */
+  public void notifyTask(String message, DbTaskRunner runner) {
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">    if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L373">      return;</span>
+    }
+<span class="nc bnc" id="L375" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L376">      logger.debug(</span>
+          &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
+<span class="nc" id="L378">          runner.toShortString());</span>
+    }
+<span class="nc" id="L380">    notifyInternalTask(message, runner);</span>
+<span class="nc" id="L381">  }</span>
+
+  /**
+   * Trap/Notification
+   *
+   * @param element
+   * @param message
+   * @param message2
+   */
+  private void notify(NotificationElements element, String message,
+                      String message2) {
+    try {
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L394">        logger.debug(&quot;Notify: &quot; + element + ':' + message + ':' + message2);</span>
+      }
+<span class="fc" id="L396">      agent.getNotificationOriginator()</span>
+<span class="fc" id="L397">           .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
+                   new VariableBinding[] {
+<span class="fc" id="L399">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+<span class="fc" id="L400">                                           new OctetString(element.name())),</span>
+<span class="fc" id="L401">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+                                           new OctetString(message)),
+<span class="fc" id="L403">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+                                           new OctetString(message2)),
+                       new VariableBinding(SnmpConstants.sysDescr,
+<span class="fc" id="L406">                                           snmpv2.getDescr()),</span>
+                       new VariableBinding(SnmpConstants.sysObjectID,
+<span class="fc" id="L408">                                           snmpv2.getObjectID()),</span>
+                       new VariableBinding(SnmpConstants.sysContact,
+<span class="fc" id="L410">                                           snmpv2.getContact()),</span>
+                       new VariableBinding(SnmpConstants.sysName,
+<span class="fc" id="L412">                                           snmpv2.getName()),</span>
+                       new VariableBinding(SnmpConstants.sysLocation,
+<span class="fc" id="L414">                                           snmpv2.getLocation())</span>
+                   });
+<span class="nc" id="L416">    } catch (final NullPointerException ignored) {</span>
+      // nothing
+<span class="fc" id="L418">    }</span>
+<span class="fc" id="L419">  }</span>
+
+  @Override
+  public void updateServices(WaarpMOScalar scalar) {
+    // nothing
+<span class="fc" id="L424">  }</span>
+
+  @Override
+  public void updateServices(MOScope range) {
+    // nothing
+<span class="nc" id="L429">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

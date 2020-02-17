@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpBusinessFactory.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel</a> &gt; <span class="el_source">HttpBusinessFactory.java</span></div><h1>HttpBusinessFactory.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.DiskAttribute;
+import io.netty.handler.codec.http.multipart.DiskFileUpload;
+import io.netty.handler.codec.http.multipart.HttpDataFactory;
+import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
+import org.waarp.gateway.kernel.AbstractHttpField.FieldRole;
+import org.waarp.gateway.kernel.HttpPage.PageRole;
+
+import java.net.SocketAddress;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ *
+ */
+<span class="fc" id="L38">public abstract class HttpBusinessFactory {</span>
+<span class="fc" id="L39">  public static final HttpDataFactory factory =</span>
+      new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
+  // Disk if size exceed MINSIZE = 16K, but for FileUpload from Ark directly
+  // XXX FIXME TODO to setup outside !
+<span class="fc" id="L43">  public static String TempPath = &quot;J:/GG/ARK/TMP&quot;;</span>
+
+  /**
+   * Initialize the Disk support
+   */
+  public static void initialize(String tempPath) {
+<span class="nc" id="L49">    TempPath = tempPath;</span>
+<span class="nc" id="L50">    DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file</span>
+    // on exit (in normal
+    // exit)
+<span class="nc" id="L53">    DiskFileUpload.baseDirectory = TempPath; // system temp</span>
+    // directory
+<span class="nc" id="L55">    DiskAttribute.deleteOnExitTemporaryFile = true; // should delete file on</span>
+    // exit (in normal exit)
+<span class="nc" id="L57">    DiskAttribute.baseDirectory = TempPath; // system temp directory</span>
+<span class="nc" id="L58">  }</span>
+
+  /**
+   * It returns the AbstractHttpBusinessRequest to use during a new request.
+   * &lt;p&gt;
+   * Note that fields given in parameter should be updated according to their
+   * values if needed.
+   *
+   * @param remoteAddress the remote SocketAddress in use
+   * @param fields the fields linked hashmap (to preserver order) to
+   *     set for
+   *     the new request
+   * @param page source HttpPage
+   *
+   * @return the AbstractHttpBusinessRequest to use during a new request
+   */
+  public abstract AbstractHttpBusinessRequest getNewHttpBusinessRequest(
+      SocketAddress remoteAddress, Map&lt;String, AbstractHttpField&gt; fields,
+      HttpPage page);
+
+  /**
+   * @param pages
+   * @param title
+   * @param clasz
+   *
+   * @return True if the default error pages are correctly added
+   */
+  public static boolean addDefaultErrorPages(HttpPageHandler pages,
+                                             String title, Class&lt;?&gt; clasz) {
+    String pagename;
+    String header;
+    String footer;
+    String beginform;
+    String endform;
+    String nextinform;
+    String uri;
+    String errorpage;
+    String classname;
+    PageRole pageRole;
+    LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap;
+    String fieldname;
+    String fieldinfo;
+    String fieldvalue;
+    FieldRole fieldRole;
+    boolean fieldvisibility;
+    boolean fieldmandatory;
+    boolean fieldcookieset;
+    boolean fieldtovalidate;
+    int fieldrank;
+
+    // Need as default error pages: 400, 401, 403, 404, 406, 500
+    try {
+<span class="fc" id="L110">      pageRole = PageRole.ERROR;</span>
+<span class="fc" id="L111">      pagename = &quot;400&quot;;</span>
+<span class="fc" id="L112">      uri = &quot;400&quot;;</span>
+<span class="fc" id="L113">      header = &quot;&lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;&quot; + title + &quot;&lt;/TITLE&gt;&lt;/HEAD&gt;&lt;BODY&gt;&quot;;</span>
+<span class="fc" id="L114">      footer = &quot;&lt;/BODY&gt;&lt;/HTML&gt;&quot;;</span>
+<span class="fc" id="L115">      beginform = &quot;&lt;table border=\&quot;0\&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;h1&gt;&quot; + title + &quot;&lt;/h1&gt;&quot;;</span>
+<span class="fc" id="L116">      endform =</span>
+          &quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;br&gt;&lt;CENTER&gt;&lt;HR WIDTH=\&quot;75%\&quot; NOSHADE color=\&quot;blue\&quot;&gt;&lt;/CENTER&gt;&quot;;
+<span class="fc" id="L118">      nextinform = &quot;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&quot;;</span>
+<span class="fc" id="L119">      classname = clasz.getName();</span>
+<span class="fc" id="L120">      errorpage = null;</span>
+<span class="fc" id="L121">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="fc" id="L122">      fieldname = AbstractHttpField.ERRORINFO;</span>
+<span class="fc" id="L123">      fieldinfo = &quot;Error information&quot;;</span>
+<span class="fc" id="L124">      fieldvalue = HttpResponseStatus.BAD_REQUEST.reasonPhrase();</span>
+<span class="fc" id="L125">      fieldRole = FieldRole.BUSINESS_INPUT_TEXT;</span>
+<span class="fc" id="L126">      fieldvisibility = true;</span>
+<span class="fc" id="L127">      fieldmandatory = false;</span>
+<span class="fc" id="L128">      fieldcookieset = false;</span>
+<span class="fc" id="L129">      fieldtovalidate = false;</span>
+<span class="fc" id="L130">      fieldrank = 1;</span>
+<span class="fc" id="L131">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             fieldtovalidate,
+                                             FieldPosition.BODY, fieldrank));
+<span class="fc" id="L137">      pages.getHashmap().put(uri, new HttpPage(pagename, null, header, footer,</span>
+                                               beginform, endform, nextinform,
+                                               uri, pageRole, errorpage,
+                                               classname, linkedHashMap));
+
+<span class="fc" id="L142">      pagename = &quot;401&quot;;</span>
+<span class="fc" id="L143">      uri = &quot;401&quot;;</span>
+<span class="fc" id="L144">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="fc" id="L145">      fieldvalue = HttpResponseStatus.UNAUTHORIZED.reasonPhrase();</span>
+<span class="fc" id="L146">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             fieldtovalidate,
+                                             FieldPosition.BODY, fieldrank));
+<span class="fc" id="L152">      pages.getHashmap().put(uri, new HttpPage(pagename, null, header, footer,</span>
+                                               beginform, endform, nextinform,
+                                               uri, pageRole, errorpage,
+                                               classname, linkedHashMap));
+
+<span class="fc" id="L157">      pagename = &quot;403&quot;;</span>
+<span class="fc" id="L158">      uri = &quot;403&quot;;</span>
+<span class="fc" id="L159">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="fc" id="L160">      fieldvalue = HttpResponseStatus.FORBIDDEN.reasonPhrase();</span>
+<span class="fc" id="L161">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             fieldtovalidate,
+                                             FieldPosition.BODY, fieldrank));
+<span class="fc" id="L167">      pages.getHashmap().put(uri, new HttpPage(pagename, null, header, footer,</span>
+                                               beginform, endform, nextinform,
+                                               uri, pageRole, errorpage,
+                                               classname, linkedHashMap));
+
+<span class="fc" id="L172">      pagename = &quot;404&quot;;</span>
+<span class="fc" id="L173">      uri = &quot;404&quot;;</span>
+<span class="fc" id="L174">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="fc" id="L175">      fieldvalue = HttpResponseStatus.NOT_FOUND.reasonPhrase();</span>
+<span class="fc" id="L176">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             fieldtovalidate,
+                                             FieldPosition.BODY, fieldrank));
+<span class="fc" id="L182">      pages.getHashmap().put(uri, new HttpPage(pagename, null, header, footer,</span>
+                                               beginform, endform, nextinform,
+                                               uri, pageRole, errorpage,
+                                               classname, linkedHashMap));
+
+<span class="fc" id="L187">      pagename = &quot;406&quot;;</span>
+<span class="fc" id="L188">      uri = &quot;406&quot;;</span>
+<span class="fc" id="L189">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="fc" id="L190">      fieldvalue = HttpResponseStatus.NOT_ACCEPTABLE.reasonPhrase();</span>
+<span class="fc" id="L191">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             fieldtovalidate,
+                                             FieldPosition.BODY, fieldrank));
+<span class="fc" id="L197">      pages.getHashmap().put(uri, new HttpPage(pagename, null, header, footer,</span>
+                                               beginform, endform, nextinform,
+                                               uri, pageRole, errorpage,
+                                               classname, linkedHashMap));
+
+<span class="fc" id="L202">      pagename = &quot;500&quot;;</span>
+<span class="fc" id="L203">      uri = &quot;500&quot;;</span>
+<span class="fc" id="L204">      linkedHashMap = new LinkedHashMap&lt;String, AbstractHttpField&gt;();</span>
+<span class="fc" id="L205">      fieldvalue = HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase();</span>
+<span class="fc" id="L206">      linkedHashMap.put(fieldname,</span>
+                        new DefaultHttpField(fieldname, fieldRole, fieldinfo,
+                                             fieldvalue, fieldvisibility,
+                                             fieldmandatory, fieldcookieset,
+                                             fieldtovalidate,
+                                             FieldPosition.BODY, fieldrank));
+<span class="fc" id="L212">      pages.getHashmap().put(uri, new HttpPage(pagename, null, header, footer,</span>
+                                               beginform, endform, nextinform,
+                                               uri, pageRole, errorpage,
+                                               classname, linkedHashMap));
+<span class="fc" id="L216">      return true;</span>
+<span class="nc" id="L217">    } catch (final ClassNotFoundException ignored) {</span>
+      // nothing
+<span class="nc" id="L219">    } catch (final InstantiationException ignored) {</span>
+      // nothing
+<span class="nc" id="L221">    } catch (final IllegalAccessException ignored) {</span>
+      // nothing
+<span class="nc" id="L223">    }</span>
+<span class="nc" id="L224">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

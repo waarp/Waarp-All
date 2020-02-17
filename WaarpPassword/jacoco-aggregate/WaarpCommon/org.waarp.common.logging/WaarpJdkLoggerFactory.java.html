@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpJdkLoggerFactory.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Password Management GUI and Console</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.logging</a> &gt; <span class="el_source">WaarpJdkLoggerFactory.java</span></div><h1>WaarpJdkLoggerFactory.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2012 The Netty Project
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the &quot;License&quot;); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+package org.waarp.common.logging;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Logger factory which creates a
+ * &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/technotes/guides/logging/&quot;&gt;java.util.logging&lt;/a&gt;
+ * logger.
+ */
+public class WaarpJdkLoggerFactory extends WaarpLoggerFactory {
+
+  /**
+   * @param level
+   */
+  public WaarpJdkLoggerFactory(final WaarpLogLevel level) {
+<span class="fc" id="L49">    super(level);</span>
+<span class="fc" id="L50">    seLevelSpecific(currentLevel);</span>
+<span class="fc" id="L51">  }</span>
+
+  @Override
+  public WaarpLogger newInstance(final String name) {
+<span class="fc" id="L55">    return new WaarpJdkLogger(Logger.getLogger(name));</span>
+  }
+
+  @Override
+  protected void seLevelSpecific(final WaarpLogLevel level) {
+<span class="fc" id="L60">    final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);</span>
+<span class="fc bfc" id="L61" title="All 5 branches covered.">    switch (level) {</span>
+      case TRACE:
+<span class="fc" id="L63">        logger.setLevel(Level.FINEST); //NOSONAR</span>
+<span class="fc" id="L64">        break;</span>
+      case DEBUG:
+<span class="fc" id="L66">        logger.setLevel(Level.FINE); //NOSONAR</span>
+<span class="fc" id="L67">        break;</span>
+      case INFO:
+<span class="fc" id="L69">        logger.setLevel(Level.INFO); //NOSONAR</span>
+<span class="fc" id="L70">        break;</span>
+      case ERROR:
+<span class="fc" id="L72">        logger.setLevel(Level.SEVERE); //NOSONAR</span>
+<span class="fc" id="L73">        break;</span>
+      case WARN:
+      default:
+<span class="fc" id="L76">        logger.setLevel(Level.WARNING); //NOSONAR</span>
+        break;
+    }
+<span class="fc" id="L79">  }</span>
+
+  @Override
+  protected WaarpLogLevel getLevelSpecific() {
+<span class="fc" id="L83">    final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">    if (logger.isLoggable(Level.FINEST)) {</span>
+<span class="fc" id="L85">      return WaarpLogLevel.TRACE;</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">    } else if (logger.isLoggable(Level.FINE)) {</span>
+<span class="fc" id="L87">      return WaarpLogLevel.DEBUG;</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">    } else if (logger.isLoggable(Level.INFO)) {</span>
+<span class="fc" id="L89">      return WaarpLogLevel.INFO;</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">    } else if (logger.isLoggable(Level.WARNING)) {</span>
+<span class="fc" id="L91">      return WaarpLogLevel.WARN;</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    } else if (logger.isLoggable(Level.SEVERE)) {</span>
+<span class="fc" id="L93">      return WaarpLogLevel.ERROR;</span>
+    }
+<span class="nc" id="L95">    return null;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

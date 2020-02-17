@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FtpArgs.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">FtpArgs.java</span></div><h1>FtpArgs.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.context.task;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+
+import java.io.File;
+
+/**
+ * Class to parse arguments for FTP command
+ */
+<span class="fc" id="L38">public class FtpArgs {</span>
+<span class="fc" id="L39">  private static Option FILE_OPTION =</span>
+<span class="fc" id="L40">      Option.builder(&quot;file&quot;).required(true).hasArg(true)</span>
+<span class="fc" id="L41">            .desc(&quot;Specify the file path to operate on&quot;).build();</span>
+<span class="fc" id="L42">  private static Option HOST_OPTION =</span>
+<span class="fc" id="L43">      Option.builder(&quot;to&quot;).required(true).hasArg(true)</span>
+<span class="fc" id="L44">            .desc(&quot;Specify the requested Host&quot;).build();</span>
+<span class="fc" id="L45">  private static Option PORT_OPTION =</span>
+<span class="fc" id="L46">      Option.builder(&quot;port&quot;).required(true).hasArg(true)</span>
+<span class="fc" id="L47">            .desc(&quot;Specify the port on remote host to use&quot;).type(Number.class)</span>
+<span class="fc" id="L48">            .build();</span>
+<span class="fc" id="L49">  private static Option USER_OPTION =</span>
+<span class="fc" id="L50">      Option.builder(&quot;user&quot;).required(true).hasArg(true)</span>
+<span class="fc" id="L51">            .desc(&quot;Specify the user on remote host to use&quot;).build();</span>
+<span class="fc" id="L52">  private static Option PWD_OPTION =</span>
+<span class="fc" id="L53">      Option.builder(&quot;pwd&quot;).required(true).hasArg(true)</span>
+<span class="fc" id="L54">            .desc(&quot;Specify the password on remote host to use&quot;).build();</span>
+<span class="fc" id="L55">  private static Option ACCOUNT_OPTION = Option.builder(&quot;account&quot;).hasArg(true)</span>
+<span class="fc" id="L56">                                               .desc(</span>
+                                                   &quot;Specify the account on remote host to use&quot;)
+<span class="fc" id="L58">                                               .build();</span>
+<span class="fc" id="L59">  private static Option MODE_OPTION = Option.builder(&quot;mode&quot;).hasArg(true).desc(</span>
+<span class="fc" id="L60">      &quot;Specify the mode active of&quot; + &quot; passive to use&quot;).build();</span>
+<span class="fc" id="L61">  private static Option SSL_OPTION = Option.builder(&quot;ssl&quot;).hasArg(true).desc(</span>
+<span class="fc" id="L62">      &quot;Specify the ssl mode to use between no / explicit / implicit&quot;).build();</span>
+<span class="fc" id="L63">  private static Option CWD_OPTION = Option.builder(&quot;cwd&quot;).hasArg(true).desc(</span>
+<span class="fc" id="L64">      &quot;Specify the remote path on remote host to use&quot;).build();</span>
+<span class="fc" id="L65">  private static Option DIGEST_OPTION = Option.builder(&quot;digest&quot;).hasArg(true)</span>
+<span class="fc" id="L66">                                              .desc(&quot;Specify the digest to &quot; +</span>
+                                                    &quot;use between crc, md5, &quot; +
+                                                    &quot;sha1, sha256, sha384, &quot; +
+<span class="fc" id="L69">                                                    &quot;sha512&quot;).build();</span>
+<span class="fc" id="L70">  private static Option PRE_OPTION = Option.builder(&quot;pre&quot;).hasArg(true).desc(</span>
+      &quot;Specify the extra command as pre operation to use, using ',' as &quot; +
+<span class="fc" id="L72">      &quot;separator of arguments&quot;).build();</span>
+<span class="fc" id="L73">  private static Option POST_OPTION = Option.builder(&quot;post&quot;).hasArg(true).desc(</span>
+      &quot;Specify the extra command &quot; + &quot;as post operation to use, using ',' as&quot; +
+<span class="fc" id="L75">      &quot; separator of arguments&quot;).build();</span>
+<span class="fc" id="L76">  private static Option CMD_OPTION = Option.builder(&quot;command&quot;).hasArg(true)</span>
+<span class="fc" id="L77">                                           .desc(&quot;Specify the command as one &quot; +</span>
+                                                 &quot;of get, put, append &quot;)
+<span class="fc" id="L79">                                           .build();</span>
+
+<span class="fc" id="L81">  private static Options FTP_OPTIONS =</span>
+<span class="fc" id="L82">      new Options().addOption(FILE_OPTION).addOption(HOST_OPTION)</span>
+<span class="fc" id="L83">                   .addOption(PORT_OPTION).addOption(USER_OPTION)</span>
+<span class="fc" id="L84">                   .addOption(PWD_OPTION).addOption(ACCOUNT_OPTION)</span>
+<span class="fc" id="L85">                   .addOption(MODE_OPTION).addOption(SSL_OPTION)</span>
+<span class="fc" id="L86">                   .addOption(CWD_OPTION).addOption(DIGEST_OPTION)</span>
+<span class="fc" id="L87">                   .addOption(PRE_OPTION).addOption(CMD_OPTION)</span>
+<span class="fc" id="L88">                   .addOption(POST_OPTION);</span>
+<span class="fc" id="L89">  private String filepath = null;</span>
+<span class="fc" id="L90">  private String filename = null;</span>
+<span class="fc" id="L91">  private String requested = null;</span>
+<span class="fc" id="L92">  private int port = 21;</span>
+<span class="fc" id="L93">  private String user = null;</span>
+<span class="fc" id="L94">  private String pwd = null;</span>
+<span class="fc" id="L95">  private String acct = null;</span>
+<span class="fc" id="L96">  private boolean isPassive = true;</span>
+<span class="fc" id="L97">  private int ssl = 0; // -1 native, 1 auth</span>
+<span class="fc" id="L98">  private String cwd = null;</span>
+<span class="fc" id="L99">  private DigestAlgo digest = null; // 1 CRC, 2 MD5, 3 SHA1, 4 SHA256, 5 SHA384,</span>
+  // 6 SHA512
+<span class="fc" id="L101">  private String digestCommand = null;</span>
+  private String command;
+<span class="fc" id="L103">  private int codeCommand = 0; // -1 get, 1 put, 2 append</span>
+<span class="fc" id="L104">  private String preArgs = null;</span>
+<span class="fc" id="L105">  private String postArgs = null;</span>
+
+  /**
+   * Print to standard output the help of this command
+   */
+  public static void printHelp() {
+<span class="nc" id="L111">    HelpFormatter formatter = new HelpFormatter();</span>
+<span class="nc" id="L112">    formatter.printHelp(&quot;FtpArgs&quot;, FTP_OPTIONS);</span>
+<span class="nc" id="L113">  }</span>
+
+  /**
+   * &quot;-file filepath &lt;br&gt; -to requestedHost &lt;br&gt; -port port &lt;br&gt; -user user &lt;br&gt; -pwd pwd &lt;br&gt; [-account
+   * account] &lt;br&gt; [-mode active/passive] &lt;br&gt; [-ssl no/implicit/explicit]&lt;br&gt; [-cwd remotepath] &lt;br&gt; [-digest
+   * (crc,md5,sha1)] &lt;br&gt; [-pre extraCommand1 with ',' as separator of arguments] &lt;br&gt; -command command from
+   * (get,put,append) &lt;br&gt; [-post extraCommand2 with ',' as separator of arguments]&quot; &lt;br&gt;
+   * &lt;br&gt;
+   *
+   * @param args must be already replaced values (getReplacedValue)
+   */
+  public static FtpArgs getFtpArgs(String[] args)
+      throws OpenR66RunnerErrorException {
+<span class="fc" id="L126">    FtpArgs ftpArgs = new FtpArgs();</span>
+<span class="fc" id="L127">    CommandLineParser parser = new DefaultParser();</span>
+    try {
+<span class="fc" id="L129">      CommandLine cmd = parser.parse(FTP_OPTIONS, args, true);</span>
+
+<span class="fc" id="L131">      ftpArgs.setFilepath(cmd.getOptionValue(&quot;file&quot;));</span>
+<span class="fc" id="L132">      ftpArgs.setFilename(new File(ftpArgs.getFilepath()).getName());</span>
+<span class="fc" id="L133">      ftpArgs.setRequested(cmd.getOptionValue(&quot;to&quot;));</span>
+      try {
+<span class="fc" id="L135">        ftpArgs.setPort(Integer.parseInt(cmd.getOptionValue(&quot;port&quot;)));</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        if (ftpArgs.getPort() &lt; 0) {</span>
+<span class="nc" id="L137">          throw new NumberFormatException(&quot;Port must be positive&quot;);</span>
+        }
+<span class="fc" id="L139">      } catch (NumberFormatException e) {</span>
+<span class="fc" id="L140">        throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L141">      }</span>
+<span class="fc" id="L142">      ftpArgs.setUser(cmd.getOptionValue(&quot;user&quot;));</span>
+<span class="fc" id="L143">      ftpArgs.setPwd(cmd.getOptionValue(&quot;pwd&quot;));</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">      if (cmd.hasOption(&quot;account&quot;)) {</span>
+<span class="fc" id="L145">        ftpArgs.setAcct(cmd.getOptionValue(&quot;account&quot;));</span>
+      }
+<span class="fc bfc" id="L147" title="All 2 branches covered.">      if (cmd.hasOption(&quot;mode&quot;)) {</span>
+<span class="fc" id="L148">        ftpArgs</span>
+<span class="fc" id="L149">            .setPassive(&quot;passive&quot;.equalsIgnoreCase(cmd.getOptionValue(&quot;mode&quot;)));</span>
+      }
+<span class="fc bfc" id="L151" title="All 2 branches covered.">      if (cmd.hasOption(&quot;ssl&quot;)) {</span>
+<span class="fc" id="L152">        String ssl = cmd.getOptionValue(&quot;ssl&quot;);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (&quot;implicit&quot;.equalsIgnoreCase(ssl)) {</span>
+<span class="fc" id="L154">          ftpArgs.setSsl(-1);</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        } else if (&quot;explicit&quot;.equalsIgnoreCase(ssl)) {</span>
+<span class="fc" id="L156">          ftpArgs.setSsl(1);</span>
+        } else {
+<span class="fc" id="L158">          ftpArgs.setSsl(0);</span>
+        }
+      }
+<span class="fc bfc" id="L161" title="All 2 branches covered.">      if (cmd.hasOption(&quot;cwd&quot;)) {</span>
+<span class="fc" id="L162">        ftpArgs.setCwd(cmd.getOptionValue(&quot;cwd&quot;));</span>
+      }
+<span class="fc bfc" id="L164" title="All 2 branches covered.">      if (cmd.hasOption(&quot;digest&quot;)) {</span>
+<span class="fc" id="L165">        String digest = cmd.getOptionValue(&quot;digest&quot;);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        if (&quot;crc&quot;.equalsIgnoreCase(digest)) {</span>
+<span class="nc" id="L167">          ftpArgs.setDigest(DigestAlgo.CRC32);</span>
+<span class="nc" id="L168">          ftpArgs.setDigestCommand(&quot;XCRC &quot; + ftpArgs.getFilename());</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        } else if (&quot;md5&quot;.equalsIgnoreCase(digest)) {</span>
+<span class="nc" id="L170">          ftpArgs.setDigest(DigestAlgo.MD5);</span>
+<span class="nc" id="L171">          ftpArgs.setDigestCommand(&quot;XMD5 &quot; + ftpArgs.getFilename());</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        } else if (&quot;sha1&quot;.equalsIgnoreCase(digest)) {</span>
+<span class="nc" id="L173">          ftpArgs.setDigest(DigestAlgo.SHA1);</span>
+<span class="nc" id="L174">          ftpArgs.setDigestCommand(&quot;XSHA1 &quot; + ftpArgs.getFilename());</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        } else if (&quot;sha256&quot;.equalsIgnoreCase(digest)) {</span>
+<span class="fc" id="L176">          ftpArgs.setDigest(DigestAlgo.SHA256);</span>
+<span class="fc" id="L177">          ftpArgs.setDigestCommand(&quot;XSHA256 &quot; + ftpArgs.getFilename());</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        } else if (&quot;sha384&quot;.equalsIgnoreCase(digest)) {</span>
+<span class="nc" id="L179">          ftpArgs.setDigest(DigestAlgo.SHA384);</span>
+<span class="nc" id="L180">          ftpArgs.setDigestCommand(&quot;XSHA384 &quot; + ftpArgs.getFilename());</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        } else if (&quot;sha512&quot;.equalsIgnoreCase(digest)) {</span>
+<span class="fc" id="L182">          ftpArgs.setDigest(DigestAlgo.SHA512);</span>
+<span class="fc" id="L183">          ftpArgs.setDigestCommand(&quot;XSHA512 &quot; + ftpArgs.getFilename());</span>
+        } else {
+<span class="nc" id="L185">          ftpArgs.setDigest(null);</span>
+        }
+      }
+<span class="fc bfc" id="L188" title="All 2 branches covered.">      if (cmd.hasOption(&quot;pre&quot;)) {</span>
+<span class="fc" id="L189">        ftpArgs.setPreArgs(cmd.getOptionValue(&quot;pre&quot;).replace(',', ' '));</span>
+      }
+<span class="fc bfc" id="L191" title="All 2 branches covered.">      if (cmd.hasOption(&quot;post&quot;)) {</span>
+<span class="fc" id="L192">        ftpArgs.setPostArgs(cmd.getOptionValue(&quot;post&quot;).replace(',', ' '));</span>
+      }
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">      if (cmd.hasOption(&quot;command&quot;)) {</span>
+<span class="fc" id="L195">        ftpArgs.setCommand(cmd.getOptionValue(&quot;command&quot;));</span>
+        // get,put,append,list
+        // -1 get, 1 put, 2 append
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (&quot;get&quot;.equalsIgnoreCase(ftpArgs.getCommand())) {</span>
+<span class="fc" id="L199">          ftpArgs.setCodeCommand(-1);</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        } else if (&quot;put&quot;.equalsIgnoreCase(ftpArgs.getCommand())) {</span>
+<span class="fc" id="L201">          ftpArgs.setCodeCommand(1);</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">        } else if (&quot;append&quot;.equalsIgnoreCase(ftpArgs.getCommand())) {</span>
+<span class="fc" id="L203">          ftpArgs.setCodeCommand(2);</span>
+        } else {
+          // error
+<span class="fc" id="L206">          ftpArgs.setCodeCommand(0);</span>
+<span class="fc" id="L207">          throw new OpenR66RunnerErrorException(</span>
+<span class="fc" id="L208">              &quot;Command not known: &quot; + ftpArgs.getCommand());</span>
+        }
+      }
+<span class="fc" id="L211">    } catch (ParseException e) {</span>
+<span class="fc" id="L212">      throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L213">    }</span>
+
+<span class="fc" id="L215">    return ftpArgs;</span>
+  }
+
+  public String getFilepath() {
+<span class="fc" id="L219">    return filepath;</span>
+  }
+
+  public FtpArgs setFilepath(String filepath) {
+<span class="fc" id="L223">    this.filepath = filepath;</span>
+<span class="fc" id="L224">    return this;</span>
+  }
+
+  public String getFilename() {
+<span class="fc" id="L228">    return filename;</span>
+  }
+
+  public FtpArgs setFilename(String filename) {
+<span class="fc" id="L232">    this.filename = filename;</span>
+<span class="fc" id="L233">    return this;</span>
+  }
+
+  public String getRequested() {
+<span class="fc" id="L237">    return requested;</span>
+  }
+
+  public FtpArgs setRequested(String requested) {
+<span class="fc" id="L241">    this.requested = requested;</span>
+<span class="fc" id="L242">    return this;</span>
+  }
+
+  public int getPort() {
+<span class="fc" id="L246">    return port;</span>
+  }
+
+  public FtpArgs setPort(int port) {
+<span class="fc" id="L250">    this.port = port;</span>
+<span class="fc" id="L251">    return this;</span>
+  }
+
+  public String getUser() {
+<span class="fc" id="L255">    return user;</span>
+  }
+
+  public FtpArgs setUser(String user) {
+<span class="fc" id="L259">    this.user = user;</span>
+<span class="fc" id="L260">    return this;</span>
+  }
+
+  public String getPwd() {
+<span class="fc" id="L264">    return pwd;</span>
+  }
+
+  public FtpArgs setPwd(String pwd) {
+<span class="fc" id="L268">    this.pwd = pwd;</span>
+<span class="fc" id="L269">    return this;</span>
+  }
+
+  public String getAcct() {
+<span class="fc" id="L273">    return acct;</span>
+  }
+
+  public FtpArgs setAcct(String acct) {
+<span class="fc" id="L277">    this.acct = acct;</span>
+<span class="fc" id="L278">    return this;</span>
+  }
+
+  public boolean isPassive() {
+<span class="fc" id="L282">    return isPassive;</span>
+  }
+
+  public FtpArgs setPassive(boolean passive) {
+<span class="fc" id="L286">    isPassive = passive;</span>
+<span class="fc" id="L287">    return this;</span>
+  }
+
+  public int getSsl() {
+<span class="fc" id="L291">    return ssl;</span>
+  }
+
+  public FtpArgs setSsl(int ssl) {
+<span class="fc" id="L295">    this.ssl = ssl;</span>
+<span class="fc" id="L296">    return this;</span>
+  }
+
+  public String getCwd() {
+<span class="fc" id="L300">    return cwd;</span>
+  }
+
+  public FtpArgs setCwd(String cwd) {
+<span class="fc" id="L304">    this.cwd = cwd;</span>
+<span class="fc" id="L305">    return this;</span>
+  }
+
+  public DigestAlgo getDigest() {
+<span class="fc" id="L309">    return digest;</span>
+  }
+
+  public FtpArgs setDigest(DigestAlgo digest) {
+<span class="fc" id="L313">    this.digest = digest;</span>
+<span class="fc" id="L314">    return this;</span>
+  }
+
+  public String getDigestCommand() {
+<span class="nc" id="L318">    return digestCommand;</span>
+  }
+
+  public FtpArgs setDigestCommand(String digestCommand) {
+<span class="fc" id="L322">    this.digestCommand = digestCommand;</span>
+<span class="fc" id="L323">    return this;</span>
+  }
+
+  public String getCommand() {
+<span class="fc" id="L327">    return command;</span>
+  }
+
+  public FtpArgs setCommand(String command) {
+<span class="fc" id="L331">    this.command = command;</span>
+<span class="fc" id="L332">    return this;</span>
+  }
+
+  public int getCodeCommand() {
+<span class="fc" id="L336">    return codeCommand;</span>
+  }
+
+  public FtpArgs setCodeCommand(int codeCommand) {
+<span class="fc" id="L340">    this.codeCommand = codeCommand;</span>
+<span class="fc" id="L341">    return this;</span>
+  }
+
+  public String getPreArgs() {
+<span class="fc" id="L345">    return preArgs;</span>
+  }
+
+  public FtpArgs setPreArgs(String preArgs) {
+<span class="fc" id="L349">    this.preArgs = preArgs;</span>
+<span class="fc" id="L350">    return this;</span>
+  }
+
+  public String getPostArgs() {
+<span class="fc" id="L354">    return postArgs;</span>
+  }
+
+  public FtpArgs setPostArgs(String postArgs) {
+<span class="fc" id="L358">    this.postArgs = postArgs;</span>
+<span class="fc" id="L359">    return this;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestAbstractR66Handler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.handler</a> &gt; <span class="el_source">HttpRestAbstractR66Handler.java</span></div><h1>HttpRestAbstractR66Handler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.rest.handler;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.rest.HttpRestHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.gateway.kernel.rest.RestMethodHandler;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+
+import java.io.IOException;
+import java.nio.charset.UnsupportedCharsetException;
+
+import static org.waarp.openr66.context.R66FiniteDualStates.*;
+
+/**
+ * Common method implementation for Action Rest R66 handlers
+ */
+public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L58">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L59">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
+
+<span class="fc" id="L61">  public enum ACTIONS_TYPE {</span>
+<span class="fc" id="L62">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
+<span class="fc" id="L63">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
+<span class="fc" id="L64">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
+<span class="fc" id="L65">    CreateTransfer</span>
+  }
+
+  /**
+   * @param path
+   * @param method
+   */
+  protected HttpRestAbstractR66Handler(String path, RestConfiguration config,
+                                       METHOD... method) {
+<span class="fc" id="L74">    super(path, path, true, config, method);</span>
+<span class="fc" id="L75">  }</span>
+
+  @Override
+  public void checkHandlerSessionCorrectness(HttpRestHandler handler,
+                                             RestArgument arguments,
+                                             RestArgument result) {
+    // no check to do here ?
+<span class="fc" id="L82">    logger.debug(&quot;debug&quot;);</span>
+<span class="fc" id="L83">  }</span>
+
+  @Override
+  public void getFileUpload(HttpRestHandler handler, FileUpload data,
+                            RestArgument arguments, RestArgument result)
+      throws HttpIncorrectRequestException {
+    // should not be
+<span class="nc" id="L90">    logger.debug(</span>
+<span class="nc" id="L91">        &quot;debug: &quot; + data.getName() + ':' + data.getHttpDataType().name());</span>
+<span class="nc" id="L92">  }</span>
+
+  protected void setError(HttpRestHandler handler, RestArgument result,
+                          HttpResponseStatus code) {
+<span class="fc" id="L96">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L97">    handler.setWillClose(true);</span>
+<span class="fc" id="L98">    result.setResult(code);</span>
+<span class="fc" id="L99">  }</span>
+
+  protected void setError(HttpRestHandler handler, RestArgument result,
+                          JsonPacket packet, HttpResponseStatus code) {
+<span class="nc" id="L103">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L104">    result.setResult(code);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (packet != null) {</span>
+      try {
+<span class="nc" id="L107">        result.addResult(packet.createObjectNode());</span>
+<span class="nc" id="L108">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L110">      }</span>
+    }
+<span class="nc" id="L112">  }</span>
+
+  protected void setOk(HttpRestHandler handler, RestArgument result,
+                       JsonPacket packet, HttpResponseStatus code) {
+<span class="fc" id="L116">    handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="fc" id="L117">    result.setResult(code);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (packet != null) {</span>
+      try {
+<span class="nc" id="L120">        result.addResult(packet.createObjectNode());</span>
+<span class="nc" id="L121">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L122">        result.setDetail(&quot;serialization impossible&quot;);</span>
+<span class="nc" id="L123">      }</span>
+    }
+<span class="fc" id="L125">  }</span>
+
+  @Override
+  public HttpResponseStatus handleException(HttpRestHandler handler,
+                                            RestArgument arguments,
+                                            RestArgument result, Object body,
+                                            Exception exception) {
+<span class="nc" id="L132">    ((HttpRestR66Handler) handler).getServerHandler().getSession()</span>
+<span class="nc" id="L133">                                  .newState(ERROR);</span>
+<span class="nc" id="L134">    return super.handleException(handler, arguments, result, body, exception);</span>
+  }
+
+  @Override
+  public ChannelFuture sendResponse(HttpRestHandler handler,
+                                    ChannelHandlerContext ctx,
+                                    RestArgument arguments, RestArgument result,
+                                    Object body, HttpResponseStatus status) {
+<span class="fc" id="L142">    final String answer = result.toString();</span>
+<span class="fc" id="L143">    final ByteBuf buffer =</span>
+<span class="fc" id="L144">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L145">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="fc" id="L146">    response.headers()</span>
+<span class="fc" id="L147">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="nc" id="L149">      return ctx.writeAndFlush(response);</span>
+    }
+<span class="fc" id="L151">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="fc" id="L152">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="fc" id="L153">    logger.debug(&quot;Will write: {}&quot;, body);</span>
+<span class="fc" id="L154">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">    if (handler.isWillClose()) {</span>
+<span class="fc" id="L156">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
+<span class="fc" id="L157">      return future;</span>
+    }
+<span class="fc" id="L159">    return null;</span>
+  }
+
+  @Override
+  public Object getBody(HttpRestHandler handler, ByteBuf body,
+                        RestArgument arguments, RestArgument result)
+      throws HttpIncorrectRequestException {
+    JsonPacket packet;
+    try {
+<span class="nc" id="L168">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L169">      packet = JsonPacket.createFromBuffer(json);</span>
+<span class="nc" id="L170">    } catch (final JsonParseException e) {</span>
+<span class="nc" id="L171">      logger.warn(&quot;Error: &quot; + body.toString(WaarpStringUtils.UTF8), e);</span>
+<span class="nc" id="L172">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L173">    } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L174">      logger.warn(&quot;Error&quot;, e);</span>
+<span class="nc" id="L175">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L176">    } catch (final IOException e) {</span>
+<span class="nc" id="L177">      logger.warn(&quot;Error&quot;, e);</span>
+<span class="nc" id="L178">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L179">    } catch (final UnsupportedCharsetException e) {</span>
+<span class="nc" id="L180">      logger.warn(&quot;Error&quot;, e);</span>
+<span class="nc" id="L181">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L182">    }</span>
+<span class="nc" id="L183">    return packet;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

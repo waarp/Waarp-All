@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpSession.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.session</a> &gt; <span class="el_source">HttpSession.java</span></div><h1>HttpSession.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.session;
+
+import io.netty.handler.codec.http.HttpMethod;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileParameterInterface;
+import org.waarp.common.file.Restart;
+import org.waarp.common.file.SessionInterface;
+import org.waarp.common.file.filesystembased.FilesystemBasedOptsMLSxImpl;
+import org.waarp.gateway.kernel.HttpPage.PageRole;
+import org.waarp.gateway.kernel.commonfile.CommonDirImpl;
+import org.waarp.gateway.kernel.commonfile.FilesystemBasedFileParameterImpl;
+
+/**
+ *
+ */
+public class HttpSession implements SessionInterface {
+  protected HttpAuthInterface httpAuth;
+<span class="nc" id="L39">  protected long logid = DbConstant.ILLEGALVALUE;</span>
+  protected CommonDirImpl dir;
+  HttpMethod method;
+  private String cookieSession;
+  private PageRole currentCommand;
+  protected String filename;
+
+  /**
+   *
+   */
+<span class="nc" id="L49">  public HttpSession() {</span>
+    // nothing
+<span class="nc" id="L51">  }</span>
+
+  /**
+   * @return the method
+   */
+  public HttpMethod getMethod() {
+<span class="nc" id="L57">    return method;</span>
+  }
+
+  /**
+   * @param method the method to set
+   */
+  public void setMethod(HttpMethod method) {
+<span class="nc" id="L64">    this.method = method;</span>
+<span class="nc" id="L65">  }</span>
+
+  /**
+   * @param httpAuth the httpAuth to set
+   */
+  public void setHttpAuth(HttpAuthInterface httpAuth) {
+<span class="nc" id="L71">    this.httpAuth = httpAuth;</span>
+<span class="nc" id="L72">    dir = new CommonDirImpl(this, new FilesystemBasedOptsMLSxImpl());</span>
+    try {
+<span class="nc" id="L74">      dir.changeDirectoryNotChecked(httpAuth.getUser());</span>
+<span class="nc" id="L75">      dir.changeDirectoryNotChecked(httpAuth.getAccount());</span>
+<span class="nc" id="L76">    } catch (final CommandAbstractException ignored) {</span>
+      // nothing
+<span class="nc" id="L78">    }</span>
+<span class="nc" id="L79">  }</span>
+
+  @Override
+  public HttpAuthInterface getAuth() {
+<span class="nc" id="L83">    return httpAuth;</span>
+  }
+
+  @Override
+  public void clear() {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (httpAuth != null) {</span>
+<span class="nc" id="L89">      httpAuth.clear();</span>
+    }
+<span class="nc" id="L91">  }</span>
+
+  @Override
+  public int getBlockSize() {
+<span class="nc" id="L95">    return 8192; // HttpChunk size</span>
+  }
+
+  @Override
+  public FileParameterInterface getFileParameter() {
+<span class="nc" id="L100">    return FilesystemBasedFileParameterImpl.fileParameterInterface;</span>
+  }
+
+  @Override
+  public Restart getRestart() {
+<span class="nc" id="L105">    return null;</span>
+  }
+
+  @Override
+  public String getUniqueExtension() {
+<span class="nc" id="L110">    return &quot;.postu&quot;;</span>
+  }
+
+  /**
+   * @return the logid
+   */
+  public long getLogid() {
+<span class="nc" id="L117">    return logid;</span>
+  }
+
+  /**
+   * @param logid the logid to set
+   */
+  public void setLogid(long logid) {
+<span class="nc" id="L124">    this.logid = logid;</span>
+<span class="nc" id="L125">  }</span>
+
+  @Override
+  public DirInterface getDir() {
+<span class="nc" id="L129">    return dir;</span>
+  }
+
+  /**
+   * @return the currentCommand
+   */
+  public PageRole getCurrentCommand() {
+<span class="nc" id="L136">    return currentCommand;</span>
+  }
+
+  /**
+   * @param currentCommand the currentCommand to set
+   */
+  public void setCurrentCommand(PageRole currentCommand) {
+<span class="nc" id="L143">    this.currentCommand = currentCommand;</span>
+<span class="nc" id="L144">  }</span>
+
+  /**
+   * @return the cookieSession
+   */
+  public String getCookieSession() {
+<span class="nc" id="L150">    return cookieSession;</span>
+  }
+
+  /**
+   * @param cookieSession the cookieSession to set
+   */
+  public void setCookieSession(String cookieSession) {
+<span class="nc" id="L157">    this.cookieSession = cookieSession;</span>
+<span class="nc" id="L158">  }</span>
+
+  /**
+   * @return the filename
+   */
+  public String getFilename() {
+<span class="nc" id="L164">    return filename;</span>
+  }
+
+  /**
+   * @param filename the filename to set
+   */
+  public void setFilename(String filename) {
+<span class="nc" id="L171">    this.filename = filename;</span>
+<span class="nc" id="L172">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L176">    return &quot;Command: &quot; + currentCommand.name() + &quot; Filename: &quot; + filename +</span>
+           &quot; LogId: &quot; + logid;
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

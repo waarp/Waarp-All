@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestExceptionHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.resthandlers</a> &gt; <span class="el_source">RestExceptionHandler.java</span></div><h1>RestExceptionHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.resthandlers;
+
+import io.cdap.http.ExceptionHandler;
+import io.cdap.http.HttpResponder;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
+
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotSupportedException;
+import java.util.Locale;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+
+/**
+ * Handles all exceptions thrown by handlers during the processing of an HTTP
+ * request.
+ */
+<span class="fc" id="L44">public class RestExceptionHandler extends ExceptionHandler {</span>
+
+  /**
+   * The logger for all events.
+   */
+<span class="fc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L50">      WaarpLoggerFactory.getLogger(RestExceptionHandler.class);</span>
+
+  /**
+   * Method called when an exception is thrown during the processing of a
+   * request.
+   *
+   * @param t the exception thrown during execution
+   * @param request the HttpRequest that failed
+   * @param responder the HttpResponder for the request
+   */
+  @Override
+  public void handle(Throwable t, HttpRequest request,
+                     HttpResponder responder) {
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    if (t instanceof RestErrorException) {</span>
+<span class="nc" id="L64">      final RestErrorException userErrors = (RestErrorException) t;</span>
+      try {
+<span class="nc" id="L66">        final Locale lang = RestUtils.getLocale(request);</span>
+<span class="nc" id="L67">        final String errorText =</span>
+<span class="nc" id="L68">            JsonUtils.nodeToString(userErrors.makeNode(lang));</span>
+<span class="nc" id="L69">        responder.sendJson(BAD_REQUEST, errorText);</span>
+<span class="nc" id="L70">      } catch (final InternalServerErrorException e) {</span>
+<span class="nc" id="L71">        logger.error(e);</span>
+<span class="nc" id="L72">        responder.sendStatus(INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L73">      }</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    } else if (t instanceof NotSupportedException) {</span>
+<span class="nc" id="L75">      final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L76">      headers.add(ACCEPT, t.getMessage());</span>
+<span class="nc" id="L77">      responder.sendStatus(UNSUPPORTED_MEDIA_TYPE, headers);</span>
+<span class="nc" id="L78">    } else {</span>
+<span class="nc" id="L79">      logger.error(t);</span>
+<span class="nc" id="L80">      responder.sendStatus(INTERNAL_SERVER_ERROR);</span>
+    }
+<span class="nc" id="L82">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

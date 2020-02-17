@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestClientSimpleResponseHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpGatewayKernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.rest.client</a> &gt; <span class="el_source">HttpRestClientSimpleResponseHandler.java</span></div><h1>HttpRestClientSimpleResponseHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2009 Red Hat, Inc.
+ *
+ * Red Hat licenses this file to you under the Apache License, version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.waarp.gateway.kernel.rest.client;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.AttributeKey;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.rest.RestArgument;
+
+import java.net.ConnectException;
+import java.nio.channels.ClosedChannelException;
+
+/**
+ *
+ */
+<span class="fc" id="L66">public class HttpRestClientSimpleResponseHandler</span>
+    extends SimpleChannelInboundHandler&lt;HttpObject&gt; {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L71">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L72">      WaarpLoggerFactory.getLogger(HttpRestClientSimpleResponseHandler.class);</span>
+
+<span class="fc" id="L74">  public static final AttributeKey&lt;RestFuture&gt; RESTARGUMENT =</span>
+<span class="fc" id="L75">      AttributeKey.valueOf(&quot;RestClient.Argument&quot;);</span>
+
+  private ByteBuf cumulativeBody;
+  protected JsonNode jsonObject;
+
+  protected void actionFromResponse(Channel channel) {
+<span class="nc" id="L81">    final RestArgument ra = new RestArgument((ObjectNode) jsonObject);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (jsonObject == null) {</span>
+<span class="nc" id="L83">      logger.warn(&quot;Recv: EMPTY&quot;);</span>
+    } else {
+<span class="nc" id="L85">      logger.warn(ra.prettyPrint());</span>
+    }
+<span class="nc" id="L87">    final RestFuture restFuture = channel.attr(RESTARGUMENT).get();</span>
+<span class="nc" id="L88">    restFuture.setRestArgument(ra);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (ra.getStatusCode() == HttpResponseStatus.OK.code()) {</span>
+<span class="nc" id="L90">      restFuture.setSuccess();</span>
+    } else {
+<span class="nc" id="L92">      logger.error(&quot;Error: &quot; + ra.getStatusMessage());</span>
+<span class="nc" id="L93">      restFuture.cancel();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">      if (channel.isActive()) {</span>
+<span class="nc" id="L95">        WaarpSslUtility.closingSslChannel(channel);</span>
+      }
+    }
+<span class="nc" id="L98">  }</span>
+
+  @Override
+  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
+      throws Exception {
+<span class="fc bfc" id="L103" title="All 2 branches covered.">    if (msg instanceof HttpResponse) {</span>
+<span class="fc" id="L104">      final HttpResponse response = (HttpResponse) msg;</span>
+<span class="fc" id="L105">      final HttpResponseStatus status = response.status();</span>
+<span class="fc" id="L106">      logger.debug(HttpHeaderNames.REFERER + &quot;: &quot; +</span>
+<span class="fc" id="L107">                   response.headers().get(HttpHeaderNames.REFERER) +</span>
+                   &quot; STATUS: &quot; + status);
+    }
+<span class="fc bfc" id="L110" title="All 2 branches covered.">    if (msg instanceof HttpContent) {</span>
+<span class="fc" id="L111">      final HttpContent chunk = (HttpContent) msg;</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">      if (chunk instanceof LastHttpContent) {</span>
+<span class="fc" id="L113">        final ByteBuf content = chunk.content();</span>
+<span class="pc bpc" id="L114" title="2 of 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="fc" id="L116">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+          } else {
+<span class="nc" id="L118">            cumulativeBody = content;</span>
+          }
+        }
+        // get the Json equivalent of the Body
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        if (cumulativeBody == null) {</span>
+<span class="nc" id="L123">          jsonObject = JsonHandler.createObjectNode();</span>
+        } else {
+          try {
+<span class="fc" id="L126">            final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L127">            jsonObject = JsonHandler.getFromString(json);</span>
+<span class="nc" id="L128">          } catch (final Throwable e2) {</span>
+<span class="nc" id="L129">            logger.warn(&quot;Error&quot;, e2);</span>
+<span class="nc" id="L130">            throw new HttpIncorrectRequestException(e2);</span>
+<span class="fc" id="L131">          }</span>
+<span class="fc" id="L132">          cumulativeBody = null;</span>
+        }
+<span class="fc" id="L134">        actionFromResponse(ctx.channel());</span>
+<span class="fc" id="L135">      } else {</span>
+<span class="fc" id="L136">        final ByteBuf content = chunk.content();</span>
+<span class="pc bpc" id="L137" title="2 of 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="nc" id="L139">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+          } else {
+<span class="fc" id="L141">            cumulativeBody = content;</span>
+          }
+        }
+      }
+    }
+<span class="fc" id="L146">  }</span>
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+      throws Exception {
+<span class="nc" id="L151">    final RestFuture restFuture = ctx.channel().attr(RESTARGUMENT).get();</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (cause instanceof ClosedChannelException) {</span>
+<span class="nc" id="L153">      restFuture.setFailure(cause);</span>
+<span class="nc" id="L154">      logger.debug(&quot;Close before ending&quot;);</span>
+<span class="nc" id="L155">      return;</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    } else if (cause instanceof ConnectException) {</span>
+<span class="nc" id="L157">      restFuture.setFailure(cause);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L159">        logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L160">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+      }
+<span class="nc" id="L162">      return;</span>
+    }
+<span class="nc" id="L164">    restFuture.setFailure(cause);</span>
+<span class="nc" id="L165">    logger.error(&quot;Error&quot;, cause);</span>
+<span class="nc" id="L166">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L167">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

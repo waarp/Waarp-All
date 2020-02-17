@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestR66ClientResponseHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.client</a> &gt; <span class="el_source">HttpRestR66ClientResponseHandler.java</span></div><h1>HttpRestR66ClientResponseHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+/*
+ * Copyright 2009 Red Hat, Inc.
+ *
+ * Red Hat licenses this file to you under the Apache License, version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.waarp.openr66.protocol.http.rest.client;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.client.HttpRestClientSimpleResponseHandler;
+import org.waarp.gateway.kernel.rest.client.RestFuture;
+import org.waarp.openr66.protocol.http.rest.handler.HttpRestAbstractR66Handler.ACTIONS_TYPE;
+
+import java.net.ConnectException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.charset.UnsupportedCharsetException;
+
+/**
+ * Rest client response handler.
+ * &lt;p&gt;
+ * Note: by default, no connection are closed except in case of error or if in
+ * HTTP 1.0 or explicitly to be
+ * closed.
+ */
+<span class="nc" id="L76">public abstract class HttpRestR66ClientResponseHandler</span>
+    extends SimpleChannelInboundHandler&lt;HttpObject&gt; {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L81">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L82">      WaarpLoggerFactory.getLogger(HttpRestR66ClientResponseHandler.class);</span>
+
+  private ByteBuf cumulativeBody;
+  protected JsonNode jsonObject;
+
+  protected void addContent(FullHttpResponse response)
+      throws HttpIncorrectRequestException {
+<span class="nc" id="L89">    final ByteBuf content = response.content();</span>
+<span class="nc bnc" id="L90" title="All 4 branches missed.">    if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="nc" id="L91">      content.retain();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (cumulativeBody != null) {</span>
+<span class="nc" id="L93">        cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+      } else {
+<span class="nc" id="L95">        cumulativeBody = content;</span>
+      }
+      // get the Json equivalent of the Body
+      try {
+<span class="nc" id="L99">        final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L100">        jsonObject = JsonHandler.getFromString(json);</span>
+<span class="nc" id="L101">      } catch (final UnsupportedCharsetException e2) {</span>
+<span class="nc" id="L102">        logger.warn(&quot;Error&quot;, e2);</span>
+<span class="nc" id="L103">        throw new HttpIncorrectRequestException(e2);</span>
+<span class="nc" id="L104">      }</span>
+<span class="nc" id="L105">      cumulativeBody = null;</span>
+    }
+<span class="nc" id="L107">  }</span>
+
+  /**
+   * Setting the RestArgument to the RestFuture and validating RestFuture.
+   *
+   * @param channel
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected void actionFromResponse(Channel channel)
+      throws HttpInvalidAuthenticationException {
+<span class="nc" id="L118">    boolean includeValidation = false;</span>
+<span class="nc" id="L119">    final RestArgument ra = new RestArgument((ObjectNode) jsonObject);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (jsonObject == null) {</span>
+<span class="nc" id="L121">      logger.debug(&quot;Recv: EMPTY&quot;);</span>
+    }
+<span class="nc" id="L123">    final RestFuture restFuture =</span>
+<span class="nc" id="L124">        channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();</span>
+<span class="nc" id="L125">    restFuture.setRestArgument(ra);</span>
+<span class="nc bnc" id="L126" title="All 6 branches missed.">    switch (ra.getMethod()) {</span>
+      case DELETE:
+<span class="nc" id="L128">        includeValidation = delete(channel, ra);</span>
+<span class="nc" id="L129">        break;</span>
+      case GET:
+<span class="nc" id="L131">        includeValidation = get(channel, ra);</span>
+<span class="nc" id="L132">        break;</span>
+      case OPTIONS:
+<span class="nc" id="L134">        includeValidation = options(channel, ra);</span>
+<span class="nc" id="L135">        break;</span>
+      case POST:
+<span class="nc" id="L137">        includeValidation = post(channel, ra);</span>
+<span class="nc" id="L138">        break;</span>
+      case PUT:
+<span class="nc" id="L140">        includeValidation = put(channel, ra);</span>
+<span class="nc" id="L141">        break;</span>
+      default:
+        break;
+    }
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (!includeValidation) {</span>
+      // finalize the future
+<span class="nc" id="L147">      restFuture.setSuccess();</span>
+    }
+<span class="nc" id="L149">  }</span>
+
+  /**
+   * Method calls when a action REST command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   * @param act
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean action(Channel channel, RestArgument ra,
+                                    ACTIONS_TYPE act)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST Get command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterDbGet(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST Post command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterDbPost(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST Put command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterDbPut(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST Delete command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterDbDelete(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST GetMultiple command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterDbGetMultiple(Channel channel,
+                                                RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST Options command is raised as answer
+   *
+   * @param channel
+   * @param ra
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterDbOptions(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  /**
+   * Method calls when a REST command is in error
+   *
+   * @param channel
+   * @param ra (might be null)
+   *
+   * @return if validation is done (or suppose to be)
+   *
+   * @throws HttpInvalidAuthenticationException
+   */
+  protected abstract boolean afterError(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException;
+
+  protected boolean get(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException {
+<span class="nc bnc" id="L260" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L261">      logger.debug(ra.prettyPrint());</span>
+    }
+<span class="nc bnc" id="L263" title="All 2 branches missed.">    if (ra.getCommand() == COMMAND_TYPE.GET) {</span>
+<span class="nc" id="L264">      return afterDbGet(channel, ra);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">    } else if (ra.getCommand() == COMMAND_TYPE.MULTIGET) {</span>
+<span class="nc" id="L266">      return afterDbGetMultiple(channel, ra);</span>
+    } else {
+<span class="nc" id="L268">      final String cmd = ra.getCommandField();</span>
+      try {
+<span class="nc" id="L270">        final ACTIONS_TYPE act = ACTIONS_TYPE.valueOf(cmd);</span>
+<span class="nc" id="L271">        return action(channel, ra, act);</span>
+<span class="nc" id="L272">      } catch (final Exception e) {</span>
+<span class="nc" id="L273">        return false;</span>
+      }
+    }
+  }
+
+  protected boolean put(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L281">      logger.debug(ra.prettyPrint());</span>
+    }
+<span class="nc bnc" id="L283" title="All 2 branches missed.">    if (ra.getCommand() == COMMAND_TYPE.UPDATE) {</span>
+<span class="nc" id="L284">      return afterDbPut(channel, ra);</span>
+    } else {
+<span class="nc" id="L286">      final String cmd = ra.getCommandField();</span>
+      try {
+<span class="nc" id="L288">        final ACTIONS_TYPE act = ACTIONS_TYPE.valueOf(cmd);</span>
+<span class="nc" id="L289">        return action(channel, ra, act);</span>
+<span class="nc" id="L290">      } catch (final Exception e) {</span>
+<span class="nc" id="L291">        return false;</span>
+      }
+    }
+  }
+
+  protected boolean post(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException {
+<span class="nc bnc" id="L298" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L299">      logger.debug(ra.prettyPrint());</span>
+    }
+<span class="nc bnc" id="L301" title="All 2 branches missed.">    if (ra.getCommand() == COMMAND_TYPE.CREATE) {</span>
+<span class="nc" id="L302">      return afterDbPost(channel, ra);</span>
+    } else {
+<span class="nc" id="L304">      final String cmd = ra.getCommandField();</span>
+      try {
+<span class="nc" id="L306">        final ACTIONS_TYPE act = ACTIONS_TYPE.valueOf(cmd);</span>
+<span class="nc" id="L307">        return action(channel, ra, act);</span>
+<span class="nc" id="L308">      } catch (final Exception e) {</span>
+<span class="nc" id="L309">        return false;</span>
+      }
+    }
+  }
+
+  protected boolean delete(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException {
+<span class="nc bnc" id="L316" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L317">      logger.debug(ra.prettyPrint());</span>
+    }
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (ra.getCommand() == COMMAND_TYPE.DELETE) {</span>
+<span class="nc" id="L320">      return afterDbDelete(channel, ra);</span>
+    } else {
+<span class="nc" id="L322">      final String cmd = ra.getCommandField();</span>
+      try {
+<span class="nc" id="L324">        final ACTIONS_TYPE act = ACTIONS_TYPE.valueOf(cmd);</span>
+<span class="nc" id="L325">        return action(channel, ra, act);</span>
+<span class="nc" id="L326">      } catch (final Exception e) {</span>
+<span class="nc" id="L327">        return false;</span>
+      }
+    }
+  }
+
+  protected boolean options(Channel channel, RestArgument ra)
+      throws HttpInvalidAuthenticationException {
+<span class="nc bnc" id="L334" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L335">      logger.debug(ra.prettyPrint());</span>
+    }
+<span class="nc bnc" id="L337" title="All 2 branches missed.">    if (ra.getCommand() == COMMAND_TYPE.OPTIONS) {</span>
+<span class="nc" id="L338">      return afterDbOptions(channel, ra);</span>
+    } else {
+<span class="nc" id="L340">      final String cmd = ra.getCommandField();</span>
+      try {
+<span class="nc" id="L342">        final ACTIONS_TYPE act = ACTIONS_TYPE.valueOf(cmd);</span>
+<span class="nc" id="L343">        return action(channel, ra, act);</span>
+<span class="nc" id="L344">      } catch (final Exception e) {</span>
+<span class="nc" id="L345">        return false;</span>
+      }
+    }
+  }
+
+  @Override
+  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
+      throws Exception {
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    if (msg instanceof HttpResponse) {</span>
+<span class="nc" id="L354">      final HttpResponse response = (HttpResponse) msg;</span>
+<span class="nc" id="L355">      final HttpResponseStatus status = response.status();</span>
+<span class="nc" id="L356">      logger.debug(HttpHeaderNames.REFERER + &quot;: &quot; +</span>
+<span class="nc" id="L357">                   response.headers().get(HttpHeaderNames.REFERER) +</span>
+                   &quot; STATUS: &quot; + status);
+<span class="nc bnc" id="L359" title="All 2 branches missed.">      if (response.status().code() != 200) {</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">        if (response instanceof FullHttpResponse) {</span>
+<span class="nc" id="L361">          addContent((FullHttpResponse) response);</span>
+        }
+<span class="nc" id="L363">        RestArgument ra = null;</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        if (jsonObject != null) {</span>
+<span class="nc" id="L365">          ra = new RestArgument((ObjectNode) jsonObject);</span>
+<span class="nc" id="L366">          final RestFuture restFuture = ctx.channel().attr(</span>
+<span class="nc" id="L367">              HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();</span>
+<span class="nc" id="L368">          restFuture.setRestArgument(ra);</span>
+<span class="nc" id="L369">          logger.error(&quot;Error: &quot; + response.status().code() + ' ' +</span>
+<span class="nc" id="L370">                       response.status().reasonPhrase() + '\n' +</span>
+<span class="nc" id="L371">                       ra.prettyPrint());</span>
+<span class="nc" id="L372">        } else {</span>
+<span class="nc" id="L373">          logger.error(&quot;Error: &quot; + response.status().code() + ' ' +</span>
+<span class="nc" id="L374">                       response.status().reasonPhrase());</span>
+        }
+<span class="nc bnc" id="L376" title="All 2 branches missed.">        if (!afterError(ctx.channel(), ra)) {</span>
+<span class="nc" id="L377">          final RestFuture restFuture = ctx.channel().attr(</span>
+<span class="nc" id="L378">              HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();</span>
+<span class="nc" id="L379">          restFuture.cancel();</span>
+        }
+<span class="nc bnc" id="L381" title="All 2 branches missed.">        if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L382">          logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L383">          WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+        }
+<span class="nc" id="L385">      } else {</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (response instanceof FullHttpResponse) {</span>
+<span class="nc" id="L387">          addContent((FullHttpResponse) response);</span>
+<span class="nc" id="L388">          actionFromResponse(ctx.channel());</span>
+        }
+      }
+<span class="nc" id="L391">    } else {</span>
+<span class="nc" id="L392">      final HttpContent chunk = (HttpContent) msg;</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">      if (chunk instanceof LastHttpContent) {</span>
+<span class="nc" id="L394">        final ByteBuf content = chunk.content();</span>
+<span class="nc bnc" id="L395" title="All 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="nc" id="L396">          content.retain();</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="nc" id="L398">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+          } else {
+<span class="nc" id="L400">            cumulativeBody = content;</span>
+          }
+        }
+        // get the Json equivalent of the Body
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (cumulativeBody == null) {</span>
+<span class="nc" id="L405">          jsonObject = JsonHandler.createObjectNode();</span>
+        } else {
+          try {
+<span class="nc" id="L408">            final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L409">            jsonObject = JsonHandler.getFromString(json);</span>
+<span class="nc" id="L410">          } catch (final Throwable e2) {</span>
+<span class="nc" id="L411">            logger.warn(&quot;Error&quot;, e2);</span>
+<span class="nc" id="L412">            throw new HttpIncorrectRequestException(e2);</span>
+<span class="nc" id="L413">          }</span>
+<span class="nc" id="L414">          cumulativeBody = null;</span>
+        }
+<span class="nc" id="L416">        actionFromResponse(ctx.channel());</span>
+<span class="nc" id="L417">      } else {</span>
+<span class="nc" id="L418">        final ByteBuf content = chunk.content();</span>
+<span class="nc bnc" id="L419" title="All 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="nc" id="L420">          content.retain();</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="nc" id="L422">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+          } else {
+<span class="nc" id="L424">            cumulativeBody = content;</span>
+          }
+        }
+      }
+    }
+<span class="nc" id="L429">  }</span>
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+      throws Exception {
+<span class="nc" id="L434">    final RestFuture restFuture =</span>
+<span class="nc" id="L435">        ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)</span>
+<span class="nc" id="L436">           .get();</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">    if (cause instanceof ClosedChannelException) {</span>
+<span class="nc" id="L438">      logger.debug(&quot;Close before ending&quot;);</span>
+<span class="nc" id="L439">      restFuture.setFailure(cause);</span>
+<span class="nc" id="L440">      return;</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">    } else if (cause instanceof ConnectException) {</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L443">        logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L444">        restFuture.setFailure(cause);</span>
+<span class="nc" id="L445">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+      }
+<span class="nc" id="L447">      return;</span>
+    }
+<span class="nc" id="L449">    logger.warn(&quot;Error&quot;, cause);</span>
+<span class="nc bnc" id="L450" title="All 4 branches missed.">    if (ctx.channel() != null &amp;&amp; restFuture != null) {</span>
+<span class="nc" id="L451">      restFuture.setFailure(cause);</span>
+    }
+<span class="nc" id="L453">    logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L454">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L455">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

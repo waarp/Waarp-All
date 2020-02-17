@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DataBusinessHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.data.handler</a> &gt; <span class="el_source">DataBusinessHandler.java</span></div><h1>DataBusinessHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.data.handler;
+
+import io.netty.channel.Channel;
+import org.waarp.ftp.core.session.FtpSession;
+
+/**
+ * This class is to be implemented in order to allow Business actions according
+ * to FTP service
+ */
+public abstract class DataBusinessHandler {
+  /**
+   * NettyHandler that holds this DataBusinessHandler
+   */
+  private DataNetworkHandler dataNetworkHandler;
+
+  /**
+   * Ftp SessionInterface
+   */
+  private FtpSession session;
+
+  /**
+   * Constructor with no argument (mandatory)
+   */
+<span class="fc" id="L43">  protected DataBusinessHandler() {</span>
+    // nothing to do
+<span class="fc" id="L45">  }</span>
+
+  /**
+   * Call when the DataNetworkHandler is created
+   *
+   * @param dataNetworkHandler the dataNetworkHandler to set
+   */
+  public void setDataNetworkHandler(DataNetworkHandler dataNetworkHandler) {
+<span class="fc" id="L53">    this.dataNetworkHandler = dataNetworkHandler;</span>
+<span class="fc" id="L54">  }</span>
+
+  /**
+   * @return the dataNetworkHandler
+   */
+  public DataNetworkHandler getDataNetworkHandler() {
+<span class="nc" id="L60">    return dataNetworkHandler;</span>
+  }
+
+  /**
+   * Called when the connection is opened
+   *
+   * @param session the session to set
+   */
+  public void setFtpSession(FtpSession session) {
+<span class="fc" id="L69">    this.session = session;</span>
+<span class="fc" id="L70">  }</span>
+
+  // Some helpful functions
+
+  /**
+   * @return the ftpSession
+   */
+  public FtpSession getFtpSession() {
+<span class="nc" id="L78">    return session;</span>
+  }
+
+  /**
+   * Is executed when the channel is closed, just before the test on the
+   * finish
+   * status.
+   */
+  public abstract void executeChannelClosed();
+
+  /**
+   * To Clean the session attached objects for Data Network
+   */
+  protected abstract void cleanSession();
+
+  /**
+   * Clean the DataBusinessHandler
+   */
+  public void clear() {
+<span class="fc" id="L97">    cleanSession();</span>
+<span class="fc" id="L98">  }</span>
+
+  /**
+   * Is executed when the channel is connected after the handler is on, before
+   * answering OK or not on
+   * connection, except if the global service is going to shutdown.
+   *
+   * @param channel
+   */
+  public abstract void executeChannelConnected(Channel channel);
+
+  /**
+   * Run when an exception is get before the channel is closed.
+   *
+   * @param e
+   */
+  public abstract void exceptionLocalCaught(Throwable e);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

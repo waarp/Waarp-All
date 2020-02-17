@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XmlUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.utils</a> &gt; <span class="el_source">XmlUtils.java</span></div><h1>XmlUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.utils;
+
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrors;
+
+import javax.ws.rs.InternalServerErrorException;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import static com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl.*;
+import static javax.xml.transform.OutputKeys.*;
+
+/**
+ * A series of utility methods for serializing and deserializing XML.
+ */
+public final class XmlUtils {
+
+  /**
+   * Prevents the default constructor from being called.
+   */
+<span class="nc" id="L61">  private XmlUtils() throws InstantiationException {</span>
+<span class="nc" id="L62">    throw new InstantiationException(</span>
+<span class="nc" id="L63">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+  }
+
+  // ######################### PUBLIC METHODS #################################
+
+  /**
+   * Converts a serializable Java object into XML format as a String.
+   *
+   * @param object the object to convert to XML
+   *
+   * @return the object's representation in XML
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static String objectToXml(XmlSerializable object) {
+    try {
+<span class="nc" id="L80">      final StringWriter writer = new StringWriter();</span>
+<span class="nc" id="L81">      final JAXBContext context = JAXBContext.newInstance(object.getClass());</span>
+<span class="nc" id="L82">      final Marshaller marshaller = context.createMarshaller();</span>
+<span class="nc" id="L83">      marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);</span>
+<span class="nc" id="L84">      marshaller.marshal(object, writer);</span>
+
+<span class="nc" id="L86">      return writer.toString();</span>
+<span class="nc" id="L87">    } catch (final JAXBException e) {</span>
+<span class="nc" id="L88">      throw new InternalServerErrorException(e);</span>
+    }
+  }
+
+  /**
+   * Converts an XML String into a serializable Java object.
+   *
+   * @param xml the string to convert into an object
+   * @param clazz the class of the serializable object
+   *
+   * @return the deserialized Java object
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static &lt;T extends XmlSerializable&gt; T xmlToObject(String xml,
+                                                          Class&lt;T&gt; clazz) {
+    try {
+<span class="fc" id="L106">      ParametersChecker.checkSanityString(xml);</span>
+<span class="nc" id="L107">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L108">      throw new InternalServerErrorException(e);</span>
+<span class="fc" id="L109">    }</span>
+    try {
+<span class="fc" id="L111">      final StringReader reader = new StringReader(xml);</span>
+<span class="fc" id="L112">      final StreamSource source = new StreamSource(reader);</span>
+<span class="fc" id="L113">      final JAXBContext context = JAXBContext.newInstance(clazz);</span>
+<span class="fc" id="L114">      final Unmarshaller unmarshaller = context.createUnmarshaller();</span>
+
+<span class="nc" id="L116">      return unmarshaller.unmarshal(source, clazz).getValue();</span>
+<span class="fc" id="L117">    } catch (final JAXBException e) {</span>
+<span class="fc" id="L118">      throw new InternalServerErrorException(e);</span>
+    }
+  }
+
+  /**
+   * Saves an XML String to a file at the given location.
+   *
+   * @param xml the XML String
+   * @param filePath the path where to save the XML file
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static void saveXML(String xml, String filePath) {
+    try {
+<span class="nc" id="L133">      ParametersChecker.checkSanityString(xml);</span>
+<span class="nc" id="L134">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L135">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L136">    }</span>
+<span class="nc" id="L137">    FileWriter fileWriter = null;</span>
+    try {
+<span class="nc" id="L139">      fileWriter = new FileWriter(filePath, false);</span>
+<span class="nc" id="L140">      final String formattedXML = pretty(xml);</span>
+<span class="nc" id="L141">      fileWriter.write(formattedXML);</span>
+<span class="nc" id="L142">      fileWriter.flush();</span>
+<span class="nc" id="L143">    } catch (final IOException e) {</span>
+<span class="nc" id="L144">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L146">      FileUtils.close(fileWriter);</span>
+    }
+<span class="nc" id="L148">  }</span>
+
+  /**
+   * Loads an XML file into a String.
+   *
+   * @param filePath the path of the XML file to load
+   *
+   * @return the content of the XML file
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static String loadXML(String filePath) {
+<span class="nc" id="L161">    FileReader fr = null;</span>
+<span class="nc" id="L162">    BufferedReader buff = null;</span>
+    try {
+<span class="nc" id="L164">      fr = new FileReader(filePath);</span>
+<span class="nc" id="L165">      buff = new BufferedReader(fr);</span>
+<span class="nc" id="L166">      final StringBuilder stringBuilder = new StringBuilder();</span>
+      String line;
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      while ((line = buff.readLine()) != null) {</span>
+<span class="nc" id="L169">        stringBuilder.append(line.trim());</span>
+      }
+<span class="nc" id="L171">      return stringBuilder.toString();</span>
+<span class="nc" id="L172">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L173">      throw new RestErrorException(RestErrors.FILE_NOT_FOUND(filePath));</span>
+<span class="nc" id="L174">    } catch (final IOException e) {</span>
+<span class="nc" id="L175">      throw new InternalServerErrorException(e);</span>
+    } finally {
+<span class="nc" id="L177">      FileUtils.close(buff);</span>
+<span class="nc" id="L178">      FileUtils.close(fr);</span>
+    }
+  }
+
+  /**
+   * Saves a serializable Java object to an XML file at the given location.
+   *
+   * @param object the object to save as XML
+   * @param filePath the path where to save the XML file
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static void saveObject(XmlSerializable object, String filePath) {
+
+<span class="nc" id="L193">    final String xml = objectToXml(object);</span>
+<span class="nc" id="L194">    saveXML(xml, filePath);</span>
+<span class="nc" id="L195">  }</span>
+
+  /**
+   * Loads the given XML file into a corresponding serializable Java object.
+   *
+   * @param filePath path of the file to load
+   * @param clazz class of the target Java object
+   *
+   * @return the deserialized XML object
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  public static &lt;T extends XmlSerializable&gt; T loadObject(String filePath,
+                                                         Class&lt;T&gt; clazz) {
+
+<span class="nc" id="L211">    final String xml = loadXML(filePath);</span>
+<span class="nc" id="L212">    return xmlToObject(xml, clazz);</span>
+  }
+
+  // ######################### PRIVATE METHODS #################################
+
+  /**
+   * Formats an unformatted XML String into a human readable one.
+   *
+   * @param input The unformatted XML String.
+   *
+   * @return The XML String in human readable format.
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   */
+  private static String pretty(String input) {
+    try {
+<span class="nc" id="L229">      final Source xmlInput = new StreamSource(new StringReader(input));</span>
+<span class="nc" id="L230">      final StringWriter stringWriter = new StringWriter();</span>
+<span class="nc" id="L231">      final StreamResult xmlOutput = new StreamResult(stringWriter);</span>
+      final TransformerFactory factory =//NOSONAR
+<span class="nc" id="L233">          TransformerFactory.newInstance();//NOSONAR</span>
+<span class="nc" id="L234">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+<span class="nc" id="L235">      factory.setAttribute(INDENT_NUMBER, 2);</span>
+<span class="nc" id="L236">      final Transformer transformer = factory.newTransformer();</span>
+<span class="nc" id="L237">      transformer.setOutputProperty(INDENT, &quot;yes&quot;);</span>
+<span class="nc" id="L238">      transformer.setOutputProperty(OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+
+<span class="nc" id="L240">      transformer.transform(xmlInput, xmlOutput);</span>
+<span class="nc" id="L241">      return xmlOutput.getWriter().toString();</span>
+<span class="nc" id="L242">    } catch (final TransformerConfigurationException e) {</span>
+<span class="nc" id="L243">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L244">    } catch (final TransformerException e) {</span>
+<span class="nc" id="L245">      throw new InternalServerErrorException(e);</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

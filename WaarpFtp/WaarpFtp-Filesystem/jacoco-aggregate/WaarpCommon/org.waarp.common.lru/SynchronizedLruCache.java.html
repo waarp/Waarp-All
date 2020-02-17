@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SynchronizedLruCache.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp Filesystem</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.lru</a> &gt; <span class="el_source">SynchronizedLruCache.java</span></div><h1>SynchronizedLruCache.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.lru;
+
+import java.util.Collection;
+import java.util.Iterator;
+
+/**
+ * Threadsafe synchronized implementation of LruCache based on LinkedHashMap.
+ * Threadsafety is provided by
+ * method synchronization.
+ * &lt;p&gt;
+ * This cache implementation should be used with low number of threads.
+ *
+ * @author Damian Momot
+ */
+public class SynchronizedLruCache&lt;K, V&gt; extends AbstractLruCache&lt;K, V&gt; {
+  private static final int DEFAULT_INITIAL_CAPACITY = 16;
+
+  private static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+  private final CapacityLruLinkedHashMap&lt;K, InterfaceLruCacheEntry&lt;V&gt;&gt; cacheMap;
+
+  /**
+   * Creates new SynchronizedLruCache
+   *
+   * @param capacity max cache capacity
+   * @param ttl time to live in milliseconds
+   * @param initialCapacity initial cache capacity
+   * @param loadFactor
+   */
+  public SynchronizedLruCache(int capacity, long ttl, int initialCapacity,
+                              float loadFactor) {
+<span class="fc" id="L51">    super(ttl);</span>
+<span class="fc" id="L52">    cacheMap =</span>
+        new CapacityLruLinkedHashMap&lt;K, InterfaceLruCacheEntry&lt;V&gt;&gt;(capacity,
+                                                                   initialCapacity,
+                                                                   loadFactor);
+<span class="fc" id="L56">  }</span>
+
+  /**
+   * Creates new SynchronizedLruCache with DEFAULT_LOAD_FACTOR
+   *
+   * @param capacity max cache capacity
+   * @param ttl time to live in milliseconds
+   * @param initialCapacity initial cache capacity
+   */
+  public SynchronizedLruCache(int capacity, long ttl, int initialCapacity) {
+<span class="nc" id="L66">    this(capacity, ttl, initialCapacity, DEFAULT_LOAD_FACTOR);</span>
+<span class="nc" id="L67">  }</span>
+
+  /**
+   * Creates new SynchronizedLruCache with DEFAULT_LOAD_FACTOR and
+   * DEFAULT_INITIAL_CAPACITY
+   *
+   * @param capacity max cache capacity
+   * @param ttl time to live in milliseconds
+   */
+  public SynchronizedLruCache(int capacity, long ttl) {
+<span class="fc" id="L77">    this(capacity, ttl, DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);</span>
+<span class="fc" id="L78">  }</span>
+
+  @Override
+  public synchronized void clear() {
+<span class="fc" id="L82">    cacheMap.clear();</span>
+<span class="fc" id="L83">  }</span>
+
+  @Override
+  public synchronized V get(K key) {
+<span class="fc" id="L87">    return super.get(key);</span>
+  }
+
+  @Override
+  public int getCapacity() {
+<span class="fc" id="L92">    return cacheMap.getCapacity();</span>
+  }
+
+  @Override
+  protected InterfaceLruCacheEntry&lt;V&gt; getEntry(K key) {
+<span class="fc" id="L97">    return cacheMap.get(key);</span>
+  }
+
+  @Override
+  public synchronized int size() {
+<span class="fc" id="L102">    return cacheMap.size();</span>
+  }
+
+  @Override
+  public synchronized void put(K key, V value, long ttl) {
+<span class="fc" id="L107">    super.put(key, value, ttl);</span>
+<span class="fc" id="L108">  }</span>
+
+  @Override
+  protected void putEntry(K key, InterfaceLruCacheEntry&lt;V&gt; entry) {
+<span class="fc" id="L112">    cacheMap.put(key, entry);</span>
+<span class="fc" id="L113">  }</span>
+
+  @Override
+  public synchronized V remove(K key) {
+<span class="fc" id="L117">    final InterfaceLruCacheEntry&lt;V&gt; cv = cacheMap.remove(key);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (cv != null) {</span>
+<span class="fc" id="L119">      return cv.getValue();</span>
+    }
+<span class="nc" id="L121">    return null;</span>
+  }
+
+  @Override
+  public synchronized int forceClearOldest() {
+<span class="nc" id="L126">    final long timeRef = System.currentTimeMillis();</span>
+<span class="nc" id="L127">    final Collection&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; collection = cacheMap.values();</span>
+<span class="nc" id="L128">    final Iterator&lt;InterfaceLruCacheEntry&lt;V&gt;&gt; iterator = collection.iterator();</span>
+<span class="nc" id="L129">    int nb = 0;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
+<span class="nc" id="L131">      final InterfaceLruCacheEntry&lt;V&gt; v = iterator.next();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (!v.isStillValid(timeRef)) {</span>
+<span class="nc" id="L133">        iterator.remove();</span>
+<span class="nc" id="L134">        nb++;</span>
+      }
+<span class="nc" id="L136">    }</span>
+<span class="nc" id="L137">    return nb;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

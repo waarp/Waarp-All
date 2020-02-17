@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NetworkPacketCodec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.networkhandler.packet</a> &gt; <span class="el_source">NetworkPacketCodec.java</span></div><h1>NetworkPacketCodec.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.networkhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageCodec;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
+import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
+import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
+import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import java.util.List;
+
+/**
+ * Packet Decoder
+ */
+<span class="fc" id="L41">public class NetworkPacketCodec extends ByteToMessageCodec&lt;NetworkPacket&gt; {</span>
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L46">      WaarpLoggerFactory.getLogger(NetworkPacketCodec.class);</span>
+
+  @Override
+  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
+                        List&lt;Object&gt; out) throws Exception {
+    // Make sure if the length field was received.
+<span class="fc bfc" id="L52" title="All 2 branches covered.">    if (buf.readableBytes() &lt; 4) {</span>
+      // The length field was not received yet - return null.
+      // This method will be invoked again when more packets are
+      // received and appended to the buffer.
+<span class="fc" id="L56">      return;</span>
+    }
+    // Mark the current buffer position
+<span class="fc" id="L59">    buf.markReaderIndex();</span>
+    // Read the length field
+<span class="fc" id="L61">    final int length = buf.readInt();</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (length &lt; 9) {</span>
+<span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(</span>
+          &quot;Incorrect decode first field in Network Packet: &quot; + length + &quot; &lt; 9&quot;);
+    }
+<span class="fc bfc" id="L66" title="All 2 branches covered.">    if (buf.readableBytes() &lt; length) {</span>
+<span class="fc" id="L67">      buf.resetReaderIndex();</span>
+<span class="fc" id="L68">      return;</span>
+    }
+    // Now we can read the two Ids
+<span class="fc" id="L71">    final int localId = buf.readInt();</span>
+<span class="fc" id="L72">    final int remoteId = buf.readInt();</span>
+<span class="fc" id="L73">    final byte code = buf.readByte();</span>
+<span class="fc" id="L74">    final int readerInder = buf.readerIndex();</span>
+<span class="fc" id="L75">    final ByteBuf buffer = buf.slice(readerInder, length - 9);</span>
+<span class="fc" id="L76">    buffer.retain();</span>
+<span class="fc" id="L77">    buf.skipBytes(length - 9);</span>
+<span class="fc" id="L78">    NetworkPacket networkPacket =</span>
+        new NetworkPacket(localId, remoteId, code, buffer);
+<span class="fc bfc" id="L80" title="All 2 branches covered.">    if (code == LocalPacketFactory.KEEPALIVEPACKET) {</span>
+<span class="fc" id="L81">      final KeepAlivePacket keepAlivePacket = (KeepAlivePacket) LocalPacketCodec</span>
+<span class="fc" id="L82">          .decodeNetworkPacket(networkPacket.getBuffer());</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">      if (keepAlivePacket.isToValidate()) {</span>
+<span class="fc" id="L84">        keepAlivePacket.validate();</span>
+<span class="fc" id="L85">        final NetworkPacket response =</span>
+<span class="fc" id="L86">            new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
+                              keepAlivePacket, null);
+<span class="fc" id="L88">        final NetworkChannelReference nc =</span>
+<span class="fc" id="L89">            NetworkTransaction.getImmediateNetworkChannel(ctx.channel());</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (nc != null) {</span>
+<span class="fc" id="L91">          nc.useIfUsed();</span>
+        }
+<span class="fc" id="L93">        ctx.writeAndFlush(response.getNetworkPacket());</span>
+      }
+<span class="fc" id="L95">      buffer.release();</span>
+<span class="fc" id="L96">      final NetworkServerHandler nsh =</span>
+<span class="fc" id="L97">          (NetworkServerHandler) ctx.pipeline().last();</span>
+<span class="fc" id="L98">      nsh.setKeepAlivedSent();</span>
+<span class="fc" id="L99">      return;</span>
+    }
+<span class="fc" id="L101">    out.add(networkPacket);</span>
+<span class="fc" id="L102">  }</span>
+
+  @Override
+  protected void encode(ChannelHandlerContext ctx, NetworkPacket msg,
+                        ByteBuf out) throws Exception {
+<span class="fc" id="L107">    logger.trace(&quot;TRACE ID sending network packet {}&quot;, msg);</span>
+<span class="fc" id="L108">    final ByteBuf finalBuf = msg.getNetworkPacket();</span>
+<span class="fc" id="L109">    out.writeBytes(finalBuf);</span>
+<span class="fc" id="L110">    finalBuf.release();</span>
+<span class="fc" id="L111">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

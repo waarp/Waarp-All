@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelFactoryR66.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.database.model</a> &gt; <span class="el_source">DbModelFactoryR66.java</span></div><h1>DbModelFactoryR66.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.database.model;
+
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModel;
+import org.waarp.common.database.model.DbModelAbstract.DbTypeResolver;
+import org.waarp.common.database.model.DbModelFactory;
+import org.waarp.common.database.model.DbType;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.openr66.database.data.DbConfiguration;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbHostConfiguration;
+import org.waarp.openr66.database.data.DbMultipleMonitor;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.utils.R66Versions;
+
+import java.sql.Types;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Factory to store the Database Model object
+ */
+<span class="nc" id="L50">public class DbModelFactoryR66 extends DbModelFactory {</span>
+
+  private static final String ALTER_TABLE = &quot;ALTER TABLE &quot;;
+  private static final String ADD_COLUMN = &quot; ADD COLUMN &quot;;
+  private static final String AFTER = &quot; AFTER &quot;;
+
+  /**
+   * Initialize the Database Model according to arguments.
+   *
+   * @param dbdriver
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   * @param write
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public static DbAdmin initialize(String dbdriver, String dbserver,
+                                   String dbuser, String dbpasswd,
+                                   boolean write)
+      throws WaarpDatabaseNoConnectionException {
+<span class="fc" id="L71">    final DbType type = DbType.getFromDriver(dbdriver);</span>
+    DbModel dbModel;
+<span class="pc bpc" id="L73" title="2 of 6 branches missed.">    switch (type) {</span>
+      case H2:
+<span class="fc" id="L75">        dbModel = new DbModelH2R66(dbserver, dbuser, dbpasswd);</span>
+<span class="fc" id="L76">        break;</span>
+      case Oracle:
+<span class="nc" id="L78">        dbModel = new DbModelOracleR66(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L79">        break;</span>
+      case PostGreSQL:
+<span class="fc" id="L81">        dbModel = new DbModelPostgresqlR66();</span>
+<span class="fc" id="L82">        break;</span>
+      case MySQL:
+<span class="fc" id="L84">        dbModel = new DbModelMysqlR66(dbserver, dbuser, dbpasswd);</span>
+<span class="fc" id="L85">        break;</span>
+      case MariaDB:
+<span class="fc" id="L87">        dbModel = new DbModelMariadbR66(dbserver, dbuser, dbpasswd);</span>
+<span class="fc" id="L88">        break;</span>
+      default:
+<span class="nc" id="L90">        throw new WaarpDatabaseNoConnectionException(</span>
+            &quot;TypeDriver unknown: &quot; + type);
+    }
+<span class="fc" id="L93">    dbModels.add(dbModel);</span>
+<span class="fc" id="L94">    return new DbAdmin(dbModel, dbserver, dbuser, dbpasswd, write);</span>
+  }
+
+  static boolean needUpgradeDbAllDb(final DbTypeResolver dbTypeResolver,
+                                    final DbSession session,
+                                    final String version)
+      throws WaarpDatabaseNoConnectionException {
+    // Check if the database is up to date
+<span class="fc" id="L102">    DbRequest request = null;</span>
+<span class="fc" id="L103">    if (PartnerConfiguration</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {</span>
+      try {
+<span class="nc" id="L106">        request = new DbRequest(session);</span>
+<span class="nc" id="L107">        request.select(</span>
+<span class="nc" id="L108">            &quot;select &quot; + DbHostConfiguration.Columns.HOSTID.name() + &quot; from &quot; +</span>
+            DbHostConfiguration.table + &quot; where &quot; +
+            DbHostConfiguration.Columns.HOSTID + &quot; = '&quot; +
+<span class="nc" id="L111">            Configuration.configuration.getHostId() + '\'');</span>
+<span class="nc" id="L112">        request.close();</span>
+<span class="nc" id="L113">        DbHostConfiguration</span>
+<span class="nc" id="L114">            .updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L115">                             R66Versions.V2_4_13.getVersion());</span>
+<span class="nc" id="L116">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        return !upgradeDbMariaDbMySQL(dbTypeResolver, session, version);</span>
+      } finally {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (request != null) {</span>
+<span class="nc" id="L120">          request.close();</span>
+        }
+      }
+    }
+<span class="fc" id="L124">    request = null;</span>
+<span class="fc" id="L125">    if (PartnerConfiguration</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {</span>
+      try {
+<span class="nc" id="L128">        request = new DbRequest(session);</span>
+<span class="nc" id="L129">        request.select(</span>
+<span class="nc" id="L130">            &quot;select &quot; + DbTaskRunner.Columns.TRANSFERINFO.name() + &quot; from &quot; +</span>
+            DbTaskRunner.table + &quot; where &quot; + DbTaskRunner.Columns.SPECIALID +
+            &quot; = &quot; + ILLEGALVALUE);
+<span class="nc" id="L133">        request.close();</span>
+<span class="nc" id="L134">        DbHostConfiguration</span>
+<span class="nc" id="L135">            .updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L136">                             R66Versions.V2_4_17.getVersion());</span>
+<span class="nc" id="L137">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        return !upgradeDbMariaDbMySQL(dbTypeResolver, session, version);</span>
+      } finally {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (request != null) {</span>
+<span class="nc" id="L141">          request.close();</span>
+        }
+      }
+    }
+<span class="fc" id="L145">    request = null;</span>
+<span class="fc" id="L146">    if (PartnerConfiguration</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {</span>
+      try {
+<span class="nc" id="L149">        request = new DbRequest(session);</span>
+<span class="nc" id="L150">        request.select(</span>
+<span class="nc" id="L151">            &quot;select &quot; + DbHostAuth.Columns.ISACTIVE.name() + &quot; from &quot; +</span>
+            DbHostAuth.table + &quot; where &quot; + DbHostAuth.Columns.PORT + &quot; = &quot; + 0);
+<span class="nc" id="L153">        request.close();</span>
+<span class="nc" id="L154">        DbHostConfiguration</span>
+<span class="nc" id="L155">            .updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L156">                             R66Versions.V2_4_23.getVersion());</span>
+<span class="nc" id="L157">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        return !upgradeDbMariaDbMySQL(dbTypeResolver, session, version);</span>
+      } finally {
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (request != null) {</span>
+<span class="nc" id="L161">          request.close();</span>
+        }
+      }
+    }
+<span class="fc" id="L165">    request = null;</span>
+<span class="fc" id="L166">    if (PartnerConfiguration</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      if (upgradeDbMariaDbMySQL(dbTypeResolver, session, version)) {</span>
+<span class="nc" id="L169">        DbHostConfiguration</span>
+<span class="nc" id="L170">            .updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L171">                             R66Versions.V2_4_25.getVersion());</span>
+      } else {
+<span class="nc" id="L173">        return true;</span>
+      }
+    }
+<span class="fc" id="L176">    return false;</span>
+  }
+
+  static DbRequest subCreateTableMariaDbMySQLPostgreSQL(
+      final DbTypeResolver dbTypeResolver, final DbSession session,
+      final String createTableH2, final String primaryKey, final String notNull)
+      throws WaarpDatabaseNoConnectionException {
+    // Multiple Mode
+<span class="fc" id="L184">    StringBuilder action =</span>
+        new StringBuilder(createTableH2 + DbMultipleMonitor.table + '(');
+    final DbMultipleMonitor.Columns[] mcolumns =
+<span class="fc" id="L187">        DbMultipleMonitor.Columns.values();</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">    for (int i = 0; i &lt; mcolumns.length - 1; i++) {</span>
+<span class="fc" id="L189">      action.append(mcolumns[i].name())</span>
+<span class="fc" id="L190">            .append(dbTypeResolver.getType(DbMultipleMonitor.dbTypes[i]))</span>
+<span class="fc" id="L191">            .append(notNull).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L193">    action.append(mcolumns[mcolumns.length - 1].name()).append(</span>
+<span class="fc" id="L194">        dbTypeResolver.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))</span>
+<span class="fc" id="L195">          .append(primaryKey).append(')');</span>
+<span class="fc" id="L196">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L198">      return null;</span>
+    }
+<span class="fc" id="L200">    final DbMultipleMonitor multipleMonitor =</span>
+<span class="fc" id="L201">        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);</span>
+    try {
+<span class="fc bfc" id="L203" title="All 2 branches covered.">      if (!multipleMonitor.exist()) {</span>
+<span class="fc" id="L204">        multipleMonitor.insert();</span>
+      }
+<span class="nc" id="L206">    } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L207">      SysErrLogger.FAKE_LOGGER.syserr(e1);</span>
+<span class="fc" id="L208">    }</span>
+
+    // Configuration
+<span class="fc" id="L211">    action = new StringBuilder(createTableH2 + DbConfiguration.table + '(');</span>
+<span class="fc" id="L212">    final DbConfiguration.Columns[] ccolumns = DbConfiguration.Columns.values();</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">    for (int i = 0; i &lt; ccolumns.length - 1; i++) {</span>
+<span class="fc" id="L214">      action.append(ccolumns[i].name())</span>
+<span class="fc" id="L215">            .append(dbTypeResolver.getType(DbConfiguration.dbTypes[i]))</span>
+<span class="fc" id="L216">            .append(notNull).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L218">    action.append(ccolumns[ccolumns.length - 1].name()).append(</span>
+<span class="fc" id="L219">        dbTypeResolver.getType(DbConfiguration.dbTypes[ccolumns.length - 1]))</span>
+<span class="fc" id="L220">          .append(primaryKey).append(')');</span>
+<span class="fc" id="L221">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L223">      return null;</span>
+    }
+
+    // HostConfiguration
+<span class="fc" id="L227">    action = new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');</span>
+    final DbHostConfiguration.Columns[] chcolumns =
+<span class="fc" id="L229">        DbHostConfiguration.Columns.values();</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">    for (int i = 0; i &lt; chcolumns.length - 1; i++) {</span>
+<span class="fc" id="L231">      action.append(chcolumns[i].name())</span>
+<span class="fc" id="L232">            .append(dbTypeResolver.getType(DbHostConfiguration.dbTypes[i]))</span>
+<span class="fc" id="L233">            .append(notNull).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L235">    action.append(chcolumns[chcolumns.length - 1].name()).append(dbTypeResolver</span>
+<span class="fc" id="L236">                                                                     .getType(</span>
+                                                                         DbHostConfiguration.dbTypes[
+                                                                             chcolumns.length -
+                                                                             1]))
+<span class="fc" id="L240">          .append(primaryKey).append(')');</span>
+<span class="fc" id="L241">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L243">      return null;</span>
+    }
+
+    // hosts
+<span class="fc" id="L247">    action = new StringBuilder(createTableH2 + DbHostAuth.table + '(');</span>
+<span class="fc" id="L248">    final DbHostAuth.Columns[] hcolumns = DbHostAuth.Columns.values();</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">    for (int i = 0; i &lt; hcolumns.length - 1; i++) {</span>
+<span class="fc" id="L250">      action.append(hcolumns[i].name())</span>
+<span class="fc" id="L251">            .append(dbTypeResolver.getType(DbHostAuth.dbTypes[i]))</span>
+<span class="fc" id="L252">            .append(notNull).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L254">    action.append(hcolumns[hcolumns.length - 1].name()).append(</span>
+<span class="fc" id="L255">        dbTypeResolver.getType(DbHostAuth.dbTypes[hcolumns.length - 1]))</span>
+<span class="fc" id="L256">          .append(primaryKey).append(')');</span>
+<span class="fc" id="L257">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L259">      return null;</span>
+    }
+
+    // rules
+<span class="fc" id="L263">    action = new StringBuilder(createTableH2 + DbRule.table + '(');</span>
+<span class="fc" id="L264">    final DbRule.Columns[] rcolumns = DbRule.Columns.values();</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">    for (int i = 0; i &lt; rcolumns.length - 1; i++) {</span>
+<span class="fc" id="L266">      action.append(rcolumns[i].name())</span>
+<span class="fc" id="L267">            .append(dbTypeResolver.getType(DbRule.dbTypes[i])).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L269">    action.append(rcolumns[rcolumns.length - 1].name())</span>
+<span class="fc" id="L270">          .append(dbTypeResolver.getType(DbRule.dbTypes[rcolumns.length - 1]))</span>
+<span class="fc" id="L271">          .append(primaryKey).append(')');</span>
+<span class="fc" id="L272">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L274">      return null;</span>
+    }
+
+    // runner
+<span class="fc" id="L278">    action = new StringBuilder(createTableH2 + DbTaskRunner.table + '(');</span>
+<span class="fc" id="L279">    final DbTaskRunner.Columns[] acolumns = DbTaskRunner.Columns.values();</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
+<span class="fc" id="L281">      action.append(acolumns[i].name())</span>
+<span class="fc" id="L282">            .append(dbTypeResolver.getType(DbTaskRunner.dbTypes[i]))</span>
+<span class="fc" id="L283">            .append(notNull);</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">      if (DbTaskRunner.dbTypes[i] == Types.TIMESTAMP) {</span>
+<span class="fc" id="L285">        action.append(&quot; DEFAULT CURRENT_TIMESTAMP(3)&quot;);</span>
+      }
+<span class="fc" id="L287">      action.append(&quot;, &quot;);</span>
+    }
+    // Several columns for primary key
+<span class="fc" id="L290">    action.append(&quot; CONSTRAINT runner_pk &quot; + primaryKey + '(');</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">    for (int i = DbTaskRunner.NBPRKEY; i &gt; 1; i--) {</span>
+<span class="fc" id="L292">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
+    }
+<span class="fc" id="L294">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="fc" id="L295">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L297">      return null;</span>
+    }
+<span class="fc" id="L299">    return new DbRequest(session);</span>
+  }
+
+  private static boolean executeRequestAction(final DbSession session,
+                                              final StringBuilder action)
+      throws WaarpDatabaseNoConnectionException {
+<span class="fc" id="L305">    return executeRequestAction(session, action.toString());</span>
+  }
+
+  private static boolean executeRequestAction(final DbSession session,
+                                              final String action)
+      throws WaarpDatabaseNoConnectionException {
+    final DbRequest request;
+<span class="fc" id="L312">    request = new DbRequest(session);</span>
+    try {
+<span class="fc" id="L314">      request.query(action);</span>
+<span class="nc" id="L315">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L316">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L317">      return true;</span>
+<span class="fc" id="L318">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="fc" id="L319">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="fc" id="L322">      request.close();</span>
+    }
+<span class="fc" id="L324">    return false;</span>
+  }
+
+  static void createTableMariaDbMySQL(final DbTypeResolver dbTypeResolver,
+                                      final DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+    // Create tables: configuration, hosts, rules, runner, cptrunner
+<span class="fc" id="L331">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+<span class="fc" id="L332">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="fc" id="L333">    final String notNull = &quot; NOT NULL &quot;;</span>
+<span class="fc" id="L334">    DbRequest request =</span>
+<span class="fc" id="L335">        subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,</span>
+                                             createTableH2, primaryKey,
+                                             notNull);
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">    if (request == null) {</span>
+<span class="nc" id="L339">      return;</span>
+    }
+    StringBuilder action;
+    // Index Runner
+<span class="fc" id="L343">    action = new StringBuilder(</span>
+        &quot;CREATE INDEX IDX_RUNNER ON &quot; + DbTaskRunner.table + '(');
+<span class="fc" id="L345">    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
+<span class="fc" id="L347">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
+    }
+<span class="fc" id="L349">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
+<span class="fc" id="L350">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L352">      return;</span>
+    }
+    // cptrunner
+    /*
+     * # Table to handle any number of sequences
+     */
+<span class="fc" id="L358">    action = new StringBuilder(</span>
+        &quot;CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY,&quot; +
+        &quot;seq BIGINT NOT NULL)&quot;);
+<span class="fc" id="L361">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L363">      return;</span>
+    }
+<span class="fc" id="L365">    action = new StringBuilder(</span>
+        &quot;INSERT INTO Sequences (name, seq) VALUES ('&quot; + DbTaskRunner.fieldseq +
+        &quot;', &quot; + (ILLEGALVALUE + 1) + ')');
+<span class="fc" id="L368">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">    if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L370">      return;</span>
+    }
+
+<span class="fc" id="L373">    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="fc" id="L374">                                        R66Versions.V2_4_25.getVersion());</span>
+<span class="fc" id="L375">  }</span>
+
+  static boolean upgradeDbMariaDbMySQL(final DbTypeResolver dbTypeResolver,
+                                       final DbSession session,
+                                       final String version)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L381">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {</span>
+<span class="nc" id="L383">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L384">          version + &quot; to &quot; + R66Versions.V2_4_13.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L385">      final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+<span class="nc" id="L386">      final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="nc" id="L387">      final String notNull = &quot; NOT NULL &quot;;</span>
+
+      // HostConfiguration
+<span class="nc" id="L390">      StringBuilder action =</span>
+          new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
+      final DbHostConfiguration.Columns[] chcolumns =
+<span class="nc" id="L393">          DbHostConfiguration.Columns.values();</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">      for (int i = 0; i &lt; chcolumns.length - 1; i++) {</span>
+<span class="nc" id="L395">        action.append(chcolumns[i].name())</span>
+<span class="nc" id="L396">              .append(dbTypeResolver.getType(DbHostConfiguration.dbTypes[i]))</span>
+<span class="nc" id="L397">              .append(notNull).append(&quot;, &quot;);</span>
+      }
+<span class="nc" id="L399">      action.append(chcolumns[chcolumns.length - 1].name()).append(</span>
+          dbTypeResolver
+<span class="nc" id="L401">              .getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))</span>
+<span class="nc" id="L402">            .append(primaryKey).append(')');</span>
+<span class="nc" id="L403">      SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">      if (executeRequestAction(session, action)) {</span>
+<span class="nc" id="L405">        return false;</span>
+      }
+    }
+<span class="nc" id="L408">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {</span>
+<span class="nc" id="L410">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L411">          version + &quot; to &quot; + R66Versions.V2_4_17.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L412">      final DbRequest request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L414">        final String command = ALTER_TABLE + DbTaskRunner.table + ADD_COLUMN +</span>
+<span class="nc" id="L415">                               DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' +</span>
+<span class="nc" id="L416">                               dbTypeResolver.getType(</span>
+                                   DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
+<span class="nc" id="L418">                                       .ordinal()]) + AFTER +</span>
+<span class="nc" id="L419">                               DbTaskRunner.Columns.FILEINFO.name();</span>
+<span class="nc" id="L420">        request.query(command);</span>
+<span class="nc" id="L421">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L422">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+        // return false
+      } finally {
+<span class="nc" id="L425">        request.close();</span>
+      }
+    }
+<span class="nc" id="L428">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {</span>
+<span class="nc" id="L430">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L431">          version + &quot; to &quot; + R66Versions.V2_4_23.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L432">      final DbRequest request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L434">        String command = ALTER_TABLE + DbHostAuth.table + ADD_COLUMN +</span>
+<span class="nc" id="L435">                         DbHostAuth.Columns.ISACTIVE.name() + ' ' +</span>
+<span class="nc" id="L436">                         dbTypeResolver.getType(</span>
+                             DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE
+<span class="nc" id="L438">                                 .ordinal()]) + AFTER +</span>
+<span class="nc" id="L439">                         DbHostAuth.Columns.ISCLIENT.name();</span>
+<span class="nc" id="L440">        request.query(command);</span>
+<span class="nc" id="L441">        command = &quot;UPDATE &quot; + DbHostAuth.table + &quot; SET &quot; +</span>
+<span class="nc" id="L442">                  DbHostAuth.Columns.ISACTIVE.name() + &quot; = &quot; + true;</span>
+<span class="nc" id="L443">        request.query(command);</span>
+<span class="nc" id="L444">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L445">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+        // return false
+      } finally {
+<span class="nc" id="L448">        request.close();</span>
+      }
+      try {
+<span class="nc" id="L451">        String command = ALTER_TABLE + DbHostAuth.table + ADD_COLUMN +</span>
+<span class="nc" id="L452">                         DbHostAuth.Columns.ISPROXIFIED.name() + ' ' +</span>
+<span class="nc" id="L453">                         dbTypeResolver.getType(</span>
+                             DbHostAuth.dbTypes[DbHostAuth.Columns.ISPROXIFIED
+<span class="nc" id="L455">                                 .ordinal()]) + AFTER +</span>
+<span class="nc" id="L456">                         DbHostAuth.Columns.ISACTIVE.name();</span>
+<span class="nc" id="L457">        request.query(command);</span>
+<span class="nc" id="L458">        command = &quot;UPDATE &quot; + DbHostAuth.table + &quot; SET &quot; +</span>
+<span class="nc" id="L459">                  DbHostAuth.Columns.ISPROXIFIED.name() + &quot; = &quot; + false;</span>
+<span class="nc" id="L460">        request.query(command);</span>
+<span class="nc" id="L461">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L462">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+        // return false
+      } finally {
+<span class="nc" id="L465">        request.close();</span>
+      }
+    }
+<span class="nc" id="L468">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {</span>
+<span class="nc" id="L470">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L471">          version + &quot; to &quot; + R66Versions.V2_4_25.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L472">      String command = ALTER_TABLE + DbTaskRunner.table + &quot; MODIFY &quot; +</span>
+<span class="nc" id="L473">                       DbTaskRunner.Columns.FILENAME.name() + ' ' +</span>
+<span class="nc" id="L474">                       dbTypeResolver.getType(</span>
+                           DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME
+<span class="nc" id="L476">                               .ordinal()]) + &quot; NOT NULL &quot;;</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">      if (executeRequestAction(session, command)) {</span>
+<span class="nc" id="L478">        return false;</span>
+      }
+<span class="nc" id="L480">      command = ALTER_TABLE + DbTaskRunner.table + &quot; MODIFY &quot; +</span>
+<span class="nc" id="L481">                DbTaskRunner.Columns.ORIGINALNAME.name() + ' ' + dbTypeResolver</span>
+<span class="nc" id="L482">                    .getType(</span>
+                        DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME
+<span class="nc" id="L484">                            .ordinal()]) + &quot; NOT NULL &quot;;</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">      if (executeRequestAction(session, command)) {</span>
+<span class="nc" id="L486">        return false;</span>
+      }
+    }
+<span class="nc" id="L489">    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L490">                                        R66Versions.V2_4_25.getVersion());</span>
+<span class="nc" id="L491">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

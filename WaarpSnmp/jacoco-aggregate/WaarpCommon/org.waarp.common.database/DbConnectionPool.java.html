@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbConnectionPool.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Snmp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database</a> &gt; <span class="el_source">DbConnectionPool.java</span></div><h1>DbConnectionPool.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database;
+
+import javax.sql.ConnectionEvent;
+import javax.sql.ConnectionEventListener;
+import javax.sql.ConnectionPoolDataSource;
+import javax.sql.PooledConnection;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * A simple standalone JDBC connection pool manager.
+ * &lt;p/&gt;
+ * The public methods of this class are thread-safe.
+ * &lt;p/&gt;
+ * Nothe that JDBC4 is needed and isValid() must be implemented (not yet in
+ * PostGre in April 2012)
+ * &lt;p/&gt;
+ *
+ * @author Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland&lt;br&gt;
+ *     Multi-licensed: EPL/LGPL/MPL.
+ *     &lt;br&gt;
+ *     Add TimerTask support to close after some &quot;delay&quot; any still connected
+ *     sessions
+ */
+public class DbConnectionPool {
+  private ConnectionPoolDataSource dataSource;
+
+  private final int maxConnections;
+
+  private final int timeout;
+
+  private static final long timeOutForceClose = 300000; // 5 minutes
+
+  private Semaphore semaphore;
+
+  private final Queue&lt;Con&gt; recycledConnections;
+
+  private int activeConnections;
+
+  private final PoolConnectionEventListener poolConnectionEventListener;
+
+  private boolean isDisposed;
+
+  private static class Con {
+    final PooledConnection pooledCon;
+
+    final long lastRecyle;
+
+<span class="nc" id="L75">    private Con(PooledConnection pooledCon) {</span>
+<span class="nc" id="L76">      this.pooledCon = pooledCon;</span>
+<span class="nc" id="L77">      lastRecyle = System.currentTimeMillis();</span>
+<span class="nc" id="L78">    }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L82" title="All 2 branches missed.">      if (this == o) {</span>
+<span class="nc" id="L83">        return true;</span>
+      }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">      if (!(o instanceof Con)) {</span>
+<span class="nc" id="L86">        return false;</span>
+      }
+
+<span class="nc" id="L89">      final Con con = (Con) o;</span>
+
+<span class="nc" id="L91">      return pooledCon.equals(con.pooledCon);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L96">      return pooledCon.hashCode();</span>
+    }
+  }
+
+  /**
+   * Class to check validity of connections in the pool
+   */
+  private static class TimerTaskCheckConnections extends TimerTask {
+    DbConnectionPool pool;
+    Timer timer;
+    long delay;
+
+    /**
+     * @param timer
+     * @param delay
+     * @param pool
+     */
+    private TimerTaskCheckConnections(Timer timer, long delay,
+<span class="nc" id="L114">                                      DbConnectionPool pool) {</span>
+<span class="nc bnc" id="L115" title="All 6 branches missed.">      if (pool == null || timer == null || delay &lt; 1000) {</span>
+<span class="nc" id="L116">        throw new IllegalArgumentException(</span>
+            &quot;Invalid values. Need pool, timer and delay &gt;= 1000&quot;);
+      }
+<span class="nc" id="L119">      this.pool = pool;</span>
+<span class="nc" id="L120">      this.timer = timer;</span>
+<span class="nc" id="L121">      this.delay = delay;</span>
+<span class="nc" id="L122">    }</span>
+
+    @Override
+    public void run() {
+<span class="nc" id="L126">      final Iterator&lt;Con&gt; conIterator = pool.recycledConnections.iterator();</span>
+<span class="nc" id="L127">      final long now = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      while (conIterator.hasNext()) {</span>
+<span class="nc" id="L129">        final Con c = conIterator.next();</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (c.lastRecyle + pool.timeOutForceClose &lt; now) {</span>
+<span class="nc" id="L131">          conIterator.remove();</span>
+<span class="nc" id="L132">          pool.closeConnectionNoEx(c.pooledCon);</span>
+        } else {
+          try {
+<span class="nc" id="L135">            if (!c.pooledCon.getConnection()</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">                            .isValid(DbConstant.VALIDTESTDURATION)) {</span>
+<span class="nc" id="L137">              conIterator.remove();</span>
+<span class="nc" id="L138">              pool.closeConnectionNoEx(c.pooledCon);</span>
+            }
+<span class="nc" id="L140">          } catch (final SQLException e) {</span>
+<span class="nc" id="L141">            conIterator.remove();</span>
+<span class="nc" id="L142">            pool.closeConnectionNoEx(c.pooledCon);</span>
+<span class="nc" id="L143">          }</span>
+        }
+<span class="nc" id="L145">      }</span>
+<span class="nc" id="L146">      timer.schedule(this, delay);</span>
+<span class="nc" id="L147">    }</span>
+
+  }
+
+  /**
+   * Release all idle connections
+   */
+  public synchronized void freeIdleConnections() {
+<span class="nc" id="L155">    final Iterator&lt;Con&gt; conIterator = recycledConnections.iterator();</span>
+<span class="nc" id="L156">    final long now = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">    while (conIterator.hasNext()) {</span>
+<span class="nc" id="L158">      final Con c = conIterator.next();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">      if (c.lastRecyle + timeOutForceClose &lt; now) {</span>
+<span class="nc" id="L160">        conIterator.remove();</span>
+<span class="nc" id="L161">        closeConnectionNoEx(c.pooledCon);</span>
+      }
+<span class="nc" id="L163">    }</span>
+<span class="nc" id="L164">  }</span>
+
+  /**
+   * Thrown in when no free connection becomes available within
+   * {@code timeout} seconds.
+   */
+  private static class TimeoutException extends RuntimeException {
+    private static final long serialVersionUID = 1;
+
+    public TimeoutException() {
+<span class="nc" id="L174">      super(&quot;Timeout while waiting for a free database connection.&quot;);</span>
+<span class="nc" id="L175">    }</span>
+  }
+
+  /**
+   * Constructs a MiniConnectionPoolManager object with no timeout and no
+   * limit.
+   *
+   * @param dataSource the data source for the connections.
+   */
+  public DbConnectionPool(ConnectionPoolDataSource dataSource) {
+<span class="nc" id="L185">    this(dataSource, 0, DbConstant.DELAYMAXCONNECTION);</span>
+<span class="nc" id="L186">  }</span>
+
+  /**
+   * Constructs a MiniConnectionPoolManager object with no timeout and no
+   * limit.
+   *
+   * @param dataSource the data source for the connections.
+   * @param timer
+   * @param delay in ms period of time to check existing connections
+   *     and
+   *     limit to get a new connection
+   */
+  public DbConnectionPool(ConnectionPoolDataSource dataSource, Timer timer,
+                          long delay) {
+<span class="nc" id="L200">    this(dataSource, 0, (int) (delay / 1000));</span>
+<span class="nc" id="L201">    timer.schedule(new TimerTaskCheckConnections(timer, delay, this), delay);</span>
+<span class="nc" id="L202">  }</span>
+
+  /**
+   * Constructs a MiniConnectionPoolManager object with a timeout of
+   * DbConstant.DELAYMAXCONNECTION seconds.
+   *
+   * @param dataSource the data source for the connections.
+   * @param maxConnections the maximum number of connections. 0 means
+   *     no
+   *     limit
+   */
+  public DbConnectionPool(ConnectionPoolDataSource dataSource,
+                          int maxConnections) {
+<span class="nc" id="L215">    this(dataSource, maxConnections, DbConstant.DELAYMAXCONNECTION);</span>
+<span class="nc" id="L216">  }</span>
+
+  /**
+   * Constructs a ConnectionPool object.
+   *
+   * @param dataSource the data source for the connections.
+   * @param maxConnections the maximum number of connections. 0 means
+   *     no
+   *     limit
+   * @param timeout the maximum time in seconds to wait for a free
+   *     connection.
+   */
+  public DbConnectionPool(ConnectionPoolDataSource dataSource,
+<span class="nc" id="L229">                          int maxConnections, int timeout) {</span>
+<span class="nc" id="L230">    this.dataSource = dataSource;</span>
+<span class="nc" id="L231">    this.maxConnections = maxConnections;</span>
+<span class="nc" id="L232">    this.timeout = timeout;</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (maxConnections != 0) {</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">      if (timeout &lt;= 0) {</span>
+<span class="nc" id="L235">        throw new IllegalArgumentException(&quot;Invalid timeout value.&quot;);</span>
+      }
+<span class="nc" id="L237">      semaphore = new Semaphore(maxConnections, true);</span>
+    }
+<span class="nc" id="L239">    recycledConnections = new ArrayDeque&lt;Con&gt;();</span>
+<span class="nc" id="L240">    poolConnectionEventListener = new PoolConnectionEventListener();</span>
+<span class="nc" id="L241">  }</span>
+
+  public void resetPoolDataSource(ConnectionPoolDataSource dataSource) {
+<span class="nc" id="L244">    this.dataSource = dataSource;</span>
+<span class="nc" id="L245">  }</span>
+
+  /**
+   * @return the max number of connections
+   */
+  public int getMaxConnections() {
+<span class="nc" id="L251">    return maxConnections;</span>
+  }
+
+  /**
+   * @return the Login Timeout in second
+   */
+  public long getLoginTimeout() {
+<span class="nc" id="L258">    return timeout;</span>
+  }
+
+  /**
+   * @return the Force Close Timeout in ms
+   */
+  public long getTimeoutForceClose() {
+<span class="nc" id="L265">    return timeOutForceClose;</span>
+  }
+
+  /**
+   * Closes all unused pooled connections.
+   *
+   * @throws SQLException //
+   */
+  public synchronized void dispose() throws SQLException {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (isDisposed) {</span>
+<span class="nc" id="L275">      return;</span>
+    }
+<span class="nc" id="L277">    isDisposed = true;</span>
+<span class="nc" id="L278">    SQLException e = null;</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">    while (!recycledConnections.isEmpty()) {</span>
+<span class="nc" id="L280">      final Con c = recycledConnections.remove();</span>
+<span class="nc" id="L281">      final PooledConnection pconn = c.pooledCon;</span>
+      try {
+<span class="nc" id="L283">        pconn.close();</span>
+<span class="nc" id="L284">      } catch (final SQLException e2) {</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        if (e == null) {</span>
+<span class="nc" id="L286">          e = e2;</span>
+        }
+<span class="nc" id="L288">      }</span>
+<span class="nc" id="L289">    }</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">    if (e != null) {</span>
+<span class="nc" id="L291">      throw e;</span>
+    }
+<span class="nc" id="L293">  }</span>
+
+  /**
+   * Retrieves a connection from the connection pool. If
+   * {@code maxConnections} connections are already in
+   * use, the method waits until a connection becomes available or
+   * {@code timeout} seconds elapsed. When
+   * the application is finished using the connection, it must close it in
+   * order
+   * to return it to the pool.
+   *
+   * @return a new Connection object.
+   *
+   * @throws TimeoutException when no connection becomes available
+   *     within
+   *     {@code timeout} seconds.
+   * @throws SQLException //
+   */
+  public Connection getConnection() throws SQLException {
+    // This routine is unsynchronized, because semaphore.tryAcquire() may
+    // block.
+<span class="nc" id="L314">    synchronized (this) {</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">      if (isDisposed) {</span>
+<span class="nc" id="L316">        throw new IllegalStateException(&quot;Connection pool has been disposed.&quot;);</span>
+      }
+<span class="nc" id="L318">    }</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (semaphore != null) {</span>
+      try {
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        if (!semaphore.tryAcquire(timeout, TimeUnit.SECONDS)) {</span>
+<span class="nc" id="L322">          throw new TimeoutException();</span>
+        }
+<span class="nc" id="L324">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L325">        throw new RuntimeException(</span>
+            &quot;Interrupted while waiting for a database connection.&quot;, e);
+<span class="nc" id="L327">      }</span>
+    }
+<span class="nc" id="L329">    boolean ok = false;</span>
+    try {
+<span class="nc" id="L331">      final Connection conn = getConnection2();</span>
+<span class="nc" id="L332">      ok = true;</span>
+<span class="nc" id="L333">      return conn;</span>
+    } finally {
+<span class="nc bnc" id="L335" title="All 4 branches missed.">      if (semaphore != null &amp;&amp; !ok) {</span>
+<span class="nc" id="L336">        semaphore.release();</span>
+      }
+    }
+  }
+
+  private synchronized Connection getConnection2() throws SQLException {
+<span class="nc bnc" id="L342" title="All 2 branches missed.">    if (isDisposed) {</span>
+<span class="nc" id="L343">      throw new IllegalStateException(</span>
+          &quot;Connection pool has been disposed.&quot;); // test again with
+    }
+    // lock
+<span class="nc" id="L347">    final long time = System.currentTimeMillis() + timeout * 1000;</span>
+    while (true) {
+      PooledConnection pconn;
+<span class="nc bnc" id="L350" title="All 2 branches missed.">      if (!recycledConnections.isEmpty()) {</span>
+<span class="nc" id="L351">        pconn = recycledConnections.remove().pooledCon;</span>
+      } else {
+<span class="nc" id="L353">        pconn = dataSource.getPooledConnection();</span>
+      }
+
+<span class="nc" id="L356">      final Connection conn = pconn.getConnection();</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">      if (conn.isValid(DbConstant.VALIDTESTDURATION)) {</span>
+<span class="nc" id="L358">        activeConnections++;</span>
+<span class="nc" id="L359">        pconn.addConnectionEventListener(poolConnectionEventListener);</span>
+<span class="nc" id="L360">        assertInnerState();</span>
+<span class="nc" id="L361">        return conn;</span>
+      }
+<span class="nc bnc" id="L363" title="All 2 branches missed.">      if (time &gt; System.currentTimeMillis()) {</span>
+        // too long
+<span class="nc" id="L365">        break;</span>
+      }
+<span class="nc" id="L367">    }</span>
+
+<span class="nc" id="L369">    throw new SQLException(&quot;Could not get a valid connection before timeout&quot;);</span>
+  }
+
+  private synchronized void recycleConnection(PooledConnection pconn) {
+<span class="nc bnc" id="L373" title="All 2 branches missed.">    if (isDisposed) {</span>
+<span class="nc" id="L374">      disposeConnection(pconn);</span>
+<span class="nc" id="L375">      return;</span>
+    }
+    try {
+<span class="nc bnc" id="L378" title="All 2 branches missed.">      if (!pconn.getConnection().isValid(DbConstant.VALIDTESTDURATION)) {</span>
+<span class="nc" id="L379">        disposeConnection(pconn);</span>
+<span class="nc" id="L380">        return;</span>
+      }
+<span class="nc" id="L382">    } catch (final SQLException e) {</span>
+<span class="nc" id="L383">      disposeConnection(pconn);</span>
+<span class="nc" id="L384">      return;</span>
+<span class="nc" id="L385">    }</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">    if (activeConnections &lt;= 0) {</span>
+<span class="nc" id="L387">      throw new AssertionError();</span>
+    }
+<span class="nc" id="L389">    activeConnections--;</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (semaphore != null) {</span>
+<span class="nc" id="L391">      semaphore.release();</span>
+    }
+<span class="nc" id="L393">    recycledConnections.add(new Con(pconn));</span>
+<span class="nc" id="L394">    assertInnerState();</span>
+<span class="nc" id="L395">  }</span>
+
+  private synchronized void disposeConnection(PooledConnection pconn) {
+<span class="nc bnc" id="L398" title="All 2 branches missed.">    if (activeConnections &lt;= 0) {</span>
+<span class="nc" id="L399">      throw new AssertionError();</span>
+    }
+<span class="nc" id="L401">    activeConnections--;</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">    if (semaphore != null) {</span>
+<span class="nc" id="L403">      semaphore.release();</span>
+    }
+<span class="nc" id="L405">    closeConnectionNoEx(pconn);</span>
+<span class="nc" id="L406">    assertInnerState();</span>
+<span class="nc" id="L407">  }</span>
+
+  private void closeConnectionNoEx(PooledConnection pconn) {
+    try {
+<span class="nc" id="L411">      pconn.close();</span>
+<span class="nc" id="L412">    } catch (final SQLException e) {</span>
+      //
+<span class="nc" id="L414">    }</span>
+<span class="nc" id="L415">  }</span>
+
+  private void assertInnerState() {
+<span class="nc bnc" id="L418" title="All 2 branches missed.">    if (activeConnections &lt; 0) {</span>
+<span class="nc" id="L419">      throw new AssertionError();</span>
+    }
+<span class="nc bnc" id="L421" title="All 2 branches missed.">    if (semaphore != null) {</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">      if (activeConnections + recycledConnections.size() &gt; maxConnections) {</span>
+<span class="nc" id="L423">        throw new AssertionError();</span>
+      }
+<span class="nc bnc" id="L425" title="All 2 branches missed.">      if (activeConnections + semaphore.availablePermits() &gt; maxConnections) {</span>
+<span class="nc" id="L426">        throw new AssertionError();</span>
+      }
+    }
+<span class="nc" id="L429">  }</span>
+
+<span class="nc" id="L431">  private class PoolConnectionEventListener implements ConnectionEventListener {</span>
+    @Override
+    public void connectionClosed(ConnectionEvent event) {
+<span class="nc" id="L434">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
+<span class="nc" id="L435">      pconn.removeConnectionEventListener(this);</span>
+<span class="nc" id="L436">      recycleConnection(pconn);</span>
+<span class="nc" id="L437">    }</span>
+
+    @Override
+    public void connectionErrorOccurred(ConnectionEvent event) {
+<span class="nc" id="L441">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
+<span class="nc" id="L442">      pconn.removeConnectionEventListener(this);</span>
+<span class="nc" id="L443">      disposeConnection(pconn);</span>
+<span class="nc" id="L444">    }</span>
+  }
+
+  /**
+   * Returns the number of active (open) connections of this pool. This is the
+   * number of {@code Connection}
+   * objects that have been issued by {@link #getConnection()} for which
+   * {@code Connection.close()} has not
+   * yet been called.
+   *
+   * @return the number of active connections.
+   */
+  public synchronized int getActiveConnections() {
+<span class="nc" id="L457">    return activeConnections;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

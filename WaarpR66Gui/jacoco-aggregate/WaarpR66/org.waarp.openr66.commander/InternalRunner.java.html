@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>InternalRunner.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.commander</a> &gt; <span class="el_source">InternalRunner.java</span></div><h1>InternalRunner.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.commander;
+
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpThreadFactory;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * This class launch and control the Commander and enable TaskRunner job
+ * submissions
+ */
+public class InternalRunner {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(InternalRunner.class);</span>
+
+  private final ScheduledExecutorService scheduledExecutorService;
+  private ScheduledFuture&lt;?&gt; scheduledFuture;
+  private CommanderInterface commander;
+<span class="fc" id="L54">  private volatile boolean isRunning = true;</span>
+  private final ThreadPoolExecutor threadPoolExecutor;
+  private final NetworkTransaction networkTransaction;
+
+  /**
+   * Create the structure to enable submission by database
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public InternalRunner()
+<span class="fc" id="L65">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
+<span class="fc" id="L66">    commander = new Commander(this, true);</span>
+    // This is not daemon intentionally
+<span class="fc" id="L68">    scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(</span>
+        new WaarpThreadFactory(&quot;InternalRunner&quot;, false));
+<span class="fc" id="L70">    isRunning = true;</span>
+<span class="fc" id="L71">    final BlockingQueue&lt;Runnable&gt; workQueue = new SynchronousQueue&lt;Runnable&gt;();</span>
+<span class="fc" id="L72">    threadPoolExecutor =</span>
+<span class="fc" id="L73">        new ThreadPoolExecutor(Configuration.configuration.getRunnerThread(),</span>
+<span class="fc" id="L74">                               Configuration.configuration.getRunnerThread() *</span>
+                               2, 1000, TimeUnit.MILLISECONDS, workQueue,
+                               new WaarpThreadFactory(&quot;ClientRunner&quot;),
+<span class="fc" id="L77">                               new RejectedExecutionHandler() {</span>
+                                 @Override
+                                 public void rejectedExecution(
+                                     Runnable runnable,
+                                     ThreadPoolExecutor threadPoolExecutor) {
+<span class="nc" id="L82">                                   logger.debug(&quot;Task rescheduled&quot;);</span>
+<span class="nc" id="L83">                                 }</span>
+                               });
+<span class="fc" id="L85">    scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,</span>
+                                                                      Configuration.configuration
+<span class="fc" id="L87">                                                                          .getDelayCommander(),</span>
+                                                                      Configuration.configuration
+<span class="fc" id="L89">                                                                          .getDelayCommander(),</span>
+                                                                      TimeUnit.MILLISECONDS);
+<span class="fc" id="L91">    networkTransaction = new NetworkTransaction();</span>
+<span class="fc" id="L92">  }</span>
+
+  public NetworkTransaction getNetworkTransaction() {
+<span class="nc" id="L95">    return networkTransaction;</span>
+  }
+
+  public int allowedToSubmit() {
+<span class="fc" id="L99">    int active = threadPoolExecutor.getActiveCount();</span>
+<span class="pc bpc" id="L100" title="3 of 4 branches missed.">    if ((isRunning || !Configuration.configuration.isShutdown()) &amp;&amp;</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        (active &lt; Configuration.configuration.getRunnerThread())) {</span>
+<span class="fc" id="L102">      return Configuration.configuration.getRunnerThread() - active;</span>
+    }
+<span class="nc" id="L104">    return 0;</span>
+  }
+
+  /**
+   * Submit a task
+   *
+   * @param taskRunner
+   */
+  public void submitTaskRunner(DbTaskRunner taskRunner) {
+<span class="pc bpc" id="L113" title="3 of 4 branches missed.">    if (isRunning || !Configuration.configuration.isShutdown()) {</span>
+      // last check: number can have raised up since Commander checks
+<span class="fc" id="L115">      if (threadPoolExecutor.getActiveCount() &lt;</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">          Configuration.configuration.getRunnerThread()) {</span>
+<span class="fc" id="L117">        logger.debug(&quot;Will run {}&quot;, taskRunner);</span>
+<span class="fc" id="L118">        final ClientRunner runner =</span>
+            new ClientRunner(networkTransaction, taskRunner, null);
+<span class="pc bpc" id="L120" title="3 of 4 branches missed.">        if (taskRunner.isSendThrough() &amp;&amp; (taskRunner.isRescheduledTransfer() ||</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                                           taskRunner.isPreTaskStarting())) {</span>
+<span class="nc" id="L122">          runner.setSendThroughMode();</span>
+<span class="nc" id="L123">          taskRunner.checkThroughMode();</span>
+        }
+        // create the client, connect and run
+<span class="fc" id="L126">        threadPoolExecutor.execute(runner);</span>
+<span class="fc" id="L127">      } else {</span>
+        // too many current active threads
+<span class="nc" id="L129">        logger.debug(&quot;Task rescheduled {}&quot;, taskRunner);</span>
+      }
+    }
+<span class="fc" id="L132">  }</span>
+
+  /**
+   * First step while shutting down the service
+   */
+  public void prepareStopInternalRunner() {
+<span class="fc" id="L138">    isRunning = false;</span>
+<span class="fc" id="L139">    scheduledFuture.cancel(false);</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (commander != null) {</span>
+<span class="fc" id="L141">      commander.finalizeCommander();</span>
+    }
+<span class="fc" id="L143">    scheduledExecutorService.shutdown();</span>
+<span class="fc" id="L144">    threadPoolExecutor.shutdown();</span>
+<span class="fc" id="L145">  }</span>
+
+  /**
+   * This should be called when the server is shutting down, after stopping
+   * active requests if possible.
+   */
+  public void stopInternalRunner() {
+<span class="fc" id="L152">    isRunning = false;</span>
+<span class="fc" id="L153">    logger.info(&quot;Stopping Commander and Runner Tasks&quot;);</span>
+<span class="fc" id="L154">    scheduledFuture.cancel(true);</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (commander != null) {</span>
+<span class="fc" id="L156">      commander.finalizeCommander();</span>
+    }
+<span class="fc" id="L158">    scheduledExecutorService.shutdownNow();</span>
+<span class="fc" id="L159">    threadPoolExecutor.shutdownNow();</span>
+<span class="fc" id="L160">    networkTransaction.closeAll(false);</span>
+<span class="fc" id="L161">  }</span>
+
+  public int nbInternalRunner() {
+<span class="fc" id="L164">    return threadPoolExecutor.getActiveCount();</span>
+  }
+
+  public void reloadInternalRunner()
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+<span class="nc" id="L169">    scheduledFuture.cancel(false);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (commander != null) {</span>
+<span class="nc" id="L171">      commander.finalizeCommander();</span>
+    }
+<span class="nc" id="L173">    commander = new Commander(this);</span>
+<span class="nc" id="L174">    scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,</span>
+                                                                      2 *
+                                                                      Configuration.configuration
+<span class="nc" id="L177">                                                                          .getDelayCommander(),</span>
+                                                                      Configuration.configuration
+<span class="nc" id="L179">                                                                          .getDelayCommander(),</span>
+                                                                      TimeUnit.MILLISECONDS);
+<span class="nc" id="L181">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ValidPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Proxy in R66 protocol</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">ValidPacket.java</span></div><h1>ValidPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * Validation Message class for packet
+ * &lt;p&gt;
+ * 2 strings and one byte: sheader,smiddle,send
+ */
+public class ValidPacket extends AbstractLocalPacket {
+  private final String sheader;
+
+  private String smiddle;
+
+  private final byte send;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new ValidPacket from buffer
+   */
+  public static ValidPacket createFromBuffer(int headerLength, int middleLength,
+                                             int endLength, ByteBuf buf) {
+<span class="fc" id="L49">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L50">    final byte[] bmiddle = new byte[middleLength];</span>
+    final byte bend;
+<span class="fc bfc" id="L52" title="All 2 branches covered.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L53">      buf.readBytes(bheader);</span>
+    }
+<span class="fc bfc" id="L55" title="All 2 branches covered.">    if (middleLength &gt; 0) {</span>
+<span class="fc" id="L56">      buf.readBytes(bmiddle);</span>
+    }
+<span class="fc" id="L58">    bend = buf.readByte();</span>
+<span class="fc" id="L59">    return new ValidPacket(new String(bheader), new String(bmiddle), bend);</span>
+  }
+
+  /**
+   * @param header
+   * @param middle
+   * @param end
+   */
+<span class="fc" id="L67">  public ValidPacket(String header, String middle, byte end) {</span>
+<span class="fc" id="L68">    sheader = header;</span>
+<span class="fc" id="L69">    smiddle = middle;</span>
+<span class="fc" id="L70">    send = end;</span>
+<span class="fc" id="L71">  }</span>
+
+  @Override
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L76">    end = Unpooled.buffer(1);</span>
+<span class="fc" id="L77">    end.writeByte(send);</span>
+<span class="fc" id="L78">  }</span>
+
+  @Override
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">    if (sheader != null) {</span>
+<span class="fc" id="L84">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
+    }
+<span class="fc" id="L86">  }</span>
+
+  @Override
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    if (smiddle != null) {</span>
+<span class="fc" id="L92">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
+    }
+<span class="fc" id="L94">  }</span>
+
+  @Override
+  public String toString() {
+<span class="fc" id="L98">    return &quot;ValidPacket: &quot; + sheader + ':' + smiddle + ':' + send;</span>
+  }
+
+  @Override
+  public byte getType() {
+<span class="fc" id="L103">    return LocalPacketFactory.VALIDPACKET;</span>
+  }
+
+  /**
+   * @return the sheader
+   */
+  public String getSheader() {
+<span class="fc" id="L110">    return sheader;</span>
+  }
+
+  /**
+   * @return the smiddle
+   */
+  public String getSmiddle() {
+<span class="fc" id="L117">    return smiddle;</span>
+  }
+
+  /**
+   * @param smiddle
+   */
+  public void setSmiddle(String smiddle) {
+<span class="fc" id="L124">    this.smiddle = smiddle;</span>
+<span class="fc" id="L125">    middle = null;</span>
+<span class="fc" id="L126">  }</span>
+
+  /**
+   * @return the type
+   */
+  public byte getTypeValid() {
+<span class="fc" id="L132">    return send;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

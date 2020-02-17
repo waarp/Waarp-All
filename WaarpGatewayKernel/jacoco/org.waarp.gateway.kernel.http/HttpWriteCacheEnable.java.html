@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpWriteCacheEnable.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Gateway Kernel</a> &gt; <a href="index.source.html" class="el_package">org.waarp.gateway.kernel.http</a> &gt; <span class="el_source">HttpWriteCacheEnable.java</span></div><h1>HttpWriteCacheEnable.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.gateway.kernel.http;
+
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpChunkedInput;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.handler.stream.ChunkedNioFile;
+
+import javax.activation.MimetypesFileTypeMap;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TimeZone;
+
+/**
+ * Utility class to write external file with cache enable properties
+ */
+public final class HttpWriteCacheEnable {
+  /**
+   * US locale - all HTTP dates are in english
+   */
+<span class="nc" id="L59">  public static final Locale LOCALE_US = Locale.US;</span>
+
+  /**
+   * GMT timezone - all HTTP dates are on GMT
+   */
+<span class="nc" id="L64">  public static final TimeZone GMT_ZONE = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+
+  /**
+   * format for RFC 1123 date string -- &quot;Sun, 06 Nov 1994 08:49:37 GMT&quot;
+   */
+  public static final String RFC1123_PATTERN = &quot;EEE, dd MMM yyyyy HH:mm:ss z&quot;;
+
+  private static final ArrayList&lt;String&gt; cache_control;
+
+  static {
+<span class="nc" id="L74">    cache_control = new ArrayList&lt;String&gt;(2);</span>
+<span class="nc" id="L75">    cache_control.add(HttpHeaderValues.PUBLIC.toString());</span>
+<span class="nc" id="L76">    cache_control.add(HttpHeaderValues.MAX_AGE + &quot;=&quot; + 604800);// 1 week</span>
+<span class="nc" id="L77">    cache_control.add(HttpHeaderValues.MUST_REVALIDATE.toString());</span>
+  }
+
+  /**
+   * set MIME TYPE if possible
+   */
+<span class="nc" id="L83">  public static final MimetypesFileTypeMap mimetypesFileTypeMap =</span>
+      new MimetypesFileTypeMap();
+
+  static {
+<span class="nc" id="L87">    mimetypesFileTypeMap.addMimeTypes(&quot;text/css css CSS&quot;);</span>
+<span class="nc" id="L88">    mimetypesFileTypeMap.addMimeTypes(&quot;text/javascript js JS&quot;);</span>
+    // Official but not supported mimetypesFileTypeMap.addMimeTypes(&quot;application/javascript js JS&quot;)
+<span class="nc" id="L90">    mimetypesFileTypeMap.addMimeTypes(&quot;application/json json JSON&quot;);</span>
+<span class="nc" id="L91">    mimetypesFileTypeMap.addMimeTypes(&quot;text/plain txt text TXT&quot;);</span>
+<span class="nc" id="L92">    mimetypesFileTypeMap.addMimeTypes(&quot;text/html htm html HTM HTML htmls htx&quot;);</span>
+<span class="nc" id="L93">    mimetypesFileTypeMap.addMimeTypes(&quot;image/jpeg jpe jpeg jpg JPG&quot;);</span>
+<span class="nc" id="L94">    mimetypesFileTypeMap.addMimeTypes(&quot;image/png png PNG&quot;);</span>
+<span class="nc" id="L95">    mimetypesFileTypeMap.addMimeTypes(&quot;image/gif gif GIF&quot;);</span>
+<span class="nc" id="L96">    mimetypesFileTypeMap.addMimeTypes(&quot;image/x-icon ico ICO&quot;);</span>
+<span class="nc" id="L97">  }</span>
+
+  private HttpWriteCacheEnable() {
+  }
+
+  /**
+   * Write a file, taking into account cache enabled and removing session
+   * cookie
+   *
+   * @param request
+   * @param ctx
+   * @param filename
+   * @param cookieNameToRemove
+   */
+  public static void writeFile(HttpRequest request, ChannelHandlerContext ctx,
+                               String filename, String cookieNameToRemove) {
+    // Convert the response content to a ByteBuf.
+    HttpResponse response;
+<span class="nc" id="L115">    final File file = new File(filename);</span>
+<span class="nc bnc" id="L116" title="All 4 branches missed.">    if (!file.isFile() || !file.canRead()) {</span>
+<span class="nc" id="L117">      response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,</span>
+                                         HttpResponseStatus.NOT_FOUND);
+<span class="nc" id="L119">      response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
+<span class="nc" id="L120">      handleCookies(request, response, cookieNameToRemove);</span>
+<span class="nc" id="L121">      ctx.writeAndFlush(response);</span>
+<span class="nc" id="L122">      return;</span>
+    }
+<span class="nc" id="L124">    final DateFormat rfc1123Format =</span>
+        new SimpleDateFormat(RFC1123_PATTERN, LOCALE_US);
+<span class="nc" id="L126">    rfc1123Format.setTimeZone(GMT_ZONE);</span>
+<span class="nc" id="L127">    final Date lastModifDate = new Date(file.lastModified());</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (request.headers().contains(HttpHeaderNames.IF_MODIFIED_SINCE)) {</span>
+<span class="nc" id="L129">      final String sdate =</span>
+<span class="nc" id="L130">          request.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);</span>
+      try {
+<span class="nc" id="L132">        final Date ifmodif = rfc1123Format.parse(sdate);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (ifmodif.after(lastModifDate)) {</span>
+<span class="nc" id="L134">          response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,</span>
+                                             HttpResponseStatus.NOT_MODIFIED);
+<span class="nc" id="L136">          handleCookies(request, response, cookieNameToRemove);</span>
+<span class="nc" id="L137">          ctx.writeAndFlush(response);</span>
+<span class="nc" id="L138">          return;</span>
+        }
+<span class="nc" id="L140">      } catch (final ParseException ignored) {</span>
+        // nothing
+<span class="nc" id="L142">      }</span>
+    }
+<span class="nc" id="L144">    final long size = file.length();</span>
+    ChunkedNioFile nioFile;
+    try {
+<span class="nc" id="L147">      nioFile = new ChunkedNioFile(file);</span>
+<span class="nc" id="L148">    } catch (final IOException e) {</span>
+<span class="nc" id="L149">      response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,</span>
+                                         HttpResponseStatus.NOT_FOUND);
+<span class="nc" id="L151">      response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
+<span class="nc" id="L152">      handleCookies(request, response, cookieNameToRemove);</span>
+<span class="nc" id="L153">      ctx.writeAndFlush(response);</span>
+<span class="nc" id="L154">      return;</span>
+<span class="nc" id="L155">    }</span>
+<span class="nc" id="L156">    response =</span>
+        new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+<span class="nc" id="L158">    response.headers()</span>
+<span class="nc" id="L159">            .set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(size));</span>
+
+<span class="nc" id="L161">    final String type = mimetypesFileTypeMap.getContentType(filename);</span>
+<span class="nc" id="L162">    response.headers().set(HttpHeaderNames.CONTENT_TYPE, type);</span>
+<span class="nc" id="L163">    response.headers().set(HttpHeaderNames.CACHE_CONTROL, cache_control);</span>
+<span class="nc" id="L164">    response.headers().set(HttpHeaderNames.LAST_MODIFIED,</span>
+<span class="nc" id="L165">                           rfc1123Format.format(lastModifDate));</span>
+<span class="nc" id="L166">    handleCookies(request, response, cookieNameToRemove);</span>
+    // Write the response.
+<span class="nc" id="L168">    ctx.write(response);</span>
+<span class="nc" id="L169">    ctx.write(new HttpChunkedInput(nioFile));</span>
+<span class="nc" id="L170">    final ChannelFuture future =</span>
+<span class="nc" id="L171">        ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">    if (!HttpUtil.isKeepAlive(request)) {</span>
+      // Close the connection when the whole content is written out.
+<span class="nc" id="L174">      future.addListener(ChannelFutureListener.CLOSE);</span>
+    }
+<span class="nc" id="L176">  }</span>
+
+  /**
+   * Remove the given named cookie
+   *
+   * @param request
+   * @param response
+   * @param cookieNameToRemove
+   */
+  public static void handleCookies(HttpRequest request, HttpResponse response,
+                                   String cookieNameToRemove) {
+<span class="nc" id="L187">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (cookieString != null) {</span>
+<span class="nc" id="L189">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+        // Reset the sessions if necessary.
+        // Remove all Session for images
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        for (final Cookie cookie : cookies) {</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">          if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {</span>
+            // nothing
+          } else {
+<span class="nc" id="L197">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L198">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+          }
+<span class="nc" id="L200">        }</span>
+      }
+    }
+<span class="nc" id="L203">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

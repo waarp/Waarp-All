@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbValue.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.data</a> &gt; <span class="el_source">DbValue.java</span></div><h1>DbValue.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.data;
+
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.WaarpStringUtils;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+/**
+ * Database Value to help getting and setting value from and to database
+ */
+public class DbValue {
+  private static final String TYPE_UNKNOWN = &quot;Type unknown: &quot;;
+  /**
+   * Real value
+   */
+  private Object value;
+  /**
+   * Data Type
+   */
+  final int type;
+  /**
+   * Column name
+   */
+  private String column;
+
+<span class="nc" id="L56">  public DbValue(String value) {</span>
+<span class="nc" id="L57">    setValue(value);</span>
+<span class="nc" id="L58">    type = Types.VARCHAR;</span>
+<span class="nc" id="L59">  }</span>
+
+<span class="nc" id="L61">  public DbValue(String value, boolean LONG) {</span>
+<span class="nc" id="L62">    setValue(value);</span>
+<span class="nc" id="L63">    type = Types.LONGVARCHAR;</span>
+<span class="nc" id="L64">  }</span>
+
+<span class="nc" id="L66">  public DbValue(boolean value) {</span>
+<span class="nc" id="L67">    setValue(value);</span>
+<span class="nc" id="L68">    type = Types.BIT;</span>
+<span class="nc" id="L69">  }</span>
+
+<span class="nc" id="L71">  public DbValue(byte value) {</span>
+<span class="nc" id="L72">    setValue(value);</span>
+<span class="nc" id="L73">    type = Types.TINYINT;</span>
+<span class="nc" id="L74">  }</span>
+
+<span class="nc" id="L76">  public DbValue(short value) {</span>
+<span class="nc" id="L77">    setValue(value);</span>
+<span class="nc" id="L78">    type = Types.SMALLINT;</span>
+<span class="nc" id="L79">  }</span>
+
+<span class="nc" id="L81">  public DbValue(int value) {</span>
+<span class="nc" id="L82">    setValue(value);</span>
+<span class="nc" id="L83">    type = Types.INTEGER;</span>
+<span class="nc" id="L84">  }</span>
+
+<span class="nc" id="L86">  public DbValue(long value) {</span>
+<span class="nc" id="L87">    setValue(value);</span>
+<span class="nc" id="L88">    type = Types.BIGINT;</span>
+<span class="nc" id="L89">  }</span>
+
+<span class="nc" id="L91">  public DbValue(float value) {</span>
+<span class="nc" id="L92">    setValue(value);</span>
+<span class="nc" id="L93">    type = Types.REAL;</span>
+<span class="nc" id="L94">  }</span>
+
+<span class="nc" id="L96">  public DbValue(double value) {</span>
+<span class="nc" id="L97">    setValue(value);</span>
+<span class="nc" id="L98">    type = Types.DOUBLE;</span>
+<span class="nc" id="L99">  }</span>
+
+<span class="nc" id="L101">  public DbValue(byte[] value) {</span>
+<span class="nc" id="L102">    setValue(value);</span>
+<span class="nc" id="L103">    type = Types.VARBINARY;</span>
+<span class="nc" id="L104">  }</span>
+
+<span class="nc" id="L106">  public DbValue(Date value) {</span>
+<span class="nc" id="L107">    setValue(value);</span>
+<span class="nc" id="L108">    type = Types.DATE;</span>
+<span class="nc" id="L109">  }</span>
+
+<span class="nc" id="L111">  public DbValue(Timestamp value) {</span>
+<span class="nc" id="L112">    setValue(value);</span>
+<span class="nc" id="L113">    type = Types.TIMESTAMP;</span>
+<span class="nc" id="L114">  }</span>
+
+<span class="nc" id="L116">  public DbValue(java.util.Date value) {</span>
+<span class="nc" id="L117">    setValue(new Timestamp(value.getTime()));</span>
+<span class="nc" id="L118">    type = Types.TIMESTAMP;</span>
+<span class="nc" id="L119">  }</span>
+
+<span class="nc" id="L121">  public DbValue(String value, String name) {</span>
+<span class="nc" id="L122">    setValue(value);</span>
+<span class="nc" id="L123">    type = Types.VARCHAR;</span>
+<span class="nc" id="L124">    setColumn(name);</span>
+<span class="nc" id="L125">  }</span>
+
+<span class="nc" id="L127">  public DbValue(String value, String name, boolean LONG) {</span>
+<span class="nc" id="L128">    setValue(value);</span>
+<span class="nc" id="L129">    type = Types.LONGVARCHAR;</span>
+<span class="nc" id="L130">    setColumn(name);</span>
+<span class="nc" id="L131">  }</span>
+
+<span class="nc" id="L133">  public DbValue(boolean value, String name) {</span>
+<span class="nc" id="L134">    setValue(value);</span>
+<span class="nc" id="L135">    type = Types.BIT;</span>
+<span class="nc" id="L136">    setColumn(name);</span>
+<span class="nc" id="L137">  }</span>
+
+<span class="nc" id="L139">  public DbValue(byte value, String name) {</span>
+<span class="nc" id="L140">    setValue(value);</span>
+<span class="nc" id="L141">    type = Types.TINYINT;</span>
+<span class="nc" id="L142">    setColumn(name);</span>
+<span class="nc" id="L143">  }</span>
+
+<span class="nc" id="L145">  public DbValue(short value, String name) {</span>
+<span class="nc" id="L146">    setValue(value);</span>
+<span class="nc" id="L147">    type = Types.SMALLINT;</span>
+<span class="nc" id="L148">    setColumn(name);</span>
+<span class="nc" id="L149">  }</span>
+
+<span class="nc" id="L151">  public DbValue(int value, String name) {</span>
+<span class="nc" id="L152">    setValue(value);</span>
+<span class="nc" id="L153">    type = Types.INTEGER;</span>
+<span class="nc" id="L154">    setColumn(name);</span>
+<span class="nc" id="L155">  }</span>
+
+<span class="nc" id="L157">  public DbValue(long value, String name) {</span>
+<span class="nc" id="L158">    setValue(value);</span>
+<span class="nc" id="L159">    type = Types.BIGINT;</span>
+<span class="nc" id="L160">    setColumn(name);</span>
+<span class="nc" id="L161">  }</span>
+
+<span class="nc" id="L163">  public DbValue(float value, String name) {</span>
+<span class="nc" id="L164">    setValue(value);</span>
+<span class="nc" id="L165">    type = Types.REAL;</span>
+<span class="nc" id="L166">    setColumn(name);</span>
+<span class="nc" id="L167">  }</span>
+
+<span class="nc" id="L169">  public DbValue(double value, String name) {</span>
+<span class="nc" id="L170">    setValue(value);</span>
+<span class="nc" id="L171">    type = Types.DOUBLE;</span>
+<span class="nc" id="L172">    setColumn(name);</span>
+<span class="nc" id="L173">  }</span>
+
+<span class="nc" id="L175">  public DbValue(byte[] value, String name) {</span>
+<span class="nc" id="L176">    setValue(value);</span>
+<span class="nc" id="L177">    type = Types.VARBINARY;</span>
+<span class="nc" id="L178">    setColumn(name);</span>
+<span class="nc" id="L179">  }</span>
+
+<span class="nc" id="L181">  public DbValue(Date value, String name) {</span>
+<span class="nc" id="L182">    setValue(value);</span>
+<span class="nc" id="L183">    type = Types.DATE;</span>
+<span class="nc" id="L184">    setColumn(name);</span>
+<span class="nc" id="L185">  }</span>
+
+<span class="nc" id="L187">  public DbValue(Timestamp value, String name) {</span>
+<span class="nc" id="L188">    setValue(value);</span>
+<span class="nc" id="L189">    type = Types.TIMESTAMP;</span>
+<span class="nc" id="L190">    setColumn(name);</span>
+<span class="nc" id="L191">  }</span>
+
+<span class="nc" id="L193">  public DbValue(java.util.Date value, String name) {</span>
+<span class="nc" id="L194">    setValue(new Timestamp(value.getTime()));</span>
+<span class="nc" id="L195">    type = Types.TIMESTAMP;</span>
+<span class="nc" id="L196">    setColumn(name);</span>
+<span class="nc" id="L197">  }</span>
+
+<span class="nc" id="L199">  public DbValue(Reader value, String name) {</span>
+<span class="nc" id="L200">    setValue(value);</span>
+<span class="nc" id="L201">    type = Types.CLOB;</span>
+<span class="nc" id="L202">    setColumn(name);</span>
+<span class="nc" id="L203">  }</span>
+
+<span class="nc" id="L205">  public DbValue(InputStream value, String name) {</span>
+<span class="nc" id="L206">    setValue(value);</span>
+<span class="nc" id="L207">    type = Types.BLOB;</span>
+<span class="nc" id="L208">    setColumn(name);</span>
+<span class="nc" id="L209">  }</span>
+
+  public void setValue(String value) {
+<span class="nc" id="L212">    this.value = value;</span>
+<span class="nc" id="L213">  }</span>
+
+  public void setValue(boolean value) {
+<span class="nc" id="L216">    this.value = value;</span>
+<span class="nc" id="L217">  }</span>
+
+  public void setValue(byte value) {
+<span class="nc" id="L220">    this.value = value;</span>
+<span class="nc" id="L221">  }</span>
+
+  public void setValue(short value) {
+<span class="nc" id="L224">    this.value = value;</span>
+<span class="nc" id="L225">  }</span>
+
+  public void setValue(int value) {
+<span class="nc" id="L228">    this.value = value;</span>
+<span class="nc" id="L229">  }</span>
+
+  public void setValue(long value) {
+<span class="nc" id="L232">    this.value = value;</span>
+<span class="nc" id="L233">  }</span>
+
+  public void setValue(float value) {
+<span class="nc" id="L236">    this.value = value;</span>
+<span class="nc" id="L237">  }</span>
+
+  public void setValue(double value) {
+<span class="nc" id="L240">    this.value = value;</span>
+<span class="nc" id="L241">  }</span>
+
+  public void setValue(byte[] value) {
+<span class="nc" id="L244">    this.value = value;</span>
+<span class="nc" id="L245">  }</span>
+
+  public void setValue(Date value) {
+<span class="nc" id="L248">    this.value = value;</span>
+<span class="nc" id="L249">  }</span>
+
+  public void setValue(Timestamp value) {
+<span class="nc" id="L252">    this.value = value;</span>
+<span class="nc" id="L253">  }</span>
+
+  public void setValue(java.util.Date value) {
+<span class="nc" id="L256">    this.value = new Timestamp(value.getTime());</span>
+<span class="nc" id="L257">  }</span>
+
+  public void setValue(Reader value) {
+<span class="nc" id="L260">    this.value = value;</span>
+<span class="nc" id="L261">  }</span>
+
+  public void setValue(InputStream value) {
+<span class="nc" id="L264">    this.value = value;</span>
+<span class="nc" id="L265">  }</span>
+
+  public void setValue(Object value) {
+<span class="nc" id="L268">    this.value = value;</span>
+<span class="nc" id="L269">  }</span>
+
+  /**
+   * @return the type in full string format
+   */
+  public String getType() {
+<span class="nc bnc" id="L275" title="All 15 branches missed.">    switch (type) {</span>
+      case Types.VARCHAR:
+<span class="nc" id="L277">        return &quot;VARCHAR&quot;;</span>
+      case Types.LONGVARCHAR:
+<span class="nc" id="L279">        return &quot;LONGVARCHAR&quot;;</span>
+      case Types.BIT:
+<span class="nc" id="L281">        return &quot;BIT&quot;;</span>
+      case Types.TINYINT:
+<span class="nc" id="L283">        return &quot;TINYINT&quot;;</span>
+      case Types.SMALLINT:
+<span class="nc" id="L285">        return &quot;SMALLINT&quot;;</span>
+      case Types.INTEGER:
+<span class="nc" id="L287">        return &quot;INTEGER&quot;;</span>
+      case Types.BIGINT:
+<span class="nc" id="L289">        return &quot;BIGINT&quot;;</span>
+      case Types.REAL:
+<span class="nc" id="L291">        return &quot;REAL&quot;;</span>
+      case Types.DOUBLE:
+<span class="nc" id="L293">        return &quot;DOUBLE&quot;;</span>
+      case Types.VARBINARY:
+<span class="nc" id="L295">        return &quot;VARBINARY&quot;;</span>
+      case Types.DATE:
+<span class="nc" id="L297">        return &quot;DATE&quot;;</span>
+      case Types.TIMESTAMP:
+<span class="nc" id="L299">        return &quot;TIMESTAMP&quot;;</span>
+      case Types.CLOB:
+<span class="nc" id="L301">        return &quot;CLOB&quot;;</span>
+      case Types.BLOB:
+<span class="nc" id="L303">        return &quot;BLOB&quot;;</span>
+      default:
+<span class="nc" id="L305">        return &quot;UNKNOWN:&quot; + type;</span>
+    }
+  }
+
+  public Object getValue() throws IllegalAccessError {
+<span class="nc bnc" id="L310" title="All 2 branches missed.">    switch (type) {</span>
+      case Types.VARCHAR:
+      case Types.LONGVARCHAR:
+      case Types.BIT:
+      case Types.TINYINT:
+      case Types.SMALLINT:
+      case Types.INTEGER:
+      case Types.BIGINT:
+      case Types.REAL:
+      case Types.DOUBLE:
+      case Types.VARBINARY:
+      case Types.DATE:
+      case Types.TIMESTAMP:
+      case Types.CLOB:
+      case Types.BLOB:
+<span class="nc" id="L325">        return value;</span>
+      default:
+<span class="nc" id="L327">        throw new IllegalAccessError(TYPE_UNKNOWN + type);</span>
+    }
+  }
+
+  public String getValueAsString() throws WaarpDatabaseSqlException {
+<span class="nc bnc" id="L332" title="All 10 branches missed.">    switch (type) {</span>
+      case Types.VARCHAR:
+      case Types.LONGVARCHAR:
+<span class="nc" id="L335">        return (String) getValue();</span>
+      case Types.BIT:
+<span class="nc" id="L337">        return ((Boolean) getValue()).toString();</span>
+      case Types.TINYINT:
+<span class="nc" id="L339">        return ((Byte) getValue()).toString();</span>
+      case Types.SMALLINT:
+<span class="nc" id="L341">        return ((Short) getValue()).toString();</span>
+      case Types.INTEGER:
+<span class="nc" id="L343">        return ((Integer) getValue()).toString();</span>
+      case Types.BIGINT:
+<span class="nc" id="L345">        return ((Long) getValue()).toString();</span>
+      case Types.REAL:
+      case Types.DOUBLE:
+      case Types.DATE:
+      case Types.TIMESTAMP:
+<span class="nc" id="L350">        return getValue().toString();</span>
+      case Types.VARBINARY:
+<span class="nc" id="L352">        return new String((byte[]) getValue(), WaarpStringUtils.UTF8);</span>
+      case Types.CLOB:
+      case Types.BLOB: {
+<span class="nc" id="L355">        final StringBuilder sBuilder = new StringBuilder();</span>
+<span class="nc" id="L356">        final Reader reader = (Reader) getValue();</span>
+<span class="nc" id="L357">        final char[] cbuf = new char[4096];</span>
+        int len;
+        try {
+<span class="nc" id="L360">          len = reader.read(cbuf);</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">          while (len &gt; 0) {</span>
+<span class="nc" id="L362">            sBuilder.append(cbuf, 0, len);</span>
+<span class="nc" id="L363">            len = reader.read(cbuf);</span>
+          }
+<span class="nc" id="L365">        } catch (final IOException e) {</span>
+<span class="nc" id="L366">          throw new WaarpDatabaseSqlException(</span>
+              &quot;Error while reading Clob as String&quot;, e);
+<span class="nc" id="L368">        }</span>
+<span class="nc" id="L369">        return sBuilder.toString();</span>
+      }
+      default:
+<span class="nc" id="L372">        throw new WaarpDatabaseSqlException(TYPE_UNKNOWN + type);</span>
+    }
+  }
+
+  public void setValueFromString(String svalue)
+      throws WaarpDatabaseSqlException {
+<span class="nc bnc" id="L378" title="All 14 branches missed.">    switch (type) {</span>
+      case Types.VARCHAR:
+      case Types.LONGVARCHAR:
+<span class="nc" id="L381">        setValue(svalue);</span>
+<span class="nc" id="L382">        break;</span>
+      case Types.BIT:
+<span class="nc" id="L384">        setValue(Boolean.parseBoolean(svalue));</span>
+<span class="nc" id="L385">        break;</span>
+      case Types.TINYINT:
+<span class="nc" id="L387">        setValue(Byte.parseByte(svalue));</span>
+<span class="nc" id="L388">        break;</span>
+      case Types.SMALLINT:
+<span class="nc" id="L390">        setValue(Short.parseShort(svalue));</span>
+<span class="nc" id="L391">        break;</span>
+      case Types.INTEGER:
+<span class="nc" id="L393">        setValue(Integer.parseInt(svalue));</span>
+<span class="nc" id="L394">        break;</span>
+      case Types.BIGINT:
+<span class="nc" id="L396">        setValue(Long.parseLong(svalue));</span>
+<span class="nc" id="L397">        break;</span>
+      case Types.REAL:
+<span class="nc" id="L399">        setValue(Float.parseFloat(svalue));</span>
+<span class="nc" id="L400">        break;</span>
+      case Types.DOUBLE:
+<span class="nc" id="L402">        setValue(Double.parseDouble(svalue));</span>
+<span class="nc" id="L403">        break;</span>
+      case Types.VARBINARY:
+<span class="nc" id="L405">        setValue(svalue.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L406">        break;</span>
+      case Types.DATE:
+        try {
+<span class="nc" id="L409">          final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyy-MM-dd&quot;);</span>
+<span class="nc" id="L410">          setValue(format.parse(svalue));</span>
+<span class="nc" id="L411">        } catch (final ParseException e) {</span>
+          try {
+<span class="nc" id="L413">            setValue(DateFormat.getDateTimeInstance().parse(svalue));</span>
+<span class="nc" id="L414">          } catch (final ParseException e1) {</span>
+<span class="nc" id="L415">            throw new WaarpDatabaseSqlException(&quot;Error in Date: &quot; + svalue, e);</span>
+<span class="nc" id="L416">          }</span>
+<span class="nc" id="L417">        }</span>
+<span class="nc" id="L418">        break;</span>
+      case Types.TIMESTAMP:
+        try {
+<span class="nc" id="L421">          final SimpleDateFormat format =</span>
+              new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss.SSS&quot;);
+<span class="nc" id="L423">          setValue(new Timestamp(format.parse(svalue).getTime()));</span>
+<span class="nc" id="L424">        } catch (final ParseException e) {</span>
+          try {
+<span class="nc" id="L426">            setValue(new Timestamp(</span>
+<span class="nc" id="L427">                DateFormat.getDateTimeInstance().parse(svalue).getTime()));</span>
+<span class="nc" id="L428">          } catch (final ParseException e1) {</span>
+<span class="nc" id="L429">            throw new WaarpDatabaseSqlException(&quot;Error in Timestamp: &quot; + svalue,</span>
+                                                e);
+<span class="nc" id="L431">          }</span>
+<span class="nc" id="L432">        }</span>
+<span class="nc" id="L433">        break;</span>
+      case Types.CLOB:
+        try {
+<span class="nc" id="L436">          setValue(new InputStreamReader(new FileInputStream(svalue),</span>
+                                         WaarpStringUtils.UTF8));
+<span class="nc" id="L438">        } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L439">          throw new WaarpDatabaseSqlException(&quot;Error in CLOB: &quot; + svalue, e);</span>
+<span class="nc" id="L440">        }</span>
+        break;
+      case Types.BLOB:
+        try {
+<span class="nc" id="L444">          setValue(new FileInputStream(svalue));</span>
+<span class="nc" id="L445">        } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L446">          throw new WaarpDatabaseSqlException(&quot;Error in BLOB: &quot; + svalue, e);</span>
+<span class="nc" id="L447">        }</span>
+        break;
+      default:
+<span class="nc" id="L450">        throw new WaarpDatabaseSqlException(TYPE_UNKNOWN + type);</span>
+    }
+<span class="nc" id="L452">  }</span>
+
+  /**
+   * @return the column
+   */
+  public String getColumn() {
+<span class="nc" id="L458">    return column;</span>
+  }
+
+  /**
+   * @param column the column to set
+   */
+  private void setColumn(String column) {
+<span class="nc" id="L465">    this.column = column;</span>
+<span class="nc" id="L466">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

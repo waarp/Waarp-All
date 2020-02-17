@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractLocalPacket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">AbstractLocalPacket.java</span></div><h1>AbstractLocalPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * This class represents Abstract Packet with its header, middle and end parts.
+ * A Packet is composed of one
+ * Header part, one Middle part (data), and one End part. Header: length field
+ * (4 bytes) = Middle length field
+ * (4 bytes), End length field (4 bytes), type field (1 byte), ...&lt;br&gt;
+ * Middle: (Middle length field bytes)&lt;br&gt;
+ * End: (End length field bytes) = code status field (4 bytes), ...&lt;br&gt;
+ */
+public abstract class AbstractLocalPacket {
+  protected ByteBuf header;
+
+  protected ByteBuf middle;
+
+  protected ByteBuf end;
+
+<span class="nc" id="L43">  protected AbstractLocalPacket(ByteBuf header, ByteBuf middle, ByteBuf end) {</span>
+<span class="nc" id="L44">    this.header = header;</span>
+<span class="nc" id="L45">    this.middle = middle;</span>
+<span class="nc" id="L46">    this.end = end;</span>
+<span class="nc" id="L47">  }</span>
+
+<span class="fc" id="L49">  protected AbstractLocalPacket() {</span>
+<span class="fc" id="L50">    header = null;</span>
+<span class="fc" id="L51">    middle = null;</span>
+<span class="fc" id="L52">    end = null;</span>
+<span class="fc" id="L53">  }</span>
+
+  /**
+   * Prepare the Header buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public abstract void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException;
+
+  /**
+   * Prepare the Middle buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public abstract void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException;
+
+  /**
+   * Prepare the End buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public abstract void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException;
+
+  /**
+   * @return the type of Packet
+   */
+  public abstract byte getType();
+
+  @Override
+  public abstract String toString();
+
+  /**
+   * @param lcr the LocalChannelReference in use
+   *
+   * @return the ByteBuf as LocalPacket
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public ByteBuf getLocalPacket(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L96">    final ByteBuf buf = Unpooled.buffer(4 * 3 + 1);// 3 header</span>
+    // lengths+type
+<span class="fc bfc" id="L98" title="All 2 branches covered.">    if (header == null) {</span>
+<span class="fc" id="L99">      createHeader(lcr);</span>
+    }
+<span class="fc bfc" id="L101" title="All 2 branches covered.">    final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L102">    final int headerLength = 4 * 2 + 1 + newHeader.readableBytes();</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">    if (middle == null) {</span>
+<span class="fc" id="L104">      createMiddle(lcr);</span>
+    }
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L107">    final int middleLength = newMiddle.readableBytes();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">    if (end == null) {</span>
+<span class="fc" id="L109">      createEnd(lcr);</span>
+    }
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L112">    final int endLength = newEnd.readableBytes();</span>
+<span class="fc" id="L113">    buf.writeInt(headerLength);</span>
+<span class="fc" id="L114">    buf.writeInt(middleLength);</span>
+<span class="fc" id="L115">    buf.writeInt(endLength);</span>
+<span class="fc" id="L116">    buf.writeByte(getType());</span>
+<span class="fc" id="L117">    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);</span>
+  }
+
+  public void clear() {
+<span class="pc bpc" id="L121" title="3 of 4 branches missed.">    if (header != null &amp;&amp; header.release()) {</span>
+<span class="nc" id="L122">      header = null;</span>
+    }
+<span class="pc bpc" id="L124" title="3 of 4 branches missed.">    if (middle != null &amp;&amp; middle.release()) {</span>
+<span class="nc" id="L125">      middle = null;</span>
+    }
+<span class="pc bpc" id="L127" title="3 of 4 branches missed.">    if (end != null &amp;&amp; end.release()) {</span>
+<span class="nc" id="L128">      end = null;</span>
+    }
+<span class="fc" id="L130">  }</span>
+
+  public void retain() {
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (header != null) {</span>
+<span class="nc" id="L134">      header.retain();</span>
+    }
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (middle != null) {</span>
+<span class="nc" id="L137">      middle.retain();</span>
+    }
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (end != null) {</span>
+<span class="nc" id="L140">      end.retain();</span>
+    }
+<span class="fc" id="L142">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

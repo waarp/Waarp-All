@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TranscodeTask.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">TranscodeTask.java</span></div><h1>TranscodeTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.transcode.CharsetsUtil;
+import org.waarp.common.utility.FileConvert;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+
+import java.io.File;
+
+/**
+ * Transcode the current file from one Charset to another Charset as
+ * specified&lt;br&gt;
+ * &lt;br&gt;
+ * Arguments are:&lt;br&gt;
+ * -dos2unix or -unix2dos (only one) ; optional argument, but if present -from
+ * and -to might be omitted;&lt;br&gt;
+ * -from charset&lt;br&gt;
+ * -to charset&lt;br&gt;
+ * -newfile newfilename ; optional argument ; if not used, will be current
+ * filename.extension ; if used,
+ * extension is ignored&lt;br&gt;
+ * -extension extension ; optional argument ; if not used, will be
+ * filename.transcode&lt;br&gt;
+ * &lt;br&gt;
+ * A convenient method (from Waarp Common) allows to list in html (-html), csv
+ * (-csv) or text format (-text)
+ * all the supported Charsets from your JVM. To use it, run the following
+ * command:&lt;br&gt;
+ * java -cp WaarpCommon-1.2.7.jar org.waarp.common.transcode.CharsetsUtil [-csv
+ * | -html | -text ]&lt;br&gt;
+ * &lt;br&gt;
+ * It could also be used as a test of transcode outside R66:&lt;br&gt;
+ * java -cp WaarpCommon-1.2.7.jar org.waarp.common.transcode.CharsetsUtil -from
+ * fromFilename fromCharset -to
+ * toFilename toCharset&lt;br&gt;
+ * &lt;p&gt;
+ * The current file is not touched and is not marked as moved.
+ */
+public class TranscodeTask extends AbstractTask {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L68">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L69">      WaarpLoggerFactory.getLogger(TranscodeTask.class);</span>
+
+  /**
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public TranscodeTask(String argRule, int delay, String argTransfer,
+                       R66Session session) {
+<span class="fc" id="L79">    super(TaskType.TRANSCODE, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L80">  }</span>
+
+  @Override
+  public void run() {
+    boolean success;
+<span class="fc" id="L85">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L86">    String arg = argRule;</span>
+<span class="fc" id="L87">    arg = getReplacedValue(arg, BLANK.split(argTransfer));</span>
+<span class="fc" id="L88">    final String[] args = BLANK.split(arg);</span>
+<span class="fc" id="L89">    boolean dos2unix = false;</span>
+<span class="fc" id="L90">    boolean unix2dos = false;</span>
+<span class="fc" id="L91">    String fromCharset = null;</span>
+<span class="fc" id="L92">    String toCharset = null;</span>
+<span class="fc" id="L93">    String newfilename = null;</span>
+<span class="fc" id="L94">    String extension = null;</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">      if (&quot;-from&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L97">        i++;</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (i &lt; args.length) {</span>
+<span class="fc" id="L99">          fromCharset = args[i];</span>
+        }
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">      } else if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L102">        i++;</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (i &lt; args.length) {</span>
+<span class="fc" id="L104">          toCharset = args[i];</span>
+        }
+<span class="nc bnc" id="L106" title="All 2 branches missed.">      } else if (&quot;-newfile&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L107">        i++;</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (i &lt; args.length) {</span>
+<span class="nc" id="L109">          newfilename = args[i];</span>
+        }
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      } else if (&quot;-extension&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L112">        i++;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (i &lt; args.length) {</span>
+<span class="nc" id="L114">          extension = args[i];</span>
+        }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      } else if (&quot;-dos2unix&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L117">        dos2unix = true;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">      } else if (&quot;-unix2dos&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L119">        unix2dos = true;</span>
+      }
+    }
+<span class="pc bpc" id="L122" title="3 of 4 branches missed.">    if (dos2unix &amp;&amp; unix2dos) {</span>
+<span class="nc" id="L123">      final R66Result result =</span>
+          new R66Result(session, false, ErrorCode.Warning, runner);
+<span class="nc" id="L125">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L126">      logger.warn(</span>
+          &quot;Dos2Unix and Unix2Dos cannot be used simultaneously in Transcode: &quot; +
+<span class="nc" id="L128">          runner.toShortString());</span>
+<span class="nc" id="L129">      futureCompletion.setFailure(new OpenR66ProtocolSystemException(</span>
+          &quot;Dos2Unix and Unix2Dos cannot be used simultaneously in Transcode&quot;));
+<span class="nc" id="L131">      return;</span>
+    }
+<span class="pc bpc" id="L133" title="2 of 4 branches missed.">    if (fromCharset == null || toCharset == null) {</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">      if (!(dos2unix || unix2dos)) {</span>
+<span class="nc" id="L135">        final R66Result result =</span>
+            new R66Result(session, false, ErrorCode.Warning, runner);
+<span class="nc" id="L137">        futureCompletion.setResult(result);</span>
+<span class="nc" id="L138">        logger.warn(</span>
+<span class="nc" id="L139">            &quot;Not enough argument in Transcode: &quot; + runner.toShortString());</span>
+<span class="nc" id="L140">        futureCompletion.setFailure(new OpenR66ProtocolSystemException(</span>
+            &quot;Not enough argument in Transcode&quot;));
+<span class="nc" id="L142">      } else {</span>
+        // only 1 of Dos2Unix/Unix2Dos
+<span class="nc" id="L144">        final FileConvert convert =</span>
+            new FileConvert(null, unix2dos, false, null);
+<span class="nc" id="L146">        final File from = session.getFile().getTrueFile();</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (convert.convert(from, unix2dos)) {</span>
+<span class="nc" id="L148">          futureCompletion.setSuccess();</span>
+        } else {
+<span class="nc" id="L150">          final R66Result result =</span>
+              new R66Result(session, false, ErrorCode.Internal, runner);
+<span class="nc" id="L152">          futureCompletion.setResult(result);</span>
+<span class="nc" id="L153">          logger.error(</span>
+              &quot;Cannot Transcode &quot; + argRule + ':' + argTransfer + &quot; and &quot; +
+              session);
+<span class="nc" id="L156">          futureCompletion.setFailure(</span>
+              new OpenR66ProtocolSystemException(&quot;Cannot Transcode file&quot;));
+        }
+      }
+<span class="nc" id="L160">      return;</span>
+    }
+<span class="fc" id="L162">    final File from = session.getFile().getTrueFile();</span>
+<span class="fc" id="L163">    String finalname = newfilename;</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">    if (newfilename != null) {</span>
+<span class="nc" id="L165">      finalname = newfilename;</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">    } else if (extension != null) {</span>
+<span class="nc" id="L167">      finalname = from.getAbsolutePath() + '.' + extension;</span>
+    } else {
+<span class="fc" id="L169">      finalname = from.getAbsolutePath() + &quot;.transcode&quot;;</span>
+    }
+<span class="fc" id="L171">    success = CharsetsUtil</span>
+<span class="fc" id="L172">        .transcode(from.getAbsolutePath(), fromCharset, finalname, toCharset,</span>
+                   Configuration.BUFFERSIZEDEFAULT);
+<span class="pc bpc" id="L174" title="3 of 6 branches missed.">    if (success &amp;&amp; (dos2unix || unix2dos)) {</span>
+      // now convert it
+      // only 1 of Dos2Unix/Unix2Dos
+<span class="nc" id="L177">      final FileConvert convert = new FileConvert(null, unix2dos, false, null);</span>
+<span class="nc" id="L178">      final File to = new File(finalname);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      if (convert.convert(to, unix2dos)) {</span>
+<span class="nc" id="L180">        futureCompletion.setSuccess();</span>
+      } else {
+        // only warning
+<span class="nc" id="L183">        logger.warn(&quot;Cannot Unix/Dos Transcode &quot; + to + &quot; : &quot; + argRule + ':' +</span>
+                    argTransfer + &quot; and &quot; + session);
+<span class="nc" id="L185">        futureCompletion.setSuccess();</span>
+      }
+<span class="nc" id="L187">      return;</span>
+    }
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (success) {</span>
+<span class="fc" id="L190">      futureCompletion.setSuccess();</span>
+    } else {
+<span class="nc" id="L192">      logger.error(&quot;Cannot Transcode from &quot; + fromCharset + &quot; to &quot; + toCharset +</span>
+                   &quot; with &quot; + argRule + ':' + argTransfer + &quot; and &quot; + session);
+<span class="nc" id="L194">      futureCompletion.setFailure(</span>
+          new OpenR66ProtocolSystemException(&quot;Cannot Transcode file&quot;));
+    }
+<span class="fc" id="L197">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

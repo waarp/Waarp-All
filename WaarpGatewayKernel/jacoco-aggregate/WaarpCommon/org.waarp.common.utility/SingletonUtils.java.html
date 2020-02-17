@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>SingletonUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Gateway Kernel</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">SingletonUtils.java</span></div><h1>SingletonUtils.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Singleton utility class
+ */
+public final class SingletonUtils {
+<span class="fc" id="L34">  private static final byte[] SINGLETON_BYTE_ARRAY = new byte[0];</span>
+<span class="fc" id="L35">  private static final InputStream SINGLETON_INPUTSTREAM =</span>
+      new NullInputStream();
+<span class="fc" id="L37">  private static final OutputStream SINGLETON_OUTPUTSTREAM =</span>
+      new VoidOutputStream();
+
+  private SingletonUtils() {
+    // empty
+  }
+
+
+  /**
+   * Immutable empty byte array
+   *
+   * @return a Byte Array Singleton
+   */
+  public static byte[] getSingletonByteArray() {
+<span class="fc" id="L51">    return SINGLETON_BYTE_ARRAY;</span>
+  }
+
+  /**
+   * Immutable empty List
+   *
+   * @return an immutable empty List
+   */
+  public static &lt;E&gt; List&lt;E&gt; singletonList() {
+<span class="fc" id="L60">    return Collections.emptyList();</span>
+  }
+
+  /**
+   * Immutable empty Set
+   *
+   * @return an immutable empty Set
+   */
+  public static &lt;E&gt; Set&lt;E&gt; singletonSet() {
+<span class="fc" id="L69">    return Collections.emptySet();</span>
+  }
+
+  /**
+   * Immutable empty Map
+   *
+   * @return an immutable empty Map
+   */
+  public static &lt;E, V&gt; Map&lt;E, V&gt; singletonMap() {
+<span class="fc" id="L78">    return Collections.emptyMap();</span>
+  }
+
+  /**
+   * Empty InputStream
+   */
+  private static class NullInputStream extends InputStream {
+    @Override
+    public int read() {
+<span class="fc" id="L87">      return -1;</span>
+    }
+
+    @Override
+    public int available() {
+<span class="fc" id="L92">      return 0;</span>
+    }
+
+    @Override
+    public void close() {
+      // Empty
+<span class="fc" id="L98">    }</span>
+
+    @Override
+    public void mark(int arg0) {//NOSONAR
+      // Empty
+<span class="fc" id="L103">    }</span>
+
+    @Override
+    public boolean markSupported() {
+<span class="fc" id="L107">      return true;</span>
+    }
+
+    @Override
+    public int read(byte[] arg0, int arg1, int arg2) {
+<span class="fc" id="L112">      return -1;</span>
+    }
+
+    @Override
+    public int read(byte[] arg0) {
+<span class="fc" id="L117">      return -1;</span>
+    }
+
+    @Override
+    public void reset() {//NOSONAR
+      // Empty
+<span class="fc" id="L123">    }</span>
+
+    @Override
+    public long skip(long arg0) {
+<span class="fc" id="L127">      return 0;</span>
+    }
+  }
+
+  /**
+   * Immutable empty InputStream
+   *
+   * @return an immutable empty InputStream
+   */
+  public static InputStream singletonInputStream() {
+<span class="fc" id="L137">    return SINGLETON_INPUTSTREAM;</span>
+  }
+
+  /**
+   * OutputStream discarding all writed elements
+   */
+  private static class VoidOutputStream extends OutputStream {
+    @Override
+    public void close() throws IOException {
+      // Empty
+<span class="fc" id="L147">    }</span>
+
+    @Override
+    public void flush() throws IOException {
+      // Empty
+<span class="fc" id="L152">    }</span>
+
+    @Override
+    public void write(byte[] arg0, int arg1, int arg2) throws IOException {
+      // Empty
+<span class="fc" id="L157">    }</span>
+
+    @Override
+    public void write(byte[] arg0) throws IOException {
+      // Empty
+<span class="fc" id="L162">    }</span>
+
+    @Override
+    public void write(int arg0) throws IOException {
+      // Empty
+<span class="fc" id="L167">    }</span>
+  }
+
+  /**
+   * Immutable void OutputStream. Any write elements are discarder (equivalent
+   * to /dev/null).
+   *
+   * @return an immutable empty OutputStream
+   */
+  public static OutputStream singletonOutputStream() {
+<span class="fc" id="L177">    return SINGLETON_OUTPUTSTREAM;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

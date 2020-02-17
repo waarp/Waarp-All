@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpSslContextFactory.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp R66 client</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.crypto.ssl</a> &gt; <span class="el_source">WaarpSslContextFactory.java</span></div><h1>WaarpSslContextFactory.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.crypto.ssl;
+
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLSessionContext;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+
+import static org.waarp.common.digest.WaarpBC.*;
+
+/**
+ * SSL ContextFactory for Netty.
+ */
+public class WaarpSslContextFactory {
+  protected static final int DEFAULT_SESSIONCACHE_TIMEOUTSEC = 60;
+
+  protected static final int DEFAULT_SESSIONCACHE_SIZE = 1024;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L46">      WaarpLoggerFactory.getLogger(WaarpSslContextFactory.class);</span>
+
+  static {
+<span class="fc" id="L49">    initializedTlsContext();</span>
+<span class="fc" id="L50">  }</span>
+
+  /**
+   *
+   */
+  private final SSLContext serverContext;
+
+  /**
+   *
+   */
+  private final SSLContext clientContext;
+
+  private boolean needClientAuthentication;
+
+  /**
+   * Create both CONTEXT
+   *
+   * @param ggSecureKeyStore
+   */
+<span class="fc" id="L69">  public WaarpSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore) {</span>
+    // Both construct Client and Server mode
+<span class="fc" id="L71">    serverContext = initSslContextFactory(ggSecureKeyStore, true);</span>
+<span class="fc" id="L72">    clientContext = initSslContextFactory(ggSecureKeyStore, false);</span>
+<span class="fc" id="L73">  }</span>
+
+  /**
+   * Create only one of the CONTEXT
+   *
+   * @param ggSecureKeyStore
+   * @param serverMode
+   */
+  public WaarpSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore,
+<span class="nc" id="L82">                                boolean serverMode) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (serverMode) {</span>
+<span class="nc" id="L84">      serverContext = initSslContextFactory(ggSecureKeyStore, serverMode);</span>
+<span class="nc" id="L85">      clientContext = null;</span>
+    } else {
+<span class="nc" id="L87">      clientContext = initSslContextFactory(ggSecureKeyStore, serverMode);</span>
+<span class="nc" id="L88">      serverContext = null;</span>
+    }
+<span class="nc" id="L90">  }</span>
+
+  /**
+   * @param cacheSize default being 1024
+   * @param timeOutInSeconds default being 60s
+   */
+  public void setSessionCacheTime(int cacheSize, int timeOutInSeconds) {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (serverContext != null) {</span>
+<span class="nc" id="L98">      final SSLSessionContext sslSessionContext =</span>
+<span class="nc" id="L99">          serverContext.getServerSessionContext();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">      if (sslSessionContext != null) {</span>
+<span class="nc" id="L101">        sslSessionContext.setSessionCacheSize(cacheSize);</span>
+<span class="nc" id="L102">        sslSessionContext.setSessionTimeout(timeOutInSeconds);</span>
+      }
+    }
+<span class="nc" id="L105">  }</span>
+
+  /**
+   * @param ggSecureKeyStore
+   * @param serverMode
+   *
+   * @return the SSLContext
+   */
+  private SSLContext initSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore,
+                                           boolean serverMode) {
+<span class="fc" id="L115">    String algorithm = Security.getProperty(&quot;ssl.KeyManagerFactory.algorithm&quot;);</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (algorithm == null) {</span>
+<span class="nc" id="L117">      algorithm = &quot;“X509&quot;;</span>
+      try {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (KeyManagerFactory.getInstance(algorithm) == null) {</span>
+<span class="nc" id="L120">          algorithm = &quot;SunX509&quot;;</span>
+        }
+<span class="nc" id="L122">      } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L123">        algorithm = &quot;SunX509&quot;;</span>
+<span class="nc" id="L124">      }</span>
+    }
+
+    SSLContext serverContextNew;
+    SSLContext clientContextNew;
+<span class="fc bfc" id="L129" title="All 2 branches covered.">    if (serverMode) {</span>
+      try {
+        // Initialize the SSLContext to work with our key managers.
+<span class="fc" id="L132">        serverContextNew = getInstance();</span>
+<span class="fc" id="L133">        final WaarpSecureTrustManagerFactory secureTrustManagerFactory =</span>
+<span class="fc" id="L134">            ggSecureKeyStore.getSecureTrustManagerFactory();</span>
+<span class="fc" id="L135">        needClientAuthentication =</span>
+<span class="fc" id="L136">            secureTrustManagerFactory.needAuthentication();</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        if (secureTrustManagerFactory.hasTrustStore()) {</span>
+<span class="fc" id="L138">          logger.debug(&quot;Has TrustManager&quot;);</span>
+<span class="fc" id="L139">          serverContextNew</span>
+<span class="fc" id="L140">              .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),</span>
+<span class="fc" id="L141">                    secureTrustManagerFactory.getTrustManagers(),</span>
+<span class="fc" id="L142">                    getSecureRandom());</span>
+        } else {
+<span class="nc" id="L144">          logger.debug(&quot;No TrustManager&quot;);</span>
+<span class="nc" id="L145">          serverContextNew</span>
+<span class="nc" id="L146">              .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),</span>
+<span class="nc" id="L147">                    null, getSecureRandom());</span>
+        }
+<span class="fc" id="L149">        final SSLSessionContext sslSessionContext =</span>
+<span class="fc" id="L150">            serverContextNew.getServerSessionContext();</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (sslSessionContext != null) {</span>
+<span class="fc" id="L152">          sslSessionContext.setSessionCacheSize(DEFAULT_SESSIONCACHE_SIZE);</span>
+<span class="fc" id="L153">          sslSessionContext.setSessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);</span>
+        }
+<span class="fc" id="L155">        return serverContextNew;</span>
+<span class="nc" id="L156">      } catch (final Throwable e) {</span>
+<span class="nc" id="L157">        logger.error(&quot;Failed to initialize the server-side SSLContext&quot;, e);</span>
+<span class="nc" id="L158">        throw new Error(&quot;Failed to initialize the server-side SSLContext&quot;, e);</span>
+      }
+    } else {
+      try {
+<span class="fc" id="L162">        clientContextNew = getInstance();</span>
+<span class="fc" id="L163">        final WaarpSecureTrustManagerFactory secureTrustManagerFactory =</span>
+<span class="fc" id="L164">            ggSecureKeyStore.getSecureTrustManagerFactory();</span>
+<span class="fc" id="L165">        needClientAuthentication =</span>
+<span class="fc" id="L166">            secureTrustManagerFactory.needAuthentication();</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (secureTrustManagerFactory.hasTrustStore()) {</span>
+<span class="fc" id="L168">          logger.debug(&quot;Has TrustManager&quot;);</span>
+<span class="fc" id="L169">          clientContextNew</span>
+<span class="fc" id="L170">              .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),</span>
+<span class="fc" id="L171">                    secureTrustManagerFactory.getTrustManagers(),</span>
+<span class="fc" id="L172">                    getSecureRandom());</span>
+        } else {
+<span class="nc" id="L174">          logger.debug(&quot;No TrustManager&quot;);</span>
+<span class="nc" id="L175">          clientContextNew</span>
+<span class="nc" id="L176">              .init(ggSecureKeyStore.getKeyManagerFactory().getKeyManagers(),</span>
+<span class="nc" id="L177">                    null, getSecureRandom());</span>
+        }
+<span class="fc" id="L179">        final SSLSessionContext sslSessionContext =</span>
+<span class="fc" id="L180">            clientContextNew.getServerSessionContext();</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        if (sslSessionContext != null) {</span>
+<span class="fc" id="L182">          sslSessionContext.setSessionCacheSize(DEFAULT_SESSIONCACHE_SIZE);</span>
+<span class="fc" id="L183">          sslSessionContext.setSessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);</span>
+        }
+<span class="fc" id="L185">        return clientContextNew;</span>
+<span class="nc" id="L186">      } catch (final Throwable e) {</span>
+<span class="nc" id="L187">        logger.error(&quot;Failed to initialize the client-side SSLContext&quot;, e);</span>
+<span class="nc" id="L188">        throw new Error(&quot;Failed to initialize the client-side SSLContext&quot;, e);</span>
+      }
+    }
+  }
+
+  /**
+   * @return the Server Context
+   */
+  public SSLContext getServerContext() {
+<span class="fc" id="L197">    return serverContext;</span>
+  }
+
+  /**
+   * @return the Client Context
+   */
+  public SSLContext getClientContext() {
+<span class="fc" id="L204">    return clientContext;</span>
+  }
+
+  /**
+   * To be called before adding as first entry in the Initializer as&lt;br&gt;
+   * pipeline.addLast(&quot;ssl&quot;, sslhandler);&lt;br&gt;
+   *
+   * @param serverMode True if in Server Mode, else False in Client
+   *     mode
+   * @param needClientAuth True if the client needs to be
+   *     authenticated
+   *     (only if serverMode is True)
+   *
+   * @return the sslhandler
+   */
+  public WaarpSslHandler initInitializer(boolean serverMode,
+                                         boolean needClientAuth) {
+    // Add SSL handler first to encrypt and decrypt everything.
+    SSLEngine engine;
+<span class="fc" id="L223">    logger.debug(&quot;Has TrustManager? &quot; + needClientAuth + &quot; Is ServerMode? &quot; +</span>
+                 serverMode);
+<span class="fc bfc" id="L225" title="All 2 branches covered.">    if (serverMode) {</span>
+<span class="fc" id="L226">      engine = getServerContext().createSSLEngine();</span>
+<span class="fc" id="L227">      engine.setUseClientMode(false);</span>
+<span class="fc" id="L228">      engine.setNeedClientAuth(needClientAuth);</span>
+    } else {
+<span class="fc" id="L230">      engine = getClientContext().createSSLEngine();</span>
+<span class="fc" id="L231">      engine.setUseClientMode(true);</span>
+    }
+<span class="fc" id="L233">    return new WaarpSslHandler(engine);</span>
+  }
+
+  /**
+   * To be called before adding as first entry in the Initializer as&lt;br&gt;
+   * pipeline.addLast(&quot;ssl&quot;, sslhandler);&lt;br&gt;
+   *
+   * @param serverMode True if in Server Mode, else False in Client
+   *     mode
+   * @param needClientAuth True if the client needs to be
+   *     authenticated
+   *     (only if serverMode is True)
+   * @param host Host for which a resume is allowed
+   * @param port port associated with the host for which a resume is
+   *     allowed
+   *
+   * @return the sslhandler
+   */
+  public WaarpSslHandler initInitializer(boolean serverMode,
+                                         boolean needClientAuth, String host,
+                                         int port) {
+    // Add SSL handler first to encrypt and decrypt everything.
+    SSLEngine engine;
+<span class="fc" id="L256">    logger.debug(&quot;Has TrustManager? &quot; + needClientAuth + &quot; Is ServerMode? &quot; +</span>
+                 serverMode);
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">    if (serverMode) {</span>
+<span class="fc" id="L259">      engine = getServerContext().createSSLEngine(host, port);</span>
+<span class="fc" id="L260">      engine.setUseClientMode(false);</span>
+<span class="fc" id="L261">      engine.setNeedClientAuth(needClientAuth);</span>
+    } else {
+<span class="nc" id="L263">      engine = getClientContext().createSSLEngine(host, port);</span>
+<span class="nc" id="L264">      engine.setUseClientMode(true);</span>
+    }
+<span class="fc" id="L266">    return new WaarpSslHandler(engine);</span>
+  }
+
+  /**
+   * @return True if the associated KeyStore has a TrustStore
+   */
+  public boolean needClientAuthentication() {
+<span class="fc" id="L273">    return needClientAuthentication;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>Host.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.pojo</a> &gt; <span class="el_source">Host.java</span></div><h1>Host.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.pojo;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
+import static org.waarp.openr66.configuration.FileBasedElements.*;
+
+/**
+ * Host data object
+ */
+@XmlType(name = XML_AUTHENTIFICATION_ENTRY)
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Host {
+  private static final String DEFAULT_CLIENT_ADDRESS = &quot;0.0.0.0&quot;;
+  private static final int DEFAULT_CLIENT_PORT = 0;
+
+  @XmlElement(name = XML_AUTHENTIFICATION_HOSTID)
+  @JsonProperty(&quot;HOSTID&quot;)
+  private String hostid;
+
+  @XmlElement(name = XML_AUTHENTIFICATION_ADDRESS)
+  @JsonProperty(&quot;ADDRESS&quot;)
+  private String address;
+
+  @XmlElement(name = XML_AUTHENTIFICATION_PORT)
+  @JsonProperty(&quot;PORT&quot;)
+  private int port;
+
+  @XmlTransient
+  @JsonProperty(&quot;HOSTKEY&quot;)
+  private byte[] hostkey;
+
+  @XmlElement(name = XML_AUTHENTIFICATION_ISSSL)
+  @JsonProperty(&quot;ISSSL&quot;)
+  private boolean ssl;
+
+  @XmlElement(name = XML_AUTHENTIFICATION_ISCLIENT)
+  @JsonProperty(&quot;ISCLIENT&quot;)
+  private boolean client;
+
+  @XmlElement(name = XML_AUTHENTIFICATION_ISPROXIFIED)
+  @JsonProperty(&quot;ISPROXIFIED&quot;)
+  private boolean proxified;
+
+<span class="fc" id="L71">  @XmlElement(name = XML_AUTHENTIFICATION_ADMIN)</span>
+  @JsonProperty(&quot;ADMINROLE&quot;)
+  private boolean admin = true;
+
+<span class="fc" id="L75">  @XmlElement(name = XML_AUTHENTIFICATION_ISACTIVE)</span>
+  @JsonProperty(&quot;ISACTIVE&quot;)
+  private boolean active = true;
+
+<span class="fc" id="L79">  @JsonProperty(&quot;UPDATEDINFO&quot;)</span>
+  private UpdatedInfo updatedInfo = UpdatedInfo.UNKNOWN;
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L85">  public Host() {</span>
+    // Nothing
+<span class="fc" id="L87">  }</span>
+
+  public Host(String hostid, String address, int port, byte[] hostkey,
+              boolean ssl, boolean client, boolean proxified, boolean admin,
+              boolean active, UpdatedInfo updatedInfo) {
+<span class="fc" id="L92">    this(hostid, address, port, hostkey, ssl, client, proxified, admin, active);</span>
+<span class="fc" id="L93">    this.updatedInfo = updatedInfo;</span>
+<span class="fc" id="L94">  }</span>
+
+  public Host(String hostid, String address, int port, byte[] hostkey,
+              boolean ssl, boolean client, boolean proxified, boolean admin,
+<span class="fc" id="L98">              boolean active) {</span>
+<span class="fc" id="L99">    this.hostid = hostid;</span>
+<span class="fc" id="L100">    this.hostkey = hostkey;</span>
+    // Force client status if unvalid port
+<span class="fc" id="L102">    this.address = address;</span>
+<span class="fc" id="L103">    this.port = port;</span>
+<span class="fc" id="L104">    this.client = client;</span>
+<span class="fc" id="L105">    this.ssl = ssl;</span>
+<span class="fc" id="L106">    this.proxified = proxified;</span>
+<span class="fc" id="L107">    this.admin = admin;</span>
+<span class="fc" id="L108">    this.active = active;</span>
+<span class="fc" id="L109">  }</span>
+
+  public Host(String hostid, String address, int port, byte[] hostkey,
+              boolean ssl, boolean client, boolean proxified, boolean admin) {
+<span class="fc" id="L113">    this(hostid, address, port, hostkey, ssl, client, proxified, admin, true);</span>
+<span class="fc" id="L114">  }</span>
+
+  public Host(String hostid, String address, int port, byte[] hostkey,
+              boolean ssl, boolean client) {
+<span class="fc" id="L118">    this(hostid, address, port, hostkey, ssl, client, false, true);</span>
+<span class="fc" id="L119">  }</span>
+
+  public String getHostid() {
+<span class="fc" id="L122">    return hostid;</span>
+  }
+
+  public void setHostid(String hostid) {
+<span class="nc" id="L126">    this.hostid = hostid;</span>
+<span class="nc" id="L127">  }</span>
+
+  public String getAddress() {
+<span class="fc" id="L130">    return address;</span>
+  }
+
+  public void setAddress(String address) {
+<span class="nc" id="L134">    this.address = address;</span>
+<span class="nc" id="L135">  }</span>
+
+  public int getPort() {
+<span class="fc" id="L138">    return port;</span>
+  }
+
+  public void setPort(int port) {
+<span class="nc" id="L142">    this.port = port;</span>
+<span class="nc" id="L143">  }</span>
+
+  public byte[] getHostkey() {
+<span class="fc" id="L146">    return hostkey;</span>
+  }
+
+  @XmlElement(name = XML_AUTHENTIFICATION_KEY)
+  @JsonIgnore
+  public String getKey() {
+<span class="nc" id="L152">    return new String(hostkey);</span>
+  }
+
+  public void setKey(String key) {
+<span class="nc" id="L156">    hostkey = key.getBytes();</span>
+<span class="nc" id="L157">  }</span>
+
+  public void setHostkey(byte[] hostkey) {
+<span class="fc" id="L160">    this.hostkey = hostkey;</span>
+<span class="fc" id="L161">  }</span>
+
+  public boolean isSSL() {
+<span class="fc" id="L164">    return ssl;</span>
+  }
+
+  public void setSSL(boolean ssl) {
+<span class="nc" id="L168">    this.ssl = ssl;</span>
+<span class="nc" id="L169">  }</span>
+
+  public boolean isClient() {
+<span class="fc" id="L172">    return client;</span>
+  }
+
+  public void setClient(boolean client) {
+<span class="nc" id="L176">    this.client = client;</span>
+<span class="nc" id="L177">  }</span>
+
+  public boolean isAdmin() {
+<span class="fc" id="L180">    return admin;</span>
+  }
+
+  public void setAdmin(boolean admin) {
+<span class="nc" id="L184">    this.admin = admin;</span>
+<span class="nc" id="L185">  }</span>
+
+  public boolean isProxified() {
+<span class="fc" id="L188">    return proxified;</span>
+  }
+
+  public void setProxified(boolean proxified) {
+<span class="fc" id="L192">    this.proxified = proxified;</span>
+<span class="fc" id="L193">  }</span>
+
+  public boolean isActive() {
+<span class="fc" id="L196">    return active;</span>
+  }
+
+  public void setActive(boolean active) {
+<span class="fc" id="L200">    this.active = active;</span>
+<span class="fc" id="L201">  }</span>
+
+  public UpdatedInfo getUpdatedInfo() {
+<span class="fc" id="L204">    return updatedInfo;</span>
+  }
+
+  public void setUpdatedInfo(UpdatedInfo info) {
+<span class="nc" id="L208">    updatedInfo = info;</span>
+<span class="nc" id="L209">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocalExecServer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp Exec</a> &gt; <a href="index.source.html" class="el_package">org.waarp.commandexec.server</a> &gt; <span class="el_source">LocalExecServer.java</span></div><h1>LocalExecServer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.commandexec.server;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.waarp.commandexec.utils.LocalExecDefaultResult;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpThreadFactory;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
+/**
+ * LocalExec server Main method.
+ */
+<span class="nc" id="L41">public class LocalExecServer {</span>
+
+<span class="nc" id="L43">  static final EventLoopGroup workerGroup = new NioEventLoopGroup();</span>
+<span class="nc" id="L44">  static final EventExecutorGroup executor =</span>
+<span class="nc" id="L45">      new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),</span>
+                                    new WaarpThreadFactory(&quot;LocalExecServer&quot;));
+
+  /**
+   * Takes 3 optional arguments:&lt;br&gt;
+   * - no argument: implies 127.0.0.1 + 9999 port&lt;br&gt;
+   * - arguments:&lt;br&gt;
+   * &quot;addresse&quot; &quot;port&quot;&lt;br&gt;
+   * &quot;addresse&quot; &quot;port&quot; &quot;default delay&quot;&lt;br&gt;
+   *
+   * @param args
+   *
+   * @throws Exception
+   */
+  public static void main(String[] args) throws Exception {
+<span class="nc" id="L60">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L61">    int port = 9999;</span>
+    InetAddress addr;
+<span class="nc" id="L63">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (args.length &gt;= 2) {</span>
+<span class="nc" id="L65">      addr = InetAddress.getByName(args[0]);</span>
+<span class="nc" id="L66">      port = Integer.parseInt(args[1]);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (args.length &gt; 2) {</span>
+<span class="nc" id="L68">        delay = Long.parseLong(args[2]);</span>
+      }
+    } else {
+<span class="nc" id="L71">      final byte[] loop = { 127, 0, 0, 1 };</span>
+<span class="nc" id="L72">      addr = InetAddress.getByAddress(loop);</span>
+    }
+    // Configure the server.
+    try {
+<span class="nc" id="L76">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L77">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);</span>
+
+      // Configure the pipeline factory.
+<span class="nc" id="L80">      bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));</span>
+
+      // Bind and start to accept incoming connections only on local address.
+<span class="nc" id="L83">      final ChannelFuture future =</span>
+<span class="nc" id="L84">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
+
+      // Wait until the server socket is closed.
+<span class="nc" id="L87">      future.channel().closeFuture().sync();</span>
+    } finally {
+      // Shut down all event loops to terminate all threads.
+<span class="nc" id="L90">      workerGroup.shutdownGracefully();</span>
+
+      // Wait until all threads are terminated.
+<span class="nc" id="L93">      workerGroup.terminationFuture().sync();</span>
+    }
+<span class="nc" id="L95">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

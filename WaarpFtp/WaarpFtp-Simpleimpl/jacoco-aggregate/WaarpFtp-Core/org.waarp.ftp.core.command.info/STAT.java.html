@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>STAT.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp SimpleServer</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Core</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.core.command.info</a> &gt; <span class="el_source">STAT.java</span></div><h1>STAT.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.core.command.info;
+
+import org.waarp.common.command.ReplyCode;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.ftp.core.command.AbstractCommand;
+import org.waarp.ftp.core.exception.FtpNoFileException;
+import org.waarp.ftp.core.exception.FtpNoTransferException;
+import org.waarp.ftp.core.file.FtpFile;
+import org.waarp.ftp.core.utils.FtpChannelUtils;
+
+import java.util.List;
+
+/**
+ * STAT command
+ */
+<span class="fc" id="L35">public class STAT extends AbstractCommand {</span>
+  @Override
+  public void exec() throws CommandAbstractException {
+    String path;
+    String message;
+<span class="fc" id="L40">    message = &quot;STATUS information\nNo FtpFile currently in transfer\n&quot;;</span>
+<span class="fc" id="L41">    FtpFile file = null;</span>
+    try {
+<span class="fc" id="L43">      file = getSession().getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L44">                         .getExecutingFtpTransfer().getFtpFile();</span>
+<span class="nc" id="L45">    } catch (final FtpNoFileException ignored) {</span>
+      // nothing
+<span class="fc" id="L47">    } catch (final FtpNoTransferException ignored) {</span>
+      // nothing
+<span class="nc" id="L49">    }</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">    if (file != null) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">      if (file.isInReading()) {</span>
+<span class="nc" id="L52">        message = &quot;STATUS information\nFile currently in Retrieve transfer\n&quot;;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">      } else if (file.isInWriting()) {</span>
+<span class="nc" id="L54">        message = &quot;STATUS information\nFile currently in Store transfer\n&quot;;</span>
+      }
+    }
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (!hasArg()) {</span>
+      // Current status of connection
+<span class="fc" id="L59">      message += getSession().getDataConn().getStatus();</span>
+<span class="fc" id="L60">      message += &quot;\nControl: &quot; +</span>
+<span class="fc" id="L61">                 FtpChannelUtils.nbCommandChannels(getConfiguration()) +</span>
+                 &quot; Data: &quot; +
+<span class="fc" id="L63">                 FtpChannelUtils.nbDataChannels(getConfiguration()) +</span>
+<span class="fc" id="L64">                 &quot; Binded: &quot; + getConfiguration().getFtpInternalConfiguration()</span>
+<span class="fc" id="L65">                                                 .getNbBindedPassive();</span>
+<span class="fc" id="L66">      message += &quot;\nEnd of Status&quot;;</span>
+<span class="fc" id="L67">      getSession()</span>
+<span class="fc" id="L68">          .setReplyCode(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY, message);</span>
+    } else {
+      // List of files from path
+<span class="nc" id="L71">      path = getArg();</span>
+<span class="nc" id="L72">      final List&lt;String&gt; filesInfo = getSession().getDir().listFull(path, true);</span>
+<span class="nc" id="L73">      final StringBuilder builder =</span>
+<span class="nc" id="L74">          new StringBuilder().append(&quot;List of files from &quot;).append(path)</span>
+<span class="nc" id="L75">                             .append('\n');</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">      for (final String newfileInfo : filesInfo) {</span>
+<span class="nc" id="L77">        builder.append(newfileInfo).append('\n');</span>
+<span class="nc" id="L78">      }</span>
+<span class="nc" id="L79">      builder.append(&quot;End of Status&quot;);</span>
+<span class="nc" id="L80">      message += builder.toString();</span>
+<span class="nc" id="L81">      getSession().setReplyCode(ReplyCode.REPLY_212_DIRECTORY_STATUS, message);</span>
+    }
+<span class="fc" id="L83">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

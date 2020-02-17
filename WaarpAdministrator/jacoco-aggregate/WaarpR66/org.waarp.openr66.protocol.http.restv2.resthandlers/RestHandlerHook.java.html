@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>RestHandlerHook.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.restv2.resthandlers</a> &gt; <span class="el_source">RestHandlerHook.java</span></div><h1>RestHandlerHook.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.protocol.http.restv2.resthandlers;
+
+import io.cdap.http.HandlerHook;
+import io.cdap.http.HttpResponder;
+import io.cdap.http.internal.HandlerInfo;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.joda.time.DateTime;
+import org.waarp.common.crypto.HmacSha256;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.BaseXx;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
+import org.waarp.openr66.protocol.http.restv2.converters.HostConfigConverter;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.AbstractRestDbHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.RequiredRole;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.core.MediaType;
+import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static io.netty.handler.codec.http.HttpMethod.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static javax.ws.rs.core.HttpHeaders.*;
+import static javax.ws.rs.core.MediaType.*;
+import static org.glassfish.jersey.message.internal.HttpHeaderReader.*;
+import static org.glassfish.jersey.message.internal.MediaTypes.*;
+import static org.waarp.common.role.RoleDefault.ROLE.*;
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+
+/**
+ * This class defines hooks called before and after the corresponding {@link
+ * AbstractRestDbHandler} when a
+ * request is made. These hooks check the user authentication and privileges, as
+ * well as the request content
+ * type.
+ */
+public class RestHandlerHook implements HandlerHook {
+
+  /**
+   * Tells if the REST request authentication is activated.
+   */
+  private final boolean authenticated;
+
+  /**
+   * Stores the key used for HMAC authentication.
+   */
+  private final HmacSha256 hmac;
+
+  /**
+   * The time (in ms) for which a HMAC signed request is valid.
+   */
+  private final long delay;
+
+  /**
+   * The logger for all events.
+   */
+<span class="fc" id="L93">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L94">      WaarpLoggerFactory.getLogger(RestHandlerHook.class);</span>
+
+  /**
+   * Hook called before a request handler is called. Checks if the REST method
+   * is active in the CRUD
+   * configuration, checks the request's content type, and finally checks the
+   * user authentication (if
+   * activated).
+   *
+   * @param request the HttpRequest currently being processed
+   * @param responder the HttpResponder sending the response
+   * @param handlerInfo the information about the handler to which the
+   *     request will be sent for processing
+   *
+   * @return {@code true} if the request can be handed to the handler, or
+   *     {@code false} if an error occurred and
+   *     a response must be sent immediately.
+   */
+  @Override
+  public boolean preCall(HttpRequest request, HttpResponder responder,
+                         HandlerInfo handlerInfo) {
+
+    try {
+<span class="fc" id="L117">      final AbstractRestDbHandler handler = getHandler(handlerInfo);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">      if (!handler.checkCRUD(request)) {</span>
+<span class="nc" id="L119">        responder.sendStatus(METHOD_NOT_ALLOWED);</span>
+<span class="nc" id="L120">        return false;</span>
+      }
+
+<span class="fc" id="L123">      final Method handleMethod = getMethod(handler, handlerInfo);</span>
+<span class="pc bpc" id="L124" title="3 of 4 branches missed.">      if (authenticated &amp;&amp; !request.method().equals(OPTIONS)) {</span>
+<span class="nc" id="L125">        final String user = checkCredentials(request);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (!checkAuthorization(user, handleMethod)) {</span>
+<span class="nc" id="L127">          responder.sendStatus(FORBIDDEN);</span>
+<span class="nc" id="L128">          return false;</span>
+        }
+      }
+
+<span class="fc" id="L132">      final List&lt;MediaType&gt; expectedTypes = getExpectedMediaTypes(handleMethod);</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">      if (!checkContentType(request, expectedTypes)) {</span>
+<span class="nc" id="L134">        final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L135">        headers.add(ACCEPT, convertToString(expectedTypes));</span>
+<span class="nc" id="L136">        responder.sendStatus(UNSUPPORTED_MEDIA_TYPE, headers);</span>
+<span class="nc" id="L137">        return false;</span>
+      }
+
+<span class="fc" id="L140">      return true;</span>
+<span class="nc" id="L141">    } catch (final NotAllowedException e) {</span>
+<span class="nc" id="L142">      logger.info(e.getMessage());</span>
+<span class="nc" id="L143">      final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L144">      headers.add(WWW_AUTHENTICATE, &quot;Basic, HMAC&quot;);</span>
+<span class="nc" id="L145">      responder.sendStatus(UNAUTHORIZED, headers);</span>
+<span class="nc" id="L146">    } catch (final InternalServerErrorException e) {</span>
+<span class="nc" id="L147">      logger.error(e);</span>
+<span class="nc" id="L148">      responder.sendStatus(INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L149">    } catch (final Throwable t) {</span>
+<span class="nc" id="L150">      logger.error(&quot;RESTv2 Unexpected exception caught -&gt;&quot;, t);</span>
+<span class="nc" id="L151">      responder.sendStatus(INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L152">    }</span>
+<span class="nc" id="L153">    return false;</span>
+  }
+
+  /**
+   * Returns the {@link AbstractRestDbHandler} instance corresponding to the
+   * info given as parameter.
+   *
+   * @param handlerInfo the information about the handler
+   *
+   * @return the corresponding AbstractRestDbHandler
+   *
+   * @throws IllegalArgumentException if the given handler does not
+   *     exist.
+   */
+  private AbstractRestDbHandler getHandler(HandlerInfo handlerInfo) {
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">    for (final AbstractRestDbHandler h : RestServiceInitializer.handlers) {</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">      if (h.getClass().getName().equals(handlerInfo.getHandlerName())) {</span>
+<span class="fc" id="L170">        return h;</span>
+      }
+<span class="fc" id="L172">    }</span>
+<span class="nc" id="L173">    throw new IllegalArgumentException(</span>
+<span class="nc" id="L174">        &quot;The handler &quot; + handlerInfo.getHandlerName() + &quot; does not exist.&quot;);</span>
+  }
+
+  /**
+   * Returns the {@link Method} object corresponding to the handler method
+   * chosen to process the request. This
+   * is needed to check for the annotations present on the method.
+   *
+   * @param handler the handler chosen to process the request
+   * @param handlerInfo the information about the handler
+   *
+   * @return the corresponding Method object
+   *
+   * @throws IllegalArgumentException if the given method name does
+   *     not exist
+   */
+  private Method getMethod(AbstractRestDbHandler handler,
+                           HandlerInfo handlerInfo) {
+<span class="fc" id="L192">    Method method = null;</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">    for (final Method m : handler.getClass().getMethods()) {//NOSONAR</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">      if (m.getName().equals(handlerInfo.getMethodName()) &amp;&amp;</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">          m.getParameterTypes()[0] == HttpRequest.class &amp;&amp;</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">          m.getParameterTypes()[1] == HttpResponder.class) {</span>
+<span class="fc" id="L197">        method = m;</span>
+<span class="fc" id="L198">        break;</span>
+      }
+    }
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">    if (method == null) {</span>
+<span class="nc" id="L202">      throw new IllegalArgumentException(</span>
+<span class="nc" id="L203">          &quot;The handler &quot; + handlerInfo.getHandlerName() +</span>
+<span class="nc" id="L204">          &quot; does not have a method &quot; + handlerInfo.getMethodName());</span>
+    }
+<span class="fc" id="L206">    return method;</span>
+  }
+
+  /**
+   * Return a List of all the {@link MediaType} accepted by the given {@link
+   * Method}. This list is based on the
+   * types indicated by the method's {@link Consumes} annotation. If the
+   * annotation is absent, the method will
+   * be assumed to accept any type.
+   *
+   * @param method the Method to inspect
+   *
+   * @return the list of all acceptable MediaType
+   */
+  private List&lt;MediaType&gt; getExpectedMediaTypes(Method method) {
+<span class="fc" id="L221">    List&lt;MediaType&gt; consumedTypes = WILDCARD_TYPE_SINGLETON_LIST;</span>
+
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">    if (method.isAnnotationPresent(Consumes.class)) {</span>
+<span class="fc" id="L224">      consumedTypes = createFrom(method.getAnnotation(Consumes.class));</span>
+    } else {
+<span class="nc" id="L226">      logger.warn(String.format(</span>
+          &quot;[RESTv2] The method %s of handler %s is missing &quot; +
+          &quot;a '%s' annotation for the expected request content type, &quot; +
+<span class="nc" id="L229">          &quot;the default value '%s' was given instead.&quot;, method.getName(),</span>
+<span class="nc" id="L230">          method.getDeclaringClass().getSimpleName(),</span>
+<span class="nc" id="L231">          Consumes.class.getSimpleName(), WILDCARD));</span>
+    }
+
+<span class="fc" id="L234">    return consumedTypes;</span>
+  }
+
+  /**
+   * Checks if the content type of the request is compatible with the expected
+   * content type of the method
+   * called. If no content type header can be found, the request will be
+   * assumed to have a correct content type.
+   *
+   * @param request the HttpRequest sent by the user
+   * @param consumedTypes a list of the acceptable MediaType for the
+   *     request
+   *
+   * @return {@code true} if the request content type is acceptable, {@code
+   *     false} otherwise.
+   */
+  private boolean checkContentType(HttpRequest request,
+                                   List&lt;MediaType&gt; consumedTypes) {
+
+<span class="fc" id="L253">    final String contentTypeHeader = request.headers().get(CONTENT_TYPE);</span>
+<span class="pc bpc" id="L254" title="3 of 4 branches missed.">    if (contentTypeHeader == null || contentTypeHeader.isEmpty()) {</span>
+<span class="fc" id="L255">      return true;</span>
+    }
+
+    MediaType requestType;
+    try {
+<span class="nc" id="L260">      requestType = readAcceptMediaType(contentTypeHeader).get(0);</span>
+<span class="nc" id="L261">    } catch (final ParseException e) {</span>
+<span class="nc" id="L262">      return false;</span>
+<span class="nc" id="L263">    }</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">    for (final MediaType consumedType : consumedTypes) {</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (requestType.isCompatible(consumedType)) {</span>
+<span class="nc" id="L266">        return true;</span>
+      }
+<span class="nc" id="L268">    }</span>
+<span class="nc" id="L269">    return false;</span>
+  }
+
+  /**
+   * Checks if the user making the request does exist. If the user does exist,
+   * this method returns the user's
+   * name, otherwise throws a {@link NotAllowedException}.
+   *
+   * @param request the request currently being processed
+   *
+   * @return the user's name
+   *
+   * @throws InternalServerErrorException if an unexpected error
+   *     occurred
+   * @throws NotAllowedException if the user making the request does
+   *     not exist
+   */
+  private String checkCredentials(HttpRequest request) {
+
+<span class="nc" id="L288">    final String authorization = request.headers().get(AUTHORIZATION);</span>
+
+<span class="nc bnc" id="L290" title="All 2 branches missed.">    if (authorization == null) {</span>
+<span class="nc" id="L291">      throw new NotAllowedException(&quot;Missing header for authentication.&quot;);</span>
+    }
+
+<span class="nc" id="L294">    final Pattern basicPattern = Pattern.compile(&quot;(Basic) (\\w+=*)&quot;);</span>
+<span class="nc" id="L295">    final Matcher basicMatcher = basicPattern.matcher(authorization);</span>
+
+<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (basicMatcher.find()) {</span>
+
+      String[] credentials;
+<span class="nc" id="L300">      credentials =</span>
+<span class="nc" id="L301">          new String(BaseXx.getFromBase64(basicMatcher.group(2))).split(&quot;:&quot;, 2);</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">      if (credentials.length != 2) {</span>
+<span class="nc" id="L303">        throw new NotAllowedException(</span>
+            &quot;Invalid header for Basic authentication.&quot;);
+      }
+<span class="nc" id="L306">      final String user = credentials[0];</span>
+<span class="nc" id="L307">      final String pswd = credentials[1];</span>
+
+<span class="nc" id="L309">      HostDAO hostDAO = null;</span>
+      Host host;
+      try {
+<span class="nc" id="L312">        hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">        if (!hostDAO.exist(user)) {</span>
+<span class="nc" id="L314">          throw new NotAllowedException(&quot;User does not exist.&quot;);</span>
+        }
+<span class="nc" id="L316">        host = hostDAO.select(user);</span>
+<span class="nc" id="L317">      } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L318">        throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L319">      } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L320">        throw new InternalServerErrorException(e);</span>
+      } finally {
+<span class="nc" id="L322">        DAOFactory.closeDAO(hostDAO);</span>
+      }
+
+      String key;
+      try {
+<span class="nc" id="L327">        key = configuration.getCryptoKey().cryptToHex(pswd);</span>
+<span class="nc" id="L328">      } catch (final Exception e) {</span>
+<span class="nc" id="L329">        throw new InternalServerErrorException(</span>
+            &quot;An error occurred when encrypting the password&quot;, e);
+<span class="nc" id="L331">      }</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">      if (!Arrays.equals(host.getHostkey(), key.getBytes())) {</span>
+<span class="nc" id="L333">        throw new NotAllowedException(&quot;Invalid password.&quot;);</span>
+      }
+
+<span class="nc" id="L336">      return user;</span>
+    }
+
+<span class="nc" id="L339">    final String authUser = request.headers().get(AUTH_USER);</span>
+<span class="nc" id="L340">    final String authDate = request.headers().get(AUTH_TIMESTAMP);</span>
+
+<span class="nc" id="L342">    final Pattern hmacPattern = Pattern.compile(&quot;(HMAC) (\\w+)&quot;);</span>
+<span class="nc" id="L343">    final Matcher hmacMatcher = hmacPattern.matcher(authorization);</span>
+
+<span class="nc bnc" id="L345" title="All 6 branches missed.">    if (hmacMatcher.find() &amp;&amp; authUser != null &amp;&amp; authDate != null) {</span>
+
+<span class="nc" id="L347">      final String authKey = hmacMatcher.group(2);</span>
+      DateTime requestDate;
+      try {
+<span class="nc" id="L350">        requestDate = DateTime.parse(authDate);</span>
+<span class="nc" id="L351">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L352">        throw new NotAllowedException(&quot;Invalid authentication timestamp.&quot;);</span>
+<span class="nc" id="L353">      }</span>
+<span class="nc" id="L354">      final DateTime limitTime = requestDate.plus(delay);</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">      if (DateTime.now().isAfter(limitTime)) {</span>
+<span class="nc" id="L356">        throw new NotAllowedException(&quot;Authentication expired.&quot;);</span>
+      }
+
+<span class="nc" id="L359">      HostDAO hostDAO = null;</span>
+      Host host;
+      try {
+<span class="nc" id="L362">        hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">        if (!hostDAO.exist(authUser)) {</span>
+<span class="nc" id="L364">          throw new NotAllowedException(&quot;User does not exist.&quot;);</span>
+        }
+<span class="nc" id="L366">        host = hostDAO.select(authUser);</span>
+<span class="nc" id="L367">      } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L368">        throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L369">      } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L370">        throw new InternalServerErrorException(e);</span>
+      } finally {
+<span class="nc" id="L372">        DAOFactory.closeDAO(hostDAO);</span>
+      }
+
+      String pswd;
+      try {
+<span class="nc" id="L377">        pswd = configuration.getCryptoKey().decryptInString(host.getHostkey());</span>
+<span class="nc" id="L378">      } catch (final Exception e) {</span>
+<span class="nc" id="L379">        throw new InternalServerErrorException(</span>
+            &quot;An error occurred when decrypting the password&quot;, e);
+<span class="nc" id="L381">      }</span>
+
+      String key;
+      try {
+<span class="nc" id="L385">        key = hmac.cryptToHex(authDate + authUser + pswd);</span>
+<span class="nc" id="L386">      } catch (final Exception e) {</span>
+<span class="nc" id="L387">        throw new InternalServerErrorException(</span>
+            &quot;An error occurred when hashing the key&quot;, e);
+<span class="nc" id="L389">      }</span>
+
+<span class="nc bnc" id="L391" title="All 2 branches missed.">      if (Arrays.equals(key.getBytes(), authKey.getBytes())) {</span>
+<span class="nc" id="L392">        throw new NotAllowedException(&quot;Invalid password.&quot;);</span>
+      }
+
+<span class="nc" id="L395">      return authUser;</span>
+    }
+
+<span class="nc" id="L398">    throw new NotAllowedException(&quot;Missing credentials.&quot;);</span>
+  }
+
+  /**
+   * Checks if the user given as argument is authorized to call the given
+   * method.
+   *
+   * @param user the name of the user making the request
+   * @param method the method called by the request
+   *
+   * @return {@code true} if the user is authorized to make the request,
+   *     {@code false} otherwise.
+   */
+  private boolean checkAuthorization(String user, Method method) {
+
+<span class="nc" id="L413">    ROLE requiredRole = NOACCESS;</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">    if (method.isAnnotationPresent(RequiredRole.class)) {</span>
+<span class="nc" id="L415">      requiredRole = method.getAnnotation(RequiredRole.class).value();</span>
+    } else {
+<span class="nc" id="L417">      logger.warn(String.format(&quot;[RESTv2] The method %s of handler %s is &quot; +</span>
+                                &quot;missing a '%s' annotation for the minimum required role, &quot; +
+                                &quot;the default value '%s' was given instead.&quot;,
+<span class="nc" id="L420">                                method.getName(),</span>
+<span class="nc" id="L421">                                method.getDeclaringClass().getSimpleName(),</span>
+<span class="nc" id="L422">                                RequiredRole.class.getSimpleName(), NOACCESS));</span>
+    }
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    if (requiredRole == NOACCESS) {</span>
+<span class="nc" id="L425">      return true;</span>
+    }
+
+<span class="nc" id="L428">    final List&lt;ROLE&gt; roles = HostConfigConverter.getRoles(user);</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (roles != null) {</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">      for (final ROLE roleType : roles) {</span>
+<span class="nc bnc" id="L431" title="All 2 branches missed.">        if (requiredRole.isContained(roleType.getAsByte())) {</span>
+<span class="nc" id="L432">          return true;</span>
+        }
+<span class="nc" id="L434">      }</span>
+    }
+<span class="nc" id="L436">    return false;</span>
+  }
+
+  /**
+   * Hook called after a request handler is called.
+   *
+   * @param httpRequest the request currently being processed
+   * @param httpResponseStatus the status of the http response
+   *     generated by the request handler
+   * @param handlerInfo information about the handler to which the
+   *     request was sent
+   */
+  @Override
+  public void postCall(HttpRequest httpRequest,
+                       HttpResponseStatus httpResponseStatus,
+                       HandlerInfo handlerInfo) {
+    // ignore
+<span class="fc" id="L453">  }</span>
+
+  /**
+   * Creates a HandlerHook which will check for authentication and signature
+   * on incoming request depending on
+   * the parameters.
+   *
+   * @param authenticated specifies if the HandlerHook will check
+   *     authentication
+   * @param hmac the key used for HMAC authentication
+   * @param delay the delay for which a HMAC signed request is valid
+   */
+<span class="fc" id="L465">  public RestHandlerHook(boolean authenticated, HmacSha256 hmac, long delay) {</span>
+<span class="fc" id="L466">    this.authenticated = authenticated;</span>
+<span class="fc" id="L467">    this.hmac = hmac;</span>
+<span class="fc" id="L468">    this.delay = delay;</span>
+<span class="fc" id="L469">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

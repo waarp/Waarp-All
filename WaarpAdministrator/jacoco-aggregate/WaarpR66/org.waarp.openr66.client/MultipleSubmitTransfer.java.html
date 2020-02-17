@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>MultipleSubmitTransfer.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.client</a> &gt; <span class="el_source">MultipleSubmitTransfer.java</span></div><h1>MultipleSubmitTransfer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.client;
+
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
+import org.waarp.openr66.client.utils.OutputFormat;
+import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Client to submit a transfer for multiple files to multiple hosts at
+ * once.&lt;br&gt;
+ * Files will have to be separated by ','.&lt;br&gt;
+ * Hosts will have to be separated by ','.&lt;br&gt;
+ * &lt;br&gt;
+ * For instance: -to host1,host2,host3 -file file1,file2 &lt;br&gt;
+ * Will generate: &lt;br&gt;
+ * -to host1 -file file1&lt;br&gt;
+ * -to host1 -file file2&lt;br&gt;
+ * -to host2 -file file1&lt;br&gt;
+ * -to host2 -file file2&lt;br&gt;
+ * -to host3 -file file1&lt;br&gt;
+ * -to host3 -file file2&lt;br&gt;
+ * &lt;br&gt;
+ * &lt;br&gt;
+ * Extra option is -client which allows the filename resolution on remote (recv
+ * files) when using
+ * wildcards.&lt;br&gt;
+ */
+public class MultipleSubmitTransfer extends SubmitTransfer {
+  private int errorMultiple;
+  private int doneMultiple;
+  protected boolean submit;
+  protected final NetworkTransaction networkTransaction;
+<span class="fc" id="L70">  private final List&lt;OutputFormat&gt; results = new ArrayList&lt;OutputFormat&gt;();</span>
+
+  public MultipleSubmitTransfer(R66Future future, String remoteHost,
+                                String filename, String rulename,
+                                String fileinfo, boolean isMD5, int blocksize,
+                                long id, Timestamp starttime,
+                                NetworkTransaction networkTransaction) {
+<span class="fc" id="L77">    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,</span>
+          id, starttime);
+<span class="fc" id="L79">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L80">  }</span>
+
+  @Override
+  public void run() {
+<span class="fc" id="L84">    final String[] localfilenames = filename.split(&quot;,&quot;);</span>
+<span class="fc" id="L85">    final String[] rhosts = remoteHost.split(&quot;,&quot;);</span>
+<span class="fc" id="L86">    R66Result resultError = null;</span>
+
+    // first check if filenames contains wildcards
+<span class="fc" id="L89">    DbRule dbrule = null;</span>
+    try {
+<span class="fc" id="L91">      dbrule = new DbRule(rulename);</span>
+<span class="nc" id="L92">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L93">      logger.error(</span>
+<span class="nc" id="L94">          Messages.getString(&quot;SubmitTransfer.2&quot;) + rulename); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L96">        return;</span>
+      }
+<span class="nc" id="L98">      ChannelUtils.stopLogger();</span>
+<span class="nc" id="L99">      System.exit(2);//NOSONAR</span>
+<span class="fc" id="L100">    }</span>
+<span class="pc bpc" id="L101" title="4 of 6 branches missed.">    if (!submit &amp;&amp; dbrule.isRecvMode() &amp;&amp; networkTransaction == null) {</span>
+<span class="nc" id="L102">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;) +</span>
+                   &quot; =&gt; -client argument is missing&quot;); //$NON-NLS-1$
+<span class="nc bnc" id="L104" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L105">        return;</span>
+      }
+<span class="nc" id="L107">      ChannelUtils.stopLogger();</span>
+<span class="nc" id="L108">      System.exit(2);//NOSONAR</span>
+    }
+<span class="fc" id="L110">    List&lt;String&gt; files = null;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (dbrule.isSendMode()) {</span>
+<span class="fc" id="L112">      files = getLocalFiles(dbrule, localfilenames);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    } else if (submit) {</span>
+<span class="nc" id="L114">      files = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L115">      Collections.addAll(files, localfilenames);</span>
+    }
+<span class="fc bfc" id="L117" title="All 2 branches covered.">    for (String host : rhosts) {</span>
+<span class="fc" id="L118">      host = host.trim();</span>
+<span class="pc bpc" id="L119" title="2 of 4 branches missed.">      if (host != null &amp;&amp; !host.isEmpty()) {</span>
+<span class="pc bpc" id="L120" title="2 of 4 branches missed.">        if (!submit &amp;&amp; dbrule.isRecvMode()) {</span>
+<span class="nc" id="L121">          files =</span>
+<span class="nc" id="L122">              getRemoteFiles(dbrule, localfilenames, host, networkTransaction);</span>
+        }
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        for (String filename : files) {</span>
+<span class="fc" id="L125">          filename = filename.trim();</span>
+<span class="pc bpc" id="L126" title="2 of 4 branches missed.">          if (filename != null &amp;&amp; !filename.isEmpty()) {</span>
+<span class="fc" id="L127">            final R66Future future = new R66Future(true);</span>
+<span class="fc" id="L128">            final SubmitTransfer transaction =</span>
+                new SubmitTransfer(future, host, filename, rulename, fileinfo,
+                                   isMD5, blocksize, id, startTime);
+<span class="fc" id="L131">            transaction.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="fc" id="L132">            transaction.run();</span>
+<span class="fc" id="L133">            future.awaitOrInterruptible();</span>
+<span class="fc" id="L134">            final DbTaskRunner runner = future.getResult().getRunner();</span>
+<span class="fc" id="L135">            final OutputFormat outputFormat =</span>
+<span class="fc" id="L136">                new OutputFormat(MultipleSubmitTransfer.class.getSimpleName(),</span>
+                                 null);
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">            if (future.isSuccess()) {</span>
+<span class="fc" id="L139">              prepareSubmitOkOutputFormat(runner, outputFormat);</span>
+<span class="fc" id="L140">              getResults().add(outputFormat);</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">              if (transaction.normalInfoAsWarn) {</span>
+<span class="fc" id="L142">                logger.warn(outputFormat.loggerOut());</span>
+              } else {
+<span class="nc" id="L144">                logger.info(outputFormat.loggerOut());</span>
+              }
+<span class="fc" id="L146">              setDoneMultiple(getDoneMultiple() + 1);</span>
+            } else {
+<span class="nc" id="L148">              prepareSubmitKoOutputFormat(future, runner, outputFormat);</span>
+<span class="nc" id="L149">              getResults().add(outputFormat);</span>
+<span class="nc" id="L150">              setErrorMultiple(getErrorMultiple() + 1);</span>
+<span class="nc" id="L151">              resultError = future.getResult();</span>
+            }
+          }
+<span class="fc" id="L154">        }</span>
+      }
+    }
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">    if (getErrorMultiple() &gt; 0) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (resultError != null) {</span>
+<span class="nc" id="L159">        future.setResult(resultError);</span>
+      }
+<span class="nc" id="L161">      future.cancel();</span>
+    } else {
+<span class="fc" id="L163">      future.setSuccess();</span>
+    }
+<span class="fc" id="L165">  }</span>
+
+  /**
+   * @param args configuration file, the remoteHost Id, the file to
+   *     transfer, the rule, file transfer
+   *     information as arguments and optionally isMD5=1 for true or 0 for
+   *     false(default) and the
+   *     blocksize if different than default
+   */
+  public static void main(String[] args) {
+<span class="nc" id="L175">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L177">      logger = WaarpLoggerFactory.getLogger(MultipleSubmitTransfer.class);</span>
+    }
+<span class="nc" id="L179">    boolean submit = true;</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">    for (final String string : args) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">      if (&quot;-client&quot;.equalsIgnoreCase(string)) {</span>
+<span class="nc" id="L182">        submit = false;</span>
+<span class="nc" id="L183">        break;</span>
+      }
+    }
+<span class="nc bnc" id="L186" title="All 2 branches missed.">    if (!getParams(args, submit)) {</span>
+<span class="nc" id="L187">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L189">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L190">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+      }
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L193">        admin.close();</span>
+      }
+<span class="nc bnc" id="L195" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L196">        return;</span>
+      }
+<span class="nc" id="L198">      ChannelUtils.stopLogger();</span>
+<span class="nc" id="L199">      System.exit(1);//NOSONAR</span>
+    }
+<span class="nc" id="L201">    NetworkTransaction networkTransaction = null;</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">    if (!submit) {</span>
+<span class="nc" id="L203">      Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L204">      networkTransaction = new NetworkTransaction();</span>
+    }
+    try {
+<span class="nc" id="L207">      final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L208">      final MultipleSubmitTransfer transaction =</span>
+          new MultipleSubmitTransfer(future, rhost, localFilename, rule,
+                                     fileInfo, ismd5, block, idt, ttimestart,
+                                     networkTransaction);
+<span class="nc" id="L212">      transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
+<span class="nc" id="L213">      transaction.run();</span>
+<span class="nc" id="L214">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L215">      final OutputFormat outputFormat = new OutputFormat(</span>
+<span class="nc" id="L216">          &quot;Unique &quot; + MultipleSubmitTransfer.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc" id="L218">        outputFormat.setValue(FIELDS.status.name(), 0);</span>
+<span class="nc" id="L219">        outputFormat.setValue(FIELDS.statusTxt.name(), &quot;Multiple &quot; + Messages</span>
+<span class="nc" id="L220">            .getString(&quot;SubmitTransfer.3&quot;) +</span>
+<span class="nc" id="L221">                                                       Messages.getString(</span>
+                                                           &quot;RequestInformation.Success&quot;)); //$NON-NLS-1$
+<span class="nc" id="L223">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L224">        outputFormat.setValue(&quot;ok&quot;, transaction.getDoneMultiple());</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (transaction.normalInfoAsWarn) {</span>
+<span class="nc" id="L226">          logger.warn(outputFormat.loggerOut());</span>
+        } else {
+<span class="nc" id="L228">          logger.info(outputFormat.loggerOut());</span>
+        }
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L231">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">          for (final OutputFormat result : transaction.getResults()) {</span>
+<span class="nc" id="L233">            SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="nc" id="L234">            result.sysout();</span>
+<span class="nc" id="L235">          }</span>
+        }
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (networkTransaction != null) {</span>
+<span class="nc" id="L238">          networkTransaction.closeAll();</span>
+<span class="nc" id="L239">          networkTransaction = null;</span>
+        }
+<span class="nc" id="L241">        admin.close();</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L243">          return;</span>
+        }
+<span class="nc" id="L245">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L246">        System.exit(0);//NOSONAR</span>
+      } else {
+<span class="nc" id="L248">        outputFormat.setValue(FIELDS.status.name(), 2);</span>
+<span class="nc" id="L249">        outputFormat.setValue(FIELDS.statusTxt.name(), &quot;Multiple &quot; + Messages</span>
+<span class="nc" id="L250">            .getString(&quot;SubmitTransfer.14&quot;) +</span>
+<span class="nc" id="L251">                                                       Messages.getString(</span>
+                                                           &quot;RequestInformation.Failure&quot;)); //$NON-NLS-1$
+<span class="nc" id="L253">        outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L254">        outputFormat.setValue(&quot;ok&quot;, transaction.getDoneMultiple());</span>
+<span class="nc" id="L255">        outputFormat.setValue(&quot;ko&quot;, transaction.getErrorMultiple());</span>
+<span class="nc" id="L256">        logger.error(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L258">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">          for (final OutputFormat result : transaction.getResults()) {</span>
+<span class="nc" id="L260">            SysErrLogger.FAKE_LOGGER.sysout();</span>
+<span class="nc" id="L261">            result.sysout();</span>
+<span class="nc" id="L262">          }</span>
+        }
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (networkTransaction != null) {</span>
+<span class="nc" id="L265">          networkTransaction.closeAll();</span>
+<span class="nc" id="L266">          networkTransaction = null;</span>
+        }
+<span class="nc" id="L268">        admin.close();</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L270">          return;</span>
+        }
+<span class="nc" id="L272">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L273">        System.exit(transaction.getErrorMultiple());//NOSONAR</span>
+      }
+    } finally {
+<span class="nc bnc" id="L276" title="All 2 branches missed.">      if (networkTransaction != null) {</span>
+<span class="nc" id="L277">        networkTransaction.closeAll();</span>
+      }
+    }
+<span class="nc" id="L280">  }</span>
+
+  /**
+   * @return the errorMultiple
+   */
+  public int getErrorMultiple() {
+<span class="fc" id="L286">    return errorMultiple;</span>
+  }
+
+  /**
+   * @param errorMultiple the errorMultiple to set
+   */
+  private void setErrorMultiple(int errorMultiple) {
+<span class="nc" id="L293">    this.errorMultiple = errorMultiple;</span>
+<span class="nc" id="L294">  }</span>
+
+  /**
+   * @return the doneMultiple
+   */
+  public int getDoneMultiple() {
+<span class="fc" id="L300">    return doneMultiple;</span>
+  }
+
+  /**
+   * @param doneMultiple the doneMultiple to set
+   */
+  private void setDoneMultiple(int doneMultiple) {
+<span class="fc" id="L307">    this.doneMultiple = doneMultiple;</span>
+<span class="fc" id="L308">  }</span>
+
+  /**
+   * @return the results
+   */
+  public List&lt;OutputFormat&gt; getResults() {
+<span class="fc" id="L314">    return results;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

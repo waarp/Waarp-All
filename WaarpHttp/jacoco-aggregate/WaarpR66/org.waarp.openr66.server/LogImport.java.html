@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LogImport.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.server</a> &gt; <span class="el_source">LogImport.java</span></div><h1>LogImport.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.server;
+
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
+import org.waarp.openr66.configuration.FileBasedConfiguration;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+
+import java.io.File;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * To import logs that were exported (one should not try to import on the same
+ * server to prevent strange
+ * behavior).
+ */
+<span class="nc" id="L42">public class LogImport {</span>
+  /**
+   * Internal Logger
+   */
+  private static WaarpLogger logger;
+
+  /**
+   * @param args
+   */
+  public static void main(String[] args) {
+<span class="nc" id="L52">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L54">      logger = WaarpLoggerFactory.getLogger(LogImport.class);</span>
+    }
+<span class="nc bnc" id="L56" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
+<span class="nc" id="L57">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L58">          .syserr(&quot;Need configuration file and the logfile to import&quot;);</span>
+<span class="nc" id="L59">      System.exit(1);//NOSONAR</span>
+    }
+    try {
+<span class="nc" id="L62">      if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">          .setConfigurationServerMinimalFromXml(Configuration.configuration,</span>
+                                                args[0])) {
+<span class="nc" id="L65">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L67">          admin.close();</span>
+        }
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L70">          return;</span>
+        }
+<span class="nc" id="L72">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L73">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L74">        return;</span>
+      }
+<span class="nc" id="L76">      final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L77">      final File logsFile = new File(args[1]);</span>
+      try {
+<span class="nc" id="L79">        DbTaskRunner.loadXml(logsFile);</span>
+<span class="nc" id="L80">      } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L81">        logger.error(&quot;Cannot load the logs from &quot; + logsFile.getAbsolutePath() +</span>
+<span class="nc" id="L82">                     &quot; since: &quot; + e.getMessage(), e);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L84">          admin.close();</span>
+        }
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L87">          return;</span>
+        }
+<span class="nc" id="L89">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L90">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L91">        return;</span>
+<span class="nc" id="L92">      }</span>
+<span class="nc" id="L93">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L94">      final long delay = time2 - time1;</span>
+<span class="nc" id="L95">      logger.warn(&quot;LogFile imported in &quot; + delay + &quot; ms&quot;);</span>
+    } finally {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L98">        admin.close();</span>
+      }
+<span class="nc" id="L100">      System.exit(0);//NOSONAR</span>
+    }
+<span class="nc" id="L102">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

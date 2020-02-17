@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpShutdownHook.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">WaarpShutdownHook.java</span></div><h1>WaarpShutdownHook.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.utility;
+
+import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ *
+ */
+public abstract class WaarpShutdownHook extends Thread {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(WaarpShutdownHook.class);</span>
+  /**
+   * Sun property pointing the main class and its arguments. Might not be
+   * defined on non Hotspot VM
+   * implementations.
+   */
+  private static final String SUN_JAVA_COMMAND = &quot;sun.java.command&quot;;
+  /**
+   * Thread for ShutdownHook
+   */
+  public static WaarpShutdownHook shutdownHook;
+  /**
+   * Set if the program is in shutdown
+   */
+  private static volatile boolean shutdown;
+  /**
+   * Set if the program will start shutdown process
+   */
+  private static volatile boolean shutdownStarted;
+  /**
+   * Set if the program is in shutdown
+   */
+  private static volatile boolean immediate;
+  /**
+   * Set if the Handler is initialized
+   */
+  private static boolean initialized;
+  /**
+   * Is the shutdown finished
+   */
+  private static boolean isShutdownOver;
+  private static String applArgs;
+  private static volatile boolean shouldRestart;
+  private ShutdownConfiguration shutdownConfiguration;
+
+<span class="fc" id="L79">  protected WaarpShutdownHook(ShutdownConfiguration configuration) {</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">    if (initialized) {</span>
+<span class="fc" id="L81">      shutdownHook.shutdownConfiguration = configuration;</span>
+<span class="fc" id="L82">      setName(&quot;WaarpShutdownHook&quot;);</span>
+<span class="fc" id="L83">      setDaemon(true);</span>
+<span class="fc" id="L84">      shutdownHook = this;</span>
+<span class="fc" id="L85">      shutdownConfiguration = configuration;</span>
+<span class="fc" id="L86">      return;</span>
+    }
+<span class="fc" id="L88">    shutdownConfiguration = configuration;</span>
+<span class="fc" id="L89">    setName(&quot;WaarpShutdownHook&quot;);</span>
+<span class="fc" id="L90">    setDaemon(true);</span>
+<span class="fc" id="L91">    shutdownHook = this;</span>
+<span class="fc" id="L92">    initialized = true;</span>
+<span class="fc" id="L93">  }</span>
+
+  /**
+   * @return the current ShutdownConfiguration
+   */
+  public ShutdownConfiguration getShutdownConfiguration() {
+<span class="nc" id="L99">    return shutdownConfiguration;</span>
+  }
+
+  /**
+   * For Server part
+   */
+  public static void addShutdownHook() {
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    if (shutdownHook != null) {</span>
+<span class="fc" id="L107">      Runtime.getRuntime().addShutdownHook(shutdownHook);</span>
+    }
+<span class="fc" id="L109">  }</span>
+
+  /**
+   * Says if the Process is currently in shutdown
+   *
+   * @return True if already in shutdown
+   */
+  public static boolean isInShutdown() {
+<span class="fc" id="L117">    return shutdown;</span>
+  }
+
+  /**
+   * @return True if the Shutdown process will start soon
+   */
+  public static boolean isShutdownStarting() {
+<span class="fc" id="L124">    return shutdownStarted;</span>
+  }
+
+  /**
+   * To specify that shutdown will soon start
+   */
+  public static void shutdownWillStart() {
+<span class="fc" id="L131">    shutdownStarted = true;</span>
+<span class="fc" id="L132">  }</span>
+
+  /**
+   * This function is the top function to be called when the process is to be
+   * shutdown.
+   *
+   * @param immediateSet
+   */
+  public static void terminate(boolean immediateSet) {
+<span class="fc bfc" id="L141" title="All 2 branches covered.">    if (immediateSet) {</span>
+<span class="fc" id="L142">      immediate = immediateSet;</span>
+    }
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">    if (shutdownHook != null) {</span>
+<span class="fc" id="L145">      removeShutdownHook();</span>
+<span class="fc" id="L146">      terminate();</span>
+<span class="fc" id="L147">      shutdownHook = null;</span>
+    } else {
+<span class="nc" id="L149">      logger.error(&quot;No ShutdownHook setup&quot;);</span>
+      //FBGEXIT DetectionUtils.SystemExit(1)
+    }
+<span class="fc" id="L152">  }</span>
+
+  /**
+   * For Server part
+   */
+  public static void removeShutdownHook() {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">    if (shutdownHook != null) {</span>
+<span class="fc" id="L159">      Runtime.getRuntime().removeShutdownHook(shutdownHook);</span>
+    }
+<span class="fc" id="L161">  }</span>
+
+  /**
+   * Intermediary exit function
+   */
+  private static void terminate() {
+<span class="fc" id="L167">    shutdownStarted = true;</span>
+<span class="fc" id="L168">    shutdown = true;</span>
+<span class="pc bpc" id="L169" title="2 of 4 branches missed.">    if (isShutdownOver || shutdownHook == null) {</span>
+<span class="nc" id="L170">      shutdown = false;</span>
+<span class="nc" id="L171">      shutdownStarted = false;</span>
+<span class="nc" id="L172">      isShutdownOver = false;</span>
+<span class="nc" id="L173">      initialized = false;</span>
+<span class="nc" id="L174">      return;</span>
+    }
+<span class="fc bfc" id="L176" title="All 2 branches covered.">    if (immediate) {</span>
+<span class="fc" id="L177">      shutdownHook.exitService();</span>
+      // Force exit!
+      try {
+<span class="fc" id="L180">        Thread.sleep(shutdownHook.shutdownConfiguration.timeout / 2);</span>
+<span class="nc" id="L181">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L182">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L183">      }</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L185">        final Map&lt;Thread, StackTraceElement[]&gt; map = Thread.getAllStackTraces();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        for (final Entry&lt;Thread, StackTraceElement[]&gt; entry : map.entrySet()) {</span>
+<span class="nc" id="L187">          printStackTrace(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L188">        }</span>
+      }
+<span class="fc" id="L190">      isShutdownOver = true;</span>
+<span class="fc" id="L191">      logger.info(&quot;Should restart? &quot; + isRestart());</span>
+      try {
+<span class="fc" id="L193">        restartApplication();</span>
+<span class="nc" id="L194">      } catch (final IOException e1) {</span>
+<span class="nc" id="L195">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="fc" id="L196">      }</span>
+<span class="fc" id="L197">      shutdownHook.serviceStopped();</span>
+<span class="fc" id="L198">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Halt System&quot;);</span>
+      try {
+<span class="fc" id="L200">        Thread.sleep(100);</span>
+<span class="nc" id="L201">      } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L202">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="pc" id="L203">      }</span>
+      //FBGEXIT DetectionUtils.SystemExit(0)
+    } else {
+<span class="fc" id="L206">      shutdownHook.launchFinalExit();</span>
+<span class="fc" id="L207">      immediate = true;</span>
+<span class="fc" id="L208">      shutdownHook.exitService();</span>
+<span class="fc" id="L209">      isShutdownOver = true;</span>
+<span class="fc" id="L210">      shutdownHook.serviceStopped();</span>
+<span class="fc" id="L211">      logger.info(&quot;Should restart? &quot; + isRestart());</span>
+      try {
+<span class="fc" id="L213">        restartApplication();</span>
+<span class="nc" id="L214">      } catch (final IOException e1) {</span>
+<span class="nc" id="L215">        SysErrLogger.FAKE_LOGGER.syserr(e1);</span>
+<span class="fc" id="L216">      }</span>
+<span class="fc" id="L217">      logger.info(&quot;Exit System&quot;);</span>
+<span class="fc" id="L218">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Exit System&quot;);</span>
+    }
+<span class="fc" id="L220">    shutdown = false;</span>
+<span class="fc" id="L221">    shutdownStarted = false;</span>
+<span class="fc" id="L222">    isShutdownOver = false;</span>
+<span class="fc" id="L223">    initialized = false;</span>
+<span class="fc" id="L224">  }</span>
+
+  /**
+   * Real exit function
+   */
+  protected abstract void exitService();
+
+  /**
+   * Print stack trace
+   *
+   * @param thread
+   * @param stacks
+   */
+  private static void printStackTrace(Thread thread,
+                                      StackTraceElement[] stacks) {
+<span class="nc" id="L239">    SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + &quot; : &quot;);</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    for (int i = 0; i &lt; stacks.length - 1; i++) {</span>
+<span class="nc" id="L241">      SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + &quot; &quot;);</span>
+    }
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (stacks.length &gt;= 1) {</span>
+<span class="nc" id="L244">      SysErrLogger.FAKE_LOGGER.syserr(stacks[stacks.length - 1]);</span>
+    } else {
+<span class="nc" id="L246">      SysErrLogger.FAKE_LOGGER.syserr();</span>
+    }
+<span class="nc" id="L248">  }</span>
+
+  /**
+   * @return True if the shutdown should be followed by a restart
+   */
+  public static boolean isRestart() {
+<span class="fc" id="L254">    return shouldRestart;</span>
+  }
+
+  /**
+   * Restart the application using the preset applArgs and computing the
+   * jvmArgs. execute the command in a
+   * shutdown hook, to be sure that all the resources have been disposed
+   * before
+   * restarting the application
+   *
+   * @throws IOException
+   */
+  private static void restartApplication() throws IOException {
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">    if (shouldRestart) {</span>
+      try {
+        // java binary
+<span class="nc" id="L270">        final String java = System.getProperty(&quot;java.home&quot;) + &quot;/bin/java&quot;;</span>
+        // vm arguments
+        final List&lt;String&gt; vmArguments =
+<span class="nc" id="L273">            ManagementFactory.getRuntimeMXBean().getInputArguments();</span>
+<span class="nc" id="L274">        final StringBuilder vmArgsOneLine = new StringBuilder();</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        for (final String arg : vmArguments) {</span>
+          // if it's the agent argument : we ignore it otherwise the
+          // address of the old application and the new one will be in conflict
+<span class="nc bnc" id="L278" title="All 2 branches missed.">          if (!arg.contains(&quot;-agentlib&quot;)) {</span>
+<span class="nc" id="L279">            vmArgsOneLine.append(arg).append(' ');</span>
+          }
+<span class="nc" id="L281">        }</span>
+        // init the command to execute, add the vm args
+        final StringBuilder cmd;
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        if (DetectionUtils.isWindows()) {</span>
+<span class="nc" id="L285">          cmd = new StringBuilder('&quot;' + java + &quot;\&quot; &quot; + vmArgsOneLine);</span>
+        } else {
+<span class="nc" id="L287">          cmd = new StringBuilder(java + ' ' + vmArgsOneLine);</span>
+        }
+
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        if (applArgs == null) {</span>
+<span class="nc" id="L291">          applArgs = getArgs();</span>
+        }
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        if (applArgs == null) {</span>
+          // big issue then
+<span class="nc" id="L295">          SysErrLogger.FAKE_LOGGER.syserr(&quot;Cannot restart!&quot;);</span>
+          // something went wrong
+<span class="nc" id="L297">          throw new IOException(</span>
+              &quot;Error while trying to restart the &quot; + &quot;application&quot;);
+        }
+<span class="nc" id="L300">        cmd.append(applArgs);</span>
+<span class="nc" id="L301">        logger.debug(&quot;Should restart with:\n&quot; + cmd);</span>
+<span class="nc" id="L302">        logger.warn(&quot;Should restart&quot;);</span>
+<span class="nc" id="L303">        Runtime.getRuntime().exec(cmd.toString()); //NOSONAR</span>
+<span class="nc" id="L304">      } catch (final Throwable e) {</span>
+        // something went wrong
+<span class="nc" id="L306">        throw new IOException(&quot;Error while trying to restart the application&quot;,</span>
+                              e);
+<span class="nc" id="L308">      }</span>
+    }
+<span class="fc" id="L310">  }</span>
+
+  private boolean serviceStopped() {
+<span class="fc bfc" id="L313" title="All 2 branches covered.">    if (shutdownConfiguration.serviceFuture != null) {</span>
+<span class="fc" id="L314">      logger.info(&quot;Service will be stopped&quot;);</span>
+<span class="fc" id="L315">      shutdownConfiguration.serviceFuture.setSuccess();</span>
+<span class="fc" id="L316">      return true;</span>
+    }
+<span class="fc" id="L318">    return false;</span>
+  }
+
+  /**
+   * Extra call to ensure exit after long delay
+   */
+  public void launchFinalExit() {
+<span class="pc bpc" id="L325" title="1 of 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
+<span class="fc" id="L326">      return;</span>
+    }
+<span class="nc" id="L328">    final Timer timer = new Timer(&quot;WaarpFinalExit&quot;, true);</span>
+<span class="nc" id="L329">    final ShutdownTimerTask timerTask = new ShutdownTimerTask();</span>
+<span class="nc" id="L330">    timer.schedule(timerTask, shutdownConfiguration.timeout * 4);</span>
+<span class="nc" id="L331">  }</span>
+
+  /**
+   * Try to return the application arguments (for Oracle VM)
+   *
+   * @return null if it cannot
+   */
+  private static String getArgs() {
+<span class="nc" id="L339">    final String test = System.getProperty(SUN_JAVA_COMMAND);</span>
+<span class="nc bnc" id="L340" title="All 4 branches missed.">    if (test != null &amp;&amp; !test.isEmpty()) {</span>
+      // compute args directly
+      // program main and program arguments
+<span class="nc" id="L343">      final String[] mainCommand = test.split(&quot; &quot;);</span>
+      // program main is a jar
+<span class="nc" id="L345">      final StringBuilder args = new StringBuilder();</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (mainCommand[0].endsWith(&quot;.jar&quot;)) {</span>
+        // if it's a jar, add -jar mainJar
+<span class="nc" id="L348">        args.append(&quot;-jar &quot;).append(new File(mainCommand[0]).getPath());</span>
+      } else {
+        // else it's a .class, add the classpath and mainClass
+<span class="nc" id="L351">        args.append(&quot;-cp \&quot;&quot;).append(System.getProperty(&quot;java.class.path&quot;))</span>
+<span class="nc" id="L352">            .append(&quot;\&quot; &quot;).append(mainCommand[0]);</span>
+      }
+      // finally add program arguments
+<span class="nc bnc" id="L355" title="All 2 branches missed.">      for (int i = 1; i &lt; mainCommand.length; i++) {</span>
+<span class="nc" id="L356">        args.append(' ').append(mainCommand[i]);</span>
+      }
+<span class="nc" id="L358">      return args.toString();</span>
+    }
+<span class="nc" id="L360">    return null;</span>
+  }
+
+  /**
+   * Set the way software should shutdown: with (true) or without restart
+   * (false)
+   *
+   * @param toRestart
+   */
+  public static void setRestart(boolean toRestart) {
+<span class="fc" id="L370">    shouldRestart = toRestart;</span>
+<span class="fc" id="L371">  }</span>
+
+  /**
+   * Called to setup main class and args to enable restart
+   *
+   * @param main
+   * @param args
+   */
+  public static void registerMain(Class&lt;?&gt; main, String[] args) {
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">    if (main == null) {</span>
+<span class="nc" id="L381">      applArgs = getArgs();</span>
+<span class="nc" id="L382">      return;</span>
+    }
+<span class="fc" id="L384">    String path = ManagementFactory.getRuntimeMXBean().getClassPath();</span>
+<span class="fc" id="L385">    StringBuilder newArgs = new StringBuilder();</span>
+<span class="pc bpc" id="L386" title="2 of 4 branches missed.">    if (path != null &amp;&amp; !path.isEmpty()) {</span>
+<span class="fc" id="L387">      newArgs.append(&quot;-cp &quot;).append(path);</span>
+    }
+<span class="fc" id="L389">    newArgs.append(' ').append(main.getName());</span>
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">    for (final String arg : args) {</span>
+<span class="nc" id="L391">      newArgs.append(' ').append(arg);</span>
+    }
+<span class="fc" id="L393">    applArgs = newArgs.toString();</span>
+<span class="fc" id="L394">  }</span>
+
+  @Override
+  public void run() {
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (isShutdownOver) {</span>
+<span class="nc bnc" id="L399" title="All 4 branches missed.">      if (shutdownHook != null &amp;&amp; shutdownHook.serviceStopped()) {</span>
+        try {
+<span class="nc" id="L401">          Thread.sleep(100);</span>
+<span class="nc" id="L402">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L403">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L404">        }</span>
+      }
+      // Already stopped
+<span class="nc" id="L407">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L408">          .syserr(&quot;Halt System now - services already stopped -&quot;);</span>
+      //FBGEXIT DetectionUtils.SystemExit(0)
+<span class="nc" id="L410">      return;</span>
+    }
+    try {
+<span class="fc" id="L413">      terminate(false);</span>
+<span class="nc" id="L414">    } catch (final Throwable t) {</span>
+<span class="nc bnc" id="L415" title="All 4 branches missed.">      if (shutdownHook != null &amp;&amp; shutdownHook.serviceStopped()) {</span>
+        try {
+<span class="nc" id="L417">          Thread.sleep(100);</span>
+<span class="nc" id="L418">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L419">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L420">        }</span>
+      }
+<span class="fc" id="L422">    }</span>
+<span class="fc" id="L423">    SysErrLogger.FAKE_LOGGER.syserr(&quot;Halt System now&quot;);</span>
+    //FBGEXIT DetectionUtils.SystemExit(0)
+<span class="fc" id="L425">  }</span>
+
+  /**
+   * Class for argument of creation of WaarpShutdownHook
+   */
+<span class="fc" id="L430">  public static class ShutdownConfiguration {</span>
+<span class="fc" id="L431">    public long timeout = 30000; // 30s per default</span>
+    public WaarpFuture serviceFuture; // no service per default
+  }
+
+  /**
+   * Finalize resources attached to handlers
+   */
+  static class ShutdownTimerTask extends TimerTask {
+    /**
+     * Internal Logger
+     */
+<span class="fc" id="L442">    private static final WaarpLogger logger =</span>
+<span class="fc" id="L443">        WaarpLoggerFactory.getLogger(ShutdownTimerTask.class);</span>
+
+    /**
+     * Internal constructor
+     */
+<span class="fc" id="L448">    ShutdownTimerTask() {</span>
+<span class="fc" id="L449">    }</span>
+
+    @Override
+    public void run() {
+<span class="fc" id="L453">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Halt System now - time waiting is over&quot;);</span>
+<span class="fc" id="L454">      logger.error(&quot;System will force EXIT&quot;);</span>
+<span class="pc bpc" id="L455" title="2 of 4 branches missed.">      if (shutdownHook != null &amp;&amp; shutdownHook.serviceStopped()) {</span>
+        try {
+<span class="fc" id="L457">          Thread.sleep(100);</span>
+<span class="nc" id="L458">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L459">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L460">        }</span>
+      }
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L463">        final Map&lt;Thread, StackTraceElement[]&gt; map = Thread.getAllStackTraces();</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">        for (final Entry&lt;Thread, StackTraceElement[]&gt; entry : map.entrySet()) {</span>
+<span class="nc" id="L465">          printStackTrace(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L466">        }</span>
+      }
+      //FBGEXIT DetectionUtils.SystemExit(0)
+<span class="fc" id="L469">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

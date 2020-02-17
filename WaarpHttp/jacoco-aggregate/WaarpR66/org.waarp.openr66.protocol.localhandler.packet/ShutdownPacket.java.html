@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ShutdownPacket.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">ShutdownPacket.java</span></div><h1>ShutdownPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+/**
+ * Shutdown Message class for packet
+ * &lt;p&gt;
+ * 1 string: spassword(or key) + 1 byte (optional) to restart (if not null)
+ */
+public class ShutdownPacket extends AbstractLocalPacket {
+  private final byte[] key;
+  private final byte restart;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new ShutdownPacket from buffer
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public static ShutdownPacket createFromBuffer(int headerLength,
+                                                int middleLength, int endLength,
+                                                ByteBuf buf)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L51">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+    }
+<span class="nc" id="L53">    final byte[] bpassword = new byte[headerLength - 1];</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="nc" id="L55">      buf.readBytes(bpassword);</span>
+    }
+<span class="nc" id="L57">    byte torestart = 0;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="nc" id="L59">      torestart = buf.readByte();</span>
+    }
+<span class="nc" id="L61">    return new ShutdownPacket(bpassword, torestart);</span>
+  }
+
+  /**
+   * @param spassword
+   */
+<span class="nc" id="L67">  public ShutdownPacket(byte[] spassword) {</span>
+<span class="nc" id="L68">    key = spassword;</span>
+<span class="nc" id="L69">    restart = 0;</span>
+<span class="nc" id="L70">  }</span>
+
+  /**
+   * @param spassword
+   * @param restart
+   */
+<span class="nc" id="L76">  public ShutdownPacket(byte[] spassword, byte restart) {</span>
+<span class="nc" id="L77">    key = spassword;</span>
+<span class="nc" id="L78">    this.restart = restart;</span>
+<span class="nc" id="L79">  }</span>
+
+  @Override
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L84">    end = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L85">  }</span>
+
+  @Override
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (key != null) {</span>
+<span class="nc" id="L91">      header = Unpooled.wrappedBuffer(key);</span>
+    }
+<span class="nc" id="L93">  }</span>
+
+  @Override
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (restart != 0) {</span>
+<span class="nc" id="L99">      final byte[] array = { restart };</span>
+<span class="nc" id="L100">      middle = Unpooled.wrappedBuffer(array);</span>
+<span class="nc" id="L101">    } else {</span>
+<span class="nc" id="L102">      middle = Unpooled.EMPTY_BUFFER;</span>
+    }
+<span class="nc" id="L104">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">    return &quot;ShutdownPacket&quot; + (restart != 0? &quot; and restart&quot; : &quot;&quot;);</span>
+  }
+
+  @Override
+  public byte getType() {
+<span class="nc" id="L113">    return LocalPacketFactory.SHUTDOWNPACKET;</span>
+  }
+
+  /**
+   * @return the key
+   */
+  public byte[] getKey() {
+<span class="nc" id="L120">    return key;</span>
+  }
+
+  public boolean isRestart() {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    return restart != 0;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

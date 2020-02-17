@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelAbstract.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp R66 Client Gui</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.model</a> &gt; <span class="el_source">DbModelAbstract.java</span></div><h1>DbModelAbstract.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.model;
+
+import org.postgresql.util.PSQLException;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ConcurrentModificationException;
+
+/**
+ * This Abstract class regroups common methods for all implementation classes.
+ */
+<span class="fc" id="L41">public abstract class DbModelAbstract implements DbModel {</span>
+  protected static DbTypeResolver dbTypeResolver;
+
+<span class="fc" id="L44">  public abstract static class DbTypeResolver {</span>
+    public abstract String getType(int sqlType);
+
+    public String getCreateTable() {
+<span class="nc" id="L48">      return &quot;CREATE TABLE &quot;;</span>
+    }
+
+    public String getPrimaryKey() {
+<span class="nc" id="L52">      return &quot; PRIMARY KEY &quot;;</span>
+    }
+
+    public String getNotNull() {
+<span class="nc" id="L56">      return &quot; NOT NULL &quot;;</span>
+    }
+
+    public String getCreateIndex() {
+<span class="nc" id="L60">      return &quot;CREATE INDEX &quot;;</span>
+    }
+  }
+
+  public DbTypeResolver getDbTypeResolver() {
+<span class="nc" id="L65">    return dbTypeResolver;</span>
+  }
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L71">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L72">      WaarpLoggerFactory.getLogger(DbModelAbstract.class);</span>
+  private static final String CANNOT_CONNECT_TO_DATABASE =
+      &quot;Cannot connect to database&quot;;
+
+  /**
+   * Recreate the disActive session
+   *
+   * @param dbSession
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  private void recreateSession(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L85">    DbAdmin admin = dbSession.getAdmin();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (admin == null) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (dbSession.isAutoCommit()) {</span>
+<span class="nc" id="L88">        admin = DbConstant.admin;</span>
+      } else {
+<span class="nc" id="L90">        admin = DbConstant.noCommitAdmin;</span>
+      }
+    }
+    DbSession newdbSession;
+<span class="nc" id="L94">    newdbSession = new DbSession(admin, dbSession.isReadOnly());</span>
+    try {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">      if (dbSession.getConn() != null) {</span>
+<span class="nc" id="L97">        dbSession.getConn().close();</span>
+      }
+<span class="nc" id="L99">    } catch (final SQLException ignored) {</span>
+      // nothing
+<span class="nc" id="L101">    } catch (final ConcurrentModificationException ignored) {</span>
+      // nothing
+<span class="nc" id="L103">    }</span>
+<span class="nc" id="L104">    dbSession.setConn(newdbSession.getConn());</span>
+<span class="nc" id="L105">    DbAdmin.addConnection(dbSession.getInternalId(), dbSession);</span>
+<span class="nc" id="L106">    DbAdmin.removeConnection(newdbSession.getInternalId());</span>
+<span class="nc" id="L107">    logger.warn(&quot;Database Connection lost: database connection reopened&quot;);</span>
+<span class="nc" id="L108">  }</span>
+
+  /**
+   * Internal use for closing connection while validating it
+   *
+   * @param dbSession
+   */
+  protected void closeInternalConnection(DbSession dbSession) {
+    try {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">      if (dbSession.getConn() != null) {</span>
+<span class="nc" id="L118">        dbSession.getConn().close();</span>
+      }
+<span class="nc" id="L120">    } catch (final SQLException ignored) {</span>
+      // nothing
+<span class="nc" id="L122">    } catch (final ConcurrentModificationException ignored) {</span>
+      // nothing
+<span class="nc" id="L124">    }</span>
+<span class="nc" id="L125">    dbSession.setDisActive(true);</span>
+<span class="nc" id="L126">    DbAdmin.removeConnection(dbSession.getInternalId());</span>
+<span class="nc" id="L127">  }</span>
+
+  @Override
+  public void validConnection(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException {
+    // try to limit the number of check!
+<span class="fc" id="L133">    synchronized (dbSession) {</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">      if (dbSession.getConn() == null) {</span>
+<span class="nc" id="L135">        throw new WaarpDatabaseNoConnectionException(</span>
+            CANNOT_CONNECT_TO_DATABASE);
+      }
+      try {
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (!dbSession.getConn().isClosed() &amp;&amp;</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">            !dbSession.getConn().isValid(DbConstant.VALIDTESTDURATION)) {</span>
+          // Give a try by closing the current connection
+<span class="nc" id="L142">          throw new SQLException(CANNOT_CONNECT_TO_DATABASE);</span>
+        }
+<span class="fc" id="L144">        dbSession.setDisActive(false);</span>
+<span class="nc" id="L145">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L146">        dbSession.setDisActive(true);</span>
+        // Might be unsupported so switch to SELECT 1 way
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (e2 instanceof PSQLException) {</span>
+<span class="nc" id="L149">          validConnectionSelect(dbSession);</span>
+<span class="nc" id="L150">          return;</span>
+        }
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (subValidationConnection(dbSession, e2)) {</span>
+<span class="nc" id="L153">          return;</span>
+        }
+<span class="nc" id="L155">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L156">        throw new WaarpDatabaseNoConnectionException(CANNOT_CONNECT_TO_DATABASE,</span>
+                                                     e2);
+<span class="fc" id="L158">      }</span>
+<span class="fc" id="L159">    }</span>
+<span class="fc" id="L160">  }</span>
+
+  private boolean subValidationConnection(final DbSession dbSession,
+                                          final SQLException e2)
+      throws WaarpDatabaseNoConnectionException {
+    try {
+      try {
+<span class="nc" id="L167">        recreateSession(dbSession);</span>
+<span class="nc" id="L168">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L169">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L170">        throw e;</span>
+<span class="nc" id="L171">      }</span>
+      try {
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (!dbSession.getConn().isValid(DbConstant.VALIDTESTDURATION)) {</span>
+          // Not ignored
+<span class="nc" id="L175">          closeInternalConnection(dbSession);</span>
+<span class="nc" id="L176">          throw new WaarpDatabaseNoConnectionException(</span>
+              CANNOT_CONNECT_TO_DATABASE, e2);
+        }
+<span class="nc" id="L179">      } catch (final SQLException e) {</span>
+<span class="nc" id="L180">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L181">        throw new WaarpDatabaseNoConnectionException(CANNOT_CONNECT_TO_DATABASE,</span>
+                                                     e);
+<span class="nc" id="L183">      }</span>
+<span class="nc" id="L184">      dbSession.setDisActive(false);</span>
+<span class="nc" id="L185">      dbSession.recreateLongTermPreparedStatements();</span>
+<span class="nc" id="L186">      return true;</span>
+<span class="nc" id="L187">    } catch (final WaarpDatabaseSqlException e1) {</span>
+      // ignore and will send a No Connection error
+    }
+<span class="nc" id="L190">    return false;</span>
+  }
+
+  protected void validConnectionSelect(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException {
+    // try to limit the number of check!
+<span class="nc" id="L196">    synchronized (dbSession) {</span>
+<span class="nc" id="L197">      Statement stmt = null;</span>
+      try {
+<span class="nc" id="L199">        stmt = dbSession.getConn().createStatement();//NOSONAR</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (stmt.execute(validConnectionString())) {</span>
+<span class="nc" id="L201">          ResultSet set = null;</span>
+          try {
+<span class="nc" id="L203">            set = stmt.getResultSet();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (!set.next()) {</span>
+<span class="nc" id="L205">              closingStatement(stmt);</span>
+              // Give a try by closing the current connection
+<span class="nc" id="L207">              throw new SQLException(CANNOT_CONNECT_TO_DATABASE);</span>
+            }
+          } finally {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (set != null) {</span>
+<span class="nc" id="L211">              set.close();</span>
+            }
+          }
+        }
+<span class="nc" id="L215">        dbSession.setDisActive(false);</span>
+<span class="nc" id="L216">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L217">        dbSession.setDisActive(true);</span>
+<span class="nc" id="L218">        stmt = subValidConnectionSelect(dbSession, stmt);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (stmt == null) {</span>
+<span class="nc" id="L220">          return;</span>
+        }
+<span class="nc" id="L222">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L223">        throw new WaarpDatabaseNoConnectionException(CANNOT_CONNECT_TO_DATABASE,</span>
+                                                     e2);
+      } finally {
+<span class="nc" id="L226">        closingStatement(stmt);</span>
+      }
+<span class="nc" id="L228">    }</span>
+<span class="nc" id="L229">  }</span>
+
+  private void closingStatement(Statement stmt) {
+    try {
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (stmt != null) {</span>
+<span class="nc" id="L234">        stmt.close();</span>
+      }
+<span class="nc" id="L236">    } catch (final SQLException e) {</span>
+      // ignore
+<span class="nc" id="L238">    }</span>
+<span class="nc" id="L239">  }</span>
+
+  private Statement subValidConnectionSelect(final DbSession dbSession,
+                                             Statement stmt)
+      throws WaarpDatabaseNoConnectionException {
+    try {
+      try {
+<span class="nc" id="L246">        recreateSession(dbSession);</span>
+<span class="nc" id="L247">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L248">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L249">        throw e;</span>
+<span class="nc" id="L250">      }</span>
+<span class="nc" id="L251">      closingStatement(stmt);</span>
+      try {
+<span class="nc" id="L253">        stmt = dbSession.getConn().createStatement();//NOSONAR</span>
+<span class="nc" id="L254">      } catch (final SQLException e) {</span>
+        // Not ignored
+<span class="nc" id="L256">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L257">        throw new WaarpDatabaseNoConnectionException(CANNOT_CONNECT_TO_DATABASE,</span>
+                                                     e);
+<span class="nc" id="L259">      }</span>
+      try {
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        if (stmt.execute(validConnectionString())) {</span>
+<span class="nc" id="L262">          ResultSet set = null;</span>
+          try {
+<span class="nc" id="L264">            set = stmt.getResultSet();</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">            if (!set.next()) {</span>
+<span class="nc" id="L266">              closingStatement(stmt);</span>
+<span class="nc" id="L267">              closeInternalConnection(dbSession);</span>
+<span class="nc" id="L268">              throw new WaarpDatabaseNoConnectionException(</span>
+                  CANNOT_CONNECT_TO_DATABASE);
+            }
+          } finally {
+<span class="nc bnc" id="L272" title="All 2 branches missed.">            if (set != null) {</span>
+<span class="nc" id="L273">              set.close();</span>
+            }
+          }
+        }
+<span class="nc" id="L277">      } catch (final SQLException e) {</span>
+<span class="nc" id="L278">        closingStatement(stmt);</span>
+<span class="nc" id="L279">        closeInternalConnection(dbSession);</span>
+<span class="nc" id="L280">        throw new WaarpDatabaseNoConnectionException(CANNOT_CONNECT_TO_DATABASE,</span>
+                                                     e);
+<span class="nc" id="L282">      }</span>
+<span class="nc" id="L283">      dbSession.setDisActive(false);</span>
+<span class="nc" id="L284">      dbSession.recreateLongTermPreparedStatements();</span>
+<span class="nc" id="L285">      closingStatement(stmt);</span>
+<span class="nc" id="L286">      return null;</span>
+<span class="nc" id="L287">    } catch (final WaarpDatabaseSqlException e1) {</span>
+      // ignore and will send a No Connection error
+    }
+<span class="nc" id="L290">    return stmt;</span>
+  }
+
+  /**
+   * @return the associated String to validate the connection (as &quot;select 1
+   *     from
+   *     dual&quot;)
+   */
+  protected abstract String validConnectionString();
+
+  @Override
+  public Connection getDbConnection(String server, String user, String passwd)
+      throws SQLException {
+    // Default implementation
+<span class="fc" id="L304">    return DriverManager.getConnection(server, user, passwd);</span>
+  }
+
+  @Override
+  public void releaseResources() {
+<span class="fc" id="L309">  }</span>
+
+  @Override
+  public int currentNumberOfPooledConnections() {
+<span class="fc" id="L313">    return DbAdmin.getNbConnection();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

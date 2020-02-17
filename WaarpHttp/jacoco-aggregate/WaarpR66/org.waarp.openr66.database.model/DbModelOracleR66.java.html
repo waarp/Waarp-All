@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelOracleR66.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.database.model</a> &gt; <span class="el_source">DbModelOracleR66.java</span></div><h1>DbModelOracleR66.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.database.model;
+
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelOracle;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.openr66.database.data.DbConfiguration;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbHostConfiguration;
+import org.waarp.openr66.database.data.DbMultipleMonitor;
+import org.waarp.openr66.database.data.DbRule;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.utils.R66Versions;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Oracle Database Model implementation
+ */
+public class DbModelOracleR66 extends DbModelOracle {
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @param dbserver
+   * @param dbuser
+   * @param dbpasswd
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+  public DbModelOracleR66(String dbserver, String dbuser, String dbpasswd)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L56">    super(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L57">  }</span>
+
+  @Override
+  public void createTables(DbSession session)
+      throws WaarpDatabaseNoConnectionException {
+    // Create tables: configuration, hosts, rules, runner, cptrunner
+<span class="nc" id="L63">    final String createTableH2 = &quot;CREATE TABLE &quot;;</span>
+<span class="nc" id="L64">    final String constraint = &quot; CONSTRAINT &quot;;</span>
+<span class="nc" id="L65">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="nc" id="L66">    final String notNull =</span>
+        &quot; &quot;; // NOT NULL not correctly supported with Oracle since Empty String =&gt; Null for Oracle
+
+    // Multiple Mode
+<span class="nc" id="L70">    StringBuilder action =</span>
+        new StringBuilder(createTableH2 + DbMultipleMonitor.table + '(');
+    final DbMultipleMonitor.Columns[] mcolumns =
+<span class="nc" id="L73">        DbMultipleMonitor.Columns.values();</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    for (int i = 0; i &lt; mcolumns.length - 1; i++) {</span>
+<span class="nc" id="L75">      action.append(mcolumns[i].name())</span>
+<span class="nc" id="L76">            .append(DBType.getType(DbMultipleMonitor.dbTypes[i]))</span>
+<span class="nc" id="L77">            .append(notNull).append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L79">    action.append(mcolumns[mcolumns.length - 1].name()).append(</span>
+<span class="nc" id="L80">        DBType.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))</span>
+<span class="nc" id="L81">          .append(notNull).append(',');</span>
+<span class="nc" id="L82">    action.append(constraint + &quot; multimonit_pk &quot; + primaryKey + '(')</span>
+<span class="nc" id="L83">          .append(mcolumns[mcolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L84">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L85">    DbRequest request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L87">      request.query(action.toString());</span>
+<span class="nc" id="L88">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L89">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L90">      return;</span>
+<span class="nc" id="L91">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L92">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L95">      request.close();</span>
+    }
+<span class="nc" id="L97">    final DbMultipleMonitor multipleMonitor =</span>
+<span class="nc" id="L98">        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);</span>
+    try {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">      if (!multipleMonitor.exist()) {</span>
+<span class="nc" id="L101">        multipleMonitor.insert();</span>
+      }
+<span class="nc" id="L103">    } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L104">      SysErrLogger.FAKE_LOGGER.syserr(e1);</span>
+<span class="nc" id="L105">    }</span>
+
+    // Configuration
+<span class="nc" id="L108">    action = new StringBuilder(createTableH2 + DbConfiguration.table + '(');</span>
+<span class="nc" id="L109">    final DbConfiguration.Columns[] ccolumns = DbConfiguration.Columns.values();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    for (int i = 0; i &lt; ccolumns.length - 1; i++) {</span>
+<span class="nc" id="L111">      action.append(ccolumns[i].name())</span>
+<span class="nc" id="L112">            .append(DBType.getType(DbConfiguration.dbTypes[i])).append(notNull)</span>
+<span class="nc" id="L113">            .append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L115">    action.append(ccolumns[ccolumns.length - 1].name())</span>
+<span class="nc" id="L116">          .append(DBType.getType(DbConfiguration.dbTypes[ccolumns.length - 1]))</span>
+<span class="nc" id="L117">          .append(notNull).append(',');</span>
+<span class="nc" id="L118">    action.append(constraint + &quot; conf_pk &quot; + primaryKey + '(')</span>
+<span class="nc" id="L119">          .append(ccolumns[ccolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L120">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L121">    request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L123">      request.query(action.toString());</span>
+<span class="nc" id="L124">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L125">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L126">      return;</span>
+<span class="nc" id="L127">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L128">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L131">      request.close();</span>
+    }
+
+    // HostConfiguration
+<span class="nc" id="L135">    action = new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');</span>
+    final DbHostConfiguration.Columns[] chcolumns =
+<span class="nc" id="L137">        DbHostConfiguration.Columns.values();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    for (int i = 0; i &lt; chcolumns.length - 1; i++) {</span>
+<span class="nc" id="L139">      action.append(chcolumns[i].name())</span>
+<span class="nc" id="L140">            .append(DBType.getType(DbHostConfiguration.dbTypes[i]))</span>
+<span class="nc" id="L141">            .append(notNull).append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L143">    action.append(chcolumns[chcolumns.length - 1].name()).append(</span>
+<span class="nc" id="L144">        DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))</span>
+<span class="nc" id="L145">          .append(notNull).append(',');</span>
+<span class="nc" id="L146">    action.append(constraint + &quot; hostconf_pk &quot; + primaryKey + '(')</span>
+<span class="nc" id="L147">          .append(chcolumns[chcolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L148">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L149">    request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L151">      request.query(action.toString());</span>
+<span class="nc" id="L152">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L153">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L154">      return;</span>
+<span class="nc" id="L155">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L156">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L159">      request.close();</span>
+    }
+
+    // hosts
+<span class="nc" id="L163">    action = new StringBuilder(createTableH2 + DbHostAuth.table + '(');</span>
+<span class="nc" id="L164">    final DbHostAuth.Columns[] hcolumns = DbHostAuth.Columns.values();</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">    for (int i = 0; i &lt; hcolumns.length - 1; i++) {</span>
+<span class="nc" id="L166">      action.append(hcolumns[i].name())</span>
+<span class="nc" id="L167">            .append(DBType.getType(DbHostAuth.dbTypes[i])).append(notNull)</span>
+<span class="nc" id="L168">            .append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L170">    action.append(hcolumns[hcolumns.length - 1].name())</span>
+<span class="nc" id="L171">          .append(DBType.getType(DbHostAuth.dbTypes[hcolumns.length - 1]))</span>
+<span class="nc" id="L172">          .append(notNull).append(',');</span>
+<span class="nc" id="L173">    action.append(constraint + &quot; host_pk &quot; + primaryKey + '(')</span>
+<span class="nc" id="L174">          .append(hcolumns[hcolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L175">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L177">      request.query(action.toString());</span>
+<span class="nc" id="L178">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L179">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L180">      return;</span>
+<span class="nc" id="L181">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L182">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L185">      request.close();</span>
+    }
+
+    // rules
+<span class="nc" id="L189">    action = new StringBuilder(createTableH2 + DbRule.table + '(');</span>
+<span class="nc" id="L190">    final DbRule.Columns[] rcolumns = DbRule.Columns.values();</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    for (int i = 0; i &lt; rcolumns.length - 1; i++) {</span>
+<span class="nc" id="L192">      action.append(rcolumns[i].name())</span>
+<span class="nc" id="L193">            .append(DBType.getType(DbRule.dbTypes[i])).append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L195">    action.append(rcolumns[rcolumns.length - 1].name())</span>
+<span class="nc" id="L196">          .append(DBType.getType(DbRule.dbTypes[rcolumns.length - 1]))</span>
+<span class="nc" id="L197">          .append(notNull).append(',');</span>
+<span class="nc" id="L198">    action.append(constraint + &quot; rule_pk &quot; + primaryKey + '(')</span>
+<span class="nc" id="L199">          .append(rcolumns[rcolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L200">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L202">      request.query(action.toString());</span>
+<span class="nc" id="L203">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L204">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L205">      return;</span>
+<span class="nc" id="L206">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L207">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L210">      request.close();</span>
+    }
+
+    // runner
+<span class="nc" id="L214">    action = new StringBuilder(createTableH2 + DbTaskRunner.table + '(');</span>
+<span class="nc" id="L215">    final DbTaskRunner.Columns[] acolumns = DbTaskRunner.Columns.values();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
+<span class="nc" id="L217">      action.append(acolumns[i].name())</span>
+<span class="nc" id="L218">            .append(DBType.getType(DbTaskRunner.dbTypes[i])).append(notNull)</span>
+<span class="nc" id="L219">            .append(&quot;, &quot;);</span>
+    }
+    // Several columns for primary key
+<span class="nc" id="L222">    action.append(constraint + &quot; runner_pk &quot; + primaryKey + '(');</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">    for (int i = DbTaskRunner.NBPRKEY; i &gt; 1; i--) {</span>
+<span class="nc" id="L224">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
+    }
+<span class="nc" id="L226">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L227">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L229">      request.query(action.toString());</span>
+<span class="nc" id="L230">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L231">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L232">      return;</span>
+<span class="nc" id="L233">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L234">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L237">      request.close();</span>
+    }
+    // Index Runner
+<span class="nc" id="L240">    action = new StringBuilder(</span>
+        &quot;CREATE INDEX IDX_RUNNER ON &quot; + DbTaskRunner.table + '(');
+<span class="nc" id="L242">    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
+<span class="nc" id="L244">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
+    }
+<span class="nc" id="L246">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
+<span class="nc" id="L247">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L249">      request.query(action.toString());</span>
+<span class="nc" id="L250">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L251">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L252">      return;</span>
+<span class="nc" id="L253">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L254">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      // XXX FIX no return
+    } finally {
+<span class="nc" id="L257">      request.close();</span>
+    }
+
+    // cptrunner
+<span class="nc" id="L261">    action = new StringBuilder(</span>
+        &quot;CREATE SEQUENCE &quot; + DbTaskRunner.fieldseq + &quot; MINVALUE &quot; +
+        (ILLEGALVALUE + 1) + &quot; START WITH &quot; + (ILLEGALVALUE + 1));
+<span class="nc" id="L264">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+    try {
+<span class="nc" id="L266">      request.query(action.toString());</span>
+<span class="nc" id="L267">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L268">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L269">      return;</span>
+<span class="nc" id="L270">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L271">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L272">      return;</span>
+    } finally {
+<span class="nc" id="L274">      request.close();</span>
+    }
+
+<span class="nc" id="L277">    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L278">                                        R66Versions.V2_4_25.getVersion());</span>
+<span class="nc" id="L279">  }</span>
+
+  @Override
+  public boolean upgradeDb(DbSession session, String version)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L284">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {</span>
+<span class="nc" id="L286">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L287">          version + &quot; to &quot; + R66Versions.V2_4_13.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L288">      final String createTableH2 = &quot;CREATE TABLE &quot;;</span>
+<span class="nc" id="L289">      final String constraint = &quot; CONSTRAINT &quot;;</span>
+<span class="nc" id="L290">      final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="nc" id="L291">      final String notNull = &quot; NOT NULL &quot;;</span>
+
+      // HostConfiguration
+<span class="nc" id="L294">      StringBuilder action =</span>
+          new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
+      final DbHostConfiguration.Columns[] chcolumns =
+<span class="nc" id="L297">          DbHostConfiguration.Columns.values();</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">      for (int i = 0; i &lt; chcolumns.length - 1; i++) {</span>
+<span class="nc" id="L299">        action.append(chcolumns[i].name())</span>
+<span class="nc" id="L300">              .append(DBType.getType(DbHostConfiguration.dbTypes[i]))</span>
+<span class="nc" id="L301">              .append(notNull).append(&quot;, &quot;);</span>
+      }
+<span class="nc" id="L303">      action.append(chcolumns[chcolumns.length - 1].name()).append(</span>
+<span class="nc" id="L304">          DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))</span>
+<span class="nc" id="L305">            .append(notNull).append(',');</span>
+<span class="nc" id="L306">      action.append(constraint + &quot; hostconf_pk &quot; + primaryKey + '(')</span>
+<span class="nc" id="L307">            .append(chcolumns[chcolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L308">      SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L309">      final DbRequest request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L311">        request.query(action.toString());</span>
+<span class="nc" id="L312">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L313">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L314">        return false;</span>
+      } finally {
+<span class="nc" id="L316">        request.close();</span>
+      }
+    }
+<span class="nc" id="L319">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {</span>
+<span class="nc" id="L321">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L322">          version + &quot; to &quot; + R66Versions.V2_4_17.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L323">      final String command = &quot;ALTER TABLE &quot; + DbTaskRunner.table + &quot; ADD ( &quot; +</span>
+<span class="nc" id="L324">                             DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' +</span>
+<span class="nc" id="L325">                             DBType.getType(</span>
+                                 DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
+<span class="nc" id="L327">                                     .ordinal()]) + &quot; DEFAULT '{}' NOT NULL ) &quot;;</span>
+<span class="nc" id="L328">      final DbRequest request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L330">        request.query(command);</span>
+<span class="nc" id="L331">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L332">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+        // return false
+      } finally {
+<span class="nc" id="L335">        request.close();</span>
+      }
+    }
+<span class="nc" id="L338">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {</span>
+<span class="nc" id="L340">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L341">          version + &quot; to &quot; + R66Versions.V2_4_23.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L342">      String command = &quot;ALTER TABLE &quot; + DbHostAuth.table + &quot; ADD ( &quot; +</span>
+<span class="nc" id="L343">                       DbHostAuth.Columns.ISACTIVE.name() + ' ' + DBType</span>
+<span class="nc" id="L344">                           .getType(</span>
+                               DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE
+<span class="nc" id="L346">                                   .ordinal()]) + &quot; DEFAULT &quot; + true +</span>
+                       &quot; NOT NULL ) &quot;;
+<span class="nc" id="L348">      DbRequest request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L350">        request.query(command);</span>
+<span class="nc" id="L351">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L352">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+        // return false
+      } finally {
+<span class="nc" id="L355">        request.close();</span>
+      }
+<span class="nc" id="L357">      command = &quot;ALTER TABLE &quot; + DbHostAuth.table + &quot; ADD ( &quot; +</span>
+<span class="nc" id="L358">                DbHostAuth.Columns.ISPROXIFIED.name() + ' ' + DBType.getType(</span>
+<span class="nc" id="L359">          DbHostAuth.dbTypes[DbHostAuth.Columns.ISPROXIFIED.ordinal()]) +</span>
+                &quot; DEFAULT &quot; + false + &quot; NOT NULL ) &quot;;
+<span class="nc" id="L361">      request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L363">        request.query(command);</span>
+<span class="nc" id="L364">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L365">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+        // return false
+      } finally {
+<span class="nc" id="L368">        request.close();</span>
+      }
+    }
+<span class="nc" id="L371">    if (PartnerConfiguration</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {</span>
+<span class="nc" id="L373">      SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L374">          version + &quot; to &quot; + R66Versions.V2_4_25.getVersion() + &quot;? &quot; + true);</span>
+<span class="nc" id="L375">      final String command =</span>
+          &quot;ALTER TABLE &quot; + DbTaskRunner.table + &quot; MODIFY ( &quot; +
+<span class="nc" id="L377">          DbTaskRunner.Columns.FILENAME.name() + ' ' + DBType.getType(</span>
+<span class="nc" id="L378">              DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME.ordinal()]) +</span>
+<span class="nc" id="L379">          &quot; NOT NULL, &quot; + DbTaskRunner.Columns.ORIGINALNAME.name() + ' ' +</span>
+<span class="nc" id="L380">          DBType.getType(DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME</span>
+<span class="nc" id="L381">              .ordinal()]) + &quot; NOT NULL )&quot;;</span>
+<span class="nc" id="L382">      final DbRequest request = new DbRequest(session);</span>
+      try {
+<span class="nc" id="L384">        SysErrLogger.FAKE_LOGGER.sysout(&quot;Command: &quot; + command);</span>
+<span class="nc" id="L385">        request.query(command);</span>
+<span class="nc" id="L386">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L387">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L388">        return false;</span>
+      } finally {
+<span class="nc" id="L390">        request.close();</span>
+      }
+    }
+<span class="nc" id="L393">    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="nc" id="L394">                                        R66Versions.V2_4_25.getVersion());</span>
+<span class="nc" id="L395">    return true;</span>
+  }
+
+  @Override
+  public boolean needUpgradeDb(DbSession session, String version,
+                               boolean tryFix)
+      throws WaarpDatabaseNoConnectionException {
+    // Check if the database is up to date
+<span class="nc" id="L403">    return DbModelFactoryR66</span>
+<span class="nc" id="L404">        .needUpgradeDbAllDb(dbTypeResolver, session, version);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
