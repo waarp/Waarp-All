@@ -4,7 +4,13 @@ Liste des changements
 
 La procédure de mise à jour est disponible ici: :any:`upgrade`
 
-Waarp R66 Next (Non publiée)
+Non publié
+==========
+
+
+
+
+Waarp R66 3.3.1 (2020-02-17)
 ============================
 
 Correctifs
