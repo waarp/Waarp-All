@@ -150,7 +150,8 @@ dbdriver          String  N               Type de base de données utilisé. Son
 dbserver          String  N               Chaîne de connexion JDBC à la base de données. Consulter le manuel du pilote JDBC utilisé pour la syntaxe exacte.
 dbuser            String  N               Utilisateur de la base de données
 dbpasswd          String  N               Mot de passe de l'utilisateur de la base de données.
-dbcheck           boolean N    True       Vérifie que le modèle de données est à jour au démarrage, et effectue la mise à jour le cas échéant
+autoUpgrade       boolean N    True       Vérifie que le modèle de données est à jour au démarrage, et effectue la mise à jour le cas échéant
+dbcheck           boolean N    True       *(déprécié)* Utiliser ``autoUpgrade`` à la place
 ================= ======= ==== ========== =============
 
 
@@ -199,6 +200,6 @@ Exemple complet
            <dbserver>jdbc:postgresql://localhost:5432/waarp_r66</dbserver>
            <dbuser>username</dbuser>
            <dbpasswd>password</dbpasswd>
-           <dbcheck>false</dbcheck>
+           <autoUpgrade>false</autoUpgrade>
      </db>
    </config>
