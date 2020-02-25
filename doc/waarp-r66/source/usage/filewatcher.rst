@@ -223,7 +223,6 @@ balises suivantes :
 
 
 ``<ignoreAlreadyUsed>``
-
    Si positionné à vrai, tout fichier déjà traité et non effacé, même s'il est
    modifié, sera ignoré et ne sera donc pas renvoyé pour éviter tout risque de
    collisions quant au contenu transféré. Normalement, cette option devrait être

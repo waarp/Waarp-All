@@ -195,7 +195,8 @@ dbdriver          String  N               Type de base de données utilisé. Son
 dbserver          String  N               Chaîne de connexion JDBC à la base de données. Consulter le manuel du pilote JDBC utilisé pour la syntaxe exacte.
 dbuser            String  N               Utilisateur de la base de données
 dbpasswd          String  N               Mot de passe de l'utilisateur de la base de données.
-dbcheck           boolean N    True       Vérifie que le modèle de données est à jour au démarrage, et effectue la mise à jour le cas échéant
+autoUpgrade       boolean N    True       Vérifie que le modèle de données est à jour au démarrage, et effectue la mise à jour le cas échéant
+dbcheck           boolean N    True       *(déprécié)* Utiliser ``autoUpgrade`` à la place
 ================= ======= ==== ========== =============
 
 
@@ -319,68 +320,29 @@ aliasid           string  O               liste de noms alias équiavelents, sé
 Section ``ExtraOptions``
 ------------------------
 
-Extra XML Option:
+Mise à jour automatique de la base de données
+"""""""""""""""""""""""""""""""""""""""""""""
 
-- Mise à jour automatique de la base en fonction de la version de Waarp
+Par défaut, le champ ``<root><version>version</version></root>`` du fichier de
+configuration XML est géré par Waarp pour vérifier la configuration de la base
+de données et sa version par rapport à celle du programme, afin de permettre une
+mise à jour automatique.
 
-Par défaut, le champ ``<root><version>version</version></root>`` du fichier de configuration XML
-est géré par Waarp pour vérifier la configuration de la base de données et sa version par rapport à celle
-du programme, afin de permettre une mise à jour automatique.
+Cette mise à jour automatique peut être empêchée par l'option
+``<db><autoUpgrade>False</autoUpgrade>...</db>`` ou grâce à la propriété Java
+``-Dopenr66.startup.dbcheck=0``.
 
-Cette mise à jour automatique peut être empêchée par l'option ``<db>dbcheck>False</dbcheck>...</db>`` ou
-grâce à la propriété Java ``-Dopenr66.startup.dbcheck=0``.
 
-- Partage d'une même base entre plusieurs moniteurs Waarp
+Partage d'une même base entre plusieurs moniteurs Waarp
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Dans le cas où une base est partagée entre plusieurs moniteurs R66, afin d'être capable de voir tous les
 transferts dans la console web d'administration, vous pouvez indiquer une option spéciale dans "Autres
 informations" avec l'identifiant qui sera utilisé pour se connecter à cette interface Web.
-    ``<root>...<seeallid>id1,id2,...,idn</seeallid></root>``
 
-- Options additionnelles pour Waarp via la JVM :
+.. code-block:: xml
 
-  - ``-Dopenr66.locale=en|fr`` pour choisir entre l'anglais ou le français pour le langage de l'interface (
-  (défaut = en)
-  - ``-Dopenr66.ishostproxyfied=1|0``  pour indiquer que ce serveur est derrière un proxy (comme R66Proxy
-  ou un matériel équivalent) afin d'empêcher le contrôle des adresses IP de s'appliquer (puisque celle-ci
-  sera celle du Proxy) (défaut = 0)
-  - ``-Dopenr66.startup.warning=1|0`` pour décider si les Warning du démarrage seront affichées ou non
-  (défaut = 1)
-  - ``-Dopenr66.startup.checkdb=1|0`` pour choisir s'il y a un test entre le niveau de la configuration de la
-  base de données
-  et la version du serveur lors du démarrage (défaut = 0)
-   - ``-Dopenr66.startup.autoUpgrade=0|1`` (défaut 0) Si les versions de la base et du moniteur diffèrent,
-   autorise la mise à jour automatique de la base de données.
-  - ``-Dopenr66.chroot.checked=1|0`` pour choisir si toutes les règles doivent respecter le contrat "choroot"
-  Par exemple, tenter de récupérer un fichier (RECV) depuis un partenaire distant en spécifiant un chemin
-  complet peut être autorisé, même si il est en dehors du répertoire "OUT", sauf si checked=1. Si
-  checked=1, alors tous les fichiers reçus doivent spécifier un chemin incluant "OUT", sans remonter
-  au-delà.  (défaut = 1)
-  - ``-Dopenr66.blacklist.badauthent=1|0`` pour choisir si un serveur qui a une mauvaise identification
-  doit être immédiatement "black listé" (il n'est plus autorisé pour un temps) pour prévenir des attaques
-  DDOS. Si ``-Dopenr66.ishostproxyfied=1``, alors il est obligatoirement faux. En effet, dans ce cas, si un
-   des partenaires a un problème d'authentification, alors tous les partenaires proxifiés via le même
-   proxy seront bannis puisque visibles depuis la même adresse IP. (défaut = 1)
-  - ``-Dopenr66.filename.maxlength=n`` pour choisir la longueur maximum autorisée pour le nom du fichier
-   (défaut = 255) quand on reçoit un fichier (nom temporaire et nom final). Ceci n'empêche pas de changer
-   le nom du fichier après et #ORIGINALFILENAME# contient toujours le nom complet d'origine du fichier, non
-    tronqué.
-  - ``-Dopenr66.trace.stats=n`` pour mettre en debug certaines traces spécifiques sur des données toutes
-  les n secondes. 0 signifie absence de trace. (défaut n=0)
-  - ``-Dopenr66.cache.limit=n`` et ``-Dopenr66.cache.timelimit=m`` pour mettre en cache les informations de
-   transfert avec
-      - n est le nombre maximum de tâches à conserver dans un cache LRU (Last Recent Used). La valeur
-      minimale est 100
-      - m est le temps maximum en millisecondes avant qu'un élément créé, utilisé ou modifié soit évincé du
-       cache. La valeur minimale est 1000 ms (1s). Une valeur trop grande peut provoquer des consommations
-       mémoires trop importante.
-    (défaut n=20000, m=180000 - 180s -)
-    **A noter: Cette option n'est plus valide à compter de la version 3.2.0 qui ne tient plus un cache LRU
-    actif**
-   - ``-Dopenr66.usespaceseparator=0|1`` (défaut 0) Autorise Waarp à utiliser l'espace comme séparateur
-   mais induit des risques de bugs.
-   - ``-Dopenr66.executebeforetransferred=0|1`` (défaut 1) Autorise Waarp à exécuter les Error-Tasks si une
-    erreur intervient pendant les "pré-task", avant le transfert effectif
+   <root>...<seeallid>id1,id2,...,idn</seeallid></root>
 
 
 .. _server-xml-example:
@@ -479,6 +441,6 @@ Exemple complet
            <dbserver>jdbc:postgresql://localhost:5432/waarp_r66</dbserver>
            <dbuser>username</dbuser>
            <dbpasswd>password</dbpasswd>
-           <dbcheck>false</dbcheck>
+           <autoUpgrade>false</autoUpgrade>
        </db>
    </config>
