@@ -30,6 +30,8 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
@@ -41,6 +43,8 @@ import java.util.Map.Entry;
  * Abstract database table implementation
  */
 public abstract class AbstractDbDataDao<E> extends AbstractDbData {
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(AbstractDbDataDao.class);
   private static final String NO_ROW_FOUND = "No row found";
   public static final String JSON_MODEL = "@model";
 
@@ -188,12 +192,19 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   }
 
   /**
-   * @return the runner as Json
+   * @return the PoJo as Json
    */
   @Override
   public String asJson() {
     final ObjectNode node = getJson();
     return JsonHandler.writeAsString(node);
+  }
+
+  /**
+   * @return the PoJo as Json
+   */
+  public String toJson() {
+    return JsonHandler.writeAsString(pojo);
   }
 
   /**
@@ -229,15 +240,33 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   @Override
   public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
+    boolean foundPrimaryKey = false;
     for (Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
       final Entry<String, JsonNode> entry = it.next();
+      logger.debug("{} = {}", entry.getKey(), entry.getValue());
       if ("UPDATEDINFO".equalsIgnoreCase(entry.getKey())) {
         continue;
       }
       if (getPrimaryField().equalsIgnoreCase(entry.getKey())) {
-        continue;
+        if (ignorePrimaryKey) {
+          continue;
+        } else {
+          foundPrimaryKey = !entry.getValue().isNull() &&
+                            !entry.getValue().asText().isEmpty();
+        }
       }
       setFromJson(entry.getKey(), entry.getValue());
+    }
+    if (!ignorePrimaryKey && foundPrimaryKey) {
+      try {
+        insert();
+      } catch (WaarpDatabaseException e) {
+        try {
+          update();
+        } catch (WaarpDatabaseException ex) {
+          logger.error("Cannot save item", ex);
+        }
+      }
     }
   }
 

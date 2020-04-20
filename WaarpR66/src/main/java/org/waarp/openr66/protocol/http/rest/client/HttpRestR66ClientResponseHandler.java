@@ -411,6 +411,7 @@ public abstract class HttpRestR66ClientResponseHandler
             logger.warn("Error", e2);
             throw new HttpIncorrectRequestException(e2);
           }
+          cumulativeBody.release();
           cumulativeBody = null;
         }
         actionFromResponse(ctx.channel());

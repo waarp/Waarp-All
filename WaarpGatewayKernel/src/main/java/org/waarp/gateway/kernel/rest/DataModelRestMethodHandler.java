@@ -390,9 +390,15 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
     try {
       item.insert();
     } catch (final WaarpDatabaseException e) {
-      throw new HttpIncorrectRequestException(
-          "Issue while inserting to database", e);
+      // Revert to update
+      try {
+        item.update();
+      } catch (WaarpDatabaseException ex) {
+        throw new HttpIncorrectRequestException(
+            "Issue while inserting to database", e);
+      }
     }
+    logger.debug("Save {}", item.getJson());
     result.addAnswer(item.getJson());
     result.setCommand(COMMAND_TYPE.CREATE);
     setOk(handler, result);
