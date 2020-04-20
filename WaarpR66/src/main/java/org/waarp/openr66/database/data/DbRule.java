@@ -226,7 +226,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND, e);
+      throw new WaarpDatabaseNoDataException(RULE_NOT_FOUND + " " + idRule, e);
     } finally {
       DAOFactory.closeDAO(ruleAccess);
     }

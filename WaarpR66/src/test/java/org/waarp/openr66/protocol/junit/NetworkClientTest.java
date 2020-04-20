@@ -1696,7 +1696,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test98_Http() throws InterruptedException {
+  public void test97_Http() throws InterruptedException {
     try {
       setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
       Configuration.configuration.setTimeoutCon(100);
@@ -1756,7 +1756,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test98_Https() throws InterruptedException {
+  public void test97_Https() throws InterruptedException {
     try {
       setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
       Configuration.configuration.setTimeoutCon(100);
@@ -1820,7 +1820,7 @@ public class NetworkClientTest extends TestAbstract {
     }
   }
 
-  @Ignore("Issue on checkBaseAuthent")
+  //@Ignore("Issue on checkBaseAuthent")
   @Test
   public void test98_RestR66() throws Exception {
     HttpTestRestR66Client.keydesfilename =
@@ -1830,7 +1830,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test98_RestR66V1V2Simple() throws Exception {
+  public void test97_RestR66V1V2Simple() throws Exception {
     try {
       // Test Rest V1
       // Step # | name | target | value | comment
@@ -1891,6 +1891,9 @@ public class NetworkClientTest extends TestAbstract {
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
       SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("business"));
+      assertTrue(driver.getPageSource().contains(Version.fullIdentifier()));
+      assertTrue(driver.getPageSource().contains(
+          org.waarp.openr66.protocol.utils.Version.ID));
       driver.get(v2BaseUri + "hosts");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
       SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
@@ -1919,7 +1922,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test97_Tasks() throws Exception {
+  public void test96_Tasks() throws Exception {
     System.err.println("Start Tasks");
     final File totest = new File("/tmp/R66/in/testTask.txt");
     final FileWriter fileWriter = new FileWriter(totest);

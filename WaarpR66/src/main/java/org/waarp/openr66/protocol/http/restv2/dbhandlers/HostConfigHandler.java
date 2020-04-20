@@ -34,6 +34,7 @@ import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.protocol.http.restv2.converters.HostConfigConverter;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.utils.Version;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -106,6 +107,9 @@ public class HostConfigHandler extends AbstractRestDbHandler {
       if (business != null) {
         final ObjectNode responseObject =
             HostConfigConverter.businessToNode(business);
+        responseObject.put("versionR66", Version.ID);
+        responseObject.put("versionBin",
+                           org.waarp.common.utility.Version.fullIdentifier());
         final String responseText = JsonUtils.nodeToString(responseObject);
         responder.sendJson(OK, responseText);
       } else {
