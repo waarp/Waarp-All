@@ -7,7 +7,20 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.3.2 (2020-04-20)
+============================
 
+Correctifs
+==========
+
+- Corrige les tests Rest V1
+- Corrige des méthodes manquantes dans le module WaarpHttp
+- Mise à jour des dépendances externes (compatibles Java 6)
+- Correction de l'API Rest V2 /v2/hostconfig/ qui retourne versionR66
+(version du protocole) et versionBin (version du code)
+   - La version retournée par l'API V1 n'est plus conforme suite la mise à jour
+    automatique du schéma de la base de données.
+- Corrige une fuite mémoire API Rest
 
 
 Waarp R66 3.3.1 (2020-02-17)
