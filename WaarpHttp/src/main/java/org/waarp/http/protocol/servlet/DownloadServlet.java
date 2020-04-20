@@ -167,7 +167,7 @@ public class DownloadServlet extends AbstractServlet {
     }
     String identifier = arguments.get(IDENTIFIER);
     if (identifier == null) {
-      identifier = new LongUuid().toString();
+      identifier = new LongUuid().getLong() + "";
     }
     String comment = arguments.get(COMMENT);
     if (comment == null) {

@@ -26,41 +26,42 @@ import org.waarp.openr66.context.R66Session;
 import java.util.Map;
 
 /**
- * Interface for authentication used by the Servlet or other ways (according
- * to implementations)
+ * Interface for authentication used by the Servlet or other ways (according to
+ * implementations)
  */
 public interface HttpAuthent {
-  /**
-   * Method to setup authentication using servlet arguments
-   *
-   * @param arguments Map of all arguments as String
-   */
-  void initializeAuthent(Map<String, String> arguments);
+	public static final String FIELD_USER = "user";
+	public static final String FIELD_KEY = "key";
 
-  /**
-   * Method to check authentication
-   *
-   * @param httpSession
-   * @param session
-   *
-   * @throws IllegalArgumentException
-   */
-  void checkAuthent(final HttpSession httpSession, final R66Session session)
-      throws IllegalArgumentException;
+	/**
+	 * Method to setup authentication using servlet arguments
+	 *
+	 * @param arguments Map of all arguments as String
+	 */
+	void initializeAuthent(Map<String, String> arguments);
 
-  /**
-   * @return the user Id
-   */
-  String getUserId();
+	/**
+	 * Method to check authentication
+	 *
+	 * @param httpSession
+	 * @param session
+	 *
+	 * @throws IllegalArgumentException
+	 */
+	void checkAuthent(final HttpSession httpSession, final R66Session session) throws IllegalArgumentException;
 
-  /**
-   * Finalize the transfer according to status in sessions
-   *
-   * @param httpSession
-   * @param session
-   *
-   * @throws IllegalArgumentException
-   */
-  void finalizeTransfer(final HttpSession httpSession, final R66Session session)
-      throws IllegalArgumentException;
+	/**
+	 * @return the user Id
+	 */
+	String getUserId();
+
+	/**
+	 * Finalize the transfer according to status in sessions
+	 *
+	 * @param httpSession
+	 * @param session
+	 *
+	 * @throws IllegalArgumentException
+	 */
+	void finalizeTransfer(final HttpSession httpSession, final R66Session session) throws IllegalArgumentException;
 }
