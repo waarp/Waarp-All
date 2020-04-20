@@ -177,10 +177,10 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     // Try to reload it
     try {
       logger.debug("{} {} <-> {}", specialId, requester, requested);
-      runner = new DbTaskRunner(specialId, requested, requester);
+      runner = new DbTaskRunner(specialId, requester, requested);
     } catch (WaarpDatabaseException e) {
       logger.debug("{} {} {}", specialId, requester, requested);
-      runner = new DbTaskRunner(specialId, requester, requested);
+      runner = new DbTaskRunner(specialId, requested, requester);
     }
     runner.setSender(true);
     try {
@@ -204,6 +204,14 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    */
   public long getFileSize() {
     return filesize;
+  }
+
+  /**
+   * 
+   * @return the identifier
+   */
+  public String getIdentifier() {
+         return identifier;
   }
 
   /**

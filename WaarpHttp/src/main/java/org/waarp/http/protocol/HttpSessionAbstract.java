@@ -147,6 +147,8 @@ public class HttpSessionAbstract implements HttpSession {
       Transfer transfer =
           new Transfer(requester, rulename, rule.getMode(), !uploadMode,
                        filename, comment, chunkSize);
+      transfer.setRequested(requested);
+      transfer.setRequester(requester);
       transfer.setId(identifier);
       runner = new DbTaskRunner(transfer);
       try {
@@ -298,5 +300,13 @@ public class HttpSessionAbstract implements HttpSession {
       // nothing
     }
     runner.clean();
+  }
+
+  /**
+   *
+   * @return the current DbTaskRunner if any (null if not)
+   */
+  public DbTaskRunner getDbTaskRunner() {
+    return session.getRunner();
   }
 }

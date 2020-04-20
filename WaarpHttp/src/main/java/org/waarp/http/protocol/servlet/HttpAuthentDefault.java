@@ -32,8 +32,6 @@ import java.util.Map;
  * authentication
  */
 public class HttpAuthentDefault implements HttpAuthent {
-  private static final String FIELD_USER = "user";
-  private static final String FIELD_KEY = "key";
 
   /**
    * Package protected for the tests

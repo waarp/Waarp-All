@@ -136,7 +136,6 @@ public class UploadServlet extends AbstractServlet {
     resumableInfo = getResumableInfo(arguments);
     logger.debug("RECV: {}", resumableInfo);
     session =
-
         getResumableSession(arguments, resumableInfo);
     logger.debug("SESSION: {}", session);
     try {
