@@ -90,6 +90,11 @@ public final class OpenR66ExceptionTrappedFactory {
           (OpenR66ProtocolBusinessCancelException) throwable;
       logger.debug("Request is canceled: {}", e2.getMessage());
       return e2;
+    } else if (throwable instanceof OpenR66ProtocolNotAuthenticatedException) {
+        final OpenR66ProtocolNotAuthenticatedException e2 =
+            (OpenR66ProtocolNotAuthenticatedException) throwable;
+        logger.debug("Request cannot continue since not authenticated: {}", e2.getMessage());
+        return e2;
     } else if (throwable instanceof OpenR66ProtocolBusinessStopException) {
       final OpenR66ProtocolBusinessStopException e2 =
           (OpenR66ProtocolBusinessStopException) throwable;

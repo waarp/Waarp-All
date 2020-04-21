@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.3.2 (2020-04-20)
+Waarp R66 3.3.2 (2020-04-21)
 ============================
 
 Correctifs
@@ -21,6 +21,8 @@ Correctifs
    - La version retournée par l'API V1 n'est plus conforme suite la mise à jour
     automatique du schéma de la base de données.
 - Corrige une fuite mémoire API Rest
+- Corrige le cas du blocage d'un client lorsqu'il n'est pas reconnu par un
+  serveur distant
 
 
 Waarp R66 3.3.1 (2020-02-17)

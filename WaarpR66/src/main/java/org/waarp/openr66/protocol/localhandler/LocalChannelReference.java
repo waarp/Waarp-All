@@ -496,12 +496,31 @@ public class LocalChannelReference {
       finalValue =
           new R66Result(session, false, ErrorCode.Unknown, session.getRunner());
     }
-    logger.debug("FET: " + futureEndTransfer.isDone() + ':' +
+    logger.debug("FST: " + futureStartup.isDone() + ":" + futureStartup.isSuccess() +
+    		     " FCT: " + futureConnection.isDone() + ':' +
+    		     futureConnection.isSuccess() + 
+    		     " FET: " + futureEndTransfer.isDone() + ':' +
                  futureEndTransfer.isSuccess() + " FVR: " +
                  futureValidRequest.isDone() + ':' +
                  futureValidRequest.isSuccess() + " FR: " +
                  futureRequest.isDone() + ':' + futureRequest.isSuccess() +
                  ' ' + finalValue.getMessage());
+    if (!futureStartup.isDone()) {
+    	futureStartup.setResult(finalValue);
+        if (finalValue.getException() != null) {
+        	futureStartup.setFailure(finalValue.getException());
+        } else {
+        	futureStartup.cancel();
+        }
+      }
+    if (!futureConnection.isDone()) {
+      futureConnection.setResult(finalValue);
+      if (finalValue.getException() != null) {
+        futureConnection.setFailure(finalValue.getException());
+      } else {
+        futureConnection.cancel();
+      }
+    }
     if (!futureEndTransfer.isDone()) {
       futureEndTransfer.setResult(finalValue);
       if (finalValue.getException() != null) {
