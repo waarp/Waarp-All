@@ -49,6 +49,7 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -337,6 +338,26 @@ public class NetworkTransaction {
    */
   public LocalChannelReference createConnectionWithRetry(
       SocketAddress socketAddress, boolean isSSL, R66Future futureRequest) {
+    try {
+      return createConnectionWithRetryWithAuthenticationException(socketAddress, isSSL, futureRequest);
+    } catch (OpenR66ProtocolNotAuthenticatedException e) {
+      // Correct return!
+      return null;
+    }
+  }
+
+  /**
+   * Create a connection to the specified socketAddress with multiple retries
+   *
+   * @param socketAddress
+   * @param isSSL
+   * @param futureRequest
+   *
+   * @return the LocalChannelReference
+   * @throws OpenR66ProtocolNotAuthenticatedException 
+   */
+  public LocalChannelReference createConnectionWithRetryWithAuthenticationException(
+      SocketAddress socketAddress, boolean isSSL, R66Future futureRequest) throws OpenR66ProtocolNotAuthenticatedException {
     LocalChannelReference localChannelReference = null;
     for (int i = 0; i < Configuration.RETRYNB; i++) {
       if (WaarpShutdownHook.isShutdownStarting()) {
@@ -355,6 +376,10 @@ public class NetworkTransaction {
         logger.error("Cannot connect : {}", e.getMessage());
         logger.debug(e);
         break;
+      } catch (final OpenR66ProtocolNotAuthenticatedException e) {
+          logger.error("Cannot be authenticated : {}", e.getMessage());
+          logger.debug(e);
+          throw e;
       } catch (final OpenR66ProtocolNetworkException e) {
         // Can retry
         logger.error("Cannot connect : {}. Will retry", e.getMessage());
@@ -363,7 +388,6 @@ public class NetworkTransaction {
           Thread.sleep(Configuration.configuration.getDelayRetry());
         } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
-          break;
         }
       }
     }
@@ -385,13 +409,14 @@ public class NetworkTransaction {
    * @throws OpenR66ProtocolNetworkException
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
+ * @throws OpenR66ProtocolNotAuthenticatedException 
    */
   private LocalChannelReference createConnection(SocketAddress socketAddress,
                                                  boolean isSSL,
                                                  R66Future futureRequest)
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
-             OpenR66ProtocolNoConnectionException {
+             OpenR66ProtocolNoConnectionException, OpenR66ProtocolNotAuthenticatedException {
     NetworkChannelReference networkChannelReference = null;
     LocalChannelReference localChannelReference;
     boolean ok = false;
@@ -602,11 +627,12 @@ public class NetworkTransaction {
    *
    * @throws OpenR66ProtocolNetworkException
    * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolNotAuthenticatedException 
    */
   private void sendValidationConnection(
       LocalChannelReference localChannelReference)
       throws OpenR66ProtocolNetworkException,
-             OpenR66ProtocolRemoteShutdownException {
+             OpenR66ProtocolRemoteShutdownException, OpenR66ProtocolNotAuthenticatedException {
     AuthentPacket authent;
 
     try {
@@ -673,7 +699,7 @@ public class NetworkTransaction {
                    future);
       final R66Result finalValue = new R66Result(
           new OpenR66ProtocolSystemException(
-              "Out of time or Connection invalid during Authentication"),
+              "Connection invalid during Authentication"),
           localChannelReference.getSession(), true,
           ErrorCode.ConnectionImpossible, null);
       logger.info("Authent is Invalid due to: {} {}",
@@ -696,7 +722,7 @@ public class NetworkTransaction {
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // ignore
       }
-      throw new OpenR66ProtocolNetworkException(
+      throw new OpenR66ProtocolNotAuthenticatedException(
           "Cannot validate connection: " + future.getResult(),
           future.getCause());
     }

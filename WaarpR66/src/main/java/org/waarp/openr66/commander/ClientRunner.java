@@ -40,6 +40,7 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -526,8 +527,17 @@ public class ClientRunner extends Thread {
     SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
 
-    LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, futureRequest);
+    LocalChannelReference localChannelReference;
+    try {
+      localChannelReference = networkTransaction
+        .createConnectionWithRetryWithAuthenticationException(socketAddress, isSSL, futureRequest);
+    } catch (OpenR66ProtocolNotAuthenticatedException e1) {
+      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent,
+        true);
+      taskRunner.setLocalChannelReference(new LocalChannelReference());
+      throw new OpenR66ProtocolNoConnectionException(
+        CANNOT_CONNECT_TO_SERVER + host + " cannot be authenticated so stop retry here", e1);
+    }
     taskRunner.setLocalChannelReference(localChannelReference);
     if (localChannelReference == null) {
       // propose to redo

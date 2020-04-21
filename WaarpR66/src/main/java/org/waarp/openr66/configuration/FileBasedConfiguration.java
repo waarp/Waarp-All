@@ -2096,6 +2096,7 @@ public class FileBasedConfiguration {
     try {
       config.setHostAuth(new DbHostAuth(config.getHostId()));
     } catch (final WaarpDatabaseException e) {
+    	logger.error("Current Host is {}", config.getHostId());
       logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST, e);
       return false;
     }

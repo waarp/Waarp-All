@@ -556,7 +556,9 @@ public abstract class AbstractTransfer implements Runnable {
     } else {
       logger.error(outputFormat.loggerOut(), future.getCause());
     }
-    outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
+    if (future.getCause() != null) {
+      outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
+    }
   }
 
   protected static void prepareKoOutputFormat(final R66Future future,

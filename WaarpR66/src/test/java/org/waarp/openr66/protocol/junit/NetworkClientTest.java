@@ -736,7 +736,7 @@ public class NetworkClientTest extends TestAbstract {
     logger.warn("1rst file");
     final File totestBig = generateOutFile(
         SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size);
-    Thread.sleep(6000);
+    Thread.sleep(10000);
     logger.warn("1rst file delete");
     totestBig.delete();
     Thread.sleep(2000);

@@ -480,6 +480,7 @@ public final class LocalServerHandler {
           code = ErrorCode.ExternalOp;
         } else if (exception instanceof OpenR66ProtocolNotAuthenticatedException) {
           code = ErrorCode.BadAuthent;
+          isAnswered = true;
         } else if (exception instanceof OpenR66ProtocolNetworkException) {
           code = ErrorCode.Disconnection;
           final DbTaskRunner runner = serverHandler.getSession().getRunner();
