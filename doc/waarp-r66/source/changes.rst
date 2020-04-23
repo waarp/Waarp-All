@@ -17,9 +17,11 @@ Correctifs
 - Corrige des méthodes manquantes dans le module WaarpHttp
 - Mise à jour des dépendances externes (compatibles Java 6)
 - Correction de l'API Rest V2 /v2/hostconfig/ qui retourne versionR66
-(version du protocole) et versionBin (version du code)
+  (version du protocole) et versionBin (version du code)
+
    - La version retournée par l'API V1 n'est plus conforme suite la mise à jour
     automatique du schéma de la base de données.
+
 - Corrige une fuite mémoire API Rest
 - Corrige le cas du blocage d'un client lorsqu'il n'est pas reconnu par un
   serveur distant
