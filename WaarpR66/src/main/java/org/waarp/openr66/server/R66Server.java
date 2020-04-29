@@ -54,11 +54,11 @@ public class R66Server {
     try {
       WaarpShutdownHook.registerMain(R66Server.class, args);
       if (initialize(args[0])) {
-        logger.warn(Messages.getString("R66Server.ServerStart") +
+        logger.info(Messages.getString("R66Server.ServerStart") +
                     Configuration.configuration.getHostId() + " : "
                     //$NON-NLS-1$
                     + Configuration.configuration);
-        SysErrLogger.FAKE_LOGGER.syserr(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("R66Server.ServerStart") +
             Configuration.configuration.getHostId()); //$NON-NLS-1$
       } else {

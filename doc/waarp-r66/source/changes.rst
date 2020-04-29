@@ -7,11 +7,20 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Correctifs
+----------
+
+- Le succès du lancement du serveur n'est plus ecrit sur la sortie standard avec
+  "ERROR"
+- Le succès du lancement du serveur est loggué en niveau INFO plustôt qu'en
+  WARNING
+
+
 Waarp R66 3.3.2 (2020-04-21)
 ============================
 
 Correctifs
-==========
+----------
 
 - Corrige les tests Rest V1
 - Corrige des méthodes manquantes dans le module WaarpHttp
@@ -31,7 +40,7 @@ Waarp R66 3.3.1 (2020-02-17)
 ============================
 
 Correctifs
-==========
+----------
 
 - [`#13 <https://github.com/waarp/Waarp-All/pull/13>`__] Corrige l'oubli du
   module WaarpPassword dans les autres modules dans les packages
