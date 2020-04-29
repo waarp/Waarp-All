@@ -949,6 +949,48 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
+   * For instance from Commander when getting updated information
+   * <p></p>
+   * <p>This version tries to load DbRule but will not make any error if not found!</p>
+   *
+   * @param preparedStatement
+   *
+   * @return the next updated DbTaskRunner
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbTaskRunner getFromStatementNoRule(
+      DbPreparedStatement preparedStatement)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+    final DbTaskRunner dbTaskRunner = new DbTaskRunner();
+    AbstractDAO<Transfer> transferDAO = null;
+    try {
+      transferDAO = dbTaskRunner.getDao();
+      dbTaskRunner.pojo = ((StatementExecutor<Transfer>) transferDAO)
+          .getFromResultSet(preparedStatement.getResultSet());
+      if (dbTaskRunner.rule == null && dbTaskRunner.pojo.getRule() != null) {
+        try {
+          dbTaskRunner.rule = new DbRule(dbTaskRunner.getRuleId());
+        } catch (final WaarpDatabaseException e) {
+          logger.warn(
+              "Rule cannot be found for DbTaskRunner: " + dbTaskRunner.asJson(),
+              e);
+        }
+      }
+      dbTaskRunner.checkThroughMode();
+      return dbTaskRunner;
+    } catch (SQLException e) {
+      DbSession.error(e);
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } catch (DAOConnectionException e) {
+      throw new WaarpDatabaseSqlException("Getting values in error", e);
+    } finally {
+      DAOFactory.closeDAO(transferDAO);
+    }
+  }
+
+  /**
    * For REST interface, to prevent DbRule issue
    *
    * @param preparedStatement
@@ -3297,7 +3339,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     WaarpStringUtils
         .replaceAll(builder, "XXXSpecIdXXX", Long.toString(getSpecialId()));
     WaarpStringUtils.replace(builder, "XXXRulXXX",
-                             rule != null? rule.toShortString() : getRuleId());
+                             rule != null? rule.toShortString() : 
+                                 "<p style='color:red'>Rule Name:" + getRuleId() +
+                                 " <em>(rule not found)</em></p>");
     WaarpStringUtils.replace(builder, "XXXFileXXX", getFilename());
     WaarpStringUtils.replace(builder, "XXXInfoXXX", getFileInformation());
     WaarpStringUtils.replace(builder, "XXXTransXXX", pojo.getFileInfo());
@@ -3564,7 +3608,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       xmlWriter.writeOpen(root);
       Element node;
       while (preparedStatement.getNext()) {
-        final DbTaskRunner runner = getFromStatement(preparedStatement);
+        final DbTaskRunner runner = getFromStatementNoRule(preparedStatement);
         if (nbAndSpecialId.higherSpecialId < runner.getSpecialId()) {
           nbAndSpecialId.higherSpecialId = runner.getSpecialId();
         }
@@ -3603,7 +3647,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           Configuration.configuration.getLocalTransaction();
       int nb = 0;
       while (preparedStatement.getNext()) {
-        final DbTaskRunner runner = getFromStatement(preparedStatement);
+        final DbTaskRunner runner = getFromStatementNoRule(preparedStatement);
         final ObjectNode node = runner.getJson();
         node.put(Columns.SPECIALID.name(),
                  Long.toString(runner.getSpecialId()));

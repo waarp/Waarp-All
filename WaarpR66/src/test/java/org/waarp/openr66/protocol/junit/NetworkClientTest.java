@@ -40,6 +40,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
@@ -960,6 +961,49 @@ public class NetworkClientTest extends TestAbstract {
     }
     Thread.sleep(100);
     totest.delete();
+  }
+
+  @Test
+  public void test50_Transfer_Delete_Rule_Wrong() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer with future deleted Rule");
+    String rulename = "todelete";
+    DbRule newRule = new DbRule("todelete", null, 3, null, null, null, null, "", "", "", "", "", "");
+    newRule.insert();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt",
+                             rulename, "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    DbTaskRunner runner = null;
+    if (future.getRunner() != null) {
+      runner = future.getRunner();
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    logger.warn("Success: " + success + " Error: " + error);
+    totest.delete();
+    assertEquals("Success should be total", 1, success);
+    assertEquals("Errors should be 0", 0, error);
+    // Now try to delete the rule
+    try {
+      newRule.delete();
+      fail("Must raized an exception since a transfer exist while we try to delete the rule associated with it");
+    } catch (WaarpDatabaseNoDataException e) {
+      // Correct behavior
+    }
+    if (runner != null) {
+      runner.delete();
+      // This time, the delete shall be ok
+      newRule.delete();
+    }
   }
 
   private void waitForAllDone(DbTaskRunner runner) {

@@ -510,7 +510,7 @@ public class HttpSslHandler
             try {
               i++;
               final DbTaskRunner taskRunner =
-                  DbTaskRunner.getFromStatement(preparedStatement);
+                  DbTaskRunner.getFromStatementNoRule(preparedStatement);
               if (isNotReload) {
                 final long specid = taskRunner.getSpecialId();
                 if (idstart == null || idstart > specid) {
@@ -641,7 +641,7 @@ public class HttpSslHandler
             try {
               i++;
               final DbTaskRunner taskRunner =
-                  DbTaskRunner.getFromStatement(preparedStatement);
+                  DbTaskRunner.getFromStatementNoRule(preparedStatement);
               if (isNotReload) {
                 final long specid = taskRunner.getSpecialId();
                 if (idstart == null || idstart > specid) {

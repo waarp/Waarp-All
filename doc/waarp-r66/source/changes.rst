@@ -7,6 +7,18 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.3.2 (2020-04-29)
+============================
+
+Correctifs
+==========
+
+- [`#20 <https://github.com/waarp/Waarp-All/pull/20>`__] Corrige l'affichage
+  d'un transfert dont la règle n'existe plus dans l'interface
+  d'administration Web Waarp OpenR66
+  (issue [`#19 <https://github.com/waarp/Waarp-All/issues/19>`__])
+- Corrige les dépendances externes
+
 Waarp R66 3.3.2 (2020-04-21)
 ============================
 
