@@ -26,11 +26,17 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 
@@ -163,6 +169,8 @@ public class RuleIdHandler extends AbstractRestDbHandler {
 
   /**
    * Method called to delete a transfer rule from the database.
+   * Note that if a Transfer exists that used this rule, the delete
+   * cannot be achieved.
    *
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -174,7 +182,22 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @RequiredRole(RULE)
   public void deleteRule(HttpRequest request, HttpResponder responder,
                          @PathParam(URI_ID) String id) {
-
+    TransferDAO transferDAO = null;
+    try {
+      transferDAO = DAO_FACTORY.getTransferDAO();
+      List<Filter> filters = new ArrayList<Filter>();
+      Filter filter = new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", id);
+      filters.add(filter);
+      List<Transfer> transferList = transferDAO.find(filters);
+      if (!transferList.isEmpty()) {
+          transferList.clear();
+          responder.sendStatus(NOT_FOUND);
+          }
+    } catch (final DAOConnectionException e) {
+      throw new InternalServerErrorException(e);
+    } finally {
+      DAOFactory.closeDAO(transferDAO);
+    }
     RuleDAO ruleDAO = null;
     try {
       ruleDAO = DAO_FACTORY.getRuleDAO();

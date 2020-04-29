@@ -96,7 +96,7 @@ public interface AbstractDAO<E> extends Cloneable {
   /**
    * Remove the specified object from the persistance layer
    *
-   * @param object object to insert
+   * @param object object to delete
    *
    * @throws DAOConnectionException If a data access error occurs
    * @throws DAONoDataException if no data are available
