@@ -180,10 +180,10 @@ public class Rule {
     this.name = name;
     this.mode = mode;
     this.hostids = hostids;
-    this.recvPath = recvPath;
-    this.sendPath = sendPath;
-    this.archivePath = archivePath;
-    this.workPath = workPath;
+    this.recvPath = checkPath(recvPath);
+    this.sendPath = checkPath(sendPath);
+    this.archivePath = checkPath(archivePath);
+    this.workPath = checkPath(workPath);
     rPreTasks = rPre;
     rPostTasks = rPost;
     rErrorTasks = rError;
@@ -283,12 +283,19 @@ public class Rule {
     this.hostids = hostids;
   }
 
+  private String checkPath(String path) {
+    if (path == null || path.trim().isEmpty()) {
+      return "";
+    }
+    return path.replace("//", "/").replace("\\\\", "\\");
+  }
+
   public String getRecvPath() {
     return recvPath;
   }
 
   public void setRecvPath(String recvPath) {
-    this.recvPath = recvPath;
+    this.recvPath = checkPath(recvPath);
   }
 
   public String getSendPath() {
@@ -296,7 +303,7 @@ public class Rule {
   }
 
   public void setSendPath(String sendPath) {
-    this.sendPath = sendPath;
+    this.sendPath = checkPath(sendPath);
   }
 
   public String getArchivePath() {
@@ -304,7 +311,7 @@ public class Rule {
   }
 
   public void setArchivePath(String archivePath) {
-    this.archivePath = archivePath;
+    this.archivePath = checkPath(archivePath);
   }
 
   public String getWorkPath() {
@@ -312,7 +319,7 @@ public class Rule {
   }
 
   public void setWorkPath(String workPath) {
-    this.workPath = workPath;
+    this.workPath = checkPath(workPath);
   }
 
   @JsonIgnore

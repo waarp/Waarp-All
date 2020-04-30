@@ -15,8 +15,12 @@ Correctifs
 
 - [`#20 <https://github.com/waarp/Waarp-All/pull/20>`__] Corrige l'affichage
   d'un transfert dont la règle n'existe plus dans l'interface
-  d'administration Web Waarp OpenR66
+  d'administration Web Waarp OpenR66 et empêche l'effacement d'une règle
+  tant qu'il existe au moins un transfert qui l'utilise dans sa définition.
   (issue [`#19 <https://github.com/waarp/Waarp-All/issues/19>`__])
+- [`#23 <https://github.com/waarp/Waarp-All/pull/23>`__] Corrige la prise
+  en compte d'un chemin sous Windows avec \ qui se double en \\
+  (issue [`#22 <https://github.com/waarp/Waarp-All/issues/22>`__])
 - Corrige les dépendances externes
 
 Waarp R66 3.3.2 (2020-04-21)
