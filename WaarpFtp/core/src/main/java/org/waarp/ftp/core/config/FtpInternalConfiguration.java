@@ -151,7 +151,7 @@ public class FtpInternalConfiguration {
    * Scheduler for TrafficCounter
    */
   private final ScheduledExecutorService executorService = Executors
-      .newScheduledThreadPool(2, new WaarpThreadFactory("TimerTrafficFtp"));
+      .newScheduledThreadPool(2, new WaarpThreadFactory("TimerTrafficFtp", false));
 
   /**
    * Global TrafficCounter (set from global configuration)
