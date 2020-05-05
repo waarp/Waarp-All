@@ -252,8 +252,6 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logPrefs.enable(LogType.SERVER, Level.OFF);
     desiredCapabilities
         .setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-    desiredCapabilities
-        .setCapability(CapabilityType.TAKES_SCREENSHOT, false);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
     desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS, "--webdriver-loglevel=NONE");
     desiredCapabilities.setJavascriptEnabled(true);
