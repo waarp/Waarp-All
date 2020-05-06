@@ -28,9 +28,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.command.exception.Reply530Exception;
-import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbPreparedStatement;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
@@ -50,7 +48,6 @@ import org.waarp.openr66.client.Message;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.SpooledInformTask;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbHostAuth;
@@ -149,8 +146,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   private static final String XXXRESULTXXX = "XXXRESULTXXX";
   private static final String XXXDATAJSONXXX = "XXXDATAJSONXXX";
   private static final String XXXHOSTSIDSXXX = "XXXHOSTSIDSXXX";
-
-  private static final int LIMITROW = 100;
 
   private String index() {
     final String index = REQUEST.index.read(this);
@@ -1366,7 +1361,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       }
     }
     if (params == null) {
-      final String system = REQUEST.System.read(this);
+      final String system = systemLimitedSource();
       final StringBuilder builder = new StringBuilder(system);
       replaceStringSystem(config, builder);
       langHandle(builder);
@@ -1663,19 +1658,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     }
   }
 
-  private void clearSession() {
-    if (admin != null) {
-      final R66Session lsession = sessions.remove(admin.value());
-      dbSessions.remove(admin.value());
-      admin = null;
-      if (lsession != null) {
-        lsession.setStatus(75);
-        lsession.clear();
-        DbAdmin.decHttpSession();
-      }
-    }
-  }
-
   private void checkAuthent(ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
@@ -1776,22 +1758,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       responseContent.append(logon);
       clearSession();
     } else {
-      // load DbSession
-      if (dbSession != null) {
-        clearSession();
-        dbSession = null;
-      }
-      if (dbSession == null) {
-        try {
-          dbSession = new DbSession(DbConstantR66.admin, false);
-          DbAdmin.incHttpSession();
-          isPrivateDbSession = true;
-        } catch (final WaarpDatabaseNoConnectionException e1) {
-          // Cannot connect so use default connection
-          logger.warn("Use default database connection");
-          dbSession = DbConstantR66.admin.getSession();
-        }
-      }
       final String index = index();
       responseContent.append(index);
       clearSession();
@@ -1801,9 +1767,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       authentHttp.setStatus(72);
-      if (isPrivateDbSession) {
-        dbSessions.put(admin.value(), dbSession);
-      }
       logger.debug("CreateSession: " + uriRequest + ":{}", admin);
     }
     writeResponse(ctx);
@@ -1837,85 +1800,89 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       return;
     }
     checkSession(ctx.channel());
-    if (!authentHttp.isAuthenticated()) {
-      logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-      checkAuthent(ctx);
-      return;
-    }
-    String find = uriRequest;
-    if (uriRequest.charAt(0) == '/') {
-      find = uriRequest.substring(1);
-    }
-    REQUEST req = REQUEST.index;
-    if (find.length() != 0) {
-      find = find.substring(0, find.indexOf('.'));
-      try {
-        req = REQUEST.valueOf(find);
-      } catch (final IllegalArgumentException e1) {
-        req = REQUEST.index;
-        logger.debug("NotFound: " + find + ':' + uriRequest);
+    try {
+      if (!authentHttp.isAuthenticated()) {
+        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        checkAuthent(ctx);
+        return;
       }
+      String find = uriRequest;
+      if (uriRequest.charAt(0) == '/') {
+        find = uriRequest.substring(1);
+      }
+      REQUEST req = REQUEST.index;
+      if (find.length() != 0) {
+        find = find.substring(0, find.indexOf('.'));
+        try {
+          req = REQUEST.valueOf(find);
+        } catch (final IllegalArgumentException e1) {
+          req = REQUEST.index;
+          logger.debug("NotFound: " + find + ':' + uriRequest);
+        }
+      }
+      switch (req) {
+        case CancelRestart:
+          if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {
+            responseContent.append(cancelRestart());
+          } else {
+            responseContent.append(unallowed(
+                Messages.getString("HttpSslHandler.CancelRestartUnallowed")));
+          }
+          break;
+        case Export:
+          if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
+            responseContent.append(export());
+          } else {
+            responseContent.append(
+                unallowed(Messages.getString("HttpSslHandler.ExportUnallowed")));
+          }
+          break;
+        case Hosts:
+          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+            responseContent.append(hosts());
+          } else {
+            responseContent.append(
+                unallowed(Messages.getString("HttpSslHandler.HostUnallowed")));
+          }
+          break;
+        case ListingReload:
+          responseContent.append(listingReload());
+          break;
+        case Listing:
+          responseContent.append(listing());
+          break;
+        case Logout:
+          responseContent.append(logout());
+          break;
+        case Rules:
+          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+            responseContent.append(rules());
+          } else {
+            responseContent.append(
+                unallowed(Messages.getString("HttpSslHandler.RulesUnallowed")));
+          }
+          break;
+        case System:
+          if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
+            responseContent.append(system());
+          } else {
+            responseContent.append(systemLimited());
+          }
+          break;
+        case Spooled:
+          responseContent.append(spooled(false));
+          break;
+        case SpooledDetailed:
+          responseContent.append(spooled(true));
+          break;
+        default:
+          responseContent.append(index());
+          break;
+      }
+      writeResponse(ctx);
+    } finally {
+      closeConnection();
     }
-    switch (req) {
-      case CancelRestart:
-        if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {
-          responseContent.append(cancelRestart());
-        } else {
-          responseContent.append(unallowed(
-              Messages.getString("HttpSslHandler.CancelRestartUnallowed")));
-        }
-        break;
-      case Export:
-        if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
-          responseContent.append(export());
-        } else {
-          responseContent.append(
-              unallowed(Messages.getString("HttpSslHandler.ExportUnallowed")));
-        }
-        break;
-      case Hosts:
-        if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-          responseContent.append(hosts());
-        } else {
-          responseContent.append(
-              unallowed(Messages.getString("HttpSslHandler.HostUnallowed")));
-        }
-        break;
-      case ListingReload:
-        responseContent.append(listingReload());
-        break;
-      case Listing:
-        responseContent.append(listing());
-        break;
-      case Logout:
-        responseContent.append(logout());
-        break;
-      case Rules:
-        if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-          responseContent.append(rules());
-        } else {
-          responseContent.append(
-              unallowed(Messages.getString("HttpSslHandler.RulesUnallowed")));
-        }
-        break;
-      case System:
-        if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
-          responseContent.append(system());
-        } else {
-          responseContent.append(systemLimited());
-        }
-        break;
-      case Spooled:
-        responseContent.append(spooled(false));
-        break;
-      case SpooledDetailed:
-        responseContent.append(spooled(true));
-        break;
-      default:
-        responseContent.append(index());
-        break;
-    }
-    writeResponse(ctx);
   }
 
   private class RestartOrStopAll {

@@ -20,15 +20,11 @@
 package org.waarp.openr66.proxy.protocol.http.adminssl;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -46,7 +42,6 @@ import org.waarp.openr66.protocol.http.adminssl.HttpSslHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
@@ -365,7 +360,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     }
   }
 
-  private void clearSession() {
+  protected void clearSession() {
     if (admin != null) {
       final R66Session lsession = sessions.remove(admin.value());
       admin = null;
@@ -491,62 +486,37 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       return;
     }
     checkSession(ctx.channel());
-    if (!authentHttp.isAuthenticated()) {
-      logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-      checkAuthent(ctx);
-      return;
-    }
-    String find = uriRequest;
-    if (uriRequest.charAt(0) == '/') {
-      find = uriRequest.substring(1);
-    }
-    REQUEST req = REQUEST.index;
-    if (find.length() != 0) {
-      find = find.substring(0, find.indexOf('.'));
-      try {
-        req = REQUEST.valueOf(find);
-      } catch (final IllegalArgumentException e1) {
-        req = REQUEST.index;
-        logger.debug("NotFound: " + find + ':' + uriRequest);
+    try {
+      if (!authentHttp.isAuthenticated()) {
+        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        checkAuthent(ctx);
+        return;
       }
-    }
-    switch (req) {
-      case System:
-        responseContent.append(System());
-        break;
-      default:
-        responseContent.append(index());
-        break;
-    }
-    writeResponse(ctx);
-  }
-
-  private void checkSession(Channel channel) {
-    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
-    if (cookieString != null) {
-      final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
-      if (!cookies.isEmpty()) {
-        for (final Cookie elt : cookies) {
-          if (elt.name()
-                 .equalsIgnoreCase(R66SESSION + configuration.getHostId())) {
-            logger.debug("Found session: " + elt);
-            admin = elt;
-            final R66Session session = sessions.get(admin.value());
-            if (session != null) {
-              authentHttp = session;
-              authentHttp.setStatus(73);
-            } else {
-              admin = null;
-            }
-          } else if (elt.name().equalsIgnoreCase(I18NEXT)) {
-            logger.debug("Found i18next: " + elt);
-            lang = elt.value();
-          }
+      String find = uriRequest;
+      if (uriRequest.charAt(0) == '/') {
+        find = uriRequest.substring(1);
+      }
+      REQUEST req = REQUEST.index;
+      if (find.length() != 0) {
+        find = find.substring(0, find.indexOf('.'));
+        try {
+          req = REQUEST.valueOf(find);
+        } catch (final IllegalArgumentException e1) {
+          req = REQUEST.index;
+          logger.debug("NotFound: " + find + ':' + uriRequest);
         }
       }
-    }
-    if (admin == null) {
-      logger.debug("NoSession: " + uriRequest + ":{}", admin);
+      switch (req) {
+        case System:
+          responseContent.append(System());
+          break;
+        default:
+          responseContent.append(index());
+          break;
+      }
+      writeResponse(ctx);
+    } finally {
+      closeConnection();
     }
   }
 }

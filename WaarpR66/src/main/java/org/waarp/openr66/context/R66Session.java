@@ -187,13 +187,11 @@ public class R66Session implements SessionInterface {
   }
 
   /**
-   * Debugging purpose
+   * Debugging purpose (trace)
    *
    * @param stat
    *
-   * @deprecated used only for trace
    */
-  @Deprecated
   public void setStatus(int stat) {
     final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];
     status = '(' + elt.getFileName() + ':' + elt.getLineNumber() + "):" + stat;

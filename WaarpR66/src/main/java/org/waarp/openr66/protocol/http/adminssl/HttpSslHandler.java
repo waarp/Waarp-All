@@ -148,8 +148,6 @@ public class HttpSslHandler
    */
   protected static final ConcurrentHashMap<String, R66Session> sessions =
       new ConcurrentHashMap<String, R66Session>();
-  static final ConcurrentHashMap<String, DbSession> dbSessions =
-      new ConcurrentHashMap<String, DbSession>();
   protected static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
   protected R66Session authentHttp = new R66Session();
@@ -278,14 +276,9 @@ public class HttpSslHandler
    * in the session
    */
   DbSession dbSession;
-  /**
-   * Does this dbSession is private and so should be closed
-   */
-  boolean isPrivateDbSession;
 
   public static String hashStatus() {
-    return "HttpSslHandler: [sessions: " + sessions.size() + " dbSessions: " +
-           dbSessions.size() + "] ";
+    return "HttpSslHandler: [sessions: " + sessions.size() + "] ";
   }
 
   String readFileHeader(String filename) {
@@ -2161,18 +2154,13 @@ public class HttpSslHandler
     }
   }
 
-  private void clearSession() {
+  protected void clearSession() {
     if (admin != null) {
       final R66Session lsession = sessions.remove(admin.value());
-      final DbSession ldbsession = dbSessions.remove(admin.value());
       admin = null;
       if (lsession != null) {
         lsession.setStatus(75);
         lsession.clear();
-      }
-      if (ldbsession != null) {
-        ldbsession.forceDisconnect();
-        DbAdmin.decHttpSession();
       }
     }
   }
@@ -2274,22 +2262,6 @@ public class HttpSslHandler
       responseContent.append(logon);
       clearSession();
     } else {
-      // load DbSession
-      if (dbSession != null) {
-        clearSession();
-        dbSession = null;
-      }
-      if (dbSession == null) {
-        try {
-          dbSession = new DbSession(DbConstantR66.admin, false);
-          DbAdmin.incHttpSession();
-          isPrivateDbSession = true;
-        } catch (final WaarpDatabaseNoConnectionException e1) {
-          // Cannot connect so use default connection
-          logger.warn("Use default database connection");
-          dbSession = DbConstantR66.admin.getSession();
-        }
-      }
       final String index = index();
       responseContent.append(index);
       clearSession();
@@ -2299,9 +2271,6 @@ public class HttpSslHandler
           Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       authentHttp.setStatus(72);
-      if (isPrivateDbSession) {
-        dbSessions.put(admin.value(), dbSession);
-      }
       logger.debug("CreateSession: " + uriRequest + ":{}", admin);
     }
     writeResponse(ctx);
@@ -2325,88 +2294,92 @@ public class HttpSslHandler
       return;
     }
     checkSession(ctx.channel());
-    if (!authentHttp.isAuthenticated()) {
-      logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-      checkAuthent(ctx);
-      return;
-    }
-    String find = uriRequest;
-    if (uriRequest.charAt(0) == '/') {
-      find = uriRequest.substring(1);
-    }
-    REQUEST req = REQUEST.index;
-    if (find.length() != 0) {
-      find = find.substring(0, find.indexOf('.'));
-      try {
-        req = REQUEST.valueOf(find);
-      } catch (final IllegalArgumentException e1) {
-        req = REQUEST.index;
-        logger.debug("NotFound: " + find + ':' + uriRequest);
+    try {
+      if (!authentHttp.isAuthenticated()) {
+        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        checkAuthent(ctx);
+        return;
       }
+      String find = uriRequest;
+      if (uriRequest.charAt(0) == '/') {
+        find = uriRequest.substring(1);
+      }
+      REQUEST req = REQUEST.index;
+      if (find.length() != 0) {
+        find = find.substring(0, find.indexOf('.'));
+        try {
+          req = REQUEST.valueOf(find);
+        } catch (final IllegalArgumentException e1) {
+          req = REQUEST.index;
+          logger.debug("NotFound: " + find + ':' + uriRequest);
+        }
+      }
+      switch (req) {
+        case CancelRestart:
+          if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {
+            responseContent.append(cancelRestart0());
+          } else {
+            responseContent.append(unallowed(
+                Messages.getString("HttpSslHandler.CancelRestartUnallowed")));
+          }
+          break;
+        case Export:
+          if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
+            responseContent.append(export0());
+          } else {
+            responseContent.append(
+                unallowed(Messages.getString("HttpSslHandler.ExportUnallowed")));
+          }
+          break;
+        case Hosts:
+          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+            responseContent.append(hosts0());
+          } else {
+            responseContent.append(
+                unallowed(Messages.getString("HttpSslHandler.HostUnallowed")));
+          }
+          break;
+        case Listing:
+          responseContent.append(listing0());
+          break;
+        case Logout:
+          responseContent.append(logout());
+          break;
+        case Rules:
+          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+            responseContent.append(rules0());
+          } else {
+            responseContent.append(
+                unallowed(Messages.getString("HttpSslHandler.RulesUnallowed")));
+          }
+          break;
+        case System:
+          if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
+            responseContent.append(system0());
+          } else {
+            responseContent.append(systemLimited());
+          }
+          break;
+        case Transfers:
+          responseContent.append(transfers());
+          break;
+        case Spooled:
+          responseContent.append(spooled0(false));
+          break;
+        case SpooledDetailed:
+          responseContent.append(spooled0(true));
+          break;
+        default:
+          responseContent.append(index());
+          break;
+      }
+      writeResponse(ctx);
+    } finally {
+      closeConnection();
     }
-    switch (req) {
-      case CancelRestart:
-        if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {
-          responseContent.append(cancelRestart0());
-        } else {
-          responseContent.append(unallowed(
-              Messages.getString("HttpSslHandler.CancelRestartUnallowed")));
-        }
-        break;
-      case Export:
-        if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
-          responseContent.append(export0());
-        } else {
-          responseContent.append(
-              unallowed(Messages.getString("HttpSslHandler.ExportUnallowed")));
-        }
-        break;
-      case Hosts:
-        if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-          responseContent.append(hosts0());
-        } else {
-          responseContent.append(
-              unallowed(Messages.getString("HttpSslHandler.HostUnallowed")));
-        }
-        break;
-      case Listing:
-        responseContent.append(listing0());
-        break;
-      case Logout:
-        responseContent.append(logout());
-        break;
-      case Rules:
-        if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-          responseContent.append(rules0());
-        } else {
-          responseContent.append(
-              unallowed(Messages.getString("HttpSslHandler.RulesUnallowed")));
-        }
-        break;
-      case System:
-        if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
-          responseContent.append(system0());
-        } else {
-          responseContent.append(systemLimited());
-        }
-        break;
-      case Transfers:
-        responseContent.append(transfers());
-        break;
-      case Spooled:
-        responseContent.append(spooled0(false));
-        break;
-      case SpooledDetailed:
-        responseContent.append(spooled0(true));
-        break;
-      default:
-        responseContent.append(index());
-        break;
-    }
-    writeResponse(ctx);
   }
 
-  void checkSession(Channel channel) {
+  protected void checkSession(Channel channel) {
     final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
     if (cookieString != null) {
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
@@ -2424,16 +2397,6 @@ public class HttpSslHandler
               admin = null;
               continue;
             }
-            final DbSession dbSession = dbSessions.get(admin.value());
-            if (dbSession != null) {
-              if (dbSession.isDisActive()) {
-                clearSession();
-              }
-              this.dbSession = dbSession;
-            } else {
-              admin = null;
-              continue;
-            }
           } else if (elt.name().equalsIgnoreCase(I18NEXT)) {
             logger.debug("Found i18next: " + elt);
             lang = elt.value();
@@ -2441,9 +2404,25 @@ public class HttpSslHandler
         }
       }
     }
+    try {
+      dbSession = new DbSession(DbConstantR66.admin, false);
+      DbAdmin.incHttpSession();
+    } catch (final WaarpDatabaseNoConnectionException e1) {
+      // Cannot connect so use default connection
+      logger.warn("Use default database connection");
+      dbSession = DbConstantR66.admin.getSession();
+    }
     if (admin == null) {
       logger.debug("NoSession: " + uriRequest + ":{}", admin);
     }
+  }
+
+  protected void closeConnection() {
+    if (dbSession != null && dbSession != DbConstantR66.admin.getSession()) {
+      DbAdmin.decHttpSession();
+      dbSession.disconnect();
+    }
+    dbSession = null;
   }
 
   private void handleCookies(HttpResponse response) {
