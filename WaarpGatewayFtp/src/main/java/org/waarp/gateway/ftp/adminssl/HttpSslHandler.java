@@ -91,8 +91,6 @@ public class HttpSslHandler
    */
   private static final ConcurrentHashMap<String, FileBasedAuth> sessions =
       new ConcurrentHashMap<String, FileBasedAuth>();
-  private static final ConcurrentHashMap<String, DbSession> dbSessions =
-      new ConcurrentHashMap<String, DbSession>();
   private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
   private final FtpSession ftpSession =
@@ -182,10 +180,6 @@ public class HttpSslHandler
    * session
    */
   private DbSession dbSession;
-  /**
-   * Does this dbSession is private and so should be closed
-   */
-  private volatile boolean isPrivateDbSession;
 
   private String getTrimValue(String varname) {
     String value = params.get(varname).get(0).trim();
@@ -549,16 +543,19 @@ public class HttpSslHandler
   private void clearSession() {
     if (admin != null) {
       final FileBasedAuth auth = sessions.remove(admin.value());
-      final DbSession ldbsession = dbSessions.remove(admin.value());
       admin = null;
       if (auth != null) {
         auth.clear();
       }
-      if (ldbsession != null) {
-        ldbsession.disconnect();
-        DbAdmin.decHttpSession();
-      }
     }
+  }
+
+  protected void closeConnection() {
+    if (dbSession != null && dbSession != DbConstantFtp.gatewayAdmin.getSession()) {
+      DbAdmin.decHttpSession();
+      dbSession.disconnect();
+    }
+    dbSession = null;
   }
 
   private void checkAuthent(ChannelHandlerContext ctx) {
@@ -631,18 +628,6 @@ public class HttpSslHandler
           logger.debug("Still not authenticated: {}", authentHttp);
           getMenu = true;
         }
-        // load DbSession
-        if (dbSession == null) {
-          try {
-            dbSession = new DbSession(DbConstantFtp.gatewayAdmin, false);
-            DbAdmin.incHttpSession();
-            isPrivateDbSession = true;
-          } catch (final WaarpDatabaseNoConnectionException e1) {
-            // Cannot connect so use default connection
-            logger.warn("Use default database connection");
-            dbSession = DbConstantFtp.gatewayAdmin.getSession();
-          }
-        }
       }
     } else {
       getMenu = true;
@@ -660,9 +645,6 @@ public class HttpSslHandler
                                     .getHostId() +
                                 Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
-      if (isPrivateDbSession) {
-        dbSessions.put(admin.value(), dbSession);
-      }
       logger.debug("CreateSession: " + uriRequest + ":{}", admin);
     }
     writeResponse(ctx);
@@ -683,41 +665,45 @@ public class HttpSslHandler
       return;
     }
     checkSession(ctx.channel());
-    if (!authentHttp.isIdentified()) {
-      logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-      checkAuthent(ctx);
-      return;
-    }
-    String find = uriRequest;
-    if (uriRequest.charAt(0) == '/') {
-      find = uriRequest.substring(1);
-    }
-    find = find.substring(0, find.indexOf('.'));
-    REQUEST req = REQUEST.index;
     try {
-      req = REQUEST.valueOf(find);
-    } catch (final IllegalArgumentException e1) {
-      req = REQUEST.index;
-      logger.debug("NotFound: " + find + ':' + uriRequest);
+      if (!authentHttp.isIdentified()) {
+        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        checkAuthent(ctx);
+        return;
+      }
+      String find = uriRequest;
+      if (uriRequest.charAt(0) == '/') {
+        find = uriRequest.substring(1);
+      }
+      find = find.substring(0, find.indexOf('.'));
+      REQUEST req = REQUEST.index;
+      try {
+        req = REQUEST.valueOf(find);
+      } catch (final IllegalArgumentException e1) {
+        req = REQUEST.index;
+        logger.debug("NotFound: " + find + ':' + uriRequest);
+      }
+      switch (req) {
+        case System:
+          responseContent.append(system());
+          break;
+        case Rule:
+          responseContent.append(rule());
+          break;
+        case User:
+          responseContent.append(user());
+          break;
+        case Transfer:
+          responseContent.append(transfer());
+          break;
+        default:
+          responseContent.append(index());
+          break;
+      }
+      writeResponse(ctx);
+    } finally {
+      closeConnection();
     }
-    switch (req) {
-      case System:
-        responseContent.append(system());
-        break;
-      case Rule:
-        responseContent.append(rule());
-        break;
-      case User:
-        responseContent.append(user());
-        break;
-      case Transfer:
-        responseContent.append(transfer());
-        break;
-      default:
-        responseContent.append(index());
-        break;
-    }
-    writeResponse(ctx);
   }
 
   private void checkSession(Channel channel) {
@@ -733,14 +719,19 @@ public class HttpSslHandler
         }
       }
     }
+    // load DbSession
+    try {
+      dbSession = new DbSession(DbConstantFtp.gatewayAdmin, false);
+      DbAdmin.incHttpSession();
+    } catch (final WaarpDatabaseNoConnectionException e1) {
+      // Cannot connect so use default connection
+      logger.warn("Use default database connection");
+      dbSession = DbConstantFtp.gatewayAdmin.getSession();
+    }
     if (admin != null) {
       final FileBasedAuth auth = sessions.get(admin.value());
       if (auth != null) {
         authentHttp = auth;
-      }
-      final DbSession dbSessionNew = dbSessions.get(admin.value());
-      if (dbSessionNew != null) {
-        this.dbSession = dbSessionNew;
       }
     } else {
       logger.debug("NoSession: " + uriRequest + ":{}", admin);
