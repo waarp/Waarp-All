@@ -27,6 +27,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
@@ -449,20 +451,34 @@ public abstract class CommonUtil {
         System.getProperty("phantomjs.binary.path"));
     desiredCapabilities
         .setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
-    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, true);
+    desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
     desiredCapabilities
-        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, true);
+        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
+    LoggingPreferences logPrefs = new LoggingPreferences();
+    logPrefs.enable(LogType.BROWSER, java.util.logging.Level.OFF);
+    logPrefs.enable(LogType.CLIENT, java.util.logging.Level.OFF);
+    logPrefs.enable(LogType.DRIVER, java.util.logging.Level.OFF);
+    logPrefs.enable(LogType.PERFORMANCE, java.util.logging.Level.OFF);
+    logPrefs.enable(LogType.PROFILER, java.util.logging.Level.OFF);
+    logPrefs.enable(LogType.SERVER, java.util.logging.Level.OFF);
+    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
+    desiredCapabilities
+        .setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
+                       "--webdriver-loglevel=NONE");
 
     desiredCapabilities.setJavascriptEnabled(true);
 
     ArrayList<String> cliArgs = new ArrayList<String>();
     cliArgs.add("--web-security=true");
     cliArgs.add("--ignore-ssl-errors=true");
+    cliArgs.add("--webdriver-loglevel=NONE");
     desiredCapabilities
         .setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgs);
 
-    return new PhantomJSDriver(desiredCapabilities);
+    PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
+    phantomJSDriver.setLogLevel(java.util.logging.Level.OFF);
+    return phantomJSDriver;
   }
 
   public static void finalizeDriver() throws InterruptedException {

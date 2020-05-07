@@ -339,7 +339,9 @@ public class NetworkTransaction {
   public LocalChannelReference createConnectionWithRetry(
       SocketAddress socketAddress, boolean isSSL, R66Future futureRequest) {
     try {
-      return createConnectionWithRetryWithAuthenticationException(socketAddress, isSSL, futureRequest);
+      return createConnectionWithRetryWithAuthenticationException(socketAddress,
+                                                                  isSSL,
+                                                                  futureRequest);
     } catch (OpenR66ProtocolNotAuthenticatedException e) {
       // Correct return!
       return null;
@@ -354,10 +356,12 @@ public class NetworkTransaction {
    * @param futureRequest
    *
    * @return the LocalChannelReference
-   * @throws OpenR66ProtocolNotAuthenticatedException 
+   *
+   * @throws OpenR66ProtocolNotAuthenticatedException
    */
   public LocalChannelReference createConnectionWithRetryWithAuthenticationException(
-      SocketAddress socketAddress, boolean isSSL, R66Future futureRequest) throws OpenR66ProtocolNotAuthenticatedException {
+      SocketAddress socketAddress, boolean isSSL, R66Future futureRequest)
+      throws OpenR66ProtocolNotAuthenticatedException {
     LocalChannelReference localChannelReference = null;
     for (int i = 0; i < Configuration.RETRYNB; i++) {
       if (WaarpShutdownHook.isShutdownStarting()) {
@@ -377,9 +381,9 @@ public class NetworkTransaction {
         logger.debug(e);
         break;
       } catch (final OpenR66ProtocolNotAuthenticatedException e) {
-          logger.error("Cannot be authenticated : {}", e.getMessage());
-          logger.debug(e);
-          throw e;
+        logger.error("Cannot be authenticated : {}", e.getMessage());
+        logger.debug(e);
+        throw e;
       } catch (final OpenR66ProtocolNetworkException e) {
         // Can retry
         logger.error("Cannot connect : {}. Will retry", e.getMessage());
@@ -409,14 +413,15 @@ public class NetworkTransaction {
    * @throws OpenR66ProtocolNetworkException
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
- * @throws OpenR66ProtocolNotAuthenticatedException 
+   * @throws OpenR66ProtocolNotAuthenticatedException
    */
   private LocalChannelReference createConnection(SocketAddress socketAddress,
                                                  boolean isSSL,
                                                  R66Future futureRequest)
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
-             OpenR66ProtocolNoConnectionException, OpenR66ProtocolNotAuthenticatedException {
+             OpenR66ProtocolNoConnectionException,
+             OpenR66ProtocolNotAuthenticatedException {
     NetworkChannelReference networkChannelReference = null;
     LocalChannelReference localChannelReference;
     boolean ok = false;
@@ -627,12 +632,13 @@ public class NetworkTransaction {
    *
    * @throws OpenR66ProtocolNetworkException
    * @throws OpenR66ProtocolRemoteShutdownException
-   * @throws OpenR66ProtocolNotAuthenticatedException 
+   * @throws OpenR66ProtocolNotAuthenticatedException
    */
   private void sendValidationConnection(
       LocalChannelReference localChannelReference)
       throws OpenR66ProtocolNetworkException,
-             OpenR66ProtocolRemoteShutdownException, OpenR66ProtocolNotAuthenticatedException {
+             OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolNotAuthenticatedException {
     AuthentPacket authent;
 
     try {

@@ -58,7 +58,7 @@ public class R66Server {
                     Configuration.configuration.getHostId() + " : "
                     //$NON-NLS-1$
                     + Configuration.configuration);
-        SysErrLogger.FAKE_LOGGER.syserr(
+        SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("R66Server.ServerStart") +
             Configuration.configuration.getHostId()); //$NON-NLS-1$
       } else {

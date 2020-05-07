@@ -303,7 +303,6 @@ public class HttpSessionAbstract implements HttpSession {
   }
 
   /**
-   *
    * @return the current DbTaskRunner if any (null if not)
    */
   public DbTaskRunner getDbTaskRunner() {

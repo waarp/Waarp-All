@@ -21,7 +21,6 @@
 package org.waarp.openr66.pojo;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import org.waarp.common.database.data.AbstractDbData;
 
 import java.util.HashMap;
@@ -93,6 +92,6 @@ public enum UpdatedInfo {
 
   @JsonValue
   public int getID() {
-  	return id;
+    return id;
   }
 }

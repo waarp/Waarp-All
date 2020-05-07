@@ -26,8 +26,6 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
-
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
@@ -190,9 +188,9 @@ public class RuleIdHandler extends AbstractRestDbHandler {
       filters.add(filter);
       List<Transfer> transferList = transferDAO.find(filters);
       if (!transferList.isEmpty()) {
-          transferList.clear();
-          responder.sendStatus(NOT_FOUND);
-          }
+        transferList.clear();
+        responder.sendStatus(NOT_FOUND);
+      }
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
     } finally {

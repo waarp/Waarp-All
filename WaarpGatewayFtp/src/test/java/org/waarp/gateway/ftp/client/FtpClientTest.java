@@ -343,8 +343,8 @@ public class FtpClientTest {
   }
 
   private static WebDriver createPhantomJSDriver() {
-	  DesiredCapabilities desiredCapabilities =
-		        new DesiredCapabilities("phantomjs", "", Platform.ANY);
+    DesiredCapabilities desiredCapabilities =
+        new DesiredCapabilities("phantomjs", "", Platform.ANY);
     desiredCapabilities.setCapability(
         PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
         System.getProperty("phantomjs.binary.path"));
@@ -360,10 +360,11 @@ public class FtpClientTest {
     logPrefs.enable(LogType.PERFORMANCE, java.util.logging.Level.OFF);
     logPrefs.enable(LogType.PROFILER, java.util.logging.Level.OFF);
     logPrefs.enable(LogType.SERVER, java.util.logging.Level.OFF);
-    desiredCapabilities
-        .setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS, "--webdriver-loglevel=NONE");
+    desiredCapabilities
+        .setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
+                       "--webdriver-loglevel=NONE");
 
     desiredCapabilities.setJavascriptEnabled(true);
 

@@ -38,103 +38,109 @@ import java.io.File;
  * Http Resumable session
  */
 public class HttpDeleteSession extends HttpSessionAbstract {
-	private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(HttpDeleteSession.class);
-	private final String identifier;
-	private final DbTaskRunner runner;
-	private final File file;
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(HttpDeleteSession.class);
+  private final String identifier;
+  private final DbTaskRunner runner;
+  private final File file;
 
-	/**
-	 * Constructor for reading from database only
-	 *
-	 * @param identifier
-	 * @param authent
-	 * @throws OpenR66RunnerErrorException 
-	 */
-	public HttpDeleteSession(final String identifier, final HttpAuthent authent) throws WaarpDatabaseException, OpenR66RunnerErrorException {
-		super(authent);
-		this.identifier = identifier;
-		if (!DetectionUtils.isJunit()) {
-			checkAuthentR66Business(this, session, authent);
-			runner = getDbTaskRunner(authent.getUserId(), identifier);
-			try {
-				session.getDir().changeDirectory(runner.getRule().getRecvPath());
-			} catch (CommandAbstractException e) {
-				// Nothing: ignore
-			}
-			String baseDir = runner.getRule().getRecvPath();
-			String path = session.getDir().getFullPath();
-			String filepath_in = runner.getFilename();
-			String finalPath = filepath_in.replace(baseDir, path).replace("//", "/");
-			logger.info("From {} to {} using {} gives {}", baseDir, path, filepath_in, finalPath);
-			file = new File(finalPath);
-		} else {
-			runner = null;
-			file = null;
-		}
-	}
+  /**
+   * Constructor for reading from database only
+   *
+   * @param identifier
+   * @param authent
+   *
+   * @throws OpenR66RunnerErrorException
+   */
+  public HttpDeleteSession(final String identifier, final HttpAuthent authent)
+      throws WaarpDatabaseException, OpenR66RunnerErrorException {
+    super(authent);
+    this.identifier = identifier;
+    if (!DetectionUtils.isJunit()) {
+      checkAuthentR66Business(this, session, authent);
+      runner = getDbTaskRunner(authent.getUserId(), identifier);
+      try {
+        session.getDir().changeDirectory(runner.getRule().getRecvPath());
+      } catch (CommandAbstractException e) {
+        // Nothing: ignore
+      }
+      String baseDir = runner.getRule().getRecvPath();
+      String path = session.getDir().getFullPath();
+      String filepath_in = runner.getFilename();
+      String finalPath = filepath_in.replace(baseDir, path).replace("//", "/");
+      logger.info("From {} to {} using {} gives {}", baseDir, path, filepath_in,
+                  finalPath);
+      file = new File(finalPath);
+    } else {
+      runner = null;
+      file = null;
+    }
+  }
 
-	/**
-	 * Reload the DbTaskRunner for this user and rulename
-	 *
-	 * @param user
-	 * @param identifier
-	 *
-	 * @return the DbTaskRunner, potentially new
-	 *
-	 * @throws IllegalArgumentException
-	 */
-	private DbTaskRunner getDbTaskRunner(final String user, final String identifier)
-			throws IllegalArgumentException, WaarpDatabaseException {
-		long specialId = Long.parseLong(identifier);
-		final String requested = Configuration.configuration.getHostId();
-		final String requester = user;
-		DbTaskRunner runner = null;
+  /**
+   * Reload the DbTaskRunner for this user and rulename
+   *
+   * @param user
+   * @param identifier
+   *
+   * @return the DbTaskRunner, potentially new
+   *
+   * @throws IllegalArgumentException
+   */
+  private DbTaskRunner getDbTaskRunner(final String user,
+                                       final String identifier)
+      throws IllegalArgumentException, WaarpDatabaseException {
+    long specialId = Long.parseLong(identifier);
+    final String requested = Configuration.configuration.getHostId();
+    final String requester = user;
+    DbTaskRunner runner = null;
 
-		// Try to reload it
-		try {
-			logger.debug("{} {} <-> {}", specialId, requester, requested);
-			runner = new DbTaskRunner(specialId, requester, requested);
-		} catch (WaarpDatabaseException e) {
-			logger.debug("{} {} {}", specialId, requester, requested);
-			runner = new DbTaskRunner(specialId, requested, requester);
-		}
-		runner.setSender(true);
-		try {
-			session.setRunner(runner);
-		} catch (OpenR66RunnerErrorException e) {
-			logger.debug(e);
-		}
-		session.setReady(true);
-		return runner;
-	}
+    // Try to reload it
+    try {
+      logger.debug("{} {} <-> {}", specialId, requester, requested);
+      runner = new DbTaskRunner(specialId, requester, requested);
+    } catch (WaarpDatabaseException e) {
+      logger.debug("{} {} {}", specialId, requester, requested);
+      runner = new DbTaskRunner(specialId, requested, requester);
+    }
+    runner.setSender(true);
+    try {
+      session.setRunner(runner);
+    } catch (OpenR66RunnerErrorException e) {
+      logger.debug(e);
+    }
+    session.setReady(true);
+    return runner;
+  }
 
-	/**
-	 * @return the File
-	 */
-	public File getFile() {
-		return file;
-	}
+  /**
+   * @return the File
+   */
+  public File getFile() {
+    return file;
+  }
 
-	/**
-	 * 
-	 * @return the identifier
-	 */
-	public String getIdentifier() {
-		return identifier;
-	}
+  /**
+   * @return the identifier
+   */
+  public String getIdentifier() {
+    return identifier;
+  }
 
-	@Override
-	public void error(Exception e, R66BusinessInterface business) throws IllegalArgumentException {
-		logger.error(e);
-		if (business != null) {
-			business.checkAtError(session);
-		}
-		session.newState(R66FiniteDualStates.ERROR);
-		throw new IllegalArgumentException(e);
-	}
+  @Override
+  public void error(Exception e, R66BusinessInterface business)
+      throws IllegalArgumentException {
+    logger.error(e);
+    if (business != null) {
+      business.checkAtError(session);
+    }
+    session.newState(R66FiniteDualStates.ERROR);
+    throw new IllegalArgumentException(e);
+  }
 
-	@Override
-	public String toString() {
-		return "DS: {" + session.toString() + ", " + identifier + ", " + file.getAbsolutePath() + "}";
-	}
+  @Override
+  public String toString() {
+    return "DS: {" + session.toString() + ", " + identifier + ", " +
+           file.getAbsolutePath() + "}";
+  }
 }

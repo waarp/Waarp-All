@@ -152,8 +152,8 @@ public class FileMonitorTest {
         };
     final FileMonitor fileMonitor =
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
-                        SMALL_WAIT, null, false, commandValidFile, commandRemovedFile,
-                        commandCheckIteration);
+                        SMALL_WAIT, null, false, commandValidFile,
+                        commandRemovedFile, commandCheckIteration);
     fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     commandValidFile.setMonitor(fileMonitor);
     fileMonitor.setCheckDelay(-1);
@@ -343,8 +343,8 @@ public class FileMonitorTest {
         };
     final FileMonitor fileMonitor =
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
-                        SMALL_WAIT, null, false, commandValidFile, commandRemovedFile,
-                        commandCheckIteration);
+                        SMALL_WAIT, null, false, commandValidFile,
+                        commandRemovedFile, commandCheckIteration);
     fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     fileMonitor.setCheckDelay(LARGE_WAIT);
     commandValidFile.setMonitor(fileMonitor);

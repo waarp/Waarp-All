@@ -22,7 +22,6 @@ package org.waarp.openr66.database.data;
 
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
 
@@ -30,29 +29,22 @@ import static org.junit.Assert.*;
 
 
 public class DbHostAuthTest {
-    @Test
-    public void testJsonSerialisation() {
-        DbHostAuth dbHostConf = new DbHostAuth("hostid", "127.0.0.1", 6666,
-                false, null, true, true);
+  @Test
+  public void testJsonSerialisation() {
+    DbHostAuth dbHostConf =
+        new DbHostAuth("hostid", "127.0.0.1", 6666, false, null, true, true);
 
-        String expected = "{" +
-                "\"@model\":\"DbHostAuth\"," +
-                "\"HOSTID\":\"hostid\"," +
-                "\"ADDRESS\":\"127.0.0.1\"," +
-                "\"PORT\":6666," +
-                "\"HOSTKEY\":null," +
-                "\"ISSSL\":false," +
-                "\"ISCLIENT\":true," +
-                "\"ISPROXIFIED\":false," +
-                "\"ADMINROLE\":true," +
-                "\"ISACTIVE\":true," +
-                "\"UPDATEDINFO\":0" +
-            "}";
+    String expected =
+        "{" + "\"@model\":\"DbHostAuth\"," + "\"HOSTID\":\"hostid\"," +
+        "\"ADDRESS\":\"127.0.0.1\"," + "\"PORT\":6666," + "\"HOSTKEY\":null," +
+        "\"ISSSL\":false," + "\"ISCLIENT\":true," + "\"ISPROXIFIED\":false," +
+        "\"ADMINROLE\":true," + "\"ISACTIVE\":true," + "\"UPDATEDINFO\":0" +
+        "}";
 
 
-        ObjectNode asJson = dbHostConf.getJson();
-        String got = JsonHandler.writeAsString(asJson);
+    ObjectNode asJson = dbHostConf.getJson();
+    String got = JsonHandler.writeAsString(asJson);
 
-        assertEquals(expected, got);
-    }
+    assertEquals(expected, got);
+  }
 }

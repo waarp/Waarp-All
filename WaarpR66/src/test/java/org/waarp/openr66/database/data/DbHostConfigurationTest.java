@@ -22,7 +22,6 @@ package org.waarp.openr66.database.data;
 
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.pojo.Business;
@@ -31,26 +30,23 @@ import org.waarp.openr66.pojo.UpdatedInfo;
 import static org.junit.Assert.*;
 
 public class DbHostConfigurationTest {
-    @Test
-    public void testJsonSerialisation() {
-		Business business = new Business("Test", "business", "roles", "aliases",
-                "others", UpdatedInfo.UNKNOWN);
-        DbHostConfiguration dbHostConf = new DbHostConfiguration(business);
+  @Test
+  public void testJsonSerialisation() {
+    Business business =
+        new Business("Test", "business", "roles", "aliases", "others",
+                     UpdatedInfo.UNKNOWN);
+    DbHostConfiguration dbHostConf = new DbHostConfiguration(business);
 
-        String expected = "{" +
-            "\"@model\":\"DbHostConfiguration\"," +
-            "\"HOSTID\":\"Test\"," +
-            "\"BUSINESS\":\"business\"," +
-            "\"ROLES\":\"roles\"," +
-            "\"ALIASES\":\"aliases\"," +
-            "\"OTHERS\":\"others\"," +
-            "\"UPDATEDINFO\":0" +
-            "}";
+    String expected =
+        "{" + "\"@model\":\"DbHostConfiguration\"," + "\"HOSTID\":\"Test\"," +
+        "\"BUSINESS\":\"business\"," + "\"ROLES\":\"roles\"," +
+        "\"ALIASES\":\"aliases\"," + "\"OTHERS\":\"others\"," +
+        "\"UPDATEDINFO\":0" + "}";
 
 
-        ObjectNode asJson = dbHostConf.getJson();
-        String got = JsonHandler.writeAsString(asJson);
+    ObjectNode asJson = dbHostConf.getJson();
+    String got = JsonHandler.writeAsString(asJson);
 
-        assertEquals(expected, got);
-    }
+    assertEquals(expected, got);
+  }
 }

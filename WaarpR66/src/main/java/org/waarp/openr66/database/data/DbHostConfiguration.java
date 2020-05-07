@@ -25,6 +25,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
@@ -731,8 +732,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           return false;
         }
         @SuppressWarnings("unchecked")
-        final List<Element> list = document.selectNodes(path);
-        for (final Element element : list) {
+        final List<Node> list = document.selectNodes(path);
+        for (final Node element : list) {
           final String sval = element.getText().trim();
           if (sval.isEmpty()) {
             continue;
@@ -830,8 +831,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           return false;
         }
         @SuppressWarnings("unchecked")
-        final List<Element> list = document.selectNodes(path);
-        for (final Element element : list) {
+        final List<Node> list = document.selectNodes(path);
+        for (final Node element : list) {
           final Element nodeid = (Element) element.selectSingleNode(keypath);
           if (nodeid == null) {
             continue;

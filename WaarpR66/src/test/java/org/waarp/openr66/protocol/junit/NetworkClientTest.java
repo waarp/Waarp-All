@@ -969,11 +969,13 @@ public class NetworkClientTest extends TestAbstract {
     final R66Future future = new R66Future(true);
     logger.warn("Start Test of DirectTransfer with future deleted Rule");
     String rulename = "todelete";
-    DbRule newRule = new DbRule("todelete", null, 3, null, null, null, null, "", "", "", "", "", "");
+    DbRule newRule =
+        new DbRule("todelete", null, 3, null, null, null, null, "", "", "", "",
+                   "", "");
     newRule.insert();
     final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostas", "testTask.txt",
-                             rulename, "Test SendDirect Small", true, 8192,
+        new TestTransferNoDb(future, "hostas", "testTask.txt", rulename,
+                             "Test SendDirect Small", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -995,7 +997,8 @@ public class NetworkClientTest extends TestAbstract {
     // Now try to delete the rule
     try {
       newRule.delete();
-      fail("Must raized an exception since a transfer exist while we try to delete the rule associated with it");
+      fail(
+          "Must raized an exception since a transfer exist while we try to delete the rule associated with it");
     } catch (WaarpDatabaseNoDataException e) {
       // Correct behavior
     }
@@ -1936,8 +1939,8 @@ public class NetworkClientTest extends TestAbstract {
       SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("business"));
       assertTrue(driver.getPageSource().contains(Version.fullIdentifier()));
-      assertTrue(driver.getPageSource().contains(
-          org.waarp.openr66.protocol.utils.Version.ID));
+      assertTrue(driver.getPageSource()
+                       .contains(org.waarp.openr66.protocol.utils.Version.ID));
       driver.get(v2BaseUri + "hosts");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
       SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());

@@ -20,6 +20,9 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Rules.Tasks;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,11 +32,6 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +43,8 @@ import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
 @XmlType(name = ROOT)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonPropertyOrder({
-    "IDRULE", "MODETRANS", "RECVPATH", "SENDPATH", "ARCHIVEPATH",
-    "WORKPATH", "UPDATEDINFO", "HOSTIDS", "SPRETASKS", "SPOSTASKS", "SERRORTASKS",
+    "IDRULE", "MODETRANS", "RECVPATH", "SENDPATH", "ARCHIVEPATH", "WORKPATH",
+    "UPDATEDINFO", "HOSTIDS", "SPRETASKS", "SPOSTASKS", "SERRORTASKS",
     "RPRETASKS", "RPOSTTASKS", "RERRORTASKS"
 })
 public class Rule {

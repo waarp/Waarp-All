@@ -250,10 +250,11 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logPrefs.enable(LogType.PERFORMANCE, Level.OFF);
     logPrefs.enable(LogType.PROFILER, Level.OFF);
     logPrefs.enable(LogType.SERVER, Level.OFF);
-    desiredCapabilities
-        .setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+    desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS, "--webdriver-loglevel=NONE");
+    desiredCapabilities
+        .setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
+                       "--webdriver-loglevel=NONE");
     desiredCapabilities.setJavascriptEnabled(true);
 
     ArrayList<String> cliArgs = new ArrayList<String>();

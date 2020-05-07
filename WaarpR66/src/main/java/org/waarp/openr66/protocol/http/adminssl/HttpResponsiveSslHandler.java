@@ -1833,8 +1833,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
             responseContent.append(export());
           } else {
-            responseContent.append(
-                unallowed(Messages.getString("HttpSslHandler.ExportUnallowed")));
+            responseContent.append(unallowed(
+                Messages.getString("HttpSslHandler.ExportUnallowed")));
           }
           break;
         case Hosts:

@@ -551,7 +551,8 @@ public class HttpSslHandler
   }
 
   protected void closeConnection() {
-    if (dbSession != null && dbSession != DbConstantFtp.gatewayAdmin.getSession()) {
+    if (dbSession != null &&
+        dbSession != DbConstantFtp.gatewayAdmin.getSession()) {
       DbAdmin.decHttpSession();
       dbSession.disconnect();
     }

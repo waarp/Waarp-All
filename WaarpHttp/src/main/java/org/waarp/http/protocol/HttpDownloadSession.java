@@ -207,11 +207,10 @@ public class HttpDownloadSession extends HttpSessionAbstract {
   }
 
   /**
-   * 
    * @return the identifier
    */
   public String getIdentifier() {
-         return identifier;
+    return identifier;
   }
 
   /**

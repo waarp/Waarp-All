@@ -20,62 +20,46 @@
 
 package org.waarp.openr66.database.data;
 
-import java.sql.Timestamp;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.pojo.UpdatedInfo;
 
+import java.sql.Timestamp;
+
 import static org.junit.Assert.*;
 
 public class DbTaskRunnerTest {
-    @Test
-    public void testJsonSerialisation() {
-        Transfer transfer = new Transfer(12345L, "myrule", 2, "myfile.dat",
-                "myoriginalfile.dat", "myfileinfo", true, 42, false,
-                "me", "me", "other", "my-transfer-info",
-                Transfer.TASKSTEP.POSTTASK, Transfer.TASKSTEP.TRANSFERTASK, 53,
-                ErrorCode.MD5Error, ErrorCode.Unimplemented, 72,
-                new Timestamp(1581092031000L),
-                new Timestamp(1581092131000L), UpdatedInfo.RUNNING);
-        DbTaskRunner dbTransfer = new DbTaskRunner(transfer);
+  @Test
+  public void testJsonSerialisation() {
+    Transfer transfer =
+        new Transfer(12345L, "myrule", 2, "myfile.dat", "myoriginalfile.dat",
+                     "myfileinfo", true, 42, false, "me", "me", "other",
+                     "my-transfer-info", Transfer.TASKSTEP.POSTTASK,
+                     Transfer.TASKSTEP.TRANSFERTASK, 53, ErrorCode.MD5Error,
+                     ErrorCode.Unimplemented, 72, new Timestamp(1581092031000L),
+                     new Timestamp(1581092131000L), UpdatedInfo.RUNNING);
+    DbTaskRunner dbTransfer = new DbTaskRunner(transfer);
 
-        String expected = "{" +
-            "\"@model\":\"DbTaskRunner\"," +
-            "\"SPECIALID\":12345," +
-            "\"RETRIEVEMODE\":false," +
-            "\"IDRULE\":\"myrule\"," +
-            "\"MODETRANS\":2," +
-            "\"FILENAME\":\"myfile.dat\"," +
-            "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
-            "\"FILEINFO\":\"myfileinfo\"," +
-            "\"ISMOVED\":true," +
-            "\"BLOCKSZ\":42," +
-            "\"OWNERREQ\":\"me\"," +
-            "\"REQUESTER\":\"me\"," +
-            "\"REQUESTED\":\"other\"," +
-            "\"TRANSFERINFO\":\"my-transfer-info\"," +
-            "\"GLOBALSTEP\":3," +
-            "\"GLOBALLASTSTEP\":2," +
-            "\"STEP\":53," +
-            "\"STEPSTATUS\":\"M  \"," +
-            "\"INFOSTATUS\":\"U  \"," +
-            "\"RANK\":72," +
-            "\"STARTTRANS\":1581092031000," +
-            "\"STOPTRANS\":1581092131000," +
-            "\"UPDATEDINFO\":5," +
-            "\"ORIGINALSIZE\":-1" +
-            "}";
+    String expected =
+        "{" + "\"@model\":\"DbTaskRunner\"," + "\"SPECIALID\":12345," +
+        "\"RETRIEVEMODE\":false," + "\"IDRULE\":\"myrule\"," +
+        "\"MODETRANS\":2," + "\"FILENAME\":\"myfile.dat\"," +
+        "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
+        "\"FILEINFO\":\"myfileinfo\"," + "\"ISMOVED\":true," +
+        "\"BLOCKSZ\":42," + "\"OWNERREQ\":\"me\"," + "\"REQUESTER\":\"me\"," +
+        "\"REQUESTED\":\"other\"," + "\"TRANSFERINFO\":\"my-transfer-info\"," +
+        "\"GLOBALSTEP\":3," + "\"GLOBALLASTSTEP\":2," + "\"STEP\":53," +
+        "\"STEPSTATUS\":\"M  \"," + "\"INFOSTATUS\":\"U  \"," + "\"RANK\":72," +
+        "\"STARTTRANS\":1581092031000," + "\"STOPTRANS\":1581092131000," +
+        "\"UPDATEDINFO\":5," + "\"ORIGINALSIZE\":-1" + "}";
 
 
-        ObjectNode asJson = dbTransfer.getJson();
-        String got = JsonHandler.writeAsString(asJson);
+    ObjectNode asJson = dbTransfer.getJson();
+    String got = JsonHandler.writeAsString(asJson);
 
-        assertEquals(expected, got);
-    }
+    assertEquals(expected, got);
+  }
 }
