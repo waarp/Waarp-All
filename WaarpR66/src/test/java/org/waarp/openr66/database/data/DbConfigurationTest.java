@@ -22,7 +22,6 @@ package org.waarp.openr66.database.data;
 
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.pojo.Limit;
@@ -31,26 +30,21 @@ import org.waarp.openr66.pojo.UpdatedInfo;
 import static org.junit.Assert.*;
 
 public class DbConfigurationTest {
-    @Test
-    public void testJsonSerialisation() {
-		Limit limit = new Limit("hostid",10, 20, 30, 40, 50, UpdatedInfo.TOSUBMIT);
-        DbConfiguration dbConf = new DbConfiguration(limit);
+  @Test
+  public void testJsonSerialisation() {
+    Limit limit = new Limit("hostid", 10, 20, 30, 40, 50, UpdatedInfo.TOSUBMIT);
+    DbConfiguration dbConf = new DbConfiguration(limit);
 
-        String expected = "{" +
-            "\"@model\":\"DbConfiguration\"," +
-            "\"HOSTID\":\"hostid\"," +
-            "\"READGLOBALLIMIT\":20," +
-            "\"WRITEGLOBALLIMIT\":30," +
-            "\"READSESSIONLIMIT\":40," +
-            "\"WRITESESSIONLIMIT\":50," +
-            "\"DELAYLIMIT\":10," +
-            "\"UPDATEDINFO\":3" +
-            "}";
+    String expected =
+        "{" + "\"@model\":\"DbConfiguration\"," + "\"HOSTID\":\"hostid\"," +
+        "\"READGLOBALLIMIT\":20," + "\"WRITEGLOBALLIMIT\":30," +
+        "\"READSESSIONLIMIT\":40," + "\"WRITESESSIONLIMIT\":50," +
+        "\"DELAYLIMIT\":10," + "\"UPDATEDINFO\":3" + "}";
 
 
-        ObjectNode asJson = dbConf.getJson();
-        String got = JsonHandler.writeAsString(asJson);
+    ObjectNode asJson = dbConf.getJson();
+    String got = JsonHandler.writeAsString(asJson);
 
-        assertEquals(expected, got);
-    }
+    assertEquals(expected, got);
+  }
 }

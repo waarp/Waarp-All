@@ -25,7 +25,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import org.joda.time.DateTime;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.CryptoException;
@@ -64,7 +63,6 @@ import org.waarp.openr66.protocol.http.rest.handler.DbHostAuthR66RestMethodHandl
 import org.waarp.openr66.protocol.http.rest.handler.DbHostConfigurationR66RestMethodHandler;
 import org.waarp.openr66.protocol.http.rest.handler.DbRuleR66RestMethodHandler;
 import org.waarp.openr66.protocol.http.rest.handler.DbTaskRunnerR66RestMethodHandler;
-import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.json.BandwidthJsonPacket;
@@ -100,7 +98,8 @@ public class HttpTestRestR66Client implements Runnable {
   private static final long delaylimit = 5000;
   private static String hostid = "test";
   private static final String address = "10.10.10.10";
-  private static final String hostkey = "a5847a6ebb2eb5230554eb160326e7b1b59da443feab31e5";
+  private static final String hostkey =
+      "a5847a6ebb2eb5230554eb160326e7b1b59da443feab31e5";
   private static final String business =
       "<business><businessid>hostas</businessid></business>";
   private static final String roles =

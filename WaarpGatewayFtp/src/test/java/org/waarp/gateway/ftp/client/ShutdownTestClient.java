@@ -1,7 +1,5 @@
 package org.waarp.gateway.ftp.client;
 
-import java.io.File;
-
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.client.transaction.Ftp4JClientTransactionTest;
@@ -9,6 +7,8 @@ import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
 import org.waarp.gateway.ftp.database.DbConstantFtp;
+
+import java.io.File;
 
 public class ShutdownTestClient {
 
@@ -23,23 +23,26 @@ public class ShutdownTestClient {
     }
     File file = new File(args[0]);
     final FileBasedConfiguration configuration =
-      new FileBasedConfiguration(ExecGatewayFtpServer.class,
-        ExecBusinessHandler.class, FileSystemBasedDataBusinessHandler.class,
-        new FilesystemBasedFileParameterImpl());
+        new FileBasedConfiguration(ExecGatewayFtpServer.class,
+                                   ExecBusinessHandler.class,
+                                   FileSystemBasedDataBusinessHandler.class,
+                                   new FilesystemBasedFileParameterImpl());
     try {
-      if (!configuration.setConfigurationServerFromXml(file.getAbsolutePath())) {
+      if (!configuration
+          .setConfigurationServerFromXml(file.getAbsolutePath())) {
         System.err.println("Bad main configuration");
         System.exit(1);
       }
-	} finally {
+    } finally {
       if (DbConstantFtp.gatewayAdmin != null) {
         DbConstantFtp.gatewayAdmin.close();
       }
     }
     System.err.println("Will start server");
-    String key = configuration.getCryptoKey().decryptHexInString("c5f4876737cf351a");
+    String key =
+        configuration.getCryptoKey().decryptHexInString("c5f4876737cf351a");
     final Ftp4JClientTransactionTest client =
-            new Ftp4JClientTransactionTest("127.0.0.1", 2021, "fredo", key, "a", 0);
+        new Ftp4JClientTransactionTest("127.0.0.1", 2021, "fredo", key, "a", 0);
     if (!client.connect()) {
       System.err.println("Cant connect");
       System.exit(2);

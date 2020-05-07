@@ -135,8 +135,7 @@ public class UploadServlet extends AbstractServlet {
     logger.warn("PARAMS: {}", arguments);
     resumableInfo = getResumableInfo(arguments);
     logger.debug("RECV: {}", resumableInfo);
-    session =
-        getResumableSession(arguments, resumableInfo);
+    session = getResumableSession(arguments, resumableInfo);
     logger.debug("SESSION: {}", session);
     try {
       if (!session.tryWrite(resumableInfo, inputStream)) {

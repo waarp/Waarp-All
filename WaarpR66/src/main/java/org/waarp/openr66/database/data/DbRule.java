@@ -373,33 +373,35 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    */
   @Override
   public void delete() throws WaarpDatabaseException {
-        AbstractDAO<Transfer> transferDAO = null;
-        try {
-          transferDAO = DAOFactory.getInstance().getTransferDAO();
-          List<Filter> filters = new ArrayList<Filter>();
-          Filter filter = new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", this.getIdRule());
-          filters.add(filter);
-          List<Transfer> transfers = transferDAO.find(filters);
-          if (!transfers.isEmpty()) {
-             transfers.clear();
-             throw new WaarpDatabaseNoDataException("Rule " + this.getIdRule() +
-                " is still used by TaskRunner therefore it cannot be deleted.");
-          }
-        } catch (DAOConnectionException e) {
-          throw new WaarpDatabaseNoConnectionException(e);
-        } finally {
-          if (transferDAO != null) {
-       	    transferDAO.close();
-          }
-        }
-	    super.delete();
+    AbstractDAO<Transfer> transferDAO = null;
+    try {
+      transferDAO = DAOFactory.getInstance().getTransferDAO();
+      List<Filter> filters = new ArrayList<Filter>();
+      Filter filter =
+          new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", this.getIdRule());
+      filters.add(filter);
+      List<Transfer> transfers = transferDAO.find(filters);
+      if (!transfers.isEmpty()) {
+        transfers.clear();
+        throw new WaarpDatabaseNoDataException("Rule " + this.getIdRule() +
+                                               " is still used by TaskRunner therefore it cannot be deleted.");
+      }
+    } catch (DAOConnectionException e) {
+      throw new WaarpDatabaseNoConnectionException(e);
+    } finally {
+      if (transferDAO != null) {
+        transferDAO.close();
+      }
+    }
+    super.delete();
   }
 
   /**
-   * Delete all Rules but returns original one, therefore not checking if 
-   * any TaskRunner are using it (used by reloading rules) 
+   * Delete all Rules but returns original one, therefore not checking if
+   * any TaskRunner are using it (used by reloading rules)
    *
    * @return the previously existing DbRule
+   *
    * @throws WaarpDatabaseException
    */
   public static DbRule[] deleteAll() throws WaarpDatabaseException {

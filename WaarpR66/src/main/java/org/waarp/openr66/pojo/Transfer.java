@@ -20,16 +20,15 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -84,7 +83,7 @@ public class Transfer {
 
     @JsonValue
     public int getTaskNo() {
-        return taskNo;
+      return taskNo;
     }
   }
 
@@ -234,10 +233,9 @@ public class Transfer {
                   TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
                   ErrorCode stepStatus, ErrorCode infoStatus, int rank,
                   Timestamp start, Timestamp stop, UpdatedInfo updatedInfo) {
-    this(id, rule, mode, filename, originalName, fileInfo, isMoved,
-         blockSize, retrieveMode, ownerReq, requester, requested, transferInfo,
-         globalStep, lastGlobalStep, step, stepStatus, infoStatus, rank, start,
-         stop);
+    this(id, rule, mode, filename, originalName, fileInfo, isMoved, blockSize,
+         retrieveMode, ownerReq, requester, requested, transferInfo, globalStep,
+         lastGlobalStep, step, stepStatus, infoStatus, rank, start, stop);
     this.updatedInfo = updatedInfo;
   }
 

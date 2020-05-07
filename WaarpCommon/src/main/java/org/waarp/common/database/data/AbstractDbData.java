@@ -107,9 +107,7 @@ public abstract class AbstractDbData {
   /**
    * Abstract constructor to set the DbSession to use
    *
-   * @param dbSession
-   *
-   * Deprecated for Waarp R66
+   * @param dbSession Deprecated for Waarp R66
    */
   protected AbstractDbData(DbSession dbSession) {
     this.dbSession = dbSession;

@@ -26,6 +26,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -3339,8 +3340,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     WaarpStringUtils
         .replaceAll(builder, "XXXSpecIdXXX", Long.toString(getSpecialId()));
     WaarpStringUtils.replace(builder, "XXXRulXXX",
-                             rule != null? rule.toShortString() : 
-                                 "<p style='color:red'>Rule Name:" + getRuleId() +
+                             rule != null? rule.toShortString() :
+                                 "<p style='color:red'>Rule Name:" +
+                                 getRuleId() +
                                  " <em>(rule not found)</em></p>");
     WaarpStringUtils.replace(builder, "XXXFileXXX", getFilename());
     WaarpStringUtils.replace(builder, "XXXInfoXXX", getFileInformation());
@@ -4118,14 +4120,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           "XML file cannot be read as an XML file", e);
     }
     @SuppressWarnings("unchecked")
-    final List<Element> elts =
+    final List<Node> elts =
         document.selectNodes('/' + XMLRUNNERS + '/' + XMLRUNNER);
     boolean error = false;
     Exception one = null;
-    for (final Element element : elts) {
+    for (final Node element : elts) {
       final DbTaskRunner runnerlog = new DbTaskRunner();
       try {
-        setRunnerFromElement(runnerlog, element);
+        setRunnerFromElement(runnerlog, (Element) element);
         runnerlog.insertOrUpdateForLogsImport();
       } catch (final WaarpDatabaseSqlException e) {
         error = true;

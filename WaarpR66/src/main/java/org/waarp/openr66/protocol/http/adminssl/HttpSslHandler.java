@@ -2327,8 +2327,8 @@ public class HttpSslHandler
           if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
             responseContent.append(export0());
           } else {
-            responseContent.append(
-                unallowed(Messages.getString("HttpSslHandler.ExportUnallowed")));
+            responseContent.append(unallowed(
+                Messages.getString("HttpSslHandler.ExportUnallowed")));
           }
           break;
         case Hosts:

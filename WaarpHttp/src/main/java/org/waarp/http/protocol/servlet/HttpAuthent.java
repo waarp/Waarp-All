@@ -30,38 +30,40 @@ import java.util.Map;
  * implementations)
  */
 public interface HttpAuthent {
-	public static final String FIELD_USER = "user";
-	public static final String FIELD_KEY = "key";
+  public static final String FIELD_USER = "user";
+  public static final String FIELD_KEY = "key";
 
-	/**
-	 * Method to setup authentication using servlet arguments
-	 *
-	 * @param arguments Map of all arguments as String
-	 */
-	void initializeAuthent(Map<String, String> arguments);
+  /**
+   * Method to setup authentication using servlet arguments
+   *
+   * @param arguments Map of all arguments as String
+   */
+  void initializeAuthent(Map<String, String> arguments);
 
-	/**
-	 * Method to check authentication
-	 *
-	 * @param httpSession
-	 * @param session
-	 *
-	 * @throws IllegalArgumentException
-	 */
-	void checkAuthent(final HttpSession httpSession, final R66Session session) throws IllegalArgumentException;
+  /**
+   * Method to check authentication
+   *
+   * @param httpSession
+   * @param session
+   *
+   * @throws IllegalArgumentException
+   */
+  void checkAuthent(final HttpSession httpSession, final R66Session session)
+      throws IllegalArgumentException;
 
-	/**
-	 * @return the user Id
-	 */
-	String getUserId();
+  /**
+   * @return the user Id
+   */
+  String getUserId();
 
-	/**
-	 * Finalize the transfer according to status in sessions
-	 *
-	 * @param httpSession
-	 * @param session
-	 *
-	 * @throws IllegalArgumentException
-	 */
-	void finalizeTransfer(final HttpSession httpSession, final R66Session session) throws IllegalArgumentException;
+  /**
+   * Finalize the transfer according to status in sessions
+   *
+   * @param httpSession
+   * @param session
+   *
+   * @throws IllegalArgumentException
+   */
+  void finalizeTransfer(final HttpSession httpSession, final R66Session session)
+      throws IllegalArgumentException;
 }

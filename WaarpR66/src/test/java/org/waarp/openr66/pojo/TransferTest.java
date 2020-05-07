@@ -20,80 +20,70 @@
 
 package org.waarp.openr66.pojo;
 
-import java.sql.Timestamp;
-
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.context.ErrorCode;
 
+import java.sql.Timestamp;
+
 import static org.junit.Assert.*;
 
 public class TransferTest {
-    @Test
-    public void testJsonSerialisation() {
-        Transfer transfer = new Transfer(12345, "myrule", 2, "myfile.dat",
-                "myoriginalfile.dat", "myfileinfo", true, 42, false,
-                "me", "me", "other", "my-transfer-info",
-                Transfer.TASKSTEP.POSTTASK, Transfer.TASKSTEP.TRANSFERTASK, 53,
-                ErrorCode.MD5Error, ErrorCode.Unimplemented, 72,
-                new Timestamp(1581092031000L),
-                new Timestamp(1581092131000L), UpdatedInfo.RUNNING);
+  @Test
+  public void testJsonSerialisation() {
+    Transfer transfer =
+        new Transfer(12345, "myrule", 2, "myfile.dat", "myoriginalfile.dat",
+                     "myfileinfo", true, 42, false, "me", "me", "other",
+                     "my-transfer-info", Transfer.TASKSTEP.POSTTASK,
+                     Transfer.TASKSTEP.TRANSFERTASK, 53, ErrorCode.MD5Error,
+                     ErrorCode.Unimplemented, 72, new Timestamp(1581092031000L),
+                     new Timestamp(1581092131000L), UpdatedInfo.RUNNING);
 
-        //String expected = "{" +
-        //    "\"@model\":\"DbTaskRunner\"," +
-        //    "\"BLOCKSZ\":42," +
-        //    "\"FILEINFO\":\"myfileinfo\"," +
-        //    "\"FILENAME\":\"myfile.dat\"," +
-        //    "\"GLOBALLASTSTEP\":2," +
-        //    "\"GLOBALSTEP\":3," +
-        //    "\"IDRULE\":\"myrule\"," +
-        //    "\"INFOSTATUS\":\"U  \"," +
-        //    "\"ISMOVED\":true," +
-        //    "\"MODETRANS\":2," +
-        //    "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
-        //    "\"ORIGINALSIZE\":-1," +
-        //    "\"OWNERREQ\":\"me\"," +
-        //    "\"RANK\":72," +
-        //    "\"REQUESTED\":\"other\"," +
-        //    "\"REQUESTER\":\"me\"," +
-        //    "\"RETRIEVEMODE\":false," +
-        //    "\"SPECIALID\":12345," +
-        //    "\"STARTTRANS\":1581092031000," +
-        //    "\"STEP\":53," +
-        //    "\"STEPSTATUS\":\"M  \"," +
-        //    "\"STOPTRANS\":1581092131000," +
-        //    "\"TRANSFERINFO\":\"my-transfer-info\"," +
-        //    "\"UPDATEDINFO\":5" +
-        //    "}";
+    //String expected = "{" +
+    //    "\"@model\":\"DbTaskRunner\"," +
+    //    "\"BLOCKSZ\":42," +
+    //    "\"FILEINFO\":\"myfileinfo\"," +
+    //    "\"FILENAME\":\"myfile.dat\"," +
+    //    "\"GLOBALLASTSTEP\":2," +
+    //    "\"GLOBALSTEP\":3," +
+    //    "\"IDRULE\":\"myrule\"," +
+    //    "\"INFOSTATUS\":\"U  \"," +
+    //    "\"ISMOVED\":true," +
+    //    "\"MODETRANS\":2," +
+    //    "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
+    //    "\"ORIGINALSIZE\":-1," +
+    //    "\"OWNERREQ\":\"me\"," +
+    //    "\"RANK\":72," +
+    //    "\"REQUESTED\":\"other\"," +
+    //    "\"REQUESTER\":\"me\"," +
+    //    "\"RETRIEVEMODE\":false," +
+    //    "\"SPECIALID\":12345," +
+    //    "\"STARTTRANS\":1581092031000," +
+    //    "\"STEP\":53," +
+    //    "\"STEPSTATUS\":\"M  \"," +
+    //    "\"STOPTRANS\":1581092131000," +
+    //    "\"TRANSFERINFO\":\"my-transfer-info\"," +
+    //    "\"UPDATEDINFO\":5" +
+    //    "}";
 
-        String expected = "{" +
-            "\"SPECIALID\":12345," +
-            "\"RETRIEVEMODE\":false," +
-            "\"IDRULE\":\"myrule\"," +
-            "\"MODETRANS\":2," +
-            "\"FILENAME\":\"myfile.dat\"," +
-            "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
-            "\"FILEINFO\":\"myfileinfo\"," +
-            "\"ISMOVED\":true," +
-            "\"BLOCKSZ\":42," +
-            "\"OWNERREQ\":\"me\"," +
-            "\"REQUESTER\":\"me\"," +
-            "\"REQUESTED\":\"other\"," +
-            "\"TRANSFERINFO\":\"my-transfer-info\"," +
-            "\"GLOBALSTEP\":3," +
-            "\"GLOBALLASTSTEP\":2," +
-            "\"STEP\":53," +
-            "\"STEPSTATUS\":\"M  \"," +
-            "\"INFOSTATUS\":\"U  \"," +
-            "\"RANK\":72," +
-            "\"STARTTRANS\":1581092031000," +
-            "\"STOPTRANS\":1581092131000," +
-            "\"UPDATEDINFO\":5" +
-            "}";
+    String expected = "{" + "\"SPECIALID\":12345," + "\"RETRIEVEMODE\":false," +
+                      "\"IDRULE\":\"myrule\"," + "\"MODETRANS\":2," +
+                      "\"FILENAME\":\"myfile.dat\"," +
+                      "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
+                      "\"FILEINFO\":\"myfileinfo\"," + "\"ISMOVED\":true," +
+                      "\"BLOCKSZ\":42," + "\"OWNERREQ\":\"me\"," +
+                      "\"REQUESTER\":\"me\"," + "\"REQUESTED\":\"other\"," +
+                      "\"TRANSFERINFO\":\"my-transfer-info\"," +
+                      "\"GLOBALSTEP\":3," + "\"GLOBALLASTSTEP\":2," +
+                      "\"STEP\":53," + "\"STEPSTATUS\":\"M  \"," +
+                      "\"INFOSTATUS\":\"U  \"," + "\"RANK\":72," +
+                      "\"STARTTRANS\":1581092031000," +
+                      "\"STOPTRANS\":1581092131000," + "\"UPDATEDINFO\":5" +
+                      "}";
 
 
-        String got = JsonHandler.writeAsString(transfer);
+    String got = JsonHandler.writeAsString(transfer);
 
-        assertEquals(expected, got);
-    }
+    assertEquals(expected, got);
+  }
 }

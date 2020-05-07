@@ -23,6 +23,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -364,13 +365,13 @@ public final class XmlUtil {
    * @throws DocumentException
    */
   @SuppressWarnings("unchecked")
-  public static List<Element> getElementMultiple(Element ref, String path)
+  public static List<Node> getElementMultiple(Element ref, String path)
       throws DocumentException {
     String npath = path;
     while (npath.charAt(0) == '/') {
       npath = npath.substring(1);
     }
-    final List<Element> list = ref.selectNodes(npath);
+    final List<Node> list = ref.selectNodes(npath);
     if (list == null || list.isEmpty()) {
       throw new DocumentException("Nodes not found: " + path);
     }
@@ -543,9 +544,9 @@ public final class XmlUtil {
    * @throws DocumentException
    */
   @SuppressWarnings("unchecked")
-  public static List<Element> getElementMultiple(Document doc, String path)
+  public static List<Node> getElementMultiple(Document doc, String path)
       throws DocumentException {
-    final List<Element> list = doc.selectNodes(path);
+    final List<Node> list = doc.selectNodes(path);
     if (list == null || list.isEmpty()) {
       throw new DocumentException("Nodes not found: " + path);
     }
@@ -580,14 +581,15 @@ public final class XmlUtil {
       values[i] = value;
       if (decls[i].isSubXml()) {
         if (decls[i].isMultiple()) {
-          List<Element> elts;
+          List<Node> elts;
           try {
             elts = getElementMultiple(doc, decls[i].getXmlPath());
           } catch (final DocumentException e) {
             continue;
           }
-          for (final Element element : elts) {
-            final XmlValue[] newValue = read(element, decls[i].getSubXml());
+          for (final Node element : elts) {
+            final XmlValue[] newValue = read((Element) element,
+                                             decls[i].getSubXml());
             if (newValue == null) {
               continue;
             }
@@ -615,13 +617,13 @@ public final class XmlUtil {
           }
         }
       } else if (decls[i].isMultiple()) {
-        List<Element> elts;
+        List<Node> elts;
         try {
           elts = getElementMultiple(doc, decls[i].getXmlPath());
         } catch (final DocumentException e) {
           continue;
         }
-        for (final Element element : elts) {
+        for (final Node element : elts) {
           final String svalue = element.getText();
           try {
             value.addFromString(getExtraTrimed(svalue));
@@ -666,14 +668,15 @@ public final class XmlUtil {
       values[i] = value;
       if (decls[i].isSubXml()) {
         if (decls[i].isMultiple()) {
-          List<Element> elts;
+          List<Node> elts;
           try {
             elts = getElementMultiple(ref, decls[i].getXmlPath());
           } catch (final DocumentException e) {
             continue;
           }
-          for (final Element element : elts) {
-            final XmlValue[] newValue = read(element, decls[i].getSubXml());
+          for (final Node element : elts) {
+            final XmlValue[] newValue = read((Element) element,
+                                             decls[i].getSubXml());
             if (newValue == null) {
               continue;
             }
@@ -701,13 +704,13 @@ public final class XmlUtil {
           }
         }
       } else if (decls[i].isMultiple()) {
-        List<Element> elts;
+        List<Node> elts;
         try {
           elts = getElementMultiple(ref, decls[i].getXmlPath());
         } catch (final DocumentException e) {
           continue;
         }
-        for (final Element element : elts) {
+        for (final Node element : elts) {
           final String svalue = element.getText();
           try {
             value.addFromString(getExtraTrimed(svalue));

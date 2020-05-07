@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.3.3 (2020-05-05)
+Waarp R66 3.3.3 (2020-05-07)
 ============================
 
 Correctifs
@@ -24,7 +24,11 @@ Correctifs
 - [`#25 <https://github.com/waarp/Waarp-All/pull/25>`__] Corrige l'arrêt
   immédiat du serveur Waarp GW FTP après son démarrage (introduit en 3.1)
   (issue [`#24 <https://github.com/waarp/Waarp-All/issues/24>`__])
-- Corrige les dépendances externes
+- [`#27 <https://github.com/waarp/Waarp-All/pull/27>`__] Corrige l'absence
+  de connections à la base de données pour l'interface d'administration
+  en mode Responsive
+  (issue [`#26 <https://github.com/waarp/Waarp-All/issues/26>`__])
+- Corrige les dépendances externes (et le style)
 
 Waarp R66 3.3.2 (2020-04-21)
 ============================

@@ -40,7 +40,7 @@ public class DBMySQLDAOTest extends DBAllDAOTest {
 
   @ClassRule
   public static MySQLContainer db = (MySQLContainer) new MySQLContainer();
-      // No TMPFS
+  // No TMPFS
   private final String createScript = "mysql/create.sql";
   private final String populateScript = "mysql/populate.sql";
   private final String cleanScript = "mysql/clean.sql";

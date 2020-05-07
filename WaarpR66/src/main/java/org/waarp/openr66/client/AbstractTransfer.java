@@ -557,7 +557,8 @@ public abstract class AbstractTransfer implements Runnable {
       logger.error(outputFormat.loggerOut(), future.getCause());
     }
     if (future.getCause() != null) {
-      outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
+      outputFormat
+          .setValue(FIELDS.error.name(), future.getCause().getMessage());
     }
   }
 
@@ -604,7 +605,8 @@ public abstract class AbstractTransfer implements Runnable {
     outputFormat.setValue(FIELDS.finalPath.name(), runner.getFilename());
     outputFormat.setValue(FIELDS.requested.name(), runner.getRequested());
     outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
-    outputFormat.setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
+    outputFormat
+        .setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
     outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
     outputFormat
         .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());

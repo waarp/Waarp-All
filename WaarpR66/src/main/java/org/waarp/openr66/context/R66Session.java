@@ -190,7 +190,6 @@ public class R66Session implements SessionInterface {
    * Debugging purpose (trace)
    *
    * @param stat
-   *
    */
   public void setStatus(int stat) {
     final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];
