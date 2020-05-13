@@ -564,93 +564,97 @@
 <a class="jxr_linenumber" name="L556" href="#L556">556</a>     } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L557" href="#L557">557</a>       logger.error(outputFormat.loggerOut(), future.getCause());
 <a class="jxr_linenumber" name="L558" href="#L558">558</a>     }
-<a class="jxr_linenumber" name="L559" href="#L559">559</a>     outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
-<a class="jxr_linenumber" name="L560" href="#L560">560</a>   }
-<a class="jxr_linenumber" name="L561" href="#L561">561</a> 
-<a class="jxr_linenumber" name="L562" href="#L562">562</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareKoOutputFormat(<strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> future,
-<a class="jxr_linenumber" name="L563" href="#L563">563</a>                                               <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
-<a class="jxr_linenumber" name="L564" href="#L564">564</a>     outputFormat.setValue(FIELDS.status.name(), 2);
-<a class="jxr_linenumber" name="L565" href="#L565">565</a>     outputFormat.setValue(FIELDS.statusTxt.name(), <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
-<a class="jxr_linenumber" name="L566" href="#L566">566</a>         .getString(<span class="jxr_string">"Transfer.FailedNoId"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L567" href="#L567">567</a>     outputFormat.setValue(FIELDS.remote.name(), rhost);
-<a class="jxr_linenumber" name="L568" href="#L568">568</a>     logger.error(outputFormat.loggerOut(), future.getCause());
-<a class="jxr_linenumber" name="L569" href="#L569">569</a>     outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
-<a class="jxr_linenumber" name="L570" href="#L570">570</a>   }
-<a class="jxr_linenumber" name="L571" href="#L571">571</a> 
-<a class="jxr_linenumber" name="L572" href="#L572">572</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareOkOutputFormat(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> delay,
-<a class="jxr_linenumber" name="L573" href="#L573">573</a>                                               <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result,
-<a class="jxr_linenumber" name="L574" href="#L574">574</a>                                               <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
-<a class="jxr_linenumber" name="L575" href="#L575">575</a>     <strong class="jxr_keyword">if</strong> (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-<a class="jxr_linenumber" name="L576" href="#L576">576</a>       outputFormat.setValue(FIELDS.status.name(), 1);
-<a class="jxr_linenumber" name="L577" href="#L577">577</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
-<a class="jxr_linenumber" name="L578" href="#L578">578</a>                             Messages.getString(<span class="jxr_string">"Transfer.Status"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
-<a class="jxr_linenumber" name="L579" href="#L579">579</a>                                 .getString(
-<a class="jxr_linenumber" name="L580" href="#L580">580</a>                                     <span class="jxr_string">"RequestInformation.Warned"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L581" href="#L581">581</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L582" href="#L582">582</a>       outputFormat.setValue(FIELDS.status.name(), 0);
-<a class="jxr_linenumber" name="L583" href="#L583">583</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
-<a class="jxr_linenumber" name="L584" href="#L584">584</a>                             Messages.getString(<span class="jxr_string">"Transfer.Status"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
-<a class="jxr_linenumber" name="L585" href="#L585">585</a>                                 .getString(
-<a class="jxr_linenumber" name="L586" href="#L586">586</a>                                     <span class="jxr_string">"RequestInformation.Success"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L587" href="#L587">587</a>     }
-<a class="jxr_linenumber" name="L588" href="#L588">588</a>     partialOutputFormat(result.getRunner(), outputFormat);
-<a class="jxr_linenumber" name="L589" href="#L589">589</a>     outputFormat.setValue(<span class="jxr_string">"filefinal"</span>, result.getFile() != <strong class="jxr_keyword">null</strong>?
-<a class="jxr_linenumber" name="L590" href="#L590">590</a>         result.getFile().toString() : <span class="jxr_string">"no file"</span>);
-<a class="jxr_linenumber" name="L591" href="#L591">591</a>     outputFormat.setValue(<span class="jxr_string">"delay"</span>, delay);
-<a class="jxr_linenumber" name="L592" href="#L592">592</a>   }
-<a class="jxr_linenumber" name="L593" href="#L593">593</a> 
-<a class="jxr_linenumber" name="L594" href="#L594">594</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> partialOutputFormat(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
-<a class="jxr_linenumber" name="L595" href="#L595">595</a>                                           <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
-<a class="jxr_linenumber" name="L596" href="#L596">596</a>     outputFormat.setValue(FIELDS.remote.name(), rhost);
-<a class="jxr_linenumber" name="L597" href="#L597">597</a>     outputFormat.setValue(FIELDS.ruleid.name(), runner.getRuleId());
-<a class="jxr_linenumber" name="L598" href="#L598">598</a>     outputFormat.setValueString(runner.getJson());
-<a class="jxr_linenumber" name="L599" href="#L599">599</a>     outputFormat
-<a class="jxr_linenumber" name="L600" href="#L600">600</a>         .setValue(FIELDS.statusCode.name(), runner.getErrorInfo().getCode());
-<a class="jxr_linenumber" name="L601" href="#L601">601</a>     outputFormat.setValue(FIELDS.specialid.name(), runner.getSpecialId());
-<a class="jxr_linenumber" name="L602" href="#L602">602</a>     outputFormat.setValue(FIELDS.finalPath.name(), runner.getFilename());
-<a class="jxr_linenumber" name="L603" href="#L603">603</a>     outputFormat.setValue(FIELDS.requested.name(), runner.getRequested());
-<a class="jxr_linenumber" name="L604" href="#L604">604</a>     outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
-<a class="jxr_linenumber" name="L605" href="#L605">605</a>     outputFormat.setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
-<a class="jxr_linenumber" name="L606" href="#L606">606</a>     outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
-<a class="jxr_linenumber" name="L607" href="#L607">607</a>     outputFormat
-<a class="jxr_linenumber" name="L608" href="#L608">608</a>         .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());
-<a class="jxr_linenumber" name="L609" href="#L609">609</a>   }
-<a class="jxr_linenumber" name="L610" href="#L610">610</a> 
-<a class="jxr_linenumber" name="L611" href="#L611">611</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareSubmitKoOutputFormat(<strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> future,
-<a class="jxr_linenumber" name="L612" href="#L612">612</a>                                                     <strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
-<a class="jxr_linenumber" name="L613" href="#L613">613</a>                                                     <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
-<a class="jxr_linenumber" name="L614" href="#L614">614</a>     outputFormat.setValue(FIELDS.status.name(), 2);
-<a class="jxr_linenumber" name="L615" href="#L615">615</a>     <strong class="jxr_keyword">if</strong> (runner == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L616" href="#L616">616</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
-<a class="jxr_linenumber" name="L617" href="#L617">617</a>                             Messages.getString(<span class="jxr_string">"SubmitTransfer.3"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
-<a class="jxr_linenumber" name="L618" href="#L618">618</a>                                 .getString(
-<a class="jxr_linenumber" name="L619" href="#L619">619</a>                                     <span class="jxr_string">"Transfer.FailedNoId"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L620" href="#L620">620</a>       outputFormat.setValue(FIELDS.remote.name(), rhost);
-<a class="jxr_linenumber" name="L621" href="#L621">621</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L622" href="#L622">622</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
-<a class="jxr_linenumber" name="L623" href="#L623">623</a>                             Messages.getString(<span class="jxr_string">"SubmitTransfer.3"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
-<a class="jxr_linenumber" name="L624" href="#L624">624</a>                                 .getString(
-<a class="jxr_linenumber" name="L625" href="#L625">625</a>                                     <span class="jxr_string">"RequestInformation.Failure"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L626" href="#L626">626</a>       partialOutputFormat(runner, outputFormat);
-<a class="jxr_linenumber" name="L627" href="#L627">627</a>     }
-<a class="jxr_linenumber" name="L628" href="#L628">628</a>     logger.error(outputFormat.loggerOut(), future.getCause());
-<a class="jxr_linenumber" name="L629" href="#L629">629</a>     <strong class="jxr_keyword">if</strong> (future.getCause() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L630" href="#L630">630</a>       outputFormat
-<a class="jxr_linenumber" name="L631" href="#L631">631</a>           .setValue(FIELDS.error.name(), future.getCause().getMessage());
-<a class="jxr_linenumber" name="L632" href="#L632">632</a>     }
-<a class="jxr_linenumber" name="L633" href="#L633">633</a>   }
-<a class="jxr_linenumber" name="L634" href="#L634">634</a> 
-<a class="jxr_linenumber" name="L635" href="#L635">635</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareSubmitOkOutputFormat(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
-<a class="jxr_linenumber" name="L636" href="#L636">636</a>                                                     <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
-<a class="jxr_linenumber" name="L637" href="#L637">637</a>     outputFormat.setValue(FIELDS.status.name(), 0);
-<a class="jxr_linenumber" name="L638" href="#L638">638</a>     outputFormat.setValue(FIELDS.statusTxt.name(),
-<a class="jxr_linenumber" name="L639" href="#L639">639</a>                           Messages.getString(<span class="jxr_string">"SubmitTransfer.3"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
-<a class="jxr_linenumber" name="L640" href="#L640">640</a>                               .getString(
-<a class="jxr_linenumber" name="L641" href="#L641">641</a>                                   <span class="jxr_string">"RequestInformation.Success"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L642" href="#L642">642</a>     partialOutputFormat(runner, outputFormat);
-<a class="jxr_linenumber" name="L643" href="#L643">643</a>   }
-<a class="jxr_linenumber" name="L644" href="#L644">644</a> 
-<a class="jxr_linenumber" name="L645" href="#L645">645</a> }
+<a class="jxr_linenumber" name="L559" href="#L559">559</a>     <strong class="jxr_keyword">if</strong> (future.getCause() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L560" href="#L560">560</a>       outputFormat
+<a class="jxr_linenumber" name="L561" href="#L561">561</a>           .setValue(FIELDS.error.name(), future.getCause().getMessage());
+<a class="jxr_linenumber" name="L562" href="#L562">562</a>     }
+<a class="jxr_linenumber" name="L563" href="#L563">563</a>   }
+<a class="jxr_linenumber" name="L564" href="#L564">564</a> 
+<a class="jxr_linenumber" name="L565" href="#L565">565</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareKoOutputFormat(<strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> future,
+<a class="jxr_linenumber" name="L566" href="#L566">566</a>                                               <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
+<a class="jxr_linenumber" name="L567" href="#L567">567</a>     outputFormat.setValue(FIELDS.status.name(), 2);
+<a class="jxr_linenumber" name="L568" href="#L568">568</a>     outputFormat.setValue(FIELDS.statusTxt.name(), <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
+<a class="jxr_linenumber" name="L569" href="#L569">569</a>         .getString(<span class="jxr_string">"Transfer.FailedNoId"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L570" href="#L570">570</a>     outputFormat.setValue(FIELDS.remote.name(), rhost);
+<a class="jxr_linenumber" name="L571" href="#L571">571</a>     logger.error(outputFormat.loggerOut(), future.getCause());
+<a class="jxr_linenumber" name="L572" href="#L572">572</a>     outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
+<a class="jxr_linenumber" name="L573" href="#L573">573</a>   }
+<a class="jxr_linenumber" name="L574" href="#L574">574</a> 
+<a class="jxr_linenumber" name="L575" href="#L575">575</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareOkOutputFormat(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> delay,
+<a class="jxr_linenumber" name="L576" href="#L576">576</a>                                               <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result,
+<a class="jxr_linenumber" name="L577" href="#L577">577</a>                                               <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
+<a class="jxr_linenumber" name="L578" href="#L578">578</a>     <strong class="jxr_keyword">if</strong> (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
+<a class="jxr_linenumber" name="L579" href="#L579">579</a>       outputFormat.setValue(FIELDS.status.name(), 1);
+<a class="jxr_linenumber" name="L580" href="#L580">580</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
+<a class="jxr_linenumber" name="L581" href="#L581">581</a>                             Messages.getString(<span class="jxr_string">"Transfer.Status"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
+<a class="jxr_linenumber" name="L582" href="#L582">582</a>                                 .getString(
+<a class="jxr_linenumber" name="L583" href="#L583">583</a>                                     <span class="jxr_string">"RequestInformation.Warned"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L584" href="#L584">584</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L585" href="#L585">585</a>       outputFormat.setValue(FIELDS.status.name(), 0);
+<a class="jxr_linenumber" name="L586" href="#L586">586</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
+<a class="jxr_linenumber" name="L587" href="#L587">587</a>                             Messages.getString(<span class="jxr_string">"Transfer.Status"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
+<a class="jxr_linenumber" name="L588" href="#L588">588</a>                                 .getString(
+<a class="jxr_linenumber" name="L589" href="#L589">589</a>                                     <span class="jxr_string">"RequestInformation.Success"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L590" href="#L590">590</a>     }
+<a class="jxr_linenumber" name="L591" href="#L591">591</a>     partialOutputFormat(result.getRunner(), outputFormat);
+<a class="jxr_linenumber" name="L592" href="#L592">592</a>     outputFormat.setValue(<span class="jxr_string">"filefinal"</span>, result.getFile() != <strong class="jxr_keyword">null</strong>?
+<a class="jxr_linenumber" name="L593" href="#L593">593</a>         result.getFile().toString() : <span class="jxr_string">"no file"</span>);
+<a class="jxr_linenumber" name="L594" href="#L594">594</a>     outputFormat.setValue(<span class="jxr_string">"delay"</span>, delay);
+<a class="jxr_linenumber" name="L595" href="#L595">595</a>   }
+<a class="jxr_linenumber" name="L596" href="#L596">596</a> 
+<a class="jxr_linenumber" name="L597" href="#L597">597</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> partialOutputFormat(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
+<a class="jxr_linenumber" name="L598" href="#L598">598</a>                                           <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
+<a class="jxr_linenumber" name="L599" href="#L599">599</a>     outputFormat.setValue(FIELDS.remote.name(), rhost);
+<a class="jxr_linenumber" name="L600" href="#L600">600</a>     outputFormat.setValue(FIELDS.ruleid.name(), runner.getRuleId());
+<a class="jxr_linenumber" name="L601" href="#L601">601</a>     outputFormat.setValueString(runner.getJson());
+<a class="jxr_linenumber" name="L602" href="#L602">602</a>     outputFormat
+<a class="jxr_linenumber" name="L603" href="#L603">603</a>         .setValue(FIELDS.statusCode.name(), runner.getErrorInfo().getCode());
+<a class="jxr_linenumber" name="L604" href="#L604">604</a>     outputFormat.setValue(FIELDS.specialid.name(), runner.getSpecialId());
+<a class="jxr_linenumber" name="L605" href="#L605">605</a>     outputFormat.setValue(FIELDS.finalPath.name(), runner.getFilename());
+<a class="jxr_linenumber" name="L606" href="#L606">606</a>     outputFormat.setValue(FIELDS.requested.name(), runner.getRequested());
+<a class="jxr_linenumber" name="L607" href="#L607">607</a>     outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
+<a class="jxr_linenumber" name="L608" href="#L608">608</a>     outputFormat
+<a class="jxr_linenumber" name="L609" href="#L609">609</a>         .setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
+<a class="jxr_linenumber" name="L610" href="#L610">610</a>     outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
+<a class="jxr_linenumber" name="L611" href="#L611">611</a>     outputFormat
+<a class="jxr_linenumber" name="L612" href="#L612">612</a>         .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());
+<a class="jxr_linenumber" name="L613" href="#L613">613</a>   }
+<a class="jxr_linenumber" name="L614" href="#L614">614</a> 
+<a class="jxr_linenumber" name="L615" href="#L615">615</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareSubmitKoOutputFormat(<strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> future,
+<a class="jxr_linenumber" name="L616" href="#L616">616</a>                                                     <strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
+<a class="jxr_linenumber" name="L617" href="#L617">617</a>                                                     <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
+<a class="jxr_linenumber" name="L618" href="#L618">618</a>     outputFormat.setValue(FIELDS.status.name(), 2);
+<a class="jxr_linenumber" name="L619" href="#L619">619</a>     <strong class="jxr_keyword">if</strong> (runner == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L620" href="#L620">620</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
+<a class="jxr_linenumber" name="L621" href="#L621">621</a>                             Messages.getString(<span class="jxr_string">"SubmitTransfer.3"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
+<a class="jxr_linenumber" name="L622" href="#L622">622</a>                                 .getString(
+<a class="jxr_linenumber" name="L623" href="#L623">623</a>                                     <span class="jxr_string">"Transfer.FailedNoId"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L624" href="#L624">624</a>       outputFormat.setValue(FIELDS.remote.name(), rhost);
+<a class="jxr_linenumber" name="L625" href="#L625">625</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L626" href="#L626">626</a>       outputFormat.setValue(FIELDS.statusTxt.name(),
+<a class="jxr_linenumber" name="L627" href="#L627">627</a>                             Messages.getString(<span class="jxr_string">"SubmitTransfer.3"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
+<a class="jxr_linenumber" name="L628" href="#L628">628</a>                                 .getString(
+<a class="jxr_linenumber" name="L629" href="#L629">629</a>                                     <span class="jxr_string">"RequestInformation.Failure"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L630" href="#L630">630</a>       partialOutputFormat(runner, outputFormat);
+<a class="jxr_linenumber" name="L631" href="#L631">631</a>     }
+<a class="jxr_linenumber" name="L632" href="#L632">632</a>     logger.error(outputFormat.loggerOut(), future.getCause());
+<a class="jxr_linenumber" name="L633" href="#L633">633</a>     <strong class="jxr_keyword">if</strong> (future.getCause() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L634" href="#L634">634</a>       outputFormat
+<a class="jxr_linenumber" name="L635" href="#L635">635</a>           .setValue(FIELDS.error.name(), future.getCause().getMessage());
+<a class="jxr_linenumber" name="L636" href="#L636">636</a>     }
+<a class="jxr_linenumber" name="L637" href="#L637">637</a>   }
+<a class="jxr_linenumber" name="L638" href="#L638">638</a> 
+<a class="jxr_linenumber" name="L639" href="#L639">639</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> prepareSubmitOkOutputFormat(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner,
+<a class="jxr_linenumber" name="L640" href="#L640">640</a>                                                     <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat) {
+<a class="jxr_linenumber" name="L641" href="#L641">641</a>     outputFormat.setValue(FIELDS.status.name(), 0);
+<a class="jxr_linenumber" name="L642" href="#L642">642</a>     outputFormat.setValue(FIELDS.statusTxt.name(),
+<a class="jxr_linenumber" name="L643" href="#L643">643</a>                           Messages.getString(<span class="jxr_string">"SubmitTransfer.3"</span>) + <a name="Messages" href="../../../../org/waarp/openr66/protocol/configuration/Messages.html#Messages">Messages</a>
+<a class="jxr_linenumber" name="L644" href="#L644">644</a>                               .getString(
+<a class="jxr_linenumber" name="L645" href="#L645">645</a>                                   <span class="jxr_string">"RequestInformation.Success"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L646" href="#L646">646</a>     partialOutputFormat(runner, outputFormat);
+<a class="jxr_linenumber" name="L647" href="#L647">647</a>   }
+<a class="jxr_linenumber" name="L648" href="#L648">648</a> 
+<a class="jxr_linenumber" name="L649" href="#L649">649</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>
