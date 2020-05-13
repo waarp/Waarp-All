@@ -791,6 +791,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       if (Configuration.configuration.getR66Mib() != null) {
         Configuration.configuration.getR66Mib().notifyInfoTask(
             "Task is " + pojo.getUpdatedInfo().name(), this);
+      } else {
+        logger.debug("Could send a SNMP trap here since {}", pojo.getUpdatedInfo());
       }
     } else {
       if (pojo.getGlobalStep() != Transfer.TASKSTEP.TRANSFERTASK ||

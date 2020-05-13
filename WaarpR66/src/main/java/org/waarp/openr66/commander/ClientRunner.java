@@ -97,6 +97,8 @@ public class ClientRunner extends Thread {
 
   private final String nameTask;
 
+  private boolean limitRetryConnection = true;
+
   public ClientRunner(NetworkTransaction networkTransaction,
                       DbTaskRunner taskRunner, R66Future futureRequest) {
     this.networkTransaction = networkTransaction;
@@ -270,6 +272,9 @@ public class ClientRunner extends Thread {
    * @return True if the task was run less than limit, else False
    */
   public boolean incrementTaskRunnerTry(DbTaskRunner runner, int limit) {
+    if (!isLimitRetryConnection()) {
+      return true;
+    }
     final String key = runner.getKey();
     Integer tries = taskRunnerRetryHashMap.get(key);
     logger.debug("try to find integer: " + tries);
@@ -278,7 +283,8 @@ public class ClientRunner extends Thread {
     } else {
       tries += 1;
     }
-    if (limit <= tries || !Thread.interrupted()) {
+    logger.debug("Check: {} vs {}: {}", tries, limit, limit <= tries);
+    if (limit <= tries || Thread.interrupted()) {
       taskRunnerRetryHashMap.remove(key);
       return false;
     } else {
@@ -544,27 +550,40 @@ public class ClientRunner extends Thread {
     if (localChannelReference == null) {
       // propose to redo
       String retry;
-      logger.debug("Will retry since Cannot connect to {}", host);
-      retry = " but will retry";
-      // now wait
-      try {
-        Thread.sleep(Configuration.configuration.getDelayRetry());
-      } catch (final InterruptedException e) {//NOSONAR
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {
+
+        logger.debug("Will retry since Cannot connect to {}", host);
+        retry = " but will retry";
+        // now wait
+        try {
+          Thread.sleep(Configuration.configuration.getDelayRetry());
+        } catch (final InterruptedException e) {//NOSONAR
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          logger.debug(
+              "Will not retry since an interruption occurs while connection " +
+              "to {}", host);
+          retry = " and retries gets an interruption so stop here";
+          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
+                            true);
+          taskRunner.setLocalChannelReference(new LocalChannelReference());
+          throw new OpenR66ProtocolNoConnectionException(
+              CANNOT_CONNECT_TO_SERVER + host + retry);
+        }
+        changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,
+                          true);
+        throw new OpenR66ProtocolNotYetConnectionException(
+            CANNOT_CONNECT_TO_SERVER + host + retry);
+      } else {
         logger.debug(
             "Will not retry since limit of connection attemtps is reached for {}",
             host);
-        retry = " and retries gets an interruption so stop here";
+        retry = " and retries reach step limit so stop here";
         changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
                           true);
         taskRunner.setLocalChannelReference(new LocalChannelReference());
         throw new OpenR66ProtocolNoConnectionException(
             CANNOT_CONNECT_TO_SERVER + host + retry);
       }
-      changeUpdatedInfo(UpdatedInfo.TOSUBMIT, ErrorCode.ConnectionImpossible,
-                        true);
-      throw new OpenR66ProtocolNotYetConnectionException(
-          CANNOT_CONNECT_TO_SERVER + host + retry);
     }
     if (handler != null) {
       localChannelReference.setRecvThroughHandler(handler);
@@ -655,5 +674,13 @@ public class ClientRunner extends Thread {
 
   public boolean getSendThroughMode() {
     return isSendThroughMode;
+  }
+
+  public boolean isLimitRetryConnection() {
+    return limitRetryConnection;
+  }
+
+  public void setLimitRetryConnection(final boolean limitRetryConnection) {
+    this.limitRetryConnection = limitRetryConnection;
   }
 }

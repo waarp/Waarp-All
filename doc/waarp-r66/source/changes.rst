@@ -28,6 +28,10 @@ Correctifs
   de connections à la base de données pour l'interface d'administration
   en mode Responsive
   (issue [`#26 <https://github.com/waarp/Waarp-All/issues/26>`__])
+- [`#30 <https://github.com/waarp/Waarp-All/pull/30>`__]
+  Corrige la régression sur la répétition à l'infini des tentatives
+  de connexion depuis la version 3.1. Le principe de 3 tentatives avant échec
+  est rétabli.
 - Corrige les dépendances externes (et le style)
 
 Waarp R66 3.3.2 (2020-04-21)

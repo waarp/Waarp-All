@@ -48,6 +48,8 @@ import static org.waarp.common.database.DbConstant.*;
 public class DirectTransfer extends AbstractTransfer {
   protected final NetworkTransaction networkTransaction;
 
+  protected boolean limitRetryConnection = true;
+
   public DirectTransfer(R66Future future, String remoteHost, String filename,
                         String rulename, String fileinfo, boolean isMD5,
                         int blocksize, long id,
@@ -56,6 +58,23 @@ public class DirectTransfer extends AbstractTransfer {
     super(DirectTransfer.class, future, filename, rulename, fileinfo, isMD5,
           remoteHost, blocksize, id, null);
     this.networkTransaction = networkTransaction;
+  }
+
+  /**
+   *
+   * @return True if this DirectTransfer should limit the retry of connection
+   */
+  public boolean isLimitRetryConnection() {
+    return limitRetryConnection;
+  }
+
+  /**
+   *
+   * @param limitRetryConnection True (default) for limited retry on
+   * connection, False to have no limit
+   */
+  public void setLimitRetryConnection(final boolean limitRetryConnection) {
+    this.limitRetryConnection = limitRetryConnection;
   }
 
   /**
@@ -75,6 +94,8 @@ public class DirectTransfer extends AbstractTransfer {
     }
     final ClientRunner runner =
         new ClientRunner(networkTransaction, taskRunner, future);
+    // If retry indefinitely is useful
+    runner.setLimitRetryConnection(isLimitRetryConnection());
     OpenR66ProtocolNotYetConnectionException exc = null;
     for (int i = 0; i < Configuration.RETRYNB; i++) {
       try {

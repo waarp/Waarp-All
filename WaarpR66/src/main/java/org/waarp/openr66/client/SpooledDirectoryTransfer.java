@@ -532,69 +532,42 @@ public class SpooledDirectoryTransfer implements Runnable {
               transaction.run();
             } else {
               if (specialId != ILLEGALVALUE) {
-                boolean direct = false;
-                // Transfer try at least once
-                text = "Request Transfer try Restart: " + specialId + ' ' +
-                       filename + ' ';
+                // Clean previously transfer if any
                 try {
                   final String srequester = Configuration.configuration
                       .getHostId(admin.getSession(), host);
-                  // Try restart
-                  final RequestTransfer transaction =
+                  text =
+                      "Request Transfer Cancelled: " + specialId +
+                      ' ' + filename + ' ';
+                  // Cancel
+                  logger.debug("Will try to cancel {}", specialId);
+                  final RequestTransfer transaction2 =
                       new RequestTransfer(r66Future, specialId, host,
-                                          srequester, false, false, true,
+                                          srequester, true, false, false,
                                           networkTransaction);
-                  transaction.normalInfoAsWarn = normalInfoAsWarn;
-                  logger.info(text + host);
+                  transaction2.normalInfoAsWarn = normalInfoAsWarn;
+                  logger.warn(text + host);
+                  transaction2.run();
                   // special task
-                  transaction.run();
                   r66Future.awaitOrInterruptible();
-                  if (!r66Future.isSuccess()) {
-                    direct = true;
-                    text =
-                        "Request Transfer Cancelled and Restart: " + specialId +
-                        ' ' + filename + ' ';
-                    r66Future = new R66Future(true);
-                    // Cancel
-                    final RequestTransfer transaction2 =
-                        new RequestTransfer(r66Future, specialId, host,
-                                            srequester, true, false, false,
-                                            networkTransaction);
-                    transaction.normalInfoAsWarn = normalInfoAsWarn;
-                    logger.warn(text + host);
-                    transaction2.run();
-                    // special task
-                    r66Future.awaitOrInterruptible();
-                  }
                 } catch (final WaarpDatabaseException e) {
-                  direct = true;
                   if (admin.getSession() != null) {
                     admin.getSession().checkConnectionNoException();
                   }
                   logger.warn(Messages.getString("RequestTransfer.5") + host,
                               e); //$NON-NLS-1$
                 }
-                if (direct) {
-                  text = "Direct Transfer: ";
-                  r66Future = new R66Future(true);
-                  final DirectTransfer transaction =
-                      new DirectTransfer(r66Future, host, filename, ruleName,
-                                         fileInfo, isMD5, blocksize,
-                                         ILLEGALVALUE, networkTransaction);
-                  transaction.normalInfoAsWarn = normalInfoAsWarn;
-                  logger.info(text + host);
-                  transaction.run();
-                }
-              } else {
-                text = "Direct Transfer: ";
-                final DirectTransfer transaction =
-                    new DirectTransfer(r66Future, host, filename, ruleName,
-                                       fileInfo, isMD5, blocksize, ILLEGALVALUE,
-                                       networkTransaction);
-                transaction.normalInfoAsWarn = normalInfoAsWarn;
-                logger.info(text + host);
-                transaction.run();
               }
+              text = "Direct Transfer: ";
+              r66Future = new R66Future(true);
+              final DirectTransfer transaction =
+                  new DirectTransfer(r66Future, host, filename, ruleName,
+                                     fileInfo, isMD5, blocksize, ILLEGALVALUE,
+                                     networkTransaction);
+              // If retry indefinitely is useful transaction.setLimitRetryConnection(true)
+              transaction.normalInfoAsWarn = normalInfoAsWarn;
+              logger.info(text + host);
+              transaction.run();
             }
             r66Future.awaitOrInterruptible();
             final R66Result r66result = r66Future.getResult();
