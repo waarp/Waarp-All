@@ -134,8 +134,7 @@ public class RequestTransfer implements Runnable {
         }
         rhost = srequested;
         try {
-          srequester = Configuration.configuration
-              .getHostId(admin.getSession(), srequested);
+          srequester = Configuration.configuration.getHostId(srequested);
         } catch (final WaarpDatabaseException e) {
           logger.error(Messages.getString("RequestTransfer.5") + srequested,
                        e); //$NON-NLS-1$
@@ -149,8 +148,7 @@ public class RequestTransfer implements Runnable {
         }
         rhost = srequester;
         try {
-          srequested = Configuration.configuration
-              .getHostId(admin.getSession(), srequester);
+          srequested = Configuration.configuration.getHostId(srequester);
         } catch (final WaarpDatabaseException e) {
           logger.error(Messages.getString("RequestTransfer.5") + srequester,
                        e); //$NON-NLS-1$

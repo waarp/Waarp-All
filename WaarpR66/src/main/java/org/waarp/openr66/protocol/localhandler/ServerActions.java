@@ -2618,16 +2618,13 @@ public class ServerActions extends ConnectionActions {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while Information received");
     }
-    final DbSession dbSession =
-        localChannelReference != null? localChannelReference.getDbSession() :
-            admin.getSession();
     String remote = session.getAuth().getUser();
     if (jsonOutput && remoteHost != null && !remoteHost.isEmpty()) {
       remote = remoteHost;
     }
     String local;
     try {
-      local = Configuration.configuration.getHostId(dbSession, remote);
+      local = Configuration.configuration.getHostId(remote);
     } catch (final WaarpDatabaseException e1) {
       logger.error("Remote Host is unknown", e1);
       throw new OpenR66ProtocolNoDataException("Remote Host is unknown", e1);

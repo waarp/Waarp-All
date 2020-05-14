@@ -37,6 +37,7 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -45,8 +46,6 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.Version;
 import org.waarp.openr66.client.Message;
@@ -66,6 +65,7 @@ import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.http.rest.handler.DbConfigurationR66RestMethodHandler;
 import org.waarp.openr66.protocol.http.rest.handler.DbHostAuthR66RestMethodHandler;
@@ -543,9 +543,8 @@ public class NetworkClientTest extends TestAbstract {
     assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }
 
-  private void test_Spooled(final SpooledThread spooledThread,
-                            final int factor) throws IOException,
-                                                    InterruptedException {
+  private void test_Spooled(final SpooledThread spooledThread, final int factor)
+      throws IOException, InterruptedException {
     final int size = 200;
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File directory = new File(SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE);
@@ -569,9 +568,9 @@ public class NetworkClientTest extends TestAbstract {
     Thread.sleep(4000 / factor);
     logger.warn("Third file");
     generateOutFile(
-        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size+1,
+        SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig.txt", size + 1,
         "abcdefghij");
-    Thread.sleep(3000 / factor);
+    Thread.sleep(4000 / factor);
     logger.warn("Third file deleted");
     totestBig.delete();
     Thread.sleep(2000 / factor);
@@ -621,8 +620,8 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledWrongHost() throws IOException,
-                                              InterruptedException {
+  public void test7_SpooledWrongHost()
+      throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Retry Transfer");
     //WaarpLoggerFactory.setLogLevel(WaarpLogLevel.DEBUG);
     SpooledThread spooledThread = new SpooledThread();
@@ -649,7 +648,8 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledWrongHostIgnore() throws IOException, InterruptedException {
+  public void test7_SpooledWrongHostIgnore()
+      throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = true;
@@ -737,6 +737,120 @@ public class NetworkClientTest extends TestAbstract {
     executorService.shutdown();
     totest.delete();
     assertEquals("Success should be total", nb, success);
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  static class SubmitTransferTest extends SubmitTransfer {
+
+    public SubmitTransferTest(final R66Future future, final String remoteHost,
+                              final String filename, final String rulename,
+                              final String fileinfo, final boolean isMD5,
+                              final int blocksize, final long id,
+                              final Timestamp starttime) {
+      super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
+            id, starttime);
+    }
+
+    static public boolean checkInternalParams(String[] args) {
+      return getParamsInternal(args);
+    }
+
+    static public void clearInternal() {
+      clear();
+    }
+    static public String getParamRule() {
+      return rule;
+    }
+
+    static public String getParamLocalFilename() {
+      return localFilename;
+    }
+  }
+
+  @Test
+  public void test5_DirectTransferThroughId() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    int success = 0;
+    int error = 0;
+    long specialId = DbConstant.ILLEGALVALUE;
+    // First transfer
+    {
+      final R66Future future = new R66Future(true);
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3",
+                               "Test SendDirect Small", true, 8192,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      transaction.run();
+      future.awaitOrInterruptible();
+      if (future.getRunner() != null) {
+        dbTaskRunners.add(future.getRunner());
+        specialId = future.getRunner().getSpecialId();
+      }
+      if (future.isSuccess()) {
+        success++;
+        logger.warn("Success for first transfer");
+      } else {
+        error++;
+        fail("Should be able to find out the previous DbTaskRunner");
+      }
+    }
+    // Now second transfer based on ID
+    String[] args =
+        { "falsConfigFile", "-id", "" + specialId, "-to", "hostas" };
+    if (SubmitTransferTest.checkInternalParams(args)) {
+      String rule = SubmitTransferTest.getParamRule();
+      String localFilename = SubmitTransferTest.getParamLocalFilename();
+      logger.warn("Success for finding previous transfer {} {} {}", specialId,
+                  rule, localFilename);
+      final R66Future future2 = new R66Future(true);
+      final Timestamp newstart = new Timestamp(System.currentTimeMillis());
+      logger.warn("Start second submit transfer");
+      SubmitTransfer submitTransfer =
+          new SubmitTransfer(future2, "hostas", localFilename, rule,
+                             "Test Send 2 Submit Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, newstart);
+      logger.warn("Running second submit transfer");
+      submitTransfer.run();
+      logger.warn("Waiting second submit transfer");
+      future2.awaitOrInterruptible();
+      logger
+          .warn("End wait for second submit transfer {}", future2.isSuccess());
+      if (future2.isSuccess()) {
+        success++;
+      } else {
+        error++;
+        fail("Should be able to find out the previous DbTaskRunner");
+      }
+      logger.warn("Prepare transfer Success: " + success + " Error: " + error);
+      assertEquals("Success should be 2", 2, success);
+      assertEquals("Errors should be 0", 0, error);
+      // Now wait for all transfers done
+      if (future2.isSuccess()) {
+        final DbTaskRunner runner2 = future2.getResult().getRunner();
+        logger.warn("Wait for second submit transfer {}", runner2);
+        if (runner2 != null) {
+          waitForAllDone(runner2);
+          dbTaskRunners.add(runner2);
+        }
+      }
+      Thread.sleep(100);
+    } else {
+      logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
+                                      "(-to -rule -file | -to -id)")); //$NON-NLS-1$
+      error++;
+    }
+    SubmitTransferTest.clearInternal();
+    String[] args2 = { "falsConfigFile", "-id", "1", "-to", "hostas" };
+    assertFalse(SubmitTransferTest.checkInternalParams(args2));
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                2 * success * 1000 / (time2 - time1));
+    Thread.sleep(1000);
+    totest.delete();
+    Thread.sleep(1000);
+    assertEquals("Success should be 2", 2, success);
     assertEquals("Errors should be 0", 0, error);
   }
 

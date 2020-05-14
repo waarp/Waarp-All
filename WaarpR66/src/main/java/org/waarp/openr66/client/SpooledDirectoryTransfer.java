@@ -488,8 +488,8 @@ public class SpooledDirectoryTransfer implements Runnable {
                 ' ' + filename + ' ';
             try {
               R66Future r66Future = new R66Future(true);
-              final String srequester = Configuration.configuration
-                  .getHostId(admin.getSession(), host);
+              final String srequester =
+                  Configuration.configuration.getHostId(host);
               // Try restart
               final RequestTransfer transaction =
                   new RequestTransfer(r66Future, fileItem.specialId, host,
@@ -502,6 +502,7 @@ public class SpooledDirectoryTransfer implements Runnable {
               r66Future.awaitOrInterruptible();
               // reset fileItem usage
               setValid(fileItem);
+              specialId = fileItem.specialId;
             } catch (final WaarpDatabaseException e) {
               if (admin.getSession() != null) {
                 admin.getSession().checkConnectionNoException();
@@ -534,11 +535,10 @@ public class SpooledDirectoryTransfer implements Runnable {
               if (specialId != ILLEGALVALUE) {
                 // Clean previously transfer if any
                 try {
-                  final String srequester = Configuration.configuration
-                      .getHostId(admin.getSession(), host);
-                  text =
-                      "Request Transfer Cancelled: " + specialId +
-                      ' ' + filename + ' ';
+                  final String srequester =
+                      Configuration.configuration.getHostId(host);
+                  text = "Request Transfer Cancelled: " + specialId + ' ' +
+                         filename + ' ';
                   // Cancel
                   logger.debug("Will try to cancel {}", specialId);
                   final RequestTransfer transaction2 =

@@ -61,7 +61,6 @@ public class DirectTransfer extends AbstractTransfer {
   }
 
   /**
-   *
    * @return True if this DirectTransfer should limit the retry of connection
    */
   public boolean isLimitRetryConnection() {
@@ -69,9 +68,8 @@ public class DirectTransfer extends AbstractTransfer {
   }
 
   /**
-   *
    * @param limitRetryConnection True (default) for limited retry on
-   * connection, False to have no limit
+   *     connection, False to have no limit
    */
   public void setLimitRetryConnection(final boolean limitRetryConnection) {
     this.limitRetryConnection = limitRetryConnection;

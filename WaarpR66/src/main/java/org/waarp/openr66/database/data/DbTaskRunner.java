@@ -383,8 +383,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     originalSize = requestPacket.getOriginalSize();
     setOriginalSizeTransferMap(originalSize);
     // itself but according to SSL
-    pojo.setRequester(
-        Configuration.configuration.getHostId(dbSession, requested));
+    pojo.setRequester(Configuration.configuration.getHostId(requested));
 
     // Retrieve rule
     this.rule = new DbRule(getRuleId());
@@ -684,9 +683,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     logger.trace("TRACE ID {}", id);
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
-      pojo = transferAccess
-          .select(id, Configuration.configuration.getHostId(), requested,
-                  Configuration.configuration.getHostId());
+      String requester = Configuration.configuration.getHostId(requested);
+      pojo = transferAccess.select(id, requester, requested,
+                                   Configuration.configuration.getHostId());
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
@@ -792,7 +791,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         Configuration.configuration.getR66Mib().notifyInfoTask(
             "Task is " + pojo.getUpdatedInfo().name(), this);
       } else {
-        logger.debug("Could send a SNMP trap here since {}", pojo.getUpdatedInfo());
+        logger.debug("Could send a SNMP trap here since {}",
+                     pojo.getUpdatedInfo());
       }
     } else {
       if (pojo.getGlobalStep() != Transfer.TASKSTEP.TRANSFERTASK ||

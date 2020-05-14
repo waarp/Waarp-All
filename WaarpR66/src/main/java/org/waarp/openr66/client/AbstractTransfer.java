@@ -22,6 +22,7 @@ package org.waarp.openr66.client;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -270,6 +271,18 @@ public abstract class AbstractTransfer implements Runnable {
   protected static Timestamp ttimestart;
   protected static boolean snormalInfoAsWarn = true;
 
+  protected static void clear() {
+    rhost = null;
+    localFilename = null;
+    rule = null;
+    fileInfo = null;
+    ismd5 = false;
+    block = 0x10000; // 64K
+    nolog = false;
+    idt = ILLEGALVALUE;
+    ttimestart = null;
+    snormalInfoAsWarn = true;
+  }
   /**
    * Parse the parameter and set current values
    *
@@ -298,6 +311,18 @@ public abstract class AbstractTransfer implements Runnable {
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
     }
+    return getParamsInternal(args);
+  }
+
+  /**
+   * Internal getParams without configuration initialization, but still as
+   * first argument
+   *
+   * @param args
+   *
+   * @return True if all parameters were found and correct
+   */
+  protected static boolean getParamsInternal(String[] args) {
     // Now set default values from configuration
     block = Configuration.configuration.getBlockSize();
     int i = 1;
@@ -375,9 +400,18 @@ public abstract class AbstractTransfer implements Runnable {
         rule = runner.getRuleId();
         localFilename = runner.getOriginalFilename();
         return true;
+      } catch (final WaarpDatabaseNoDataException e) {
+        logger.error("No transfer found with this id and partner");
+        logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
+                                        "(-to -rule -file | -to -id with " +
+                                        "existing id transfer)")
+                     //$NON-NLS-1$
+            , e);
+        return false;
       } catch (final WaarpDatabaseException e) {
         logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
-                                        "(-to -rule -file | -to -id)")
+                                        "(-to -rule -file | -to -id) with a " +
+                                        "correct database connexion")
                      //$NON-NLS-1$
             , e);
         return false;
