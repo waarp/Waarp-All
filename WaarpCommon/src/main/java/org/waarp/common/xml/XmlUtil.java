@@ -588,8 +588,8 @@ public final class XmlUtil {
             continue;
           }
           for (final Node element : elts) {
-            final XmlValue[] newValue = read((Element) element,
-                                             decls[i].getSubXml());
+            final XmlValue[] newValue =
+                read((Element) element, decls[i].getSubXml());
             if (newValue == null) {
               continue;
             }
@@ -675,8 +675,8 @@ public final class XmlUtil {
             continue;
           }
           for (final Node element : elts) {
-            final XmlValue[] newValue = read((Element) element,
-                                             decls[i].getSubXml());
+            final XmlValue[] newValue =
+                read((Element) element, decls[i].getSubXml());
             if (newValue == null) {
               continue;
             }

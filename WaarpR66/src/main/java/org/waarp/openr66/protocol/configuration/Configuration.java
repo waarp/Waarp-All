@@ -1408,21 +1408,34 @@ public class Configuration {
   }
 
   /**
-   * @param dbSession
    * @param remoteHost
    *
    * @return the HostId according to remoteHost (and its SSL status)
    *
    * @throws WaarpDatabaseException
    */
-  public String getHostId(DbSession dbSession, String remoteHost)
-      throws WaarpDatabaseException {
+  public String getHostId(String remoteHost) throws WaarpDatabaseException {
     final DbHostAuth dbHostAuth = new DbHostAuth(remoteHost);
     try {
       return configuration.getHostId(dbHostAuth.isSsl());
     } catch (final OpenR66ProtocolNoSslException e) {
       throw new WaarpDatabaseException(e);
     }
+  }
+
+  /**
+   * @param dbSession
+   * @param remoteHost
+   *
+   * @return the HostId according to remoteHost (and its SSL status)
+   *
+   * @throws WaarpDatabaseException
+   * @deprecated Use getHostId(String remoteHost)
+   */
+  @Deprecated
+  public String getHostId(DbSession dbSession, String remoteHost)
+      throws WaarpDatabaseException {
+    return getHostId(remoteHost);
   }
 
   private static class UsageStatistic extends TimerTask {

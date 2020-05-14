@@ -156,10 +156,6 @@ public class LocalChannelReference {
    * PartnerConfiguration
    */
   private volatile PartnerConfiguration partner;
-  /**
-   * DbSession for Database that do not support concurrency in access
-   */
-  private volatile DbSession noconcurrencyDbSession;
 
   /**
    * @param networkChannelRef
@@ -280,9 +276,6 @@ public class LocalChannelReference {
    * @return the actual dbSession
    */
   public DbSession getDbSession() {
-    if (noconcurrencyDbSession != null) {
-      return noconcurrencyDbSession;
-    }
     if (networkServerHandler != null) {
       return networkServerHandler.getDbSession();
     }
