@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.3.3 (2020-06-01)
+Waarp R66 3.3.4 (2020-06-01)
 ============================
 
 Correctifs
@@ -17,6 +17,8 @@ Correctifs
   Corrige la régression sur la sélection d'un transfert à partir de son ID
   où le nom du serveur local ne prenait pas en compte si le serveur
   distant était en mode SSL ou pas (régression en 3.0).
+- Fix Documentation (maven site) for WaarpHttp
+- Fix dependencies in shading jars
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================
