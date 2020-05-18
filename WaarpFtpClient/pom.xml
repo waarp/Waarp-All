@@ -41,6 +41,18 @@
       <artifactId>WaarpCommon</artifactId>
     </dependency>
     <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpDigest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative-boringssl-static</artifactId>
+    </dependency>
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
     </dependency>
@@ -58,13 +70,13 @@
       <classifier>ftp</classifier>
     </dependency>
     <dependency>
+      <groupId>it.sauronsoftware</groupId>
+      <artifactId>ftp4j</artifactId>
+    </dependency>
+    <dependency>
       <groupId>Waarp</groupId>
       <artifactId>WaarpFtp-Simpleimpl</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>it.sauronsoftware</groupId>
-      <artifactId>ftp4j</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -92,54 +104,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <minimizeJar>true</minimizeJar>
-              <promoteTransitiveDependencies>true
-              </promoteTransitiveDependencies>
-              <createDependencyReducedPom>true</createDependencyReducedPom>
-              <keepDependenciesWithProvidedScope>true
-              </keepDependenciesWithProvidedScope>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-              <useBaseVersion>true</useBaseVersion>
-              <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
-                  <addHeader>false</addHeader>
-                </transformer>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ResourceBundleAppendingTransformer"/>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <manifestEntries>
-                    <mainClass>org.waarp.ftp.client.WaarpFtp4jClient</mainClass>
-                    <X-Compile-Source-JDK>${java.version}</X-Compile-Source-JDK>
-                    <X-Compile-Target-JDK>${java.version}</X-Compile-Target-JDK>
-                  </manifestEntries>
-                </transformer>
-              </transformers>
-              <artifactSet>
-                <excludes>
-                  <include>Waarp:*</include>
-                  <exclude>classworlds:classworlds</exclude>
-                  <exclude>junit:junit</exclude>
-                  <exclude>jmock:*</exclude>
-                  <exclude>org.apache.maven:lib:tests</exclude>
-                </excludes>
-              </artifactSet>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
