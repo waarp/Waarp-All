@@ -121,7 +121,9 @@ public class DownloadServlet extends AbstractServlet {
       response.setHeader("Cache-Control",
                          "must-revalidate, post-check=0, " + "pre-check=0");
       // Used by javascript downloader
-      response.addCookie(new Cookie("fileDownload", "true"));
+      Cookie cookie = new Cookie("fileDownload", "true");
+      cookie.setHttpOnly(true);
+      response.addCookie(cookie);
       response
           .setHeader("Content-Length", Long.toString(session.getFileSize()));
       String hash = null;

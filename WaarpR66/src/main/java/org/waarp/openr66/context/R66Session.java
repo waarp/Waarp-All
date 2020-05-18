@@ -44,6 +44,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The global object session in OpenR66, a session by local channel
@@ -91,7 +92,7 @@ public class R66Session implements SessionInterface {
   /**
    * Used to prevent deny of service
    */
-  private volatile int numOfError;
+  private AtomicInteger numOfError;
 
   /**
    * Current Restart information
@@ -796,16 +797,18 @@ public class R66Session implements SessionInterface {
           }
         }
       } else {
-        try {
-          localChannelReference.getFutureRequest().setFilesize(file.length());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        try {
-          file.restartMarker(restart);
-        } catch (final CommandAbstractException e) {
-          runner.deleteTempFile();
-          throw new OpenR66RunnerErrorException(e);
+        if (file != null) {
+          try {
+            localChannelReference.getFutureRequest().setFilesize(file.length());
+          } catch (final CommandAbstractException ignored) {
+            // nothing
+          }
+          try {
+            file.restartMarker(restart);
+          } catch (final CommandAbstractException e) {
+            runner.deleteTempFile();
+            throw new OpenR66RunnerErrorException(e);
+          }
         }
       }
     }
@@ -1019,8 +1022,8 @@ public class R66Session implements SessionInterface {
    * @return True if the number of Error is still acceptable
    */
   public boolean addError() {
-    numOfError++;
-    return numOfError < Configuration.RETRYNB;
+    int value = numOfError.incrementAndGet();
+    return value < Configuration.RETRYNB;
   }
 
   @Override

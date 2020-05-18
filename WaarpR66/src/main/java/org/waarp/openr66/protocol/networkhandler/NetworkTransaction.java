@@ -573,8 +573,13 @@ public class NetworkTransaction {
           }
         }
       }
-      throw new OpenR66ProtocolNetworkException(
-          "Cannot connect to remote server", channelFuture.cause());
+      if (channelFuture != null) {
+        throw new OpenR66ProtocolNetworkException(
+            "Cannot connect to remote server", channelFuture.cause());
+      } else {
+        throw new OpenR66ProtocolNetworkException(
+            "Cannot connect to remote server");
+      }
     } finally {
       socketLock.unlock();
     }

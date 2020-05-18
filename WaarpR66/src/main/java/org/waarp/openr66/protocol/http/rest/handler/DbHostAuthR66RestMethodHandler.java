@@ -239,7 +239,7 @@ public class DbHostAuthR66RestMethodHandler
       throws HttpForbiddenRequestException {
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;
     final R66Session session = r66handler.getServerHandler().getSession();
-    if (!session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+    if (!session.getAuth().isValidRole(ROLE.HOST)) {
       throw new HttpForbiddenRequestException(
           "Partner must have ConfigAdmin role");
     }

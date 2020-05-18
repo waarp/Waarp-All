@@ -1100,19 +1100,11 @@ public class ServerActions extends ConnectionActions {
         result = new R66Result(session, false, ErrorCode.ExternalOp,
                                session.getRunner());
       }
-      logger.info("Task in Error:" + node.getClassName() + ' ' + result);
-      if (!result.isAnswered()) {
-        node.setValidated(false);
-        session.newState(ERROR);
-        final ErrorPacket error = new ErrorPacket(
-            "BusinessRequest in error: for " + node + " since " +
-            result.getMessage(), result.getCode().getCode(),
-            ErrorPacket.FORWARDCLOSECODE);
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
-        session.setStatus(203);
-      }
-      session.setStatus(204);
+      wrongResult(node, result);
+    } else if (future == null) {
+      R66Result result = new R66Result(session, false, ErrorCode.ExternalOp,
+                                       session.getRunner());
+      wrongResult(node, result);
     } else {
       logger.debug("BusinessRequest part 2");
       R66Result result = future.getResult();
@@ -1133,6 +1125,23 @@ public class ServerActions extends ConnectionActions {
       }
       localChannelReference.close();
     }
+  }
+
+  private void wrongResult(final BusinessRequestJsonPacket node,
+                           final R66Result result)
+      throws OpenR66ProtocolPacketException {
+    logger.info("Task in Error:" + node.getClassName() + ' ' + result);
+    if (!result.isAnswered()) {
+      node.setValidated(false);
+      session.newState(ERROR);
+      final ErrorPacket error = new ErrorPacket(
+          "BusinessRequest in error: for " + node + " since " +
+          result.getMessage(), result.getCode().getCode(),
+          ErrorPacket.FORWARDCLOSECODE);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      session.setStatus(203);
+    }
+    session.setStatus(204);
   }
 
   private void jsonCommandBlockRequest(final JsonPacket json)
@@ -2052,7 +2061,7 @@ public class ServerActions extends ConnectionActions {
       }
     }
     return new String[] {
-        filename, Long.toString(nb.nb), Long.toString(npurge)
+        filename, nb != null? Long.toString(nb.nb) : "0", Long.toString(npurge)
     };
   }
 
@@ -2314,20 +2323,11 @@ public class ServerActions extends ConnectionActions {
         result = new R66Result(session, false, ErrorCode.ExternalOp,
                                session.getRunner());
       }
-      logger.info("Task in Error:" + argRule + ' ' + result);
-      if (!result.isAnswered()) {
-        packet.invalidate();
-        session.newState(ERROR);
-        final ErrorPacket error = new ErrorPacket(
-            "BusinessRequest in error: for " + packet + " since " +
-            result.getMessage(), result.getCode().getCode(),
-            ErrorPacket.FORWARDCLOSECODE);
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
-        session.setStatus(203);
-      }
-      session.setStatus(204);
-      packet.clear();
+      wrongResult(packet, argRule, result);
+    } else if (future == null) {
+      R66Result result = new R66Result(session, false, ErrorCode.ExternalOp,
+                                       session.getRunner());
+      wrongResult(packet, argRule, result);
     } else {
       logger.debug("BusinessRequest part 2");
       R66Result result = future.getResult();
@@ -2344,6 +2344,24 @@ public class ServerActions extends ConnectionActions {
         localChannelReference.close();
       }
     }
+  }
+
+  private void wrongResult(final BusinessRequestPacket packet,
+                           final String argRule, final R66Result result)
+      throws OpenR66ProtocolPacketException {
+    logger.info("Task in Error:" + argRule + ' ' + result);
+    if (!result.isAnswered()) {
+      packet.invalidate();
+      session.newState(ERROR);
+      final ErrorPacket error = new ErrorPacket(
+          "BusinessRequest in error: for " + packet + " since " +
+          result.getMessage(), result.getCode().getCode(),
+          ErrorPacket.FORWARDCLOSECODE);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      session.setStatus(203);
+    }
+    session.setStatus(204);
+    packet.clear();
   }
 
   /**

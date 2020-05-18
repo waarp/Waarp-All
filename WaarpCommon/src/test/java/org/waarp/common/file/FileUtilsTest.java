@@ -110,6 +110,9 @@ public class FileUtilsTest {
     SysErrLogger.FAKE_LOGGER.sysout(file.getAbsolutePath());
     assertTrue(file.canRead());
     File to = new File("/tmp/phantomjs-2.1.1");
+    if (to.exists()) {
+      to.delete();
+    }
     assertTrue(FileUtils.uncompressedBz2File(file, to) > 0);
     assertTrue(to.canRead());
     to.setExecutable(true);

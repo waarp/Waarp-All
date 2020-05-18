@@ -19,35 +19,41 @@
  */
 package org.waarp.gateway.kernel.http;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
-import io.netty.handler.stream.ChunkedNioFile;
+import org.waarp.common.logging.SysErrLogger;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+
+import static io.netty.handler.codec.http.HttpVersion.*;
 
 /**
  * Utility class to write external file with cache enable properties
@@ -70,10 +76,12 @@ public final class HttpWriteCacheEnable {
 
   private static final ArrayList<String> cache_control;
 
+  private static final int MAX_AGE_SECOND = 604800;
+
   static {
     cache_control = new ArrayList<String>(2);
     cache_control.add(HttpHeaderValues.PUBLIC.toString());
-    cache_control.add(HttpHeaderValues.MAX_AGE + "=" + 604800);// 1 week
+    cache_control.add(HttpHeaderValues.MAX_AGE + "=" + MAX_AGE_SECOND);// 1 week
     cache_control.add(HttpHeaderValues.MUST_REVALIDATE.toString());
   }
 
@@ -87,7 +95,7 @@ public final class HttpWriteCacheEnable {
     mimetypesFileTypeMap.addMimeTypes("text/css css CSS");
     mimetypesFileTypeMap.addMimeTypes("text/javascript js JS");
     // Official but not supported mimetypesFileTypeMap.addMimeTypes("application/javascript js JS")
-    mimetypesFileTypeMap.addMimeTypes("application/json json JSON");
+    mimetypesFileTypeMap.addMimeTypes("application/json json JSON map MAP");
     mimetypesFileTypeMap.addMimeTypes("text/plain txt text TXT");
     mimetypesFileTypeMap.addMimeTypes("text/html htm html HTM HTML htmls htx");
     mimetypesFileTypeMap.addMimeTypes("image/jpeg jpe jpeg jpg JPG");
@@ -112,13 +120,11 @@ public final class HttpWriteCacheEnable {
                                String filename, String cookieNameToRemove) {
     // Convert the response content to a ByteBuf.
     HttpResponse response;
+    final boolean keepAlive = HttpUtil.isKeepAlive(request);
     final File file = new File(filename);
     if (!file.isFile() || !file.canRead()) {
-      response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                                         HttpResponseStatus.NOT_FOUND);
-      response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);
-      handleCookies(request, response, cookieNameToRemove);
-      ctx.writeAndFlush(response);
+      SysErrLogger.FAKE_LOGGER.syserr("Cannot read " + file.getAbsolutePath());
+      sendError(request, ctx, cookieNameToRemove, keepAlive);
       return;
     }
     final DateFormat rfc1123Format =
@@ -131,7 +137,7 @@ public final class HttpWriteCacheEnable {
       try {
         final Date ifmodif = rfc1123Format.parse(sdate);
         if (ifmodif.after(lastModifDate)) {
-          response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+          response = new DefaultHttpResponse(HTTP_1_1,
                                              HttpResponseStatus.NOT_MODIFIED);
           handleCookies(request, response, cookieNameToRemove);
           ctx.writeAndFlush(response);
@@ -141,37 +147,102 @@ public final class HttpWriteCacheEnable {
         // nothing
       }
     }
-    final long size = file.length();
-    ChunkedNioFile nioFile;
+    int fileLength = (int) file.length();
+    ByteBuf byteBuf = Unpooled.buffer(fileLength);
+    FileInputStream inputStream = null;
     try {
-      nioFile = new ChunkedNioFile(file);
-    } catch (final IOException e) {
-      response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                                         HttpResponseStatus.NOT_FOUND);
-      response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);
-      handleCookies(request, response, cookieNameToRemove);
-      ctx.writeAndFlush(response);
+      inputStream = new FileInputStream(file);
+      byteBuf.writeBytes(inputStream, fileLength);
+    } catch (FileNotFoundException e) {
+      byteBuf.release();
+      sendError(request, ctx, cookieNameToRemove, keepAlive);
+      return;
+    } catch (IOException e) {
+      byteBuf.release();
+      sendError(request, ctx, cookieNameToRemove, keepAlive);
       return;
     }
-    response =
-        new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-    response.headers()
-            .set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(size));
 
-    final String type = mimetypesFileTypeMap.getContentType(filename);
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE, type);
+    response =
+        new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, byteBuf);
+    response.headers().set(HttpHeaderNames.CONTENT_LENGTH, fileLength);
+    setContentTypeHeader(response, file);
+    setDateAndCacheHeaders(response, file, rfc1123Format, lastModifDate);
+
+    if (!keepAlive) {
+      response.headers()
+              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+    } else if (request.protocolVersion().equals(HTTP_1_0)) {
+      response.headers()
+              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+    }
+
+    // Write the initial line and the header.
+    ChannelFuture sendFileFuture = ctx.writeAndFlush(response);
+
+    // Decide whether to close the connection or not.
+    if (!keepAlive) {
+      // Close the connection when the whole content is written out.
+      sendFileFuture.addListener(ChannelFutureListener.CLOSE);
+    }
+  }
+
+  /**
+   * Sets the content type header for the HTTP Response
+   *
+   * @param response HTTP response
+   * @param file file to extract content type
+   */
+  private static void setContentTypeHeader(HttpResponse response, File file) {
+    response.headers().set(HttpHeaderNames.CONTENT_TYPE,
+                           mimetypesFileTypeMap.getContentType(file.getPath()));
+  }
+
+  /**
+   * Sets the Date and Cache headers for the HTTP Response
+   *
+   * @param response HTTP response
+   * @param fileToCache file to extract content type
+   */
+  private static void setDateAndCacheHeaders(HttpResponse response,
+                                             File fileToCache,
+                                             DateFormat rfc1123Format,
+                                             Date lastModifDate) {
+    // Date header
+    Calendar time = new GregorianCalendar();
+    response.headers()
+            .set(HttpHeaderNames.DATE, rfc1123Format.format(time.getTime()));
+
+    // Add cache headers
+    time.add(Calendar.SECOND, MAX_AGE_SECOND);
+    response.headers()
+            .set(HttpHeaderNames.EXPIRES, rfc1123Format.format(time.getTime()));
     response.headers().set(HttpHeaderNames.CACHE_CONTROL, cache_control);
     response.headers().set(HttpHeaderNames.LAST_MODIFIED,
                            rfc1123Format.format(lastModifDate));
+  }
+
+  private static void sendError(final HttpRequest request,
+                                final ChannelHandlerContext ctx,
+                                final String cookieNameToRemove,
+                                boolean keepAlive) {
+    final HttpResponse response;
+    response =
+        new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_FOUND);
+    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);
+    if (!keepAlive) {
+      response.headers()
+              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+    } else if (request.protocolVersion().equals(HTTP_1_0)) {
+      response.headers()
+              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+    }
     handleCookies(request, response, cookieNameToRemove);
-    // Write the response.
-    ctx.write(response);
-    ctx.write(new HttpChunkedInput(nioFile));
-    final ChannelFuture future =
-        ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-    if (!HttpUtil.isKeepAlive(request)) {
+    ChannelFuture sendFileFuture = ctx.writeAndFlush(response);
+    // Decide whether to close the connection or not.
+    if (!keepAlive) {
       // Close the connection when the whole content is written out.
-      future.addListener(ChannelFutureListener.CLOSE);
+      sendFileFuture.addListener(ChannelFutureListener.CLOSE);
     }
   }
 

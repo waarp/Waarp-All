@@ -93,9 +93,10 @@ public abstract class ScenarioBase extends TestAbstract {
 
   public static void setUpBeforeClass() throws Exception {
     final ClassLoader classLoader = ScenarioBase.class.getClassLoader();
-    final File file =
+    File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     dirResources = file.getParentFile().getParentFile().getParentFile();
+    logger.warn(dirResources.getAbsolutePath());
     setUpBeforeClassMinimal(RESOURCES_SERVER_1_XML);
     File r1 = new File(dirResources, "R1/conf");
     createBaseR66Directory(r1, TMP_R66_SCENARIO_R1);

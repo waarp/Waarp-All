@@ -482,7 +482,9 @@ public class WaarpFtp4jClient {
             logger.error(result, e);
             return false;
           } finally {
-            nullOutputStream.close();
+            if (nullOutputStream != null) {
+              nullOutputStream.close();
+            }
           }
         } else {
           logger.debug("Will DLD to local: " + remote + " into " + local);

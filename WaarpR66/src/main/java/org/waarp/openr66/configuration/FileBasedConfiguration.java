@@ -63,6 +63,7 @@ import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.database.model.DbModelFactoryR66;
+import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
@@ -1467,19 +1468,6 @@ public class FileBasedConfiguration {
         }
       }
       loadAliases(config);
-      // now check in DB
-      if (admin != null) {
-        try {
-          final DbHostConfiguration hostconfiguration =
-              new DbHostConfiguration(config.getHostId());
-          if (hostconfiguration != null) {
-            DbHostConfiguration
-                .updateHostConfiguration(config, hostconfiguration);
-          }
-        } catch (final WaarpDatabaseException e) {
-          // ignore
-        }
-      }
       setSelfVersion(config);
     } finally {
       hashConfig.clear();
@@ -1592,6 +1580,30 @@ public class FileBasedConfiguration {
       hashConfig.clear();
       hashConfig = null;
     }
+  }
+
+  /**
+   * Finalize configuration for Server on DbHostConfiguration
+   *
+   * @param config
+   */
+  private static void finalizeDbHostConfiguration(Configuration config) {
+    // now check in DB
+    if (admin != null) {
+      DbHostConfiguration hostconfiguration = null;
+      try {
+        hostconfiguration = new DbHostConfiguration(config.getHostId());
+      } catch (final WaarpDatabaseException e) {
+        // ignore
+        Business business = new Business();
+        business.setHostid(config.getHostId());
+        hostconfiguration = new DbHostConfiguration(business);
+      }
+      if (hostconfiguration != null) {
+        hostconfiguration.updateFromConfiguration(config);
+      }
+    }
+
   }
 
   /**
@@ -2007,6 +2019,7 @@ public class FileBasedConfiguration {
     }
     loadBusinessWhiteList(config);
     loadRolesList(config);
+    finalizeDbHostConfiguration(config);
     hashRootConfig.clear();
     hashRootConfig = null;
     configuration = null;

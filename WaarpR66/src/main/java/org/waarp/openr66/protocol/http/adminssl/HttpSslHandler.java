@@ -1045,7 +1045,8 @@ public class HttpSslHandler
     }
     return body.replace(XXXRESULTXXX, "Export " + (isexported?
         "<B>" + Messages.getString("HttpSslHandler.8") + //$NON-NLS-2$
-        filename + Messages.getString("HttpSslHandler.9") + nbAndSpecialId.nb +
+        filename + Messages.getString("HttpSslHandler.9") +
+        (nbAndSpecialId != null? nbAndSpecialId.nb : 0) +
         Messages.getString("HttpSslHandler.10")
         //$NON-NLS-1$ //$NON-NLS-2$
         + purge + Messages.getString("HttpSslHandler.11") + "</B>" :
@@ -1470,12 +1471,14 @@ public class HttpSslHandler
         }
         head = resetOptionRules(head, rule, tmode, gmode);
         logger.debug("Recv UpdOrInsert: " + rule + ':' + hostids + ':' +
-                     tmode.ordinal() + ':' + recvp + ':' + sendp + ':' + archp +
-                     ':' + workp + ':' + rpre + ':' + rpost + ':' + rerr + ':' +
-                     spre + ':' + spost + ':' + serr);
+                     (tmode != null? tmode.ordinal() : 0) + ':' + recvp + ':' +
+                     sendp + ':' + archp + ':' + workp + ':' + rpre + ':' +
+                     rpost + ':' + rerr + ':' + spre + ':' + spost + ':' +
+                     serr);
         final DbRule dbrule =
-            new DbRule(rule, hostids, tmode.ordinal(), recvp, sendp, archp,
-                       workp, rpre, rpost, rerr, spre, spost, serr);
+            new DbRule(rule, hostids, (tmode != null? tmode.ordinal() : 0),
+                       recvp, sendp, archp, workp, rpre, rpost, rerr, spre,
+                       spost, serr);
         try {
           if (CREATE.equalsIgnoreCase(parm)) {
             dbrule.insert();
@@ -1687,11 +1690,11 @@ public class HttpSslHandler
         new QueryStringDecoder(request.uri());
     params = queryStringDecoder.parameters();
     String name = null;
-    if (params.containsKey("name")) {
+    if (params != null && params.containsKey("name")) {
       name = getTrimValue("name");
     }
     int istatus = 0;
-    if (params.containsKey("status")) {
+    if (params != null && params.containsKey("status")) {
       final String status = getTrimValue("status");
       try {
         istatus = Integer.parseInt(status);
@@ -2077,7 +2080,7 @@ public class HttpSslHandler
             extraInformation =
                 Messages.getString("HttpSslHandler.42"); //$NON-NLS-1$
           }
-        } else if ("Data.HostConfig".equalsIgnoreCase(act)) {
+        } else if ("HostConfig".equalsIgnoreCase(act)) {
           config.setBusiness(getTrimValue("BUSINESS"));
           config.setRoles(getTrimValue("ROLES"));
           config.setAliases(getTrimValue("ALIASES"));
@@ -2188,7 +2191,7 @@ public class HttpSslHandler
       }
     }
     boolean getMenu = false;
-    if (params.containsKey("Logon")) {
+    if (params != null && params.containsKey("Logon")) {
       String name = null;
       String password = null;
       List<String> values;
@@ -2220,7 +2223,7 @@ public class HttpSslHandler
       } else {
         getMenu = true;
       }
-      if (!getMenu) {
+      if (!getMenu && name != null) {
         logger.debug(
             "Name? " + name.equals(Configuration.configuration.getAdminName()) +
             " Passwd? " + Arrays
@@ -2332,7 +2335,7 @@ public class HttpSslHandler
           }
           break;
         case Hosts:
-          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+          if (authentHttp.getAuth().isValidRole(ROLE.HOST)) {
             responseContent.append(hosts0());
           } else {
             responseContent.append(
@@ -2346,7 +2349,7 @@ public class HttpSslHandler
           responseContent.append(logout());
           break;
         case Rules:
-          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+          if (authentHttp.getAuth().isValidRole(ROLE.RULE)) {
             responseContent.append(rules0());
           } else {
             responseContent.append(

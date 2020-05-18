@@ -92,8 +92,48 @@ public class RoleDefault {
       return (value & brole) == brole;
     }
 
+    public boolean isContained(ROLE role) {
+      return isContained(role.brole);
+    }
+
+    public boolean contains(ROLE role) {
+      return role.isContained(this);
+    }
+
     public byte getAsByte() {
       return brole;
+    }
+
+    public ROLE[] getComposingRoles() {
+      switch (brole) {
+        case 1:
+          return new ROLE[] { READONLY };
+        case 2:
+          return new ROLE[] { TRANSFER };
+        case 3:
+          return new ROLE[] { READONLY, TRANSFER };
+        case 4:
+          return new ROLE[] { RULE };
+        case 8:
+          return new ROLE[] { HOST };
+        case 15:
+          return new ROLE[] { READONLY, TRANSFER, RULE, HOST };
+        case 16:
+          return new ROLE[] { LIMIT };
+        case 32:
+          return new ROLE[] { SYSTEM };
+        case 64:
+          return new ROLE[] { LOGCONTROL };
+        case 127:
+          return new ROLE[] {
+              READONLY, TRANSFER, RULE, LIMIT, SYSTEM, LOGCONTROL
+          };
+        case -128:
+          return new ROLE[] { UNUSED };
+        case 0:
+        default:
+          return new ROLE[] { NOACCESS };
+      }
     }
 
     public static final String toString(byte fromRole) {
@@ -114,16 +154,22 @@ public class RoleDefault {
           return READONLY;
         case 2:
           return TRANSFER;
+        case 3:
+          return PARTNER;
         case 4:
           return RULE;
         case 8:
           return HOST;
+        case 15:
+          return CONFIGADMIN;
         case 16:
           return LIMIT;
         case 32:
           return SYSTEM;
         case 64:
           return LOGCONTROL;
+        case 127:
+          return FULLADMIN;
         case -128:
           return UNUSED;
         case 0:

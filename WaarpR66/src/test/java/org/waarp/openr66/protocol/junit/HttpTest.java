@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.protocol.junit;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -124,6 +125,11 @@ public class HttpTest extends TestAbstract {
     tearDownAfterClassServer();
   }
 
+  @After
+  public void restartDriver() throws InterruptedException {
+    reloadDriver();
+  }
+
   @Test
   public void test98_HttpResponsive() throws InterruptedException {
     try {
@@ -161,11 +167,9 @@ public class HttpTest extends TestAbstract {
       driver.get("http://127.0.0.1:8866/spooleddetail");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
     }
@@ -204,11 +208,9 @@ public class HttpTest extends TestAbstract {
       driver.get("https://127.0.0.1:8867/Logout.html");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
     }

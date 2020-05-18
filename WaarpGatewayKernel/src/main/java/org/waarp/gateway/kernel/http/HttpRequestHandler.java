@@ -449,7 +449,7 @@ public abstract class HttpRequestHandler
         " businessRequest: " +
         (businessRequest != null? businessRequest.getClass().getName() :
             "no BR"));
-    if (httpPage.getPagerole() == PageRole.ERROR) {
+    if (httpPage != null && httpPage.getPagerole() == PageRole.ERROR) {
       try {
         httpPage
             .setValue(businessRequest, AbstractHttpField.ERRORINFO, errorMesg,
@@ -458,7 +458,8 @@ public abstract class HttpRequestHandler
         // ignore
       }
     }
-    final String answer = httpPage.getHtmlPage(businessRequest);
+    final String answer =
+        httpPage != null? httpPage.getHtmlPage(businessRequest) : "BAD REQUEST";
     int length;
     // Convert the response content to a ByteBuf.
     final ByteBuf buf =

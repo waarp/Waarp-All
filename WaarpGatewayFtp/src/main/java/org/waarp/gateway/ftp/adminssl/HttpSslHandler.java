@@ -610,7 +610,7 @@ public class HttpSslHandler
       } else {
         getMenu = true;
       }
-      if (!getMenu) {
+      if (!getMenu && name != null) {
         logger.debug("Name=" + name + " vs " + name.equals(
             FileBasedConfiguration.fileBasedConfiguration.getAdminName()) +
                      " Passwd=" + password + " vs " +

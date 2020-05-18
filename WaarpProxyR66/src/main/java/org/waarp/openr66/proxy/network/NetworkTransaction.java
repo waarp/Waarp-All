@@ -124,7 +124,11 @@ public class NetworkTransaction {
       }
     }
     if (channel == null) {
-      logger.debug("Cannot connect : {}", lastException.getMessage());
+      if (lastException != null) {
+        logger.debug("Cannot connect : {}", lastException.getMessage());
+      } else {
+        logger.debug("Cannot connect!");
+      }
     } else if (lastException != null) {
       logger.debug("Connection retried since {}", lastException.getMessage());
     }

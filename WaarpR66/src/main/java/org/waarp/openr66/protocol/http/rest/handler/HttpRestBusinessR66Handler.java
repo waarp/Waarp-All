@@ -101,14 +101,11 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
             r66result =
                 new R66Result(session, false, ErrorCode.ExternalOp, null);
           }
-          logger.info("Task in Error:" + node.getClassName() + ' ' + r66result);
-          if (!r66result.isAnswered()) {
-            node.setValidated(false);
-            session.newState(ERROR);
-          }
-          result.setDetail(
-              "Task in Error:" + node.getClassName() + ' ' + r66result);
-          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);
+          wrongResult(handler, result, session, node, r66result);
+        } else if (future == null) {
+          R66Result r66result =
+              new R66Result(session, false, ErrorCode.ExternalOp, null);
+          wrongResult(handler, result, session, node, r66result);
         } else {
           final R66Result r66result = future.getResult();
           if (r66result != null && r66result.getOther() != null) {
@@ -127,6 +124,19 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
     } catch (final OpenR66ProtocolPacketException e) {
       throw new HttpIncorrectRequestException(e);
     }
+  }
+
+  private void wrongResult(final HttpRestHandler handler,
+                           final RestArgument result, final R66Session session,
+                           final BusinessRequestJsonPacket node,
+                           final R66Result r66result) {
+    logger.info("Task in Error:" + node.getClassName() + ' ' + r66result);
+    if (!r66result.isAnswered()) {
+      node.setValidated(false);
+      session.newState(ERROR);
+    }
+    result.setDetail("Task in Error:" + node.getClassName() + ' ' + r66result);
+    setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);
   }
 
   @Override

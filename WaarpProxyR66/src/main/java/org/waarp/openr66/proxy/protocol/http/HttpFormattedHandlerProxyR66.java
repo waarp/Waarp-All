@@ -86,13 +86,13 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
      * @return the content of the unique file
      */
     public String readFileUnique(HttpFormattedHandlerProxyR66 handler) {
-      return handler
-          .readFileHeader(configuration.getHttpBasePath() + MONITOR + header);
+      return handler.readFileHeaderInternal(
+          configuration.getHttpBasePath() + MONITOR + header);
     }
 
     public String readHeader(HttpFormattedHandlerProxyR66 handler) {
-      return handler
-          .readFileHeader(configuration.getHttpBasePath() + MONITOR + header);
+      return handler.readFileHeaderInternal(
+          configuration.getHttpBasePath() + MONITOR + header);
     }
 
     public String readEnd() {
@@ -103,7 +103,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
 
   final R66Session authentHttp = new R66Session();
 
-  private String readFileHeader(String filename) {
+  private String readFileHeaderInternal(String filename) {
     String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
