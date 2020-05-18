@@ -45,18 +45,18 @@ public class WaarpBC {
         registerRandomSecure();
         initialized = true;
       }
-    } catch (Throwable ignored) {//NOSONAR
-      ignored.printStackTrace();//NOSONAR
+    } catch (Throwable throwable) {//NOSONAR
+      throwable.printStackTrace();//NOSONAR
       System.err //NOSONAR
                  .println("Error occurs at startup: " +//NOSONAR
-                          ignored.getMessage());//NOSONAR
+                          throwable.getMessage());//NOSONAR
     }
   }
 
   /**
    * Called at first
    */
-  private static final void addBcProvider() {
+  private static void addBcProvider() {
     OpenSsl.isAvailable();
   }
 
@@ -121,5 +121,9 @@ public class WaarpBC {
   public static SSLContext getInstance()
       throws NoSuchAlgorithmException, NoSuchProviderException {
     return SSLContext.getInstance(PROTOCOL);
+  }
+
+  private WaarpBC() {
+    // Nothing
   }
 }

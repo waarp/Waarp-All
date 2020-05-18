@@ -128,8 +128,9 @@ public class TransferActions extends ServerActions {
     } else {
       session.newState(ERROR);
       final ErrorPacket error = new ErrorPacket(
-          "TaskRunner initialisation in error: " + e1.getMessage() + " for " +
-          packet + " since " + code.getMesg(), code.getCode(),
+          "TaskRunner initialisation in error: " +
+          (e1 != null? e1.getMessage() : "Unknown Error") + " for " + packet +
+          " since " + code.getMesg(), code.getCode(),
           ErrorPacket.FORWARDCLOSECODE);
       ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
     }
@@ -1341,30 +1342,33 @@ public class TransferActions extends ServerActions {
     try {
       session.renameReceiverFile(newfilename);
     } catch (final OpenR66RunnerErrorException e) {
-      runner.saveStatus();
-      runner.setErrorExecutionStatus(ErrorCode.FileNotFound);
-      session.newState(ERROR);
-      logger.error("File renaming in error {}", e.getMessage());
-      final ErrorPacket error =
-          new ErrorPacket("File renaming in error: " + e.getMessage(),
-                          runner.getErrorInfo().getCode(),
-                          ErrorPacket.FORWARDCLOSECODE);
-      try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException ignored) {
-        // nothing
-      }
-      try {
-        session.setFinalizeTransfer(false, new R66Result(e, session, true,
-                                                         runner.getErrorInfo(),
-                                                         runner));
-      } catch (final OpenR66RunnerErrorException e1) {
-        localChannelReference.invalidateRequest(
-            new R66Result(e, session, true, runner.getErrorInfo(), runner));
-      } catch (final OpenR66ProtocolSystemException e1) {
-        localChannelReference.invalidateRequest(
-            new R66Result(e, session, true, runner.getErrorInfo(), runner));
+      if (runner != null) {
+        runner.saveStatus();
+        runner.setErrorExecutionStatus(ErrorCode.FileNotFound);
+        session.newState(ERROR);
+        logger.error("File renaming in error {}", e.getMessage());
+        final ErrorPacket error =
+            new ErrorPacket("File renaming in error: " + e.getMessage(),
+                            runner.getErrorInfo().getCode(),
+                            ErrorPacket.FORWARDCLOSECODE);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, error, true);
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
+        }
+        try {
+          session.setFinalizeTransfer(false, new R66Result(e, session, true,
+                                                           runner
+                                                               .getErrorInfo(),
+                                                           runner));
+        } catch (final OpenR66RunnerErrorException e1) {
+          localChannelReference.invalidateRequest(
+              new R66Result(e, session, true, runner.getErrorInfo(), runner));
+        } catch (final OpenR66ProtocolSystemException e1) {
+          localChannelReference.invalidateRequest(
+              new R66Result(e, session, true, runner.getErrorInfo(), runner));
+        }
       }
       session.setStatus(97);
       ChannelCloseTimer.closeFutureTransaction(this);

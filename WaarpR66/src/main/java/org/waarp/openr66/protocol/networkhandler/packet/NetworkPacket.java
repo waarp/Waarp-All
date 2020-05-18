@@ -124,10 +124,10 @@ public class NetworkPacket {
   @Override
   public String toString() {
     return "RId: " + remoteId + " LId: " + localId + " Code: " + code +
-           " Length: " + buffer != null? (buffer.readableBytes() + (code ==
-                                                                    LocalPacketFactory.REQUESTPACKET?
+           " Length: " + (buffer != null? (buffer.readableBytes() + (code ==
+                                                                     LocalPacketFactory.REQUESTPACKET?
         buffer.toString(buffer.readerIndex(), buffer.readableBytes(),
-                        Charsets.UTF_8) : "")) : "no buffer";
+                        Charsets.UTF_8) : "")) : "no buffer");
   }
 
   public void clear() {

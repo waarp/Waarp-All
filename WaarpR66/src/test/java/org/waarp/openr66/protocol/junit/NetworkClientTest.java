@@ -46,6 +46,7 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.Version;
 import org.waarp.openr66.client.Message;
@@ -60,10 +61,15 @@ import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.task.test.TestExecJavaTask;
+import org.waarp.openr66.dao.BusinessDAO;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
@@ -207,7 +213,132 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test1_PingPongPacket() throws WaarpDatabaseException {
+  public void test1_roles() {
+    logger.warn("Start of Roles tests");
+    RoleDefault roleDefault =
+        Configuration.configuration.getRoles().get("test");
+    assertTrue(roleDefault.hasReadOnly());
+    assertTrue(roleDefault.hasTransfer());
+    assertTrue(roleDefault.hasLogControl());
+    logger.warn(roleDefault.toString());
+    BusinessDAO businessDAO = null;
+    try {
+      businessDAO = DAOFactory.getInstance().getBusinessDAO();
+      Business business =
+          businessDAO.select(Configuration.configuration.getHostId());
+      logger.warn("HostConfig {} A: {} B: {} R: {} O: {}", business.getHostid(),
+                  business.getAliases(), business.getBusiness(),
+                  business.getRoles(), business.getOthers());
+      assertFalse(business.getAliases().isEmpty());
+      assertFalse(business.getBusiness().isEmpty());
+      assertFalse(business.getRoles().isEmpty());
+      assertFalse(business.getOthers().isEmpty());
+    } catch (DAOConnectionException e) {
+      logger.error("Issue", e);
+      fail(e.getMessage());
+    } catch (DAONoDataException e) {
+      logger.error("Issue", e);
+      try {
+        List<Business> list = businessDAO.getAll();
+        logger.warn("All {}", list.size());
+        for (Business business : list) {
+          logger.warn("All HostConfig {} A: {} B: {} R: {} O: {}",
+                      business.getHostid(), business.getAliases(),
+                      business.getBusiness(), business.getRoles(),
+                      business.getOthers());
+        }
+      } catch (DAOConnectionException daoConnectionException) {
+        // ignore
+      }
+    } finally {
+      if (businessDAO != null) {
+        businessDAO.close();
+      }
+    }
+  }
+
+  @Test
+  public void test1_JsonGenerator() {
+    // Simple check of version
+    logger.warn(Version.fullIdentifier());
+    assertNotNull(Version.fullIdentifier());
+    assertTrue(Version.artifactId().equals("WaarpR66"));
+    final int nb = 11;
+    logger.warn("Start Test Json");
+    DbPreparedStatement preparedStatement;
+    try {
+      preparedStatement = DbTaskRunner
+          .getFilterPrepareStatement(DbConstantR66.admin.getSession(), nb,
+                                     false, null, null, null, null, null, null,
+                                     false, false, false, false, true, null);
+      preparedStatement.executeQuery();
+      final String tasks = DbTaskRunner.getJson(preparedStatement, nb);
+      preparedStatement.realClose();
+      assertFalse("Json should not be empty", tasks.isEmpty());
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      e.printStackTrace();
+      fail("Json in Error");
+    } catch (final WaarpDatabaseSqlException e) {
+      e.printStackTrace();
+      fail("Json in Error");
+    } catch (final OpenR66ProtocolBusinessException e) {
+      e.printStackTrace();
+      fail("Json in Error");
+    }
+  }
+
+  @Test
+  public void test1_JsonGeneratorDbHostAuth() {
+    final int nb = 11;
+    logger.warn("Start Test Json");
+    DbPreparedStatement preparedStatement;
+    try {
+      preparedStatement = DbHostAuth
+          .getFilterPrepareStament(DbConstantR66.admin.getSession(), null,
+                                   null);
+      preparedStatement.executeQuery();
+      final String hosts = DbHostAuth.getJson(preparedStatement, nb);
+      preparedStatement.realClose();
+      assertFalse("Json should not be empty", hosts.isEmpty());
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      e.printStackTrace();
+      assertTrue("Json in Error", false);
+    } catch (final WaarpDatabaseSqlException e) {
+      e.printStackTrace();
+      assertTrue("Json in Error", false);
+    } catch (final OpenR66ProtocolBusinessException e) {
+      e.printStackTrace();
+      assertTrue("Json in Error", false);
+    }
+  }
+
+  @Test
+  public void test1_JsonGeneratorDbRule() {
+    final int nb = 11;
+    logger.warn("Start Test Json");
+    DbPreparedStatement preparedStatement;
+    try {
+      preparedStatement = DbRule
+          .getFilterPrepareStament(DbConstantR66.admin.getSession(), null, -1);
+      preparedStatement.executeQuery();
+      final String rules = DbRule.getJson(preparedStatement, nb);
+      preparedStatement.realClose();
+      assertFalse("Json should not be empty", rules.isEmpty());
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      e.printStackTrace();
+      assertTrue("Json in Error", false);
+    } catch (final WaarpDatabaseSqlException e) {
+      e.printStackTrace();
+      assertTrue("Json in Error", false);
+    } catch (final OpenR66ProtocolBusinessException e) {
+      e.printStackTrace();
+      assertTrue("Json in Error", false);
+    }
+    logger.warn("End Test Json");
+  }
+
+  @Test
+  public void test2_PingPongPacket() throws WaarpDatabaseException {
     final DbHostAuth host = new DbHostAuth("hosta");
     final SocketAddress socketServerAddress;
     try {
@@ -258,11 +389,129 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test83_BusinessRequest() throws WaarpDatabaseException {
-    logger.warn("Start Test of BusinessRequest");
-    final DbHostAuth host = new DbHostAuth("hostas");
-    assertEquals("Error should be at 0", 0,
-                 TestBusinessRequest.runTest(networkTransaction, host, 3));
+  public void test2_ThriftClient() throws IOException {
+    logger.warn("Start Test Thrift Client");
+    final int PORT = 4266;
+    final int tries = 1000;
+    TTransport transport = null;
+    try {
+      final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+      transport = new TSocket("localhost", PORT);
+      final TProtocol protocol = new TBinaryProtocol(transport);
+      final R66Service.Client client = new R66Service.Client(protocol);
+      transport.open();
+      R66Request request = new R66Request(RequestMode.INFOFILE);
+      request.setDestuid("hostas");
+      request.setFromuid("hostas");
+      request.setRule("rule3");
+      request.setAction(Action.List);
+
+      System.out.println("REQUEST1: " + request);
+      List<String> list = client.infoListQuery(request);
+      System.out.println("RESULT1: " + list.size());
+      for (final String slist : list) {
+        System.out.println(slist);
+      }
+      assertFalse("List should not be empty", list.isEmpty());
+      final long start = System.currentTimeMillis();
+      for (int i = 0; i < tries; i++) {
+        list = client.infoListQuery(request);
+      }
+      final long end = System.currentTimeMillis();
+      System.out.println(
+          "Delay: " + (end - start) + " : " + (tries * 1000) / (end - start));
+
+      request.setMode(RequestMode.INFOFILE);
+      request.setAction(Action.Mlsx);
+      list = client.infoListQuery(request);
+      System.out.println("RESULT3: " + list.size());
+      for (final String slist : list) {
+        System.out.println(slist);
+      }
+      assertFalse("List should not be empty", list.isEmpty());
+
+      request = new R66Request(RequestMode.ASYNCTRANSFER);
+      request.setDestuid("hostas");
+      request.setFromuid("hostas");
+      request.setRule("rule3");
+      request.setFile("testTask.txt");
+      request.setInfo("Submitted from Thrift");
+      System.out.println("REQUEST4: " + request);
+      org.waarp.thrift.r66.R66Result result =
+          client.transferRequestQuery(request);
+      System.out.println("RESULT4: " + result);
+
+      final long startEx = System.currentTimeMillis();
+      boolean dontknow = false;
+      final long tid = result.getTid();
+      for (int i = 0; i < tries; i++) {
+        dontknow = client.isStillRunning("hostas", "hostas", tid);
+      }
+      final long endEx = System.currentTimeMillis();
+      System.out.println("StillRunning: " + dontknow);
+      System.out.println("Delay: " + (endEx - startEx) + " : " +
+                         (tries * 1000) / (endEx - startEx));
+
+      request.setMode(RequestMode.INFOREQUEST);
+      request.setTid(tid);
+      request.setAction(Action.Detail);
+      result = client.infoTransferQuery(request);
+      System.out.println("RESULT2: " + result);
+      final long startQu = System.currentTimeMillis();
+      for (int i = 0; i < tries; i++) {
+        result = client.infoTransferQuery(request);
+      }
+      final long endQu = System.currentTimeMillis();
+      System.out.println("Delay: " + (endQu - startQu) + " : " +
+                         (tries * 1000) / (endQu - startQu));
+
+      System.out.println("Exist: " + client
+          .isStillRunning(request.getFromuid(), request.getDestuid(),
+                          request.getTid()));
+
+      // Wrong request
+      request = new R66Request(RequestMode.INFOFILE);
+
+      System.out.println("WRONG REQUEST: " + request);
+      list = client.infoListQuery(request);
+      System.out.println("RESULT of Wrong Request: " + list.size());
+      for (final String slist : list) {
+        System.out.println(slist);
+      }
+      totest.delete();
+    } catch (final TTransportException e) {
+      e.printStackTrace();
+      Assume.assumeNoException("Thrift in Error during connection", e);
+    } catch (final TException e) {
+      e.printStackTrace();
+      assertTrue("Thrift in Error", false);
+    } finally {
+      if (transport != null) {
+        transport.close();
+      }
+    }
+  }
+
+  @Test
+  public void test3_ProgressBarTransfer() throws IOException {
+    logger.warn("Start Test of ProgressBar Transfer");
+    final int size = 10000000;
+    final File totestBig =
+        generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
+    final R66Future future = new R66Future(true);
+    final long time1 = System.currentTimeMillis();
+    final TestProgressBarTransfer transaction =
+        new TestProgressBarTransfer(future, "hostas", "testTaskBig.txt",
+                                    "rule3", "Test Send Small ProgressBar",
+                                    true, 65536, DbConstantR66.ILLEGALVALUE,
+                                    networkTransaction, 100);
+    transaction.run();
+    future.awaitOrInterruptible();
+    final long time2 = System.currentTimeMillis();
+    final long delay = time2 - time1;
+    final R66Result result = future.getResult();
+    checkFinalResult(future, result, delay, size);
+    totestBig.delete();
   }
 
   @Test
@@ -306,40 +555,6 @@ public class NetworkClientTest extends TestAbstract {
     result = future.getResult();
     checkFinalResult(future, result, delay, size);
     totestBig.delete();
-  }
-
-  @Test
-  public void test5_MultipleRecvThroughClient()
-      throws IOException, InterruptedException {
-    logger.warn("Start Test of Multiple Recv Through Transfer");
-    File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100000);
-    int NUMBER_FILES = 10;
-    ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
-    ExecutorService executorService =
-        Executors.newFixedThreadPool(NUMBER_FILES);
-    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
-    long timestart = System.currentTimeMillis();
-    for (int i = 0; i < NUMBER_FILES; i++) {
-      final R66Future future = new R66Future(true);
-      futures.add(future);
-      final TestRecvThroughClient transaction =
-          new TestRecvThroughClient(future, handler, "hostas", "testTask.txt",
-                                    "rule6", "Test Multiple RecvThrough", true,
-                                    8192, networkTransaction);
-      executorService.execute(transaction);
-    }
-    Thread.sleep(100);
-    executorService.shutdown();
-    for (int i = 0; i < NUMBER_FILES; i++) {
-      final R66Future future = futures.remove(0);
-      future.awaitOrInterruptible();
-      assertTrue(future.isSuccess());
-    }
-    long timestop = System.currentTimeMillis();
-    logger
-        .warn("RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
-              NUMBER_FILES, (timestop - timestart) / 1000,
-              NUMBER_FILES * 1000 / (timestop - timestart));
   }
 
   private void checkFinalResult(R66Future future, R66Result result, long delay,
@@ -436,25 +651,323 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test3_ProgressBarTransfer() throws IOException {
-    logger.warn("Start Test of ProgressBar Transfer");
-    final int size = 10000000;
-    final File totestBig =
-        generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
-    final R66Future future = new R66Future(true);
+  public void test5_MultipleRecvThroughClient()
+      throws IOException, InterruptedException {
+    logger.warn("Start Test of Multiple Recv Through Transfer");
+    File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100000);
+    int NUMBER_FILES = 10;
+    ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
+    ExecutorService executorService =
+        Executors.newFixedThreadPool(NUMBER_FILES);
+    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    long timestart = System.currentTimeMillis();
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      final R66Future future = new R66Future(true);
+      futures.add(future);
+      final TestRecvThroughClient transaction =
+          new TestRecvThroughClient(future, handler, "hostas", "testTask.txt",
+                                    "rule6", "Test Multiple RecvThrough", true,
+                                    8192, networkTransaction);
+      executorService.execute(transaction);
+    }
+    Thread.sleep(100);
+    executorService.shutdown();
+    for (int i = 0; i < NUMBER_FILES; i++) {
+      final R66Future future = futures.remove(0);
+      future.awaitOrInterruptible();
+      assertTrue(future.isSuccess());
+    }
+    long timestop = System.currentTimeMillis();
+    logger
+        .warn("RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
+              NUMBER_FILES, (timestop - timestart) / 1000,
+              NUMBER_FILES * 1000 / (timestop - timestart));
+  }
+
+  @Test
+  public void test5_DirectTransfer() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final ExecutorService executorService = Executors.newCachedThreadPool();
+    final int nb = nbThread;
+    final R66Future[] arrayFuture = new R66Future[nb];
+    logger.warn("Start Test of DirectTransfer");
     final long time1 = System.currentTimeMillis();
-    final TestProgressBarTransfer transaction =
-        new TestProgressBarTransfer(future, "hostas", "testTaskBig.txt",
-                                    "rule3", "Test Send Small ProgressBar",
-                                    true, 65536, DbConstantR66.ILLEGALVALUE,
-                                    networkTransaction, 100);
-    transaction.run();
-    future.awaitOrInterruptible();
+    for (int i = 0; i < nb; i++) {
+      arrayFuture[i] = new R66Future(true);
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(arrayFuture[i], "hostas", "testTask.txt",
+                               "rule3", "Test SendDirect Small", true, 8192,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      executorService.execute(transaction);
+    }
+    int success = 0;
+    int error = 0;
+    for (int i = 0; i < nb; i++) {
+      arrayFuture[i].awaitOrInterruptible();
+      if (arrayFuture[i].getRunner() != null) {
+        dbTaskRunners.add(arrayFuture[i].getRunner());
+      }
+      if (arrayFuture[i].isSuccess()) {
+        success++;
+      } else {
+        error++;
+      }
+    }
     final long time2 = System.currentTimeMillis();
-    final long delay = time2 - time1;
-    final R66Result result = future.getResult();
-    checkFinalResult(future, result, delay, size);
-    totestBig.delete();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    executorService.shutdown();
+    totest.delete();
+    assertEquals("Success should be total", nb, success);
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  @Test
+  public void test5_DirectTransferThroughId() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    int success = 0;
+    int error = 0;
+    long specialId = DbConstant.ILLEGALVALUE;
+    // First transfer
+    {
+      final R66Future future = new R66Future(true);
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3",
+                               "Test SendDirect Small", true, 8192,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      transaction.run();
+      future.awaitOrInterruptible();
+      if (future.getRunner() != null) {
+        dbTaskRunners.add(future.getRunner());
+        specialId = future.getRunner().getSpecialId();
+      }
+      if (future.isSuccess()) {
+        success++;
+        logger.warn("Success for first transfer");
+      } else {
+        error++;
+        fail("Should be able to find out the previous DbTaskRunner");
+      }
+    }
+    // Now second transfer based on ID
+    String[] args =
+        { "falsConfigFile", "-id", "" + specialId, "-to", "hostas" };
+    if (SubmitTransferTest.checkInternalParams(args)) {
+      String rule = SubmitTransferTest.getParamRule();
+      String localFilename = SubmitTransferTest.getParamLocalFilename();
+      logger.warn("Success for finding previous transfer {} {} {}", specialId,
+                  rule, localFilename);
+      final R66Future future2 = new R66Future(true);
+      final Timestamp newstart = new Timestamp(System.currentTimeMillis());
+      logger.warn("Start second submit transfer");
+      SubmitTransfer submitTransfer =
+          new SubmitTransfer(future2, "hostas", localFilename, rule,
+                             "Test Send 2 Submit Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, newstart);
+      logger.warn("Running second submit transfer");
+      submitTransfer.run();
+      logger.warn("Waiting second submit transfer");
+      future2.awaitOrInterruptible();
+      logger
+          .warn("End wait for second submit transfer {}", future2.isSuccess());
+      if (future2.isSuccess()) {
+        success++;
+      } else {
+        error++;
+        fail("Should be able to find out the previous DbTaskRunner");
+      }
+      logger.warn("Prepare transfer Success: " + success + " Error: " + error);
+      assertEquals("Success should be 2", 2, success);
+      assertEquals("Errors should be 0", 0, error);
+      // Now wait for all transfers done
+      if (future2.isSuccess()) {
+        final DbTaskRunner runner2 = future2.getResult().getRunner();
+        logger.warn("Wait for second submit transfer {}", runner2);
+        if (runner2 != null) {
+          waitForAllDone(runner2);
+          dbTaskRunners.add(runner2);
+        }
+      }
+      Thread.sleep(100);
+    } else {
+      logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
+                                      "(-to -rule -file | -to -id)")); //$NON-NLS-1$
+      error++;
+    }
+    SubmitTransferTest.clearInternal();
+    String[] args2 = { "falsConfigFile", "-id", "1", "-to", "hostas" };
+    assertFalse(SubmitTransferTest.checkInternalParams(args2));
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                2 * success * 1000 / (time2 - time1));
+    Thread.sleep(1000);
+    totest.delete();
+    Thread.sleep(1000);
+    assertEquals("Success should be 2", 2, success);
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  private void waitForAllDone(DbTaskRunner runner) {
+    while (true) {
+      try {
+        DbTaskRunner checkedRunner =
+            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
+                             runner.getRequested());
+        if (checkedRunner.isAllDone()) {
+          logger.warn("DbTaskRunner done");
+          return;
+        } else if (checkedRunner.isInError()) {
+          logger.error("DbTaskRunner in error");
+          return;
+        }
+        Thread.sleep(100);
+      } catch (InterruptedException e) {//NOSONAR
+        logger.error("Interrupted", e);
+        return;
+      } catch (WaarpDatabaseException e) {
+        logger.error("Cannot found DbTaskRunner", e);
+        return;
+      }
+    }
+  }
+
+  @Test
+  public void test5_DirectTransferWrong() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostbs", "testTask.txt", "rule3",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    Thread.sleep(5000);
+    totest.delete();
+    Thread.sleep(3000);
+    assertEquals("Success should be 0", 0, success);
+    assertEquals("Errors should be 1", 1, error);
+  }
+
+  @Test
+  public void test5_DirectTransferWrongHost() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostunknowns", "testTask.txt", "rule3",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    Thread.sleep(5000);
+    totest.delete();
+    Thread.sleep(3000);
+    assertEquals("Success should be 0", 0, success);
+    assertEquals("Errors should be 1", 1, error);
+  }
+
+  @Test
+  public void test5_DirectTransferPullWrong() throws Exception {
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostbs", "testTaskNew.txt", "rule4",
+                             "Test RecvDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    Thread.sleep(5000);
+    assertEquals("Success should be 0", 0, success);
+    assertEquals("Errors should be 1", 1, error);
+  }
+
+  @Test
+  public void test5_SubmitTransfer() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final int nb = nbThread;
+    final R66Future[] arrayFuture = new R66Future[nb];
+    logger.warn("Start Test of SubmitTransfer");
+
+    for (int i = 0; i < nb; i++) {
+      arrayFuture[i] = new R66Future(true);
+      final Timestamp newstart =
+          new Timestamp(System.currentTimeMillis() + i * 10);
+      final SubmitTransfer transaction =
+          new SubmitTransfer(arrayFuture[i], "hostas", "testTask.txt", "rule3",
+                             "Test Send Submit Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, newstart);
+      transaction.run();
+    }
+    int success = 0;
+    int error = 0;
+    for (int i = 0; i < nb; i++) {
+      arrayFuture[i].awaitOrInterruptible();
+      if (arrayFuture[i].isSuccess()) {
+        success++;
+      } else {
+        error++;
+      }
+    }
+    logger.warn("Prepare transfer Success: " + success + " Error: " + error);
+    assertEquals("Success should be total", nb, success);
+    assertEquals("Errors should be 0", 0, error);
+    // Now wait for all transfers done
+    for (int i = 0; i < nb; i++) {
+      if (arrayFuture[i].isSuccess()) {
+        final DbTaskRunner runner = arrayFuture[i].getResult().getRunner();
+        if (runner != null) {
+          waitForAllDone(runner);
+          dbTaskRunners.add(runner);
+        }
+      }
+    }
+    Thread.sleep(100);
+    totest.delete();
   }
 
   @Test
@@ -486,50 +999,32 @@ public class NetworkClientTest extends TestAbstract {
     bandwidth = 0;
   }
 
-  private class SpooledThread extends Thread {
-    private static final String TMP_R_66_TEST_OUT_EXAMPLE =
-        "/tmp/R66/test/out/example";
-    private static final String TMP_R_66_TEST_STOPOUT_TXT =
-        "/tmp/R66/test/stopout.txt";
-    private static final String SPOOLED_ROOT = "/tmp/R66/test";
-    R66Future future;
-    private boolean ignoreAlreadyUsed = false;
-    private boolean submit = false;
-    private String host = "hostas";
-    private String waarpHost = "hostas";
-    private SpooledDirectoryTransfer spooledDirectoryTransfer;
+  @Test
+  public void test6_RecvUsingTrafficShaping() throws IOException {
+    logger.warn("Start Test of Recv TrafficShaping Transfer");
+    final int size = 20000;
+    final long bandwidth = 5000;
+    final File totestBig =
+        generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
 
-    @Override
-    public void run() {
-      Arguments arguments = new Arguments();
-      arguments.setName("SpooledClient");
-      arguments.getLocalDirectory().add(TMP_R_66_TEST_OUT_EXAMPLE);
-      arguments.setStatusFile("/tmp/R66/test/statusoutdirect1.json");
-      arguments.setStopFile(TMP_R_66_TEST_STOPOUT_TXT);
-      arguments.setRule("rule3del");
-      arguments.setFileInfo("fileInfo");
-      arguments.setMd5(true);
-      arguments.getRemoteHosts().add(host);
-      if (waarpHost != null) {
-        arguments.getWaarpHosts().add(waarpHost);
-      }
-      arguments.setBlock(5000);
-      arguments.setRegex(null);
-      arguments.setElapsed(100);
-      arguments.setToSubmit(submit);
-      arguments.setNoLog(false);
-      arguments.setRecursive(false);
-      arguments.setElapsedWaarp(100);
-      arguments.setParallel(false);
-      arguments.setLimitParallel(1);
-      arguments.setMinimalSize(100);
-      arguments.setLogWarn(true);
-      arguments.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+    Configuration.configuration
+        .changeNetworkLimit(bandwidth, bandwidth, bandwidth, bandwidth, 1000);
 
-      spooledDirectoryTransfer =
-          new SpooledDirectoryTransfer(future, arguments, networkTransaction);
-      spooledDirectoryTransfer.run();
-    }
+    final R66Future future = new R66Future(true);
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTaskBig.txt", "rule4",
+                             "Test RecvDirect Big With Traffic Shaping", true,
+                             8192, DbConstantR66.ILLEGALVALUE,
+                             networkTransaction);
+    transaction.run();
+    future.awaitOrInterruptible();
+    final long time2 = System.currentTimeMillis();
+    final long delay = time2 - time1;
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    final R66Result result = future.getResult();
+    checkFinalResult(future, result, delay, size);
+    totestBig.delete();
   }
 
   @Test
@@ -675,323 +1170,6 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test6_RecvUsingTrafficShaping() throws IOException {
-    logger.warn("Start Test of Recv TrafficShaping Transfer");
-    final int size = 20000;
-    final long bandwidth = 5000;
-    final File totestBig =
-        generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
-
-    Configuration.configuration
-        .changeNetworkLimit(bandwidth, bandwidth, bandwidth, bandwidth, 1000);
-
-    final R66Future future = new R66Future(true);
-    final long time1 = System.currentTimeMillis();
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostas", "testTaskBig.txt", "rule4",
-                             "Test RecvDirect Big With Traffic Shaping", true,
-                             8192, DbConstantR66.ILLEGALVALUE,
-                             networkTransaction);
-    transaction.run();
-    future.awaitOrInterruptible();
-    final long time2 = System.currentTimeMillis();
-    final long delay = time2 - time1;
-    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
-    final R66Result result = future.getResult();
-    checkFinalResult(future, result, delay, size);
-    totestBig.delete();
-  }
-
-  @Test
-  public void test5_DirectTransfer() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final ExecutorService executorService = Executors.newCachedThreadPool();
-    final int nb = nbThread;
-    final R66Future[] arrayFuture = new R66Future[nb];
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    for (int i = 0; i < nb; i++) {
-      arrayFuture[i] = new R66Future(true);
-      final TestTransferNoDb transaction =
-          new TestTransferNoDb(arrayFuture[i], "hostas", "testTask.txt",
-                               "rule3", "Test SendDirect Small", true, 8192,
-                               DbConstantR66.ILLEGALVALUE, networkTransaction);
-      executorService.execute(transaction);
-    }
-    int success = 0;
-    int error = 0;
-    for (int i = 0; i < nb; i++) {
-      arrayFuture[i].awaitOrInterruptible();
-      if (arrayFuture[i].getRunner() != null) {
-        dbTaskRunners.add(arrayFuture[i].getRunner());
-      }
-      if (arrayFuture[i].isSuccess()) {
-        success++;
-      } else {
-        error++;
-      }
-    }
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * 1000 / (time2 - time1));
-    executorService.shutdown();
-    totest.delete();
-    assertEquals("Success should be total", nb, success);
-    assertEquals("Errors should be 0", 0, error);
-  }
-
-  static class SubmitTransferTest extends SubmitTransfer {
-
-    public SubmitTransferTest(final R66Future future, final String remoteHost,
-                              final String filename, final String rulename,
-                              final String fileinfo, final boolean isMD5,
-                              final int blocksize, final long id,
-                              final Timestamp starttime) {
-      super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
-            id, starttime);
-    }
-
-    static public boolean checkInternalParams(String[] args) {
-      return getParamsInternal(args);
-    }
-
-    static public void clearInternal() {
-      clear();
-    }
-    static public String getParamRule() {
-      return rule;
-    }
-
-    static public String getParamLocalFilename() {
-      return localFilename;
-    }
-  }
-
-  @Test
-  public void test5_DirectTransferThroughId() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    int success = 0;
-    int error = 0;
-    long specialId = DbConstant.ILLEGALVALUE;
-    // First transfer
-    {
-      final R66Future future = new R66Future(true);
-      final TestTransferNoDb transaction =
-          new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3",
-                               "Test SendDirect Small", true, 8192,
-                               DbConstantR66.ILLEGALVALUE, networkTransaction);
-      transaction.run();
-      future.awaitOrInterruptible();
-      if (future.getRunner() != null) {
-        dbTaskRunners.add(future.getRunner());
-        specialId = future.getRunner().getSpecialId();
-      }
-      if (future.isSuccess()) {
-        success++;
-        logger.warn("Success for first transfer");
-      } else {
-        error++;
-        fail("Should be able to find out the previous DbTaskRunner");
-      }
-    }
-    // Now second transfer based on ID
-    String[] args =
-        { "falsConfigFile", "-id", "" + specialId, "-to", "hostas" };
-    if (SubmitTransferTest.checkInternalParams(args)) {
-      String rule = SubmitTransferTest.getParamRule();
-      String localFilename = SubmitTransferTest.getParamLocalFilename();
-      logger.warn("Success for finding previous transfer {} {} {}", specialId,
-                  rule, localFilename);
-      final R66Future future2 = new R66Future(true);
-      final Timestamp newstart = new Timestamp(System.currentTimeMillis());
-      logger.warn("Start second submit transfer");
-      SubmitTransfer submitTransfer =
-          new SubmitTransfer(future2, "hostas", localFilename, rule,
-                             "Test Send 2 Submit Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, newstart);
-      logger.warn("Running second submit transfer");
-      submitTransfer.run();
-      logger.warn("Waiting second submit transfer");
-      future2.awaitOrInterruptible();
-      logger
-          .warn("End wait for second submit transfer {}", future2.isSuccess());
-      if (future2.isSuccess()) {
-        success++;
-      } else {
-        error++;
-        fail("Should be able to find out the previous DbTaskRunner");
-      }
-      logger.warn("Prepare transfer Success: " + success + " Error: " + error);
-      assertEquals("Success should be 2", 2, success);
-      assertEquals("Errors should be 0", 0, error);
-      // Now wait for all transfers done
-      if (future2.isSuccess()) {
-        final DbTaskRunner runner2 = future2.getResult().getRunner();
-        logger.warn("Wait for second submit transfer {}", runner2);
-        if (runner2 != null) {
-          waitForAllDone(runner2);
-          dbTaskRunners.add(runner2);
-        }
-      }
-      Thread.sleep(100);
-    } else {
-      logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
-                                      "(-to -rule -file | -to -id)")); //$NON-NLS-1$
-      error++;
-    }
-    SubmitTransferTest.clearInternal();
-    String[] args2 = { "falsConfigFile", "-id", "1", "-to", "hostas" };
-    assertFalse(SubmitTransferTest.checkInternalParams(args2));
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                2 * success * 1000 / (time2 - time1));
-    Thread.sleep(1000);
-    totest.delete();
-    Thread.sleep(1000);
-    assertEquals("Success should be 2", 2, success);
-    assertEquals("Errors should be 0", 0, error);
-  }
-
-  @Test
-  public void test5_DirectTransferWrong() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final R66Future future = new R66Future(true);
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostbs", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    int success = 0;
-    int error = 0;
-    future.awaitOrInterruptible();
-    if (future.getRunner() != null) {
-      dbTaskRunners.add(future.getRunner());
-    }
-    if (future.isSuccess()) {
-      success++;
-    } else {
-      error++;
-    }
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
-    totest.delete();
-    Thread.sleep(3000);
-    assertEquals("Success should be 0", 0, success);
-    assertEquals("Errors should be 1", 1, error);
-  }
-
-  @Test
-  public void test5_DirectTransferWrongHost() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final R66Future future = new R66Future(true);
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostunknowns", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    int success = 0;
-    int error = 0;
-    future.awaitOrInterruptible();
-    if (future.getRunner() != null) {
-      dbTaskRunners.add(future.getRunner());
-    }
-    if (future.isSuccess()) {
-      success++;
-    } else {
-      error++;
-    }
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
-    totest.delete();
-    Thread.sleep(3000);
-    assertEquals("Success should be 0", 0, success);
-    assertEquals("Errors should be 1", 1, error);
-  }
-
-  @Test
-  public void test5_DirectTransferPullWrong() throws Exception {
-    final R66Future future = new R66Future(true);
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostbs", "testTaskNew.txt", "rule4",
-                             "Test RecvDirect Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    int success = 0;
-    int error = 0;
-    future.awaitOrInterruptible();
-    if (future.getRunner() != null) {
-      dbTaskRunners.add(future.getRunner());
-    }
-    if (future.isSuccess()) {
-      success++;
-    } else {
-      error++;
-    }
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
-    assertEquals("Success should be 0", 0, success);
-    assertEquals("Errors should be 1", 1, error);
-  }
-
-  @Test
-  public void test5_SubmitTransfer() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final int nb = nbThread;
-    final R66Future[] arrayFuture = new R66Future[nb];
-    logger.warn("Start Test of SubmitTransfer");
-
-    for (int i = 0; i < nb; i++) {
-      arrayFuture[i] = new R66Future(true);
-      final Timestamp newstart =
-          new Timestamp(System.currentTimeMillis() + i * 10);
-      final SubmitTransfer transaction =
-          new SubmitTransfer(arrayFuture[i], "hostas", "testTask.txt", "rule3",
-                             "Test Send Submit Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, newstart);
-      transaction.run();
-    }
-    int success = 0;
-    int error = 0;
-    for (int i = 0; i < nb; i++) {
-      arrayFuture[i].awaitOrInterruptible();
-      if (arrayFuture[i].isSuccess()) {
-        success++;
-      } else {
-        error++;
-      }
-    }
-    logger.warn("Prepare transfer Success: " + success + " Error: " + error);
-    assertEquals("Success should be total", nb, success);
-    assertEquals("Errors should be 0", 0, error);
-    // Now wait for all transfers done
-    for (int i = 0; i < nb; i++) {
-      if (arrayFuture[i].isSuccess()) {
-        final DbTaskRunner runner = arrayFuture[i].getResult().getRunner();
-        if (runner != null) {
-          waitForAllDone(runner);
-          dbTaskRunners.add(runner);
-        }
-      }
-    }
-    Thread.sleep(100);
-    totest.delete();
-  }
-
-  @Test
   public void test50_Transfer_Delete_Rule_Wrong() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     final R66Future future = new R66Future(true);
@@ -1037,108 +1215,243 @@ public class NetworkClientTest extends TestAbstract {
     }
   }
 
-  private void waitForAllDone(DbTaskRunner runner) {
-    while (true) {
-      try {
-        DbTaskRunner checkedRunner =
-            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-                             runner.getRequested());
-        if (checkedRunner.isAllDone()) {
-          logger.warn("DbTaskRunner done");
-          return;
-        } else if (checkedRunner.isInError()) {
-          logger.error("DbTaskRunner in error");
-          return;
-        }
-        Thread.sleep(100);
-      } catch (InterruptedException e) {//NOSONAR
-        logger.error("Interrupted", e);
-        return;
-      } catch (WaarpDatabaseException e) {
-        logger.error("Cannot found DbTaskRunner", e);
-        return;
-      }
+  @Ignore("Information not OK at the end")
+  @Test
+  public void test80_JsonCommandsBusiness() throws Exception {
+    final DbHostAuth host = new DbHostAuth("hosta");
+    final SocketAddress socketServerAddress;
+    try {
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
     }
+
+    final byte scode = -1;
+    logger.warn("Business");
+    final R66Future future = new R66Future(true);
+    AbstractLocalPacket valid = null;
+    final BusinessRequestJsonPacket node3 = new BusinessRequestJsonPacket();
+    node3.setClassName(TestExecJavaTask.class.getName());
+    node3.setArguments(" business 0");
+    node3.setExtraArguments(" simple business request");
+    node3.setDelay(0);
+    valid =
+        new JsonCommandPacket(node3, LocalPacketFactory.BUSINESSREQUESTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+  }
+
+  @Ignore("Information not OK at the end")
+  @Test
+  public void test80_JsonCommandsTest() throws Exception {
+    final DbHostAuth host = new DbHostAuth("hosta");
+    final SocketAddress socketServerAddress;
+    try {
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
+    }
+
+    final byte scode = -1;
+    logger.warn("Test");
+    final R66Future future = new R66Future(true);
+    AbstractLocalPacket valid = null;
+    final JsonPacket node9 = new JsonPacket();
+    node9.setComment("Test Message");
+    node9.setRequestUserPacket(LocalPacketFactory.TESTPACKET);
+    valid = new JsonCommandPacket(node9, LocalPacketFactory.TESTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+    logger.warn("End Json");
   }
 
   @Test
-  public void test1_JsonGenerator() {
-    // Simple check of version
-    logger.warn(Version.fullIdentifier());
-    assertNotNull(Version.fullIdentifier());
-    assertTrue(Version.artifactId().equals("WaarpR66"));
-    final int nb = 11;
-    logger.warn("Start Test Json");
-    DbPreparedStatement preparedStatement;
+  public void test81_JsonCommandsLogs() throws Exception {
+    final DbHostAuth host = new DbHostAuth("hosta");
+    final SocketAddress socketServerAddress;
     try {
-      preparedStatement = DbTaskRunner
-          .getFilterPrepareStatement(DbConstantR66.admin.getSession(), nb,
-                                     false, null, null, null, null, null, null,
-                                     false, false, false, false, true, null);
-      preparedStatement.executeQuery();
-      final String tasks = DbTaskRunner.getJson(preparedStatement, nb);
-      preparedStatement.realClose();
-      assertFalse("Json should not be empty", tasks.isEmpty());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
-      fail("Json in Error");
-    } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      fail("Json in Error");
-    } catch (final OpenR66ProtocolBusinessException e) {
-      e.printStackTrace();
-      fail("Json in Error");
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
     }
+
+    final byte scode = -1;
+    AbstractLocalPacket valid = null;
+
+    logger.warn("Log");
+    R66Future future = new R66Future(true);
+    final LogJsonPacket node6 = new LogJsonPacket();
+    node6.setClean(true);
+    node6.setPurge(false);
+    valid = new JsonCommandPacket(node6, LocalPacketFactory.LOGPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+    logger.warn("Log2");
+    future = new R66Future(true);
+    node6.setPurge(true);
+    valid = new JsonCommandPacket(node6, LocalPacketFactory.LOGPURGEPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
   }
 
   @Test
-  public void test1_JsonGeneratorDbHostAuth() {
-    final int nb = 11;
-    logger.warn("Start Test Json");
-    DbPreparedStatement preparedStatement;
+  public void test81_JsonCommandsWithTransferId() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final DbHostAuth host = new DbHostAuth("hostas");
+    final SocketAddress socketServerAddress;
     try {
-      preparedStatement = DbHostAuth
-          .getFilterPrepareStament(DbConstantR66.admin.getSession(), null,
-                                   null);
-      preparedStatement.executeQuery();
-      final String hosts = DbHostAuth.getJson(preparedStatement, nb);
-      preparedStatement.realClose();
-      assertFalse("Json should not be empty", hosts.isEmpty());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
-      assertTrue("Json in Error", false);
-    } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      assertTrue("Json in Error", false);
-    } catch (final OpenR66ProtocolBusinessException e) {
-      e.printStackTrace();
-      assertTrue("Json in Error", false);
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
     }
+    final R66Future futureTransfer = new R66Future(true);
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(futureTransfer, "hostas", "testTask.txt", "rule3",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    futureTransfer.awaitOrInterruptible();
+    assertTrue("File transfer not ok", futureTransfer.isSuccess());
+    final long id = futureTransfer.getResult().getRunner().getSpecialId();
+    logger.warn("Remote Task: {}",
+                futureTransfer.getResult().getRunner().getSpecialId());
+
+    final byte scode = -1;
+
+    R66Future future;
+    AbstractLocalPacket valid;
+
+    logger.warn("Information");
+    future = new R66Future(true);
+    InformationJsonPacket node4 = new InformationJsonPacket(id, true, "hostas");
+    valid = new JsonCommandPacket(node4, LocalPacketFactory.INFORMATIONPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    logger.warn("Information2");
+    future = new R66Future(true);
+    node4 = new InformationJsonPacket(
+        (byte) InformationPacket.ASKENUM.ASKMLSDETAIL.ordinal(), "rule3",
+        "testTask.txt");
+    valid = new JsonCommandPacket(node4, LocalPacketFactory.INFORMATIONPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    logger.warn("Stop");
+    future = new R66Future(true);
+    final StopOrCancelJsonPacket node5 = new StopOrCancelJsonPacket();
+    node5.setRequested("hostas");
+    node5.setRequester("hostas");
+    node5.setSpecialid(id);
+    valid = new JsonCommandPacket(node5, LocalPacketFactory.STOPPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+    logger.warn("Cancel");
+    future = new R66Future(true);
+    valid = new JsonCommandPacket(node5, LocalPacketFactory.CANCELPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    logger.warn("End Json");
+    totest.delete();
   }
 
   @Test
-  public void test1_JsonGeneratorDbRule() {
-    final int nb = 11;
-    logger.warn("Start Test Json");
-    DbPreparedStatement preparedStatement;
+  public void test82_JsonCommandsOthers() throws Exception {
+    final DbHostAuth host = new DbHostAuth("hosta");
+    final SocketAddress socketServerAddress;
     try {
-      preparedStatement = DbRule
-          .getFilterPrepareStament(DbConstantR66.admin.getSession(), null, -1);
-      preparedStatement.executeQuery();
-      final String rules = DbRule.getJson(preparedStatement, nb);
-      preparedStatement.realClose();
-      assertFalse("Json should not be empty", rules.isEmpty());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      e.printStackTrace();
-      assertTrue("Json in Error", false);
-    } catch (final WaarpDatabaseSqlException e) {
-      e.printStackTrace();
-      assertTrue("Json in Error", false);
-    } catch (final OpenR66ProtocolBusinessException e) {
-      e.printStackTrace();
-      assertTrue("Json in Error", false);
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
     }
-    logger.warn("End Test Json");
+
+    final byte scode = -1;
+
+    logger.warn("BandwidthJsonPacket");
+    R66Future future = new R66Future(true);
+    AbstractLocalPacket valid = null;
+    BandwidthJsonPacket node = new BandwidthJsonPacket();
+    // will ask current values instead
+    node.setSetter(false);
+    valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+    logger.warn("BandwidthUnlimit");
+    future = new R66Future(true);
+    node = new BandwidthJsonPacket();
+    // will ask current values instead
+    node.setSetter(true);
+    node.setWriteglobal(1000000000);
+    node.setReadglobal(1000000000);
+    node.setWritesession(1000000000);
+    node.setReadsession(1000000000);
+    valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+    logger.warn("Config Export");
+    future = new R66Future(true);
+    final ConfigExportJsonPacket node7 = new ConfigExportJsonPacket();
+    node7.setHost(true);
+    node7.setAlias(true);
+    node7.setBusiness(true);
+    node7.setRoles(true);
+    node7.setRule(true);
+    valid = new JsonCommandPacket(node7, LocalPacketFactory.CONFEXPORTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+    logger.warn("Config Import");
+    future = new R66Future(true);
+    final ConfigImportJsonPacket node8 = new ConfigImportJsonPacket();
+    node8.setHost("/tmp/R66/arch/hosta_Authentications.xml");
+    node8.setRule("/tmp/R66/arch/hosta.rules.xml");
+    valid = new JsonCommandPacket(node8, LocalPacketFactory.CONFIMPORTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+    logger.warn("BandwidthUnlimit 2");
+    future = new R66Future(true);
+    node = new BandwidthJsonPacket();
+    // will ask current values instead
+    node.setSetter(true);
+    node.setWriteglobal(1000000000);
+    node.setReadglobal(1000000000);
+    node.setWritesession(1000000000);
+    node.setReadsession(1000000000);
+    valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+    logger.warn("Block only");
+    future = new R66Future(true);
+    final ShutdownOrBlockJsonPacket node2 = new ShutdownOrBlockJsonPacket();
+    node2.setRestartOrBlock(false);
+    node2.setShutdownOrBlock(false);
+    node2.setKey(FilesystemBasedDigest.passwdCrypt(
+        Configuration.configuration.getServerAdminKey()));
+    valid = new JsonCommandPacket(node2, LocalPacketFactory.BLOCKREQUESTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, false);
+
+  }
+
+  @Test
+  public void test83_BusinessRequest() throws WaarpDatabaseException {
+    logger.warn("Start Test of BusinessRequest");
+    final DbHostAuth host = new DbHostAuth("hostas");
+    assertEquals("Error should be at 0", 0,
+                 TestBusinessRequest.runTest(networkTransaction, host, 3));
   }
 
   @Test
@@ -1211,6 +1524,133 @@ public class NetworkClientTest extends TestAbstract {
 
     setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
     totest.delete();
+  }
+
+  @Test
+  public void test91_MultipleDirectTransfer() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final DbHostAuth host = new DbHostAuth("hostas");
+    try {
+      host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
+    }
+    final R66Future futureTransfer = new R66Future(true);
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(futureTransfer, "hostas", "testTask.txt", "rule3",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    futureTransfer.awaitOrInterruptible();
+    assertTrue("File transfer not ok", futureTransfer.isSuccess());
+    final long id = futureTransfer.getRunner().getSpecialId();
+    logger.warn("Remote Task: {}", id);
+
+    // MultipleDirectTransfer
+    logger.warn("Start MultipleDirectTransfer");
+    final R66Future future = new R66Future(true);
+    final MultipleDirectTransfer multipleDirectTransfer =
+        new MultipleDirectTransfer(future, "hostas,hostas",
+                                   "testTask.txt,testTask.txt", "rule3",
+                                   "MultipleDirectTransfer", true, 1024,
+                                   DbConstantR66.ILLEGALVALUE,
+                                   networkTransaction);
+    multipleDirectTransfer.run();
+    future.awaitOrInterruptible();
+    assertTrue("All sends should be OK", future.isSuccess());
+
+    totest.delete();
+  }
+
+  @Test
+  public void test92_ExtraCommandsOther() throws Exception {
+    setUpBeforeClassClient("config-clientB.xml");
+    ValidPacket valid;
+    final byte scode = -1;
+    final DbHostAuth host = new DbHostAuth("hostas");
+    final SocketAddress socketServerAddress;
+    try {
+      socketServerAddress = host.getSocketAddress();
+    } catch (final IllegalArgumentException e) {
+      logger.error("Needs a correct configuration file as first argument");
+      return;
+    }
+    R66Future future;
+
+    // Message
+    logger.warn("Start Message");
+    future = new R66Future(true);
+    final TestPacket packet = new TestPacket("MSG", "Message", 2);
+    final Message message =
+        new Message(networkTransaction, future, "hostas", packet);
+    message.run();
+    future.awaitOrInterruptible();
+    assertTrue("Message should be OK", future.isSuccess());
+
+    // MultipleSubmitTransfer
+    logger.warn("Start MultipleSubmitTransfer");
+    future = new R66Future(true);
+    File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final MultipleSubmitTransfer multipleSubmitTransfer =
+        new MultipleSubmitTransfer(future, "hostas",
+                                   "/tmp/R66/out/testTask.txt", "rule3",
+                                   "Multiple Submit", true, 1024,
+                                   DbConstantR66.ILLEGALVALUE, null,
+                                   networkTransaction);
+    multipleSubmitTransfer.run();
+    future.awaitOrInterruptible();
+    assertTrue("All submits should be OK", future.isSuccess());
+
+    // ValidPacket CONFEXPORTPACKET
+    logger.warn("Start Valid CONFEXPORTPACKET");
+    future = new R66Future(true);
+    valid = new ValidPacket(Boolean.TRUE.toString(), Boolean.TRUE.toString(),
+                            LocalPacketFactory.CONFEXPORTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    // ValidPacket CONFIMPORTPACKET
+    logger.warn("Start Valid CONFIMPORTPACKET");
+    future = new R66Future(true);
+    valid = new ValidPacket("0 /tmp/R66/arch/hostb_Authentications.xml",
+                            "0 /tmp/R66/arch/hostb.rules.xml",
+                            LocalPacketFactory.CONFIMPORTPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    // ValidPacket LOG
+    logger.warn("Start Valid LOG");
+    future = new R66Future(true);
+    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    // ValidPacket LOGPURGE
+    logger.warn("Start Valid LOGPURGE");
+    future = new R66Future(true);
+    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPURGEPACKET);
+    sendInformation(valid, socketServerAddress, future, scode, false,
+                    R66FiniteDualStates.VALIDOTHER, true);
+
+    // NoOpPacket
+    logger.warn("Start NoOp");
+    final long timeout = Configuration.configuration.getTimeoutCon();
+    Configuration.configuration.setTimeoutCon(100);
+    future = new R66Future(true);
+    final NoOpPacket noOpPacket = new NoOpPacket();
+    sendInformation(noOpPacket, socketServerAddress, future, scode, false,
+                    R66FiniteDualStates.INFORMATION, true);
+
+    // KeepAlivePacket
+    logger.warn("Start KeepAlive");
+    future = new R66Future(true);
+    final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
+    sendInformation(keepAlivePacket, socketServerAddress, future, scode, true,
+                    R66FiniteDualStates.INFORMATION, true);
+    Configuration.configuration.setTimeoutCon(timeout);
+
+    setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
   }
 
   @Test
@@ -1309,465 +1749,18 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test92_ExtraCommandsOther() throws Exception {
-    setUpBeforeClassClient("config-clientB.xml");
-    ValidPacket valid;
-    final byte scode = -1;
-    final DbHostAuth host = new DbHostAuth("hostas");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-    R66Future future;
-
-    // Message
-    logger.warn("Start Message");
-    future = new R66Future(true);
-    final TestPacket packet = new TestPacket("MSG", "Message", 2);
-    final Message message =
-        new Message(networkTransaction, future, "hostas", packet);
-    message.run();
-    future.awaitOrInterruptible();
-    assertTrue("Message should be OK", future.isSuccess());
-
-    // MultipleSubmitTransfer
-    logger.warn("Start MultipleSubmitTransfer");
-    future = new R66Future(true);
-    File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final MultipleSubmitTransfer multipleSubmitTransfer =
-        new MultipleSubmitTransfer(future, "hostas",
-                                   "/tmp/R66/out/testTask.txt", "rule3",
-                                   "Multiple Submit", true, 1024,
-                                   DbConstantR66.ILLEGALVALUE, null,
-                                   networkTransaction);
-    multipleSubmitTransfer.run();
-    future.awaitOrInterruptible();
-    assertTrue("All submits should be OK", future.isSuccess());
-
-    // ValidPacket CONFEXPORTPACKET
-    logger.warn("Start Valid CONFEXPORTPACKET");
-    future = new R66Future(true);
-    valid = new ValidPacket(Boolean.TRUE.toString(), Boolean.TRUE.toString(),
-                            LocalPacketFactory.CONFEXPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket CONFIMPORTPACKET
-    logger.warn("Start Valid CONFIMPORTPACKET");
-    future = new R66Future(true);
-    valid = new ValidPacket("0 /tmp/R66/arch/hostb_Authentications.xml",
-                            "0 /tmp/R66/arch/hostb.rules.xml",
-                            LocalPacketFactory.CONFIMPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket LOG
-    logger.warn("Start Valid LOG");
-    future = new R66Future(true);
-    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // ValidPacket LOGPURGE
-    logger.warn("Start Valid LOGPURGE");
-    future = new R66Future(true);
-    valid = new ValidPacket(null, null, LocalPacketFactory.LOGPURGEPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    // NoOpPacket
-    logger.warn("Start NoOp");
-    final long timeout = Configuration.configuration.getTimeoutCon();
-    Configuration.configuration.setTimeoutCon(100);
-    future = new R66Future(true);
-    final NoOpPacket noOpPacket = new NoOpPacket();
-    sendInformation(noOpPacket, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.INFORMATION, true);
-
-    // KeepAlivePacket
-    logger.warn("Start KeepAlive");
-    future = new R66Future(true);
-    final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
-    sendInformation(keepAlivePacket, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.INFORMATION, true);
-    Configuration.configuration.setTimeoutCon(timeout);
-
-    setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
-  }
-
-  @Test
-  public void test91_MultipleDirectTransfer() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final DbHostAuth host = new DbHostAuth("hostas");
-    try {
-      host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-    final R66Future futureTransfer = new R66Future(true);
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(futureTransfer, "hostas", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    futureTransfer.awaitOrInterruptible();
-    assertTrue("File transfer not ok", futureTransfer.isSuccess());
-    final long id = futureTransfer.getRunner().getSpecialId();
-    logger.warn("Remote Task: {}", id);
-
-    // MultipleDirectTransfer
-    logger.warn("Start MultipleDirectTransfer");
-    final R66Future future = new R66Future(true);
-    final MultipleDirectTransfer multipleDirectTransfer =
-        new MultipleDirectTransfer(future, "hostas,hostas",
-                                   "testTask.txt,testTask.txt", "rule3",
-                                   "MultipleDirectTransfer", true, 1024,
-                                   DbConstantR66.ILLEGALVALUE,
-                                   networkTransaction);
-    multipleDirectTransfer.run();
-    future.awaitOrInterruptible();
-    assertTrue("All sends should be OK", future.isSuccess());
-
-    totest.delete();
-  }
-
-  @Test
-  public void test81_JsonCommandsLogs() throws Exception {
-    final DbHostAuth host = new DbHostAuth("hosta");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-
-    final byte scode = -1;
-    AbstractLocalPacket valid = null;
-
-    logger.warn("Log");
-    R66Future future = new R66Future(true);
-    final LogJsonPacket node6 = new LogJsonPacket();
-    node6.setClean(true);
-    node6.setPurge(false);
-    valid = new JsonCommandPacket(node6, LocalPacketFactory.LOGPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-    logger.warn("Log2");
-    future = new R66Future(true);
-    node6.setPurge(true);
-    valid = new JsonCommandPacket(node6, LocalPacketFactory.LOGPURGEPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-  }
-
-  @Test
-  public void test82_JsonCommandsOthers() throws Exception {
-    final DbHostAuth host = new DbHostAuth("hosta");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-
-    final byte scode = -1;
-
-    logger.warn("BandwidthJsonPacket");
-    R66Future future = new R66Future(true);
-    AbstractLocalPacket valid = null;
-    BandwidthJsonPacket node = new BandwidthJsonPacket();
-    // will ask current values instead
-    node.setSetter(false);
-    valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-    logger.warn("BandwidthUnlimit");
-    future = new R66Future(true);
-    node = new BandwidthJsonPacket();
-    // will ask current values instead
-    node.setSetter(true);
-    node.setWriteglobal(1000000000);
-    node.setReadglobal(1000000000);
-    node.setWritesession(1000000000);
-    node.setReadsession(1000000000);
-    valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-    logger.warn("Config Export");
-    future = new R66Future(true);
-    final ConfigExportJsonPacket node7 = new ConfigExportJsonPacket();
-    node7.setHost(true);
-    node7.setAlias(true);
-    node7.setBusiness(true);
-    node7.setRoles(true);
-    node7.setRule(true);
-    valid = new JsonCommandPacket(node7, LocalPacketFactory.CONFEXPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-    logger.warn("Config Import");
-    future = new R66Future(true);
-    final ConfigImportJsonPacket node8 = new ConfigImportJsonPacket();
-    node8.setHost("/tmp/R66/arch/hosta_Authentications.xml");
-    node8.setRule("/tmp/R66/arch/hosta.rules.xml");
-    valid = new JsonCommandPacket(node8, LocalPacketFactory.CONFIMPORTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-    logger.warn("BandwidthUnlimit 2");
-    future = new R66Future(true);
-    node = new BandwidthJsonPacket();
-    // will ask current values instead
-    node.setSetter(true);
-    node.setWriteglobal(1000000000);
-    node.setReadglobal(1000000000);
-    node.setWritesession(1000000000);
-    node.setReadsession(1000000000);
-    valid = new JsonCommandPacket(node, LocalPacketFactory.BANDWIDTHPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-    logger.warn("Block only");
-    future = new R66Future(true);
-    final ShutdownOrBlockJsonPacket node2 = new ShutdownOrBlockJsonPacket();
-    node2.setRestartOrBlock(false);
-    node2.setShutdownOrBlock(false);
-    node2.setKey(FilesystemBasedDigest.passwdCrypt(
-        Configuration.configuration.getServerAdminKey()));
-    valid = new JsonCommandPacket(node2, LocalPacketFactory.BLOCKREQUESTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-  }
-
-  @Ignore("Information not OK at the end")
-  @Test
-  public void test80_JsonCommandsBusiness() throws Exception {
-    final DbHostAuth host = new DbHostAuth("hosta");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-
-    final byte scode = -1;
-    logger.warn("Business");
-    final R66Future future = new R66Future(true);
-    AbstractLocalPacket valid = null;
-    final BusinessRequestJsonPacket node3 = new BusinessRequestJsonPacket();
-    node3.setClassName(TestExecJavaTask.class.getName());
-    node3.setArguments(" business 0");
-    node3.setExtraArguments(" simple business request");
-    node3.setDelay(0);
-    valid =
-        new JsonCommandPacket(node3, LocalPacketFactory.BUSINESSREQUESTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-  }
-
-  @Ignore("Information not OK at the end")
-  @Test
-  public void test80_JsonCommandsTest() throws Exception {
-    final DbHostAuth host = new DbHostAuth("hosta");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-
-    final byte scode = -1;
-    logger.warn("Test");
-    final R66Future future = new R66Future(true);
-    AbstractLocalPacket valid = null;
-    final JsonPacket node9 = new JsonPacket();
-    node9.setComment("Test Message");
-    node9.setRequestUserPacket(LocalPacketFactory.TESTPACKET);
-    valid = new JsonCommandPacket(node9, LocalPacketFactory.TESTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, false);
-
-    logger.warn("End Json");
-  }
-
-  @Test
-  public void test81_JsonCommandsWithTransferId() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final DbHostAuth host = new DbHostAuth("hostas");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
-    }
-    final R66Future futureTransfer = new R66Future(true);
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(futureTransfer, "hostas", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    futureTransfer.awaitOrInterruptible();
-    assertTrue("File transfer not ok", futureTransfer.isSuccess());
-    final long id = futureTransfer.getResult().getRunner().getSpecialId();
-    logger.warn("Remote Task: {}",
-                futureTransfer.getResult().getRunner().getSpecialId());
-
-    final byte scode = -1;
-
-    R66Future future;
-    AbstractLocalPacket valid;
-
-    logger.warn("Information");
-    future = new R66Future(true);
-    InformationJsonPacket node4 = new InformationJsonPacket(id, true, "hostas");
-    valid = new JsonCommandPacket(node4, LocalPacketFactory.INFORMATIONPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    logger.warn("Information2");
-    future = new R66Future(true);
-    node4 = new InformationJsonPacket(
-        (byte) InformationPacket.ASKENUM.ASKMLSDETAIL.ordinal(), "rule3",
-        "testTask.txt");
-    valid = new JsonCommandPacket(node4, LocalPacketFactory.INFORMATIONPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    logger.warn("Stop");
-    future = new R66Future(true);
-    final StopOrCancelJsonPacket node5 = new StopOrCancelJsonPacket();
-    node5.setRequested("hostas");
-    node5.setRequester("hostas");
-    node5.setSpecialid(id);
-    valid = new JsonCommandPacket(node5, LocalPacketFactory.STOPPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-    logger.warn("Cancel");
-    future = new R66Future(true);
-    valid = new JsonCommandPacket(node5, LocalPacketFactory.CANCELPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, true,
-                    R66FiniteDualStates.VALIDOTHER, true);
-
-    logger.warn("End Json");
-    totest.delete();
-  }
-
-  @Test
-  public void test1_ThriftClient() throws IOException {
-    logger.warn("Start Test Thrift Client");
-    final int PORT = 4266;
-    final int tries = 1000;
-    TTransport transport = null;
-    try {
-      final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-      transport = new TSocket("localhost", PORT);
-      final TProtocol protocol = new TBinaryProtocol(transport);
-      final R66Service.Client client = new R66Service.Client(protocol);
-      transport.open();
-      R66Request request = new R66Request(RequestMode.INFOFILE);
-      request.setDestuid("hostas");
-      request.setFromuid("hostas");
-      request.setRule("rule3");
-      request.setAction(Action.List);
-
-      System.out.println("REQUEST1: " + request);
-      List<String> list = client.infoListQuery(request);
-      System.out.println("RESULT1: " + list.size());
-      for (final String slist : list) {
-        System.out.println(slist);
-      }
-      assertFalse("List should not be empty", list.isEmpty());
-      final long start = System.currentTimeMillis();
-      for (int i = 0; i < tries; i++) {
-        list = client.infoListQuery(request);
-      }
-      final long end = System.currentTimeMillis();
-      System.out.println(
-          "Delay: " + (end - start) + " : " + (tries * 1000) / (end - start));
-
-      request.setMode(RequestMode.INFOFILE);
-      request.setAction(Action.Mlsx);
-      list = client.infoListQuery(request);
-      System.out.println("RESULT3: " + list.size());
-      for (final String slist : list) {
-        System.out.println(slist);
-      }
-      assertFalse("List should not be empty", list.isEmpty());
-
-      request = new R66Request(RequestMode.ASYNCTRANSFER);
-      request.setDestuid("hostas");
-      request.setFromuid("hostas");
-      request.setRule("rule3");
-      request.setFile("testTask.txt");
-      request.setInfo("Submitted from Thrift");
-      System.out.println("REQUEST4: " + request);
-      org.waarp.thrift.r66.R66Result result =
-          client.transferRequestQuery(request);
-      System.out.println("RESULT4: " + result);
-
-      final long startEx = System.currentTimeMillis();
-      boolean dontknow = false;
-      final long tid = result.getTid();
-      for (int i = 0; i < tries; i++) {
-        dontknow = client.isStillRunning("hostas", "hostas", tid);
-      }
-      final long endEx = System.currentTimeMillis();
-      System.out.println("StillRunning: " + dontknow);
-      System.out.println("Delay: " + (endEx - startEx) + " : " +
-                         (tries * 1000) / (endEx - startEx));
-
-      request.setMode(RequestMode.INFOREQUEST);
-      request.setTid(tid);
-      request.setAction(Action.Detail);
-      result = client.infoTransferQuery(request);
-      System.out.println("RESULT2: " + result);
-      final long startQu = System.currentTimeMillis();
-      for (int i = 0; i < tries; i++) {
-        result = client.infoTransferQuery(request);
-      }
-      final long endQu = System.currentTimeMillis();
-      System.out.println("Delay: " + (endQu - startQu) + " : " +
-                         (tries * 1000) / (endQu - startQu));
-
-      System.out.println("Exist: " + client
-          .isStillRunning(request.getFromuid(), request.getDestuid(),
-                          request.getTid()));
-
-      // Wrong request
-      request = new R66Request(RequestMode.INFOFILE);
-
-      System.out.println("WRONG REQUEST: " + request);
-      list = client.infoListQuery(request);
-      System.out.println("RESULT of Wrong Request: " + list.size());
-      for (final String slist : list) {
-        System.out.println(slist);
-      }
-      totest.delete();
-    } catch (final TTransportException e) {
-      e.printStackTrace();
-      Assume.assumeNoException("Thrift in Error during connection", e);
-    } catch (final TException e) {
-      e.printStackTrace();
-      assertTrue("Thrift in Error", false);
-    } finally {
-      if (transport != null) {
-        transport.close();
-      }
-    }
+  public void test96_Tasks() throws Exception {
+    System.err.println("Start Tasks");
+    final File totest = new File("/tmp/R66/in/testTask.txt");
+    final FileWriter fileWriter = new FileWriter(totest);
+    fileWriter.write("Test content");
+    fileWriter.flush();
+    fileWriter.close();
+    TestTasks.main(new String[] {
+        new File(dirResources, CONFIG_SERVER_A_MINIMAL_XML).getAbsolutePath(),
+        "/tmp/R66/in", "/tmp/R66/out", totest.getName()
+    });
+    System.err.println("End Tasks");
   }
 
   @Test
@@ -1820,13 +1813,12 @@ public class NetworkClientTest extends TestAbstract {
       driver.get("http://127.0.0.1:8066/");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
+      reloadDriver();
     }
   }
 
@@ -1885,23 +1877,13 @@ public class NetworkClientTest extends TestAbstract {
       driver.findElement(By.linkText("LOGOUT")).click();
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
+      reloadDriver();
     }
-  }
-
-  //@Ignore("Issue on checkBaseAuthent")
-  @Test
-  public void test98_RestR66() throws Exception {
-    HttpTestRestR66Client.keydesfilename =
-        new File(dirResources, "certs/test-key.des").getAbsolutePath();
-    logger.info("Key filename: {}", HttpTestRestR66Client.keydesfilename);
-    HttpTestRestR66Client.main(new String[] { "1" });
   }
 
   @Test
@@ -1913,102 +1895,79 @@ public class NetworkClientTest extends TestAbstract {
       final String baseUri = "http://localhost:8088/";
       driver.get(baseUri + DbTaskRunnerR66RestMethodHandler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("answer"));
       driver.get(baseUri + DbConfigurationR66RestMethodHandler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("answer"));
       driver.get(baseUri + DbHostAuthR66RestMethodHandler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("answer"));
       driver.get(baseUri + DbHostConfigurationR66RestMethodHandler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("answer"));
       driver.get(baseUri + DbRuleR66RestMethodHandler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("answer"));
       driver.get(baseUri + HttpRestBandwidthR66Handler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("Bad Request"));
       driver.get(baseUri + HttpRestConfigR66Handler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("Bad Request"));
       driver.get(baseUri + HttpRestControlR66Handler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("Bad Request"));
       driver.get(baseUri + HttpRestInformationR66Handler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("Bad Request"));
       driver.get(baseUri + HttpRestLogR66Handler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("Bad Request"));
       driver.get(baseUri + HttpRestServerR66Handler.BASEURI);
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("results"));
 
       // 2 | type | V2 [  |
       String v2BaseUri = baseUri + "v2/";
       driver.get(v2BaseUri + "transfers");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("results"));
       driver.get(v2BaseUri + "hostconfig");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("business"));
       assertTrue(driver.getPageSource().contains(Version.fullIdentifier()));
       assertTrue(driver.getPageSource()
                        .contains(org.waarp.openr66.protocol.utils.Version.ID));
       driver.get(v2BaseUri + "hosts");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("results"));
       driver.get(v2BaseUri + "limits");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("results"));
       driver.get(v2BaseUri + "rules");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("results"));
       driver.get(v2BaseUri + "server/status");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getPageSource());
       assertTrue(driver.getPageSource().contains("serverName"));
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
+    } finally {
+      reloadDriver();
     }
   }
 
+  //@Ignore("Issue on checkBaseAuthent")
   @Test
-  public void test96_Tasks() throws Exception {
-    System.err.println("Start Tasks");
-    final File totest = new File("/tmp/R66/in/testTask.txt");
-    final FileWriter fileWriter = new FileWriter(totest);
-    fileWriter.write("Test content");
-    fileWriter.flush();
-    fileWriter.close();
-    TestTasks.main(new String[] {
-        new File(dirResources, CONFIG_SERVER_A_MINIMAL_XML).getAbsolutePath(),
-        "/tmp/R66/in", "/tmp/R66/out", totest.getName()
-    });
-    System.err.println("End Tasks");
+  public void test98_RestR66() throws Exception {
+    HttpTestRestR66Client.keydesfilename =
+        new File(dirResources, "certs/test-key.des").getAbsolutePath();
+    logger.info("Key filename: {}", HttpTestRestR66Client.keydesfilename);
+    HttpTestRestR66Client.main(new String[] { "1" });
   }
 
   @Test
@@ -2038,6 +1997,81 @@ public class NetworkClientTest extends TestAbstract {
       }
     } finally {
       Processes.finalizeProject(project);
+    }
+  }
+
+
+  static class SubmitTransferTest extends SubmitTransfer {
+
+    public SubmitTransferTest(final R66Future future, final String remoteHost,
+                              final String filename, final String rulename,
+                              final String fileinfo, final boolean isMD5,
+                              final int blocksize, final long id,
+                              final Timestamp starttime) {
+      super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
+            id, starttime);
+    }
+
+    static public boolean checkInternalParams(String[] args) {
+      return getParamsInternal(args);
+    }
+
+    static public void clearInternal() {
+      clear();
+    }
+
+    static public String getParamRule() {
+      return rule;
+    }
+
+    static public String getParamLocalFilename() {
+      return localFilename;
+    }
+  }
+
+  private class SpooledThread extends Thread {
+    private static final String TMP_R_66_TEST_OUT_EXAMPLE =
+        "/tmp/R66/test/out/example";
+    private static final String TMP_R_66_TEST_STOPOUT_TXT =
+        "/tmp/R66/test/stopout.txt";
+    private static final String SPOOLED_ROOT = "/tmp/R66/test";
+    R66Future future;
+    private boolean ignoreAlreadyUsed = false;
+    private boolean submit = false;
+    private String host = "hostas";
+    private final String waarpHost = "hostas";
+    private SpooledDirectoryTransfer spooledDirectoryTransfer;
+
+    @Override
+    public void run() {
+      Arguments arguments = new Arguments();
+      arguments.setName("SpooledClient");
+      arguments.getLocalDirectory().add(TMP_R_66_TEST_OUT_EXAMPLE);
+      arguments.setStatusFile("/tmp/R66/test/statusoutdirect1.json");
+      arguments.setStopFile(TMP_R_66_TEST_STOPOUT_TXT);
+      arguments.setRule("rule3del");
+      arguments.setFileInfo("fileInfo");
+      arguments.setMd5(true);
+      arguments.getRemoteHosts().add(host);
+      if (waarpHost != null) {
+        arguments.getWaarpHosts().add(waarpHost);
+      }
+      arguments.setBlock(5000);
+      arguments.setRegex(null);
+      arguments.setElapsed(100);
+      arguments.setToSubmit(submit);
+      arguments.setNoLog(false);
+      arguments.setRecursive(false);
+      arguments.setElapsedWaarp(100);
+      arguments.setParallel(false);
+      arguments.setLimitParallel(1);
+      arguments.setMinimalSize(100);
+      arguments.setLogWarn(true);
+      arguments.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+
+      spooledDirectoryTransfer =
+          new SpooledDirectoryTransfer(future, arguments, networkTransaction);
+      spooledDirectoryTransfer.run();
     }
   }
 }

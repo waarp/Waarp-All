@@ -147,7 +147,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   private static final String XXXDATAJSONXXX = "XXXDATAJSONXXX";
   private static final String XXXHOSTSIDSXXX = "XXXHOSTSIDSXXX";
 
-  private String index() {
+  private String indexResponsive() {
     final String index = REQUEST.index.read(this);
     final StringBuilder builder = new StringBuilder(index);
     WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
@@ -166,7 +166,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
   }
 
-  private String unallowed(String mesg) {
+  private String unallowedResponsive(String mesg) {
     final String index = REQUEST.unallowed.read(this);
     if (index == null || index.isEmpty()) {
       return error(mesg);
@@ -294,12 +294,12 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   private String listing() {
-    getParams();
+    getParamsResponsive();
     return listingReload();
   }
 
   private String cancelRestart() {
-    getParams();
+    getParamsResponsive();
     if (params == null) {
       return getHeadNoParam(REQUEST.CancelRestart, "");
     }
@@ -487,7 +487,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   private String export() {
-    getParams();
+    getParamsResponsive();
     if (params == null) {
       String body = REQUEST.Export.read(this);
       body =
@@ -604,7 +604,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         "<B>" + Messages.getString("HttpSslHandler.8") + //$NON-NLS-2$
         "<A href='" + basename + "' target='_blank'>" + basename + "</A>" +
         Messages.getString("HttpSslHandler.9") //$NON-NLS-4$
-        + nbAndSpecialId.nb + Messages.getString("HttpSslHandler.10") + purge
+        + (nbAndSpecialId != null? nbAndSpecialId.nb : 0) +
+        Messages.getString("HttpSslHandler.10") + purge
         //$NON-NLS-1$
         + Messages.getString("HttpSslHandler.11") + "</B>" :
         //$NON-NLS-1$
@@ -640,7 +641,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   private String hosts() {
-    getParams();
+    getParamsResponsive();
     String head = REQUEST.Hosts.read(this);
     String errorText = "";
     if (params == null) {
@@ -961,7 +962,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   private String rules() {
-    getParams();
+    getParamsResponsive();
     String head = REQUEST.Rules.read(this);
     final StringBuilder builderHead = new StringBuilder(head);
     fillHostIds(builderHead);
@@ -1028,12 +1029,14 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         }
         head = resetOptionRules(head, rule, tmode, gmode);
         logger.debug("Recv UpdOrInsert: " + rule + ':' + hostids + ':' +
-                     tmode.ordinal() + ':' + recvp + ':' + sendp + ':' + archp +
-                     ':' + workp + ':' + rpre + ':' + rpost + ':' + rerr + ':' +
-                     spre + ':' + spost + ':' + serr);
+                     (tmode != null? tmode.ordinal() : 0) + ':' + recvp + ':' +
+                     sendp + ':' + archp + ':' + workp + ':' + rpre + ':' +
+                     rpost + ':' + rerr + ':' + spre + ':' + spost + ':' +
+                     serr);
         final DbRule dbrule =
-            new DbRule(rule, hostids, tmode.ordinal(), recvp, sendp, archp,
-                       workp, rpre, rpost, rerr, spre, spost, serr);
+            new DbRule(rule, hostids, (tmode != null? tmode.ordinal() : 0),
+                       recvp, sendp, archp, workp, rpre, rpost, rerr, spre,
+                       spost, serr);
         try {
           if ("Create".equalsIgnoreCase(parm)) {
             dbrule.insert();
@@ -1233,7 +1236,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   private String spooled(boolean detailed) {
     // XXXSPOOLEDXXX
     if (request.method() == HttpMethod.POST) {
-      getParams();
+      getParamsResponsive();
     }
     final String spooled = REQUEST.Spooled.read(this);
     String uri;
@@ -1244,6 +1247,9 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     }
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
+    if (params == null) {
+      params = new HashMap<String, List<String>>();
+    }
     params.putAll(queryStringDecoder.parameters());
     String name = null;
     if (params.containsKey("name")) {
@@ -1346,7 +1352,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   private String system() {
-    getParams();
+    getParamsResponsive();
     DbHostConfiguration config;
     try {
       config = new DbHostConfiguration(Configuration.configuration.getHostId());
@@ -1555,11 +1561,13 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
             extraInformation =
                 Messages.getString("HttpSslHandler.42"); //$NON-NLS-1$
           }
-        } else if ("Data.HostConfig".equalsIgnoreCase(act)) {
+        } else if ("HostConfig".equalsIgnoreCase(act)) {
+          logger.debug("DbHC update");
           config.setBusiness(getTrimValue("BUSINESS"));
           config.setRoles(getTrimValue("ROLES"));
           config.setAliases(getTrimValue("ALIASES"));
           config.setOthers(getTrimValue("OTHER"));
+          logger.debug("DbHC update {}", config.toJson());
           try {
             config.update();
             extraInformation =
@@ -1582,7 +1590,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     return builder.toString();
   }
 
-  private void getParams() {
+  private void getParamsResponsive() {
     if (request.method() == HttpMethod.GET) {
       params = null;
     } else if (request.method() == HttpMethod.POST) {
@@ -1658,7 +1666,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     }
   }
 
-  private void checkAuthent(ChannelHandlerContext ctx) {
+  private void checkAuthentResponsive(ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
       String logon = logon();
@@ -1668,7 +1676,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       writeResponse(ctx);
       return;
     } else if (request.method() == HttpMethod.POST) {
-      getParams();
+      getParamsResponsive();
       if (params == null) {
         String logon = logon();
         logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
@@ -1684,7 +1692,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       return;
     }
     boolean getMenu = false;
-    if (params.containsKey("Logon")) {
+    if (params != null && params.containsKey("Logon")) {
       String name = null;
       String password = null;
       List<String> values;
@@ -1716,7 +1724,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       } else {
         getMenu = true;
       }
-      if (!getMenu) {
+      if (!getMenu && name != null) {
         logger.debug(
             "Name? " + name.equals(Configuration.configuration.getAdminName()) +
             " Passwd? " + Arrays
@@ -1758,7 +1766,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       responseContent.append(logon);
       clearSession();
     } else {
-      final String index = index();
+      final String index = indexResponsive();
       responseContent.append(index);
       clearSession();
       admin = new DefaultCookie(
@@ -1803,7 +1811,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     try {
       if (!authentHttp.isAuthenticated()) {
         logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-        checkAuthent(ctx);
+        checkAuthentResponsive(ctx);
         return;
       }
       String find = uriRequest;
@@ -1825,7 +1833,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {
             responseContent.append(cancelRestart());
           } else {
-            responseContent.append(unallowed(
+            responseContent.append(unallowedResponsive(
                 Messages.getString("HttpSslHandler.CancelRestartUnallowed")));
           }
           break;
@@ -1833,16 +1841,16 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           if (authentHttp.getAuth().isValidRole(ROLE.SYSTEM)) {
             responseContent.append(export());
           } else {
-            responseContent.append(unallowed(
+            responseContent.append(unallowedResponsive(
                 Messages.getString("HttpSslHandler.ExportUnallowed")));
           }
           break;
         case Hosts:
-          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+          if (authentHttp.getAuth().isValidRole(ROLE.HOST)) {
             responseContent.append(hosts());
           } else {
-            responseContent.append(
-                unallowed(Messages.getString("HttpSslHandler.HostUnallowed")));
+            responseContent.append(unallowedResponsive(
+                Messages.getString("HttpSslHandler.HostUnallowed")));
           }
           break;
         case ListingReload:
@@ -1855,11 +1863,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           responseContent.append(logout());
           break;
         case Rules:
-          if (authentHttp.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+          if (authentHttp.getAuth().isValidRole(ROLE.RULE)) {
             responseContent.append(rules());
           } else {
-            responseContent.append(
-                unallowed(Messages.getString("HttpSslHandler.RulesUnallowed")));
+            responseContent.append(unallowedResponsive(
+                Messages.getString("HttpSslHandler.RulesUnallowed")));
           }
           break;
         case System:
@@ -1876,7 +1884,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           responseContent.append(spooled(true));
           break;
         default:
-          responseContent.append(index());
+          responseContent.append(indexResponsive());
           break;
       }
       writeResponse(ctx);

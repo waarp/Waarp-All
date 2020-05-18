@@ -81,11 +81,12 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
      * @return the content of the unique file
      */
     public String readFileUnique(HttpSslHandlerProxyR66 handler) {
-      return handler.readFileHeader(configuration.getHttpBasePath() + header);
+      return handler
+          .readFileHeaderInternal(configuration.getHttpBasePath() + header);
     }
   }
 
-  private String readFileHeader(String filename) {
+  private String readFileHeaderInternal(String filename) {
     String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
@@ -133,7 +134,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     return builder.toString();
   }
 
-  private String index() {
+  private String indexProxy() {
     final String index = REQUEST.index.readFileUnique(this);
     final StringBuilder builder = new StringBuilder(index);
     WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
@@ -203,7 +204,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
   }
 
   private String System() {
-    getParams();
+    getParamsProxy();
     if (params == null) {
       final String system = REQUEST.System.readFileUnique(this);
       final StringBuilder builder = new StringBuilder(system);
@@ -344,7 +345,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     return builder.toString();
   }
 
-  private void getParams() {
+  private void getParamsProxy() {
     if (request.method() == HttpMethod.GET) {
       params = null;
     } else if (request.method() == HttpMethod.POST) {
@@ -360,6 +361,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     }
   }
 
+  @Override
   protected void clearSession() {
     if (admin != null) {
       final R66Session lsession = sessions.remove(admin.value());
@@ -371,7 +373,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     }
   }
 
-  private void checkAuthent(ChannelHandlerContext ctx) {
+  private void checkAuthentProxy(ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
       String logon = logon();
@@ -381,7 +383,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       writeResponse(ctx);
       return;
     } else if (request.method() == HttpMethod.POST) {
-      getParams();
+      getParamsProxy();
       if (params == null) {
         String logon = logon();
         logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
@@ -394,7 +396,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       }
     }
     boolean getMenu = false;
-    if (params.containsKey("Logon")) {
+    if (params != null && params.containsKey("Logon")) {
       String name = null;
       String password = null;
       List<String> values;
@@ -426,7 +428,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       } else {
         getMenu = true;
       }
-      if (!getMenu) {
+      if (!getMenu && name != null) {
         logger.debug("Name=" + name + " vs " +
                      name.equals(configuration.getAdminName()) + " Passwd vs " +
                      Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
@@ -456,7 +458,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       responseContent.append(logon);
       clearSession();
     } else {
-      final String index = index();
+      final String index = indexProxy();
       responseContent.append(index);
       clearSession();
       admin = new DefaultCookie(R66SESSION + configuration.getHostId(),
@@ -489,7 +491,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     try {
       if (!authentHttp.isAuthenticated()) {
         logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-        checkAuthent(ctx);
+        checkAuthentProxy(ctx);
         return;
       }
       String find = uriRequest;
@@ -511,7 +513,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           responseContent.append(System());
           break;
         default:
-          responseContent.append(index());
+          responseContent.append(indexProxy());
           break;
       }
       writeResponse(ctx);

@@ -164,6 +164,10 @@ public class ServerInitDatabase {
             .format(Messages.getString("ServerInitDatabase.Upgrade.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
+      // Try to load some element directly into database from first
+      // configuration file
+      FileBasedConfiguration
+          .setConfigurationServerFromXml(Configuration.configuration, args[0]);
       if (sdirconfig != null) {
         // load Rules
         System.out
@@ -248,13 +252,13 @@ public class ServerInitDatabase {
         try {
           hostConfiguration =
               new DbHostConfiguration(Configuration.configuration.getHostId());
-          if (!salias.isEmpty()) {
+          if (salias != null && !salias.isEmpty()) {
             hostConfiguration.setAliases(salias);
           }
-          if (!sbusiness.isEmpty()) {
+          if (sbusiness != null && !sbusiness.isEmpty()) {
             hostConfiguration.setBusiness(sbusiness);
           }
-          if (!sroles.isEmpty()) {
+          if (sroles != null && !sroles.isEmpty()) {
             hostConfiguration.setRoles(sroles);
           }
           hostConfiguration.update();

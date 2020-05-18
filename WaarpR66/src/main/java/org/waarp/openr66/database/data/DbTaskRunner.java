@@ -2989,7 +2989,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             .setErrorMessage(finalValue.getMessage(), finalValue.getCode());
       }
       // First send error mesg
-      if (!finalValue.isAnswered()) {
+      if (!finalValue.isAnswered() && localChannelReference != null) {
         localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
         final ErrorPacket errorPacket = new ErrorPacket(finalValue.getMessage(),
                                                         finalValue.getCode()

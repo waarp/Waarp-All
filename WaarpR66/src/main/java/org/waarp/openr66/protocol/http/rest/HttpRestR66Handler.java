@@ -371,6 +371,10 @@ public class HttpRestR66Handler extends HttpRestHandler {
         temp.useConnection();
         dbSession = temp;
       }
+      if (key == null) {
+        status = HttpResponseStatus.UNAUTHORIZED;
+        throw new HttpInvalidAuthenticationException("Wrong Authentication");
+      }
       try {
         session.getAuth().connectionHttps(user, FilesystemBasedDigest
             .passwdCrypt(key.getBytes(WaarpStringUtils.UTF8)));

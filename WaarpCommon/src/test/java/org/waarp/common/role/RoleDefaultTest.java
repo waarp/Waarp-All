@@ -367,4 +367,228 @@ public class RoleDefaultTest {
     }
   }
 
+  @Test
+  public void testRole() {
+    assertTrue(ROLE.NOACCESS.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.READONLY));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.RULE));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.HOST));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.READONLY.isContained(ROLE.NOACCESS));
+    assertTrue(ROLE.READONLY.isContained(ROLE.READONLY));
+    assertFalse(ROLE.READONLY.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.READONLY.isContained(ROLE.RULE));
+    assertFalse(ROLE.READONLY.isContained(ROLE.HOST));
+    assertFalse(ROLE.READONLY.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.READONLY.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.READONLY.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.READONLY));
+    assertTrue(ROLE.TRANSFER.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.RULE));
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.HOST));
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.TRANSFER.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.RULE.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.RULE.isContained(ROLE.READONLY));
+    assertFalse(ROLE.RULE.isContained(ROLE.TRANSFER));
+    assertTrue(ROLE.RULE.isContained(ROLE.RULE));
+    assertFalse(ROLE.RULE.isContained(ROLE.HOST));
+    assertFalse(ROLE.RULE.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.RULE.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.RULE.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.HOST.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.HOST.isContained(ROLE.READONLY));
+    assertFalse(ROLE.HOST.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.HOST.isContained(ROLE.RULE));
+    assertTrue(ROLE.HOST.isContained(ROLE.HOST));
+    assertFalse(ROLE.HOST.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.HOST.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.HOST.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.LIMIT.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.READONLY));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.RULE));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.HOST));
+    assertTrue(ROLE.LIMIT.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.READONLY));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.RULE));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.HOST));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.LIMIT));
+    assertTrue(ROLE.SYSTEM.isContained(ROLE.SYSTEM));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.NOACCESS));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.READONLY));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.TRANSFER));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.RULE));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.HOST));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.LIMIT));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.SYSTEM));
+    assertTrue(ROLE.LOGCONTROL.isContained(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.PARTNER));
+    assertTrue(ROLE.READONLY.isContained(ROLE.PARTNER));
+    assertTrue(ROLE.TRANSFER.isContained(ROLE.PARTNER));
+    assertFalse(ROLE.RULE.isContained(ROLE.PARTNER));
+    assertFalse(ROLE.HOST.isContained(ROLE.PARTNER));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.PARTNER));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.PARTNER));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.PARTNER));
+
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.CONFIGADMIN));
+    assertTrue(ROLE.READONLY.isContained(ROLE.CONFIGADMIN));
+    assertTrue(ROLE.TRANSFER.isContained(ROLE.CONFIGADMIN));
+    assertTrue(ROLE.RULE.isContained(ROLE.CONFIGADMIN));
+    assertTrue(ROLE.HOST.isContained(ROLE.CONFIGADMIN));
+    assertFalse(ROLE.LIMIT.isContained(ROLE.CONFIGADMIN));
+    assertFalse(ROLE.SYSTEM.isContained(ROLE.CONFIGADMIN));
+    assertFalse(ROLE.LOGCONTROL.isContained(ROLE.CONFIGADMIN));
+
+    assertFalse(ROLE.NOACCESS.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.READONLY.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.TRANSFER.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.RULE.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.HOST.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.LIMIT.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.SYSTEM.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.LOGCONTROL.isContained(ROLE.FULLADMIN));
+
+    assertTrue(ROLE.NOACCESS.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.READONLY));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.RULE));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.HOST));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.LIMIT));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.NOACCESS.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.READONLY.contains(ROLE.NOACCESS));
+    assertTrue(ROLE.READONLY.contains(ROLE.READONLY));
+    assertFalse(ROLE.READONLY.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.READONLY.contains(ROLE.RULE));
+    assertFalse(ROLE.READONLY.contains(ROLE.HOST));
+    assertFalse(ROLE.READONLY.contains(ROLE.LIMIT));
+    assertFalse(ROLE.READONLY.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.READONLY.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.TRANSFER.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.TRANSFER.contains(ROLE.READONLY));
+    assertTrue(ROLE.TRANSFER.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.TRANSFER.contains(ROLE.RULE));
+    assertFalse(ROLE.TRANSFER.contains(ROLE.HOST));
+    assertFalse(ROLE.TRANSFER.contains(ROLE.LIMIT));
+    assertFalse(ROLE.TRANSFER.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.TRANSFER.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.RULE.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.RULE.contains(ROLE.READONLY));
+    assertFalse(ROLE.RULE.contains(ROLE.TRANSFER));
+    assertTrue(ROLE.RULE.contains(ROLE.RULE));
+    assertFalse(ROLE.RULE.contains(ROLE.HOST));
+    assertFalse(ROLE.RULE.contains(ROLE.LIMIT));
+    assertFalse(ROLE.RULE.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.RULE.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.HOST.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.HOST.contains(ROLE.READONLY));
+    assertFalse(ROLE.HOST.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.HOST.contains(ROLE.RULE));
+    assertTrue(ROLE.HOST.contains(ROLE.HOST));
+    assertFalse(ROLE.HOST.contains(ROLE.LIMIT));
+    assertFalse(ROLE.HOST.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.HOST.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.LIMIT.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.LIMIT.contains(ROLE.READONLY));
+    assertFalse(ROLE.LIMIT.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.LIMIT.contains(ROLE.RULE));
+    assertFalse(ROLE.LIMIT.contains(ROLE.HOST));
+    assertTrue(ROLE.LIMIT.contains(ROLE.LIMIT));
+    assertFalse(ROLE.LIMIT.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.LIMIT.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.SYSTEM.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.SYSTEM.contains(ROLE.READONLY));
+    assertFalse(ROLE.SYSTEM.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.SYSTEM.contains(ROLE.RULE));
+    assertFalse(ROLE.SYSTEM.contains(ROLE.HOST));
+    assertFalse(ROLE.SYSTEM.contains(ROLE.LIMIT));
+    assertTrue(ROLE.SYSTEM.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.SYSTEM.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.NOACCESS));
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.READONLY));
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.RULE));
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.HOST));
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.LIMIT));
+    assertFalse(ROLE.LOGCONTROL.contains(ROLE.SYSTEM));
+    assertTrue(ROLE.LOGCONTROL.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.PARTNER.contains(ROLE.NOACCESS));
+    assertTrue(ROLE.PARTNER.contains(ROLE.READONLY));
+    assertTrue(ROLE.PARTNER.contains(ROLE.TRANSFER));
+    assertFalse(ROLE.PARTNER.contains(ROLE.RULE));
+    assertFalse(ROLE.PARTNER.contains(ROLE.HOST));
+    assertFalse(ROLE.PARTNER.contains(ROLE.LIMIT));
+    assertFalse(ROLE.PARTNER.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.PARTNER.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.CONFIGADMIN.contains(ROLE.NOACCESS));
+    assertTrue(ROLE.CONFIGADMIN.contains(ROLE.READONLY));
+    assertTrue(ROLE.CONFIGADMIN.contains(ROLE.TRANSFER));
+    assertTrue(ROLE.CONFIGADMIN.contains(ROLE.RULE));
+    assertTrue(ROLE.CONFIGADMIN.contains(ROLE.HOST));
+    assertFalse(ROLE.CONFIGADMIN.contains(ROLE.LIMIT));
+    assertFalse(ROLE.CONFIGADMIN.contains(ROLE.SYSTEM));
+    assertFalse(ROLE.CONFIGADMIN.contains(ROLE.LOGCONTROL));
+
+    assertFalse(ROLE.FULLADMIN.contains(ROLE.NOACCESS));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.READONLY));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.TRANSFER));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.RULE));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.HOST));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.LIMIT));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.SYSTEM));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.LOGCONTROL));
+
+    assertEquals(0, ROLE.NOACCESS.getAsByte());
+    assertEquals(1, ROLE.READONLY.getAsByte());
+    assertEquals(2, ROLE.TRANSFER.getAsByte());
+    assertEquals(4, ROLE.RULE.getAsByte());
+    assertEquals(8, ROLE.HOST.getAsByte());
+    assertEquals(16, ROLE.LIMIT.getAsByte());
+    assertEquals(32, ROLE.SYSTEM.getAsByte());
+    assertEquals(64, ROLE.LOGCONTROL.getAsByte());
+    assertEquals(3, ROLE.PARTNER.getAsByte());
+    assertEquals(15, ROLE.CONFIGADMIN.getAsByte());
+    assertEquals(127, ROLE.FULLADMIN.getAsByte());
+
+    assertEquals(ROLE.NOACCESS, ROLE.fromByte((byte) 0));
+    assertEquals(ROLE.READONLY, ROLE.fromByte((byte) 1));
+    assertEquals(ROLE.TRANSFER, ROLE.fromByte((byte) 2));
+    assertEquals(ROLE.RULE, ROLE.fromByte((byte) 4));
+    assertEquals(ROLE.HOST, ROLE.fromByte((byte) 8));
+    assertEquals(ROLE.LIMIT, ROLE.fromByte((byte) 16));
+    assertEquals(ROLE.SYSTEM, ROLE.fromByte((byte) 32));
+    assertEquals(ROLE.LOGCONTROL, ROLE.fromByte((byte) 64));
+    assertEquals(ROLE.PARTNER, ROLE.fromByte((byte) 3));
+    assertEquals(ROLE.CONFIGADMIN, ROLE.fromByte((byte) 15));
+    assertEquals(ROLE.FULLADMIN, ROLE.fromByte((byte) 127));
+  }
 }

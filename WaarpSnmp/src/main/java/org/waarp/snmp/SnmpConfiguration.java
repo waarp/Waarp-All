@@ -545,6 +545,8 @@ public final class SnmpConfiguration {
       }
       if (address != null) {
         logger.debug("Addr: {} {}", address.getClass(), targetAddress);
+      } else {
+        return false;
       }
       value = subHash.get(SNMP_TARGET_TIMEOUT);
       if (value == null || value.isEmpty()) {

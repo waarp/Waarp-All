@@ -68,7 +68,9 @@ public abstract class TestAbstractMinimal {
           new File(classLoader.getResource(serverInitBaseDirectory).getFile());
     }
     if (file.exists()) {
-      dir = file.getParentFile();
+      dir = new File(file.getParentFile().getAbsolutePath()
+                         .replace("target/test-classes", "src/test/resources"));
+      logger.warn(dir.getAbsolutePath());
       createBaseR66Directory(dir, "/tmp/R66");
     } else {
       System.err.println("Cannot find serverInitBaseDirectory file: " +
@@ -85,6 +87,10 @@ public abstract class TestAbstractMinimal {
     new File(tmp, "out").mkdir();
     new File(tmp, "arch").mkdir();
     new File(tmp, "work").mkdir();
+    File web = new File(tmp, "admin");
+    web.mkdir();
+    File webResp = new File(tmp, "adminresp");
+    webResp.mkdir();
     final File conf = new File(tmp, "conf");
     conf.mkdir();
     logger.warn("Copy from {} to {}", dirConf, conf);
@@ -93,6 +99,31 @@ public abstract class TestAbstractMinimal {
       System.out.print(fileCopied.getAbsolutePath() + ' ');
     }
     System.out.println(" Done");
+    File webSrc = new File(
+        dir.getParentFile().getParentFile().getParentFile().getParentFile(),
+        "src/main/httpadmin/i18n");
+    if (webSrc.isDirectory()) {
+      logger.warn("Copy Web from {} to {}", webSrc, web);
+      final File[] copiedWeb = FileUtils.copyRecursive(webSrc, web, false);
+      for (final File fileCopied : copiedWeb) {
+        System.out.print(fileCopied.getAbsolutePath() + ' ');
+      }
+      System.out.println(" Done");
+    } else {
+      logger.warn("Http dir does not exists: " + webSrc.getAbsolutePath());
+    }
+    File webRespSrc = new File(webSrc.getParentFile(), "admin-bootstrap");
+    if (webRespSrc.isDirectory()) {
+      logger.warn("CopyResp Web from {} to {}", webRespSrc, webResp);
+      final File[] copiedWebResp =
+          FileUtils.copyRecursive(webRespSrc, webResp, false);
+      for (final File fileCopied : copiedWebResp) {
+        System.out.print(fileCopied.getAbsolutePath() + ' ');
+      }
+      System.out.println(" Done");
+    } else {
+      logger.warn("Http dir does not exists: " + webRespSrc.getAbsolutePath());
+    }
   }
 
   /**

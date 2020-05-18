@@ -283,6 +283,7 @@ public abstract class AbstractTransfer implements Runnable {
     ttimestart = null;
     snormalInfoAsWarn = true;
   }
+
   /**
    * Parse the parameter and set current values
    *

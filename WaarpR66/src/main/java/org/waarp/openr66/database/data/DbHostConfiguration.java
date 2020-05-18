@@ -796,6 +796,104 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   }
 
   /**
+   * Update the DbHostConfiguration from Configuration
+   *
+   * @param configuration
+   */
+  public void updateFromConfiguration(Configuration configuration) {
+    // Business
+    if (!configuration.getBusinessWhiteSet().isEmpty()) {
+      Document document = DocumentHelper
+          .createDocument(DocumentHelper.createElement(XML_BUSINESS));
+      final Element root = document.getRootElement();
+      for (final String sval : configuration.getBusinessWhiteSet()) {
+        root.addElement(XML_BUSINESSID).setText(sval);
+        logger.info("Business Allow: " + sval);
+      }
+      String xml = root.asXML();
+      this.pojo.setBusiness(xml);
+      document.clearContent();
+    }
+    // Aliases
+    if (!configuration.getAliases().isEmpty()) {
+      Document document = DocumentHelper
+          .createDocument(DocumentHelper.createElement(XML_ALIASES));
+      final Element root = document.getRootElement();
+      for (final Entry<String, String[]> entry : configuration
+          .getReverseAliases().entrySet()) {
+        final Element elt = root.addElement(XML_ALIAS);
+        elt.addElement(XML_REALID).setText(entry.getKey());
+        StringBuilder cumul = null;
+        for (final String namealias : entry.getValue()) {
+          if (cumul == null) {
+            cumul = new StringBuilder(namealias);
+          } else {
+            cumul.append(' ').append(namealias);
+          }
+        }
+        if (cumul == null) {
+          cumul = new StringBuilder("");
+        }
+        elt.addElement(XML_ALIASID).setText(cumul.toString());
+      }
+      String xml = root.asXML();
+      this.pojo.setAliases(xml);
+      document.clearContent();
+    }
+
+    // Role
+    if (!configuration.getRoles().isEmpty()) {
+      Document document = DocumentHelper
+          .createDocument(DocumentHelper.createElement(XML_ROLES));
+      final Element root = document.getRootElement();
+      for (final Entry<String, RoleDefault> entry : configuration.getRoles()
+                                                                 .entrySet()) {
+        final Element elt = root.addElement(XML_ROLE);
+        elt.addElement(XML_ROLEID).setText(entry.getKey());
+        StringBuilder cumul = null;
+        RoleDefault roleDefault = entry.getValue();
+        if (roleDefault.hasNoAccess()) {
+          cumul = new StringBuilder(ROLE.NOACCESS.name());
+        } else {
+          for (ROLE role : ROLE.values()) {
+            if (role == ROLE.NOACCESS) {
+              continue;
+            }
+            if (roleDefault.isContaining(role)) {
+              if (cumul == null) {
+                cumul = new StringBuilder(role.name().toUpperCase());
+              } else {
+                cumul.append(' ').append(role.name().toUpperCase());
+              }
+            }
+          }
+        }
+        if (cumul == null) {
+          cumul = new StringBuilder("");
+        }
+        logger.info("New Role: " + entry.getKey() + ':' + cumul.toString());
+        elt.addElement(XML_ROLESET).setText(cumul.toString());
+      }
+      String xml = root.asXML();
+      this.pojo.setRoles(xml);
+      document.clearContent();
+    }
+
+    // Now save (insert or update)
+    try {
+      update();
+    } catch (final WaarpDatabaseException e) {
+      try {
+        insert();
+      } catch (WaarpDatabaseException waarpDatabaseException) {
+        // Real issue there
+        logger.error("Cannot update neither save DbHostConfiguration for ",
+                     this.pojo.getHostid());
+      }
+    }
+  }
+
+  /**
    * Shortcut to add all paths element with key and value from source into map
    *
    * @param source
@@ -914,6 +1012,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           alias[i] = namealias;
           i++;
         }
+        if (cumul == null) {
+          cumul = new StringBuilder("");
+        }
         elt.addElement(XML_ALIASID).setText(cumul.toString());
         config.getReverseAliases().put(entry.getKey(), alias);
       }
@@ -1000,6 +1101,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           } catch (final IllegalArgumentException e) {
             // ignore
           }
+        }
+        if (cumul == null) {
+          cumul = new StringBuilder("");
         }
         logger.info("New Role: " + entry.getKey() + ':' + newrole);
         config.getRoles().put(entry.getKey(), newrole);

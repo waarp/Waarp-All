@@ -203,7 +203,13 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @return True if the current role contains the specified role to check
    */
   public boolean isValidRole(ROLE roleCheck) {
-    return role.isContaining(roleCheck);
+    ROLE[] roles = roleCheck.getComposingRoles();
+    for (ROLE role1 : roles) {
+      if (!role.isContaining(role1)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
