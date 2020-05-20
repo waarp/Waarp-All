@@ -52,6 +52,21 @@ var EdgeWindows10=navigator.userAgent.search('Windows NT 10') > 0 && navigator.u
   <!-- Tablesorter: special Javascript -->
   <script type="text/javascript">
 var table;
+jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+    "specialid-asc": function ( a, b ) {
+      return ((a[0]=='-'&&b[0]=='-') ? -1: 1) * a.localeCompare(b, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    },
+
+    "specialid-desc": function ( a, b ) {
+      return -1 * ((a[0]=='-'&&b[0]=='-') ? -1: 1) * a.localeCompare(b, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    }
+} );
 var prepareTable = function() {
 	var activeString = ' <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>';
 	var pushString = '<span class="glyphicon glyphicon-export" aria-hidden="true"></span>';
@@ -74,7 +89,7 @@ var prepareTable = function() {
 	var renderGeneric = function (data, type, full, meta) {return changeValueColumn(data, meta.col);};
 
 	var myData = XXXDATAJSONXXX;
-	var myColumns = [{ data: "SPECIALID", title : i18n.t("menu2.entete1"), render: renderSpecialId},
+	var myColumns = [{ data: "SPECIALID", title : i18n.t("menu2.entete1"), render: renderSpecialId, type: "specialid"},
 					  { data: "IDRULE", title :i18n.t("menu2.entete2")},
 					  { data: "MODETRANS", title :i18n.t("menu2.entete24"), render: renderGeneric},
 					  { data: "OWNERREQ", title :i18n.t("menu2.entete25"), render: renderOWNERREQ},
@@ -185,7 +200,6 @@ var prepareTable = function() {
 	 });
 	 var refreshrate = XXXREFRESHXXX*1000; if (refreshrate > 0) {setTimeout(function(){location.assign("/ListingReload.html");}, refreshrate+100); };
 };
-
   </script>
 </head>
 <body>
@@ -387,7 +401,7 @@ var prepareTable = function() {
           data-i18n="menu2.filtre16">In Error</label>
           <input type="checkbox" name="done" value="ON" XXXDONEXXX><label
           data-i18n="menu2.filtre17">Done</label>
-          <input type="checkbox" name="all" value="ON" XXXALLXXX><label
+          <input type="checkbox" name="all" id="checkall" value="ON" XXXALLXXX><label
           data-i18n="menu2.filtre18">All</label>
         </div>
       </div>
@@ -400,8 +414,22 @@ var prepareTable = function() {
           results.</label>
         </div>
         <div class="form-group col-md-1 text-right">
-          <input type="reset" value="Clear" class="btn btn-default btn-sm"
+          <input type="reset" value="Reset" class="btn btn-default btn-sm"
                  name="ACTION" data-i18n="[title]app.help1">
+          <script>
+function clearFields() {
+  $('#startid').val('');
+  $('#stopid').val('');
+  $('#start').val('');
+  $('#stop').val('');
+  $('#rule').val('');
+  $('#req').val('');
+  $('input:checkbox').removeAttr('checked');
+  $('#checkall').prop("checked", true);
+};
+          </script>
+          <input type="button" value="Clear" class="btn btn-default btn-sm"
+                 name="ACTION" data-i18n="[title]app.help7" onclick="clearFields()">
         </div>
         <div class="form-group col-md-2 text-right">
           <input type="submit" value="Filter" class="btn btn-primary btn-sm"
