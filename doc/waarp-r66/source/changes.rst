@@ -17,8 +17,13 @@ Correctifs
   Corrige la régression sur la sélection d'un transfert à partir de son ID
   où le nom du serveur local ne prenait pas en compte si le serveur
   distant était en mode SSL ou pas (régression en 3.0).
-- Fix Documentation (maven site) for WaarpHttp
-- Fix dependencies in shading jars
+- Corrige la documentation (maven site) pour WaarpHttp
+- Corrige les dépendences dans les shading jars et les pom
+- Corrige l'interface DbHostConfiguration dans le Web Admin
+- Corrige la classe HttpWriteCacheEnable
+- Corrige le Web Admin sur les écrans Listing et CancelRestart pour le tri selon
+  le specialId et pour le boutton "Clear"
+  (issue [`#35 <https://github.com/waarp/Waarp-All/issues/35>`__])
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================
