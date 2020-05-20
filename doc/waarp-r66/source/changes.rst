@@ -28,6 +28,8 @@ Correctifs
   (issue [`#37 <https://github.com/waarp/Waarp-All/issues/37>`__])
 - Nettoyage du code
 - Corrige l'intégration de SonarQube avec Maven
+- Corrige l'exemple de la documentation sur l'authentification HMAC (pull
+  request [`#38 <https://github.com/waarp/Waarp-All/pull/38>`__])
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================

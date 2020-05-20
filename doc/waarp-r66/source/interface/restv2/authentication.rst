@@ -4,8 +4,6 @@ Authentification des requêtes
 Lorsque l'authentification des requêtes est activée dans la configuration REST du serveur,
 celle-ci peut se faire de 2 manières différentes.
 
---------------------------------------------------------------------------------------------------------------
-
 Authentification Basique
 ========================
 
@@ -30,8 +28,6 @@ Cette authentification se fait avec les entêtes suivants :
       -> ``Basic dG90bzp0b3RvbWRw`` après encodage
       
       
---------------------------------------------------------------------------------------------------------------
-    
 Authentification HMAC
 =====================
 
@@ -62,6 +58,6 @@ Cette authentification se fait avec les entêtes suivants :
   * *exemple* : Pour l'utilisateur 'toto' avec le mot de passe 'totomdp' à la date '1970-01-01T01:00:00+00:00'
     cela donne
     
-    -> ``HMAC totototomdp1970-01-01T01:00:00+00:00`` avant hachage
+    -> ``HMAC 1970-01-01T01:00:00+00:00totototomdp`` avant hachage
     
     -> ``HMAC e4219167eb4cf1f8590d684713218c4ad011d475d8f3b2d37fb15ce3da675021`` après hachage
