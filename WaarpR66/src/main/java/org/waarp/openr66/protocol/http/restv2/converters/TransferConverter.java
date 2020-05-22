@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
+import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.RuleDAO;
@@ -32,6 +33,7 @@ import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Rule;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter.ModeTrans;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
@@ -169,8 +171,8 @@ public final class TransferConverter {
   public static Transfer nodeToNewTransfer(ObjectNode object) {
     final Transfer defaultTransfer =
         new Transfer(null, null, -1, false, null, null, 65536);
-    defaultTransfer.setRequester(SERVER_NAME);
-    defaultTransfer.setOwnerRequest(SERVER_NAME);
+    defaultTransfer.setRequester(serverName());
+    defaultTransfer.setOwnerRequest(serverName());
     defaultTransfer.setBlockSize(65536);
     defaultTransfer.setTransferInfo("");
     defaultTransfer.setStart(new Timestamp(DateTime.now().getMillis()));
@@ -334,6 +336,12 @@ public final class TransferConverter {
         if (value.isTextual()) {
           if (hostExists(value.asText())) {
             transfer.setRequested(value.asText());
+            try {
+              transfer.setRequester(
+                  Configuration.configuration.getHostId(value.asText()));
+            } catch (WaarpDatabaseException e) {
+              // Ignore !!
+            }
           } else {
             errors.add(UNKNOWN_HOST(value.asText()));
           }

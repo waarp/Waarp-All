@@ -104,8 +104,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
-      if (limitDAO.exist(SERVER_NAME)) {
-        final Limit limits = limitDAO.select(SERVER_NAME);
+      if (limitDAO.exist(serverName())) {
+        final Limit limits = limitDAO.select(serverName());
         final ObjectNode responseObject = LimitsConverter.limitToNode(limits);
         final String responseText = JsonUtils.nodeToString(responseObject);
 
@@ -141,7 +141,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
 
-      if (!limitDAO.exist(SERVER_NAME)) {
+      if (!limitDAO.exist(serverName())) {
         final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
         final Limit limits = LimitsConverter.nodeToNewLimit(requestObject);
         limitDAO.insert(limits);
@@ -156,7 +156,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
         final String responseText = JsonUtils.nodeToString(responseObject);
         responder.sendJson(CREATED, responseText);
       } else {
-        throw new RestErrorException(ALREADY_EXISTING(SERVER_NAME));
+        throw new RestErrorException(ALREADY_EXISTING(serverName()));
       }
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
@@ -182,14 +182,14 @@ public class LimitsHandler extends AbstractRestDbHandler {
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
 
-      if (!limitDAO.exist(SERVER_NAME)) {
+      if (!limitDAO.exist(serverName())) {
         responder.sendStatus(NOT_FOUND);
         return;
       }
 
       final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
 
-      final Limit oldLimits = limitDAO.select(SERVER_NAME);
+      final Limit oldLimits = limitDAO.select(serverName());
       final Limit newLimits =
           LimitsConverter.nodeToUpdatedLimit(requestObject, oldLimits);
 
@@ -231,8 +231,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
 
-      if (limitDAO.exist(SERVER_NAME)) {
-        limitDAO.delete(limitDAO.select(SERVER_NAME));
+      if (limitDAO.exist(serverName())) {
+        limitDAO.delete(limitDAO.select(serverName()));
         configuration.changeNetworkLimit(0, 0, 0, 0, 0);
         responder.sendStatus(NO_CONTENT);
       } else {

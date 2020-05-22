@@ -368,7 +368,7 @@ public class RoleDefaultTest {
   }
 
   @Test
-  public void testRole() {
+  public void testRoleIsContained() {
     assertTrue(ROLE.NOACCESS.isContained(ROLE.NOACCESS));
     assertFalse(ROLE.NOACCESS.isContained(ROLE.READONLY));
     assertFalse(ROLE.NOACCESS.isContained(ROLE.TRANSFER));
@@ -444,6 +444,7 @@ public class RoleDefaultTest {
     assertFalse(ROLE.NOACCESS.isContained(ROLE.PARTNER));
     assertTrue(ROLE.READONLY.isContained(ROLE.PARTNER));
     assertTrue(ROLE.TRANSFER.isContained(ROLE.PARTNER));
+    assertTrue(ROLE.PARTNER.isContained(ROLE.PARTNER));
     assertFalse(ROLE.RULE.isContained(ROLE.PARTNER));
     assertFalse(ROLE.HOST.isContained(ROLE.PARTNER));
     assertFalse(ROLE.LIMIT.isContained(ROLE.PARTNER));
@@ -455,6 +456,7 @@ public class RoleDefaultTest {
     assertTrue(ROLE.TRANSFER.isContained(ROLE.CONFIGADMIN));
     assertTrue(ROLE.RULE.isContained(ROLE.CONFIGADMIN));
     assertTrue(ROLE.HOST.isContained(ROLE.CONFIGADMIN));
+    assertTrue(ROLE.CONFIGADMIN.isContained(ROLE.CONFIGADMIN));
     assertFalse(ROLE.LIMIT.isContained(ROLE.CONFIGADMIN));
     assertFalse(ROLE.SYSTEM.isContained(ROLE.CONFIGADMIN));
     assertFalse(ROLE.LOGCONTROL.isContained(ROLE.CONFIGADMIN));
@@ -467,7 +469,11 @@ public class RoleDefaultTest {
     assertTrue(ROLE.LIMIT.isContained(ROLE.FULLADMIN));
     assertTrue(ROLE.SYSTEM.isContained(ROLE.FULLADMIN));
     assertTrue(ROLE.LOGCONTROL.isContained(ROLE.FULLADMIN));
+    assertTrue(ROLE.FULLADMIN.isContained(ROLE.FULLADMIN));
+  }
 
+  @Test
+  public void testRoleContains() {
     assertTrue(ROLE.NOACCESS.contains(ROLE.NOACCESS));
     assertFalse(ROLE.NOACCESS.contains(ROLE.READONLY));
     assertFalse(ROLE.NOACCESS.contains(ROLE.TRANSFER));
@@ -543,6 +549,7 @@ public class RoleDefaultTest {
     assertFalse(ROLE.PARTNER.contains(ROLE.NOACCESS));
     assertTrue(ROLE.PARTNER.contains(ROLE.READONLY));
     assertTrue(ROLE.PARTNER.contains(ROLE.TRANSFER));
+    assertTrue(ROLE.PARTNER.contains(ROLE.PARTNER));
     assertFalse(ROLE.PARTNER.contains(ROLE.RULE));
     assertFalse(ROLE.PARTNER.contains(ROLE.HOST));
     assertFalse(ROLE.PARTNER.contains(ROLE.LIMIT));
@@ -554,6 +561,7 @@ public class RoleDefaultTest {
     assertTrue(ROLE.CONFIGADMIN.contains(ROLE.TRANSFER));
     assertTrue(ROLE.CONFIGADMIN.contains(ROLE.RULE));
     assertTrue(ROLE.CONFIGADMIN.contains(ROLE.HOST));
+    assertTrue(ROLE.CONFIGADMIN.contains(ROLE.CONFIGADMIN));
     assertFalse(ROLE.CONFIGADMIN.contains(ROLE.LIMIT));
     assertFalse(ROLE.CONFIGADMIN.contains(ROLE.SYSTEM));
     assertFalse(ROLE.CONFIGADMIN.contains(ROLE.LOGCONTROL));
@@ -566,7 +574,11 @@ public class RoleDefaultTest {
     assertTrue(ROLE.FULLADMIN.contains(ROLE.LIMIT));
     assertTrue(ROLE.FULLADMIN.contains(ROLE.SYSTEM));
     assertTrue(ROLE.FULLADMIN.contains(ROLE.LOGCONTROL));
+    assertTrue(ROLE.FULLADMIN.contains(ROLE.FULLADMIN));
+  }
 
+  @Test
+  public void testRoleValues() {
     assertEquals(0, ROLE.NOACCESS.getAsByte());
     assertEquals(1, ROLE.READONLY.getAsByte());
     assertEquals(2, ROLE.TRANSFER.getAsByte());

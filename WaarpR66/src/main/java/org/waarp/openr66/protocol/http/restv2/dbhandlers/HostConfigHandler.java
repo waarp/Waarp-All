@@ -103,7 +103,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
-      final Business business = businessDAO.select(SERVER_NAME);
+      final Business business = businessDAO.select(serverName());
       if (business != null) {
         final ObjectNode responseObject =
             HostConfigConverter.businessToNode(business);
@@ -141,7 +141,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
 
-      if (!businessDAO.exist(SERVER_NAME)) {
+      if (!businessDAO.exist(serverName())) {
         final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
         final Business config =
             HostConfigConverter.nodeToNewBusiness(requestObject);
@@ -152,7 +152,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
         final String responseText = JsonUtils.nodeToString(responseObject);
         responder.sendJson(CREATED, responseText);
       } else {
-        throw new RestErrorException(ALREADY_EXISTING(SERVER_NAME));
+        throw new RestErrorException(ALREADY_EXISTING(serverName()));
       }
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
@@ -179,12 +179,12 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
 
-      if (!businessDAO.exist(SERVER_NAME)) {
+      if (!businessDAO.exist(serverName())) {
         responder.sendStatus(NOT_FOUND);
       }
 
       final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
-      final Business oldConfig = businessDAO.select(SERVER_NAME);
+      final Business oldConfig = businessDAO.select(serverName());
       final Business newConfig =
           HostConfigConverter.nodeToUpdatedBusiness(requestObject, oldConfig);
       businessDAO.update(newConfig);
@@ -217,8 +217,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
-      if (businessDAO.exist(SERVER_NAME)) {
-        businessDAO.delete(businessDAO.select(SERVER_NAME));
+      if (businessDAO.exist(serverName())) {
+        businessDAO.delete(businessDAO.select(serverName()));
         responder.sendStatus(NO_CONTENT);
       } else {
         responder.sendStatus(NOT_FOUND);

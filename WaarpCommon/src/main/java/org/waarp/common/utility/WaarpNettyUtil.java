@@ -51,7 +51,7 @@ public final class WaarpNettyUtil {
                                   int timeout) {
     bootstrap.channel(NioSocketChannel.class);
     bootstrap.group(group);
-    bootstrap.option(ChannelOption.TCP_NODELAY, true);
+    bootstrap.option(ChannelOption.TCP_NODELAY, false);
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
     bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
@@ -73,7 +73,7 @@ public final class WaarpNettyUtil {
     bootstrap.group(group);
     // bootstrap.option(ChannelOption.TCP_NODELAY, true)
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
-    bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
+    bootstrap.childOption(ChannelOption.TCP_NODELAY, false);
     bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);

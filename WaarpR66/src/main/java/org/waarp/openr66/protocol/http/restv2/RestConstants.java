@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.http.restv2;
 
 import io.netty.util.AsciiString;
 import org.waarp.common.database.ConnectionFactory;
+import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -63,9 +64,29 @@ public final class RestConstants {
 
   /**
    * The name of this R66 server instance.
+   *
+   * @return The name of this R66 Server
    */
-  public static final String SERVER_NAME =
-      Configuration.configuration.getHostId();
+  public static final String serverName() {
+    return Configuration.configuration.getHostId();
+  }
+
+  /**
+   * The name of this R66 server instance according to SSL or not of remote one.
+   *
+   * @param requested
+   *
+   * @return the name of this R66 server according to SSL
+   */
+  public static final String serverName(String requested) {
+    String requester = serverName();
+    try {
+      requester = Configuration.configuration.getHostId(requested);
+    } catch (WaarpDatabaseException e) {
+      // Ignore !!
+    }
+    return requester;
+  }
 
   /**
    * The DAO_FACTORY to generate connections to the underlying database.
