@@ -81,7 +81,7 @@ public final class LimitsConverter {
    *     represent a Limit object
    */
   public static Limit nodeToNewLimit(ObjectNode object) {
-    final Limit emptyLimits = new Limit(SERVER_NAME, 0, 0, 0, 0, 0);
+    final Limit emptyLimits = new Limit(serverName(), 0, 0, 0, 0, 0);
     return nodeToUpdatedLimit(object, emptyLimits);
   }
 

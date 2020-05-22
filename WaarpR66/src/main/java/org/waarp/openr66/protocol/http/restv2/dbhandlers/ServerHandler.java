@@ -240,7 +240,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     HostDAO hostDAO = null;
     try {
       hostDAO = DAO_FACTORY.getHostDAO();
-      final Host host = hostDAO.select(SERVER_NAME);
+      final Host host = hostDAO.select(serverName());
       host.setActive(!host.isActive());
       hostDAO.update(host);
 
@@ -349,8 +349,8 @@ public class ServerHandler extends AbstractRestDbHandler {
     RestUtils.getLocale(request);
     final List<Filter> filters = new ArrayList<Filter>();
     final String filePath =
-        ARCH_PATH + File.separator + SERVER_NAME + "_export_" + DateTime.now() +
-        ".xml";
+        ARCH_PATH + File.separator + serverName() + "_export_" +
+        DateTime.now() + ".xml";
 
     boolean purge = false;
     boolean clean = false;
@@ -532,15 +532,15 @@ public class ServerHandler extends AbstractRestDbHandler {
     }
 
     final String hostsFilePath =
-        CONFIGS_PATH + File.separator + SERVER_NAME + "_hosts.xml";
+        CONFIGS_PATH + File.separator + serverName() + "_hosts.xml";
     final String rulesFilePath =
-        CONFIGS_PATH + File.separator + SERVER_NAME + "_rules.xml";
+        CONFIGS_PATH + File.separator + serverName() + "_rules.xml";
     final String businessFilePath =
-        CONFIGS_PATH + File.separator + SERVER_NAME + "_business.xml";
+        CONFIGS_PATH + File.separator + serverName() + "_business.xml";
     final String aliasFilePath =
-        CONFIGS_PATH + File.separator + SERVER_NAME + "_aliases.xml";
+        CONFIGS_PATH + File.separator + serverName() + "_aliases.xml";
     final String rolesFilePath =
-        CONFIGS_PATH + File.separator + SERVER_NAME + "_roles.xml";
+        CONFIGS_PATH + File.separator + serverName() + "_roles.xml";
 
     final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
 
@@ -565,7 +565,7 @@ public class ServerHandler extends AbstractRestDbHandler {
         responseObject.put("fileRule", rulesFilePath);
       }
       businessDAO = DAO_FACTORY.getBusinessDAO();
-      final Business businessEntry = businessDAO.select(SERVER_NAME);
+      final Business businessEntry = businessDAO.select(serverName());
       if (business) {
         final String businessXML = businessEntry.getBusiness();
 
@@ -744,7 +744,7 @@ public class ServerHandler extends AbstractRestDbHandler {
 
       businessDAO = DAO_FACTORY.getBusinessDAO();
       if (purgeBusiness) {
-        final Business business = businessDAO.select(SERVER_NAME);
+        final Business business = businessDAO.select(serverName());
 
         final String new_business = XmlUtils.loadXML(businessFile);
         business.setBusiness(new_business);
@@ -752,13 +752,13 @@ public class ServerHandler extends AbstractRestDbHandler {
         responseObject.put("purgedBusiness", TRUE.toString());
       }
       if (purgeAlias) {
-        final Business business = businessDAO.select(SERVER_NAME);
+        final Business business = businessDAO.select(serverName());
         business.setAliases(XmlUtils.loadXML(aliasFile));
         businessDAO.update(business);
         responseObject.put("purgedAlias", TRUE.toString());
       }
       if (purgeRole) {
-        final Business business = businessDAO.select(SERVER_NAME);
+        final Business business = businessDAO.select(serverName());
         business.setRoles(XmlUtils.loadXML(roleFile));
         businessDAO.update(business);
         responseObject.put("purgedRoles", TRUE.toString());

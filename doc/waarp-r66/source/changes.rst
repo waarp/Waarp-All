@@ -24,6 +24,8 @@ Correctifs
 - Corrige le Web Admin sur les écrans Listing et CancelRestart pour le tri selon
   le specialId et pour le boutton "Clear"
   (issue [`#35 <https://github.com/waarp/Waarp-All/issues/35>`__])
+- Corrige l'interface RESTV2 pour les accès avec droits non pris en compte
+  (issue [`#37 <https://github.com/waarp/Waarp-All/issues/37>`__])
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================

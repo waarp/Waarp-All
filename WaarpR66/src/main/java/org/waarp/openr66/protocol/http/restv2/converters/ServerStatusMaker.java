@@ -65,7 +65,7 @@ public final class ServerStatusMaker {
     mon.run(seconds, true);
     final ObjectNode server = new ObjectNode(JsonNodeFactory.instance);
 
-    server.put("serverName", SERVER_NAME);
+    server.put("serverName", serverName());
     server.put("date", DateTime.now().toString());
     server.put("lastRun", lastRun == null? null : lastRun.toString());
     server.put("fromDate", DateTime.now().minus(period).toString());

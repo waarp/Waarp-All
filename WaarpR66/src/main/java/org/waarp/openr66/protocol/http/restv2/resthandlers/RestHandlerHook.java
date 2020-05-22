@@ -28,14 +28,17 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
 import org.waarp.common.crypto.HmacSha256;
+import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.BaseXx;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.http.restv2.converters.HostConfigConverter;
@@ -408,7 +411,15 @@ public class RestHandlerHook implements HandlerHook {
    * @return {@code true} if the user is authorized to make the request,
    *     {@code false} otherwise.
    */
-  private boolean checkAuthorization(String user, Method method) {
+  protected boolean checkAuthorization(String user, Method method) {
+    try {
+      DbHostAuth hostAuth = new DbHostAuth(user);
+      if (hostAuth.isAdminrole()) {
+        return true;
+      }
+    } catch (WaarpDatabaseException e) {
+      // ignore and continue
+    }
 
     ROLE requiredRole = NOACCESS;
     if (method.isAnnotationPresent(RequiredRole.class)) {
@@ -427,10 +438,12 @@ public class RestHandlerHook implements HandlerHook {
 
     final List<ROLE> roles = HostConfigConverter.getRoles(user);
     if (roles != null) {
+      RoleDefault roleDefault = new RoleDefault();
       for (final ROLE roleType : roles) {
-        if (requiredRole.isContained(roleType.getAsByte())) {
-          return true;
-        }
+        roleDefault.addRole(roleType);
+      }
+      if (roleDefault.isContaining(requiredRole)) {
+        return true;
       }
     }
     return false;

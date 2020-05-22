@@ -43,7 +43,7 @@ public class R66ProxyResponsiveTest extends CommonUtil {
     try {
       // Step # | name | target | value | comment
       // 1 | open | / |  |
-      driver.get("http://127.0.0.1:10186/");
+      driver.get("http://127.0.0.1:11186/");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       reloadDriver();
@@ -63,7 +63,7 @@ public class R66ProxyResponsiveTest extends CommonUtil {
       // Test name: ProxyAdmin
       // Step # | name | target | value | comment
       // 1 | open | / |  |
-      driver.get("https://127.0.0.1:10187/");
+      driver.get("https://127.0.0.1:11187/");
       // 7 | click | name=name |  |
       driver.findElement(By.name("name")).click();
       // 8 | type | name=name | monadmin |
@@ -73,9 +73,9 @@ public class R66ProxyResponsiveTest extends CommonUtil {
       // 10 | sendKeys | name=passwd | ${KEY_ENTER} |
       driver.findElement(By.name("passwd")).sendKeys(Keys.ENTER);
       // 11 | click | linkText=SYSTEM |  |
-      driver.get("https://127.0.0.1:10187/System.html");
+      driver.get("https://127.0.0.1:11187/System.html");
       // 12 | click | linkText=START |  |
-      driver.get("https://127.0.0.1:10187/index.html");
+      driver.get("https://127.0.0.1:11187/index.html");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       reloadDriver();

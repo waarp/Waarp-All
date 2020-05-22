@@ -34,9 +34,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.StaleElementReferenceException;
+import org.waarp.common.crypto.HmacSha256;
 import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -45,7 +43,6 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.Version;
@@ -73,18 +70,7 @@ import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
-import org.waarp.openr66.protocol.http.rest.handler.DbConfigurationR66RestMethodHandler;
-import org.waarp.openr66.protocol.http.rest.handler.DbHostAuthR66RestMethodHandler;
-import org.waarp.openr66.protocol.http.rest.handler.DbHostConfigurationR66RestMethodHandler;
-import org.waarp.openr66.protocol.http.rest.handler.DbRuleR66RestMethodHandler;
-import org.waarp.openr66.protocol.http.rest.handler.DbTaskRunnerR66RestMethodHandler;
-import org.waarp.openr66.protocol.http.rest.handler.HttpRestBandwidthR66Handler;
-import org.waarp.openr66.protocol.http.rest.handler.HttpRestConfigR66Handler;
-import org.waarp.openr66.protocol.http.rest.handler.HttpRestControlR66Handler;
-import org.waarp.openr66.protocol.http.rest.handler.HttpRestInformationR66Handler;
-import org.waarp.openr66.protocol.http.rest.handler.HttpRestLogR66Handler;
-import org.waarp.openr66.protocol.http.rest.handler.HttpRestServerR66Handler;
-import org.waarp.openr66.protocol.http.rest.test.HttpTestRestR66Client;
+import org.waarp.openr66.protocol.http.restv2.resthandlers.RestHandlerHook;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
 import org.waarp.openr66.protocol.localhandler.packet.InformationPacket;
 import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
@@ -120,6 +106,7 @@ import org.waarp.thrift.r66.RequestMode;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.SocketAddress;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -1763,211 +1750,15 @@ public class NetworkClientTest extends TestAbstract {
     System.err.println("End Tasks");
   }
 
-  @Test
-  public void test97_Http() throws InterruptedException {
-    try {
-      setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
-      Configuration.configuration.setTimeoutCon(100);
-    } catch (Exception e) {
-      e.printStackTrace();
+  public static final class RestHandlerHookForTest extends RestHandlerHook {
+    public RestHandlerHookForTest(final boolean authenticated,
+                                  final HmacSha256 hmac, final long delay) {
+      super(authenticated, hmac, delay);
     }
-    try {
-      // Test name: TestMonitorR66
-      // Step # | name | target | value | comment
-      // 1 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 2 | click | linkText=Active Transfers |  |
-      driver.get("http://127.0.0.1:8066/active");
-      // 3 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 4 | click | linkText=In Error Transfers |  |
-      driver.get("http://127.0.0.1:8066/error");
-      //driver.findElement(By.linkText("In Error Transfers")).click();
-      // 5 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 6 | click | linkText=Finished Transfers |  |
-      driver.get("http://127.0.0.1:8066/done");
-      //driver.findElement(By.linkText("Finished Transfers")).click();
-      // 7 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 8 | click | linkText=All Transfers |  |
-      driver.get("http://127.0.0.1:8066/all");
-      //driver.findElement(By.linkText("All Transfers")).click();
-      // 9 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 10 | click | linkText=Statut of the server in XML format |  |
-      driver.get("http://127.0.0.1:8066/statusxml");
-      // 11 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 12 | click | linkText=Statut of the server in Json format |  |
-      driver.get("http://127.0.0.1:8066/statusjson");
-      // 13 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 16 | click | linkText=All Spooled daemons |  |
-      driver.get("http://127.0.0.1:8066/spooled");
-      // 17 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-      // 18 | click | linkText=All detailed Spooled daemons |  |
-      driver.get("http://127.0.0.1:8066/spooleddetail");
-      // 19 | open | / |  |
-      driver.get("http://127.0.0.1:8066/");
-    } catch (NoSuchElementException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } catch (StaleElementReferenceException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } finally {
-      reloadDriver();
-    }
-  }
 
-  @Test
-  public void test97_Https() throws InterruptedException {
-    try {
-      setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
-      Configuration.configuration.setTimeoutCon(100);
-    } catch (Exception e) {
-      e.printStackTrace();
+    public boolean testcheckAuthorization(String user, Method method) {
+      return checkAuthorization(user, method);
     }
-    try {
-      // Test name: TestAdminR66
-      // Step # | name | target | value | comment
-      // 1 | open | / |  |
-      driver.get("https://127.0.0.1:8067/");
-      // 2 | type | name=passwd | pwdhttp |
-      driver.findElement(By.name("passwd")).sendKeys("pwdhttp");
-      // 3 | type | name=name | monadmin |
-      driver.findElement(By.name("name")).sendKeys("monadmin");
-      // 4 | click | name=Logon |  |
-      driver.findElement(By.name("Logon")).click();
-      // 5 | click | linkText=TRANSFERS |  |
-      driver.findElement(By.linkText("TRANSFERS")).click();
-      // 6 | click | linkText=LISTING |  |
-      driver.findElement(By.linkText("LISTING")).click();
-      // 7 | click | name=ACTION |  |
-      driver.findElement(By.name("ACTION")).click();
-      // 8 | click | linkText=CANCEL-RESTART |  |
-      driver.findElement(By.linkText("CANCEL-RESTART")).click();
-      // 9 | click | name=ACTION |  |
-      driver.findElement(By.name("ACTION")).click();
-      // 10 | click | linkText=EXPORT |  |
-      driver.findElement(By.linkText("EXPORT")).click();
-      // 11 | click | name=ACTION |  |
-      driver.findElement(By.name("ACTION")).click();
-      // 12 | click | linkText=SPOOLED DIRECTORY |  |
-      driver.findElement(By.linkText("SPOOLED DIRECTORY")).click();
-      // 13 | click | linkText=SpooledDirectory daemons information |  |
-      driver.findElement(By.linkText("SpooledDirectory daemons information"))
-            .click();
-      // 14 | click | linkText=HOSTS |  |
-      driver.findElement(By.linkText("HOSTS")).click();
-      // 15 | click | css=input:nth-child(4) |  |
-      driver.findElement(By.cssSelector("input:nth-child(4)")).click();
-      // 16 | click | linkText=RULES |  |
-      driver.findElement(By.linkText("RULES")).click();
-      // 17 | click | css=p:nth-child(3) > input:nth-child(4) |  |
-      driver.findElement(By.cssSelector("p:nth-child(3) > input:nth-child(4)"))
-            .click();
-      // 18 | click | linkText=SYSTEM |  |
-      driver.findElement(By.linkText("SYSTEM")).click();
-      // 19 | click | linkText=START |  |
-      driver.findElement(By.linkText("START")).click();
-      // 20 | click | linkText=LOGOUT |  |
-      driver.findElement(By.linkText("LOGOUT")).click();
-    } catch (NoSuchElementException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } catch (StaleElementReferenceException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } finally {
-      reloadDriver();
-    }
-  }
-
-  @Test
-  public void test97_RestR66V1V2Simple() throws Exception {
-    try {
-      // Test Rest V1
-      // Step # | name | target | value | comment
-      // 1 | open | V1 |  |
-      final String baseUri = "http://localhost:8088/";
-      driver.get(baseUri + DbTaskRunnerR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbConfigurationR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbHostAuthR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbHostConfigurationR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbRuleR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + HttpRestBandwidthR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestConfigR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestControlR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestInformationR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestLogR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestServerR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-
-      // 2 | type | V2 [  |
-      String v2BaseUri = baseUri + "v2/";
-      driver.get(v2BaseUri + "transfers");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "hostconfig");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("business"));
-      assertTrue(driver.getPageSource().contains(Version.fullIdentifier()));
-      assertTrue(driver.getPageSource()
-                       .contains(org.waarp.openr66.protocol.utils.Version.ID));
-      driver.get(v2BaseUri + "hosts");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "limits");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "rules");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "server/status");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("serverName"));
-    } catch (NoSuchElementException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } catch (StaleElementReferenceException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } finally {
-      reloadDriver();
-    }
-  }
-
-  //@Ignore("Issue on checkBaseAuthent")
-  @Test
-  public void test98_RestR66() throws Exception {
-    HttpTestRestR66Client.keydesfilename =
-        new File(dirResources, "certs/test-key.des").getAbsolutePath();
-    logger.info("Key filename: {}", HttpTestRestR66Client.keydesfilename);
-    HttpTestRestR66Client.main(new String[] { "1" });
   }
 
   @Test

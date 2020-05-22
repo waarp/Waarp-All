@@ -104,35 +104,48 @@ public class RoleDefault {
       return brole;
     }
 
+    private static final ROLE[] READONLY_A = new ROLE[] { READONLY };
+    private static final ROLE[] TRANSFER_A = new ROLE[] { TRANSFER };
+    private static final ROLE[] RULE_A = new ROLE[] { RULE };
+    private static final ROLE[] HOST_A = new ROLE[] { HOST };
+    private static final ROLE[] LIMIT_A = new ROLE[] { LIMIT };
+    private static final ROLE[] SYSTEM_A = new ROLE[] { SYSTEM };
+    private static final ROLE[] LOGCONTROL_A = new ROLE[] { LOGCONTROL };
+    private static final ROLE[] UNUSED_A = new ROLE[] { UNUSED };
+    private static final ROLE[] NOACCESS_A = new ROLE[] { NOACCESS };
+    private static final ROLE[] PARTNER_A = new ROLE[] { READONLY, TRANSFER };
+    private static final ROLE[] CONFIGADMIN_A =
+        new ROLE[] { READONLY, TRANSFER, RULE, HOST };
+    private static final ROLE[] FULLADMIN_A =
+        new ROLE[] { READONLY, TRANSFER, RULE, LIMIT, SYSTEM, LOGCONTROL };
+
     public ROLE[] getComposingRoles() {
       switch (brole) {
         case 1:
-          return new ROLE[] { READONLY };
+          return READONLY_A;
         case 2:
-          return new ROLE[] { TRANSFER };
+          return TRANSFER_A;
         case 3:
-          return new ROLE[] { READONLY, TRANSFER };
+          return PARTNER_A;
         case 4:
-          return new ROLE[] { RULE };
+          return RULE_A;
         case 8:
-          return new ROLE[] { HOST };
+          return HOST_A;
         case 15:
-          return new ROLE[] { READONLY, TRANSFER, RULE, HOST };
+          return CONFIGADMIN_A;
         case 16:
-          return new ROLE[] { LIMIT };
+          return LIMIT_A;
         case 32:
-          return new ROLE[] { SYSTEM };
+          return SYSTEM_A;
         case 64:
-          return new ROLE[] { LOGCONTROL };
+          return LOGCONTROL_A;
         case 127:
-          return new ROLE[] {
-              READONLY, TRANSFER, RULE, LIMIT, SYSTEM, LOGCONTROL
-          };
+          return FULLADMIN_A;
         case -128:
-          return new ROLE[] { UNUSED };
+          return UNUSED_A;
         case 0:
         default:
-          return new ROLE[] { NOACCESS };
+          return NOACCESS_A;
       }
     }
 

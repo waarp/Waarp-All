@@ -113,11 +113,12 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO.exist(transID, SERVER_NAME, requested, SERVER_NAME)) {
+      if (!transferDAO
+          .exist(transID, serverName(requested), requested, serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer =
-            transferDAO.select(transID, SERVER_NAME, requested, SERVER_NAME);
+        final Transfer transfer = transferDAO
+            .select(transID, serverName(requested), requested, serverName());
         final ObjectNode response = TransferConverter.transferToNode(transfer);
         final String responseText = JsonUtils.nodeToString(response);
         responder.sendJson(OK, responseText);
@@ -168,11 +169,12 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO.exist(transID, SERVER_NAME, requested, SERVER_NAME)) {
+      if (!transferDAO
+          .exist(transID, serverName(requested), requested, serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer =
-            transferDAO.select(transID, SERVER_NAME, requested, SERVER_NAME);
+        final Transfer transfer = transferDAO
+            .select(transID, serverName(requested), requested, serverName());
         final ServerActions actions = new ServerActions();
         actions.newSession();
         actions.stopTransfer(transfer);
@@ -230,11 +232,12 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO.exist(transID, SERVER_NAME, requested, SERVER_NAME)) {
+      if (!transferDAO
+          .exist(transID, serverName(requested), requested, serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer =
-            transferDAO.select(transID, SERVER_NAME, requested, SERVER_NAME);
+        final Transfer transfer = transferDAO
+            .select(transID, serverName(requested), requested, serverName());
         final ServerActions actions = new ServerActions();
         actions.newSession();
         actions.stopTransfer(transfer);
@@ -290,11 +293,12 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO.exist(transID, SERVER_NAME, requested, SERVER_NAME)) {
+      if (!transferDAO
+          .exist(transID, serverName(requested), requested, serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer =
-            transferDAO.select(transID, SERVER_NAME, requested, SERVER_NAME);
+        final Transfer transfer = transferDAO
+            .select(transID, serverName(requested), requested, serverName());
         final ServerActions actions = new ServerActions();
         actions.newSession();
         actions.cancelTransfer(transfer);

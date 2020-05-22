@@ -23,7 +23,9 @@ package org.waarp.openr66.protocol.junit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -37,6 +39,7 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminResponsiveTest extends TestAbstract {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AdminResponsiveTest.class);
@@ -47,7 +50,7 @@ public class AdminResponsiveTest extends TestAbstract {
   private static final String LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML =
       "Linux/config/config-serverInitA.xml";
 
-  private static final int WAIT = 400;
+  private static final int WAIT = 300;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -85,7 +88,141 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testHttpsBusiness() throws InterruptedException {
+  public void testWebHttpSimpleAdmin() throws InterruptedException {
+    try {
+      // Test name: TestResponsiveMonitor
+      // Step # | name | target | value | comment
+      // 1 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 2 | click | linkText=Active Transfers |  |
+      driver.get("http://127.0.0.1:8866/active");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/active"));
+      // 4 | click | linkText=In Error Transfers |  |
+      driver.get("http://127.0.0.1:8866/error");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/error"));
+      // 5 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 6 | click | linkText=Finished Transfers |  |
+      driver.get("http://127.0.0.1:8866/done");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/done"));
+      // 7 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 8 | click | linkText=All Transfers |  |
+      driver.get("http://127.0.0.1:8866/all");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/all"));
+      // 9 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 10 | click | css=li:nth-child(5) > a |  |
+      driver.get("http://127.0.0.1:8866/statusxml");
+      assertTrue(
+          driver.getCurrentUrl().equals("http://127.0.0.1:8866/statusxml"));
+      // 11 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 12 | click | css=li:nth-child(6) > a |  |
+      driver.get("http://127.0.0.1:8866/statusjson");
+      assertTrue(
+          driver.getCurrentUrl().equals("http://127.0.0.1:8866/statusjson"));
+      // 13 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 18 | click | linkText=All Spooled daemons |  |
+      driver.get("http://127.0.0.1:8866/spooled");
+      assertTrue(
+          driver.getCurrentUrl().equals("http://127.0.0.1:8866/spooled"));
+      // 19 | open | / |  |
+      driver.get("http://127.0.0.1:8866/");
+      assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
+      // 20 | click | css=li:nth-child(10) > a |  |
+      driver.get("http://127.0.0.1:8866/spooleddetail");
+      assertTrue(
+          driver.getCurrentUrl().equals("http://127.0.0.1:8866/spooleddetail"));
+    } catch (NoSuchElementException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } catch (StaleElementReferenceException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } finally {
+    }
+  }
+
+
+  @Test
+  public void testWebHttpsBasic() throws InterruptedException {
+    try {
+      // Test name: TestResponsiveAdmin
+      // Step # | name | target | value | comment
+      // 1 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      // 2 | type | id=passwd | pwdhttp |
+      driver.findElement(By.id("passwd")).sendKeys("pwdhttp");
+      // 3 | type | id=name | monadmin |
+      driver.findElement(By.id("name")).sendKeys("monadmin");
+      // 4 | click | id=submit |  |
+      driver.findElement(By.id("submit")).click();
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/index.html"));
+      // 5 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      assertTrue(driver.getCurrentUrl().equals("https://127.0.0.1:8867/"));
+      // 6 | click | linkText=HOSTS |  |
+      driver.get("https://127.0.0.1:8867/Hosts.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Hosts.html"));
+      // 7 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      assertTrue(driver.getCurrentUrl().equals("https://127.0.0.1:8867/"));
+      // 8 | click | linkText=RULES |  |
+      driver.get("https://127.0.0.1:8867/Rules.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Rules.html"));
+      // 9 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      assertTrue(driver.getCurrentUrl().equals("https://127.0.0.1:8867/"));
+      // 10 | click | linkText=SYSTEM |  |
+      driver.get("https://127.0.0.1:8867/System.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/System.html"));
+      // 11 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      assertTrue(driver.getCurrentUrl().equals("https://127.0.0.1:8867/"));
+      // 24 | click | linkText=START |  |
+      driver.get("https://127.0.0.1:8867/index.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/index.html"));
+      driver.get("https://127.0.0.1:8867/CancelRestart.html");
+      assertTrue(driver.getCurrentUrl()
+                       .equals("https://127.0.0.1:8867/CancelRestart.html"));
+      driver.get("https://127.0.0.1:8867/Export.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Export.html"));
+      driver.get("https://127.0.0.1:8867/Listing.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Listing.html"));
+      driver.get("https://127.0.0.1:8867/Spooled.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Spooled.html"));
+    } catch (NoSuchElementException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } catch (StaleElementReferenceException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } finally {
+      // 29 | click | linkText=LOGOUT |  |
+      driver.get("https://127.0.0.1:8867/Logout.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Logout.html"));
+    }
+  }
+
+  @Test
+  public void testWebBusiness() throws InterruptedException {
     try {
       // Test name: HostConfig
       // Step # | name | target | value
@@ -211,6 +348,7 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.findElement(By.cssSelector("#bh_myModal .modal-body")).click();
       // 37 | click | css=#bh_myModal .btn-success |
       driver.findElement(By.cssSelector("#bh_myModal .btn-success")).click();
+      Thread.sleep(WAIT);
       // 38 | click | css=.btn-success:nth-child(1) |
       driver.findElement(By.cssSelector(".btn-success:nth-child(1)")).click();
       Thread.sleep(WAIT);
@@ -238,7 +376,7 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testSystemResponsive() throws InterruptedException {
+  public void testWebSystem() throws InterruptedException {
     try {
       // Test name: SystemResponsive
       // Step # | name | target | value
@@ -395,7 +533,7 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testCreateUser() throws InterruptedException {
+  public void testWebCreateUser() throws InterruptedException {
     // Test name: TestCreateUser
     try {
       // Step # | name | target | value
@@ -543,6 +681,67 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.get("https://127.0.0.1:8867/Hosts.html");
       Thread.sleep(WAIT);
       page = driver.getPageSource();
+      assertFalse(page.contains("Your profile does not allow this function."));
+      // 59 | click | linkText=RULES |
+      driver.get("https://127.0.0.1:8867/Rules.html");
+      Thread.sleep(WAIT);
+      page = driver.getPageSource();
+      assertFalse(page.contains("Your profile does not allow this function."));
+      Thread.sleep(WAIT);
+    } finally {
+      // Disconnection
+      driver.get("https://127.0.0.1:8867/Logout.html");
+    }
+  }
+
+  @Test
+  public void testWebCreateUserAdmin() throws InterruptedException {
+    // Test name: TestCreateUser
+    try {
+      // Step # | name | target | value
+      // 1 | open | / |
+      driver.get("https://127.0.0.1:8867/");
+      Thread.sleep(WAIT);
+      // 4 | type | id=passwd | pwdhttp
+      driver.findElement(By.id("passwd")).sendKeys("pwdhttp");
+      // 5 | type | id=name | monadmin
+      driver.findElement(By.id("name")).sendKeys("monadmin");
+      // 6 | click | id=submit |
+      driver.findElement(By.id("submit")).click();
+      Thread.sleep(WAIT);
+      // 7 | click | linkText=HOSTS |
+      driver.get("https://127.0.0.1:8867/Hosts.html");
+      Thread.sleep(WAIT);
+      // 9 | type | id=HOSTID | testb
+      driver.findElement(By.id("HOSTID")).sendKeys("testb2");
+      // 10 | type | id=ADDRESS | 127.0.0.1
+      driver.findElement(By.id("ADDRESS")).sendKeys("127.0.0.1");
+      // 12 | type | id=PORT | -1
+      driver.findElement(By.id("PORT")).sendKeys("-1");
+      // 13 | click | id=ISACTIVE |
+      driver.findElement(By.id("ISACTIVE")).click();
+      // 14 | click | id=ISCLIENT |
+      driver.findElement(By.id("ISCLIENT")).click();
+      driver.findElement(By.id("ADMINROLE")).click();
+      // 16 | type | id=HOSTKEY | testb
+      driver.findElement(By.id("HOSTKEY")).sendKeys("testb2");
+      // 17 | click | id=create-button |
+      driver.findElement(By.id("create-button")).click();
+      Thread.sleep(WAIT);
+      // 18 | click | linkText=LOGOUT |
+      driver.get("https://127.0.0.1:8867/Logout.html");
+      Thread.sleep(WAIT);
+      // 55 | type | id=passwd | testb
+      driver.findElement(By.id("passwd")).sendKeys("testb2");
+      // 56 | type | id=name | testb
+      driver.findElement(By.id("name")).sendKeys("testb2");
+      // 57 | click | id=submit |
+      driver.findElement(By.id("submit")).click();
+      Thread.sleep(WAIT);
+      // 58 | click | linkText=HOSTS |
+      driver.get("https://127.0.0.1:8867/Hosts.html");
+      Thread.sleep(WAIT);
+      String page = driver.getPageSource();
       assertFalse(page.contains("Your profile does not allow this function."));
       // 59 | click | linkText=RULES |
       driver.get("https://127.0.0.1:8867/Rules.html");

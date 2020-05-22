@@ -73,18 +73,22 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
         ((HttpRestR66Handler) handler).getServerHandler();
     // now action according to body
     final JsonPacket json = (JsonPacket) body;
-    if (json == null) {
-      result.setDetail("not enough information");
-      setError(handler, result, HttpResponseStatus.BAD_REQUEST);
+    if (json != null && !(json instanceof BandwidthJsonPacket)) {
+      logger.info("Validation is ignored: " + json);
+      result.setDetail("Unknown command");
+      setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);
       return;
     }
     result.getAnswer()
           .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Bandwidth.name());
     try {
-      if (json instanceof BandwidthJsonPacket) {//
+      final long[] lresult;
+      final boolean setter;
+      final BandwidthJsonPacket node;
+      if (json != null && json instanceof BandwidthJsonPacket) {//
         // setter, writeglobal, readglobal, writesession, readsession
-        final BandwidthJsonPacket node = (BandwidthJsonPacket) json;
-        final boolean setter = node.isSetter();
+        node = (BandwidthJsonPacket) json;
+        setter = node.isSetter();
         if (setter && arguments.getMethod() != METHOD.PUT) {
           // wrong
           result.setDetail("Setter should be requested with a PUT method");
@@ -96,26 +100,31 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
           setError(handler, result, HttpResponseStatus.CONFLICT);
           return;
         }
-        if (setter) {
-          result.setCommand(ACTIONS_TYPE.SetBandwidth.name());
-        } else {
-          result.setCommand(ACTIONS_TYPE.GetBandwidth.name());
-        }
-        // request of current values or set new values
-        final long[] lresult = serverHandler
-            .bandwidth(setter, node.getWriteglobal(), node.getReadglobal(),
-                       node.getWritesession(), node.getReadsession());
-        // Now answer
-        node.setWriteglobal(lresult[0]);
-        node.setReadglobal(lresult[1]);
-        node.setWritesession(lresult[2]);
-        node.setReadsession(lresult[3]);
-        setOk(handler, result, json, HttpResponseStatus.OK);
       } else {
-        logger.info("Validation is ignored: " + json);
-        result.setDetail("Unknown command");
-        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);
+        if (json == null && arguments.getMethod() != METHOD.GET) {
+          // wrong
+          result.setDetail("Setter should be requested with a JSON argument");
+          setError(handler, result, HttpResponseStatus.CONFLICT);
+          return;
+        }
+        setter = false;
+        node = new BandwidthJsonPacket();
       }
+      if (setter) {
+        result.setCommand(ACTIONS_TYPE.SetBandwidth.name());
+      } else {
+        result.setCommand(ACTIONS_TYPE.GetBandwidth.name());
+      }
+      // request of current values or set new values
+      lresult = serverHandler
+          .bandwidth(setter, node.getWriteglobal(), node.getReadglobal(),
+                     node.getWritesession(), node.getReadsession());
+      // Now answer
+      node.setWriteglobal(lresult[0]);
+      node.setReadglobal(lresult[1]);
+      node.setWritesession(lresult[2]);
+      node.setReadsession(lresult[3]);
+      setOk(handler, result, node, HttpResponseStatus.OK);
     } catch (final OpenR66ProtocolNotAuthenticatedException e) {
       throw new HttpInvalidAuthenticationException(e);
     }

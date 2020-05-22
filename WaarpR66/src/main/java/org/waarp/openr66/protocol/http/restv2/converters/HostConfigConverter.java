@@ -100,7 +100,7 @@ public final class HostConfigConverter {
    */
   public static Business nodeToNewBusiness(ObjectNode object) {
     final Business emptyBusiness =
-        new Business(SERVER_NAME, "", "<roles></roles>", "<aliases></aliases>",
+        new Business(serverName(), "", "<roles></roles>", "<aliases></aliases>",
                      "<root><version></version></root>");
 
     return nodeToUpdatedBusiness(object, emptyBusiness);
@@ -205,7 +205,7 @@ public final class HostConfigConverter {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
-      final Business config = businessDAO.select(SERVER_NAME);
+      final Business config = businessDAO.select(serverName());
       array = getRolesArray(config);
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
