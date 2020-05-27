@@ -116,7 +116,7 @@ public final class RestConstants {
    * Name of the HTTP header used to store the signature key of a request.
    */
   public static final AsciiString AUTH_SIGNATURE =
-      AsciiString.cached("X-Auth-Key");
+      AsciiString.cached("X-Auth-Signature");
 
   // ########################## ENTRY POINTS URI ##############################
 
