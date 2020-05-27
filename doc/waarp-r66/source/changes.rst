@@ -30,6 +30,8 @@ Correctifs
 - Corrige l'intégration de SonarQube avec Maven
 - Corrige l'exemple de la documentation sur l'authentification HMAC (pull
   request [`#38 <https://github.com/waarp/Waarp-All/pull/38>`__])
+- Correction de la signature des requêtes dans l'API REST v2 (pull
+  request [`#42 <https://github.com/waarp/Waarp-All/pull/42>`__])
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================
