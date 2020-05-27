@@ -27,6 +27,7 @@ Correctifs
 - Corrige l'interface RESTV2 pour les accès avec droits non pris en compte
   (issue [`#37 <https://github.com/waarp/Waarp-All/issues/37>`__])
 - Nettoyage du code
+- Corrige l'intégration de SonarQube avec Maven
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================
