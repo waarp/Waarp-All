@@ -200,19 +200,13 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <sonar-maven-plugin.version>3.7.0.1746</sonar-maven-plugin.version>
-    <sonar.sources>src/main/java</sonar.sources>
     <sonar.tests>src/test/java</sonar.tests>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.language>java</sonar.language>
     <sonar.skipDesign>true</sonar.skipDesign>
-    <jacoco.outputDir>${root.directory}/target/jacoco</jacoco.outputDir>
-    <jacoco.out.ut.file>jacoco.exec</jacoco.out.ut.file>
-    <!-- Tells Sonar where the Jacoco coverage result file is located for Unit Tests -->
-    <sonar.jacoco.reportPaths>${jacoco.outputDir}/${jacoco.out.ut.file}</sonar.jacoco.reportPaths>
-    <!-- Jacoco output file for ITs -->
-    <jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
-    <!-- Tells Sonar where the Jacoco coverage result file is located for Integration Tests -->
-    <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
+    <sonar.sources>src/main/java</sonar.sources>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.coverage.jacoco.xmlReportPaths>${root.directory}/WaarpHttp/target/site/jacoco/jacoco.xml,${root.directory}/WaarpHttp/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpDigest/target/site/jacoco/jacoco.xml,${root.directory}/WaarpDigest/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpExec/target/site/jacoco/jacoco.xml,${root.directory}/WaarpExec/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpFtp/core/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpFtp/filesystem/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpFtp/simpleimpl/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpFtp/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpFtpClient/target/site/jacoco/jacoco.xml,${root.directory}/WaarpFtpClient/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpGatewayFtp/target/site/jacoco/jacoco.xml,${root.directory}/WaarpGatewayFtp/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpGatewayKernel/target/site/jacoco/jacoco.xml,${root.directory}/WaarpGatewayKernel/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpPassword/target/site/jacoco/jacoco.xml,${root.directory}/WaarpPassword/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpProxyR66/target/site/jacoco/jacoco.xml,${root.directory}/WaarpProxyR66/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpR66/target/site/jacoco/jacoco.xml,${root.directory}/WaarpR66/target/site/jacoco-it/jacoco.xml,${root.directory}/WaarpR66/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpSnmp/target/site/jacoco/jacoco.xml,${root.directory}/WaarpSnmp/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpThrift/target/site/jacoco/jacoco.xml,${root.directory}/WaarpThrift/target/site/jacoco-aggregate/jacoco.xml,${root.directory}/WaarpCommon/target/site/jacoco/jacoco.xml,${root.directory}/WaarpCommon/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <sonar.exclusions>
       file:**/test/java/**/*,
       file:**/generated-sources/**/*,
@@ -223,7 +217,6 @@
       **/src/test/**/*
     </sonar.test.exclusions>
     <sonar.java.binaries>${root.directory}/WaarpAdministrator/target/classes,${root.directory}/WaarpDigest/target/classes,${root.directory}/WaarpCommon/target/classes,${root.directory}/WaarpExec/target/classes,${root.directory}/WaarpSnmp/target/classes,${root.directory}/WaarpThrift/target/classes,${root.directory}/WaarpPassword/target/classes,${root.directory}/WaarpFtp/target/classes,${root.directory}/WaarpFtp/core/target/classes,${root.directory}/WaarpFtp/filesystem/target/classes,${root.directory}/WaarpFtp/simpleimpl/target/classes,${root.directory}/WaarpFtpClient/target/classes,${root.directory}/WaarpGatewayKernel/target/classes,${root.directory}/WaarpR66/target/classes,${root.directory}/WaarpGatewayFtp/target/classes,${root.directory}/WaarpProxyR66/target/classes,${root.directory}/WaarpR66Gui/target/classes,${root.directory}/WaarpXmlEditor/target/classes,${root.directory}/WaarpAdministrator/target/classes,${root.directory}/WaarpHttp/target/classes</sonar.java.binaries>
-
     <sonar.surefire.reportsPath>target/surefire-reports</sonar.surefire.reportsPath>
 
     <!-- Others -->
@@ -618,24 +611,13 @@
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacoco-maven-plugin.version}</version>
-          <configuration>
-            <append>true</append>
-            <excludes>
-              <exclude>com.gargoylesoftware.*</exclude>
-            </excludes>
-          </configuration>
           <executions>
             <execution>
-              <id>pre-unit-test</id>
+              <id>prepare-agent</id>
+              <phase>initialize</phase>
               <goals>
                 <goal>prepare-agent</goal>
               </goals>
-              <configuration>
-                <append>true</append>
-                <destFile>${sonar.jacoco.reportPaths}</destFile>
-                <output>file</output>
-                <!--<propertyName>surefire.argLine</propertyName>-->
-              </configuration>
             </execution>
             <execution>
               <id>post-unit-test</id>
@@ -649,12 +631,6 @@
               <goals>
                 <goal>prepare-agent-integration</goal>
               </goals>
-              <configuration>
-                <append>true</append>
-                <destFile>${sonar.jacoco.itReportPath}</destFile>
-                <output>file</output>
-                <!--<propertyName>failsafe.argLine</propertyName>-->
-              </configuration>
             </execution>
             <execution>
               <id>post-integration-test</id>
@@ -663,49 +639,11 @@
               </goals>
             </execution>
             <execution>
-              <id>merge-results</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>merge</goal>
-              </goals>
-              <configuration>
-                <fileSets>
-                  <fileSet>
-                    <directory>${jacoco.outputDir}</directory>
-                    <includes>
-                      <include>*.exec</include>
-                    </includes>
-                    <excludes>
-                      <exclude>aggregate.exec</exclude>
-                    </excludes>
-                  </fileSet>
-                </fileSets>
-                <destFile>${jacoco.outputDir}/aggregate.exec</destFile>
-              </configuration>
-            </execution>
-            <execution>
               <id>report-aggregate</id>
-              <phase>prepare-package</phase>
               <goals>
                 <goal>report-aggregate</goal>
               </goals>
-              <configuration>
-                <dataFileIncludes>
-                  <dataFileInclude>${jacoco.outputDir}/aggregate.exec</dataFileInclude>
-                </dataFileIncludes>
-                <outputDirectory>${jacoco.outputDir}/jacoco-aggregate</outputDirectory>
-              </configuration>
-            </execution>
-            <execution>
-              <id>post-merge-report</id>
               <phase>verify</phase>
-              <goals>
-                <goal>report</goal>
-              </goals>
-              <configuration>
-                <dataFile>${jacoco.outputDir}/aggregate.exec</dataFile>
-                <outputDirectory>${jacoco.outputDir}/jacoco-aggregate</outputDirectory>
-              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -829,7 +767,6 @@
         <version>${maven.dependencycheck.version}</version>
         <configuration>
           <failOnError>false</failOnError>
-          <!-- <skip>true</skip> -->
           <skipProvidedScope>true</skipProvidedScope>
           <skipRuntimeScope>true</skipRuntimeScope>
           <skipTestScope>true</skipTestScope>
@@ -1220,7 +1157,6 @@
           <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
           <minimumTokens>100</minimumTokens>
           <failOnViolation>false</failOnViolation>
-          <!-- <skip>${module.project}</skip>-->
           <aggregate>true</aggregate>
         </configuration>
         <dependencies>
@@ -1269,65 +1205,6 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>coverage</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>prepare-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>merge-results</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>merge</goal>
-                </goals>
-                <configuration>
-                  <fileSets>
-                    <fileSet>
-                      <directory>${jacoco.outputDir}</directory>
-                      <includes>
-                        <include>*.exec</include>
-                      </includes>
-                      <excludes>
-                        <exclude>aggregate.exec</exclude>
-                      </excludes>
-                    </fileSet>
-                  </fileSets>
-                  <destFile>${jacoco.outputDir}/aggregate.exec</destFile>
-                </configuration>
-              </execution>
-              <execution>
-                <id>report</id>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>report-aggregate</id>
-                <goals>
-                  <goal>report-aggregate</goal>
-                </goals>
-                <phase>verify</phase>
-                <configuration>
-                  <dataFileIncludes>
-                    <dataFileInclude>${jacoco.outputDir}/aggregate.exec</dataFileInclude>
-                  </dataFileIncludes>
-                  <outputDirectory>${jacoco.outputDir}/jacoco-aggregate</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 
   <reporting>
@@ -1339,14 +1216,12 @@
         <version>${maven.dependencycheck.version}</version>
         <configuration>
           <failOnError>false</failOnError>
-          <!-- <skip>true</skip> -->
           <skipProvidedScope>true</skipProvidedScope>
           <skipRuntimeScope>true</skipRuntimeScope>
           <skipTestScope>true</skipTestScope>
           <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
           <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
           <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-          <!-- <skip>${module.project}</skip>-->
         </configuration>
         <reportSets>
           <reportSet>
@@ -1388,7 +1263,6 @@
           <skipEmptyReport>true</skipEmptyReport>
           <dependencyDetailsEnabled>true</dependencyDetailsEnabled>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-          <!-- <skip>${module.project}</skip> -->
         </configuration>
         <reportSets>
           <reportSet>
@@ -1410,29 +1284,6 @@
           </reportSet>
         </reportSets>
       </plugin>
-      <!-- To keep until under Github
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-changes-plugin</artifactId>
-        <version>${maven-changes-plugin.version}</version>
-        <configuration>
-          <githubAPIServerId>github</githubAPIServerId>
-          <githubAPIScheme>https</githubAPIScheme>
-          <githubAPIPort>443</githubAPIPort>
-          <includeOpenIssues>false</includeOpenIssues>
-          <onlyMilestoneIssues>false</onlyMilestoneIssues>
-        </configuration>
-        <reportSets>
-          <reportSet>
-            <id>aggregate</id>
-            <reports>
-              <report>changes-report</report>
-              <report>github-report</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changelog-plugin</artifactId>
@@ -1524,7 +1375,6 @@
           <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
           <minimumTokens>100</minimumTokens>
           <failOnViolation>false</failOnViolation>
-          <!-- <skip>${module.project}</skip>-->
           <aggregate>true</aggregate>
         </configuration>
       </plugin>
@@ -1727,6 +1577,13 @@
                 </group>
 
                 <group>
+                  <title>Waarp Http package</title>
+                  <packages>
+                    org.waarp.http.protocol*
+                  </packages>
+                </group>
+
+                <group>
                   <title>Waarp R66 Client Gui package</title>
                   <packages>org.waarp.openr66.r66gui*:com.swtdesigner*
                   </packages>
@@ -1745,13 +1602,6 @@
                   <title>Waarp Administrator Gui package</title>
                   <packages>
                     org.waarp.administrator*:org.waarp.administrator.guipwd*
-                  </packages>
-                </group>
-
-                <group>
-                  <title>Waarp Http package</title>
-                  <packages>
-                    org.waarp.http.protocol*
                   </packages>
                 </group>
 
@@ -1928,6 +1778,13 @@
                 </group>
 
                 <group>
+                  <title>Waarp Http package</title>
+                  <packages>
+                    org.waarp.http.protocol*
+                  </packages>
+                </group>
+
+                <group>
                   <title>Waarp R66 Client Gui package</title>
                   <packages>org.waarp.openr66.r66gui*:com.swtdesigner*
                   </packages>
@@ -1946,13 +1803,6 @@
                   <title>Waarp Administrator Gui package</title>
                   <packages>
                     org.waarp.administrator*:org.waarp.administrator.guipwd*
-                  </packages>
-                </group>
-
-                <group>
-                  <title>Waarp Http package</title>
-                  <packages>
-                    org.waarp.http.protocol*
                   </packages>
                 </group>
 
@@ -2004,9 +1854,6 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <!-- <skip>${module.project}</skip>-->
-        </configuration>
         <reportSets>
           <reportSet>
             <reports>
