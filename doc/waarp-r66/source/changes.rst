@@ -32,6 +32,8 @@ Correctifs
   request [`#38 <https://github.com/waarp/Waarp-All/pull/38>`__])
 - Correction de la signature des requêtes dans l'API REST v2 (pull
   request [`#42 <https://github.com/waarp/Waarp-All/pull/42>`__])
+- Correction de l'authentification HMAC de l'API REST v2 (pull
+  request [`#43 <https://github.com/waarp/Waarp-All/pull/43>`__])
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================

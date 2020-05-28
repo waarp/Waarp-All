@@ -389,6 +389,20 @@ public abstract class KeyObject {
   }
 
   /**
+   * Decrypt a String as HEX format representing a crypted String and
+   * returns the uncrypted String
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted String
+   *
+   * @throws Exception
+   */
+  public String decryptHexInString(byte[] ciphertext) throws Exception {
+    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);
+  }
+
+  /**
    * Decode from a file containing a HEX crypted string
    *
    * @param file
