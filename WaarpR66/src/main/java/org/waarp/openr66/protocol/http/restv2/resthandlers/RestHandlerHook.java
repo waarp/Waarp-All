@@ -286,7 +286,7 @@ public class RestHandlerHook implements HandlerHook {
    * @throws NotAllowedException if the user making the request does
    *     not exist
    */
-  private String checkCredentials(HttpRequest request) {
+  protected String checkCredentials(HttpRequest request) {
 
     final String authorization = request.headers().get(AUTHORIZATION);
 
@@ -375,30 +375,36 @@ public class RestHandlerHook implements HandlerHook {
         DAOFactory.closeDAO(hostDAO);
       }
 
-      String pswd;
-      try {
-        pswd = configuration.getCryptoKey().decryptInString(host.getHostkey());
-      } catch (final Exception e) {
-        throw new InternalServerErrorException(
-            "An error occurred when decrypting the password", e);
-      }
-
-      String key;
-      try {
-        key = hmac.cryptToHex(authDate + authUser + pswd);
-      } catch (final Exception e) {
-        throw new InternalServerErrorException(
-            "An error occurred when hashing the key", e);
-      }
-
-      if (Arrays.equals(key.getBytes(), authKey.getBytes())) {
-        throw new NotAllowedException("Invalid password.");
-      }
+      validateHMACCredentials(host, authDate, authUser, authKey);
 
       return authUser;
     }
 
     throw new NotAllowedException("Missing credentials.");
+  }
+
+  protected void validateHMACCredentials(Host host, String authDate,
+                                       String authUser, String authKey)
+      throws InternalServerErrorException {
+    String pswd;
+    try {
+      pswd = configuration.getCryptoKey().decryptHexInString(host.getHostkey());
+    } catch (final Exception e) {
+      throw new InternalServerErrorException(
+          "An error occurred when decrypting the password", e);
+    }
+
+    String key;
+    try {
+      key = hmac.cryptToHex(authDate + authUser + pswd);
+    } catch (final Exception e) {
+      throw new InternalServerErrorException(
+          "An error occurred when hashing the key", e);
+    }
+
+    if (!key.equals(authKey)) {
+      throw new NotAllowedException("Invalid password.");
+    }
   }
 
   /**
