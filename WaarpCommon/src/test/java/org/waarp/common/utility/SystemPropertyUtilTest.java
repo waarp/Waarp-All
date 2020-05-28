@@ -50,7 +50,8 @@ public class SystemPropertyUtilTest {
     assertTrue(SystemPropertyUtil.isFileEncodingCorrect());
     SystemPropertyUtil.set(SystemPropertyUtil.FILE_ENCODING, "UTF-16");
     assertTrue(SystemPropertyUtil.isFileEncodingCorrect());
-    SystemPropertyUtil.set(SystemPropertyUtil.FILE_ENCODING, StringUtils.UTF_8);
+    SystemPropertyUtil
+        .set(SystemPropertyUtil.FILE_ENCODING, WaarpStringUtils.UTF_8);
     assertTrue(SystemPropertyUtil.isFileEncodingCorrect());
     SystemPropertyUtil.clear(SystemPropertyUtil.FILE_ENCODING);
     assertTrue(SystemPropertyUtil.isFileEncodingCorrect());

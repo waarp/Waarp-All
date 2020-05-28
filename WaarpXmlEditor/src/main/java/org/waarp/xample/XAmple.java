@@ -34,6 +34,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.xample.custnodes.FFileDialog;
 
 import javax.swing.ButtonGroup;
@@ -446,8 +447,9 @@ public class XAmple extends JFrame
       try {
         file.createNewFile();
         out = new FileOutputStream(file);
-        final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
-        writer = new OutputStreamWriter(out, "UTF-8");
+        final OutputFormat format =
+            new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
+        writer = new OutputStreamWriter(out, WaarpStringUtils.UTF8);
         final XMLSerializer serial = new XMLSerializer(writer, format);
         serial.asDOMSerializer();
         serial.serialize(doc);

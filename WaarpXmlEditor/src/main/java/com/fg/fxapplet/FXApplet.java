@@ -27,13 +27,13 @@ import com.fg.xmleditor.FXDocumentModelImpl;
 import com.fg.xmleditor.FXDoubleView;
 import com.fg.xmleditor.FXModelStatusListener;
 import com.fg.xmleditor.FXStatusEvent;
-import com.google.common.base.Charsets;
 import netscape.javascript.JSObject;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.xml.sax.InputSource;
 
 import javax.swing.BorderFactory;
@@ -332,7 +332,7 @@ public class FXApplet extends JApplet {
           final InputStream in = con.getInputStream();
           try {
             final InputStreamReader reader =
-                new InputStreamReader(in, Charsets.UTF_8);
+                new InputStreamReader(in, WaarpStringUtils.UTF8);
             final InputSource src = new InputSource(reader);
             src.setSystemId(getXMLBaseURL().toString());
             lostElements = model.openDocument(xsdURL, src);
@@ -427,7 +427,8 @@ public class FXApplet extends JApplet {
     final StringWriter writer = new StringWriter();
     try {
       try {
-        final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+        final OutputFormat format =
+            new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
         final XMLSerializer serial = new XMLSerializer(writer, format);
         serial.asDOMSerializer();
         serial.serialize(doc);
@@ -477,7 +478,8 @@ public class FXApplet extends JApplet {
             return;
           }
           out = new FileOutputStream(file);
-          final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+          final OutputFormat format =
+              new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
           final Writer writer = new OutputStreamWriter(out);
           final XMLSerializer serial = new XMLSerializer(writer, format);
           serial.asDOMSerializer();
@@ -515,7 +517,8 @@ public class FXApplet extends JApplet {
       httpConn.setUseCaches(false);
       httpConn.setRequestProperty("Content-Type", "text/plain");
       out = httpConn.getOutputStream();
-      final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+      final OutputFormat format =
+          new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
       final Writer writer = new OutputStreamWriter(out);
       final XMLSerializer serial = new XMLSerializer(writer, format);
       serial.asDOMSerializer();

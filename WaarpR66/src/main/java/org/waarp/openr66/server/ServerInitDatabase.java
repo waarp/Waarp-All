@@ -27,6 +27,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
@@ -296,7 +297,8 @@ public class ServerInitDatabase {
     final File file = new File(path);
     if (file.canRead()) {
       try {
-        final String value = FileUtils.readFileToString(file);
+        final String value =
+            FileUtils.readFileToString(file, WaarpStringUtils.UTF8);
         if (value != null && !value.trim().isEmpty()) {
           res = value.replaceAll("\r|\n|  ", " ").trim();
         }

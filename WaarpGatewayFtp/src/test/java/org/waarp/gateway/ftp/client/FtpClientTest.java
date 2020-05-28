@@ -352,7 +352,7 @@ public class FtpClientTest {
         .setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
     desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
     desiredCapabilities
-        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, true);
+        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
     LoggingPreferences logPrefs = new LoggingPreferences();
     logPrefs.enable(LogType.BROWSER, java.util.logging.Level.OFF);
     logPrefs.enable(LogType.CLIENT, java.util.logging.Level.OFF);

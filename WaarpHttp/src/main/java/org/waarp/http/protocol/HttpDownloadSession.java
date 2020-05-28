@@ -221,8 +221,8 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     byte[] bin;
     try {
       bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);
-    } catch (IOException ignore) {
-      logger.warn(ignore);
+    } catch (IOException e) {
+      logger.warn(e);
       return null;
     }
     String hash = FilesystemBasedDigest.getHex(bin);
@@ -242,7 +242,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     logger.trace("Runner {}", session.getRunner());
     String hash = (String) session.getRunner().getFromTransferMap(HASH);
     logger.debug("Found {}", hash);
-    return (String) hash;
+    return hash;
   }
 
   @Override

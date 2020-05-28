@@ -24,6 +24,7 @@ import io.netty.util.AsciiString;
 import org.waarp.common.database.ConnectionFactory;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.ServerHandler;
@@ -96,7 +97,7 @@ public final class RestConstants {
   /**
    * The UTF-8 {@link Charset} constant.
    */
-  public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+  public static final Charset UTF8_CHARSET = WaarpStringUtils.UTF8;
 
   // ######################### HTTP HEADER NAMES ##############################
 

@@ -19,7 +19,6 @@
  */
 package org.waarp.common.utility;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.dom4j.Node;
 import org.waarp.common.exception.FileTransferException;
@@ -78,7 +77,7 @@ public final class WaarpStringUtils {
           " bytes).");
     }
     try {
-      return Files.toString(file, Charsets.UTF_8);
+      return Files.toString(file, UTF8);
     } catch (IOException e) {
       logger.error("Error on File while trying to read: " + filename, e);
       throw new FileTransferException("Error on File while trying to read", e);

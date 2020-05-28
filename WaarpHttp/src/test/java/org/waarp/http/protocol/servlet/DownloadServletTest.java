@@ -37,6 +37,7 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
@@ -170,7 +171,7 @@ public class DownloadServletTest extends TestAbstract {
         (HttpURLConnection) serverUri.resolve("/").toURL().openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -224,7 +225,7 @@ public class DownloadServletTest extends TestAbstract {
         (HttpURLConnection) new URL(getRequest).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -262,7 +263,7 @@ public class DownloadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -305,7 +306,7 @@ public class DownloadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -353,7 +354,7 @@ public class DownloadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("HEAD");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -367,7 +368,7 @@ public class DownloadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -389,7 +390,7 @@ public class DownloadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("HEAD");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -429,7 +430,7 @@ public class DownloadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();

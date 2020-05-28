@@ -26,6 +26,7 @@ import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
@@ -396,6 +397,7 @@ public abstract class CommonUtil {
   @After
   public void tearDown() throws Exception {
     Configuration.configuration.setTimeoutCon(100);
+    reloadDriver();
   }
 
   public static void initiateWebDriver(File file) {
@@ -445,7 +447,8 @@ public abstract class CommonUtil {
   }
 
   private static WebDriver createPhantomJSDriver() {
-    DesiredCapabilities desiredCapabilities = DesiredCapabilities.phantomjs();
+    DesiredCapabilities desiredCapabilities =
+        new DesiredCapabilities("phantomjs", "", Platform.ANY);
     desiredCapabilities.setCapability(
         PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
         System.getProperty("phantomjs.binary.path"));

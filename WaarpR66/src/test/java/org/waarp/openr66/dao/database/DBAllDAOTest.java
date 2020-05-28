@@ -537,9 +537,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   public void testInsertHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
-      dao.insert(
-          new Host("chacha", "address", 666, "aaa".getBytes("utf-8"), false,
-                   false));
+      dao.insert(new Host("chacha", "address", 666,
+                          "aaa".getBytes(WaarpStringUtils.UTF8), false, false));
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT COUNT(1) as count FROM hosts");
@@ -552,7 +551,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("chacha", res2.getString("hostid"));
       assertEquals("address", res2.getString("address"));
       assertEquals(666, res2.getInt("port"));
-      assertArrayEquals("aaa".getBytes("utf-8"), res2.getBytes("hostkey"));
+      assertArrayEquals("aaa".getBytes(WaarpStringUtils.UTF8),
+                        res2.getBytes("hostkey"));
       assertFalse(res2.getBoolean("isssl"));
       assertFalse(res2.getBoolean("isclient"));
       assertFalse(res2.getBoolean("isproxified"));
@@ -568,9 +568,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
   public void testUpdateHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
-      dao.update(
-          new Host("server2", "address", 666, "password".getBytes("utf-8"),
-                   false, false));
+      dao.update(new Host("server2", "address", 666,
+                          "password".getBytes(WaarpStringUtils.UTF8), false,
+                          false));
 
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM hosts WHERE hostid = 'server2'");
@@ -578,7 +578,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("server2", res.getString("hostid"));
       assertEquals("address", res.getString("address"));
       assertEquals(666, res.getInt("port"));
-      assertArrayEquals("password".getBytes("utf-8"), res.getBytes("hostkey"));
+      assertArrayEquals("password".getBytes(WaarpStringUtils.UTF8),
+                        res.getBytes("hostkey"));
       assertFalse(res.getBoolean("isssl"));
       assertFalse(res.getBoolean("isclient"));
       assertFalse(res.getBoolean("isproxified"));

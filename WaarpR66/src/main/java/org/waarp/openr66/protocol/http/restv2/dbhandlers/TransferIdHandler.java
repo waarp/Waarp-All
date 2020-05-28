@@ -26,7 +26,7 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
-import org.apache.commons.codec.Charsets;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -45,7 +45,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -155,7 +154,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                               @PathParam(URI_ID) String uri)
       throws UnsupportedEncodingException {
 
-    final String key = URLDecoder.decode(uri, Charsets.UTF_8.name());
+    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
     if (!matcher.find()) {
@@ -218,7 +217,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                            @PathParam(URI_ID) String uri)
       throws UnsupportedEncodingException {
 
-    final String key = URLDecoder.decode(uri, Charset.forName("UTF-8").name());
+    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
     if (!matcher.find()) {
@@ -279,7 +278,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                              @PathParam(URI_ID) String uri)
       throws UnsupportedEncodingException {
 
-    final String key = URLDecoder.decode(uri, Charset.forName("UTF-8").name());
+    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
     if (!matcher.find()) {

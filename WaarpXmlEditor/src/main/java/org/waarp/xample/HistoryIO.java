@@ -29,6 +29,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -118,7 +119,8 @@ public final class HistoryIO {
     try {
       file.createNewFile();
       out = new FileOutputStream(file);
-      final OutputFormat format = new OutputFormat(doc, "UTF-8", true);
+      final OutputFormat format =
+          new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
       final Writer writer = new OutputStreamWriter(out);
       final XMLSerializer serial = new XMLSerializer(writer, format);
       serial.asDOMSerializer();

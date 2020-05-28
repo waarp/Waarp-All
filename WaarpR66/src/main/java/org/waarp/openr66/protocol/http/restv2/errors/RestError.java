@@ -83,7 +83,8 @@ public class RestError implements Serializable {
   public ObjectNode makeNode(Locale lang) {
     final ResourceBundle bundle =
         ResourceBundle.getBundle("restmessages", lang);
-    final String message = String.format(lang, bundle.getString(msgKey), args);
+    final String message =
+        String.format(lang, bundle.getString(msgKey), (Object[]) args);
 
     final ObjectNode response = new ObjectNode(JsonNodeFactory.instance);
     response.put("message", message);

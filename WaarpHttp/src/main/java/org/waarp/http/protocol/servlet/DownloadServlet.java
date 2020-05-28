@@ -44,6 +44,7 @@ import java.util.concurrent.Future;
  * Download Servlet: enables downloading file from Web Browser to final user
  */
 public class DownloadServlet extends AbstractServlet {
+  private static final long serialVersionUID = 2002L;
   public static final String FILENAME = "filename";
   public static final String IDENTIFIER = "identifier";
   private static final WaarpLogger logger =

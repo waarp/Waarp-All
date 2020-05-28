@@ -20,7 +20,6 @@
 
 package org.waarp.common.utility;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import jnr.constants.platform.Errno;
 import jnr.posix.POSIX;
@@ -104,8 +103,7 @@ public final class Processes {
       } catch (InterruptedException ignored) {//NOSONAR
       }
       BufferedReader reader = new BufferedReader(
-          new InputStreamReader(psAux.getInputStream(),
-                                WaarpStringUtils.UTF_8));
+          new InputStreamReader(psAux.getInputStream(), WaarpStringUtils.UTF8));
       try {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -151,8 +149,7 @@ public final class Processes {
       } catch (InterruptedException ignored) {//NOSONAR
       }
       BufferedReader reader = new BufferedReader(
-          new InputStreamReader(psAux.getInputStream(),
-                                WaarpStringUtils.UTF_8));
+          new InputStreamReader(psAux.getInputStream(), WaarpStringUtils.UTF8));
       try {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -279,7 +276,7 @@ public final class Processes {
       } catch (InterruptedException ignored) {//NOSONAR
       }
       BufferedReader reader = new BufferedReader(
-          new InputStreamReader(psAux.getInputStream(), Charsets.UTF_8));
+          new InputStreamReader(psAux.getInputStream(), WaarpStringUtils.UTF8));
       try {
         String line;
         String spid = Integer.toString(pid);
