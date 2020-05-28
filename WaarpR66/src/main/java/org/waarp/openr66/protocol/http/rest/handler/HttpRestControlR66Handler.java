@@ -150,7 +150,6 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
         if (node.getRequested() == null || node.getRequester() == null ||
             node.getSpecialid() == ILLEGALVALUE) {
           final ErrorCode code = ErrorCode.CommandNotFound;
-          resulttest = new R66Result(session, true, code, session.getRunner());
           result.setDetail("Not enough argument passed to identify a transfer");
           setError(handler, result, node, HttpResponseStatus.NOT_FOUND);
         } else {

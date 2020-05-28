@@ -27,6 +27,7 @@ import org.w3c.dom.NodeList;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.configuration.ExtensionFilter;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
@@ -236,7 +237,7 @@ public class XMLRuleDAO implements RuleDAO {
     Document document;
     InputStream stream = null;
     try {
-      stream = new ByteArrayInputStream(xml.getBytes("UTF-8"));
+      stream = new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));
       final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       document = dbf.newDocumentBuilder().parse(stream);
     } catch (final IOException e) {

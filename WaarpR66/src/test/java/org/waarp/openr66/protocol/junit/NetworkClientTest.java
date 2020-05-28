@@ -143,10 +143,6 @@ public class NetworkClientTest extends TestAbstract {
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
-    if (file.exists()) {
-      driverType = DriverType.PHANTOMJS;
-      initiateWebDriver(file.getParentFile());
-    }
     setUpBeforeClassMinimal(LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML);
     setUpDbBeforeClass();
     // setUpBeforeClassServer("Linux/config/config-serverInitB.xml", "config-serverB.xml", false);
@@ -161,7 +157,6 @@ public class NetworkClientTest extends TestAbstract {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     Thread.sleep(100);
-    finalizeDriver();
     for (final DbTaskRunner dbTaskRunner : dbTaskRunners) {
       try {
         dbTaskRunner.delete();
@@ -1820,7 +1815,7 @@ public class NetworkClientTest extends TestAbstract {
     }
   }
 
-  private class SpooledThread extends Thread {
+  private static class SpooledThread extends Thread {
     private static final String TMP_R_66_TEST_OUT_EXAMPLE =
         "/tmp/R66/test/out/example";
     private static final String TMP_R_66_TEST_STOPOUT_TXT =

@@ -84,6 +84,8 @@ public class WaarpBC {
         if (service != null) {
           Security.insertProviderAt(new Provider(name, provider.getVersion(),
                                                  "Waarp quick fix for SecureRandom using urandom") {
+            private static final long serialVersionUID = 1001L;
+
             {
               System.setProperty(name, service.getClassName());
             }

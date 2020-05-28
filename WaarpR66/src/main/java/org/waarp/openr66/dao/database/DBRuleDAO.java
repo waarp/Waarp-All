@@ -26,6 +26,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Rule;
@@ -190,7 +191,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
     Document document;
     try {
       final InputStream stream =
-          new ByteArrayInputStream(xml.getBytes("UTF-8"));
+          new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));
       DocumentBuilderFactory factory = getDocumentBuilderFactory();
       document = factory.newDocumentBuilder().parse(stream);
     } catch (final Exception e) {
@@ -214,7 +215,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
     Document document;
     try {
       final InputStream stream =
-          new ByteArrayInputStream(xml.getBytes("UTF-8"));
+          new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));
       DocumentBuilderFactory factory = getDocumentBuilderFactory();
       document = factory.newDocumentBuilder().parse(stream);
     } catch (final Exception e) {

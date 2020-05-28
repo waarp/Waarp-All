@@ -46,11 +46,9 @@ public class R66ProxyResponsiveTest extends CommonUtil {
       driver.get("http://127.0.0.1:11186/");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
     }
@@ -78,13 +76,12 @@ public class R66ProxyResponsiveTest extends CommonUtil {
       driver.get("https://127.0.0.1:11187/index.html");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
+      driver.get("https://127.0.0.1:11187/Logout.html");
     }
   }
 }

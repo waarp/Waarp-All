@@ -48,8 +48,7 @@ public class ExampleUsageMachineState {
         stateMap =
         new ConcurrentHashMap<ExampleEnumState, EnumSet<ExampleEnumState>>();
     stateMap.put(ExampleTransition.tRUNNING.elt.getState(),
-                 (EnumSet<ExampleEnumState>) ExampleTransition.tRUNNING.elt
-                     .getSet());
+                 ExampleTransition.tRUNNING.elt.getSet());
     // Second create the MachineState with the right Map
     final MachineState<ExampleEnumState> machineState1 =
         new MachineState(ExampleEnumState.PAUSED, stateMap);

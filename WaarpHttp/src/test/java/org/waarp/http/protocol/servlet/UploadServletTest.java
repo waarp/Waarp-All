@@ -20,7 +20,6 @@
 
 package org.waarp.http.protocol.servlet;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -35,6 +34,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -46,6 +46,7 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
@@ -174,7 +175,7 @@ public class UploadServletTest extends TestAbstract {
         (HttpURLConnection) serverUri.resolve("/").toURL().openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -184,8 +185,8 @@ public class UploadServletTest extends TestAbstract {
     printResponse(http, null);
 
     try {
-      assertThat("Response Code", http.getResponseCode(),
-                 is(HttpStatus.NOT_FOUND_404));
+      MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                               is(HttpStatus.NOT_FOUND_404));
     } catch (IOException e) {
       logger.warn(e);
     }
@@ -231,7 +232,7 @@ public class UploadServletTest extends TestAbstract {
         (HttpURLConnection) new URL(getRequest).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -239,8 +240,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.NOT_FOUND_404));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.NOT_FOUND_404));
     http.disconnect();
   }
 
@@ -272,7 +273,7 @@ public class UploadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     StringBuilder builder = new StringBuilder(100);
@@ -287,8 +288,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
   }
 
@@ -332,7 +333,7 @@ public class UploadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -340,8 +341,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.NOT_FOUND_404));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.NOT_FOUND_404));
     http.disconnect();
 
     // POST
@@ -349,7 +350,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     StringBuilder builder = new StringBuilder(100);
@@ -364,7 +365,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, "All finished.");
-    assertThat("Response Code", http.getResponseCode(), is(HttpStatus.OK_200));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.OK_200));
     http.disconnect();
   }
 
@@ -394,7 +396,7 @@ public class UploadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -402,8 +404,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
 
     // POST
@@ -411,7 +413,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     StringBuilder builder = new StringBuilder(100);
@@ -426,8 +428,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
   }
 
@@ -457,7 +459,7 @@ public class UploadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -465,8 +467,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
 
     // POST
@@ -474,7 +476,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     StringBuilder builder = new StringBuilder(100);
@@ -489,8 +491,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
   }
 
@@ -522,7 +524,7 @@ public class UploadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -530,8 +532,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.NOT_FOUND_404));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.NOT_FOUND_404));
     http.disconnect();
 
     // POST 1/2
@@ -539,7 +541,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     StringBuilder builder = new StringBuilder(100);
@@ -554,8 +556,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
 
     ByteArrayInputStream stream = new ByteArrayInputStream(content.getBytes());
@@ -575,7 +577,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     writeBinaryContent(http, content);
@@ -585,7 +587,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(), is(HttpStatus.OK_200));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.OK_200));
     http.disconnect();
   }
 
@@ -616,7 +619,7 @@ public class UploadServletTest extends TestAbstract {
             .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -624,8 +627,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.NOT_FOUND_404));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.NOT_FOUND_404));
     http.disconnect();
 
     // POST 1/2
@@ -633,7 +636,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     StringBuilder builder = new StringBuilder(1024);
@@ -648,8 +651,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, "Upload");
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.CREATED_201));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.CREATED_201));
     http.disconnect();
 
     // GET 1/2
@@ -657,7 +660,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     try {
       http.connect();
@@ -665,7 +668,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, "Uploaded.");
-    assertThat("Response Code", http.getResponseCode(), is(HttpStatus.OK_200));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.OK_200));
     http.disconnect();
 
     // POST 1/2 bis
@@ -673,7 +677,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     writeBinaryContent(http, content);
@@ -683,8 +687,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, null);
-    assertThat("Response Code", http.getResponseCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
 
     // POST 2/2
@@ -700,7 +704,7 @@ public class UploadServletTest extends TestAbstract {
         .openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
-    http.setRequestProperty("Accept-Charset", "UTF-8");
+    http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
     http.setDoInput(true);
     http.setDoOutput(true);
     content = "A";
@@ -711,7 +715,8 @@ public class UploadServletTest extends TestAbstract {
       fail(e.getMessage());
     }
     printResponse(http, "All finished.");
-    assertThat("Response Code", http.getResponseCode(), is(HttpStatus.OK_200));
+    MatcherAssert.assertThat("Response Code", http.getResponseCode(),
+                             is(HttpStatus.OK_200));
     http.disconnect();
   }
 
@@ -745,10 +750,11 @@ public class UploadServletTest extends TestAbstract {
         return response.getEntity().getContent();
       }
     };
-    String valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+    String valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("GET {}", valueText);
-    assertThat("Response Code", response.getStatusLine().getStatusCode(),
-               is(HttpStatus.NOT_FOUND_404));
+    MatcherAssert
+        .assertThat("Response Code", response.getStatusLine().getStatusCode(),
+                    is(HttpStatus.NOT_FOUND_404));
 
     // POST 1/2
     StringBuilder builder = new StringBuilder(1024);
@@ -774,10 +780,11 @@ public class UploadServletTest extends TestAbstract {
         return response2.getEntity().getContent();
       }
     };
-    valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+    valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
-    assertThat("Response Code", response2.getStatusLine().getStatusCode(),
-               is(HttpStatus.CREATED_201));
+    MatcherAssert
+        .assertThat("Response Code", response2.getStatusLine().getStatusCode(),
+                    is(HttpStatus.CREATED_201));
 
     // GET 1/2
     final HttpResponse response3 = client.execute(get);
@@ -787,10 +794,11 @@ public class UploadServletTest extends TestAbstract {
         return response3.getEntity().getContent();
       }
     };
-    valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+    valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("GET {}", valueText);
-    assertThat("Response Code", response3.getStatusLine().getStatusCode(),
-               is(HttpStatus.OK_200));
+    MatcherAssert
+        .assertThat("Response Code", response3.getStatusLine().getStatusCode(),
+                    is(HttpStatus.OK_200));
 
     // POST 1/2 bis
     MultipartEntityBuilder entityBuilder2 = MultipartEntityBuilder.create();
@@ -807,10 +815,11 @@ public class UploadServletTest extends TestAbstract {
         return response4.getEntity().getContent();
       }
     };
-    valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+    valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
-    assertThat("Response Code", response4.getStatusLine().getStatusCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert
+        .assertThat("Response Code", response4.getStatusLine().getStatusCode(),
+                    is(HttpStatus.INTERNAL_SERVER_ERROR_500));
 
     // POST 1/2 ter
     post = new HttpPost(postRequest);
@@ -822,10 +831,11 @@ public class UploadServletTest extends TestAbstract {
         return response5.getEntity().getContent();
       }
     };
-    valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+    valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
-    assertThat("Response Code", response5.getStatusLine().getStatusCode(),
-               is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert
+        .assertThat("Response Code", response5.getStatusLine().getStatusCode(),
+                    is(HttpStatus.INTERNAL_SERVER_ERROR_500));
 
     // POST 2/2
     map.put("resumableChunkNumber", "2");
@@ -847,11 +857,12 @@ public class UploadServletTest extends TestAbstract {
         return response6.getEntity().getContent();
       }
     };
-    valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+    valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
     assertEquals("All finished.", valueText);
-    assertThat("Response Code", response6.getStatusLine().getStatusCode(),
-               is(HttpStatus.OK_200));
+    MatcherAssert
+        .assertThat("Response Code", response6.getStatusLine().getStatusCode(),
+                    is(HttpStatus.OK_200));
     client.close();
   }
 

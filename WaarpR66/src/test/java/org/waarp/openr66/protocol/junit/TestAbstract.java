@@ -272,8 +272,10 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   public static void finalizeDriver() throws InterruptedException {
     // 17 | close |  |  |
     // driver.close();
-    driver.quit();
-    driver = null;
+    if (driver != null) {
+      driver.quit();
+      driver = null;
+    }
     Thread.sleep(10);
   }
 

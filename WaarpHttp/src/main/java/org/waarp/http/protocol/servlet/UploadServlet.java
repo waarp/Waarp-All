@@ -20,11 +20,11 @@
 
 package org.waarp.http.protocol.servlet;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteSource;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.http.protocol.HttpHelper;
 import org.waarp.http.protocol.HttpResumableInfo;
 import org.waarp.http.protocol.HttpResumableSession;
@@ -48,6 +48,7 @@ import java.util.Map;
  */
 @MultipartConfig(fileSizeThreshold = 1024 * 1024)
 public class UploadServlet extends AbstractServlet {
+  private static final long serialVersionUID = 2003L;
   public static final String RESUMABLE_CHUNK_NUMBER = "resumableChunkNumber";
   public static final String RESUMABLE_CHUNK_SIZE = "resumableChunkSize";
   public static final String RESUMABLE_TOTAL_SIZE = "resumableTotalSize";
@@ -100,7 +101,8 @@ public class UploadServlet extends AbstractServlet {
                 }
               };
 
-              String valueText = byteSource.asCharSource(Charsets.UTF_8).read();
+              String valueText =
+                  byteSource.asCharSource(WaarpStringUtils.UTF8).read();
               arguments.put(part.getName(), valueText);
             }
           }

@@ -23,6 +23,7 @@ package org.waarp.common.logging;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import javax.management.RuntimeErrorException;
 import java.io.OutputStream;
@@ -46,7 +47,7 @@ public class JdkLoggerTest {
         public void write(final int b) {
           buf.append((char) b);
         }
-      }, true, "UTF-8"));
+      }, true, WaarpStringUtils.UTF_8));
     } catch (final UnsupportedEncodingException e) {
       throw new RuntimeErrorException(new Error(e));
     }
@@ -197,7 +198,7 @@ public class JdkLoggerTest {
     exception0 = new Exception();
     final StackTraceElement[] stackTraceElementArray0 =
         exception0.getStackTrace();
-    jdkLogger0.trace("};Dg`Me}$_cLd}O(}$", stackTraceElementArray0);
+    jdkLogger0.trace("};Dg`Me}$_cLd}O(}$", (Object[]) stackTraceElementArray0);
     assertEquals("", jdkLogger0.name());
     logger0 = Logger.getAnonymousLogger();
     logger1 = logger0.getParent();

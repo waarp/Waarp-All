@@ -19,11 +19,11 @@
  */
 package org.waarp.openr66.protocol.networkhandler.packet;
 
-import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
@@ -127,7 +127,7 @@ public class NetworkPacket {
            " Length: " + (buffer != null? (buffer.readableBytes() + (code ==
                                                                      LocalPacketFactory.REQUESTPACKET?
         buffer.toString(buffer.readerIndex(), buffer.readableBytes(),
-                        Charsets.UTF_8) : "")) : "no buffer");
+                        WaarpStringUtils.UTF8) : "")) : "no buffer");
   }
 
   public void clear() {

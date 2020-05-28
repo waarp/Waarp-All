@@ -26,6 +26,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.junit.Test;
 import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -563,7 +564,7 @@ public class XmlTest {
       fail("Should not");
     }
     try {
-      XmlUtil.writeXML("/tmp/test4.xml", "UTF-8", newDoc);
+      XmlUtil.writeXML("/tmp/test4.xml", WaarpStringUtils.UTF_8, newDoc);
     } catch (final IOException e) {
       e.printStackTrace();
       fail("Should not");

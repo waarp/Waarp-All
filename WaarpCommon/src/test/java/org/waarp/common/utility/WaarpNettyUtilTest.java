@@ -53,7 +53,6 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.Test;
@@ -255,7 +254,7 @@ public class WaarpNettyUtilTest {
         throws Exception {
       if (msg instanceof LastHttpContent) {
         final ByteBuf content =
-            Unpooled.copiedBuffer("Hello World.", CharsetUtil.UTF_8);
+            Unpooled.copiedBuffer("Hello World.", WaarpStringUtils.UTF8);
         final FullHttpResponse response =
             new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
                                         HttpResponseStatus.OK, content);
@@ -326,7 +325,7 @@ public class WaarpNettyUtilTest {
       if (msg instanceof HttpContent) {
         final HttpContent content = (HttpContent) msg;
 
-        System.err.print(content.content().toString(CharsetUtil.UTF_8));
+        System.err.print(content.content().toString(WaarpStringUtils.UTF8));
         System.err.flush();
 
         if (content instanceof LastHttpContent) {

@@ -49,7 +49,6 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.ErrorDataDec
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDataDecoderException;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
-import io.netty.util.CharsetUtil;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
@@ -463,7 +462,7 @@ public abstract class HttpRequestHandler
     int length;
     // Convert the response content to a ByteBuf.
     final ByteBuf buf =
-        Unpooled.wrappedBuffer(answer.getBytes(CharsetUtil.UTF_8));
+        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
     final FullHttpResponse response = getResponse(buf);
     response.headers().set(HttpHeaderNames.CONTENT_TYPE,
                            businessRequest.getContentType());

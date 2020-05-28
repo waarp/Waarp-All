@@ -32,6 +32,7 @@ import java.io.File;
 import java.net.URL;
 
 public class AbstractServlet extends HttpServlet {
+  private static final long serialVersionUID = 2001L;
   public static final String R_66_CONFIG = "r66config";
   public static final String AUTHENT_CLASSNAME = "authentClassName";
   public static final String RULENAME = "rulename";

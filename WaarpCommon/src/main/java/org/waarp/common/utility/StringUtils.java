@@ -19,11 +19,6 @@
  */
 package org.waarp.common.utility;
 
-import com.google.common.base.Charsets;
-
-import java.nio.charset.Charset;
-
-
 /**
  * String utils
  */
@@ -38,15 +33,6 @@ public final class StringUtils {
   static {
     LINE_SEP = SystemPropertyUtil.get("line.separator");
   }
-
-  /**
-   * UTF-8 string
-   */
-  public static final String UTF_8 = "UTF-8";
-  /**
-   * UTF-8 Charset
-   */
-  public static final Charset UTF8 = Charsets.UTF_8;
 
   private StringUtils() {
     // empty

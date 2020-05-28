@@ -97,7 +97,8 @@ public class FileConvertTest {
     fileWriterBig.flush();
     fileWriterBig.close();
     final String[] args = {
-        "-to", "/tmp/to.txt", "UTF-8", "-from", "/tmp/from.txt", "UTF-8"
+        "-to", "/tmp/to.txt", WaarpStringUtils.UTF_8, "-from", "/tmp/from.txt",
+        WaarpStringUtils.UTF_8
     };
     CharsetsUtil.main(args);
     assertTrue(fileto.exists());

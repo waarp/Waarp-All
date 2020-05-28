@@ -2066,7 +2066,9 @@ public class ServerActions extends ConnectionActions {
   }
 
   /**
-   * Stop or Cancel a transfer
+   * Stop or Cancel a transfer.
+   *
+   * Warning use stopTransfer or cancelTransfer instead.
    *
    * @param type
    * @param reqd
@@ -2076,9 +2078,7 @@ public class ServerActions extends ConnectionActions {
    * @return the Result to answer
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
-   * @deprecated use stopTransfer or cancel transfer instead
    */
-  @Deprecated
   public final R66Result stopOrCancel(byte type, String reqd, String reqr,
                                       long id)
       throws OpenR66ProtocolNotAuthenticatedException {

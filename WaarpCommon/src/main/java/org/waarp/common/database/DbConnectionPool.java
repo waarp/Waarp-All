@@ -127,7 +127,7 @@ public class DbConnectionPool {
       final long now = System.currentTimeMillis();
       while (conIterator.hasNext()) {
         final Con c = conIterator.next();
-        if (c.lastRecyle + pool.timeOutForceClose < now) {
+        if (c.lastRecyle + timeOutForceClose < now) {
           conIterator.remove();
           pool.closeConnectionNoEx(c.pooledCon);
         } else {

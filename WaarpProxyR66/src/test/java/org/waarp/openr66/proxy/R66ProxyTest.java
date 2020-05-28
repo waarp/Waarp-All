@@ -115,13 +115,12 @@ public class R66ProxyTest extends CommonUtil {
       driver.get("https://127.0.0.1:10087/index.html");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } catch (StaleElementReferenceException e) {
       e.printStackTrace();
-      reloadDriver();
       fail(e.getMessage());
     } finally {
+      driver.get("https://127.0.0.1:10087/Logout.html");
     }
   }
 

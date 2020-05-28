@@ -388,7 +388,7 @@ public class FtpTransferTask extends AbstractTask {
     final String[] argFormat = BLANK.split(argTransfer);
     if (argFormat != null && argFormat.length > 0) {
       try {
-        finalname = String.format(finalname, argFormat);
+        finalname = String.format(finalname, (Object[]) argFormat);
       } catch (final Exception e) {
         // ignored error since bad argument in static rule info
         logger
