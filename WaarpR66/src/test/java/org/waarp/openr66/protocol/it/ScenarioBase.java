@@ -84,6 +84,9 @@ public abstract class ScenarioBase extends TestAbstract {
   private static final String TMP_R66_CONFIG_R1 =
       "/tmp/R66/scenario_1_2_3/" + SERVER_1_REWRITTEN_XML;
   public static int NUMBER_FILES = 50;
+  public static int LARGE_SIZE = 2000000;
+  public static int BLOCK_SIZE = 8192;
+
   private static int r66Pid1 = 999999;
   private static int r66Pid2 = 999999;
   private static int r66Pid3 = 999999;
@@ -368,7 +371,7 @@ public abstract class ScenarioBase extends TestAbstract {
     Assume.assumeNotNull(networkTransaction);
     File baseDir = new File("/tmp/R66/scenario_1_2_3/R1/out/");
     final File totest =
-        generateOutFile(baseDir.getAbsolutePath() + "/testTask.txt", 1000);
+        generateOutFile(baseDir.getAbsolutePath() + "/testTask.txt", 100);
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
         new SubmitTransfer(future, "server1-ssl", "testTask.txt", "rule3",
@@ -394,7 +397,8 @@ public abstract class ScenarioBase extends TestAbstract {
     Assume.assumeNotNull(networkTransaction);
     File baseDir = new File("/tmp/R66/scenario_1_2_3/R2/out/");
     File fileOut = new File(baseDir, "hello");
-    final File outHello = generateOutFile(fileOut.getAbsolutePath(), 100000);
+    final File outHello =
+        generateOutFile(fileOut.getAbsolutePath(), LARGE_SIZE);
     ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
     ExecutorService executorService =
         Executors.newFixedThreadPool(NUMBER_FILES);
@@ -406,7 +410,7 @@ public abstract class ScenarioBase extends TestAbstract {
       final TestRecvThroughClient transaction =
           new TestRecvThroughClient(future, handler, "server2", "hello",
                                     "recvthrough", "Test Multiple RecvThrough",
-                                    true, 8192, networkTransaction);
+                                    true, BLOCK_SIZE, networkTransaction);
       transaction.setNormalInfoAsWarn(false);
       executorService.execute(transaction);
     }
@@ -418,11 +422,13 @@ public abstract class ScenarioBase extends TestAbstract {
       assertTrue(future.isSuccess());
     }
     long timestop = System.currentTimeMillis();
-    logger
-        .warn("RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
-              NUMBER_FILES, (timestop - timestart) / 1000,
-              NUMBER_FILES * 1000 / (timestop - timestart));
+    logger.warn(
+        "RecvThrough {} files from R2 ({} seconds,  {} per seconds) of " +
+        "size {} with block size {}", NUMBER_FILES,
+        (timestop - timestart) / 1000,
+        NUMBER_FILES * 1000 / (timestop - timestart), LARGE_SIZE, BLOCK_SIZE);
     outHello.delete();
+    FileUtils.forceDeleteRecursiveDir(baseDir);
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -509,6 +515,48 @@ public abstract class ScenarioBase extends TestAbstract {
     NUMBER_FILES = lastNumber;
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(5000);
+  }
+
+  @Test
+  public void test04_5000_MultipleSends_ChangingBlockSize()
+      throws IOException, InterruptedException {
+    Assume.assumeTrue("If the Long term tests are allowed",
+                      SystemPropertyUtil.get(IT_LONG_TEST, false));
+    int lastNumber = NUMBER_FILES;
+    NUMBER_FILES = 800;
+    BLOCK_SIZE = 16 * 1024;
+    test012_MultipleSendsSync();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    // Ensure the last send is ok
+    test011_SendToItself();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    BLOCK_SIZE = 64 * 1024;
+    test012_MultipleSendsSync();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    // Ensure the last send is ok
+    test011_SendToItself();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    BLOCK_SIZE = 128 * 1024;
+    test012_MultipleSendsSync();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    // Ensure the last send is ok
+    test011_SendToItself();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    BLOCK_SIZE = 512 * 1024;
+    test012_MultipleSendsSync();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(1000);
+    // Ensure the last send is ok
+    test011_SendToItself();
+    // Extra sleep to check correctness if necessary on Logs
+    Thread.sleep(5000);
+    NUMBER_FILES = lastNumber;
   }
 
   private void waitForAllDone(DbTaskRunner runner) {

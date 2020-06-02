@@ -212,6 +212,12 @@ public class TransferActions extends ServerActions {
     }
     // Receiver can specify a rank different from database
     setRankAtStartupFromRequest(packet, runner);
+    runner.setBlocksize(packet.getBlocksize());
+    try {
+      runner.update();
+    } catch (WaarpDatabaseException ignored) {
+      // Ignore
+    }
     logger.debug(
         "Filesize: " + packet.getOriginalSize() + ':' + runner.isSender());
     boolean shouldInformBack = false;
@@ -287,6 +293,8 @@ public class TransferActions extends ServerActions {
       }
       // Check if the blocksize is greater than local value
       if (Configuration.configuration.getBlockSize() < blocksize) {
+        logger.warn("Blocksize is greater than allowed {} < {}",
+                    Configuration.configuration.getBlockSize(), blocksize);
         blocksize = Configuration.configuration.getBlockSize();
         final String sep = localChannelReference.getPartner().getSeperator();
         packet = new RequestPacket(packet.getRulename(), packet.getMode(),
