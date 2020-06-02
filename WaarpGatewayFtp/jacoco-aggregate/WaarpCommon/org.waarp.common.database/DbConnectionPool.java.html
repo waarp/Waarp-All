@@ -72,10 +72,10 @@ public class DbConnectionPool {
 
     final long lastRecyle;
 
-<span class="fc" id="L75">    private Con(PooledConnection pooledCon) {</span>
-<span class="fc" id="L76">      this.pooledCon = pooledCon;</span>
-<span class="fc" id="L77">      lastRecyle = System.currentTimeMillis();</span>
-<span class="fc" id="L78">    }</span>
+<span class="nc" id="L75">    private Con(PooledConnection pooledCon) {</span>
+<span class="nc" id="L76">      this.pooledCon = pooledCon;</span>
+<span class="nc" id="L77">      lastRecyle = System.currentTimeMillis();</span>
+<span class="nc" id="L78">    }</span>
 
     @Override
     public boolean equals(Object o) {
@@ -127,7 +127,7 @@ public class DbConnectionPool {
 <span class="nc" id="L127">      final long now = System.currentTimeMillis();</span>
 <span class="nc bnc" id="L128" title="All 2 branches missed.">      while (conIterator.hasNext()) {</span>
 <span class="nc" id="L129">        final Con c = conIterator.next();</span>
-<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (c.lastRecyle + pool.timeOutForceClose &lt; now) {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (c.lastRecyle + timeOutForceClose &lt; now) {</span>
 <span class="nc" id="L131">          conIterator.remove();</span>
 <span class="nc" id="L132">          pool.closeConnectionNoEx(c.pooledCon);</span>
         } else {
@@ -182,8 +182,8 @@ public class DbConnectionPool {
    * @param dataSource the data source for the connections.
    */
   public DbConnectionPool(ConnectionPoolDataSource dataSource) {
-<span class="fc" id="L185">    this(dataSource, 0, DbConstant.DELAYMAXCONNECTION);</span>
-<span class="fc" id="L186">  }</span>
+<span class="nc" id="L185">    this(dataSource, 0, DbConstant.DELAYMAXCONNECTION);</span>
+<span class="nc" id="L186">  }</span>
 
   /**
    * Constructs a MiniConnectionPoolManager object with no timeout and no
@@ -226,19 +226,19 @@ public class DbConnectionPool {
    *     connection.
    */
   public DbConnectionPool(ConnectionPoolDataSource dataSource,
-<span class="fc" id="L229">                          int maxConnections, int timeout) {</span>
-<span class="fc" id="L230">    this.dataSource = dataSource;</span>
-<span class="fc" id="L231">    this.maxConnections = maxConnections;</span>
-<span class="fc" id="L232">    this.timeout = timeout;</span>
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    if (maxConnections != 0) {</span>
+<span class="nc" id="L229">                          int maxConnections, int timeout) {</span>
+<span class="nc" id="L230">    this.dataSource = dataSource;</span>
+<span class="nc" id="L231">    this.maxConnections = maxConnections;</span>
+<span class="nc" id="L232">    this.timeout = timeout;</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (maxConnections != 0) {</span>
 <span class="nc bnc" id="L234" title="All 2 branches missed.">      if (timeout &lt;= 0) {</span>
 <span class="nc" id="L235">        throw new IllegalArgumentException(&quot;Invalid timeout value.&quot;);</span>
       }
 <span class="nc" id="L237">      semaphore = new Semaphore(maxConnections, true);</span>
     }
-<span class="fc" id="L239">    recycledConnections = new ArrayDeque&lt;Con&gt;();</span>
-<span class="fc" id="L240">    poolConnectionEventListener = new PoolConnectionEventListener();</span>
-<span class="fc" id="L241">  }</span>
+<span class="nc" id="L239">    recycledConnections = new ArrayDeque&lt;Con&gt;();</span>
+<span class="nc" id="L240">    poolConnectionEventListener = new PoolConnectionEventListener();</span>
+<span class="nc" id="L241">  }</span>
 
   public void resetPoolDataSource(ConnectionPoolDataSource dataSource) {
 <span class="nc" id="L244">    this.dataSource = dataSource;</span>
@@ -248,21 +248,21 @@ public class DbConnectionPool {
    * @return the max number of connections
    */
   public int getMaxConnections() {
-<span class="fc" id="L251">    return maxConnections;</span>
+<span class="nc" id="L251">    return maxConnections;</span>
   }
 
   /**
    * @return the Login Timeout in second
    */
   public long getLoginTimeout() {
-<span class="fc" id="L258">    return timeout;</span>
+<span class="nc" id="L258">    return timeout;</span>
   }
 
   /**
    * @return the Force Close Timeout in ms
    */
   public long getTimeoutForceClose() {
-<span class="fc" id="L265">    return timeOutForceClose;</span>
+<span class="nc" id="L265">    return timeOutForceClose;</span>
   }
 
   /**
@@ -271,26 +271,26 @@ public class DbConnectionPool {
    * @throws SQLException //
    */
   public synchronized void dispose() throws SQLException {
-<span class="pc bpc" id="L274" title="1 of 2 branches missed.">    if (isDisposed) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (isDisposed) {</span>
 <span class="nc" id="L275">      return;</span>
     }
-<span class="fc" id="L277">    isDisposed = true;</span>
-<span class="fc" id="L278">    SQLException e = null;</span>
-<span class="fc bfc" id="L279" title="All 2 branches covered.">    while (!recycledConnections.isEmpty()) {</span>
-<span class="fc" id="L280">      final Con c = recycledConnections.remove();</span>
-<span class="fc" id="L281">      final PooledConnection pconn = c.pooledCon;</span>
+<span class="nc" id="L277">    isDisposed = true;</span>
+<span class="nc" id="L278">    SQLException e = null;</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">    while (!recycledConnections.isEmpty()) {</span>
+<span class="nc" id="L280">      final Con c = recycledConnections.remove();</span>
+<span class="nc" id="L281">      final PooledConnection pconn = c.pooledCon;</span>
       try {
-<span class="fc" id="L283">        pconn.close();</span>
+<span class="nc" id="L283">        pconn.close();</span>
 <span class="nc" id="L284">      } catch (final SQLException e2) {</span>
 <span class="nc bnc" id="L285" title="All 2 branches missed.">        if (e == null) {</span>
 <span class="nc" id="L286">          e = e2;</span>
         }
-<span class="fc" id="L288">      }</span>
-<span class="fc" id="L289">    }</span>
-<span class="pc bpc" id="L290" title="1 of 2 branches missed.">    if (e != null) {</span>
+<span class="nc" id="L288">      }</span>
+<span class="nc" id="L289">    }</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">    if (e != null) {</span>
 <span class="nc" id="L291">      throw e;</span>
     }
-<span class="fc" id="L293">  }</span>
+<span class="nc" id="L293">  }</span>
 
   /**
    * Retrieves a connection from the connection pool. If
@@ -311,12 +311,12 @@ public class DbConnectionPool {
   public Connection getConnection() throws SQLException {
     // This routine is unsynchronized, because semaphore.tryAcquire() may
     // block.
-<span class="fc" id="L314">    synchronized (this) {</span>
-<span class="pc bpc" id="L315" title="1 of 2 branches missed.">      if (isDisposed) {</span>
+<span class="nc" id="L314">    synchronized (this) {</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">      if (isDisposed) {</span>
 <span class="nc" id="L316">        throw new IllegalStateException(&quot;Connection pool has been disposed.&quot;);</span>
       }
-<span class="fc" id="L318">    }</span>
-<span class="pc bpc" id="L319" title="1 of 2 branches missed.">    if (semaphore != null) {</span>
+<span class="nc" id="L318">    }</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (semaphore != null) {</span>
       try {
 <span class="nc bnc" id="L321" title="All 2 branches missed.">        if (!semaphore.tryAcquire(timeout, TimeUnit.SECONDS)) {</span>
 <span class="nc" id="L322">          throw new TimeoutException();</span>
@@ -326,39 +326,39 @@ public class DbConnectionPool {
             &quot;Interrupted while waiting for a database connection.&quot;, e);
 <span class="nc" id="L327">      }</span>
     }
-<span class="fc" id="L329">    boolean ok = false;</span>
+<span class="nc" id="L329">    boolean ok = false;</span>
     try {
-<span class="fc" id="L331">      final Connection conn = getConnection2();</span>
-<span class="fc" id="L332">      ok = true;</span>
-<span class="fc" id="L333">      return conn;</span>
+<span class="nc" id="L331">      final Connection conn = getConnection2();</span>
+<span class="nc" id="L332">      ok = true;</span>
+<span class="nc" id="L333">      return conn;</span>
     } finally {
-<span class="pc bpc" id="L335" title="3 of 4 branches missed.">      if (semaphore != null &amp;&amp; !ok) {</span>
+<span class="nc bnc" id="L335" title="All 4 branches missed.">      if (semaphore != null &amp;&amp; !ok) {</span>
 <span class="nc" id="L336">        semaphore.release();</span>
       }
     }
   }
 
   private synchronized Connection getConnection2() throws SQLException {
-<span class="pc bpc" id="L342" title="1 of 2 branches missed.">    if (isDisposed) {</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">    if (isDisposed) {</span>
 <span class="nc" id="L343">      throw new IllegalStateException(</span>
           &quot;Connection pool has been disposed.&quot;); // test again with
     }
     // lock
-<span class="fc" id="L347">    final long time = System.currentTimeMillis() + timeout * 1000;</span>
+<span class="nc" id="L347">    final long time = System.currentTimeMillis() + timeout * 1000;</span>
     while (true) {
       PooledConnection pconn;
-<span class="pc bpc" id="L350" title="1 of 2 branches missed.">      if (!recycledConnections.isEmpty()) {</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">      if (!recycledConnections.isEmpty()) {</span>
 <span class="nc" id="L351">        pconn = recycledConnections.remove().pooledCon;</span>
       } else {
-<span class="fc" id="L353">        pconn = dataSource.getPooledConnection();</span>
+<span class="nc" id="L353">        pconn = dataSource.getPooledConnection();</span>
       }
 
-<span class="fc" id="L356">      final Connection conn = pconn.getConnection();</span>
-<span class="pc bpc" id="L357" title="1 of 2 branches missed.">      if (conn.isValid(DbConstant.VALIDTESTDURATION)) {</span>
-<span class="fc" id="L358">        activeConnections++;</span>
-<span class="fc" id="L359">        pconn.addConnectionEventListener(poolConnectionEventListener);</span>
-<span class="fc" id="L360">        assertInnerState();</span>
-<span class="fc" id="L361">        return conn;</span>
+<span class="nc" id="L356">      final Connection conn = pconn.getConnection();</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">      if (conn.isValid(DbConstant.VALIDTESTDURATION)) {</span>
+<span class="nc" id="L358">        activeConnections++;</span>
+<span class="nc" id="L359">        pconn.addConnectionEventListener(poolConnectionEventListener);</span>
+<span class="nc" id="L360">        assertInnerState();</span>
+<span class="nc" id="L361">        return conn;</span>
       }
 <span class="nc bnc" id="L363" title="All 2 branches missed.">      if (time &gt; System.currentTimeMillis()) {</span>
         // too long
@@ -370,29 +370,29 @@ public class DbConnectionPool {
   }
 
   private synchronized void recycleConnection(PooledConnection pconn) {
-<span class="pc bpc" id="L373" title="1 of 2 branches missed.">    if (isDisposed) {</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">    if (isDisposed) {</span>
 <span class="nc" id="L374">      disposeConnection(pconn);</span>
 <span class="nc" id="L375">      return;</span>
     }
     try {
-<span class="pc bpc" id="L378" title="1 of 2 branches missed.">      if (!pconn.getConnection().isValid(DbConstant.VALIDTESTDURATION)) {</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">      if (!pconn.getConnection().isValid(DbConstant.VALIDTESTDURATION)) {</span>
 <span class="nc" id="L379">        disposeConnection(pconn);</span>
 <span class="nc" id="L380">        return;</span>
       }
 <span class="nc" id="L382">    } catch (final SQLException e) {</span>
 <span class="nc" id="L383">      disposeConnection(pconn);</span>
 <span class="nc" id="L384">      return;</span>
-<span class="fc" id="L385">    }</span>
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">    if (activeConnections &lt;= 0) {</span>
+<span class="nc" id="L385">    }</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">    if (activeConnections &lt;= 0) {</span>
 <span class="nc" id="L387">      throw new AssertionError();</span>
     }
-<span class="fc" id="L389">    activeConnections--;</span>
-<span class="pc bpc" id="L390" title="1 of 2 branches missed.">    if (semaphore != null) {</span>
+<span class="nc" id="L389">    activeConnections--;</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (semaphore != null) {</span>
 <span class="nc" id="L391">      semaphore.release();</span>
     }
-<span class="fc" id="L393">    recycledConnections.add(new Con(pconn));</span>
-<span class="fc" id="L394">    assertInnerState();</span>
-<span class="fc" id="L395">  }</span>
+<span class="nc" id="L393">    recycledConnections.add(new Con(pconn));</span>
+<span class="nc" id="L394">    assertInnerState();</span>
+<span class="nc" id="L395">  }</span>
 
   private synchronized void disposeConnection(PooledConnection pconn) {
 <span class="nc bnc" id="L398" title="All 2 branches missed.">    if (activeConnections &lt;= 0) {</span>
@@ -415,10 +415,10 @@ public class DbConnectionPool {
 <span class="nc" id="L415">  }</span>
 
   private void assertInnerState() {
-<span class="pc bpc" id="L418" title="1 of 2 branches missed.">    if (activeConnections &lt; 0) {</span>
+<span class="nc bnc" id="L418" title="All 2 branches missed.">    if (activeConnections &lt; 0) {</span>
 <span class="nc" id="L419">      throw new AssertionError();</span>
     }
-<span class="pc bpc" id="L421" title="1 of 2 branches missed.">    if (semaphore != null) {</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">    if (semaphore != null) {</span>
 <span class="nc bnc" id="L422" title="All 2 branches missed.">      if (activeConnections + recycledConnections.size() &gt; maxConnections) {</span>
 <span class="nc" id="L423">        throw new AssertionError();</span>
       }
@@ -426,15 +426,15 @@ public class DbConnectionPool {
 <span class="nc" id="L426">        throw new AssertionError();</span>
       }
     }
-<span class="fc" id="L429">  }</span>
+<span class="nc" id="L429">  }</span>
 
-<span class="fc" id="L431">  private class PoolConnectionEventListener implements ConnectionEventListener {</span>
+<span class="nc" id="L431">  private class PoolConnectionEventListener implements ConnectionEventListener {</span>
     @Override
     public void connectionClosed(ConnectionEvent event) {
-<span class="fc" id="L434">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
-<span class="fc" id="L435">      pconn.removeConnectionEventListener(this);</span>
-<span class="fc" id="L436">      recycleConnection(pconn);</span>
-<span class="fc" id="L437">    }</span>
+<span class="nc" id="L434">      final PooledConnection pconn = (PooledConnection) event.getSource();</span>
+<span class="nc" id="L435">      pconn.removeConnectionEventListener(this);</span>
+<span class="nc" id="L436">      recycleConnection(pconn);</span>
+<span class="nc" id="L437">    }</span>
 
     @Override
     public void connectionErrorOccurred(ConnectionEvent event) {
@@ -454,7 +454,7 @@ public class DbConnectionPool {
    * @return the number of active connections.
    */
   public synchronized int getActiveConnections() {
-<span class="fc" id="L457">    return activeConnections;</span>
+<span class="nc" id="L457">    return activeConnections;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

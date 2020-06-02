@@ -59,20 +59,20 @@ public final class RuleConverter {
   /**
    * All the possible ways to sort a list of rule objects.
    */
-<span class="fc" id="L62">  public enum Order {</span>
+<span class="nc" id="L62">  public enum Order {</span>
     /**
      * By ruleID, in ascending order.
      */
-<span class="fc" id="L66">    ascName(new Comparator&lt;Rule&gt;() {</span>
+<span class="nc" id="L66">    ascName(new Comparator&lt;Rule&gt;() {</span>
       @Override
       public int compare(Rule t1, Rule t2) {
-<span class="fc" id="L69">        return t1.getName().compareTo(t2.getName());</span>
+<span class="nc" id="L69">        return t1.getName().compareTo(t2.getName());</span>
       }
     }),
     /**
      * By ruleID, in descending order.
      */
-<span class="fc" id="L75">    descName(new Comparator&lt;Rule&gt;() {</span>
+<span class="nc" id="L75">    descName(new Comparator&lt;Rule&gt;() {</span>
       @Override
       public int compare(Rule t1, Rule t2) {
 <span class="nc" id="L78">        return -t1.getName().compareTo(t2.getName());</span>
@@ -84,58 +84,58 @@ public final class RuleConverter {
      */
     public final Comparator&lt;Rule&gt; comparator;
 
-<span class="fc" id="L87">    Order(Comparator&lt;Rule&gt; comparator) {</span>
-<span class="fc" id="L88">      this.comparator = comparator;</span>
-<span class="fc" id="L89">    }</span>
+<span class="nc" id="L87">    Order(Comparator&lt;Rule&gt; comparator) {</span>
+<span class="nc" id="L88">      this.comparator = comparator;</span>
+<span class="nc" id="L89">    }</span>
   }
 
   /**
    * The different modes of file transfer.
    */
-<span class="fc" id="L95">  public enum ModeTrans {</span>
+<span class="nc" id="L95">  public enum ModeTrans {</span>
     /**
      * From requester to requested.
      */
-<span class="fc" id="L99">    send(1),</span>
+<span class="nc" id="L99">    send(1),</span>
     /**
      * From requested to requester.
      */
-<span class="fc" id="L103">    receive(2),</span>
+<span class="nc" id="L103">    receive(2),</span>
     /**
      * From requester to requested, with MD5 checksum verification.
      */
-<span class="fc" id="L107">    sendMD5(3),</span>
+<span class="nc" id="L107">    sendMD5(3),</span>
     /**
      * From requested to requester, with MD5 checksum verification.
      */
-<span class="fc" id="L111">    receiveMD5(4),</span>
+<span class="nc" id="L111">    receiveMD5(4),</span>
     /**
      * From requester to requested, using Through mode.
      */
-<span class="fc" id="L115">    SENDTHROUGHMODE(5),</span>
+<span class="nc" id="L115">    SENDTHROUGHMODE(5),</span>
     /**
      * From requested to requester, using Through mode.
      */
-<span class="fc" id="L119">    RECVTHROUGHMODE(6),</span>
+<span class="nc" id="L119">    RECVTHROUGHMODE(6),</span>
     /**
      * From requester to requested, with MD5 checksum verification and
      * Through mode.
      */
-<span class="fc" id="L124">    SENDMD5THROUGHMODE(7),</span>
+<span class="nc" id="L124">    SENDMD5THROUGHMODE(7),</span>
     /**
      * From requested to requester, with MD5 checksum verification and
      * Through mode.
      */
-<span class="fc" id="L129">    RECVMD5THROUGHMODE(8);</span>
+<span class="nc" id="L129">    RECVMD5THROUGHMODE(8);</span>
 
     /**
      * The database code of the transfer mode.
      */
     public final int code;
 
-<span class="fc" id="L136">    ModeTrans(int code) {</span>
-<span class="fc" id="L137">      this.code = code;</span>
-<span class="fc" id="L138">    }</span>
+<span class="nc" id="L136">    ModeTrans(int code) {</span>
+<span class="nc" id="L137">      this.code = code;</span>
+<span class="nc" id="L138">    }</span>
 
     /**
      * Returns the ModeTrans value corresponding to the give code.
@@ -148,9 +148,9 @@ public final class RuleConverter {
      *     correspond to a ModeTrans value
      */
     public static ModeTrans fromCode(int code) {
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">      for (final ModeTrans mode : values()) {</span>
-<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (mode.code == code) {</span>
-<span class="fc" id="L153">          return mode;</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">      for (final ModeTrans mode : values()) {</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (mode.code == code) {</span>
+<span class="nc" id="L153">          return mode;</span>
         }
       }
 <span class="nc" id="L156">      throw new IllegalArgumentException(&quot;Code unknown: &quot; + code);</span>
@@ -167,22 +167,22 @@ public final class RuleConverter {
    * @return the converted ObjectNode
    */
   public static ObjectNode ruleToNode(Rule rule) {
-<span class="fc" id="L170">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L171">    node.put(RULE_NAME, rule.getName());</span>
-<span class="fc" id="L172">    node.putArray(HOST_IDS).addAll(getHostIdsArray(rule.getHostids()));</span>
-<span class="fc" id="L173">    node.put(MODE_TRANS, ModeTrans.fromCode(rule.getMode()).name());</span>
-<span class="fc" id="L174">    node.put(RECV_PATH, rule.getRecvPath());</span>
-<span class="fc" id="L175">    node.put(SEND_PATH, rule.getSendPath());</span>
-<span class="fc" id="L176">    node.put(ARCHIVE_PATH, rule.getArchivePath());</span>
-<span class="fc" id="L177">    node.put(WORK_PATH, rule.getWorkPath());</span>
-<span class="fc" id="L178">    node.set(R_PRE_TASKS, getTaskArray(rule.getRPreTasks()));</span>
-<span class="fc" id="L179">    node.set(R_POST_TASKS, getTaskArray(rule.getRPostTasks()));</span>
-<span class="fc" id="L180">    node.set(R_ERROR_TASKS, getTaskArray(rule.getRErrorTasks()));</span>
-<span class="fc" id="L181">    node.set(S_PRE_TASKS, getTaskArray(rule.getSPreTasks()));</span>
-<span class="fc" id="L182">    node.set(S_POST_TASKS, getTaskArray(rule.getSPostTasks()));</span>
-<span class="fc" id="L183">    node.set(S_ERROR_TASKS, getTaskArray(rule.getSErrorTasks()));</span>
+<span class="nc" id="L170">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="nc" id="L171">    node.put(RULE_NAME, rule.getName());</span>
+<span class="nc" id="L172">    node.putArray(HOST_IDS).addAll(getHostIdsArray(rule.getHostids()));</span>
+<span class="nc" id="L173">    node.put(MODE_TRANS, ModeTrans.fromCode(rule.getMode()).name());</span>
+<span class="nc" id="L174">    node.put(RECV_PATH, rule.getRecvPath());</span>
+<span class="nc" id="L175">    node.put(SEND_PATH, rule.getSendPath());</span>
+<span class="nc" id="L176">    node.put(ARCHIVE_PATH, rule.getArchivePath());</span>
+<span class="nc" id="L177">    node.put(WORK_PATH, rule.getWorkPath());</span>
+<span class="nc" id="L178">    node.set(R_PRE_TASKS, getTaskArray(rule.getRPreTasks()));</span>
+<span class="nc" id="L179">    node.set(R_POST_TASKS, getTaskArray(rule.getRPostTasks()));</span>
+<span class="nc" id="L180">    node.set(R_ERROR_TASKS, getTaskArray(rule.getRErrorTasks()));</span>
+<span class="nc" id="L181">    node.set(S_PRE_TASKS, getTaskArray(rule.getSPreTasks()));</span>
+<span class="nc" id="L182">    node.set(S_POST_TASKS, getTaskArray(rule.getSPostTasks()));</span>
+<span class="nc" id="L183">    node.set(S_ERROR_TASKS, getTaskArray(rule.getSErrorTasks()));</span>
 
-<span class="fc" id="L185">    return node;</span>
+<span class="nc" id="L185">    return node;</span>
   }
 
   /**
@@ -349,11 +349,11 @@ public final class RuleConverter {
    * @return the corresponding ArrayNode
    */
   private static ArrayNode getHostIdsArray(List&lt;String&gt; hostIds) {
-<span class="fc" id="L352">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="fc bfc" id="L353" title="All 2 branches covered.">    for (final String host : hostIds) {</span>
-<span class="fc" id="L354">      array.add(host);</span>
-<span class="fc" id="L355">    }</span>
-<span class="fc" id="L356">    return array;</span>
+<span class="nc" id="L352">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">    for (final String host : hostIds) {</span>
+<span class="nc" id="L354">      array.add(host);</span>
+<span class="nc" id="L355">    }</span>
+<span class="nc" id="L356">    return array;</span>
   }
 
   /**
@@ -364,15 +364,15 @@ public final class RuleConverter {
    * @return the corresponding ArrayNode
    */
   private static ArrayNode getTaskArray(List&lt;RuleTask&gt; tasks) {
-<span class="fc" id="L367">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="fc bfc" id="L368" title="All 2 branches covered.">    for (final RuleTask task : tasks) {</span>
-<span class="fc" id="L369">      final ObjectNode object = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L370">      object.put(TASK_TYPE, task.getType());</span>
-<span class="fc" id="L371">      object.put(TASK_ARGUMENTS, task.getPath());</span>
-<span class="fc" id="L372">      object.put(TASK_DELAY, task.getDelay());</span>
-<span class="fc" id="L373">      array.add(object);</span>
-<span class="fc" id="L374">    }</span>
-<span class="fc" id="L375">    return array;</span>
+<span class="nc" id="L367">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">    for (final RuleTask task : tasks) {</span>
+<span class="nc" id="L369">      final ObjectNode object = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="nc" id="L370">      object.put(TASK_TYPE, task.getType());</span>
+<span class="nc" id="L371">      object.put(TASK_ARGUMENTS, task.getPath());</span>
+<span class="nc" id="L372">      object.put(TASK_DELAY, task.getDelay());</span>
+<span class="nc" id="L373">      array.add(object);</span>
+<span class="nc" id="L374">    }</span>
+<span class="nc" id="L375">    return array;</span>
   }
 
   /**

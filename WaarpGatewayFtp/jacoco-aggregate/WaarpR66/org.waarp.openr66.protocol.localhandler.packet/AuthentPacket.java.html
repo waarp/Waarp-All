@@ -68,36 +68,36 @@ public class AuthentPacket extends AbstractLocalPacket {
                                                int middleLength, int endLength,
                                                ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
 <span class="nc" id="L72">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">    if (middleLength &lt;= 0) {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (middleLength &lt;= 0) {</span>
 <span class="nc" id="L75">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="pc bpc" id="L77" title="1 of 2 branches missed.">    if (endLength &lt; 5) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (endLength &lt; 5) {</span>
 <span class="nc" id="L78">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="fc" id="L80">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="fc" id="L81">    final byte[] bmiddle = new byte[middleLength];</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="fc" id="L83">      buf.readBytes(bheader);</span>
+<span class="nc" id="L80">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="nc" id="L81">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="nc" id="L83">      buf.readBytes(bheader);</span>
     }
-<span class="pc bpc" id="L85" title="1 of 2 branches missed.">    if (middleLength &gt; 0) {</span>
-<span class="fc" id="L86">      buf.readBytes(bmiddle);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="nc" id="L86">      buf.readBytes(bmiddle);</span>
     }
     // end part
-<span class="fc" id="L89">    final Integer newId = buf.readInt();</span>
-<span class="fc" id="L90">    final byte valid = buf.readByte();</span>
-<span class="fc" id="L91">    String version = R66Versions.V2_4_12</span>
-<span class="fc" id="L92">        .getVersion(); // first base reference where it is unacceptable</span>
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (endLength &gt; 5) {</span>
+<span class="nc" id="L89">    final Integer newId = buf.readInt();</span>
+<span class="nc" id="L90">    final byte valid = buf.readByte();</span>
+<span class="nc" id="L91">    String version = R66Versions.V2_4_12</span>
+<span class="nc" id="L92">        .getVersion(); // first base reference where it is unacceptable</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    if (endLength &gt; 5) {</span>
       // version
-<span class="fc" id="L95">      final byte[] bversion = new byte[endLength - 5];</span>
-<span class="fc" id="L96">      buf.readBytes(bversion);</span>
-<span class="fc" id="L97">      version = new String(bversion);</span>
+<span class="nc" id="L95">      final byte[] bversion = new byte[endLength - 5];</span>
+<span class="nc" id="L96">      buf.readBytes(bversion);</span>
+<span class="nc" id="L97">      version = new String(bversion);</span>
     }
-<span class="fc" id="L99">    final String sheader = new String(bheader);</span>
-<span class="fc" id="L100">    return new AuthentPacket(sheader, bmiddle, newId, valid, version);</span>
+<span class="nc" id="L99">    final String sheader = new String(bheader);</span>
+<span class="nc" id="L100">    return new AuthentPacket(sheader, bmiddle, newId, valid, version);</span>
   }
 
   /**
@@ -108,66 +108,66 @@ public class AuthentPacket extends AbstractLocalPacket {
    * @param version
    */
   private AuthentPacket(String hostId, byte[] key, Integer newId, byte valid,
-<span class="fc" id="L111">                        String version) {</span>
-<span class="fc" id="L112">    this.hostId = hostId;</span>
-<span class="fc" id="L113">    this.key = key;</span>
-<span class="fc" id="L114">    localId = newId;</span>
-<span class="fc" id="L115">    way = valid;</span>
-<span class="fc" id="L116">    Configuration.configuration.getVersions().put(hostId,</span>
+<span class="nc" id="L111">                        String version) {</span>
+<span class="nc" id="L112">    this.hostId = hostId;</span>
+<span class="nc" id="L113">    this.key = key;</span>
+<span class="nc" id="L114">    localId = newId;</span>
+<span class="nc" id="L115">    way = valid;</span>
+<span class="nc" id="L116">    Configuration.configuration.getVersions().put(hostId,</span>
                                                   new PartnerConfiguration(
                                                       hostId, version));
-<span class="fc" id="L119">    this.version = version;</span>
-<span class="fc" id="L120">  }</span>
+<span class="nc" id="L119">    this.version = version;</span>
+<span class="nc" id="L120">  }</span>
 
   /**
    * @param hostId
    * @param key
    * @param newId
    */
-<span class="fc" id="L127">  public AuthentPacket(String hostId, byte[] key, Integer newId) {</span>
-<span class="fc" id="L128">    this.hostId = hostId;</span>
-<span class="fc" id="L129">    this.key = key;</span>
-<span class="fc" id="L130">    localId = newId;</span>
-<span class="fc" id="L131">    way = ASKVALIDATE;</span>
-<span class="fc" id="L132">    Configuration.configuration.getVersions().putIfAbsent(hostId,</span>
+<span class="nc" id="L127">  public AuthentPacket(String hostId, byte[] key, Integer newId) {</span>
+<span class="nc" id="L128">    this.hostId = hostId;</span>
+<span class="nc" id="L129">    this.key = key;</span>
+<span class="nc" id="L130">    localId = newId;</span>
+<span class="nc" id="L131">    way = ASKVALIDATE;</span>
+<span class="nc" id="L132">    Configuration.configuration.getVersions().putIfAbsent(hostId,</span>
                                                           new PartnerConfiguration(
                                                               hostId));
-<span class="fc" id="L135">    version = Configuration.configuration.getVersions().get(hostId).toString();</span>
-<span class="fc" id="L136">  }</span>
+<span class="nc" id="L135">    version = Configuration.configuration.getVersions().get(hostId).toString();</span>
+<span class="nc" id="L136">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L141" title="1 of 2 branches missed.">    final byte[] bversion = version != null? version.getBytes() : null;</span>
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    end = Unpooled.buffer(5 + (version != null? bversion.length : 0));</span>
-<span class="fc" id="L143">    end.writeInt(localId);</span>
-<span class="fc" id="L144">    end.writeByte(way);</span>
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    if (version != null) {</span>
-<span class="fc" id="L146">      end.writeBytes(bversion);</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">    final byte[] bversion = version != null? version.getBytes() : null;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    end = Unpooled.buffer(5 + (version != null? bversion.length : 0));</span>
+<span class="nc" id="L143">    end.writeInt(localId);</span>
+<span class="nc" id="L144">    end.writeByte(way);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (version != null) {</span>
+<span class="nc" id="L146">      end.writeBytes(bversion);</span>
     }
-<span class="fc" id="L148">  }</span>
+<span class="nc" id="L148">  }</span>
 
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (hostId == null) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (hostId == null) {</span>
 <span class="nc" id="L154">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="fc" id="L156">    header = Unpooled.wrappedBuffer(hostId.getBytes());</span>
-<span class="fc" id="L157">  }</span>
+<span class="nc" id="L156">    header = Unpooled.wrappedBuffer(hostId.getBytes());</span>
+<span class="nc" id="L157">  }</span>
 
   @Override
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L162" title="1 of 2 branches missed.">    if (key == null) {</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (key == null) {</span>
 <span class="nc" id="L163">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="fc" id="L165">    middle = Unpooled.wrappedBuffer(key);</span>
-<span class="fc" id="L166">  }</span>
+<span class="nc" id="L165">    middle = Unpooled.wrappedBuffer(key);</span>
+<span class="nc" id="L166">  }</span>
 
   @Override
   public byte getType() {
-<span class="fc" id="L170">    return LocalPacketFactory.AUTHENTPACKET;</span>
+<span class="nc" id="L170">    return LocalPacketFactory.AUTHENTPACKET;</span>
   }
 
   @Override
@@ -180,14 +180,14 @@ public class AuthentPacket extends AbstractLocalPacket {
    * @return the hostId
    */
   public String getHostId() {
-<span class="fc" id="L183">    return hostId;</span>
+<span class="nc" id="L183">    return hostId;</span>
   }
 
   /**
    * @return the key
    */
   public byte[] getKey() {
-<span class="fc" id="L190">    return key;</span>
+<span class="nc" id="L190">    return key;</span>
   }
 
   /**
@@ -201,30 +201,30 @@ public class AuthentPacket extends AbstractLocalPacket {
    * @return True if this packet is to be validated
    */
   public boolean isToValidate() {
-<span class="fc bfc" id="L204" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
   public void validate(boolean isSSL) {
-<span class="fc" id="L211">    way = ANSWERVALIDATE;</span>
-<span class="fc bfc" id="L212" title="All 2 branches covered.">    DbHostAuth auth = isSSL? Configuration.configuration.getHostSslAuth() :</span>
-<span class="fc" id="L213">        Configuration.configuration.getHostAuth();</span>
+<span class="nc" id="L211">    way = ANSWERVALIDATE;</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    DbHostAuth auth = isSSL? Configuration.configuration.getHostSslAuth() :</span>
+<span class="nc" id="L213">        Configuration.configuration.getHostAuth();</span>
     try {
-<span class="fc" id="L215">      hostId = Configuration.configuration.getHostId(isSSL);</span>
+<span class="nc" id="L215">      hostId = Configuration.configuration.getHostId(isSSL);</span>
 <span class="nc" id="L216">    } catch (final OpenR66ProtocolNoSslException e) {</span>
 <span class="nc" id="L217">      hostId = Configuration.configuration.getHostId();</span>
 <span class="nc" id="L218">      auth = Configuration.configuration.getHostAuth();</span>
-<span class="fc" id="L219">    }</span>
-<span class="fc" id="L220">    key = FilesystemBasedDigest.passwdCrypt(auth.getHostkey());</span>
-<span class="fc" id="L221">    Configuration.configuration.getVersions().putIfAbsent(hostId,</span>
+<span class="nc" id="L219">    }</span>
+<span class="nc" id="L220">    key = FilesystemBasedDigest.passwdCrypt(auth.getHostkey());</span>
+<span class="nc" id="L221">    Configuration.configuration.getVersions().putIfAbsent(hostId,</span>
                                                           new PartnerConfiguration(
                                                               hostId));
-<span class="fc" id="L224">    version = Configuration.configuration.getVersions().get(hostId).toString();</span>
-<span class="fc" id="L225">    header = null;</span>
-<span class="fc" id="L226">    middle = null;</span>
-<span class="fc" id="L227">    end = null;</span>
-<span class="fc" id="L228">  }</span>
+<span class="nc" id="L224">    version = Configuration.configuration.getVersions().get(hostId).toString();</span>
+<span class="nc" id="L225">    header = null;</span>
+<span class="nc" id="L226">    middle = null;</span>
+<span class="nc" id="L227">    end = null;</span>
+<span class="nc" id="L228">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

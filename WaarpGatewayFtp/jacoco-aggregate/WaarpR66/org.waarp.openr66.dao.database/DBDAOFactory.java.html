@@ -45,14 +45,14 @@ public class DBDAOFactory extends DAOFactory {
 
   private static final String DATA_ACCESS_ERROR = &quot;data access error&quot;;
 
-<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(DBDAOFactory.class);</span>
+<span class="nc" id="L48">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L49">      WaarpLoggerFactory.getLogger(DBDAOFactory.class);</span>
 
   private final ConnectionFactory connectionFactory;
 
-<span class="fc" id="L53">  public DBDAOFactory(ConnectionFactory factory) {</span>
-<span class="fc" id="L54">    connectionFactory = factory;</span>
-<span class="fc" id="L55">  }</span>
+<span class="nc" id="L53">  public DBDAOFactory(ConnectionFactory factory) {</span>
+<span class="nc" id="L54">    connectionFactory = factory;</span>
+<span class="nc" id="L55">  }</span>
 
   public ConnectionFactory getConnectionFactory() {
 <span class="nc" id="L58">    return connectionFactory;</span>
@@ -66,7 +66,7 @@ public class DBDAOFactory extends DAOFactory {
   @Override
   public DBBusinessDAO getBusinessDAO() throws DAOConnectionException {
     try {
-<span class="fc" id="L69">      return new DBBusinessDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L69">      return new DBBusinessDAO(connectionFactory.getConnection());</span>
 <span class="nc" id="L70">    } catch (final SQLException e) {</span>
 <span class="nc" id="L71">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
@@ -75,7 +75,7 @@ public class DBDAOFactory extends DAOFactory {
   @Override
   public DBHostDAO getHostDAO() throws DAOConnectionException {
     try {
-<span class="fc" id="L78">      return new DBHostDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L78">      return new DBHostDAO(connectionFactory.getConnection());</span>
 <span class="nc" id="L79">    } catch (final SQLException e) {</span>
 <span class="nc" id="L80">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
@@ -84,7 +84,7 @@ public class DBDAOFactory extends DAOFactory {
   @Override
   public DBLimitDAO getLimitDAO() throws DAOConnectionException {
     try {
-<span class="fc" id="L87">      return new DBLimitDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L87">      return new DBLimitDAO(connectionFactory.getConnection());</span>
 <span class="nc" id="L88">    } catch (final SQLException e) {</span>
 <span class="nc" id="L89">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
@@ -94,7 +94,7 @@ public class DBDAOFactory extends DAOFactory {
   public DBMultipleMonitorDAO getMultipleMonitorDAO()
       throws DAOConnectionException {
     try {
-<span class="fc" id="L97">      return new DBMultipleMonitorDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L97">      return new DBMultipleMonitorDAO(connectionFactory.getConnection());</span>
 <span class="nc" id="L98">    } catch (final SQLException e) {</span>
 <span class="nc" id="L99">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
@@ -103,7 +103,7 @@ public class DBDAOFactory extends DAOFactory {
   @Override
   public DBRuleDAO getRuleDAO() throws DAOConnectionException {
     try {
-<span class="fc" id="L106">      return new DBRuleDAO(connectionFactory.getConnection());</span>
+<span class="nc" id="L106">      return new DBRuleDAO(connectionFactory.getConnection());</span>
 <span class="nc" id="L107">    } catch (final SQLException e) {</span>
 <span class="nc" id="L108">      throw new DAOConnectionException(DATA_ACCESS_ERROR, e);</span>
     }
@@ -112,17 +112,17 @@ public class DBDAOFactory extends DAOFactory {
   @Override
   public DBTransferDAO getTransferDAO() throws DAOConnectionException {
     try {
-<span class="fc" id="L115">      final DbProperties prop = connectionFactory.getProperties();</span>
-<span class="fc bfc" id="L116" title="All 2 branches covered.">      if (prop instanceof H2Properties) {</span>
-<span class="fc" id="L117">        return new H2TransferDAO(connectionFactory.getConnection());</span>
-<span class="fc bfc" id="L118" title="All 2 branches covered.">      } else if (prop instanceof MariaDBProperties) {</span>
-<span class="fc" id="L119">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
-<span class="fc bfc" id="L120" title="All 2 branches covered.">      } else if (prop instanceof MySQLProperties) {</span>
-<span class="fc" id="L121">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">      } else if (prop instanceof OracleProperties) {</span>
+<span class="nc" id="L115">      final DbProperties prop = connectionFactory.getProperties();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      if (prop instanceof H2Properties) {</span>
+<span class="nc" id="L117">        return new H2TransferDAO(connectionFactory.getConnection());</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">      } else if (prop instanceof MariaDBProperties) {</span>
+<span class="nc" id="L119">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">      } else if (prop instanceof MySQLProperties) {</span>
+<span class="nc" id="L121">        return new MariaDBTransferDAO(connectionFactory.getConnection());</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">      } else if (prop instanceof OracleProperties) {</span>
 <span class="nc" id="L123">        return new OracleTransferDAO(connectionFactory.getConnection());</span>
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      } else if (prop instanceof PostgreSQLProperties) {</span>
-<span class="fc" id="L125">        return new PostgreSQLTransferDAO(connectionFactory.getConnection());</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">      } else if (prop instanceof PostgreSQLProperties) {</span>
+<span class="nc" id="L125">        return new PostgreSQLTransferDAO(connectionFactory.getConnection());</span>
       } else {
 <span class="nc" id="L127">        throw new DAOConnectionException(&quot;Unsupported database&quot;);</span>
       }

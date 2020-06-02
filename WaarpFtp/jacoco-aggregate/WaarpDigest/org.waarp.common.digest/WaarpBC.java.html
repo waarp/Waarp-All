@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>WaarpBC.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Ftp</a> &gt; <a href="../index.html" class="el_bundle">WaarpDigest</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.digest</a> &gt; <span class="el_source">WaarpBC.java</span></div><h1>WaarpBC.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.digest;
+
+import io.netty.handler.ssl.OpenSsl;
+
+import javax.net.ssl.SSLContext;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+
+public class WaarpBC {
+  public static final String PROTOCOL = &quot;TLS&quot;;
+<span class="nc" id="L34">  private static volatile boolean initialized = false;</span>
+<span class="nc" id="L35">  private static boolean specialSecureRandom = false;</span>
+
+  static {
+<span class="nc" id="L38">    initializedTlsContext();</span>
+<span class="nc" id="L39">  }</span>
+
+  public static void initializedTlsContext() {
+    try {
+<span class="nc bnc" id="L43" title="All 2 branches missed.">      if (!initialized) {</span>
+<span class="nc" id="L44">        addBcProvider();</span>
+<span class="nc" id="L45">        registerRandomSecure();</span>
+<span class="nc" id="L46">        initialized = true;</span>
+      }
+<span class="nc" id="L48">    } catch (Throwable throwable) {//NOSONAR</span>
+<span class="nc" id="L49">      throwable.printStackTrace();//NOSONAR</span>
+<span class="nc" id="L50">      System.err //NOSONAR</span>
+<span class="nc" id="L51">                 .println(&quot;Error occurs at startup: &quot; +//NOSONAR</span>
+<span class="nc" id="L52">                          throwable.getMessage());//NOSONAR</span>
+<span class="nc" id="L53">    }</span>
+<span class="nc" id="L54">  }</span>
+
+  /**
+   * Called at first
+   */
+  private static void addBcProvider() {
+<span class="nc" id="L60">    OpenSsl.isAvailable();</span>
+<span class="nc" id="L61">  }</span>
+
+  /**
+   * To fix issue on SecureRandom using bad algotithm
+   * &lt;/br&gt;
+   * Called at second place
+   */
+  private static void registerRandomSecure() {
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (System.getProperty(&quot;os.name&quot;).contains(&quot;Windows&quot;)) {</span>
+<span class="nc" id="L70">      Provider provider = Security.getProvider(&quot;SunMSCAPI&quot;);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (provider != null) {</span>
+<span class="nc" id="L72">        Security.removeProvider(provider.getName());</span>
+<span class="nc" id="L73">        Security.insertProviderAt(provider, 1);</span>
+<span class="nc" id="L74">        specialSecureRandom = true;</span>
+      }
+<span class="nc" id="L76">    } else {</span>
+<span class="nc" id="L77">      System.setProperty(&quot;java.security.egd&quot;, &quot;file:/dev/./urandom&quot;);</span>
+<span class="nc" id="L78">      Provider provider = Security.getProvider(&quot;SUN&quot;);</span>
+<span class="nc" id="L79">      final String type = &quot;SecureRandom&quot;;</span>
+<span class="nc" id="L80">      final String alg = &quot;NativePRNGNonBlocking&quot;;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">      if (provider != null) {</span>
+<span class="nc" id="L82">        final String name = String.format(&quot;%s.%s&quot;, type, alg);</span>
+<span class="nc" id="L83">        final Provider.Service service = provider.getService(type, alg);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (service != null) {</span>
+<span class="nc" id="L85">          Security.insertProviderAt(new Provider(name, provider.getVersion(),</span>
+<span class="nc" id="L86">                                                 &quot;Waarp quick fix for SecureRandom using urandom&quot;) {</span>
+            private static final long serialVersionUID = 1001L;
+
+            {
+<span class="nc" id="L90">              System.setProperty(name, service.getClassName());</span>
+<span class="nc" id="L91">            }</span>
+
+          }, 1);
+<span class="nc" id="L94">          specialSecureRandom = true;</span>
+        }
+      }
+    }
+<span class="nc" id="L98">  }</span>
+
+  public static SecureRandom getSecureRandom() {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (!specialSecureRandom) {</span>
+<span class="nc" id="L102">      return new SecureRandom();</span>
+    }
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (System.getProperty(&quot;os.name&quot;).contains(&quot;Windows&quot;)) {</span>
+      try {
+<span class="nc" id="L106">        return SecureRandom.getInstance(&quot;Windows-PRNG&quot;, &quot;SunMSCAPI&quot;);</span>
+<span class="nc" id="L107">      } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L108">        return new SecureRandom();</span>
+<span class="nc" id="L109">      } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L110">        return new SecureRandom();</span>
+      }
+    } else {
+      try {
+<span class="nc" id="L114">        return SecureRandom.getInstance(&quot;NativePRNGNonBlocking&quot;, &quot;SUN&quot;);</span>
+<span class="nc" id="L115">      } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L116">        return new SecureRandom();</span>
+<span class="nc" id="L117">      } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L118">        return new SecureRandom();</span>
+      }
+    }
+  }
+
+  public static SSLContext getInstance()
+      throws NoSuchAlgorithmException, NoSuchProviderException {
+<span class="nc" id="L125">    return SSLContext.getInstance(PROTOCOL);</span>
+  }
+
+  private WaarpBC() {
+    // Nothing
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

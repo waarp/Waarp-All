@@ -74,17 +74,17 @@ public class RulesHandler extends AbstractRestDbHandler {
   private static final HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="fc" id="L77">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="fc" id="L78">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="fc" id="L79">    allow.add(HttpMethod.GET);</span>
-<span class="fc" id="L80">    allow.add(HttpMethod.POST);</span>
-<span class="fc" id="L81">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="fc" id="L82">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L77">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="nc" id="L78">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L79">    allow.add(HttpMethod.GET);</span>
+<span class="nc" id="L80">    allow.add(HttpMethod.POST);</span>
+<span class="nc" id="L81">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L82">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="nc" id="L83">  }</span>
 
   public RulesHandler(byte crud) {
-<span class="fc" id="L86">    super(crud);</span>
-<span class="fc" id="L87">  }</span>
+<span class="nc" id="L86">    super(crud);</span>
+<span class="nc" id="L87">  }</span>
 
   /**
    * Method called to obtain a list of transfer rules based on the filters in
@@ -114,72 +114,72 @@ public class RulesHandler extends AbstractRestDbHandler {
                           @QueryParam(MODE_TRANS) @DefaultValue(&quot;&quot;)
                               String modeTransStr) {
 
-<span class="fc" id="L117">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc" id="L117">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="fc" id="L119">    int limit = 20;</span>
-<span class="fc" id="L120">    int offset = 0;</span>
-<span class="fc" id="L121">    Order order = ascName;</span>
-<span class="fc" id="L122">    ModeTrans modeTrans = null;</span>
+<span class="nc" id="L119">    int limit = 20;</span>
+<span class="nc" id="L120">    int offset = 0;</span>
+<span class="nc" id="L121">    Order order = ascName;</span>
+<span class="nc" id="L122">    ModeTrans modeTrans = null;</span>
     try {
-<span class="fc" id="L124">      limit = Integer.parseInt(limitStr);</span>
-<span class="fc" id="L125">      order = Order.valueOf(orderStr);</span>
+<span class="nc" id="L124">      limit = Integer.parseInt(limitStr);</span>
+<span class="nc" id="L125">      order = Order.valueOf(orderStr);</span>
 <span class="nc" id="L126">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L127">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
 <span class="nc" id="L128">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L129">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, orderStr));</span>
-<span class="pc" id="L130">    }</span>
+<span class="nc" id="L130">    }</span>
     try {
-<span class="fc" id="L132">      offset = Integer.parseInt(offsetStr);</span>
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">      if (!modeTransStr.isEmpty()) {</span>
+<span class="nc" id="L132">      offset = Integer.parseInt(offsetStr);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (!modeTransStr.isEmpty()) {</span>
 <span class="nc" id="L134">        modeTrans = ModeTrans.valueOf(modeTransStr);</span>
       }
 <span class="nc" id="L136">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L137">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
 <span class="nc" id="L138">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L139">      errors.add(ILLEGAL_PARAMETER_VALUE(MODE_TRANS, e.getMessage()));</span>
-<span class="pc" id="L140">    }</span>
+<span class="nc" id="L140">    }</span>
 
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (limit &lt;= 0) {</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (limit &lt;= 0) {</span>
 <span class="nc" id="L143">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">    } else if (offset &lt; 0) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">    } else if (offset &lt; 0) {</span>
 <span class="nc" id="L145">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
     }
 
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
 <span class="nc" id="L149">      throw new RestErrorException(errors);</span>
     }
 
-<span class="fc" id="L152">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (modeTrans != null) {</span>
+<span class="nc" id="L152">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (modeTrans != null) {</span>
 <span class="nc" id="L154">      filters.add(new Filter(MODE_TRANS_FIELD, &quot;=&quot;,</span>
 <span class="nc" id="L155">                             Integer.toString(modeTrans.ordinal())));</span>
     }
 
     List&lt;Rule&gt; rules;
-<span class="fc" id="L159">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L159">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="fc" id="L161">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="fc" id="L162">      rules = ruleDAO.find(filters);</span>
+<span class="nc" id="L161">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L162">      rules = ruleDAO.find(filters);</span>
 <span class="nc" id="L163">    } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L164">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="fc" id="L166">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L166">      DAOFactory.closeDAO(ruleDAO);</span>
     }
 
-<span class="fc" id="L169">    final int totalResults = rules.size();</span>
-<span class="fc" id="L170">    Collections.sort(rules, order.comparator);</span>
+<span class="nc" id="L169">    final int totalResults = rules.size();</span>
+<span class="nc" id="L170">    Collections.sort(rules, order.comparator);</span>
 
-<span class="fc" id="L172">    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L173" title="1 of 4 branches missed.">    for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; rules.size(); i++) {</span>
-<span class="fc" id="L174">      results.add(ruleToNode(rules.get(i)));</span>
+<span class="nc" id="L172">    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L173" title="All 4 branches missed.">    for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; rules.size(); i++) {</span>
+<span class="nc" id="L174">      results.add(ruleToNode(rules.get(i)));</span>
     }
 
-<span class="fc" id="L177">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L178">    responseObject.put(&quot;totalResults&quot;, totalResults);</span>
-<span class="fc" id="L179">    responseObject.set(&quot;results&quot;, results);</span>
-<span class="fc" id="L180">    final String responseText = nodeToString(responseObject);</span>
-<span class="fc" id="L181">    responder.sendJson(OK, responseText);</span>
-<span class="fc" id="L182">  }</span>
+<span class="nc" id="L177">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="nc" id="L178">    responseObject.put(&quot;totalResults&quot;, totalResults);</span>
+<span class="nc" id="L179">    responseObject.set(&quot;results&quot;, results);</span>
+<span class="nc" id="L180">    final String responseText = nodeToString(responseObject);</span>
+<span class="nc" id="L181">    responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L182">  }</span>
 
   /**
    * Method called to add a new transfer rule in the server database. The

@@ -29,53 +29,53 @@ import java.util.concurrent.ConcurrentHashMap;
  * Finite Dual State Machine for OpenR66 (Requester=R, requesteD=D, Sender=S,
  * Receive=R)
  */
-<span class="fc" id="L32">public enum R66FiniteDualStates {</span>
-<span class="fc" id="L33">  OPENEDCHANNEL, CLOSEDCHANNEL, ERROR, STARTUP, AUTHENTR, AUTHENTD, REQUESTR,</span>
-<span class="fc" id="L34">  REQUESTD, VALID, DATAR, DATAS, ENDTRANSFERR, ENDREQUESTR, ENDTRANSFERS,</span>
-<span class="fc" id="L35">  ENDREQUESTS, TEST, INFORMATION, VALIDOTHER, SHUTDOWN, BUSINESSR, BUSINESSD;</span>
+<span class="nc" id="L32">public enum R66FiniteDualStates {</span>
+<span class="nc" id="L33">  OPENEDCHANNEL, CLOSEDCHANNEL, ERROR, STARTUP, AUTHENTR, AUTHENTD, REQUESTR,</span>
+<span class="nc" id="L34">  REQUESTD, VALID, DATAR, DATAS, ENDTRANSFERR, ENDREQUESTR, ENDTRANSFERS,</span>
+<span class="nc" id="L35">  ENDREQUESTS, TEST, INFORMATION, VALIDOTHER, SHUTDOWN, BUSINESSR, BUSINESSD;</span>
   // not used in LSH
   // CONNECTERROR,
   // KEEPALIVEPACKET
 
-<span class="fc" id="L40">  private enum R66Transition {</span>
-<span class="fc" id="L41">    tOPENEDCHANNEL(OPENEDCHANNEL, EnumSet.of(STARTUP, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L42">    tSTARTUP(STARTUP, EnumSet.of(AUTHENTR, AUTHENTD, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L43">    tAUTHENTR(AUTHENTR, EnumSet.of(AUTHENTD, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L44">    tAUTHENTD(AUTHENTD, EnumSet</span>
-<span class="fc" id="L45">        .of(REQUESTR, VALIDOTHER, INFORMATION, SHUTDOWN, TEST, BUSINESSR,</span>
+<span class="nc" id="L40">  private enum R66Transition {</span>
+<span class="nc" id="L41">    tOPENEDCHANNEL(OPENEDCHANNEL, EnumSet.of(STARTUP, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L42">    tSTARTUP(STARTUP, EnumSet.of(AUTHENTR, AUTHENTD, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L43">    tAUTHENTR(AUTHENTR, EnumSet.of(AUTHENTD, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L44">    tAUTHENTD(AUTHENTD, EnumSet</span>
+<span class="nc" id="L45">        .of(REQUESTR, VALIDOTHER, INFORMATION, SHUTDOWN, TEST, BUSINESSR,</span>
             BUSINESSD, ENDREQUESTS, CLOSEDCHANNEL, ERROR)),
-<span class="fc" id="L47">    tREQUESTR(REQUESTR, EnumSet.of(VALID, REQUESTD, ERROR, CLOSEDCHANNEL)),</span>
-<span class="fc" id="L48">    tREQUESTD(REQUESTD, EnumSet.of(VALID, DATAS, DATAR, ENDTRANSFERS, ERROR)),</span>
-<span class="fc" id="L49">    tVALID(VALID, EnumSet</span>
-<span class="fc" id="L50">        .of(REQUESTD, DATAR, DATAS, ENDTRANSFERS, ENDTRANSFERR, CLOSEDCHANNEL,</span>
+<span class="nc" id="L47">    tREQUESTR(REQUESTR, EnumSet.of(VALID, REQUESTD, ERROR, CLOSEDCHANNEL)),</span>
+<span class="nc" id="L48">    tREQUESTD(REQUESTD, EnumSet.of(VALID, DATAS, DATAR, ENDTRANSFERS, ERROR)),</span>
+<span class="nc" id="L49">    tVALID(VALID, EnumSet</span>
+<span class="nc" id="L50">        .of(REQUESTD, DATAR, DATAS, ENDTRANSFERS, ENDTRANSFERR, CLOSEDCHANNEL,</span>
             ERROR)),
-<span class="fc" id="L52">    tDATAS(DATAS, EnumSet.of(DATAS, ENDTRANSFERS, VALID, ERROR)),</span>
-<span class="fc" id="L53">    tDATAR(DATAR, EnumSet.of(DATAR, ENDTRANSFERS, ERROR)),</span>
-<span class="fc" id="L54">    tENDTRANSFERS(ENDTRANSFERS, EnumSet.of(ENDTRANSFERR, VALID, ERROR)),</span>
-<span class="fc" id="L55">    tENDTRANSFERR(ENDTRANSFERR, EnumSet.of(ENDREQUESTS, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L56">    tENDREQUESTS(ENDREQUESTS, EnumSet.of(ENDREQUESTR, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L57">    tENDREQUESTR(ENDREQUESTR, EnumSet.of(CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L58">    tINFORMATION(INFORMATION, EnumSet.of(VALIDOTHER, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L59">    tTEST(TEST, EnumSet.of(TEST, VALIDOTHER)),</span>
-<span class="fc" id="L60">    tVALIDOTHER(VALIDOTHER, EnumSet.of(VALIDOTHER, CLOSEDCHANNEL, ERROR)),</span>
-<span class="fc" id="L61">    tSHUTDOWN(SHUTDOWN, EnumSet.of(CLOSEDCHANNEL, SHUTDOWN, ERROR)),</span>
-<span class="fc" id="L62">    tERROR(ERROR, EnumSet.of(ERROR, SHUTDOWN, CLOSEDCHANNEL)),</span>
-<span class="fc" id="L63">    tCLOSEDCHANNEL(CLOSEDCHANNEL,</span>
-<span class="fc" id="L64">                   EnumSet.of(CLOSEDCHANNEL, ENDREQUESTR, ENDREQUESTS)),</span>
-<span class="fc" id="L65">    tBUSINESSR(BUSINESSR,</span>
-<span class="fc" id="L66">               EnumSet.of(ERROR, BUSINESSD, CLOSEDCHANNEL, VALIDOTHER)),</span>
-<span class="fc" id="L67">    tBUSINESSD(BUSINESSD, EnumSet</span>
-<span class="fc" id="L68">        .of(ERROR, BUSINESSD, BUSINESSR, CLOSEDCHANNEL, VALIDOTHER));</span>
+<span class="nc" id="L52">    tDATAS(DATAS, EnumSet.of(DATAS, ENDTRANSFERS, VALID, ERROR)),</span>
+<span class="nc" id="L53">    tDATAR(DATAR, EnumSet.of(DATAR, ENDTRANSFERS, ENDTRANSFERR, ERROR)),</span>
+<span class="nc" id="L54">    tENDTRANSFERS(ENDTRANSFERS, EnumSet.of(ENDTRANSFERR, VALID, ERROR)),</span>
+<span class="nc" id="L55">    tENDTRANSFERR(ENDTRANSFERR, EnumSet.of(ENDREQUESTS, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L56">    tENDREQUESTS(ENDREQUESTS, EnumSet.of(ENDREQUESTR, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L57">    tENDREQUESTR(ENDREQUESTR, EnumSet.of(CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L58">    tINFORMATION(INFORMATION, EnumSet.of(VALIDOTHER, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L59">    tTEST(TEST, EnumSet.of(TEST, VALIDOTHER)),</span>
+<span class="nc" id="L60">    tVALIDOTHER(VALIDOTHER, EnumSet.of(VALIDOTHER, CLOSEDCHANNEL, ERROR)),</span>
+<span class="nc" id="L61">    tSHUTDOWN(SHUTDOWN, EnumSet.of(CLOSEDCHANNEL, SHUTDOWN, ERROR)),</span>
+<span class="nc" id="L62">    tERROR(ERROR, EnumSet.of(ERROR, SHUTDOWN, CLOSEDCHANNEL)),</span>
+<span class="nc" id="L63">    tCLOSEDCHANNEL(CLOSEDCHANNEL,</span>
+<span class="nc" id="L64">                   EnumSet.of(CLOSEDCHANNEL, ENDREQUESTR, ENDREQUESTS)),</span>
+<span class="nc" id="L65">    tBUSINESSR(BUSINESSR,</span>
+<span class="nc" id="L66">               EnumSet.of(ERROR, BUSINESSD, CLOSEDCHANNEL, VALIDOTHER)),</span>
+<span class="nc" id="L67">    tBUSINESSD(BUSINESSD, EnumSet</span>
+<span class="nc" id="L68">        .of(ERROR, BUSINESSD, BUSINESSR, CLOSEDCHANNEL, VALIDOTHER));</span>
 
     public final Transition&lt;R66FiniteDualStates&gt; elt;
 
-<span class="fc" id="L72">    R66Transition(R66FiniteDualStates state, EnumSet&lt;R66FiniteDualStates&gt; set) {</span>
-<span class="fc" id="L73">      elt = new Transition&lt;R66FiniteDualStates&gt;(state, set);</span>
-<span class="fc" id="L74">    }</span>
+<span class="nc" id="L72">    R66Transition(R66FiniteDualStates state, EnumSet&lt;R66FiniteDualStates&gt; set) {</span>
+<span class="nc" id="L73">      elt = new Transition&lt;R66FiniteDualStates&gt;(state, set);</span>
+<span class="nc" id="L74">    }</span>
   }
 
   private static final ConcurrentHashMap&lt;R66FiniteDualStates, EnumSet&lt;R66FiniteDualStates&gt;&gt;
-<span class="fc" id="L78">      stateMap =</span>
+<span class="nc" id="L78">      stateMap =</span>
       new ConcurrentHashMap&lt;R66FiniteDualStates, EnumSet&lt;R66FiniteDualStates&gt;&gt;();
 
   /**
@@ -83,16 +83,16 @@ import java.util.concurrent.ConcurrentHashMap;
    * States association.
    */
   public static void initR66FiniteStates() {
-<span class="fc bfc" id="L86" title="All 2 branches covered.">    for (final R66Transition trans : R66Transition.values()) {</span>
-<span class="fc" id="L87">      stateMap.put(trans.elt.getState(), trans.elt.getSet());</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    for (final R66Transition trans : R66Transition.values()) {</span>
+<span class="nc" id="L87">      stateMap.put(trans.elt.getState(), trans.elt.getSet());</span>
     }
-<span class="fc" id="L89">  }</span>
+<span class="nc" id="L89">  }</span>
 
   /**
    * @return a new Session MachineState for OpenR66
    */
   public static MachineState&lt;R66FiniteDualStates&gt; newSessionMachineState() {
-<span class="fc" id="L95">    return new MachineState&lt;R66FiniteDualStates&gt;(OPENEDCHANNEL, stateMap);</span>
+<span class="nc" id="L95">    return new MachineState&lt;R66FiniteDualStates&gt;(OPENEDCHANNEL, stateMap);</span>
   }
 
   /**
@@ -100,7 +100,7 @@ import java.util.concurrent.ConcurrentHashMap;
    */
   public static void endSessionMachineSate(
       MachineState&lt;R66FiniteDualStates&gt; machine) {
-<span class="fc" id="L103">    machine.release();</span>
-<span class="fc" id="L104">  }</span>
+<span class="nc" id="L103">    machine.release();</span>
+<span class="nc" id="L104">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

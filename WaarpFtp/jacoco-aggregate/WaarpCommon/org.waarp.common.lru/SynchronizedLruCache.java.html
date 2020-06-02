@@ -48,12 +48,12 @@ public class SynchronizedLruCache&lt;K, V&gt; extends AbstractLruCache&lt;K, V&g
    */
   public SynchronizedLruCache(int capacity, long ttl, int initialCapacity,
                               float loadFactor) {
-<span class="fc" id="L51">    super(ttl);</span>
-<span class="fc" id="L52">    cacheMap =</span>
+<span class="nc" id="L51">    super(ttl);</span>
+<span class="nc" id="L52">    cacheMap =</span>
         new CapacityLruLinkedHashMap&lt;K, InterfaceLruCacheEntry&lt;V&gt;&gt;(capacity,
                                                                    initialCapacity,
                                                                    loadFactor);
-<span class="fc" id="L56">  }</span>
+<span class="nc" id="L56">  }</span>
 
   /**
    * Creates new SynchronizedLruCache with DEFAULT_LOAD_FACTOR
@@ -74,49 +74,49 @@ public class SynchronizedLruCache&lt;K, V&gt; extends AbstractLruCache&lt;K, V&g
    * @param ttl time to live in milliseconds
    */
   public SynchronizedLruCache(int capacity, long ttl) {
-<span class="fc" id="L77">    this(capacity, ttl, DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);</span>
-<span class="fc" id="L78">  }</span>
+<span class="nc" id="L77">    this(capacity, ttl, DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);</span>
+<span class="nc" id="L78">  }</span>
 
   @Override
   public synchronized void clear() {
-<span class="fc" id="L82">    cacheMap.clear();</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L82">    cacheMap.clear();</span>
+<span class="nc" id="L83">  }</span>
 
   @Override
   public synchronized V get(K key) {
-<span class="fc" id="L87">    return super.get(key);</span>
+<span class="nc" id="L87">    return super.get(key);</span>
   }
 
   @Override
   public int getCapacity() {
-<span class="fc" id="L92">    return cacheMap.getCapacity();</span>
+<span class="nc" id="L92">    return cacheMap.getCapacity();</span>
   }
 
   @Override
   protected InterfaceLruCacheEntry&lt;V&gt; getEntry(K key) {
-<span class="fc" id="L97">    return cacheMap.get(key);</span>
+<span class="nc" id="L97">    return cacheMap.get(key);</span>
   }
 
   @Override
   public synchronized int size() {
-<span class="fc" id="L102">    return cacheMap.size();</span>
+<span class="nc" id="L102">    return cacheMap.size();</span>
   }
 
   @Override
   public synchronized void put(K key, V value, long ttl) {
-<span class="fc" id="L107">    super.put(key, value, ttl);</span>
-<span class="fc" id="L108">  }</span>
+<span class="nc" id="L107">    super.put(key, value, ttl);</span>
+<span class="nc" id="L108">  }</span>
 
   @Override
   protected void putEntry(K key, InterfaceLruCacheEntry&lt;V&gt; entry) {
-<span class="fc" id="L112">    cacheMap.put(key, entry);</span>
-<span class="fc" id="L113">  }</span>
+<span class="nc" id="L112">    cacheMap.put(key, entry);</span>
+<span class="nc" id="L113">  }</span>
 
   @Override
   public synchronized V remove(K key) {
-<span class="fc" id="L117">    final InterfaceLruCacheEntry&lt;V&gt; cv = cacheMap.remove(key);</span>
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (cv != null) {</span>
-<span class="fc" id="L119">      return cv.getValue();</span>
+<span class="nc" id="L117">    final InterfaceLruCacheEntry&lt;V&gt; cv = cacheMap.remove(key);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (cv != null) {</span>
+<span class="nc" id="L119">      return cv.getValue();</span>
     }
 <span class="nc" id="L121">    return null;</span>
   }

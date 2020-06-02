@@ -41,7 +41,7 @@ import java.util.List;
  */
 public final class ZipUtility {
 
-<span class="fc" id="L44">  private static final File[] FILE_0_LENGTH = {};</span>
+<span class="nc" id="L44">  private static final File[] FILE_0_LENGTH = {};</span>
 
   private ZipUtility() {
   }
@@ -59,28 +59,28 @@ public final class ZipUtility {
   public static boolean createZipFromDirectory(String directory,
                                                String filename,
                                                boolean absolute) {
-<span class="fc" id="L62">    final File rootDir = new File(directory);</span>
-<span class="fc" id="L63">    final File saveFile = new File(filename);</span>
+<span class="nc" id="L62">    final File rootDir = new File(directory);</span>
+<span class="nc" id="L63">    final File saveFile = new File(filename);</span>
     // recursive call
     ZipArchiveOutputStream zaos;
     try {
-<span class="fc" id="L67">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
+<span class="nc" id="L67">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
 <span class="nc" id="L68">    } catch (final FileNotFoundException e) {</span>
 <span class="nc" id="L69">      return false;</span>
-<span class="fc" id="L70">    }</span>
+<span class="nc" id="L70">    }</span>
     try {
-<span class="fc" id="L72">      recurseFiles(rootDir, rootDir, zaos, absolute);</span>
+<span class="nc" id="L72">      recurseFiles(rootDir, rootDir, zaos, absolute);</span>
 <span class="nc" id="L73">    } catch (final IOException e2) {</span>
 <span class="nc" id="L74">      FileUtils.close(zaos);</span>
 <span class="nc" id="L75">      return false;</span>
-<span class="fc" id="L76">    }</span>
+<span class="nc" id="L76">    }</span>
     try {
-<span class="fc" id="L78">      zaos.finish();</span>
+<span class="nc" id="L78">      zaos.finish();</span>
 <span class="nc" id="L79">    } catch (final IOException e1) {</span>
       // ignore
-<span class="fc" id="L81">    }</span>
-<span class="fc" id="L82">    FileUtils.close(zaos);</span>
-<span class="fc" id="L83">    return true;</span>
+<span class="nc" id="L81">    }</span>
+<span class="nc" id="L82">    FileUtils.close(zaos);</span>
+<span class="nc" id="L83">    return true;</span>
   }
 
   /**
@@ -96,29 +96,29 @@ public final class ZipUtility {
   private static void recurseFiles(File root, File file,
                                    ZipArchiveOutputStream zaos,
                                    boolean absolute) throws IOException {
-<span class="fc bfc" id="L99" title="All 2 branches covered.">    if (file.isDirectory()) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (file.isDirectory()) {</span>
       // recursive call
-<span class="fc" id="L101">      final File[] files = file.listFiles();</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">      for (final File file2 : files) {</span>
-<span class="fc" id="L103">        recurseFiles(root, file2, zaos, absolute);</span>
+<span class="nc" id="L101">      final File[] files = file.listFiles();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      for (final File file2 : files) {</span>
+<span class="nc" id="L103">        recurseFiles(root, file2, zaos, absolute);</span>
       }
-<span class="fc bfc" id="L105" title="All 2 branches covered.">    } else if (!file.getName().endsWith(&quot;.zip&quot;) &amp;&amp;</span>
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">               !file.getName().endsWith(&quot;.ZIP&quot;)) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    } else if (!file.getName().endsWith(&quot;.zip&quot;) &amp;&amp;</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">               !file.getName().endsWith(&quot;.ZIP&quot;)) {</span>
       String filename;
-<span class="fc bfc" id="L108" title="All 2 branches covered.">      if (absolute) {</span>
-<span class="fc" id="L109">        filename =</span>
-<span class="fc" id="L110">            file.getAbsolutePath().substring(root.getAbsolutePath().length());</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (absolute) {</span>
+<span class="nc" id="L109">        filename =</span>
+<span class="nc" id="L110">            file.getAbsolutePath().substring(root.getAbsolutePath().length());</span>
       } else {
-<span class="fc" id="L112">        filename = file.getName();</span>
+<span class="nc" id="L112">        filename = file.getName();</span>
       }
-<span class="fc" id="L114">      final ZipArchiveEntry zae = new ZipArchiveEntry(filename);</span>
-<span class="fc" id="L115">      zae.setSize(file.length());</span>
-<span class="fc" id="L116">      zaos.putArchiveEntry(zae);</span>
-<span class="fc" id="L117">      final FileInputStream fis = new FileInputStream(file);</span>
-<span class="fc" id="L118">      IOUtils.copy(fis, zaos);</span>
-<span class="fc" id="L119">      zaos.closeArchiveEntry();</span>
+<span class="nc" id="L114">      final ZipArchiveEntry zae = new ZipArchiveEntry(filename);</span>
+<span class="nc" id="L115">      zae.setSize(file.length());</span>
+<span class="nc" id="L116">      zaos.putArchiveEntry(zae);</span>
+<span class="nc" id="L117">      final FileInputStream fis = new FileInputStream(file);</span>
+<span class="nc" id="L118">      IOUtils.copy(fis, zaos);</span>
+<span class="nc" id="L119">      zaos.closeArchiveEntry();</span>
     }
-<span class="fc" id="L121">  }</span>
+<span class="nc" id="L121">  }</span>
 
   /**
    * Create a new Zip from a list of Files (only name of files will be used)
@@ -129,7 +129,7 @@ public final class ZipUtility {
    * @return True if OK
    */
   public static boolean createZipFromFiles(List&lt;File&gt; files, String filename) {
-<span class="fc" id="L132">    return createZipFromFiles(files.toArray(FILE_0_LENGTH), filename);</span>
+<span class="nc" id="L132">    return createZipFromFiles(files.toArray(FILE_0_LENGTH), filename);</span>
   }
 
   /**
@@ -141,28 +141,28 @@ public final class ZipUtility {
    * @return True if OK
    */
   public static boolean createZipFromFiles(File[] files, String filename) {
-<span class="fc" id="L144">    final File saveFile = new File(filename);</span>
+<span class="nc" id="L144">    final File saveFile = new File(filename);</span>
     ZipArchiveOutputStream zaos;
     try {
-<span class="fc" id="L147">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
+<span class="nc" id="L147">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
 <span class="nc" id="L148">    } catch (final FileNotFoundException e) {</span>
 <span class="nc" id="L149">      return false;</span>
-<span class="fc" id="L150">    }</span>
-<span class="fc bfc" id="L151" title="All 2 branches covered.">    for (final File file : files) {</span>
+<span class="nc" id="L150">    }</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    for (final File file : files) {</span>
       try {
-<span class="fc" id="L153">        addFile(file, zaos);</span>
+<span class="nc" id="L153">        addFile(file, zaos);</span>
 <span class="nc" id="L154">      } catch (final IOException e) {</span>
 <span class="nc" id="L155">        FileUtils.close(zaos);</span>
 <span class="nc" id="L156">        return false;</span>
-<span class="fc" id="L157">      }</span>
+<span class="nc" id="L157">      }</span>
     }
     try {
-<span class="fc" id="L160">      zaos.finish();</span>
+<span class="nc" id="L160">      zaos.finish();</span>
 <span class="nc" id="L161">    } catch (final IOException e1) {</span>
       // ignore
-<span class="fc" id="L163">    }</span>
-<span class="fc" id="L164">    FileUtils.close(zaos);</span>
-<span class="fc" id="L165">    return true;</span>
+<span class="nc" id="L163">    }</span>
+<span class="nc" id="L164">    FileUtils.close(zaos);</span>
+<span class="nc" id="L165">    return true;</span>
   }
 
   /**
@@ -176,14 +176,14 @@ public final class ZipUtility {
   private static void addFile(File file, ZipArchiveOutputStream zaos)
       throws IOException {
     String filename;
-<span class="fc" id="L179">    filename = file.getName();</span>
-<span class="fc" id="L180">    final ZipArchiveEntry zae = new ZipArchiveEntry(filename);</span>
-<span class="fc" id="L181">    zae.setSize(file.length());</span>
-<span class="fc" id="L182">    zaos.putArchiveEntry(zae);</span>
-<span class="fc" id="L183">    final FileInputStream fis = new FileInputStream(file);</span>
-<span class="fc" id="L184">    IOUtils.copy(fis, zaos);</span>
-<span class="fc" id="L185">    zaos.closeArchiveEntry();</span>
-<span class="fc" id="L186">  }</span>
+<span class="nc" id="L179">    filename = file.getName();</span>
+<span class="nc" id="L180">    final ZipArchiveEntry zae = new ZipArchiveEntry(filename);</span>
+<span class="nc" id="L181">    zae.setSize(file.length());</span>
+<span class="nc" id="L182">    zaos.putArchiveEntry(zae);</span>
+<span class="nc" id="L183">    final FileInputStream fis = new FileInputStream(file);</span>
+<span class="nc" id="L184">    IOUtils.copy(fis, zaos);</span>
+<span class="nc" id="L185">    zaos.closeArchiveEntry();</span>
+<span class="nc" id="L186">  }</span>
 
   /**
    * Extract all files from Tar into the specified directory
@@ -197,34 +197,34 @@ public final class ZipUtility {
    */
   public static List&lt;String&gt; unZip(File tarFile, File directory)
       throws IOException {
-<span class="fc" id="L200">    final List&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L201">    final InputStream inputStream = new FileInputStream(tarFile);</span>
-<span class="fc" id="L202">    final ZipArchiveInputStream in = new ZipArchiveInputStream(inputStream);</span>
+<span class="nc" id="L200">    final List&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L201">    final InputStream inputStream = new FileInputStream(tarFile);</span>
+<span class="nc" id="L202">    final ZipArchiveInputStream in = new ZipArchiveInputStream(inputStream);</span>
     try {
-<span class="fc" id="L204">      ZipArchiveEntry entry = in.getNextZipEntry();</span>
-<span class="fc bfc" id="L205" title="All 2 branches covered.">      while (entry != null) {</span>
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (entry.isDirectory()) {</span>
+<span class="nc" id="L204">      ZipArchiveEntry entry = in.getNextZipEntry();</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">      while (entry != null) {</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        if (entry.isDirectory()) {</span>
 <span class="nc" id="L207">          entry = in.getNextZipEntry();</span>
 <span class="nc" id="L208">          continue;</span>
         }
-<span class="fc" id="L210">        final File curfile = new File(directory, entry.getName());</span>
-<span class="fc" id="L211">        final File parent = curfile.getParentFile();</span>
-<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (!parent.exists()) {</span>
-<span class="fc" id="L213">          parent.mkdirs();</span>
+<span class="nc" id="L210">        final File curfile = new File(directory, entry.getName());</span>
+<span class="nc" id="L211">        final File parent = curfile.getParentFile();</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (!parent.exists()) {</span>
+<span class="nc" id="L213">          parent.mkdirs();</span>
         }
-<span class="fc" id="L215">        final OutputStream out = new FileOutputStream(curfile);</span>
+<span class="nc" id="L215">        final OutputStream out = new FileOutputStream(curfile);</span>
         try {
-<span class="fc" id="L217">          IOUtils.copy(in, out);</span>
+<span class="nc" id="L217">          IOUtils.copy(in, out);</span>
         } finally {
-<span class="fc" id="L219">          FileUtils.close(out);</span>
+<span class="nc" id="L219">          FileUtils.close(out);</span>
         }
-<span class="fc" id="L221">        result.add(entry.getName());</span>
-<span class="fc" id="L222">        entry = in.getNextZipEntry();</span>
-<span class="fc" id="L223">      }</span>
+<span class="nc" id="L221">        result.add(entry.getName());</span>
+<span class="nc" id="L222">        entry = in.getNextZipEntry();</span>
+<span class="nc" id="L223">      }</span>
     } finally {
-<span class="fc" id="L225">      FileUtils.close(in);</span>
+<span class="nc" id="L225">      FileUtils.close(in);</span>
     }
-<span class="fc" id="L227">    return result;</span>
+<span class="nc" id="L227">    return result;</span>
   }
 
   public static void main(String[] args) {

@@ -56,22 +56,22 @@ public class EndRequestPacket extends AbstractLocalPacket {
                                                   int middleLength,
                                                   int endLength, ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L59" title="1 of 2 branches missed.">    if (headerLength - 1 != 4) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (headerLength - 1 != 4) {</span>
 <span class="nc" id="L60">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (middleLength != 1) {</span>
 <span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="fc" id="L65">    final int bheader = buf.readInt();</span>
-<span class="fc" id="L66">    final byte valid = buf.readByte();</span>
+<span class="nc" id="L65">    final int bheader = buf.readInt();</span>
+<span class="nc" id="L66">    final byte valid = buf.readByte();</span>
     String optional;
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (endLength &gt; 0) {</span>
 <span class="nc" id="L69">      optional =</span>
 <span class="nc" id="L70">          buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());</span>
 <span class="nc" id="L71">      buf.skipBytes(endLength);</span>
 <span class="nc" id="L72">      return new EndRequestPacket(bheader, valid, optional);</span>
     }
-<span class="fc" id="L74">    return new EndRequestPacket(bheader, valid);</span>
+<span class="nc" id="L74">    return new EndRequestPacket(bheader, valid);</span>
   }
 
   /**
@@ -89,43 +89,43 @@ public class EndRequestPacket extends AbstractLocalPacket {
    * @param code
    * @param valid
    */
-<span class="fc" id="L92">  private EndRequestPacket(int code, byte valid) {</span>
-<span class="fc" id="L93">    this.code = code;</span>
-<span class="fc" id="L94">    way = valid;</span>
-<span class="fc" id="L95">  }</span>
+<span class="nc" id="L92">  private EndRequestPacket(int code, byte valid) {</span>
+<span class="nc" id="L93">    this.code = code;</span>
+<span class="nc" id="L94">    way = valid;</span>
+<span class="nc" id="L95">  }</span>
 
   /**
    * @param code
    */
-<span class="fc" id="L100">  public EndRequestPacket(int code) {</span>
-<span class="fc" id="L101">    this.code = code;</span>
-<span class="fc" id="L102">    way = ASKVALIDATE;</span>
-<span class="fc" id="L103">  }</span>
+<span class="nc" id="L100">  public EndRequestPacket(int code) {</span>
+<span class="nc" id="L101">    this.code = code;</span>
+<span class="nc" id="L102">    way = ASKVALIDATE;</span>
+<span class="nc" id="L103">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr) {
-<span class="pc bpc" id="L107" title="1 of 2 branches missed.">    if (optional == null) {</span>
-<span class="fc" id="L108">      end = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (optional == null) {</span>
+<span class="nc" id="L108">      end = Unpooled.EMPTY_BUFFER;</span>
     } else {
 <span class="nc" id="L110">      end = Unpooled.copiedBuffer(optional, Charset.defaultCharset());</span>
     }
-<span class="fc" id="L112">  }</span>
+<span class="nc" id="L112">  }</span>
 
   @Override
   public void createHeader(LocalChannelReference lcr) {
-<span class="fc" id="L116">    header = Unpooled.buffer(4);</span>
-<span class="fc" id="L117">    header.writeInt(code);</span>
-<span class="fc" id="L118">  }</span>
+<span class="nc" id="L116">    header = Unpooled.buffer(4);</span>
+<span class="nc" id="L117">    header.writeInt(code);</span>
+<span class="nc" id="L118">  }</span>
 
   @Override
   public void createMiddle(LocalChannelReference lcr) {
-<span class="fc" id="L122">    final byte[] newbytes = { way };</span>
-<span class="fc" id="L123">    middle = Unpooled.wrappedBuffer(newbytes);</span>
-<span class="fc" id="L124">  }</span>
+<span class="nc" id="L122">    final byte[] newbytes = { way };</span>
+<span class="nc" id="L123">    middle = Unpooled.wrappedBuffer(newbytes);</span>
+<span class="nc" id="L124">  }</span>
 
   @Override
   public byte getType() {
-<span class="fc" id="L128">    return LocalPacketFactory.ENDREQUESTPACKET;</span>
+<span class="nc" id="L128">    return LocalPacketFactory.ENDREQUESTPACKET;</span>
   }
 
   @Override
@@ -145,32 +145,32 @@ public class EndRequestPacket extends AbstractLocalPacket {
    * @return True if this packet is to be validated
    */
   public boolean isToValidate() {
-<span class="fc bfc" id="L148" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
   public void validate() {
-<span class="fc" id="L155">    way = ANSWERVALIDATE;</span>
-<span class="fc" id="L156">    header = null;</span>
-<span class="fc" id="L157">    middle = null;</span>
-<span class="fc" id="L158">    end = null;</span>
-<span class="fc" id="L159">  }</span>
+<span class="nc" id="L155">    way = ANSWERVALIDATE;</span>
+<span class="nc" id="L156">    header = null;</span>
+<span class="nc" id="L157">    middle = null;</span>
+<span class="nc" id="L158">    end = null;</span>
+<span class="nc" id="L159">  }</span>
 
   /**
    * @return the optional
    */
   public String getOptional() {
-<span class="fc" id="L165">    return optional;</span>
+<span class="nc" id="L165">    return optional;</span>
   }
 
   /**
    * @param optional the optional to set
    */
   public void setOptional(String optional) {
-<span class="fc" id="L172">    this.optional = optional;</span>
-<span class="fc" id="L173">  }</span>
+<span class="nc" id="L172">    this.optional = optional;</span>
+<span class="nc" id="L173">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

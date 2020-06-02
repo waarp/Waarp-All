@@ -104,27 +104,27 @@ import java.sql.SQLException;
   public static long nextSequenceMonitoring(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="fc" id="L107">    long result = DbConstant.ILLEGALVALUE;</span>
-<span class="fc" id="L108">    final String action = &quot;SELECT NEXTVAL('&quot; + DbTransferLog.fieldseq + &quot;')&quot;;</span>
-<span class="fc" id="L109">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L107">    long result = DbConstant.ILLEGALVALUE;</span>
+<span class="nc" id="L108">    final String action = &quot;SELECT NEXTVAL('&quot; + DbTransferLog.fieldseq + &quot;')&quot;;</span>
+<span class="nc" id="L109">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="fc" id="L112">      preparedStatement.createPrepareStatement(action);</span>
+<span class="nc" id="L112">      preparedStatement.createPrepareStatement(action);</span>
       // Limit the search
-<span class="fc" id="L114">      preparedStatement.executeQuery();</span>
-<span class="pc bpc" id="L115" title="1 of 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+<span class="nc" id="L114">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
         try {
-<span class="fc" id="L117">          result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L117">          result = preparedStatement.getResultSet().getLong(1);</span>
 <span class="nc" id="L118">        } catch (final SQLException e) {</span>
 <span class="nc" id="L119">          throw new WaarpDatabaseSqlException(e);</span>
-<span class="fc" id="L120">        }</span>
-<span class="fc" id="L121">        return result;</span>
+<span class="nc" id="L120">        }</span>
+<span class="nc" id="L121">        return result;</span>
       } else {
 <span class="nc" id="L123">        throw new WaarpDatabaseNoDataException(</span>
             &quot;No sequence found. Must be initialized first&quot;);
       }
     } finally {
-<span class="fc" id="L127">      preparedStatement.realClose();</span>
+<span class="nc" id="L127">      preparedStatement.realClose();</span>
     }
   }
 }

@@ -411,48 +411,49 @@ import java.nio.charset.UnsupportedCharsetException;
 <span class="nc" id="L411">            logger.warn(&quot;Error&quot;, e2);</span>
 <span class="nc" id="L412">            throw new HttpIncorrectRequestException(e2);</span>
 <span class="nc" id="L413">          }</span>
-<span class="nc" id="L414">          cumulativeBody = null;</span>
+<span class="nc" id="L414">          cumulativeBody.release();</span>
+<span class="nc" id="L415">          cumulativeBody = null;</span>
         }
-<span class="nc" id="L416">        actionFromResponse(ctx.channel());</span>
-<span class="nc" id="L417">      } else {</span>
-<span class="nc" id="L418">        final ByteBuf content = chunk.content();</span>
-<span class="nc bnc" id="L419" title="All 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
-<span class="nc" id="L420">          content.retain();</span>
-<span class="nc bnc" id="L421" title="All 2 branches missed.">          if (cumulativeBody != null) {</span>
-<span class="nc" id="L422">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
+<span class="nc" id="L417">        actionFromResponse(ctx.channel());</span>
+<span class="nc" id="L418">      } else {</span>
+<span class="nc" id="L419">        final ByteBuf content = chunk.content();</span>
+<span class="nc bnc" id="L420" title="All 4 branches missed.">        if (content != null &amp;&amp; content.isReadable()) {</span>
+<span class="nc" id="L421">          content.retain();</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">          if (cumulativeBody != null) {</span>
+<span class="nc" id="L423">            cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);</span>
           } else {
-<span class="nc" id="L424">            cumulativeBody = content;</span>
+<span class="nc" id="L425">            cumulativeBody = content;</span>
           }
         }
       }
     }
-<span class="nc" id="L429">  }</span>
+<span class="nc" id="L430">  }</span>
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
       throws Exception {
-<span class="nc" id="L434">    final RestFuture restFuture =</span>
-<span class="nc" id="L435">        ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)</span>
-<span class="nc" id="L436">           .get();</span>
-<span class="nc bnc" id="L437" title="All 2 branches missed.">    if (cause instanceof ClosedChannelException) {</span>
-<span class="nc" id="L438">      logger.debug(&quot;Close before ending&quot;);</span>
-<span class="nc" id="L439">      restFuture.setFailure(cause);</span>
-<span class="nc" id="L440">      return;</span>
-<span class="nc bnc" id="L441" title="All 2 branches missed.">    } else if (cause instanceof ConnectException) {</span>
-<span class="nc bnc" id="L442" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
-<span class="nc" id="L443">        logger.debug(&quot;Will close&quot;);</span>
-<span class="nc" id="L444">        restFuture.setFailure(cause);</span>
-<span class="nc" id="L445">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L435">    final RestFuture restFuture =</span>
+<span class="nc" id="L436">        ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)</span>
+<span class="nc" id="L437">           .get();</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">    if (cause instanceof ClosedChannelException) {</span>
+<span class="nc" id="L439">      logger.debug(&quot;Close before ending&quot;);</span>
+<span class="nc" id="L440">      restFuture.setFailure(cause);</span>
+<span class="nc" id="L441">      return;</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">    } else if (cause instanceof ConnectException) {</span>
+<span class="nc bnc" id="L443" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L444">        logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L445">        restFuture.setFailure(cause);</span>
+<span class="nc" id="L446">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
       }
-<span class="nc" id="L447">      return;</span>
+<span class="nc" id="L448">      return;</span>
     }
-<span class="nc" id="L449">    logger.warn(&quot;Error&quot;, cause);</span>
-<span class="nc bnc" id="L450" title="All 4 branches missed.">    if (ctx.channel() != null &amp;&amp; restFuture != null) {</span>
-<span class="nc" id="L451">      restFuture.setFailure(cause);</span>
+<span class="nc" id="L450">    logger.warn(&quot;Error&quot;, cause);</span>
+<span class="nc bnc" id="L451" title="All 4 branches missed.">    if (ctx.channel() != null &amp;&amp; restFuture != null) {</span>
+<span class="nc" id="L452">      restFuture.setFailure(cause);</span>
     }
-<span class="nc" id="L453">    logger.debug(&quot;Will close&quot;);</span>
-<span class="nc" id="L454">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L455">  }</span>
+<span class="nc" id="L454">    logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L455">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L456">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

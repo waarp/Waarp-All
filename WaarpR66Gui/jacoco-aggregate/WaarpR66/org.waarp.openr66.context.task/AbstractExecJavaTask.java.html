@@ -37,16 +37,16 @@ import java.util.regex.Pattern;
 /**
  * Dummy Runnable Task that only logs
  */
-<span class="fc" id="L40">public abstract class AbstractExecJavaTask implements R66Runnable {</span>
+<span class="nc" id="L40">public abstract class AbstractExecJavaTask implements R66Runnable {</span>
   /**
    * Internal Logger
    */
-<span class="fc" id="L44">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L45">      WaarpLoggerFactory.getLogger(AbstractExecJavaTask.class);</span>
-<span class="fc" id="L46">  protected static final Pattern BLANK = Pattern.compile(&quot; &quot;);</span>
+<span class="nc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L45">      WaarpLoggerFactory.getLogger(AbstractExecJavaTask.class);</span>
+<span class="nc" id="L46">  protected static final Pattern BLANK = Pattern.compile(&quot; &quot;);</span>
 
   protected int delay;
-<span class="fc" id="L49">  protected int status = -1;</span>
+<span class="nc" id="L49">  protected int status = -1;</span>
   protected R66Session session;
   protected boolean waitForValidation;
   protected boolean useLocalExec;
@@ -64,26 +64,26 @@ import java.util.regex.Pattern;
    * @param packet
    */
   public void validate(BusinessRequestPacket packet) {
-<span class="fc" id="L67">    status = 0;</span>
-<span class="fc" id="L68">    packet.validate();</span>
-<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    if (callFromBusiness) {</span>
-<span class="fc" id="L70">      final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L71">          session.getLocalChannelReference();</span>
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="fc" id="L73">        final R66Result result =</span>
+<span class="nc" id="L67">    status = 0;</span>
+<span class="nc" id="L68">    packet.validate();</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc" id="L70">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L71">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L73">        final R66Result result =</span>
             new R66Result(session, true, ErrorCode.CompleteOk, null);
-<span class="fc" id="L75">        localChannelReference.validateRequest(result);</span>
+<span class="nc" id="L75">        localChannelReference.validateRequest(result);</span>
         try {
-<span class="fc" id="L77">          ChannelUtils</span>
-<span class="fc" id="L78">              .writeAbstractLocalPacket(localChannelReference, packet, true);</span>
+<span class="nc" id="L77">          ChannelUtils</span>
+<span class="nc" id="L78">              .writeAbstractLocalPacket(localChannelReference, packet, true);</span>
 <span class="nc" id="L79">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
           // nothing
-<span class="fc" id="L81">        }</span>
-<span class="fc" id="L82">      } else {</span>
+<span class="nc" id="L81">        }</span>
+<span class="nc" id="L82">      } else {</span>
 <span class="nc" id="L83">        finalInformation = packet.toString();</span>
       }
     }
-<span class="fc" id="L86">  }</span>
+<span class="nc" id="L86">  }</span>
 
   /**
    * To be called by the requester when finished
@@ -91,21 +91,21 @@ import java.util.regex.Pattern;
    * @param object special object to get back
    */
   public void finalValidate(Object object) {
-<span class="fc" id="L94">    status = 0;</span>
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    if (callFromBusiness) {</span>
-<span class="fc" id="L96">      final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L97">          session.getLocalChannelReference();</span>
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="fc" id="L99">        final R66Result result =</span>
+<span class="nc" id="L94">    status = 0;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc" id="L96">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L97">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L99">        final R66Result result =</span>
             new R66Result(session, true, ErrorCode.CompleteOk, null);
-<span class="fc" id="L101">        result.setOther(object);</span>
-<span class="fc" id="L102">        localChannelReference.validateRequest(result);</span>
-<span class="fc" id="L103">        localChannelReference.close();</span>
-<span class="fc" id="L104">      } else {</span>
+<span class="nc" id="L101">        result.setOther(object);</span>
+<span class="nc" id="L102">        localChannelReference.validateRequest(result);</span>
+<span class="nc" id="L103">        localChannelReference.close();</span>
+<span class="nc" id="L104">      } else {</span>
 <span class="nc" id="L105">        finalInformation = JsonHandler.writeAsString(object);</span>
       }
     }
-<span class="fc" id="L108">  }</span>
+<span class="nc" id="L108">  }</span>
 
   /**
    * To be used if abnormal usage is made of one Java Method
@@ -160,29 +160,29 @@ import java.util.regex.Pattern;
                       boolean useLocalExec, int delay, String classname,
                       String arg, boolean callFromBusiness,
                       boolean isToValidate) {
-<span class="fc" id="L163">    this.session = session;</span>
-<span class="fc" id="L164">    this.waitForValidation = waitForValidation;</span>
-<span class="fc" id="L165">    this.useLocalExec = useLocalExec;</span>
-<span class="fc" id="L166">    this.delay = delay;</span>
-<span class="fc" id="L167">    this.classname = classname;</span>
-<span class="fc" id="L168">    this.callFromBusiness = callFromBusiness;</span>
-<span class="fc" id="L169">    fullarg = arg;</span>
-<span class="fc" id="L170">    this.isToValidate = isToValidate;</span>
-<span class="fc" id="L171">  }</span>
+<span class="nc" id="L163">    this.session = session;</span>
+<span class="nc" id="L164">    this.waitForValidation = waitForValidation;</span>
+<span class="nc" id="L165">    this.useLocalExec = useLocalExec;</span>
+<span class="nc" id="L166">    this.delay = delay;</span>
+<span class="nc" id="L167">    this.classname = classname;</span>
+<span class="nc" id="L168">    this.callFromBusiness = callFromBusiness;</span>
+<span class="nc" id="L169">    fullarg = arg;</span>
+<span class="nc" id="L170">    this.isToValidate = isToValidate;</span>
+<span class="nc" id="L171">  }</span>
 
   @Override
   public int getFinalStatus() {
-<span class="fc" id="L175">    return status;</span>
+<span class="nc" id="L175">    return status;</span>
   }
 
   @Override
   public String toString() {
-<span class="pc bpc" id="L180" title="1 of 4 branches missed.">    if (status == -1 || finalInformation == null) {</span>
-<span class="fc" id="L181">      final StringBuilder builder =</span>
-<span class="fc" id="L182">          new StringBuilder(getClass().getSimpleName()).append(&quot;: [&quot;)</span>
-<span class="fc" id="L183">                                                       .append(fullarg)</span>
-<span class="fc" id="L184">                                                       .append(']');</span>
-<span class="fc" id="L185">      return builder.toString();</span>
+<span class="nc bnc" id="L180" title="All 4 branches missed.">    if (status == -1 || finalInformation == null) {</span>
+<span class="nc" id="L181">      final StringBuilder builder =</span>
+<span class="nc" id="L182">          new StringBuilder(getClass().getSimpleName()).append(&quot;: [&quot;)</span>
+<span class="nc" id="L183">                                                       .append(fullarg)</span>
+<span class="nc" id="L184">                                                       .append(']');</span>
+<span class="nc" id="L185">      return builder.toString();</span>
     } else {
 <span class="nc" id="L187">      return finalInformation;</span>
     }

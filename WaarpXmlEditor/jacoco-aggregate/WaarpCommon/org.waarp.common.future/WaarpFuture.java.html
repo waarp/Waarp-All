@@ -31,7 +31,7 @@ import static java.util.concurrent.TimeUnit.*;
  * any channel inside.
  */
 public class WaarpFuture {
-<span class="fc" id="L34">  private static final Throwable CANCELLED = new Throwable();</span>
+<span class="nc" id="L34">  private static final Throwable CANCELLED = new Throwable();</span>
 
   private final boolean cancellable;
 
@@ -44,9 +44,9 @@ public class WaarpFuture {
   /**
    * Creates a new instance.
    */
-<span class="fc" id="L47">  public WaarpFuture() {</span>
-<span class="fc" id="L48">    cancellable = false;</span>
-<span class="fc" id="L49">  }</span>
+<span class="nc" id="L47">  public WaarpFuture() {</span>
+<span class="nc" id="L48">    cancellable = false;</span>
+<span class="nc" id="L49">  }</span>
 
   /**
    * Creates a new instance.
@@ -54,9 +54,9 @@ public class WaarpFuture {
    * @param cancellable {@code true} if and only if this future can be
    *     canceled
    */
-<span class="fc" id="L57">  public WaarpFuture(boolean cancellable) {</span>
-<span class="fc" id="L58">    this.cancellable = cancellable;</span>
-<span class="fc" id="L59">  }</span>
+<span class="nc" id="L57">  public WaarpFuture(boolean cancellable) {</span>
+<span class="nc" id="L58">    this.cancellable = cancellable;</span>
+<span class="nc" id="L59">  }</span>
 
   /**
    * Returns {@code true} if and only if this future is complete, regardless
@@ -143,9 +143,9 @@ public class WaarpFuture {
    * @return True if the Future is done or False if interrupted
    */
   public boolean awaitOrInterruptible() {
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">    while (!Thread.interrupted()) {</span>
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">      if (awaitOrInterruptible(1, SECONDS)) {</span>
-<span class="fc" id="L148">        return true;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    while (!Thread.interrupted()) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">      if (awaitOrInterruptible(1, SECONDS)) {</span>
+<span class="nc" id="L148">        return true;</span>
       }
     }
 <span class="nc" id="L151">    return false;</span>
@@ -157,7 +157,7 @@ public class WaarpFuture {
    * @return True if the Future is done or False if interrupted
    */
   public boolean awaitOrInterruptible(long timeoutMilliseconds) {
-<span class="fc" id="L160">    return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),</span>
+<span class="nc" id="L160">    return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),</span>
                                 false);
   }
 
@@ -168,7 +168,7 @@ public class WaarpFuture {
    * @return True if the Future is done or False if interrupted
    */
   public boolean awaitOrInterruptible(long timeout, TimeUnit unit) {
-<span class="fc" id="L171">    return awaitOrInterruptible(unit.toNanos(timeout), false);</span>
+<span class="nc" id="L171">    return awaitOrInterruptible(unit.toNanos(timeout), false);</span>
   }
 
   /**
@@ -180,8 +180,8 @@ public class WaarpFuture {
   private boolean awaitOrInterruptible(long timeoutNanos,
                                        boolean interruptable) {
     try {
-<span class="pc bpc" id="L183" title="2 of 4 branches missed.">      if (await0(timeoutNanos, interruptable) &amp;&amp; !Thread.interrupted()) {</span>
-<span class="fc" id="L184">        return true;</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">      if (await0(timeoutNanos, interruptable) &amp;&amp; !Thread.interrupted()) {</span>
+<span class="nc" id="L184">        return true;</span>
       }
 <span class="nc" id="L186">    } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L187">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
@@ -191,30 +191,30 @@ public class WaarpFuture {
 
   private boolean await0(long timeoutNanos, boolean interruptable)
       throws InterruptedException {
-<span class="fc bfc" id="L194" title="All 2 branches covered.">    if (done) {</span>
-<span class="fc" id="L195">      return done;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    if (done) {</span>
+<span class="nc" id="L195">      return done;</span>
     }
-<span class="pc bpc" id="L197" title="1 of 2 branches missed.">    if (timeoutNanos &lt;= 0) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    if (timeoutNanos &lt;= 0) {</span>
 <span class="nc" id="L198">      return done;</span>
     }
-<span class="pc bpc" id="L200" title="3 of 4 branches missed.">    if (interruptable &amp;&amp; Thread.interrupted()) {</span>
+<span class="nc bnc" id="L200" title="All 4 branches missed.">    if (interruptable &amp;&amp; Thread.interrupted()) {</span>
 <span class="nc" id="L201">      throw new InterruptedException();</span>
     }
 
-<span class="fc" id="L204">    long startTime = System.nanoTime();</span>
-<span class="fc" id="L205">    long waitTime = timeoutNanos;</span>
-<span class="fc" id="L206">    boolean interrupted = false;</span>
+<span class="nc" id="L204">    long startTime = System.nanoTime();</span>
+<span class="nc" id="L205">    long waitTime = timeoutNanos;</span>
+<span class="nc" id="L206">    boolean interrupted = false;</span>
 
     try {
       for (; ; ) {
-<span class="fc" id="L210">        synchronized (this) {</span>
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">          if (done) {</span>
+<span class="nc" id="L210">        synchronized (this) {</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">          if (done) {</span>
 <span class="nc" id="L212">            return done;</span>
           }
-<span class="fc" id="L214">          waiters++;</span>
+<span class="nc" id="L214">          waiters++;</span>
 
           try {
-<span class="fc" id="L217">            wait(waitTime / 1000000, (int) (waitTime % 1000000));</span>
+<span class="nc" id="L217">            wait(waitTime / 1000000, (int) (waitTime % 1000000));</span>
 <span class="nc" id="L218">          } catch (InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L219">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc bnc" id="L220" title="All 2 branches missed.">            if (interruptable) {</span>
@@ -223,11 +223,11 @@ public class WaarpFuture {
 <span class="nc" id="L223">              interrupted = true;</span>
             }
           } finally {
-<span class="fc" id="L226">            waiters--;</span>
+<span class="nc" id="L226">            waiters--;</span>
           }
-<span class="fc" id="L228">        }</span>
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        if (done) {</span>
-<span class="fc" id="L230">          return true;</span>
+<span class="nc" id="L228">        }</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        if (done) {</span>
+<span class="nc" id="L230">          return true;</span>
         }
 <span class="nc" id="L232">        waitTime = timeoutNanos - (System.nanoTime() - startTime);</span>
 <span class="nc bnc" id="L233" title="All 2 branches missed.">        if (waitTime &lt;= 0) {</span>
@@ -235,7 +235,7 @@ public class WaarpFuture {
         }
       }
     } finally {
-<span class="pc bpc" id="L238" title="1 of 2 branches missed.">      if (interrupted) {</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">      if (interrupted) {</span>
 <span class="nc" id="L239">        Thread.currentThread().interrupt();</span>
       }
     }
@@ -250,18 +250,18 @@ public class WaarpFuture {
    *     failure.
    */
   public boolean setSuccess() {
-<span class="fc" id="L253">    synchronized (this) {</span>
+<span class="nc" id="L253">    synchronized (this) {</span>
       // Allow only once.
-<span class="fc bfc" id="L255" title="All 2 branches covered.">      if (done) {</span>
-<span class="fc" id="L256">        return false;</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">      if (done) {</span>
+<span class="nc" id="L256">        return false;</span>
       }
 
-<span class="fc" id="L259">      done = true;</span>
-<span class="fc bfc" id="L260" title="All 2 branches covered.">      if (waiters &gt; 0) {</span>
-<span class="fc" id="L261">        notifyAll();</span>
+<span class="nc" id="L259">      done = true;</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      if (waiters &gt; 0) {</span>
+<span class="nc" id="L261">        notifyAll();</span>
       }
-<span class="fc" id="L263">    }</span>
-<span class="fc" id="L264">    return true;</span>
+<span class="nc" id="L263">    }</span>
+<span class="nc" id="L264">    return true;</span>
   }
 
   /**

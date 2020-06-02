@@ -61,19 +61,19 @@ public class DbTaskRunnerR66RestMethodHandler
       &quot;Special Id as LONG in URI as &quot;;
   public static final String BASEURI = &quot;transfers&quot;;
 
-<span class="fc" id="L64">  public enum FILTER_ARGS {</span>
-<span class="fc" id="L65">    LIMIT(&quot;number&quot;), ORDERBYID(&quot;boolean&quot;), STARTID(&quot;transfer id&quot;),</span>
-<span class="fc" id="L66">    STOPID(&quot;transfer id&quot;), IDRULE(&quot;rule name&quot;),</span>
-<span class="fc" id="L67">    PARTNER(&quot;partner (requester or requested) name&quot;), PENDING(&quot;boolean&quot;),</span>
-<span class="fc" id="L68">    INTRANSFER(&quot;boolean&quot;), INERROR(&quot;boolean&quot;), DONE(&quot;boolean&quot;),</span>
-<span class="fc" id="L69">    ALLSTATUS(&quot;boolean&quot;), STARTTRANS(&quot;Date in ISO 8601 format or ms&quot;),</span>
-<span class="fc" id="L70">    STOPTRANS(&quot;Date in ISO 8601 format or ms&quot;);</span>
+<span class="nc" id="L64">  public enum FILTER_ARGS {</span>
+<span class="nc" id="L65">    LIMIT(&quot;number&quot;), ORDERBYID(&quot;boolean&quot;), STARTID(&quot;transfer id&quot;),</span>
+<span class="nc" id="L66">    STOPID(&quot;transfer id&quot;), IDRULE(&quot;rule name&quot;),</span>
+<span class="nc" id="L67">    PARTNER(&quot;partner (requester or requested) name&quot;), PENDING(&quot;boolean&quot;),</span>
+<span class="nc" id="L68">    INTRANSFER(&quot;boolean&quot;), INERROR(&quot;boolean&quot;), DONE(&quot;boolean&quot;),</span>
+<span class="nc" id="L69">    ALLSTATUS(&quot;boolean&quot;), STARTTRANS(&quot;Date in ISO 8601 format or ms&quot;),</span>
+<span class="nc" id="L70">    STOPTRANS(&quot;Date in ISO 8601 format or ms&quot;);</span>
 
     public final String type;
 
-<span class="fc" id="L74">    FILTER_ARGS(String type) {</span>
-<span class="fc" id="L75">      this.type = type;</span>
-<span class="fc" id="L76">    }</span>
+<span class="nc" id="L74">    FILTER_ARGS(String type) {</span>
+<span class="nc" id="L75">      this.type = type;</span>
+<span class="nc" id="L76">    }</span>
   }
 
   /**
@@ -82,8 +82,8 @@ public class DbTaskRunnerR66RestMethodHandler
    */
   public DbTaskRunnerR66RestMethodHandler(RestConfiguration config,
                                           METHOD... method) {
-<span class="fc" id="L85">    super(BASEURI, config, method);</span>
-<span class="fc" id="L86">  }</span>
+<span class="nc" id="L85">    super(BASEURI, config, method);</span>
+<span class="nc" id="L86">  }</span>
 
   @Override
   protected DbTaskRunner getItem(HttpRestHandler handler,
@@ -136,49 +136,49 @@ public class DbTaskRunnerR66RestMethodHandler
                                                      RestArgument result,
                                                      Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="fc" id="L139">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="fc" id="L140">    arg.setAll(arguments.getBody());</span>
-<span class="fc" id="L141">    final int limit = arg.path(FILTER_ARGS.LIMIT.name()).asInt(0);</span>
-<span class="fc" id="L142">    final boolean orderBySpecialId =</span>
-<span class="fc" id="L143">        arg.path(FILTER_ARGS.ORDERBYID.name()).asBoolean(false);</span>
-<span class="fc" id="L144">    JsonNode node = arg.path(FILTER_ARGS.STARTID.name());</span>
-<span class="fc" id="L145">    String startid = null;</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
+<span class="nc" id="L139">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="nc" id="L140">    arg.setAll(arguments.getBody());</span>
+<span class="nc" id="L141">    final int limit = arg.path(FILTER_ARGS.LIMIT.name()).asInt(0);</span>
+<span class="nc" id="L142">    final boolean orderBySpecialId =</span>
+<span class="nc" id="L143">        arg.path(FILTER_ARGS.ORDERBYID.name()).asBoolean(false);</span>
+<span class="nc" id="L144">    JsonNode node = arg.path(FILTER_ARGS.STARTID.name());</span>
+<span class="nc" id="L145">    String startid = null;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (!node.isMissingNode()) {</span>
 <span class="nc" id="L147">      startid = node.asText();</span>
     }
-<span class="pc bpc" id="L149" title="3 of 4 branches missed.">    if (startid == null || startid.isEmpty()) {</span>
-<span class="fc" id="L150">      startid = null;</span>
+<span class="nc bnc" id="L149" title="All 4 branches missed.">    if (startid == null || startid.isEmpty()) {</span>
+<span class="nc" id="L150">      startid = null;</span>
     }
-<span class="fc" id="L152">    node = arg.path(FILTER_ARGS.STOPID.name());</span>
-<span class="fc" id="L153">    String stopid = null;</span>
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
+<span class="nc" id="L152">    node = arg.path(FILTER_ARGS.STOPID.name());</span>
+<span class="nc" id="L153">    String stopid = null;</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (!node.isMissingNode()) {</span>
 <span class="nc" id="L155">      stopid = node.asText();</span>
     }
-<span class="pc bpc" id="L157" title="3 of 4 branches missed.">    if (stopid == null || stopid.isEmpty()) {</span>
-<span class="fc" id="L158">      stopid = null;</span>
+<span class="nc bnc" id="L157" title="All 4 branches missed.">    if (stopid == null || stopid.isEmpty()) {</span>
+<span class="nc" id="L158">      stopid = null;</span>
     }
-<span class="fc" id="L160">    String rule = arg.path(FILTER_ARGS.IDRULE.name()).asText();</span>
-<span class="pc bpc" id="L161" title="2 of 4 branches missed.">    if (rule == null || rule.isEmpty()) {</span>
-<span class="fc" id="L162">      rule = null;</span>
+<span class="nc" id="L160">    String rule = arg.path(FILTER_ARGS.IDRULE.name()).asText();</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">    if (rule == null || rule.isEmpty()) {</span>
+<span class="nc" id="L162">      rule = null;</span>
     }
-<span class="fc" id="L164">    String req = arg.path(FILTER_ARGS.PARTNER.name()).asText();</span>
-<span class="pc bpc" id="L165" title="2 of 4 branches missed.">    if (req == null || req.isEmpty()) {</span>
-<span class="fc" id="L166">      req = null;</span>
+<span class="nc" id="L164">    String req = arg.path(FILTER_ARGS.PARTNER.name()).asText();</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">    if (req == null || req.isEmpty()) {</span>
+<span class="nc" id="L166">      req = null;</span>
     }
-<span class="fc" id="L168">    String owner = arg.path(DbTaskRunner.Columns.OWNERREQ.name()).asText();</span>
-<span class="pc bpc" id="L169" title="2 of 4 branches missed.">    if (owner == null || owner.isEmpty()) {</span>
-<span class="fc" id="L170">      owner = null;</span>
+<span class="nc" id="L168">    String owner = arg.path(DbTaskRunner.Columns.OWNERREQ.name()).asText();</span>
+<span class="nc bnc" id="L169" title="All 4 branches missed.">    if (owner == null || owner.isEmpty()) {</span>
+<span class="nc" id="L170">      owner = null;</span>
     }
-<span class="fc" id="L172">    final boolean pending =</span>
-<span class="fc" id="L173">        arg.path(FILTER_ARGS.PENDING.name()).asBoolean(false);</span>
-<span class="fc" id="L174">    final boolean transfer =</span>
-<span class="fc" id="L175">        arg.path(FILTER_ARGS.INTRANSFER.name()).asBoolean(false);</span>
-<span class="fc" id="L176">    final boolean error = arg.path(FILTER_ARGS.INERROR.name()).asBoolean(false);</span>
-<span class="fc" id="L177">    final boolean done = arg.path(FILTER_ARGS.DONE.name()).asBoolean(false);</span>
-<span class="fc" id="L178">    final boolean all = arg.path(FILTER_ARGS.ALLSTATUS.name()).asBoolean(false);</span>
-<span class="fc" id="L179">    Timestamp start = null;</span>
-<span class="fc" id="L180">    node = arg.path(FILTER_ARGS.STARTTRANS.name());</span>
-<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
+<span class="nc" id="L172">    final boolean pending =</span>
+<span class="nc" id="L173">        arg.path(FILTER_ARGS.PENDING.name()).asBoolean(false);</span>
+<span class="nc" id="L174">    final boolean transfer =</span>
+<span class="nc" id="L175">        arg.path(FILTER_ARGS.INTRANSFER.name()).asBoolean(false);</span>
+<span class="nc" id="L176">    final boolean error = arg.path(FILTER_ARGS.INERROR.name()).asBoolean(false);</span>
+<span class="nc" id="L177">    final boolean done = arg.path(FILTER_ARGS.DONE.name()).asBoolean(false);</span>
+<span class="nc" id="L178">    final boolean all = arg.path(FILTER_ARGS.ALLSTATUS.name()).asBoolean(false);</span>
+<span class="nc" id="L179">    Timestamp start = null;</span>
+<span class="nc" id="L180">    node = arg.path(FILTER_ARGS.STARTTRANS.name());</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">    if (!node.isMissingNode()) {</span>
 <span class="nc" id="L182">      long val = node.asLong();</span>
 <span class="nc bnc" id="L183" title="All 2 branches missed.">      if (val == 0) {</span>
 <span class="nc" id="L184">        final DateTime received = DateTime.parse(node.asText());</span>
@@ -186,9 +186,9 @@ public class DbTaskRunnerR66RestMethodHandler
       }
 <span class="nc" id="L187">      start = new Timestamp(val);</span>
     }
-<span class="fc" id="L189">    Timestamp stop = null;</span>
-<span class="fc" id="L190">    node = arg.path(FILTER_ARGS.STOPTRANS.name());</span>
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
+<span class="nc" id="L189">    Timestamp stop = null;</span>
+<span class="nc" id="L190">    node = arg.path(FILTER_ARGS.STOPTRANS.name());</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (!node.isMissingNode()) {</span>
 <span class="nc" id="L192">      long val = node.asLong();</span>
 <span class="nc bnc" id="L193" title="All 2 branches missed.">      if (val == 0) {</span>
 <span class="nc" id="L194">        final DateTime received = DateTime.parse(node.asText());</span>
@@ -197,8 +197,8 @@ public class DbTaskRunnerR66RestMethodHandler
 <span class="nc" id="L197">      stop = new Timestamp(val);</span>
     }
     try {
-<span class="fc" id="L200">      return DbTaskRunner</span>
-<span class="fc" id="L201">          .getFilterPrepareStatement(handler.getDbSession(), limit,</span>
+<span class="nc" id="L200">      return DbTaskRunner</span>
+<span class="nc" id="L201">          .getFilterPrepareStatement(handler.getDbSession(), limit,</span>
                                      orderBySpecialId, startid, stopid, start,
                                      stop, rule, req, pending, transfer, error,
                                      done, all, owner);
@@ -327,12 +327,12 @@ public class DbTaskRunnerR66RestMethodHandler
                                     RestArgument arguments, RestArgument result,
                                     METHOD method)
       throws HttpForbiddenRequestException {
-<span class="fc" id="L330">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
-<span class="fc" id="L331">    final R66Session session = r66handler.getServerHandler().getSession();</span>
-<span class="pc bpc" id="L332" title="1 of 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.SYSTEM)) {</span>
+<span class="nc" id="L330">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
+<span class="nc" id="L331">    final R66Session session = r66handler.getServerHandler().getSession();</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.SYSTEM)) {</span>
 <span class="nc" id="L333">      throw new HttpForbiddenRequestException(&quot;Partner must have System role&quot;);</span>
     }
-<span class="fc" id="L335">  }</span>
+<span class="nc" id="L335">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

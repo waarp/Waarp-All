@@ -51,9 +51,9 @@ public abstract class RestMethodHandler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L54">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L55">      WaarpLoggerFactory.getLogger(RestMethodHandler.class);</span>
-<span class="fc" id="L56">  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];</span>
+<span class="nc" id="L54">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L55">      WaarpLoggerFactory.getLogger(RestMethodHandler.class);</span>
+<span class="nc" id="L56">  private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];</span>
 
   protected final String name;
   protected final String path;
@@ -74,19 +74,19 @@ public abstract class RestMethodHandler {
    */
   protected RestMethodHandler(String name, String path,
                               boolean isBodyJsonDecode,
-<span class="fc" id="L77">                              RestConfiguration config, METHOD... method) {</span>
-<span class="fc" id="L78">    this.name = name;</span>
-<span class="fc" id="L79">    this.path = path;</span>
-<span class="fc" id="L80">    methods = new HashSet&lt;HttpRestHandler.METHOD&gt;();</span>
-<span class="fc" id="L81">    setMethods(method);</span>
-<span class="fc" id="L82">    setMethods(METHOD.OPTIONS);</span>
-<span class="fc" id="L83">    this.isBodyJsonDecode = isBodyJsonDecode;</span>
-<span class="fc" id="L84">    restConfiguration = config;</span>
-<span class="fc" id="L85">  }</span>
+<span class="nc" id="L77">                              RestConfiguration config, METHOD... method) {</span>
+<span class="nc" id="L78">    this.name = name;</span>
+<span class="nc" id="L79">    this.path = path;</span>
+<span class="nc" id="L80">    methods = new HashSet&lt;HttpRestHandler.METHOD&gt;();</span>
+<span class="nc" id="L81">    setMethods(method);</span>
+<span class="nc" id="L82">    setMethods(METHOD.OPTIONS);</span>
+<span class="nc" id="L83">    this.isBodyJsonDecode = isBodyJsonDecode;</span>
+<span class="nc" id="L84">    restConfiguration = config;</span>
+<span class="nc" id="L85">  }</span>
 
   protected void setMethods(METHOD... method) {
-<span class="fc" id="L88">    Collections.addAll(methods, method);</span>
-<span class="fc" id="L89">  }</span>
+<span class="nc" id="L88">    Collections.addAll(methods, method);</span>
+<span class="nc" id="L89">  }</span>
 
   /**
    * Will assign the intersection of both set of Methods
@@ -96,14 +96,14 @@ public abstract class RestMethodHandler {
    */
   protected void setIntersectionMethods(METHOD[] selectedMethods,
                                         METHOD... validMethod) {
-<span class="fc" id="L99">    final Set&lt;METHOD&gt; set = new HashSet&lt;METHOD&gt;();</span>
-<span class="fc" id="L100">    Collections.addAll(set, validMethod);</span>
-<span class="fc" id="L101">    final Set&lt;METHOD&gt; set2 = new HashSet&lt;METHOD&gt;();</span>
-<span class="fc" id="L102">    Collections.addAll(set2, selectedMethods);</span>
-<span class="fc" id="L103">    set.retainAll(set2);</span>
-<span class="fc" id="L104">    final METHOD[] methodsToSet = set.toArray(METHOD_0_LENGTH);</span>
-<span class="fc" id="L105">    setMethods(methodsToSet);</span>
-<span class="fc" id="L106">  }</span>
+<span class="nc" id="L99">    final Set&lt;METHOD&gt; set = new HashSet&lt;METHOD&gt;();</span>
+<span class="nc" id="L100">    Collections.addAll(set, validMethod);</span>
+<span class="nc" id="L101">    final Set&lt;METHOD&gt; set2 = new HashSet&lt;METHOD&gt;();</span>
+<span class="nc" id="L102">    Collections.addAll(set2, selectedMethods);</span>
+<span class="nc" id="L103">    set.retainAll(set2);</span>
+<span class="nc" id="L104">    final METHOD[] methodsToSet = set.toArray(METHOD_0_LENGTH);</span>
+<span class="nc" id="L105">    setMethods(methodsToSet);</span>
+<span class="nc" id="L106">  }</span>
 
   public String getName() {
 <span class="nc" id="L109">    return name;</span>
@@ -119,7 +119,7 @@ public abstract class RestMethodHandler {
    * @return True if the Method is valid for this Handler
    */
   public boolean isMethodIncluded(METHOD method) {
-<span class="fc" id="L122">    return methods.contains(method);</span>
+<span class="nc" id="L122">    return methods.contains(method);</span>
   }
 
   /**
@@ -246,25 +246,25 @@ public abstract class RestMethodHandler {
                                               ChannelHandlerContext ctx,
                                               RestArgument result,
                                               HttpResponseStatus status) {
-<span class="fc" id="L249">    final String list = result.getAllowOption();</span>
-<span class="fc" id="L250">    final String answer = result.toString();</span>
-<span class="fc" id="L251">    final ByteBuf buffer =</span>
-<span class="fc" id="L252">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="fc" id="L253">    final HttpResponse response = handler.getResponse(buffer);</span>
-<span class="pc bpc" id="L254" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="nc" id="L249">    final String list = result.getAllowOption();</span>
+<span class="nc" id="L250">    final String answer = result.toString();</span>
+<span class="nc" id="L251">    final ByteBuf buffer =</span>
+<span class="nc" id="L252">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L253">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
 <span class="nc" id="L255">      return ctx.writeAndFlush(response);</span>
     }
-<span class="fc" id="L257">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
-<span class="fc" id="L258">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
-<span class="fc" id="L259">    response.headers().add(HttpHeaderNames.ALLOW, list);</span>
-<span class="fc" id="L260">    logger.debug(&quot;Msg ready&quot;);</span>
-<span class="fc" id="L261">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="pc bpc" id="L262" title="1 of 2 branches missed.">    if (handler.isWillClose()) {</span>
+<span class="nc" id="L257">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="nc" id="L258">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="nc" id="L259">    response.headers().add(HttpHeaderNames.ALLOW, list);</span>
+<span class="nc" id="L260">    logger.debug(&quot;Msg ready&quot;);</span>
+<span class="nc" id="L261">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    if (handler.isWillClose()) {</span>
 <span class="nc" id="L263">      SysErrLogger.FAKE_LOGGER</span>
 <span class="nc" id="L264">          .syserr(&quot;Will close session in RestMethodHandler&quot;);</span>
 <span class="nc" id="L265">      return future;</span>
     }
-<span class="fc" id="L267">    return null;</span>
+<span class="nc" id="L267">    return null;</span>
   }
 
   /**
@@ -276,26 +276,26 @@ public abstract class RestMethodHandler {
    */
   protected void optionsCommand(HttpRestHandler handler, RestArgument arguments,
                                 RestArgument result) {
-<span class="fc" id="L279">    result.setCommand(COMMAND_TYPE.OPTIONS);</span>
-<span class="fc" id="L280">    final METHOD[] realmethods = METHOD.values();</span>
-<span class="fc" id="L281">    final boolean[] allMethods = new boolean[realmethods.length];</span>
-<span class="fc bfc" id="L282" title="All 2 branches covered.">    for (final METHOD methoditem : methods) {</span>
-<span class="fc" id="L283">      allMethods[methoditem.ordinal()] = true;</span>
-<span class="fc" id="L284">    }</span>
-<span class="fc" id="L285">    StringBuilder allow = null;</span>
-<span class="fc bfc" id="L286" title="All 2 branches covered.">    for (int i = 0; i &lt; allMethods.length; i++) {</span>
-<span class="fc bfc" id="L287" title="All 2 branches covered.">      if (allMethods[i]) {</span>
-<span class="fc bfc" id="L288" title="All 2 branches covered.">        if (allow == null) {</span>
-<span class="fc" id="L289">          allow = new StringBuilder(realmethods[i].name());</span>
+<span class="nc" id="L279">    result.setCommand(COMMAND_TYPE.OPTIONS);</span>
+<span class="nc" id="L280">    final METHOD[] realmethods = METHOD.values();</span>
+<span class="nc" id="L281">    final boolean[] allMethods = new boolean[realmethods.length];</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">    for (final METHOD methoditem : methods) {</span>
+<span class="nc" id="L283">      allMethods[methoditem.ordinal()] = true;</span>
+<span class="nc" id="L284">    }</span>
+<span class="nc" id="L285">    StringBuilder allow = null;</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">    for (int i = 0; i &lt; allMethods.length; i++) {</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">      if (allMethods[i]) {</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (allow == null) {</span>
+<span class="nc" id="L289">          allow = new StringBuilder(realmethods[i].name());</span>
         } else {
-<span class="fc" id="L291">          allow.append(',').append(realmethods[i].name());</span>
+<span class="nc" id="L291">          allow.append(',').append(realmethods[i].name());</span>
         }
       }
     }
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">    if (allow != null) {</span>
-<span class="fc" id="L296">      result.addOptions(allow.toString(), path, getDetailedAllow());</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (allow != null) {</span>
+<span class="nc" id="L296">      result.addOptions(allow.toString(), path, getDetailedAllow());</span>
     }
-<span class="fc" id="L298">  }</span>
+<span class="nc" id="L298">  }</span>
 
   /**
    * @return the detail of the method handler
@@ -306,7 +306,7 @@ public abstract class RestMethodHandler {
    * @return the isBodyJson
    */
   public boolean isBodyJsonDecoded() {
-<span class="fc" id="L309">    return isBodyJsonDecode;</span>
+<span class="nc" id="L309">    return isBodyJsonDecode;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -57,19 +57,19 @@ public class ErrorPacket extends AbstractLocalPacket {
   public static ErrorPacket createFromBuffer(int headerLength, int middleLength,
                                              int endLength, ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="fc" id="L60">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="fc" id="L61">    final byte[] bmiddle = new byte[middleLength];</span>
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="fc" id="L63">      buf.readBytes(bheader);</span>
+<span class="nc" id="L60">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="nc" id="L61">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="nc" id="L63">      buf.readBytes(bheader);</span>
     }
-<span class="pc bpc" id="L65" title="1 of 2 branches missed.">    if (middleLength &gt; 0) {</span>
-<span class="fc" id="L66">      buf.readBytes(bmiddle);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="nc" id="L66">      buf.readBytes(bmiddle);</span>
     }
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (endLength != 4) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (endLength != 4) {</span>
 <span class="nc" id="L69">      throw new OpenR66ProtocolPacketException(&quot;Packet not correct&quot;);</span>
     }
-<span class="fc" id="L71">    return new ErrorPacket(new String(bheader), new String(bmiddle),</span>
-<span class="fc" id="L72">                           buf.readInt());</span>
+<span class="nc" id="L71">    return new ErrorPacket(new String(bheader), new String(bmiddle),</span>
+<span class="nc" id="L72">                           buf.readInt());</span>
   }
 
   /**
@@ -77,64 +77,64 @@ public class ErrorPacket extends AbstractLocalPacket {
    * @param middle
    * @param code
    */
-<span class="fc" id="L80">  public ErrorPacket(String header, String middle, int code) {</span>
-<span class="fc" id="L81">    sheader = header;</span>
-<span class="fc" id="L82">    smiddle = middle;</span>
-<span class="fc" id="L83">    this.code = code;</span>
-<span class="fc" id="L84">  }</span>
+<span class="nc" id="L80">  public ErrorPacket(String header, String middle, int code) {</span>
+<span class="nc" id="L81">    sheader = header;</span>
+<span class="nc" id="L82">    smiddle = middle;</span>
+<span class="nc" id="L83">    this.code = code;</span>
+<span class="nc" id="L84">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="fc" id="L89">    end = Unpooled.buffer(4);</span>
-<span class="fc" id="L90">    end.writeInt(code);</span>
-<span class="fc" id="L91">  }</span>
+<span class="nc" id="L89">    end = Unpooled.buffer(4);</span>
+<span class="nc" id="L90">    end.writeInt(code);</span>
+<span class="nc" id="L91">  }</span>
 
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    if (sheader != null) {</span>
-<span class="fc" id="L97">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">    if (sheader != null) {</span>
+<span class="nc" id="L97">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
     }
-<span class="fc" id="L99">  }</span>
+<span class="nc" id="L99">  }</span>
 
   @Override
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">    if (smiddle != null) {</span>
-<span class="fc" id="L105">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (smiddle != null) {</span>
+<span class="nc" id="L105">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
     }
-<span class="fc" id="L107">  }</span>
+<span class="nc" id="L107">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L111">    return &quot;ErrorPacket:(&quot; + code + ':' + smiddle + &quot;) &quot; + sheader;</span>
+<span class="nc" id="L111">    return &quot;ErrorPacket:(&quot; + code + ':' + smiddle + &quot;) &quot; + sheader;</span>
   }
 
   @Override
   public byte getType() {
-<span class="fc" id="L116">    return LocalPacketFactory.ERRORPACKET;</span>
+<span class="nc" id="L116">    return LocalPacketFactory.ERRORPACKET;</span>
   }
 
   /**
    * @return the sheader
    */
   public String getSheader() {
-<span class="fc" id="L123">    return sheader;</span>
+<span class="nc" id="L123">    return sheader;</span>
   }
 
   /**
    * @return the smiddle
    */
   public String getSmiddle() {
-<span class="fc" id="L130">    return smiddle;</span>
+<span class="nc" id="L130">    return smiddle;</span>
   }
 
   /**
    * @return the code
    */
   public int getCode() {
-<span class="fc" id="L137">    return code;</span>
+<span class="nc" id="L137">    return code;</span>
   }
 
 }

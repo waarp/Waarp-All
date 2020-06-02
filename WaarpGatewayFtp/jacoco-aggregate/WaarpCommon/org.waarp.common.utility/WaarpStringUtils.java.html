@@ -19,7 +19,6 @@
  */
 package org.waarp.common.utility;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.dom4j.Node;
 import org.waarp.common.exception.FileTransferException;
@@ -47,13 +46,13 @@ public final class WaarpStringUtils {
   /**
    * Internal Logger
    */
-<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(WaarpStringUtils.class);</span>
+<span class="nc" id="L49">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L50">      WaarpLoggerFactory.getLogger(WaarpStringUtils.class);</span>
 
   /**
    * Format used for Files
    */
-<span class="fc" id="L56">  public static final Charset UTF8 = Charset.forName(UTF_8);</span>
+<span class="nc" id="L55">  public static final Charset UTF8 = Charset.forName(UTF_8);</span>
 
   private WaarpStringUtils() {
   }
@@ -70,18 +69,18 @@ public final class WaarpStringUtils {
    */
   public static String readFileException(String filename)
       throws InvalidArgumentException, FileTransferException {
-<span class="fc" id="L73">    final File file = new File(filename);</span>
+<span class="nc" id="L72">    final File file = new File(filename);</span>
     // Check for size of file
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
-<span class="nc" id="L76">      throw new FileTransferException(</span>
-<span class="nc" id="L77">          &quot;File is too big for this convenience method (&quot; + file.length() +</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L75">      throw new FileTransferException(</span>
+<span class="nc" id="L76">          &quot;File is too big for this convenience method (&quot; + file.length() +</span>
           &quot; bytes).&quot;);
     }
     try {
-<span class="fc" id="L81">      return Files.toString(file, Charsets.UTF_8);</span>
-<span class="nc" id="L82">    } catch (IOException e) {</span>
-<span class="nc" id="L83">      logger.error(&quot;Error on File while trying to read: &quot; + filename, e);</span>
-<span class="nc" id="L84">      throw new FileTransferException(&quot;Error on File while trying to read&quot;, e);</span>
+<span class="nc" id="L80">      return Files.toString(file, UTF8);</span>
+<span class="nc" id="L81">    } catch (IOException e) {</span>
+<span class="nc" id="L82">      logger.error(&quot;Error on File while trying to read: &quot; + filename, e);</span>
+<span class="nc" id="L83">      throw new FileTransferException(&quot;Error on File while trying to read&quot;, e);</span>
     }
   }
 
@@ -94,13 +93,13 @@ public final class WaarpStringUtils {
    */
   public static String readFile(String filename) {
     try {
-<span class="fc" id="L97">      return readFileException(filename);</span>
-<span class="nc" id="L98">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L99">      logger.error(&quot;Error while trying to open: &quot; + filename, e);</span>
-<span class="nc" id="L100">      return &quot;&quot;;</span>
-<span class="nc" id="L101">    } catch (final FileTransferException e) {</span>
-<span class="nc" id="L102">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
-<span class="nc" id="L103">      return &quot;&quot;;</span>
+<span class="nc" id="L96">      return readFileException(filename);</span>
+<span class="nc" id="L97">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L98">      logger.error(&quot;Error while trying to open: &quot; + filename, e);</span>
+<span class="nc" id="L99">      return &quot;&quot;;</span>
+<span class="nc" id="L100">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L101">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
+<span class="nc" id="L102">      return &quot;&quot;;</span>
     }
   }
 
@@ -112,25 +111,25 @@ public final class WaarpStringUtils {
    * @return the corresponding Timestamp
    */
   public static Timestamp fixDate(String date) {
-<span class="fc" id="L115">    Timestamp tdate = null;</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (date == null) {</span>
-<span class="nc" id="L117">      return tdate;</span>
+<span class="nc" id="L114">    Timestamp tdate = null;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (date == null) {</span>
+<span class="nc" id="L116">      return tdate;</span>
     }
-<span class="fc" id="L119">    String ndate = date.replaceAll(&quot;/|:|\\.| |-&quot;, &quot;&quot;);</span>
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (!ndate.isEmpty()) {</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
-<span class="nc" id="L122">        final int len = ndate.length();</span>
-<span class="nc" id="L123">        ndate += &quot;000000000000000&quot;.substring(len);</span>
+<span class="nc" id="L118">    String ndate = date.replaceAll(&quot;/|:|\\.| |-&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
+<span class="nc" id="L121">        final int len = ndate.length();</span>
+<span class="nc" id="L122">        ndate += &quot;000000000000000&quot;.substring(len);</span>
       }
-<span class="nc" id="L125">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
+<span class="nc" id="L124">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
       try {
-<span class="nc" id="L127">        final Date ddate = format.parse(ndate);</span>
-<span class="nc" id="L128">        tdate = new Timestamp(ddate.getTime());</span>
-<span class="nc" id="L129">      } catch (final ParseException e) {</span>
-<span class="nc" id="L130">        logger.debug(&quot;start&quot;, e);</span>
-<span class="nc" id="L131">      }</span>
+<span class="nc" id="L126">        final Date ddate = format.parse(ndate);</span>
+<span class="nc" id="L127">        tdate = new Timestamp(ddate.getTime());</span>
+<span class="nc" id="L128">      } catch (final ParseException e) {</span>
+<span class="nc" id="L129">        logger.debug(&quot;start&quot;, e);</span>
+<span class="nc" id="L130">      }</span>
     }
-<span class="fc" id="L133">    return tdate;</span>
+<span class="nc" id="L132">    return tdate;</span>
   }
 
   /**
@@ -147,40 +146,40 @@ public final class WaarpStringUtils {
    * @return the end date
    */
   public static Timestamp fixDate(String date, Timestamp before) {
-<span class="fc" id="L150">    Timestamp tdate = null;</span>
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    if (date == null) {</span>
-<span class="nc" id="L152">      return tdate;</span>
+<span class="nc" id="L149">    Timestamp tdate = null;</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (date == null) {</span>
+<span class="nc" id="L151">      return tdate;</span>
     }
-<span class="fc" id="L154">    String ndate = date.replaceAll(&quot;/|:|\\.| |-&quot;, &quot;&quot;);</span>
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (!ndate.isEmpty()) {</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
-<span class="nc" id="L157">        final int len = ndate.length();</span>
-<span class="nc" id="L158">        ndate += &quot;000000000000000&quot;.substring(len);</span>
+<span class="nc" id="L153">    String ndate = date.replaceAll(&quot;/|:|\\.| |-&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (!ndate.isEmpty()) {</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">      if (ndate.length() &lt; 15) {</span>
+<span class="nc" id="L156">        final int len = ndate.length();</span>
+<span class="nc" id="L157">        ndate += &quot;000000000000000&quot;.substring(len);</span>
       }
-<span class="nc" id="L160">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
+<span class="nc" id="L159">      final SimpleDateFormat format = new SimpleDateFormat(&quot;yyyyMMddHHmmssSSS&quot;);</span>
       try {
-<span class="nc" id="L162">        Date ddate = format.parse(ndate);</span>
-<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (before != null) {</span>
-<span class="nc" id="L164">          final Date bef = new Date(before.getTime());</span>
-<span class="nc bnc" id="L165" title="All 2 branches missed.">          if (bef.compareTo(ddate) &gt;= 0) {</span>
-<span class="nc" id="L166">            ddate = new Date(bef.getTime() + 1000 * 3600 * 24 - 1);</span>
+<span class="nc" id="L161">        Date ddate = format.parse(ndate);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (before != null) {</span>
+<span class="nc" id="L163">          final Date bef = new Date(before.getTime());</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">          if (bef.compareTo(ddate) &gt;= 0) {</span>
+<span class="nc" id="L165">            ddate = new Date(bef.getTime() + 1000 * 3600 * 24 - 1);</span>
           }
         }
-<span class="nc" id="L169">        tdate = new Timestamp(ddate.getTime());</span>
-<span class="nc" id="L170">      } catch (final ParseException e) {</span>
-<span class="nc" id="L171">        logger.debug(&quot;start&quot;, e);</span>
-<span class="nc" id="L172">      }</span>
+<span class="nc" id="L168">        tdate = new Timestamp(ddate.getTime());</span>
+<span class="nc" id="L169">      } catch (final ParseException e) {</span>
+<span class="nc" id="L170">        logger.debug(&quot;start&quot;, e);</span>
+<span class="nc" id="L171">      }</span>
     }
-<span class="fc" id="L174">    return tdate;</span>
+<span class="nc" id="L173">    return tdate;</span>
   }
 
   public static Timestamp getTodayMidnight() {
-<span class="fc" id="L178">    final GregorianCalendar calendar = new GregorianCalendar();</span>
-<span class="fc" id="L179">    calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
-<span class="fc" id="L180">    calendar.set(Calendar.MINUTE, 0);</span>
-<span class="fc" id="L181">    calendar.set(Calendar.SECOND, 0);</span>
-<span class="fc" id="L182">    calendar.set(Calendar.MILLISECOND, 0);</span>
-<span class="fc" id="L183">    return new Timestamp(calendar.getTimeInMillis());</span>
+<span class="nc" id="L177">    final GregorianCalendar calendar = new GregorianCalendar();</span>
+<span class="nc" id="L178">    calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="nc" id="L179">    calendar.set(Calendar.MINUTE, 0);</span>
+<span class="nc" id="L180">    calendar.set(Calendar.SECOND, 0);</span>
+<span class="nc" id="L181">    calendar.set(Calendar.MILLISECOND, 0);</span>
+<span class="nc" id="L182">    return new Timestamp(calendar.getTimeInMillis());</span>
   }
 
   /**
@@ -191,15 +190,15 @@ public final class WaarpStringUtils {
    * @return the corresponding value
    */
   public static boolean getBoolean(Node node) {
-<span class="nc" id="L194">    final String val = node.getText();</span>
+<span class="nc" id="L193">    final String val = node.getText();</span>
     boolean bval;
     try {
-<span class="nc" id="L197">      final int ival = Integer.parseInt(val);</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">      bval = ival == 1;</span>
-<span class="nc" id="L199">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L200">      bval = Boolean.parseBoolean(val);</span>
-<span class="nc" id="L201">    }</span>
-<span class="nc" id="L202">    return bval;</span>
+<span class="nc" id="L196">      final int ival = Integer.parseInt(val);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">      bval = ival == 1;</span>
+<span class="nc" id="L198">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L199">      bval = Boolean.parseBoolean(val);</span>
+<span class="nc" id="L200">    }</span>
+<span class="nc" id="L201">    return bval;</span>
   }
 
   /**
@@ -212,17 +211,17 @@ public final class WaarpStringUtils {
    * @throws InvalidArgumentException
    */
   public static int getInteger(Node node) throws InvalidArgumentException {
-<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (node == null) {</span>
-<span class="nc" id="L216">      throw new InvalidArgumentException(&quot;Node empty&quot;);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (node == null) {</span>
+<span class="nc" id="L215">      throw new InvalidArgumentException(&quot;Node empty&quot;);</span>
     }
-<span class="nc" id="L218">    final String val = node.getText();</span>
+<span class="nc" id="L217">    final String val = node.getText();</span>
     int ival;
     try {
-<span class="nc" id="L221">      ival = Integer.parseInt(val);</span>
-<span class="nc" id="L222">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L223">      throw new InvalidArgumentException(&quot;Incorrect value&quot;);</span>
-<span class="nc" id="L224">    }</span>
-<span class="nc" id="L225">    return ival;</span>
+<span class="nc" id="L220">      ival = Integer.parseInt(val);</span>
+<span class="nc" id="L221">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L222">      throw new InvalidArgumentException(&quot;Incorrect value&quot;);</span>
+<span class="nc" id="L223">    }</span>
+<span class="nc" id="L224">    return ival;</span>
   }
 
   /**
@@ -237,20 +236,20 @@ public final class WaarpStringUtils {
    */
   public static boolean replace(StringBuilder builder, String find,
                                 String replace) {
-<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (find == null) {</span>
-<span class="nc" id="L241">      return false;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (find == null) {</span>
+<span class="nc" id="L240">      return false;</span>
     }
-<span class="fc" id="L243">    final int start = builder.indexOf(find);</span>
-<span class="fc bfc" id="L244" title="All 2 branches covered.">    if (start == -1) {</span>
-<span class="fc" id="L245">      return false;</span>
+<span class="nc" id="L242">    final int start = builder.indexOf(find);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (start == -1) {</span>
+<span class="nc" id="L244">      return false;</span>
     }
-<span class="fc" id="L247">    final int end = start + find.length();</span>
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">    if (replace != null) {</span>
-<span class="fc" id="L249">      builder.replace(start, end, replace);</span>
+<span class="nc" id="L246">    final int end = start + find.length();</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">    if (replace != null) {</span>
+<span class="nc" id="L248">      builder.replace(start, end, replace);</span>
     } else {
-<span class="nc" id="L251">      builder.replace(start, end, &quot;&quot;);</span>
+<span class="nc" id="L250">      builder.replace(start, end, &quot;&quot;);</span>
     }
-<span class="fc" id="L253">    return true;</span>
+<span class="nc" id="L252">    return true;</span>
   }
 
   /**
@@ -263,10 +262,10 @@ public final class WaarpStringUtils {
    */
   public static void replaceAll(StringBuilder builder, String find,
                                 String replace) {
-<span class="fc bfc" id="L266" title="All 2 branches covered.">    while (replace(builder, find, replace)) {</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">    while (replace(builder, find, replace)) {</span>
       // nothing
     }
-<span class="fc" id="L269">  }</span>
+<span class="nc" id="L268">  }</span>
 
   /**
    * Build a String with count chars using fillChar
@@ -277,9 +276,9 @@ public final class WaarpStringUtils {
    * @return the String of length count filled with fillChar
    */
   public static String fillString(char fillChar, int count) {
-<span class="fc" id="L280">    final char[] chars = new char[count];</span>
-<span class="fc" id="L281">    Arrays.fill(chars, fillChar);</span>
-<span class="fc" id="L282">    return new String(chars);</span>
+<span class="nc" id="L279">    final char[] chars = new char[count];</span>
+<span class="nc" id="L280">    Arrays.fill(chars, fillChar);</span>
+<span class="nc" id="L281">    return new String(chars);</span>
   }
 
   /**
@@ -291,9 +290,9 @@ public final class WaarpStringUtils {
    * @return the cleaned String
    */
   public static String cleanJsonForHtml(String json) {
-<span class="fc" id="L294">    return json.replaceAll(&quot;([^\\\\])\\\\n&quot;, &quot;$1&quot;)</span>
-<span class="fc" id="L295">               .replaceAll(&quot;([^\\\\])\\\\r&quot;, &quot;$1&quot;)</span>
-<span class="fc" id="L296">               .replaceAll(&quot;([^\\\\])\\\\\&quot;&quot;, &quot;$1&quot;).replace(&quot;\\\\&quot;, &quot;\\\\\\\\&quot;);</span>
+<span class="nc" id="L293">    return json.replaceAll(&quot;([^\\\\])\\\\n&quot;, &quot;$1&quot;)</span>
+<span class="nc" id="L294">               .replaceAll(&quot;([^\\\\])\\\\r&quot;, &quot;$1&quot;)</span>
+<span class="nc" id="L295">               .replaceAll(&quot;([^\\\\])\\\\\&quot;&quot;, &quot;$1&quot;).replace(&quot;\\\\&quot;, &quot;\\\\\\\\&quot;);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -61,32 +61,32 @@ public final class FileUtils {
                                       R66File file)
       throws OpenR66RunnerErrorException {
     String filename;
-<span class="fc" id="L64">    logger.debug(&quot;PreStart: &quot; + isPreStart);</span>
-<span class="fc" id="L65">    logger.debug(&quot;Dir is: &quot; + session.getDir().getFullPath());</span>
-<span class="fc" id="L66">    logger.debug(&quot;File is: &quot; + filenameSrc);</span>
-<span class="pc bpc" id="L67" title="1 of 2 branches missed.">    if (isPreStart) {</span>
-<span class="fc" id="L68">      filename = AbstractDir.normalizePath(filenameSrc);</span>
-<span class="fc" id="L69">      filename = AbstractDir.pathFromURI(filename);</span>
-<span class="fc" id="L70">      logger.debug(&quot;File becomes: &quot; + filename);</span>
+<span class="nc" id="L64">    logger.debug(&quot;PreStart: &quot; + isPreStart);</span>
+<span class="nc" id="L65">    logger.debug(&quot;Dir is: &quot; + session.getDir().getFullPath());</span>
+<span class="nc" id="L66">    logger.debug(&quot;File is: &quot; + filenameSrc);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (isPreStart) {</span>
+<span class="nc" id="L68">      filename = AbstractDir.normalizePath(filenameSrc);</span>
+<span class="nc" id="L69">      filename = AbstractDir.pathFromURI(filename);</span>
+<span class="nc" id="L70">      logger.debug(&quot;File becomes: &quot; + filename);</span>
     } else {
 <span class="nc" id="L72">      filename = filenameSrc;</span>
     }
-<span class="fc bfc" id="L74" title="All 2 branches covered.">    if (isSender) {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (isSender) {</span>
       try {
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (file == null) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (file == null) {</span>
           try {
-<span class="fc" id="L78">            file = (R66File) session.getDir().setFile(filename, false);</span>
+<span class="nc" id="L78">            file = (R66File) session.getDir().setFile(filename, false);</span>
 <span class="nc" id="L79">          } catch (final CommandAbstractException e) {</span>
 <span class="nc" id="L80">            logger.warn(&quot;File not placed in normal directory&quot;, e);</span>
             // file is not under normal base directory, so is external
             // File should already exist but can be using special code ('*?')
 <span class="nc" id="L83">            file = session.getDir().setFileNoCheck(filename);</span>
-<span class="fc" id="L84">          }</span>
+<span class="nc" id="L84">          }</span>
         }
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (isThrough) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (isThrough) {</span>
           // no test on file since it does not really exist
 <span class="nc" id="L88">          logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
-<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        } else if (!file.canRead()) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        } else if (!file.canRead()) {</span>
 <span class="nc" id="L90">          logger</span>
 <span class="nc" id="L91">              .debug(&quot;File {} cannot be read, so try external from &quot; + filename,</span>
                      file);
@@ -102,12 +102,12 @@ public final class FileUtils {
         }
 <span class="nc" id="L103">      } catch (final CommandAbstractException e) {</span>
 <span class="nc" id="L104">        throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L105">      }</span>
+<span class="nc" id="L105">      }</span>
     } else {
       // not sender so file is just registered as is but no test of existence
-<span class="fc" id="L108">      file = new R66File(session, session.getDir(), filename);</span>
+<span class="nc" id="L108">      file = new R66File(session, session.getDir(), filename);</span>
     }
-<span class="fc" id="L110">    return file;</span>
+<span class="nc" id="L110">    return file;</span>
   }
 
   /**
@@ -118,11 +118,11 @@ public final class FileUtils {
   public static final ByteBuf getHash(ByteBuf buffer, DigestAlgo algo) {
     byte[] newkey;
     try {
-<span class="fc" id="L121">      newkey = FilesystemBasedDigest.getHash(buffer, algo);</span>
+<span class="nc" id="L121">      newkey = FilesystemBasedDigest.getHash(buffer, algo);</span>
 <span class="nc" id="L122">    } catch (final IOException e) {</span>
 <span class="nc" id="L123">      return Unpooled.EMPTY_BUFFER;</span>
-<span class="fc" id="L124">    }</span>
-<span class="fc" id="L125">    return Unpooled.wrappedBuffer(newkey);</span>
+<span class="nc" id="L124">    }</span>
+<span class="nc" id="L125">    return Unpooled.wrappedBuffer(newkey);</span>
   }
 
   /**
@@ -133,11 +133,11 @@ public final class FileUtils {
    */
   public static void computeGlobalHash(FilesystemBasedDigest digest,
                                        ByteBuf buffer) {
-<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (digest == null) {</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (digest == null) {</span>
 <span class="nc" id="L137">      return;</span>
     }
-<span class="fc" id="L139">    digest.Update(buffer);</span>
-<span class="fc" id="L140">  }</span>
+<span class="nc" id="L139">    digest.Update(buffer);</span>
+<span class="nc" id="L140">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

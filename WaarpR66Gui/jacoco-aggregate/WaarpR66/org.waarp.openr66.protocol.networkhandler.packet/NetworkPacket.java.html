@@ -19,11 +19,11 @@
  */
 package org.waarp.openr66.protocol.networkhandler.packet;
 
-import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
@@ -40,8 +40,8 @@ public class NetworkPacket {
   /**
    * Internal Logger
    */
-<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(NetworkPacket.class);</span>
+<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(NetworkPacket.class);</span>
   private ByteBuf buffer;
 
   private final int remoteId;
@@ -56,12 +56,12 @@ public class NetworkPacket {
    * @param code
    * @param buffer
    */
-<span class="fc" id="L59">  public NetworkPacket(int localId, int remoteId, byte code, ByteBuf buffer) {</span>
-<span class="fc" id="L60">    this.remoteId = remoteId;</span>
-<span class="fc" id="L61">    this.localId = localId;</span>
-<span class="fc" id="L62">    this.code = code;</span>
-<span class="fc" id="L63">    this.buffer = buffer;</span>
-<span class="fc" id="L64">  }</span>
+<span class="nc" id="L59">  public NetworkPacket(int localId, int remoteId, byte code, ByteBuf buffer) {</span>
+<span class="nc" id="L60">    this.remoteId = remoteId;</span>
+<span class="nc" id="L61">    this.localId = localId;</span>
+<span class="nc" id="L62">    this.code = code;</span>
+<span class="nc" id="L63">    this.buffer = buffer;</span>
+<span class="nc" id="L64">  }</span>
 
   /**
    * @param localId
@@ -73,67 +73,67 @@ public class NetworkPacket {
    */
   public NetworkPacket(int localId, int remoteId, AbstractLocalPacket packet,
                        LocalChannelReference lcr)
-<span class="fc" id="L76">      throws OpenR66ProtocolPacketException {</span>
-<span class="fc" id="L77">    this.remoteId = remoteId;</span>
-<span class="fc" id="L78">    this.localId = localId;</span>
-<span class="fc" id="L79">    code = packet.getType();</span>
-<span class="fc" id="L80">    buffer = packet.getLocalPacket(lcr);</span>
-<span class="fc" id="L81">  }</span>
+<span class="nc" id="L76">      throws OpenR66ProtocolPacketException {</span>
+<span class="nc" id="L77">    this.remoteId = remoteId;</span>
+<span class="nc" id="L78">    this.localId = localId;</span>
+<span class="nc" id="L79">    code = packet.getType();</span>
+<span class="nc" id="L80">    buffer = packet.getLocalPacket(lcr);</span>
+<span class="nc" id="L81">  }</span>
 
   /**
    * @return the buffer
    */
   public ByteBuf getBuffer() {
-<span class="fc" id="L87">    return buffer;</span>
+<span class="nc" id="L87">    return buffer;</span>
   }
 
   /**
    * @return the remoteId
    */
   public int getRemoteId() {
-<span class="fc" id="L94">    return remoteId;</span>
+<span class="nc" id="L94">    return remoteId;</span>
   }
 
   /**
    * @return the localId
    */
   public int getLocalId() {
-<span class="fc" id="L101">    return localId;</span>
+<span class="nc" id="L101">    return localId;</span>
   }
 
   /**
    * @return the code
    */
   public byte getCode() {
-<span class="fc" id="L108">    return code;</span>
+<span class="nc" id="L108">    return code;</span>
   }
 
   /**
    * @return The corresponding ByteBuf
    */
   public ByteBuf getNetworkPacket() {
-<span class="fc" id="L115">    final ByteBuf buf = Unpooled.buffer(13);</span>
-<span class="fc" id="L116">    buf.writeInt(buffer.readableBytes() + 9);</span>
-<span class="fc" id="L117">    buf.writeInt(remoteId);</span>
-<span class="fc" id="L118">    buf.writeInt(localId);</span>
-<span class="fc" id="L119">    buf.writeByte(code);</span>
-<span class="fc" id="L120">    logger.trace(&quot;TRACE ID Before sending NetworkPacket {}&quot;, this);</span>
-<span class="fc" id="L121">    return Unpooled.wrappedBuffer(buf, buffer);</span>
+<span class="nc" id="L115">    final ByteBuf buf = Unpooled.buffer(13);</span>
+<span class="nc" id="L116">    buf.writeInt(buffer.readableBytes() + 9);</span>
+<span class="nc" id="L117">    buf.writeInt(remoteId);</span>
+<span class="nc" id="L118">    buf.writeInt(localId);</span>
+<span class="nc" id="L119">    buf.writeByte(code);</span>
+<span class="nc" id="L120">    logger.trace(&quot;TRACE ID Before sending NetworkPacket {}&quot;, this);</span>
+<span class="nc" id="L121">    return Unpooled.wrappedBuffer(buf, buffer);</span>
   }
 
   @Override
   public String toString() {
-<span class="fc" id="L126">    return &quot;RId: &quot; + remoteId + &quot; LId: &quot; + localId + &quot; Code: &quot; + code +</span>
-<span class="pc bpc" id="L127" title="1 of 2 branches missed.">           &quot; Length: &quot; + buffer.readableBytes() +</span>
-           (code == LocalPacketFactory.REQUESTPACKET? buffer
-<span class="pc" id="L129">               .toString(buffer.readerIndex(), buffer.readableBytes(),</span>
-                         Charsets.UTF_8) : &quot;&quot;);
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    return &quot;RId: &quot; + remoteId + &quot; LId: &quot; + localId + &quot; Code: &quot; + code +</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">           &quot; Length: &quot; + (buffer != null? (buffer.readableBytes() + (code ==</span>
+                                                                     LocalPacketFactory.REQUESTPACKET?
+<span class="nc" id="L129">        buffer.toString(buffer.readerIndex(), buffer.readableBytes(),</span>
+                        WaarpStringUtils.UTF8) : &quot;&quot;)) : &quot;no buffer&quot;);
   }
 
   public void clear() {
-<span class="pc bpc" id="L134" title="1 of 4 branches missed.">    if (buffer != null &amp;&amp; buffer.release()) {</span>
-<span class="fc" id="L135">      buffer = null;</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">    if (buffer != null &amp;&amp; buffer.release()) {</span>
+<span class="nc" id="L135">      buffer = null;</span>
     }
-<span class="fc" id="L137">  }</span>
+<span class="nc" id="L137">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

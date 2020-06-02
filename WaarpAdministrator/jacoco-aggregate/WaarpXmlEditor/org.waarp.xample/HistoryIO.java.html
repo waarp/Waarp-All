@@ -29,6 +29,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,75 +61,76 @@ public final class HistoryIO {
   }
 
   static void populateHistory(History history, Element element) {
-<span class="nc" id="L63">    final NodeList lst = element.getChildNodes();</span>
-<span class="nc" id="L64">    history.items = new ArrayList&lt;History&gt;();</span>
-<span class="nc bnc" id="L65" title="All 2 branches missed.">    for (int i = lst.getLength() - 1; i &gt;= 0; i--) {</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">      if (!(lst.item(i) instanceof Element)) {</span>
-<span class="nc" id="L67">        continue;</span>
+<span class="nc" id="L64">    final NodeList lst = element.getChildNodes();</span>
+<span class="nc" id="L65">    history.items = new ArrayList&lt;History&gt;();</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">    for (int i = lst.getLength() - 1; i &gt;= 0; i--) {</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (!(lst.item(i) instanceof Element)) {</span>
+<span class="nc" id="L68">        continue;</span>
       }
-<span class="nc" id="L69">      final Element child = (Element) lst.item(i);</span>
-<span class="nc" id="L70">      final String path = child.getAttribute(FILE);</span>
-<span class="nc bnc" id="L71" title="All 4 branches missed.">      if (path != null &amp;&amp; path.length() &gt; 0) {</span>
-<span class="nc" id="L72">        final History childHistory = history.put(path);</span>
-<span class="nc" id="L73">        populateHistory(childHistory, child);</span>
+<span class="nc" id="L70">      final Element child = (Element) lst.item(i);</span>
+<span class="nc" id="L71">      final String path = child.getAttribute(FILE);</span>
+<span class="nc bnc" id="L72" title="All 4 branches missed.">      if (path != null &amp;&amp; path.length() &gt; 0) {</span>
+<span class="nc" id="L73">        final History childHistory = history.put(path);</span>
+<span class="nc" id="L74">        populateHistory(childHistory, child);</span>
       }
     }
-<span class="nc" id="L76">  }</span>
+<span class="nc" id="L77">  }</span>
 
   public static void load(History history) {
-<span class="nc" id="L79">    final File file = new File(HISTORY_FILE_NAME);</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L81">      return;</span>
+<span class="nc" id="L80">    final File file = new File(HISTORY_FILE_NAME);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="nc" id="L82">      return;</span>
     }
     Element root;
     try {
-<span class="nc" id="L85">      final DOMParser parser = new DOMParser();</span>
-<span class="nc" id="L86">      parser.parse(file.toURI().toURL().toString());</span>
-<span class="nc" id="L87">      final Document doc = parser.getDocument();</span>
-<span class="nc" id="L88">      root = doc.getDocumentElement();</span>
-<span class="nc" id="L89">      populateHistory(history, root);</span>
-<span class="nc" id="L90">    } catch (final Exception ex) {</span>
-<span class="nc" id="L91">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
-<span class="nc" id="L92">    }</span>
-<span class="nc" id="L93">  }</span>
+<span class="nc" id="L86">      final DOMParser parser = new DOMParser();</span>
+<span class="nc" id="L87">      parser.parse(file.toURI().toURL().toString());</span>
+<span class="nc" id="L88">      final Document doc = parser.getDocument();</span>
+<span class="nc" id="L89">      root = doc.getDocumentElement();</span>
+<span class="nc" id="L90">      populateHistory(history, root);</span>
+<span class="nc" id="L91">    } catch (final Exception ex) {</span>
+<span class="nc" id="L92">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L93">    }</span>
+<span class="nc" id="L94">  }</span>
 
   public static void save(History history) {
-<span class="nc" id="L96">    final Document doc = new DocumentImpl();</span>
-<span class="nc" id="L97">    final Element root = doc.createElement(HISTORY);</span>
-<span class="nc" id="L98">    doc.appendChild(root);</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (history.items != null) {</span>
-<span class="nc bnc" id="L100" title="All 2 branches missed.">      for (int i = 0; i &lt; history.items.size(); i++) {</span>
-<span class="nc" id="L101">        final History hXSD = history.items.get(i);</span>
-<span class="nc" id="L102">        final Element eXSD = doc.createElement(XSD_DOC);</span>
-<span class="nc" id="L103">        eXSD.setAttribute(FILE, hXSD.path);</span>
-<span class="nc" id="L104">        root.appendChild(eXSD);</span>
-<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (hXSD.items == null) {</span>
-<span class="nc" id="L106">          continue;</span>
+<span class="nc" id="L97">    final Document doc = new DocumentImpl();</span>
+<span class="nc" id="L98">    final Element root = doc.createElement(HISTORY);</span>
+<span class="nc" id="L99">    doc.appendChild(root);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (history.items != null) {</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">      for (int i = 0; i &lt; history.items.size(); i++) {</span>
+<span class="nc" id="L102">        final History hXSD = history.items.get(i);</span>
+<span class="nc" id="L103">        final Element eXSD = doc.createElement(XSD_DOC);</span>
+<span class="nc" id="L104">        eXSD.setAttribute(FILE, hXSD.path);</span>
+<span class="nc" id="L105">        root.appendChild(eXSD);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (hXSD.items == null) {</span>
+<span class="nc" id="L107">          continue;</span>
         }
-<span class="nc bnc" id="L108" title="All 2 branches missed.">        for (int j = 0; j &lt; hXSD.items.size(); j++) {</span>
-<span class="nc" id="L109">          final History hXML = hXSD.items.get(j);</span>
-<span class="nc" id="L110">          final Element eXML = doc.createElement(XML_DOC);</span>
-<span class="nc" id="L111">          eXML.setAttribute(FILE, hXML.path);</span>
-<span class="nc" id="L112">          eXSD.appendChild(eXML);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        for (int j = 0; j &lt; hXSD.items.size(); j++) {</span>
+<span class="nc" id="L110">          final History hXML = hXSD.items.get(j);</span>
+<span class="nc" id="L111">          final Element eXML = doc.createElement(XML_DOC);</span>
+<span class="nc" id="L112">          eXML.setAttribute(FILE, hXML.path);</span>
+<span class="nc" id="L113">          eXSD.appendChild(eXML);</span>
         }
       }
     }
-<span class="nc" id="L116">    final File file = new File(HISTORY_FILE_NAME);</span>
-<span class="nc" id="L117">    FileOutputStream out = null;</span>
+<span class="nc" id="L117">    final File file = new File(HISTORY_FILE_NAME);</span>
+<span class="nc" id="L118">    FileOutputStream out = null;</span>
     try {
-<span class="nc" id="L119">      file.createNewFile();</span>
-<span class="nc" id="L120">      out = new FileOutputStream(file);</span>
-<span class="nc" id="L121">      final OutputFormat format = new OutputFormat(doc, &quot;UTF-8&quot;, true);</span>
-<span class="nc" id="L122">      final Writer writer = new OutputStreamWriter(out);</span>
-<span class="nc" id="L123">      final XMLSerializer serial = new XMLSerializer(writer, format);</span>
-<span class="nc" id="L124">      serial.asDOMSerializer();</span>
-<span class="nc" id="L125">      serial.serialize(doc);</span>
-<span class="nc" id="L126">    } catch (final Exception ignored) {</span>
+<span class="nc" id="L120">      file.createNewFile();</span>
+<span class="nc" id="L121">      out = new FileOutputStream(file);</span>
+<span class="nc" id="L122">      final OutputFormat format =</span>
+          new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
+<span class="nc" id="L124">      final Writer writer = new OutputStreamWriter(out);</span>
+<span class="nc" id="L125">      final XMLSerializer serial = new XMLSerializer(writer, format);</span>
+<span class="nc" id="L126">      serial.asDOMSerializer();</span>
+<span class="nc" id="L127">      serial.serialize(doc);</span>
+<span class="nc" id="L128">    } catch (final Exception ignored) {</span>
       // nothing
     } finally {
-<span class="nc" id="L129">      FileUtils.close(out);</span>
+<span class="nc" id="L131">      FileUtils.close(out);</span>
     }
-<span class="nc" id="L131">  }</span>
+<span class="nc" id="L133">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 /**
  * Abstract definition of an FTP Command
  */
-<span class="fc" id="L33">public abstract class AbstractCommand implements CommandInterface {</span>
-<span class="fc" id="L34">  private static final Pattern COMPILE_BLANK = Pattern.compile(&quot; &quot;);</span>
+<span class="nc" id="L33">public abstract class AbstractCommand implements CommandInterface {</span>
+<span class="nc" id="L34">  private static final Pattern COMPILE_BLANK = Pattern.compile(&quot; &quot;);</span>
   /**
    * Code of Command
    */
@@ -66,34 +66,34 @@ import java.util.regex.Pattern;
   @Override
   public void setArgs(SessionInterface session, String command, String arg,
                       @SuppressWarnings(&quot;rawtypes&quot;) Enum code) {
-<span class="fc" id="L69">    this.session = (FtpSession) session;</span>
-<span class="fc" id="L70">    this.command = command;</span>
-<span class="fc" id="L71">    this.arg = arg;</span>
-<span class="fc" id="L72">    this.code = (FtpCommandCode) code;</span>
-<span class="fc" id="L73">  }</span>
+<span class="nc" id="L69">    this.session = (FtpSession) session;</span>
+<span class="nc" id="L70">    this.command = command;</span>
+<span class="nc" id="L71">    this.arg = arg;</span>
+<span class="nc" id="L72">    this.code = (FtpCommandCode) code;</span>
+<span class="nc" id="L73">  }</span>
 
   @Override
   public void setExtraNextCommand(
       @SuppressWarnings(&quot;rawtypes&quot;) Enum extraNextCommand) {
-<span class="fc bfc" id="L78" title="All 2 branches covered.">    if (extraNextCommand != FtpCommandCode.NOOP) {</span>
-<span class="fc" id="L79">      this.extraNextCommand = (FtpCommandCode) extraNextCommand;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">    if (extraNextCommand != FtpCommandCode.NOOP) {</span>
+<span class="nc" id="L79">      this.extraNextCommand = (FtpCommandCode) extraNextCommand;</span>
     } else {
-<span class="fc" id="L81">      this.extraNextCommand = null;</span>
+<span class="nc" id="L81">      this.extraNextCommand = null;</span>
     }
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L83">  }</span>
 
   @Override
   public boolean isNextCommandValid(CommandInterface newCommandArg) {
-<span class="fc" id="L87">    final AbstractCommand newCommand = (AbstractCommand) newCommandArg;</span>
-<span class="fc" id="L88">    final Class&lt;? extends AbstractCommand&gt; newClass = newCommand.getClass();</span>
+<span class="nc" id="L87">    final AbstractCommand newCommand = (AbstractCommand) newCommandArg;</span>
+<span class="nc" id="L88">    final Class&lt;? extends AbstractCommand&gt; newClass = newCommand.getClass();</span>
     // Special commands: QUIT ABORT STAT NOP
-<span class="fc bfc" id="L90" title="All 2 branches covered.">    if (FtpCommandCode.isSpecialCommand(newCommand.getCode())) {</span>
-<span class="fc" id="L91">      return true;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (FtpCommandCode.isSpecialCommand(newCommand.getCode())) {</span>
+<span class="nc" id="L91">      return true;</span>
     }
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (code == null) {</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    if (code == null) {</span>
 <span class="nc" id="L94">      return false;</span>
     }
-<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    if (extraNextCommand != null) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">    if (extraNextCommand != null) {</span>
 <span class="nc bnc" id="L97" title="All 2 branches missed.">      if (extraNextCommand.command == newClass) {</span>
 <span class="nc" id="L98">        return true;</span>
       }
@@ -106,13 +106,13 @@ import java.util.regex.Pattern;
       }
 <span class="nc" id="L107">      return false;</span>
     }
-<span class="pc bpc" id="L109" title="1 of 4 branches missed.">    if (code.nextValids == null || code.nextValids.length == 0) {</span>
+<span class="nc bnc" id="L109" title="All 4 branches missed.">    if (code.nextValids == null || code.nextValids.length == 0) {</span>
       // Any command is allowed
-<span class="fc" id="L111">      return true;</span>
+<span class="nc" id="L111">      return true;</span>
     }
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    for (final Class&lt;?&gt; nextValid : code.nextValids) {</span>
-<span class="fc bfc" id="L114" title="All 2 branches covered.">      if (nextValid == newClass) {</span>
-<span class="fc" id="L115">        return true;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    for (final Class&lt;?&gt; nextValid : code.nextValids) {</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">      if (nextValid == newClass) {</span>
+<span class="nc" id="L115">        return true;</span>
       }
     }
 <span class="nc" id="L118">    return false;</span>
@@ -130,33 +130,33 @@ import java.util.regex.Pattern;
 
   @Override
   public String getArg() {
-<span class="fc" id="L133">    return arg;</span>
+<span class="nc" id="L133">    return arg;</span>
   }
 
   @Override
   public String[] getArgs() {
-<span class="fc" id="L138">    return COMPILE_BLANK.split(arg);</span>
+<span class="nc" id="L138">    return COMPILE_BLANK.split(arg);</span>
   }
 
   @Override
   public int getValue(String argx) throws InvalidArgumentException {
     int i;
     try {
-<span class="fc" id="L145">      i = Integer.parseInt(argx);</span>
+<span class="nc" id="L145">      i = Integer.parseInt(argx);</span>
 <span class="nc" id="L146">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L147">      throw new InvalidArgumentException(&quot;Not an integer&quot;, e);</span>
-<span class="fc" id="L148">    }</span>
-<span class="fc" id="L149">    return i;</span>
+<span class="nc" id="L148">    }</span>
+<span class="nc" id="L149">    return i;</span>
   }
 
   @Override
   public String getCommand() {
-<span class="fc" id="L154">    return command;</span>
+<span class="nc" id="L154">    return command;</span>
   }
 
   @Override
   public boolean hasArg() {
-<span class="pc bpc" id="L159" title="1 of 4 branches missed.">    return arg != null &amp;&amp; arg.length() != 0;</span>
+<span class="nc bnc" id="L159" title="All 4 branches missed.">    return arg != null &amp;&amp; arg.length() != 0;</span>
   }
 
   /**
@@ -164,7 +164,7 @@ import java.util.regex.Pattern;
    */
   @Override
   public FtpSession getSession() {
-<span class="fc" id="L167">    return session;</span>
+<span class="nc" id="L167">    return session;</span>
   }
 
   // some helpful functions
@@ -173,21 +173,21 @@ import java.util.regex.Pattern;
    * @return The current configuration object
    */
   public FtpConfiguration getConfiguration() {
-<span class="fc" id="L176">    return session.getConfiguration();</span>
+<span class="nc" id="L176">    return session.getConfiguration();</span>
   }
 
   @Override
   public void invalidCurrentCommand() {
-<span class="fc" id="L181">    session.getRestart().setSet(false);</span>
-<span class="fc" id="L182">    session.setPreviousAsCurrentCommand();</span>
-<span class="fc" id="L183">  }</span>
+<span class="nc" id="L181">    session.getRestart().setSet(false);</span>
+<span class="nc" id="L182">    session.setPreviousAsCurrentCommand();</span>
+<span class="nc" id="L183">  }</span>
 
   /**
    * @return The FtpCommandCode associated with this command
    */
   @Override
   public FtpCommandCode getCode() {
-<span class="fc" id="L190">    return code;</span>
+<span class="nc" id="L190">    return code;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

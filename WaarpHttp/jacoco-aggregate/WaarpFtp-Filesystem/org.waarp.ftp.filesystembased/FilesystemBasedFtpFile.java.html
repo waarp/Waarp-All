@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FilesystemBasedFtpFile.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpFtp-Filesystem</a> &gt; <a href="index.source.html" class="el_package">org.waarp.ftp.filesystembased</a> &gt; <span class="el_source">FilesystemBasedFtpFile.java</span></div><h1>FilesystemBasedFtpFile.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.ftp.filesystembased;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.exception.FileEndOfTransferException;
+import org.waarp.common.exception.FileTransferException;
+import org.waarp.common.file.DataBlock;
+import org.waarp.common.file.filesystembased.FilesystemBasedFileImpl;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.ftp.core.exception.FtpNoConnectionException;
+import org.waarp.ftp.core.file.FtpFile;
+import org.waarp.ftp.core.session.FtpSession;
+
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * Filesystem implementation of a FtpFile
+ */
+public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
+    implements FtpFile {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(FilesystemBasedFtpFile.class);</span>
+
+  /**
+   * Retrieve lock to ensure only one call at a time for one file
+   */
+<span class="nc" id="L52">  private final ReentrantLock retrieveLock = new ReentrantLock();</span>
+
+  /**
+   * @param session
+   * @param dir It is not necessary the directory that owns this file.
+   * @param path
+   * @param append
+   *
+   * @throws CommandAbstractException
+   */
+  protected FilesystemBasedFtpFile(FtpSession session,
+                                   FilesystemBasedFtpDir dir, String path,
+                                   boolean append)
+      throws CommandAbstractException {
+<span class="nc" id="L66">    super(session, dir, path, append);</span>
+<span class="nc" id="L67">  }</span>
+
+  @Override
+  public long length() throws CommandAbstractException {
+<span class="nc" id="L71">    long length = super.length();</span>
+<span class="nc" id="L72">    if (((FtpSession) getSession()).getDataConn()</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                                   .isFileStreamBlockAsciiImage()) {</span>
+<span class="nc" id="L74">      final long block = (long) Math</span>
+<span class="nc" id="L75">          .ceil((double) length / (double) getSession().getBlockSize());</span>
+<span class="nc" id="L76">      length += (block + 3) * 3;</span>
+    }
+<span class="nc" id="L78">    return length;</span>
+  }
+
+  /**
+   * Launch retrieve operation (internal method, should not be called
+   * directly)
+   */
+  @Override
+  public void trueRetrieve() {
+<span class="nc" id="L87">    retrieveLock.lock();</span>
+    try {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (!isReady) {</span>
+<span class="nc" id="L90">        return;</span>
+      }
+      // First check if ready to run from Control
+      try {
+<span class="nc" id="L94">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L95">                              .waitForDataNetworkHandlerReady();</span>
+<span class="nc" id="L96">      } catch (final InterruptedException e) {//NOSONAR</span>
+        // bad thing
+<span class="nc" id="L98">        logger.warn(&quot;DataNetworkHandler was not ready&quot;, e);</span>
+<span class="nc" id="L99">        return;</span>
+<span class="nc" id="L100">      }</span>
+      Channel channel;
+      try {
+<span class="nc" id="L103">        channel = ((FtpSession) session).getDataConn().getCurrentDataChannel();</span>
+<span class="nc" id="L104">      } catch (final FtpNoConnectionException e) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (isInReading()) {</span>
+<span class="nc" id="L106">          logger.error(&quot;Should not be&quot;, e);</span>
+<span class="nc" id="L107">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L108">                                .setTransferAbortedFromInternal(true);</span>
+        }
+<span class="nc" id="L110">        logger.debug(</span>
+            &quot;Possible call while channel was on going to be closed once transfer was done&quot;,
+            e);
+<span class="nc" id="L113">        closeFile();</span>
+<span class="nc" id="L114">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L115">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L116">        return;</span>
+<span class="nc" id="L117">      }</span>
+      DataBlock block;
+      try {
+<span class="nc" id="L120">        block = readDataBlock();</span>
+<span class="nc" id="L121">      } catch (final FileEndOfTransferException e) {</span>
+        // Last block (in fact, previous block was the last one,
+        // but it could be aligned with the block size so not
+        // detected)
+<span class="nc" id="L125">        closeFile();</span>
+<span class="nc" id="L126">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L127">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L128">        return;</span>
+<span class="nc" id="L129">      }</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">      if (block == null) {</span>
+        // Last block (in fact, previous block was the last one,
+        // but it could be aligned with the block size so not
+        // detected)
+<span class="nc" id="L134">        closeFile();</span>
+<span class="nc" id="L135">        ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L136">                              .setPreEndOfTransfer();</span>
+<span class="nc" id="L137">        return;</span>
+      }
+      // While not last block
+<span class="nc" id="L140">      ChannelFuture future = null;</span>
+<span class="nc bnc" id="L141" title="All 4 branches missed.">      while (block != null &amp;&amp; !block.isEOF()) {</span>
+<span class="nc" id="L142">        future = channel.writeAndFlush(block);</span>
+<span class="nc" id="L143">        WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (!future.isSuccess()) {</span>
+<span class="nc" id="L145">          closeFile();</span>
+<span class="nc" id="L146">          throw new FileTransferException(&quot;File transfer in error&quot;);</span>
+        }
+        try {
+<span class="nc" id="L149">          block = readDataBlock();</span>
+<span class="nc" id="L150">        } catch (final FileEndOfTransferException e) {</span>
+<span class="nc" id="L151">          closeFile();</span>
+          // Wait for last write
+<span class="nc bnc" id="L153" title="All 2 branches missed.">          if (future.isSuccess()) {</span>
+<span class="nc" id="L154">            ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L155">                                  .setPreEndOfTransfer();</span>
+          } else {
+<span class="nc" id="L157">            throw new FileTransferException(&quot;File transfer in error&quot;);</span>
+          }
+<span class="nc" id="L159">          return;</span>
+<span class="nc" id="L160">        }</span>
+      }
+      // Last block
+<span class="nc" id="L163">      closeFile();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      if (block != null) {</span>
+<span class="nc" id="L165">        logger.debug(&quot;Write &quot; + block.getByteCount());</span>
+<span class="nc" id="L166">        future = channel.writeAndFlush(block);</span>
+      }
+      // Wait for last write
+<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (future != null) {</span>
+<span class="nc" id="L170">        WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (future.isSuccess()) {</span>
+<span class="nc" id="L172">          ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L173">                                .setPreEndOfTransfer();</span>
+        } else {
+<span class="nc" id="L175">          throw new FileTransferException(&quot;Write is not successful&quot;);</span>
+        }
+      }
+<span class="nc" id="L178">    } catch (final FileTransferException e) {</span>
+      // An error occurs!
+<span class="nc" id="L180">      ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L181">                            .setTransferAbortedFromInternal(true);</span>
+<span class="nc" id="L182">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L183">      logger.error(&quot;Should not be&quot;, e);</span>
+<span class="nc" id="L184">      ((FtpSession) session).getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L185">                            .setTransferAbortedFromInternal(true);</span>
+    } finally {
+<span class="nc" id="L187">      retrieveLock.unlock();</span>
+    }
+<span class="nc" id="L189">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -39,7 +39,7 @@ import org.waarp.commandexec.utils.LocalExecDefaultResult;
 public class LocalExecServerInitializer
     extends ChannelInitializer&lt;SocketChannel&gt; {
 
-<span class="fc" id="L42">  private long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+<span class="nc" id="L42">  private long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
   protected final EventExecutorGroup eventExecutorGroup;
   private final ChannelGroup channelGroup;
 
@@ -48,11 +48,11 @@ public class LocalExecServerInitializer
    *
    * @param eventExecutorGroup
    */
-<span class="fc" id="L51">  public LocalExecServerInitializer(EventExecutorGroup eventExecutorGroup) {</span>
-<span class="fc" id="L52">    this.eventExecutorGroup = eventExecutorGroup;</span>
-<span class="fc" id="L53">    channelGroup =</span>
-<span class="fc" id="L54">        new DefaultChannelGroup(&quot;LocalExecServer&quot;, eventExecutorGroup.next());</span>
-<span class="fc" id="L55">  }</span>
+<span class="nc" id="L51">  public LocalExecServerInitializer(EventExecutorGroup eventExecutorGroup) {</span>
+<span class="nc" id="L52">    this.eventExecutorGroup = eventExecutorGroup;</span>
+<span class="nc" id="L53">    channelGroup =</span>
+<span class="nc" id="L54">        new DefaultChannelGroup(&quot;LocalExecServer&quot;, eventExecutorGroup.next());</span>
+<span class="nc" id="L55">  }</span>
 
   /**
    * Constructor with a specific default delay
@@ -61,29 +61,29 @@ public class LocalExecServerInitializer
    * @param eventExecutorGroup
    */
   public LocalExecServerInitializer(long newdelay,
-<span class="fc" id="L64">                                    EventExecutorGroup eventExecutorGroup) {</span>
-<span class="fc" id="L65">    delay = newdelay;</span>
-<span class="fc" id="L66">    this.eventExecutorGroup = eventExecutorGroup;</span>
-<span class="fc" id="L67">    channelGroup =</span>
-<span class="fc" id="L68">        new DefaultChannelGroup(&quot;LocalExecServer&quot;, eventExecutorGroup.next());</span>
-<span class="fc" id="L69">  }</span>
+<span class="nc" id="L64">                                    EventExecutorGroup eventExecutorGroup) {</span>
+<span class="nc" id="L65">    delay = newdelay;</span>
+<span class="nc" id="L66">    this.eventExecutorGroup = eventExecutorGroup;</span>
+<span class="nc" id="L67">    channelGroup =</span>
+<span class="nc" id="L68">        new DefaultChannelGroup(&quot;LocalExecServer&quot;, eventExecutorGroup.next());</span>
+<span class="nc" id="L69">  }</span>
 
   @Override
   public void initChannel(SocketChannel ch) throws Exception {
     // Create a default pipeline implementation.
-<span class="fc" id="L74">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="nc" id="L74">    final ChannelPipeline pipeline = ch.pipeline();</span>
 
     // Add the text line codec combination first,
-<span class="fc" id="L77">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, Delimiters</span>
-<span class="fc" id="L78">        .lineDelimiter()));</span>
-<span class="fc" id="L79">    pipeline.addLast(eventExecutorGroup, &quot;decoder&quot;, new StringDecoder());</span>
-<span class="fc" id="L80">    pipeline.addLast(eventExecutorGroup, &quot;encoder&quot;, new StringEncoder());</span>
+<span class="nc" id="L77">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, Delimiters</span>
+<span class="nc" id="L78">        .lineDelimiter()));</span>
+<span class="nc" id="L79">    pipeline.addLast(eventExecutorGroup, &quot;decoder&quot;, new StringDecoder());</span>
+<span class="nc" id="L80">    pipeline.addLast(eventExecutorGroup, &quot;encoder&quot;, new StringEncoder());</span>
 
     // and then business logic.
     // Could change it with a new fixed delay if necessary at construction
-<span class="fc" id="L84">    pipeline.addLast(eventExecutorGroup, &quot;handler&quot;,</span>
+<span class="nc" id="L84">    pipeline.addLast(eventExecutorGroup, &quot;handler&quot;,</span>
                      new LocalExecServerHandler(this, delay));
-<span class="fc" id="L86">  }</span>
+<span class="nc" id="L86">  }</span>
 
   /**
    * Add a channel to the ExecClient Group
@@ -91,14 +91,14 @@ public class LocalExecServerInitializer
    * @param channel
    */
   public void addChannel(Channel channel) {
-<span class="fc" id="L94">    channelGroup.add(channel);</span>
-<span class="fc" id="L95">  }</span>
+<span class="nc" id="L94">    channelGroup.add(channel);</span>
+<span class="nc" id="L95">  }</span>
 
   /**
    * Release internal resources
    */
   public void releaseResources() {
-<span class="fc" id="L101">    channelGroup.close();</span>
-<span class="fc" id="L102">  }</span>
+<span class="nc" id="L101">    channelGroup.close();</span>
+<span class="nc" id="L102">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

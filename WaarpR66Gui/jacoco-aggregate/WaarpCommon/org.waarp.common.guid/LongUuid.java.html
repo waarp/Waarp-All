@@ -40,8 +40,8 @@ public final class LongUuid {
   /**
    * Counter part
    */
-<span class="fc" id="L43">  private static final AtomicInteger COUNTER =</span>
-<span class="fc" id="L44">      new AtomicInteger(StringUtils.RANDOM.nextInt());</span>
+<span class="nc" id="L43">  private static final AtomicInteger COUNTER =</span>
+<span class="nc" id="L44">      new AtomicInteger(StringUtils.RANDOM.nextInt());</span>
   /**
    * Byte size of UUID
    */
@@ -56,73 +56,73 @@ public final class LongUuid {
    * Constructor that generates a new UUID using the current process id, MAC
    * address, and timestamp
    */
-<span class="fc" id="L59">  public LongUuid() {</span>
-<span class="fc" id="L60">    final long time = System.currentTimeMillis();</span>
-<span class="fc" id="L61">    uuid = new byte[UUIDSIZE];</span>
+<span class="nc" id="L59">  public LongUuid() {</span>
+<span class="nc" id="L60">    final long time = System.currentTimeMillis();</span>
+<span class="nc" id="L61">    uuid = new byte[UUIDSIZE];</span>
 
     // atomically
     final int count;
-<span class="fc" id="L65">    synchronized (COUNTER) {</span>
-<span class="fc" id="L66">      count = COUNTER.incrementAndGet();</span>
-<span class="pc bpc" id="L67" title="1 of 2 branches missed.">      if (count == Integer.MAX_VALUE) {</span>
+<span class="nc" id="L65">    synchronized (COUNTER) {</span>
+<span class="nc" id="L66">      count = COUNTER.incrementAndGet();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (count == Integer.MAX_VALUE) {</span>
 <span class="nc" id="L68">        COUNTER.set(Integer.MIN_VALUE + 1);</span>
       }
-<span class="fc" id="L70">    }</span>
+<span class="nc" id="L70">    }</span>
 
     // copy pid to uuid
-<span class="fc" id="L73">    uuid[0] = (byte) (JvmProcessId.JVMPID &gt;&gt; 8);</span>
-<span class="fc" id="L74">    uuid[1] = (byte) JvmProcessId.JVMPID;</span>
+<span class="nc" id="L73">    uuid[0] = (byte) (JvmProcessId.JVMPID &gt;&gt; 8);</span>
+<span class="nc" id="L74">    uuid[1] = (byte) JvmProcessId.JVMPID;</span>
 
     // copy timestamp into uuid (up to 2^36 s = 2 years rolling)
-<span class="fc" id="L77">    uuid[2] = (byte) (time &gt;&gt; 28);</span>
-<span class="fc" id="L78">    uuid[3] = (byte) (time &gt;&gt; 20);</span>
-<span class="fc" id="L79">    uuid[4] = (byte) (time &gt;&gt; 12);</span>
+<span class="nc" id="L77">    uuid[2] = (byte) (time &gt;&gt; 28);</span>
+<span class="nc" id="L78">    uuid[3] = (byte) (time &gt;&gt; 20);</span>
+<span class="nc" id="L79">    uuid[4] = (byte) (time &gt;&gt; 12);</span>
 
     // Keep 4 first bytes, 4 bytes coming from Timestamp =&gt; 2^20 (at most 1M / 1/2s)
-<span class="fc" id="L82">    uuid[5] = (byte) (count &gt;&gt; 16 &amp; 0x0F | time &gt;&gt; 4 &amp; 0xF0);</span>
-<span class="fc" id="L83">    uuid[6] = (byte) (count &gt;&gt; 8);</span>
-<span class="fc" id="L84">    uuid[7] = (byte) count;</span>
-<span class="fc" id="L85">  }</span>
+<span class="nc" id="L82">    uuid[5] = (byte) (count &gt;&gt; 16 &amp; 0x0F | time &gt;&gt; 4 &amp; 0xF0);</span>
+<span class="nc" id="L83">    uuid[6] = (byte) (count &gt;&gt; 8);</span>
+<span class="nc" id="L84">    uuid[7] = (byte) count;</span>
+<span class="nc" id="L85">  }</span>
 
   /**
    * Constructor that takes a byte array as this UUID's content
    *
    * @param bytes UUID content
    */
-<span class="fc" id="L92">  public LongUuid(final byte[] bytes) {</span>
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (bytes.length != UUIDSIZE) {</span>
+<span class="nc" id="L92">  public LongUuid(final byte[] bytes) {</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    if (bytes.length != UUIDSIZE) {</span>
 <span class="nc" id="L94">      throw new RuntimeException(</span>
 <span class="nc" id="L95">          &quot;Attempted to parse malformed UUID: &quot; + Arrays.toString(bytes));</span>
     }
 
-<span class="fc" id="L98">    uuid = Arrays.copyOf(bytes, UUIDSIZE);</span>
-<span class="fc" id="L99">  }</span>
+<span class="nc" id="L98">    uuid = Arrays.copyOf(bytes, UUIDSIZE);</span>
+<span class="nc" id="L99">  }</span>
 
-<span class="fc" id="L101">  public LongUuid(final long value) {</span>
-<span class="fc" id="L102">    uuid = new byte[UUIDSIZE];</span>
-<span class="fc" id="L103">    uuid[0] = (byte) (value &gt;&gt; 56);</span>
-<span class="fc" id="L104">    uuid[1] = (byte) (value &gt;&gt; 48);</span>
-<span class="fc" id="L105">    uuid[2] = (byte) (value &gt;&gt; 40);</span>
-<span class="fc" id="L106">    uuid[3] = (byte) (value &gt;&gt; 32);</span>
-<span class="fc" id="L107">    uuid[4] = (byte) (value &gt;&gt; 24);</span>
-<span class="fc" id="L108">    uuid[5] = (byte) (value &gt;&gt; 16);</span>
-<span class="fc" id="L109">    uuid[6] = (byte) (value &gt;&gt; 8);</span>
-<span class="fc" id="L110">    uuid[7] = (byte) value;</span>
-<span class="fc" id="L111">  }</span>
+<span class="nc" id="L101">  public LongUuid(final long value) {</span>
+<span class="nc" id="L102">    uuid = new byte[UUIDSIZE];</span>
+<span class="nc" id="L103">    uuid[0] = (byte) (value &gt;&gt; 56);</span>
+<span class="nc" id="L104">    uuid[1] = (byte) (value &gt;&gt; 48);</span>
+<span class="nc" id="L105">    uuid[2] = (byte) (value &gt;&gt; 40);</span>
+<span class="nc" id="L106">    uuid[3] = (byte) (value &gt;&gt; 32);</span>
+<span class="nc" id="L107">    uuid[4] = (byte) (value &gt;&gt; 24);</span>
+<span class="nc" id="L108">    uuid[5] = (byte) (value &gt;&gt; 16);</span>
+<span class="nc" id="L109">    uuid[6] = (byte) (value &gt;&gt; 8);</span>
+<span class="nc" id="L110">    uuid[7] = (byte) value;</span>
+<span class="nc" id="L111">  }</span>
 
-<span class="fc" id="L113">  public LongUuid(final String idsource) {</span>
-<span class="fc" id="L114">    final String id = idsource.trim();</span>
+<span class="nc" id="L113">  public LongUuid(final String idsource) {</span>
+<span class="nc" id="L114">    final String id = idsource.trim();</span>
 
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (id.length() != UUIDSIZE * 2) {</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (id.length() != UUIDSIZE * 2) {</span>
 <span class="nc" id="L117">      throw new RuntimeException(&quot;Attempted to parse malformed UUID: &quot; + id);</span>
     }
 
-<span class="fc" id="L120">    uuid = Hexa.fromHex(id);</span>
-<span class="fc" id="L121">  }</span>
+<span class="nc" id="L120">    uuid = Hexa.fromHex(id);</span>
+<span class="nc" id="L121">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L125">    return Hexa.toHex(uuid);</span>
+<span class="nc" id="L125">    return Hexa.toHex(uuid);</span>
   }
 
   /**
@@ -131,7 +131,7 @@ public final class LongUuid {
    * @return raw byte array of UUID
    */
   public byte[] getBytes() {
-<span class="fc" id="L134">    return Arrays.copyOf(uuid, UUIDSIZE);</span>
+<span class="nc" id="L134">    return Arrays.copyOf(uuid, UUIDSIZE);</span>
   }
 
   /**
@@ -140,7 +140,7 @@ public final class LongUuid {
    * @return id of process that generated the UUID
    */
   public int getProcessId() {
-<span class="fc" id="L143">    return (uuid[0] &amp; 0xFF) &lt;&lt; 8 | uuid[1] &amp; 0xFF;</span>
+<span class="nc" id="L143">    return (uuid[0] &amp; 0xFF) &lt;&lt; 8 | uuid[1] &amp; 0xFF;</span>
   }
 
   /**
@@ -150,39 +150,39 @@ public final class LongUuid {
    */
   public long getTimestamp() {
     long time;
-<span class="fc" id="L153">    time = ((long) uuid[2] &amp; 0xFF) &lt;&lt; 28;</span>
-<span class="fc" id="L154">    time |= ((long) uuid[3] &amp; 0xFF) &lt;&lt; 20;</span>
-<span class="fc" id="L155">    time |= ((long) uuid[4] &amp; 0xFF) &lt;&lt; 12;</span>
-<span class="fc" id="L156">    time |= ((long) uuid[5] &amp; 0xF0) &lt;&lt; 4;</span>
-<span class="fc" id="L157">    return time;</span>
+<span class="nc" id="L153">    time = ((long) uuid[2] &amp; 0xFF) &lt;&lt; 28;</span>
+<span class="nc" id="L154">    time |= ((long) uuid[3] &amp; 0xFF) &lt;&lt; 20;</span>
+<span class="nc" id="L155">    time |= ((long) uuid[4] &amp; 0xFF) &lt;&lt; 12;</span>
+<span class="nc" id="L156">    time |= ((long) uuid[5] &amp; 0xF0) &lt;&lt; 4;</span>
+<span class="nc" id="L157">    return time;</span>
   }
 
   @Override
   public boolean equals(Object o) {
-<span class="pc bpc" id="L162" title="1 of 2 branches missed.">    if (!(o instanceof LongUuid)) {</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (!(o instanceof LongUuid)) {</span>
 <span class="nc" id="L163">      return false;</span>
     }
-<span class="pc bpc" id="L165" title="1 of 4 branches missed.">    return this == o || Arrays.equals(uuid, ((LongUuid) o).uuid);</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">    return this == o || Arrays.equals(uuid, ((LongUuid) o).uuid);</span>
   }
 
   @Override
   public int hashCode() {
-<span class="fc" id="L170">    return Arrays.hashCode(uuid);</span>
+<span class="nc" id="L170">    return Arrays.hashCode(uuid);</span>
   }
 
   /**
    * @return the equivalent UUID as long
    */
   public long getLong() {
-<span class="fc" id="L177">    long value = ((long) uuid[0] &amp; 0xFF) &lt;&lt; 56;</span>
-<span class="fc" id="L178">    value |= ((long) uuid[1] &amp; 0xFF) &lt;&lt; 48;</span>
-<span class="fc" id="L179">    value |= ((long) uuid[2] &amp; 0xFF) &lt;&lt; 40;</span>
-<span class="fc" id="L180">    value |= ((long) uuid[3] &amp; 0xFF) &lt;&lt; 32;</span>
-<span class="fc" id="L181">    value |= ((long) uuid[4] &amp; 0xFF) &lt;&lt; 24;</span>
-<span class="fc" id="L182">    value |= ((long) uuid[5] &amp; 0xFF) &lt;&lt; 16;</span>
-<span class="fc" id="L183">    value |= ((long) uuid[6] &amp; 0xFF) &lt;&lt; 8;</span>
-<span class="fc" id="L184">    value |= (long) uuid[7] &amp; 0xFF;</span>
-<span class="fc" id="L185">    return value;</span>
+<span class="nc" id="L177">    long value = ((long) uuid[0] &amp; 0xFF) &lt;&lt; 56;</span>
+<span class="nc" id="L178">    value |= ((long) uuid[1] &amp; 0xFF) &lt;&lt; 48;</span>
+<span class="nc" id="L179">    value |= ((long) uuid[2] &amp; 0xFF) &lt;&lt; 40;</span>
+<span class="nc" id="L180">    value |= ((long) uuid[3] &amp; 0xFF) &lt;&lt; 32;</span>
+<span class="nc" id="L181">    value |= ((long) uuid[4] &amp; 0xFF) &lt;&lt; 24;</span>
+<span class="nc" id="L182">    value |= ((long) uuid[5] &amp; 0xFF) &lt;&lt; 16;</span>
+<span class="nc" id="L183">    value |= ((long) uuid[6] &amp; 0xFF) &lt;&lt; 8;</span>
+<span class="nc" id="L184">    value |= (long) uuid[7] &amp; 0xFF;</span>
+<span class="nc" id="L185">    return value;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

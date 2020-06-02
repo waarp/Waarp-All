@@ -55,14 +55,14 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   /**
    * Internal Logger
    */
-<span class="fc" id="L58">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L59">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
+<span class="nc" id="L58">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L59">      WaarpLoggerFactory.getLogger(HttpRestAbstractR66Handler.class);</span>
 
-<span class="fc" id="L61">  public enum ACTIONS_TYPE {</span>
-<span class="fc" id="L62">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
-<span class="fc" id="L63">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
-<span class="fc" id="L64">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
-<span class="fc" id="L65">    CreateTransfer</span>
+<span class="nc" id="L61">  public enum ACTIONS_TYPE {</span>
+<span class="nc" id="L62">    OPTIONS, GetBandwidth, SetBandwidth, ExecuteBusiness, ExportConfig,</span>
+<span class="nc" id="L63">    ImportConfig, GetInformation, GetTransferInformation, GetLog,</span>
+<span class="nc" id="L64">    ShutdownOrBlock, GetStatus, RestartTransfer, StopOrCancelTransfer,</span>
+<span class="nc" id="L65">    CreateTransfer</span>
   }
 
   /**
@@ -71,16 +71,16 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
    */
   protected HttpRestAbstractR66Handler(String path, RestConfiguration config,
                                        METHOD... method) {
-<span class="fc" id="L74">    super(path, path, true, config, method);</span>
-<span class="fc" id="L75">  }</span>
+<span class="nc" id="L74">    super(path, path, true, config, method);</span>
+<span class="nc" id="L75">  }</span>
 
   @Override
   public void checkHandlerSessionCorrectness(HttpRestHandler handler,
                                              RestArgument arguments,
                                              RestArgument result) {
     // no check to do here ?
-<span class="fc" id="L82">    logger.debug(&quot;debug&quot;);</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L82">    logger.debug(&quot;debug&quot;);</span>
+<span class="nc" id="L83">  }</span>
 
   @Override
   public void getFileUpload(HttpRestHandler handler, FileUpload data,
@@ -93,10 +93,10 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
 
   protected void setError(HttpRestHandler handler, RestArgument result,
                           HttpResponseStatus code) {
-<span class="fc" id="L96">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
-<span class="fc" id="L97">    handler.setWillClose(true);</span>
-<span class="fc" id="L98">    result.setResult(code);</span>
-<span class="fc" id="L99">  }</span>
+<span class="nc" id="L96">    handler.setStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L97">    handler.setWillClose(true);</span>
+<span class="nc" id="L98">    result.setResult(code);</span>
+<span class="nc" id="L99">  }</span>
 
   protected void setError(HttpRestHandler handler, RestArgument result,
                           JsonPacket packet, HttpResponseStatus code) {
@@ -113,16 +113,16 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
 
   protected void setOk(HttpRestHandler handler, RestArgument result,
                        JsonPacket packet, HttpResponseStatus code) {
-<span class="fc" id="L116">    handler.setStatus(HttpResponseStatus.OK);</span>
-<span class="fc" id="L117">    result.setResult(code);</span>
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (packet != null) {</span>
+<span class="nc" id="L116">    handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="nc" id="L117">    result.setResult(code);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (packet != null) {</span>
       try {
 <span class="nc" id="L120">        result.addResult(packet.createObjectNode());</span>
 <span class="nc" id="L121">      } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L122">        result.setDetail(&quot;serialization impossible&quot;);</span>
 <span class="nc" id="L123">      }</span>
     }
-<span class="fc" id="L125">  }</span>
+<span class="nc" id="L125">  }</span>
 
   @Override
   public HttpResponseStatus handleException(HttpRestHandler handler,
@@ -139,24 +139,24 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
                                     ChannelHandlerContext ctx,
                                     RestArgument arguments, RestArgument result,
                                     Object body, HttpResponseStatus status) {
-<span class="fc" id="L142">    final String answer = result.toString();</span>
-<span class="fc" id="L143">    final ByteBuf buffer =</span>
-<span class="fc" id="L144">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="fc" id="L145">    final HttpResponse response = handler.getResponse(buffer);</span>
-<span class="fc" id="L146">    response.headers()</span>
-<span class="fc" id="L147">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="nc" id="L142">    final String answer = result.toString();</span>
+<span class="nc" id="L143">    final ByteBuf buffer =</span>
+<span class="nc" id="L144">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L145">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="nc" id="L146">    response.headers()</span>
+<span class="nc" id="L147">            .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
 <span class="nc" id="L149">      return ctx.writeAndFlush(response);</span>
     }
-<span class="fc" id="L151">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
-<span class="fc" id="L152">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
-<span class="fc" id="L153">    logger.debug(&quot;Will write: {}&quot;, body);</span>
-<span class="fc" id="L154">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="fc bfc" id="L155" title="All 2 branches covered.">    if (handler.isWillClose()) {</span>
-<span class="fc" id="L156">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
-<span class="fc" id="L157">      return future;</span>
+<span class="nc" id="L151">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="nc" id="L152">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="nc" id="L153">    logger.debug(&quot;Will write: {}&quot;, body);</span>
+<span class="nc" id="L154">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (handler.isWillClose()) {</span>
+<span class="nc" id="L156">      logger.debug(&quot;Will close session in HttpRestAbstractR66Handler&quot;);</span>
+<span class="nc" id="L157">      return future;</span>
     }
-<span class="fc" id="L159">    return null;</span>
+<span class="nc" id="L159">    return null;</span>
   }
 
   @Override

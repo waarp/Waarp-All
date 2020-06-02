@@ -47,15 +47,15 @@ public class FileCheckTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="fc" id="L50">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L51">      WaarpLoggerFactory.getLogger(FileCheckTask.class);</span>
+<span class="nc" id="L50">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L51">      WaarpLoggerFactory.getLogger(FileCheckTask.class);</span>
 
-<span class="fc" id="L53">  private enum FC_COMMAND {</span>
-<span class="fc" id="L54">    SIZE, DFCHECK</span>
+<span class="nc" id="L53">  private enum FC_COMMAND {</span>
+<span class="nc" id="L54">    SIZE, DFCHECK</span>
   }
 
-<span class="fc" id="L57">  private enum FC_ARGSSIZE {</span>
-<span class="fc" id="L58">    LT, GT, LTE, GTE, EQ</span>
+<span class="nc" id="L57">  private enum FC_ARGSSIZE {</span>
+<span class="nc" id="L58">    LT, GT, LTE, GTE, EQ</span>
   }
 
   /**
@@ -66,56 +66,56 @@ public class FileCheckTask extends AbstractTask {
    */
   public FileCheckTask(String argRule, int delay, String argTransfer,
                        R66Session session) {
-<span class="fc" id="L69">    super(TaskType.CHKFILE, delay, argRule, argTransfer, session);</span>
-<span class="fc" id="L70">  }</span>
+<span class="nc" id="L69">    super(TaskType.CHKFILE, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L70">  }</span>
 
   @Override
   public void run() {
-<span class="fc" id="L74">    final DbTaskRunner runner = session.getRunner();</span>
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    if (runner == null) {</span>
+<span class="nc" id="L74">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    if (runner == null) {</span>
       // no information so in error
 <span class="nc" id="L77">      logger.error(&quot;No Runner task so cannot check file: &quot; + session);</span>
 <span class="nc" id="L78">      futureCompletion.setFailure(</span>
           new OpenR66RunnerException(&quot;No Runner task so cannot check File&quot;));
 <span class="nc" id="L80">      return;</span>
     }
-<span class="fc" id="L82">    final long supposelength = runner.getOriginalSize();</span>
-<span class="pc bpc" id="L83" title="1 of 2 branches missed.">    if (supposelength &lt;= 0) {</span>
+<span class="nc" id="L82">    final long supposelength = runner.getOriginalSize();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (supposelength &lt;= 0) {</span>
       // no information but could be not an error so ignore
 <span class="nc" id="L85">      logger.warn(&quot;No file size known: &quot; + session);</span>
 <span class="nc" id="L86">      futureCompletion.setSuccess();</span>
 <span class="nc" id="L87">      return;</span>
     }
-<span class="fc" id="L89">    final String[] commands = BLANK.split(argRule);</span>
-<span class="fc" id="L90">    int current = 0;</span>
-<span class="fc bfc" id="L91" title="All 2 branches covered.">    while (current &lt; commands.length) {</span>
-<span class="fc bfc" id="L92" title="All 2 branches covered.">      if (commands[current].equalsIgnoreCase(FC_COMMAND.SIZE.name())) {</span>
-<span class="fc" id="L93">        current++;</span>
+<span class="nc" id="L89">    final String[] commands = BLANK.split(argRule);</span>
+<span class="nc" id="L90">    int current = 0;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    while (current &lt; commands.length) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (commands[current].equalsIgnoreCase(FC_COMMAND.SIZE.name())) {</span>
+<span class="nc" id="L93">        current++;</span>
         FC_ARGSSIZE arg;
         try {
-<span class="fc" id="L96">          arg = FC_ARGSSIZE.valueOf(commands[current]);</span>
+<span class="nc" id="L96">          arg = FC_ARGSSIZE.valueOf(commands[current]);</span>
 <span class="nc" id="L97">        } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L98">          arg = null;</span>
-<span class="fc" id="L99">        }</span>
-<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (arg != null) {</span>
-<span class="fc" id="L101">          current++;</span>
+<span class="nc" id="L99">        }</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (arg != null) {</span>
+<span class="nc" id="L101">          current++;</span>
           try {
-<span class="fc" id="L103">            final long tocompare = Long.parseLong(commands[current]);</span>
-<span class="fc" id="L104">            current++;</span>
+<span class="nc" id="L103">            final long tocompare = Long.parseLong(commands[current]);</span>
+<span class="nc" id="L104">            current++;</span>
             boolean result;
-<span class="pc bpc" id="L106" title="4 of 6 branches missed.">            switch (arg) {</span>
+<span class="nc bnc" id="L106" title="All 6 branches missed.">            switch (arg) {</span>
               case EQ:
 <span class="nc bnc" id="L108" title="All 2 branches missed.">                result = supposelength == tocompare;</span>
 <span class="nc" id="L109">                break;</span>
               case GT:
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">                result = supposelength &gt; tocompare;</span>
-<span class="fc" id="L112">                break;</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                result = supposelength &gt; tocompare;</span>
+<span class="nc" id="L112">                break;</span>
               case GTE:
 <span class="nc bnc" id="L114" title="All 2 branches missed.">                result = supposelength &gt;= tocompare;</span>
 <span class="nc" id="L115">                break;</span>
               case LT:
-<span class="pc bpc" id="L117" title="1 of 2 branches missed.">                result = supposelength &lt; tocompare;</span>
-<span class="fc" id="L118">                break;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                result = supposelength &lt; tocompare;</span>
+<span class="nc" id="L118">                break;</span>
               case LTE:
 <span class="nc bnc" id="L120" title="All 2 branches missed.">                result = supposelength &lt;= tocompare;</span>
 <span class="nc" id="L121">                break;</span>
@@ -123,9 +123,9 @@ public class FileCheckTask extends AbstractTask {
 <span class="nc" id="L123">                result = true; // ??</span>
                 break;
             }
-<span class="fc" id="L126">            logger.debug(</span>
-<span class="fc" id="L127">                &quot;DEBUG: &quot; + supposelength + ' ' + arg.name() + ' ' + tocompare);</span>
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">            if (!result) {</span>
+<span class="nc" id="L126">            logger.debug(</span>
+<span class="nc" id="L127">                &quot;DEBUG: &quot; + supposelength + ' ' + arg.name() + ' ' + tocompare);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            if (!result) {</span>
               // error so stop
 <span class="nc" id="L130">              logger.error(</span>
                   &quot;File length is incompatible with specified SIZE comparizon: &quot; +
@@ -139,13 +139,13 @@ public class FileCheckTask extends AbstractTask {
             }
 <span class="nc" id="L140">          } catch (final NumberFormatException e) {</span>
             // ignore and continue
-<span class="fc" id="L142">          }</span>
+<span class="nc" id="L142">          }</span>
         }
-<span class="fc" id="L144">      } else if (commands[current]</span>
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">          .equalsIgnoreCase(FC_COMMAND.DFCHECK.name())) {</span>
-<span class="fc" id="L146">        current++;</span>
-<span class="fc" id="L147">        long freesize = runner.freespace(session, true);</span>
-<span class="pc bpc" id="L148" title="2 of 4 branches missed.">        if (freesize &gt; 0 &amp;&amp; supposelength &gt; freesize) {</span>
+<span class="nc" id="L144">      } else if (commands[current]</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">          .equalsIgnoreCase(FC_COMMAND.DFCHECK.name())) {</span>
+<span class="nc" id="L146">        current++;</span>
+<span class="nc" id="L147">        long freesize = runner.freespace(session, true);</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">        if (freesize &gt; 0 &amp;&amp; supposelength &gt; freesize) {</span>
           // error so stop
 <span class="nc" id="L150">          logger.error(</span>
               &quot;File length is incompatible with available space in Working directory: &quot; +
@@ -156,9 +156,9 @@ public class FileCheckTask extends AbstractTask {
               &quot;File size incompatible with Working directory&quot;));
 <span class="nc" id="L157">          return;</span>
         }
-<span class="fc" id="L159">        logger.debug(&quot;DEBUG: &quot; + supposelength + &quot; &lt; &quot; + freesize);</span>
-<span class="fc" id="L160">        freesize = runner.freespace(session, false);</span>
-<span class="pc bpc" id="L161" title="2 of 4 branches missed.">        if (freesize &gt; 0 &amp;&amp; supposelength &gt; freesize) {</span>
+<span class="nc" id="L159">        logger.debug(&quot;DEBUG: &quot; + supposelength + &quot; &lt; &quot; + freesize);</span>
+<span class="nc" id="L160">        freesize = runner.freespace(session, false);</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">        if (freesize &gt; 0 &amp;&amp; supposelength &gt; freesize) {</span>
           // error so stop
 <span class="nc" id="L163">          logger.error(</span>
               &quot;File length is incompatible with available space in Recv directory: &quot; +
@@ -169,15 +169,15 @@ public class FileCheckTask extends AbstractTask {
               &quot;File size incompatible with Recv directory&quot;));
 <span class="nc" id="L170">          return;</span>
         }
-<span class="fc" id="L172">        logger.debug(&quot;DEBUG: &quot; + supposelength + &quot; &lt; &quot; + freesize);</span>
-<span class="fc" id="L173">      } else {</span>
+<span class="nc" id="L172">        logger.debug(&quot;DEBUG: &quot; + supposelength + &quot; &lt; &quot; + freesize);</span>
+<span class="nc" id="L173">      } else {</span>
         // ignore and continue
 <span class="nc" id="L175">        current++;</span>
       }
     }
-<span class="fc" id="L178">    logger.debug(&quot;DEBUG: End of check &quot; + supposelength);</span>
-<span class="fc" id="L179">    futureCompletion.setSuccess();</span>
-<span class="fc" id="L180">  }</span>
+<span class="nc" id="L178">    logger.debug(&quot;DEBUG: End of check &quot; + supposelength);</span>
+<span class="nc" id="L179">    futureCompletion.setSuccess();</span>
+<span class="nc" id="L180">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

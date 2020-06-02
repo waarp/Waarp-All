@@ -52,9 +52,9 @@ public abstract class AbstractBusinessRequest implements Runnable {
    */
   protected static volatile WaarpLogger logger;
 
-<span class="fc" id="L55">  protected static final String _INFO_ARGS =</span>
-<span class="fc" id="L56">      Messages.getString(&quot;AbstractBusinessRequest.0&quot;) //$NON-NLS-1$</span>
-<span class="fc" id="L57">      + Messages.getString(&quot;Message.OutputFormat&quot;);</span>
+<span class="nc" id="L55">  protected static final String _INFO_ARGS =</span>
+<span class="nc" id="L56">      Messages.getString(&quot;AbstractBusinessRequest.0&quot;) //$NON-NLS-1$</span>
+<span class="nc" id="L57">      + Messages.getString(&quot;Message.OutputFormat&quot;);</span>
 
   protected final R66Future future;
 
@@ -69,29 +69,29 @@ public abstract class AbstractBusinessRequest implements Runnable {
   protected AbstractBusinessRequest(Class&lt;?&gt; clasz, R66Future future,
                                     String remoteHost,
                                     NetworkTransaction networkTransaction,
-<span class="fc" id="L72">                                    BusinessRequestPacket packet) {</span>
-<span class="fc bfc" id="L73" title="All 2 branches covered.">    if (logger == null) {</span>
-<span class="fc" id="L74">      logger = WaarpLoggerFactory.getLogger(clasz);</span>
+<span class="nc" id="L72">                                    BusinessRequestPacket packet) {</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L74">      logger = WaarpLoggerFactory.getLogger(clasz);</span>
     }
-<span class="fc" id="L76">    this.future = future;</span>
-<span class="fc" id="L77">    this.remoteHost = remoteHost;</span>
-<span class="fc" id="L78">    this.networkTransaction = networkTransaction;</span>
-<span class="fc" id="L79">    businessPacket = packet;</span>
-<span class="fc" id="L80">  }</span>
+<span class="nc" id="L76">    this.future = future;</span>
+<span class="nc" id="L77">    this.remoteHost = remoteHost;</span>
+<span class="nc" id="L78">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L79">    businessPacket = packet;</span>
+<span class="nc" id="L80">  }</span>
 
   @Override
   public void run() {
     try {
-<span class="fc" id="L85">      initRequest();</span>
-<span class="fc" id="L86">      sendRequest();</span>
+<span class="nc" id="L85">      initRequest();</span>
+<span class="nc" id="L86">      sendRequest();</span>
 <span class="nc" id="L87">    } catch (final OpenR66ProtocolNoConnectionException ignored) {</span>
       // notning
-<span class="fc" id="L89">    }</span>
-<span class="fc" id="L90">  }</span>
+<span class="nc" id="L89">    }</span>
+<span class="nc" id="L90">  }</span>
 
   public void initRequest() throws OpenR66ProtocolNoConnectionException {
-<span class="fc" id="L93">    final DbHostAuth host = R66Auth.getServerAuth(remoteHost);</span>
-<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (host == null) {</span>
+<span class="nc" id="L93">    final DbHostAuth host = R66Auth.getServerAuth(remoteHost);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (host == null) {</span>
 <span class="nc" id="L95">      future.setResult(null);</span>
 <span class="nc" id="L96">      final OpenR66ProtocolNoConnectionException e2 =</span>
           new OpenR66ProtocolNoConnectionException(
@@ -102,7 +102,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
     }
     final SocketAddress socketServerAddress;
     try {
-<span class="fc" id="L105">      socketServerAddress = host.getSocketAddress();</span>
+<span class="nc" id="L105">      socketServerAddress = host.getSocketAddress();</span>
 <span class="nc" id="L106">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L107">      future.setResult(null);</span>
 <span class="nc" id="L108">      final OpenR66ProtocolNoConnectionException e2 =</span>
@@ -111,11 +111,11 @@ public abstract class AbstractBusinessRequest implements Runnable {
               host); //$NON-NLS-1$
 <span class="nc" id="L112">      future.setFailure(e2);</span>
 <span class="nc" id="L113">      throw e2;</span>
-<span class="fc" id="L114">    }</span>
-<span class="fc" id="L115">    final boolean isSSL = host.isSsl();</span>
-<span class="fc" id="L116">    localChannelReference = networkTransaction</span>
-<span class="fc" id="L117">        .createConnectionWithRetry(socketServerAddress, isSSL, future);</span>
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L114">    }</span>
+<span class="nc" id="L115">    final boolean isSSL = host.isSsl();</span>
+<span class="nc" id="L116">    localChannelReference = networkTransaction</span>
+<span class="nc" id="L117">        .createConnectionWithRetry(socketServerAddress, isSSL, future);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
 <span class="nc" id="L119">      future.setResult(null);</span>
 <span class="nc" id="L120">      final OpenR66ProtocolNoConnectionException e =</span>
           new OpenR66ProtocolNoConnectionException(
@@ -124,21 +124,21 @@ public abstract class AbstractBusinessRequest implements Runnable {
 <span class="nc" id="L124">      future.setFailure(e);</span>
 <span class="nc" id="L125">      throw e;</span>
     }
-<span class="fc" id="L127">    localChannelReference.sessionNewState(R66FiniteDualStates.BUSINESSR);</span>
-<span class="fc" id="L128">  }</span>
+<span class="nc" id="L127">    localChannelReference.sessionNewState(R66FiniteDualStates.BUSINESSR);</span>
+<span class="nc" id="L128">  }</span>
 
   public void sendRequest() {
     try {
-<span class="fc" id="L132">      ChannelUtils</span>
-<span class="fc" id="L133">          .writeAbstractLocalPacket(localChannelReference, businessPacket,</span>
+<span class="nc" id="L132">      ChannelUtils</span>
+<span class="nc" id="L133">          .writeAbstractLocalPacket(localChannelReference, businessPacket,</span>
                                     false);
 <span class="nc" id="L135">    } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L136">      future.setResult(null);</span>
 <span class="nc" id="L137">      future.setFailure(e);</span>
 <span class="nc" id="L138">      localChannelReference.close();</span>
-<span class="fc" id="L139">    }</span>
+<span class="nc" id="L139">    }</span>
 
-<span class="fc" id="L141">  }</span>
+<span class="nc" id="L141">  }</span>
 
   /**
    * Dummy Main method

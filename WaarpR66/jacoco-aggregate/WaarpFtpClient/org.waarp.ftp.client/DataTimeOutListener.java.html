@@ -36,28 +36,28 @@ public class DataTimeOutListener implements FTPDataTransferListener {
   /**
    * Internal Logger
    */
-<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(DataTimeOutListener.class);</span>
+<span class="nc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L40">      WaarpLoggerFactory.getLogger(DataTimeOutListener.class);</span>
 
   private final FTPClient client;
   private final Timer timer;
   private long timeout;
-<span class="fc" id="L45">  private long last = System.currentTimeMillis();</span>
+<span class="nc" id="L45">  private long last = System.currentTimeMillis();</span>
   private boolean finished;
   private final String command;
   private final String file;
 
   public DataTimeOutListener(FTPClient client, long timeout, String command,
-<span class="fc" id="L51">                             String file) {</span>
-<span class="fc" id="L52">    this.client = client;</span>
-<span class="fc" id="L53">    timer = new Timer(true);</span>
-<span class="fc" id="L54">    this.timeout = timeout;</span>
-<span class="fc" id="L55">    this.command = command;</span>
-<span class="fc" id="L56">    this.file = file;</span>
-<span class="fc" id="L57">  }</span>
+<span class="nc" id="L51">                             String file) {</span>
+<span class="nc" id="L52">    this.client = client;</span>
+<span class="nc" id="L53">    timer = new Timer(true);</span>
+<span class="nc" id="L54">    this.timeout = timeout;</span>
+<span class="nc" id="L55">    this.command = command;</span>
+<span class="nc" id="L56">    this.file = file;</span>
+<span class="nc" id="L57">  }</span>
 
   private void renewTask() {
-<span class="fc" id="L60">    final TimerTask task = new TimerTask() {</span>
+<span class="nc" id="L60">    final TimerTask task = new TimerTask() {</span>
       @Override
       public void run() {
 <span class="nc bnc" id="L63" title="All 2 branches missed.">        if (finished) {</span>
@@ -79,26 +79,26 @@ public class DataTimeOutListener implements FTPDataTransferListener {
         }
 <span class="nc" id="L80">      }</span>
     };
-<span class="fc" id="L82">    timer.schedule(task, timeout);</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L82">    timer.schedule(task, timeout);</span>
+<span class="nc" id="L83">  }</span>
 
   @Override
   public void started() {
-<span class="fc" id="L87">    renewTask();</span>
-<span class="fc" id="L88">    last = System.currentTimeMillis();</span>
-<span class="fc" id="L89">  }</span>
+<span class="nc" id="L87">    renewTask();</span>
+<span class="nc" id="L88">    last = System.currentTimeMillis();</span>
+<span class="nc" id="L89">  }</span>
 
   @Override
   public void transferred(int length) {
-<span class="fc" id="L93">    last = System.currentTimeMillis();</span>
-<span class="fc" id="L94">  }</span>
+<span class="nc" id="L93">    last = System.currentTimeMillis();</span>
+<span class="nc" id="L94">  }</span>
 
   @Override
   public void completed() {
-<span class="fc" id="L98">    finished = true;</span>
-<span class="fc" id="L99">    last = System.currentTimeMillis();</span>
-<span class="fc" id="L100">    timer.cancel();</span>
-<span class="fc" id="L101">  }</span>
+<span class="nc" id="L98">    finished = true;</span>
+<span class="nc" id="L99">    last = System.currentTimeMillis();</span>
+<span class="nc" id="L100">    timer.cancel();</span>
+<span class="nc" id="L101">  }</span>
 
   @Override
   public void aborted() {

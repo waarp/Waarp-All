@@ -75,17 +75,17 @@ public final class HostConfigConverter {
    * @return the converted ObjectNode
    */
   public static ObjectNode businessToNode(Business hostConfig) {
-<span class="fc" id="L78">    final ArrayNode business = getBusinessArray(hostConfig);</span>
-<span class="fc" id="L79">    final ArrayNode roles = getRolesArray(hostConfig);</span>
-<span class="fc" id="L80">    final ArrayNode aliasArray = getAliasArray(hostConfig);</span>
+<span class="nc" id="L78">    final ArrayNode business = getBusinessArray(hostConfig);</span>
+<span class="nc" id="L79">    final ArrayNode roles = getRolesArray(hostConfig);</span>
+<span class="nc" id="L80">    final ArrayNode aliasArray = getAliasArray(hostConfig);</span>
 
-<span class="fc" id="L82">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L83">    node.putArray(BUSINESS).addAll(business);</span>
-<span class="fc" id="L84">    node.putArray(ROLES).addAll(roles);</span>
-<span class="fc" id="L85">    node.putArray(ALIASES).addAll(aliasArray);</span>
-<span class="fc" id="L86">    node.put(OTHERS, hostConfig.getOthers());</span>
+<span class="nc" id="L82">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="nc" id="L83">    node.putArray(BUSINESS).addAll(business);</span>
+<span class="nc" id="L84">    node.putArray(ROLES).addAll(roles);</span>
+<span class="nc" id="L85">    node.putArray(ALIASES).addAll(aliasArray);</span>
+<span class="nc" id="L86">    node.put(OTHERS, hostConfig.getOthers());</span>
 
-<span class="fc" id="L88">    return node;</span>
+<span class="nc" id="L88">    return node;</span>
   }
 
   /**
@@ -100,7 +100,7 @@ public final class HostConfigConverter {
    */
   public static Business nodeToNewBusiness(ObjectNode object) {
 <span class="nc" id="L102">    final Business emptyBusiness =</span>
-        new Business(SERVER_NAME, &quot;&quot;, &quot;&lt;roles&gt;&lt;/roles&gt;&quot;, &quot;&lt;aliases&gt;&lt;/aliases&gt;&quot;,
+<span class="nc" id="L103">        new Business(serverName(), &quot;&quot;, &quot;&lt;roles&gt;&lt;/roles&gt;&quot;, &quot;&lt;aliases&gt;&lt;/aliases&gt;&quot;,</span>
                      &quot;&lt;root&gt;&lt;version&gt;&lt;/version&gt;&lt;/root&gt;&quot;);
 
 <span class="nc" id="L106">    return nodeToUpdatedBusiness(object, emptyBusiness);</span>
@@ -205,7 +205,7 @@ public final class HostConfigConverter {
 <span class="nc" id="L205">    BusinessDAO businessDAO = null;</span>
     try {
 <span class="nc" id="L207">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="nc" id="L208">      final Business config = businessDAO.select(SERVER_NAME);</span>
+<span class="nc" id="L208">      final Business config = businessDAO.select(serverName());</span>
 <span class="nc" id="L209">      array = getRolesArray(config);</span>
 <span class="nc" id="L210">    } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L211">      throw new InternalServerErrorException(e);</span>
@@ -236,10 +236,10 @@ public final class HostConfigConverter {
    * @return the server's list of known aliases
    */
   private static ArrayNode getAliasArray(Business hostConfig) {
-<span class="fc" id="L239">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (hostConfig.getAliases() != null) {</span>
+<span class="nc" id="L239">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (hostConfig.getAliases() != null) {</span>
       try {
-<span class="fc" id="L242">        final Aliases aliases =</span>
+<span class="nc" id="L242">        final Aliases aliases =</span>
 <span class="nc" id="L243">            XmlUtils.xmlToObject(hostConfig.getAliases(), Aliases.class);</span>
 
 <span class="nc bnc" id="L245" title="All 2 branches missed.">        for (final AliasEntry alias : aliases.aliases) {</span>
@@ -255,11 +255,11 @@ public final class HostConfigConverter {
 
 <span class="nc" id="L256">          array.add(node);</span>
 <span class="nc" id="L257">        }</span>
-<span class="fc" id="L258">      } catch (InternalServerErrorException ignore) { //NOSONAR</span>
-<span class="fc" id="L259">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Alias definition&quot;);</span>
+<span class="nc" id="L258">      } catch (InternalServerErrorException ignore) { //NOSONAR</span>
+<span class="nc" id="L259">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Alias definition&quot;);</span>
 <span class="nc" id="L260">      }</span>
     }
-<span class="fc" id="L262">    return array;</span>
+<span class="nc" id="L262">    return array;</span>
   }
 
   /**
@@ -271,10 +271,10 @@ public final class HostConfigConverter {
    * @return the server's list of known aliases
    */
   private static ArrayNode getRolesArray(Business hostConfig) {
-<span class="fc" id="L274">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L275" title="1 of 2 branches missed.">    if (hostConfig.getRoles() != null) {</span>
+<span class="nc" id="L274">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">    if (hostConfig.getRoles() != null) {</span>
       try {
-<span class="fc" id="L277">        final Roles roles =</span>
+<span class="nc" id="L277">        final Roles roles =</span>
 <span class="nc" id="L278">            XmlUtils.xmlToObject(hostConfig.getRoles(), Roles.class);</span>
 
 <span class="nc bnc" id="L280" title="All 2 branches missed.">        for (final RoleEntry role : roles.roles) {</span>
@@ -290,11 +290,11 @@ public final class HostConfigConverter {
 
 <span class="nc" id="L291">          array.add(node);</span>
 <span class="nc" id="L292">        }</span>
-<span class="fc" id="L293">      } catch (InternalServerErrorException ignore) {//NOSONAR</span>
-<span class="fc" id="L294">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Roles definition&quot;);</span>
+<span class="nc" id="L293">      } catch (InternalServerErrorException ignore) {//NOSONAR</span>
+<span class="nc" id="L294">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Roles definition&quot;);</span>
 <span class="nc" id="L295">      }</span>
     }
-<span class="fc" id="L297">    return array;</span>
+<span class="nc" id="L297">    return array;</span>
   }
 
   /**
@@ -307,20 +307,20 @@ public final class HostConfigConverter {
    * @return the server's list of known aliases
    */
   private static ArrayNode getBusinessArray(Business hostConfig) {
-<span class="fc" id="L310">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L311" title="1 of 2 branches missed.">    if (hostConfig.getBusiness() != null) {</span>
+<span class="nc" id="L310">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">    if (hostConfig.getBusiness() != null) {</span>
       try {
-<span class="fc" id="L313">        final Businesses business =</span>
+<span class="nc" id="L313">        final Businesses business =</span>
 <span class="nc" id="L314">            XmlUtils.xmlToObject(hostConfig.getBusiness(), Businesses.class);</span>
 
 <span class="nc bnc" id="L316" title="All 2 branches missed.">        for (final String businessId : business.business) {</span>
 <span class="nc" id="L317">          array.add(businessId);</span>
 <span class="nc" id="L318">        }</span>
-<span class="fc" id="L319">      } catch (InternalServerErrorException ignore) {//NOSONAR</span>
-<span class="fc" id="L320">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Business definition&quot;);</span>
+<span class="nc" id="L319">      } catch (InternalServerErrorException ignore) {//NOSONAR</span>
+<span class="nc" id="L320">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Business definition&quot;);</span>
 <span class="nc" id="L321">      }</span>
     }
-<span class="fc" id="L323">    return array;</span>
+<span class="nc" id="L323">    return array;</span>
   }
 
   /**

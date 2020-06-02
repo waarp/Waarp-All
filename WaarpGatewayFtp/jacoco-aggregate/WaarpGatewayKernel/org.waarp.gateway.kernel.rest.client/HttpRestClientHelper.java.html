@@ -78,7 +78,7 @@ public class HttpRestClientHelper {
 
   private final HttpHeaders headers;
 
-<span class="fc" id="L81">  private String baseUri = &quot;/&quot;;</span>
+<span class="nc" id="L81">  private String baseUri = &quot;/&quot;;</span>
 
   /**
    * @param baseUri base of all URI, in general simply &quot;/&quot; (default if
@@ -88,32 +88,32 @@ public class HttpRestClientHelper {
    * @param Initializer the associated client pipeline factory
    */
   public HttpRestClientHelper(String baseUri, int nbclient, long timeout,
-<span class="fc" id="L91">                              ChannelInitializer&lt;SocketChannel&gt; Initializer) {</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="fc" id="L93">      logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);</span>
+<span class="nc" id="L91">                              ChannelInitializer&lt;SocketChannel&gt; Initializer) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L93">      logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);</span>
     }
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    if (baseUri != null) {</span>
-<span class="fc" id="L96">      this.baseUri = baseUri;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (baseUri != null) {</span>
+<span class="nc" id="L96">      this.baseUri = baseUri;</span>
     }
     // Configure the client.
-<span class="fc" id="L99">    bootstrap = new Bootstrap();</span>
-<span class="fc" id="L100">    workerGroup = new NioEventLoopGroup(nbclient, new WaarpThreadFactory(</span>
+<span class="nc" id="L99">    bootstrap = new Bootstrap();</span>
+<span class="nc" id="L100">    workerGroup = new NioEventLoopGroup(nbclient, new WaarpThreadFactory(</span>
         &quot;Rest_&quot; + baseUri + '_'));
-<span class="fc" id="L102">    WaarpNettyUtil.setBootstrap(bootstrap, workerGroup, 30000);</span>
+<span class="nc" id="L102">    WaarpNettyUtil.setBootstrap(bootstrap, workerGroup, 30000);</span>
     // Configure the pipeline factory.
-<span class="fc" id="L104">    bootstrap.handler(Initializer);</span>
+<span class="nc" id="L104">    bootstrap.handler(Initializer);</span>
 
     // will ignore real request
-<span class="fc" id="L107">    final HttpRequest request =</span>
+<span class="nc" id="L107">    final HttpRequest request =</span>
         new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, baseUri);
-<span class="fc" id="L109">    headers = request.headers();</span>
-<span class="fc" id="L110">    headers.set(HttpHeaderNames.ACCEPT_ENCODING,</span>
+<span class="nc" id="L109">    headers = request.headers();</span>
+<span class="nc" id="L110">    headers.set(HttpHeaderNames.ACCEPT_ENCODING,</span>
                 HttpHeaderValues.GZIP + &quot;,&quot; + HttpHeaderValues.DEFLATE);
-<span class="fc" id="L112">    headers.set(HttpHeaderNames.ACCEPT_CHARSET, &quot;utf-8;q=0.7,*;q=0.7&quot;);</span>
-<span class="fc" id="L113">    headers.set(HttpHeaderNames.ACCEPT_LANGUAGE, &quot;fr,en&quot;);</span>
-<span class="fc" id="L114">    headers</span>
-<span class="fc" id="L115">        .set(HttpHeaderNames.USER_AGENT, &quot;Netty Simple Http Rest Client side&quot;);</span>
-<span class="fc" id="L116">    headers.set(HttpHeaderNames.ACCEPT,</span>
+<span class="nc" id="L112">    headers.set(HttpHeaderNames.ACCEPT_CHARSET, &quot;utf-8;q=0.7,*;q=0.7&quot;);</span>
+<span class="nc" id="L113">    headers.set(HttpHeaderNames.ACCEPT_LANGUAGE, &quot;fr,en&quot;);</span>
+<span class="nc" id="L114">    headers</span>
+<span class="nc" id="L115">        .set(HttpHeaderNames.USER_AGENT, &quot;Netty Simple Http Rest Client side&quot;);</span>
+<span class="nc" id="L116">    headers.set(HttpHeaderNames.ACCEPT,</span>
                 &quot;text/html,text/plain,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8&quot;);
     // connection will not close but needed
     /*
@@ -121,7 +121,7 @@ public class HttpRestClientHelper {
      */
     // request.setHeader(&quot;Connection&quot;,&quot;keep-alive&quot;)
     // request.setHeader(&quot;Keep-Alive&quot;,&quot;300&quot;)
-<span class="fc" id="L124">  }</span>
+<span class="nc" id="L124">  }</span>
 
   /**
    * Create one new connection to the remote host using port
@@ -133,16 +133,16 @@ public class HttpRestClientHelper {
    */
   public Channel getChannel(String host, int port) {
     // Start the connection attempt.
-<span class="fc" id="L136">    final ChannelFuture future =</span>
-<span class="fc" id="L137">        bootstrap.connect(new InetSocketAddress(host, port));</span>
+<span class="nc" id="L136">    final ChannelFuture future =</span>
+<span class="nc" id="L137">        bootstrap.connect(new InetSocketAddress(host, port));</span>
     // Wait until the connection attempt succeeds or fails.
-<span class="fc" id="L139">    final Channel channel = WaarpSslUtility.waitforChannelReady(future);</span>
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (channel != null) {</span>
-<span class="fc" id="L141">      final RestFuture futureChannel = new RestFuture(true);</span>
-<span class="fc" id="L142">      channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)</span>
-<span class="fc" id="L143">             .set(futureChannel);</span>
+<span class="nc" id="L139">    final Channel channel = WaarpSslUtility.waitforChannelReady(future);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">    if (channel != null) {</span>
+<span class="nc" id="L141">      final RestFuture futureChannel = new RestFuture(true);</span>
+<span class="nc" id="L142">      channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)</span>
+<span class="nc" id="L143">             .set(futureChannel);</span>
     }
-<span class="fc" id="L145">    return channel;</span>
+<span class="nc" id="L145">    return channel;</span>
   }
 
   /**
@@ -267,61 +267,61 @@ public class HttpRestClientHelper {
                               String addedUri, String user,
                               Map&lt;String, String&gt; uriArgs, String json) {
     // Prepare the HTTP request.
-<span class="fc" id="L270">    logger.debug(&quot;Prepare request: &quot; + method + ':' + addedUri + ':' + json);</span>
-<span class="fc" id="L271">    final RestFuture future =</span>
-<span class="fc" id="L272">        channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();</span>
+<span class="nc" id="L270">    logger.debug(&quot;Prepare request: &quot; + method + ':' + addedUri + ':' + json);</span>
+<span class="nc" id="L271">    final RestFuture future =</span>
+<span class="nc" id="L272">        channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();</span>
     QueryStringEncoder encoder;
-<span class="fc bfc" id="L274" title="All 2 branches covered.">    if (addedUri != null) {</span>
-<span class="fc" id="L275">      encoder = new QueryStringEncoder(baseUri + addedUri);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (addedUri != null) {</span>
+<span class="nc" id="L275">      encoder = new QueryStringEncoder(baseUri + addedUri);</span>
     } else {
-<span class="fc" id="L277">      encoder = new QueryStringEncoder(baseUri);</span>
+<span class="nc" id="L277">      encoder = new QueryStringEncoder(baseUri);</span>
     }
     // add Form attribute
-<span class="pc bpc" id="L280" title="1 of 2 branches missed.">    if (uriArgs != null) {</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">    if (uriArgs != null) {</span>
 <span class="nc bnc" id="L281" title="All 2 branches missed.">      for (final Entry&lt;String, String&gt; elt : uriArgs.entrySet()) {</span>
 <span class="nc" id="L282">        encoder.addParam(elt.getKey(), elt.getValue());</span>
 <span class="nc" id="L283">      }</span>
     }
     URI uri;
     try {
-<span class="fc" id="L287">      uri = encoder.toUri();</span>
+<span class="nc" id="L287">      uri = encoder.toUri();</span>
 <span class="nc" id="L288">    } catch (final URISyntaxException e) {</span>
 <span class="nc" id="L289">      logger.error(e.getMessage());</span>
 <span class="nc" id="L290">      future.setFailure(e);</span>
 <span class="nc" id="L291">      return future;</span>
-<span class="fc" id="L292">    }</span>
-<span class="fc" id="L293">    logger.debug(&quot;Uri ready: &quot; + uri.toASCIIString());</span>
+<span class="nc" id="L292">    }</span>
+<span class="nc" id="L293">    logger.debug(&quot;Uri ready: &quot; + uri.toASCIIString());</span>
 
     FullHttpRequest request;
-<span class="fc bfc" id="L296" title="All 2 branches covered.">    if (json != null) {</span>
-<span class="fc" id="L297">      logger.debug(&quot;Add body&quot;);</span>
-<span class="fc" id="L298">      final ByteBuf buffer =</span>
-<span class="fc" id="L299">          Unpooled.wrappedBuffer(json.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="fc" id="L300">      request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method,</span>
-<span class="fc" id="L301">                                           uri.toASCIIString(), buffer);</span>
-<span class="fc" id="L302">      request.headers()</span>
-<span class="fc" id="L303">             .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
-<span class="fc" id="L304">    } else {</span>
-<span class="fc" id="L305">      request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method,</span>
-<span class="fc" id="L306">                                           uri.toASCIIString());</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">    if (json != null) {</span>
+<span class="nc" id="L297">      logger.debug(&quot;Add body&quot;);</span>
+<span class="nc" id="L298">      final ByteBuf buffer =</span>
+<span class="nc" id="L299">          Unpooled.wrappedBuffer(json.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="nc" id="L300">      request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method,</span>
+<span class="nc" id="L301">                                           uri.toASCIIString(), buffer);</span>
+<span class="nc" id="L302">      request.headers()</span>
+<span class="nc" id="L303">             .set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());</span>
+<span class="nc" id="L304">    } else {</span>
+<span class="nc" id="L305">      request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method,</span>
+<span class="nc" id="L306">                                           uri.toASCIIString());</span>
     }
 
     // it is legal to add directly header or cookie into the request until finalize
-<span class="fc" id="L310">    request.headers().add(headers);</span>
-<span class="fc" id="L311">    request.headers().set(HttpHeaderNames.HOST, host);</span>
-<span class="pc bpc" id="L312" title="1 of 2 branches missed.">    if (user != null) {</span>
+<span class="nc" id="L310">    request.headers().add(headers);</span>
+<span class="nc" id="L311">    request.headers().set(HttpHeaderNames.HOST, host);</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">    if (user != null) {</span>
 <span class="nc" id="L313">      request.headers().set(</span>
           (CharSequence) RestArgument.REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
           user);
     }
-<span class="fc" id="L317">    request.headers().set(</span>
+<span class="nc" id="L317">    request.headers().set(</span>
         (CharSequence) RestArgument.REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
-<span class="fc" id="L319">        new DateTime().toString());</span>
+<span class="nc" id="L319">        new DateTime().toString());</span>
     // send request
-<span class="fc" id="L321">    logger.debug(&quot;Send request&quot;);</span>
-<span class="fc" id="L322">    channel.writeAndFlush(request);</span>
-<span class="fc" id="L323">    logger.debug(&quot;Request sent&quot;);</span>
-<span class="fc" id="L324">    return future;</span>
+<span class="nc" id="L321">    logger.debug(&quot;Send request&quot;);</span>
+<span class="nc" id="L322">    channel.writeAndFlush(request);</span>
+<span class="nc" id="L323">    logger.debug(&quot;Request sent&quot;);</span>
+<span class="nc" id="L324">    return future;</span>
   }
 
   /**

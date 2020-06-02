@@ -27,13 +27,13 @@ import com.fg.xmleditor.FXDocumentModelImpl;
 import com.fg.xmleditor.FXDoubleView;
 import com.fg.xmleditor.FXModelStatusListener;
 import com.fg.xmleditor.FXStatusEvent;
-import com.google.common.base.Charsets;
 import netscape.javascript.JSObject;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.xml.sax.InputSource;
 
 import javax.swing.BorderFactory;
@@ -332,7 +332,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L332">          final InputStream in = con.getInputStream();</span>
           try {
 <span class="nc" id="L334">            final InputStreamReader reader =</span>
-                new InputStreamReader(in, Charsets.UTF_8);
+                new InputStreamReader(in, WaarpStringUtils.UTF8);
 <span class="nc" id="L336">            final InputSource src = new InputSource(reader);</span>
 <span class="nc" id="L337">            src.setSystemId(getXMLBaseURL().toString());</span>
 <span class="nc" id="L338">            lostElements = model.openDocument(xsdURL, src);</span>
@@ -427,159 +427,162 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L427">    final StringWriter writer = new StringWriter();</span>
     try {
       try {
-<span class="nc" id="L430">        final OutputFormat format = new OutputFormat(doc, &quot;UTF-8&quot;, true);</span>
-<span class="nc" id="L431">        final XMLSerializer serial = new XMLSerializer(writer, format);</span>
-<span class="nc" id="L432">        serial.asDOMSerializer();</span>
-<span class="nc" id="L433">        serial.serialize(doc);</span>
-<span class="nc" id="L434">        return writer.toString();</span>
-<span class="nc" id="L435">      } catch (final IOException ex) {</span>
-<span class="nc" id="L436">        dblView.showErrorMessage(ex.toString());</span>
-<span class="nc" id="L437">        SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L430">        final OutputFormat format =</span>
+            new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
+<span class="nc" id="L432">        final XMLSerializer serial = new XMLSerializer(writer, format);</span>
+<span class="nc" id="L433">        serial.asDOMSerializer();</span>
+<span class="nc" id="L434">        serial.serialize(doc);</span>
+<span class="nc" id="L435">        return writer.toString();</span>
+<span class="nc" id="L436">      } catch (final IOException ex) {</span>
+<span class="nc" id="L437">        dblView.showErrorMessage(ex.toString());</span>
+<span class="nc" id="L438">        SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
       }
-<span class="nc" id="L439">      return &quot;&quot;;</span>
+<span class="nc" id="L440">      return &quot;&quot;;</span>
     } finally {
       try {
-<span class="nc" id="L442">        writer.close();</span>
-<span class="nc" id="L443">      } catch (final Exception ignore) {</span>
+<span class="nc" id="L443">        writer.close();</span>
+<span class="nc" id="L444">      } catch (final Exception ignore) {</span>
         // nothing
-<span class="nc" id="L445">      }</span>
+<span class="nc" id="L446">      }</span>
     }
   }
 
   void saveXMLDocument() {
-<span class="nc bnc" id="L450" title="All 2 branches missed.">    if (!dblView.hasDocument()) {</span>
-<span class="nc" id="L451">      return;</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">    if (!dblView.hasDocument()) {</span>
+<span class="nc" id="L452">      return;</span>
     }
-<span class="nc" id="L453">    dblView.stopEditing();</span>
-<span class="nc bnc" id="L454" title="All 2 branches missed.">    if (!dblView.isDocValid()) {</span>
-<span class="nc" id="L455">      dblView.showErrorMessage(&quot;Error: Invalid document can not be saved&quot;);</span>
-<span class="nc" id="L456">      return;</span>
+<span class="nc" id="L454">    dblView.stopEditing();</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">    if (!dblView.isDocValid()) {</span>
+<span class="nc" id="L456">      dblView.showErrorMessage(&quot;Error: Invalid document can not be saved&quot;);</span>
+<span class="nc" id="L457">      return;</span>
     }
-<span class="nc" id="L458">    prmXMLDest = null;</span>
-<span class="nc bnc" id="L459" title="All 2 branches missed.">    if (prmXMLDest == null) {</span>
-<span class="nc" id="L460">      final String cur = textFieldXml.getText();</span>
+<span class="nc" id="L459">    prmXMLDest = null;</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">    if (prmXMLDest == null) {</span>
+<span class="nc" id="L461">      final String cur = textFieldXml.getText();</span>
       JFileChooser fc;
-<span class="nc bnc" id="L462" title="All 4 branches missed.">      if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
-<span class="nc" id="L463">        final File parent = new File(cur).getParentFile();</span>
-<span class="nc" id="L464">        fc = new JFileChooser(parent);</span>
-<span class="nc" id="L465">      } else {</span>
-<span class="nc" id="L466">        fc = new JFileChooser();</span>
+<span class="nc bnc" id="L463" title="All 4 branches missed.">      if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
+<span class="nc" id="L464">        final File parent = new File(cur).getParentFile();</span>
+<span class="nc" id="L465">        fc = new JFileChooser(parent);</span>
+<span class="nc" id="L466">      } else {</span>
+<span class="nc" id="L467">        fc = new JFileChooser();</span>
       }
-<span class="nc" id="L468">      final int val = fc.showSaveDialog(rootPane);</span>
-<span class="nc bnc" id="L469" title="All 2 branches missed.">      if (val == JFileChooser.APPROVE_OPTION) {</span>
-<span class="nc" id="L470">        final File file = fc.getSelectedFile();</span>
-<span class="nc" id="L471">        textFieldXml.setText(file.getAbsolutePath());</span>
-<span class="nc" id="L472">        prmXMLDest = textFieldXml.getText();</span>
-<span class="nc" id="L473">        OutputStream out = null;</span>
+<span class="nc" id="L469">      final int val = fc.showSaveDialog(rootPane);</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">      if (val == JFileChooser.APPROVE_OPTION) {</span>
+<span class="nc" id="L471">        final File file = fc.getSelectedFile();</span>
+<span class="nc" id="L472">        textFieldXml.setText(file.getAbsolutePath());</span>
+<span class="nc" id="L473">        prmXMLDest = textFieldXml.getText();</span>
+<span class="nc" id="L474">        OutputStream out = null;</span>
         try {
-<span class="nc" id="L475">          final Document doc = model.getDocument();</span>
-<span class="nc bnc" id="L476" title="All 2 branches missed.">          if (doc == null) {</span>
-<span class="nc" id="L477">            return;</span>
+<span class="nc" id="L476">          final Document doc = model.getDocument();</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">          if (doc == null) {</span>
+<span class="nc" id="L478">            return;</span>
           }
-<span class="nc" id="L479">          out = new FileOutputStream(file);</span>
-<span class="nc" id="L480">          final OutputFormat format = new OutputFormat(doc, &quot;UTF-8&quot;, true);</span>
-<span class="nc" id="L481">          final Writer writer = new OutputStreamWriter(out);</span>
-<span class="nc" id="L482">          final XMLSerializer serial = new XMLSerializer(writer, format);</span>
-<span class="nc" id="L483">          serial.asDOMSerializer();</span>
-<span class="nc" id="L484">          serial.serialize(doc);</span>
-<span class="nc" id="L485">          dblView.showErrorMessage(&quot;File written&quot;);</span>
-<span class="nc" id="L486">        } catch (final Exception ex) {</span>
-<span class="nc" id="L487">          dblView.showErrorMessage(ex.toString());</span>
-<span class="nc" id="L488">          SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L480">          out = new FileOutputStream(file);</span>
+<span class="nc" id="L481">          final OutputFormat format =</span>
+              new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
+<span class="nc" id="L483">          final Writer writer = new OutputStreamWriter(out);</span>
+<span class="nc" id="L484">          final XMLSerializer serial = new XMLSerializer(writer, format);</span>
+<span class="nc" id="L485">          serial.asDOMSerializer();</span>
+<span class="nc" id="L486">          serial.serialize(doc);</span>
+<span class="nc" id="L487">          dblView.showErrorMessage(&quot;File written&quot;);</span>
+<span class="nc" id="L488">        } catch (final Exception ex) {</span>
+<span class="nc" id="L489">          dblView.showErrorMessage(ex.toString());</span>
+<span class="nc" id="L490">          SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
         } finally {
           try {
-<span class="nc bnc" id="L491" title="All 2 branches missed.">            if (out != null) {</span>
-<span class="nc" id="L492">              out.close();</span>
+<span class="nc bnc" id="L493" title="All 2 branches missed.">            if (out != null) {</span>
+<span class="nc" id="L494">              out.close();</span>
             }
-<span class="nc" id="L494">          } catch (final Exception ignored) {</span>
+<span class="nc" id="L496">          } catch (final Exception ignored) {</span>
             // nothing
-<span class="nc" id="L496">          }</span>
+<span class="nc" id="L498">          }</span>
         }
-<span class="nc" id="L498">      } else {</span>
-<span class="nc" id="L499">        dblView.showErrorMessage(&quot;Error: XML_DEST parameter is not specified&quot;);</span>
+<span class="nc" id="L500">      } else {</span>
+<span class="nc" id="L501">        dblView.showErrorMessage(&quot;Error: XML_DEST parameter is not specified&quot;);</span>
       }
-<span class="nc" id="L501">      return;</span>
+<span class="nc" id="L503">      return;</span>
     }
-<span class="nc" id="L503">    HttpURLConnection httpConn = null;</span>
-<span class="nc" id="L504">    OutputStream out = null;</span>
-<span class="nc" id="L505">    BufferedReader reader = null;</span>
+<span class="nc" id="L505">    HttpURLConnection httpConn = null;</span>
+<span class="nc" id="L506">    OutputStream out = null;</span>
+<span class="nc" id="L507">    BufferedReader reader = null;</span>
     try {
-<span class="nc" id="L507">      final Document doc = model.getDocument();</span>
-<span class="nc bnc" id="L508" title="All 2 branches missed.">      if (doc == null) {</span>
-<span class="nc" id="L509">        return;</span>
+<span class="nc" id="L509">      final Document doc = model.getDocument();</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">      if (doc == null) {</span>
+<span class="nc" id="L511">        return;</span>
       }
-<span class="nc" id="L511">      final URL url = new URL(getCodeBase() + prmXMLDest);</span>
-<span class="nc" id="L512">      httpConn = (HttpURLConnection) url.openConnection();</span>
-<span class="nc" id="L513">      httpConn.setDoInput(true);</span>
-<span class="nc" id="L514">      httpConn.setDoOutput(true);</span>
-<span class="nc" id="L515">      httpConn.setUseCaches(false);</span>
-<span class="nc" id="L516">      httpConn.setRequestProperty(&quot;Content-Type&quot;, &quot;text/plain&quot;);</span>
-<span class="nc" id="L517">      out = httpConn.getOutputStream();</span>
-<span class="nc" id="L518">      final OutputFormat format = new OutputFormat(doc, &quot;UTF-8&quot;, true);</span>
-<span class="nc" id="L519">      final Writer writer = new OutputStreamWriter(out);</span>
-<span class="nc" id="L520">      final XMLSerializer serial = new XMLSerializer(writer, format);</span>
-<span class="nc" id="L521">      serial.asDOMSerializer();</span>
-<span class="nc" id="L522">      serial.serialize(doc);</span>
-<span class="nc" id="L523">      reader =</span>
-<span class="nc" id="L524">          new BufferedReader(new InputStreamReader(httpConn.getInputStream()));</span>
-<span class="nc" id="L525">      StringBuilder message = new StringBuilder();</span>
+<span class="nc" id="L513">      final URL url = new URL(getCodeBase() + prmXMLDest);</span>
+<span class="nc" id="L514">      httpConn = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L515">      httpConn.setDoInput(true);</span>
+<span class="nc" id="L516">      httpConn.setDoOutput(true);</span>
+<span class="nc" id="L517">      httpConn.setUseCaches(false);</span>
+<span class="nc" id="L518">      httpConn.setRequestProperty(&quot;Content-Type&quot;, &quot;text/plain&quot;);</span>
+<span class="nc" id="L519">      out = httpConn.getOutputStream();</span>
+<span class="nc" id="L520">      final OutputFormat format =</span>
+          new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
+<span class="nc" id="L522">      final Writer writer = new OutputStreamWriter(out);</span>
+<span class="nc" id="L523">      final XMLSerializer serial = new XMLSerializer(writer, format);</span>
+<span class="nc" id="L524">      serial.asDOMSerializer();</span>
+<span class="nc" id="L525">      serial.serialize(doc);</span>
+<span class="nc" id="L526">      reader =</span>
+<span class="nc" id="L527">          new BufferedReader(new InputStreamReader(httpConn.getInputStream()));</span>
+<span class="nc" id="L528">      StringBuilder message = new StringBuilder();</span>
       String line;
-<span class="nc bnc" id="L527" title="All 2 branches missed.">      for (; (line = reader.readLine()) != null;</span>
-<span class="nc" id="L528">           message.append(line).append('\n')) {</span>
+<span class="nc bnc" id="L530" title="All 2 branches missed.">      for (; (line = reader.readLine()) != null;</span>
+<span class="nc" id="L531">           message.append(line).append('\n')) {</span>
         // nothing
       }
-<span class="nc" id="L531">      dblView.showErrorMessage(&quot;Server response: &quot; + message.toString().trim());</span>
-<span class="nc" id="L532">    } catch (final Exception ex) {</span>
-<span class="nc" id="L533">      dblView.showErrorMessage(ex.toString());</span>
-<span class="nc" id="L534">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L534">      dblView.showErrorMessage(&quot;Server response: &quot; + message.toString().trim());</span>
+<span class="nc" id="L535">    } catch (final Exception ex) {</span>
+<span class="nc" id="L536">      dblView.showErrorMessage(ex.toString());</span>
+<span class="nc" id="L537">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
     } finally {
       try {
-<span class="nc" id="L537">        reader.close();</span>
-<span class="nc" id="L538">      } catch (final Exception ignored) {</span>
+<span class="nc" id="L540">        reader.close();</span>
+<span class="nc" id="L541">      } catch (final Exception ignored) {</span>
         // nothing
-<span class="nc" id="L540">      }</span>
+<span class="nc" id="L543">      }</span>
       try {
-<span class="nc" id="L542">        out.close();</span>
-<span class="nc" id="L543">      } catch (final Exception ignored) {</span>
+<span class="nc" id="L545">        out.close();</span>
+<span class="nc" id="L546">      } catch (final Exception ignored) {</span>
         // nothing
-<span class="nc" id="L545">      }</span>
+<span class="nc" id="L548">      }</span>
       try {
-<span class="nc" id="L547">        httpConn.disconnect();</span>
-<span class="nc" id="L548">      } catch (final Exception ignore) {</span>
+<span class="nc" id="L550">        httpConn.disconnect();</span>
+<span class="nc" id="L551">      } catch (final Exception ignore) {</span>
         // nothing
-<span class="nc" id="L550">      }</span>
+<span class="nc" id="L553">      }</span>
     }
-<span class="nc" id="L552">  }</span>
+<span class="nc" id="L555">  }</span>
 
   void updateLookAndFeel(String lfName) {
-<span class="nc" id="L555">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
-<span class="nc bnc" id="L556" title="All 4 branches missed.">    if (lf != null &amp;&amp; lf.getName().equals(lfName)) {</span>
-<span class="nc" id="L557">      return;</span>
+<span class="nc" id="L558">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
+<span class="nc bnc" id="L559" title="All 4 branches missed.">    if (lf != null &amp;&amp; lf.getName().equals(lfName)) {</span>
+<span class="nc" id="L560">      return;</span>
     }
-<span class="nc" id="L559">    final LookAndFeelInfo[] lfi = UIManager.getInstalledLookAndFeels();</span>
-<span class="nc bnc" id="L560" title="All 2 branches missed.">    for (final LookAndFeelInfo element2 : lfi) {</span>
-<span class="nc bnc" id="L561" title="All 2 branches missed.">      if (element2.getName().equals(lfName)) {</span>
+<span class="nc" id="L562">    final LookAndFeelInfo[] lfi = UIManager.getInstalledLookAndFeels();</span>
+<span class="nc bnc" id="L563" title="All 2 branches missed.">    for (final LookAndFeelInfo element2 : lfi) {</span>
+<span class="nc bnc" id="L564" title="All 2 branches missed.">      if (element2.getName().equals(lfName)) {</span>
         try {
-<span class="nc" id="L563">          dblView.stopEditing();</span>
-<span class="nc" id="L564">          UIManager.setLookAndFeel(element2.getClassName());</span>
-<span class="nc" id="L565">          SwingUtilities.updateComponentTreeUI(this);</span>
-<span class="nc" id="L566">          return;</span>
-<span class="nc" id="L567">        } catch (final Exception ignored) {</span>
+<span class="nc" id="L566">          dblView.stopEditing();</span>
+<span class="nc" id="L567">          UIManager.setLookAndFeel(element2.getClassName());</span>
+<span class="nc" id="L568">          SwingUtilities.updateComponentTreeUI(this);</span>
+<span class="nc" id="L569">          return;</span>
+<span class="nc" id="L570">        } catch (final Exception ignored) {</span>
           // nothing
         }
       }
     }
 
-<span class="nc" id="L573">  }</span>
+<span class="nc" id="L576">  }</span>
 
   @Override
   public String getAppletInfo() {
-<span class="nc" id="L577">    return &quot;XML Editor Applet. Author: Felix Golubov, WMG 2003.&quot;;</span>
+<span class="nc" id="L580">    return &quot;XML Editor Applet. Author: Felix Golubov, WMG 2003.&quot;;</span>
   }
 
   @Override
   public String[][] getParameterInfo() {
-<span class="nc" id="L582">    return new String[][] {</span>
+<span class="nc" id="L585">    return new String[][] {</span>
         new String[] {
             &quot;XML_SCHEMA&quot;, &quot;String&quot;,
             &quot;Relative URL of XML Schema document. Mandatory parameter.&quot;
@@ -613,8 +616,8 @@ public class FXApplet extends JApplet {
 
   @Override
   public void destroy() {
-<span class="nc" id="L616">    Thread.yield();</span>
-<span class="nc" id="L617">  }</span>
+<span class="nc" id="L619">    Thread.yield();</span>
+<span class="nc" id="L620">  }</span>
 
   class Btn extends JButton {
 
@@ -623,17 +626,17 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = 7556957719356707384L;
 
-<span class="nc" id="L626">    Btn(ImageIcon icon, String toolTipText) {</span>
-<span class="nc" id="L627">      super(icon);</span>
-<span class="nc" id="L628">      setFocusPainted(false);</span>
-<span class="nc" id="L629">      setDisabledIcon(FadingFilter.fade(icon));</span>
-<span class="nc" id="L630">      setToolTipText(toolTipText);</span>
-<span class="nc" id="L631">      setPreferredSize(new Dimension(35, 27));</span>
-<span class="nc" id="L632">      setMinimumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L633">      setMaximumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L634">      addActionListener(innerListener);</span>
-<span class="nc" id="L635">      toolbar.add(this, null);</span>
-<span class="nc" id="L636">    }</span>
+<span class="nc" id="L629">    Btn(ImageIcon icon, String toolTipText) {</span>
+<span class="nc" id="L630">      super(icon);</span>
+<span class="nc" id="L631">      setFocusPainted(false);</span>
+<span class="nc" id="L632">      setDisabledIcon(FadingFilter.fade(icon));</span>
+<span class="nc" id="L633">      setToolTipText(toolTipText);</span>
+<span class="nc" id="L634">      setPreferredSize(new Dimension(35, 27));</span>
+<span class="nc" id="L635">      setMinimumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L636">      setMaximumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L637">      addActionListener(innerListener);</span>
+<span class="nc" id="L638">      toolbar.add(this, null);</span>
+<span class="nc" id="L639">    }</span>
   }
 
   class ToggleBtn extends JToggleButton {
@@ -643,17 +646,17 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = -2731668382902219913L;
 
-<span class="nc" id="L646">    ToggleBtn(ImageIcon icon, String toolTipText) {</span>
-<span class="nc" id="L647">      super(icon);</span>
-<span class="nc" id="L648">      setFocusPainted(false);</span>
-<span class="nc" id="L649">      setDisabledIcon(FadingFilter.fade(icon));</span>
-<span class="nc" id="L650">      setToolTipText(toolTipText);</span>
-<span class="nc" id="L651">      setPreferredSize(new Dimension(35, 27));</span>
-<span class="nc" id="L652">      setMinimumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L653">      setMaximumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L654">      addActionListener(innerListener);</span>
-<span class="nc" id="L655">      toolbar.add(this, null);</span>
-<span class="nc" id="L656">    }</span>
+<span class="nc" id="L649">    ToggleBtn(ImageIcon icon, String toolTipText) {</span>
+<span class="nc" id="L650">      super(icon);</span>
+<span class="nc" id="L651">      setFocusPainted(false);</span>
+<span class="nc" id="L652">      setDisabledIcon(FadingFilter.fade(icon));</span>
+<span class="nc" id="L653">      setToolTipText(toolTipText);</span>
+<span class="nc" id="L654">      setPreferredSize(new Dimension(35, 27));</span>
+<span class="nc" id="L655">      setMinimumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L656">      setMaximumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L657">      addActionListener(innerListener);</span>
+<span class="nc" id="L658">      toolbar.add(this, null);</span>
+<span class="nc" id="L659">    }</span>
   }
 
   class MItem extends JMenuItem {
@@ -663,104 +666,104 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = -6743687839953167701L;
 
-<span class="nc" id="L666">    MItem(String text, ImageIcon icon) {</span>
-<span class="nc" id="L667">      super(text);</span>
-<span class="nc bnc" id="L668" title="All 2 branches missed.">      if (icon != null) {</span>
-<span class="nc" id="L669">        setIcon(icon);</span>
-<span class="nc" id="L670">        setDisabledIcon(FadingFilter.fade(icon));</span>
+<span class="nc" id="L669">    MItem(String text, ImageIcon icon) {</span>
+<span class="nc" id="L670">      super(text);</span>
+<span class="nc bnc" id="L671" title="All 2 branches missed.">      if (icon != null) {</span>
+<span class="nc" id="L672">        setIcon(icon);</span>
+<span class="nc" id="L673">        setDisabledIcon(FadingFilter.fade(icon));</span>
       }
-<span class="nc" id="L672">      addActionListener(innerListener);</span>
-<span class="nc" id="L673">    }</span>
+<span class="nc" id="L675">      addActionListener(innerListener);</span>
+<span class="nc" id="L676">    }</span>
   }
 
   class XMLDocumentLoader implements Runnable {
 
     final String xmlContent;
 
-<span class="nc" id="L680">    XMLDocumentLoader(String xmlContent) {</span>
-<span class="nc" id="L681">      this.xmlContent = xmlContent;</span>
-<span class="nc" id="L682">    }</span>
+<span class="nc" id="L683">    XMLDocumentLoader(String xmlContent) {</span>
+<span class="nc" id="L684">      this.xmlContent = xmlContent;</span>
+<span class="nc" id="L685">    }</span>
 
     @Override
     public void run() {
-<span class="nc" id="L686">      doLoadXMLDocument(xmlContent);</span>
-<span class="nc" id="L687">    }</span>
+<span class="nc" id="L689">      doLoadXMLDocument(xmlContent);</span>
+<span class="nc" id="L690">    }</span>
   }
 
   class InnerListener implements ActionListener, FXModelStatusListener {
 
-<span class="nc" id="L692">    InnerListener() {</span>
-<span class="nc" id="L693">    }</span>
+<span class="nc" id="L695">    InnerListener() {</span>
+<span class="nc" id="L696">    }</span>
 
     @Override
     public void actionPerformed(ActionEvent e) {
-<span class="nc" id="L697">      final Object source = e.getSource();</span>
-<span class="nc bnc" id="L698" title="All 4 branches missed.">      if (source == btnReload || source == mReload) {</span>
-<span class="nc bnc" id="L699" title="All 2 branches missed.">        if (prmOnLoad != null) {</span>
-<span class="nc" id="L700">          callJavascriptHandler(prmOnLoad);</span>
+<span class="nc" id="L700">      final Object source = e.getSource();</span>
+<span class="nc bnc" id="L701" title="All 4 branches missed.">      if (source == btnReload || source == mReload) {</span>
+<span class="nc bnc" id="L702" title="All 2 branches missed.">        if (prmOnLoad != null) {</span>
+<span class="nc" id="L703">          callJavascriptHandler(prmOnLoad);</span>
         } else {
-<span class="nc" id="L702">          doLoadXMLDocument(null);</span>
+<span class="nc" id="L705">          doLoadXMLDocument(null);</span>
         }
-<span class="nc bnc" id="L704" title="All 4 branches missed.">      } else if (source == btnSave || source == mSave) {</span>
-<span class="nc bnc" id="L705" title="All 2 branches missed.">        if (prmOnSave != null) {</span>
-<span class="nc" id="L706">          callJavascriptHandler(prmOnSave);</span>
+<span class="nc bnc" id="L707" title="All 4 branches missed.">      } else if (source == btnSave || source == mSave) {</span>
+<span class="nc bnc" id="L708" title="All 2 branches missed.">        if (prmOnSave != null) {</span>
+<span class="nc" id="L709">          callJavascriptHandler(prmOnSave);</span>
         } else {
-<span class="nc" id="L708">          saveXMLDocument();</span>
+<span class="nc" id="L711">          saveXMLDocument();</span>
         }
-<span class="nc bnc" id="L710" title="All 4 branches missed.">      } else if (source == btnXmlLoad || source == mXmlLoad) {</span>
-<span class="nc" id="L711">        final String cur = textFieldXml.getText();</span>
+<span class="nc bnc" id="L713" title="All 4 branches missed.">      } else if (source == btnXmlLoad || source == mXmlLoad) {</span>
+<span class="nc" id="L714">        final String cur = textFieldXml.getText();</span>
         JFileChooser fc;
-<span class="nc bnc" id="L713" title="All 4 branches missed.">        if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
-<span class="nc" id="L714">          final File parent = new File(cur).getParentFile();</span>
-<span class="nc" id="L715">          fc = new JFileChooser(parent);</span>
-<span class="nc" id="L716">        } else {</span>
-<span class="nc" id="L717">          fc = new JFileChooser();</span>
+<span class="nc bnc" id="L716" title="All 4 branches missed.">        if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
+<span class="nc" id="L717">          final File parent = new File(cur).getParentFile();</span>
+<span class="nc" id="L718">          fc = new JFileChooser(parent);</span>
+<span class="nc" id="L719">        } else {</span>
+<span class="nc" id="L720">          fc = new JFileChooser();</span>
         }
-<span class="nc" id="L719">        final int val = fc.showOpenDialog(rootPane);</span>
-<span class="nc bnc" id="L720" title="All 2 branches missed.">        if (val == JFileChooser.APPROVE_OPTION) {</span>
-<span class="nc" id="L721">          final File file = fc.getSelectedFile();</span>
-<span class="nc" id="L722">          textFieldXml.setText(file.getAbsolutePath());</span>
+<span class="nc" id="L722">        final int val = fc.showOpenDialog(rootPane);</span>
+<span class="nc bnc" id="L723" title="All 2 branches missed.">        if (val == JFileChooser.APPROVE_OPTION) {</span>
+<span class="nc" id="L724">          final File file = fc.getSelectedFile();</span>
+<span class="nc" id="L725">          textFieldXml.setText(file.getAbsolutePath());</span>
         }
-<span class="nc" id="L724">        setXMLSource(textFieldXml.getText());</span>
-<span class="nc" id="L725">        doLoadXMLDocument(null);</span>
-<span class="nc bnc" id="L726" title="All 4 branches missed.">      } else if (source == btnXsdLoad || source == mXsdLoad) {</span>
-<span class="nc" id="L727">        final String cur = textField.getText();</span>
+<span class="nc" id="L727">        setXMLSource(textFieldXml.getText());</span>
+<span class="nc" id="L728">        doLoadXMLDocument(null);</span>
+<span class="nc bnc" id="L729" title="All 4 branches missed.">      } else if (source == btnXsdLoad || source == mXsdLoad) {</span>
+<span class="nc" id="L730">        final String cur = textField.getText();</span>
         JFileChooser fc;
-<span class="nc bnc" id="L729" title="All 4 branches missed.">        if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
-<span class="nc" id="L730">          final File parent = new File(cur).getParentFile();</span>
-<span class="nc" id="L731">          fc = new JFileChooser(parent);</span>
-<span class="nc" id="L732">        } else {</span>
-<span class="nc" id="L733">          fc = new JFileChooser();</span>
+<span class="nc bnc" id="L732" title="All 4 branches missed.">        if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
+<span class="nc" id="L733">          final File parent = new File(cur).getParentFile();</span>
+<span class="nc" id="L734">          fc = new JFileChooser(parent);</span>
+<span class="nc" id="L735">        } else {</span>
+<span class="nc" id="L736">          fc = new JFileChooser();</span>
         }
-<span class="nc" id="L735">        final int val = fc.showOpenDialog(rootPane);</span>
-<span class="nc bnc" id="L736" title="All 2 branches missed.">        if (val == JFileChooser.APPROVE_OPTION) {</span>
-<span class="nc" id="L737">          final File file = fc.getSelectedFile();</span>
-<span class="nc" id="L738">          textField.setText(file.getAbsolutePath());</span>
+<span class="nc" id="L738">        final int val = fc.showOpenDialog(rootPane);</span>
+<span class="nc bnc" id="L739" title="All 2 branches missed.">        if (val == JFileChooser.APPROVE_OPTION) {</span>
+<span class="nc" id="L740">          final File file = fc.getSelectedFile();</span>
+<span class="nc" id="L741">          textField.setText(file.getAbsolutePath());</span>
         }
-<span class="nc" id="L740">        setXMLSchema(textField.getText());</span>
-<span class="nc" id="L741">        doLoadXMLDocument(null);</span>
-<span class="nc bnc" id="L742" title="All 2 branches missed.">      } else if (source == btnHorizSplit) {</span>
-<span class="nc" id="L743">        dblView.setOrientation(1);</span>
-<span class="nc bnc" id="L744" title="All 2 branches missed.">      } else if (source == btnVertSplit) {</span>
-<span class="nc" id="L745">        dblView.setOrientation(0);</span>
-<span class="nc bnc" id="L746" title="All 2 branches missed.">      } else if (source == btnSync) {</span>
-<span class="nc" id="L747">        dblView.setSyncSelectNodes(btnSync.getModel().isSelected());</span>
-<span class="nc bnc" id="L748" title="All 2 branches missed.">      } else if (source instanceof JRadioButtonMenuItem) {</span>
-<span class="nc" id="L749">        updateLookAndFeel(((JRadioButtonMenuItem) source).getText());</span>
+<span class="nc" id="L743">        setXMLSchema(textField.getText());</span>
+<span class="nc" id="L744">        doLoadXMLDocument(null);</span>
+<span class="nc bnc" id="L745" title="All 2 branches missed.">      } else if (source == btnHorizSplit) {</span>
+<span class="nc" id="L746">        dblView.setOrientation(1);</span>
+<span class="nc bnc" id="L747" title="All 2 branches missed.">      } else if (source == btnVertSplit) {</span>
+<span class="nc" id="L748">        dblView.setOrientation(0);</span>
+<span class="nc bnc" id="L749" title="All 2 branches missed.">      } else if (source == btnSync) {</span>
+<span class="nc" id="L750">        dblView.setSyncSelectNodes(btnSync.getModel().isSelected());</span>
+<span class="nc bnc" id="L751" title="All 2 branches missed.">      } else if (source instanceof JRadioButtonMenuItem) {</span>
+<span class="nc" id="L752">        updateLookAndFeel(((JRadioButtonMenuItem) source).getText());</span>
       }
-<span class="nc" id="L751">    }</span>
+<span class="nc" id="L754">    }</span>
 
     @Override
     public void newDocumentLoaded(FXStatusEvent e) {
-<span class="nc bnc" id="L755" title="All 4 branches missed.">      btnSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
-<span class="nc bnc" id="L756" title="All 4 branches missed.">      mSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
-<span class="nc" id="L757">    }</span>
+<span class="nc bnc" id="L758" title="All 4 branches missed.">      btnSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
+<span class="nc bnc" id="L759" title="All 4 branches missed.">      mSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
+<span class="nc" id="L760">    }</span>
 
     @Override
     public void docValidityStatusChanged(FXStatusEvent e) {
-<span class="nc bnc" id="L761" title="All 4 branches missed.">      btnSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
-<span class="nc bnc" id="L762" title="All 4 branches missed.">      mSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
-<span class="nc" id="L763">    }</span>
+<span class="nc bnc" id="L764" title="All 4 branches missed.">      btnSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
+<span class="nc bnc" id="L765" title="All 4 branches missed.">      mSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
+<span class="nc" id="L766">    }</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

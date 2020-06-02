@@ -112,8 +112,8 @@
 <a class="jxr_linenumber" name="L104" href="#L104">104</a>     <a name="LimitDAO" href="../../../../../../../org/waarp/openr66/dao/LimitDAO.html#LimitDAO">LimitDAO</a> limitDAO = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L105" href="#L105">105</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L106" href="#L106">106</a>       limitDAO = DAO_FACTORY.getLimitDAO();
-<a class="jxr_linenumber" name="L107" href="#L107">107</a>       <strong class="jxr_keyword">if</strong> (limitDAO.exist(SERVER_NAME)) {
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>         <strong class="jxr_keyword">final</strong> <a name="Limit" href="../../../../../../../org/waarp/openr66/pojo/Limit.html#Limit">Limit</a> limits = limitDAO.select(SERVER_NAME);
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>       <strong class="jxr_keyword">if</strong> (limitDAO.exist(serverName())) {
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>         <strong class="jxr_keyword">final</strong> <a name="Limit" href="../../../../../../../org/waarp/openr66/pojo/Limit.html#Limit">Limit</a> limits = limitDAO.select(serverName());
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>         <strong class="jxr_keyword">final</strong> ObjectNode responseObject = LimitsConverter.limitToNode(limits);
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>         <strong class="jxr_keyword">final</strong> String responseText = JsonUtils.nodeToString(responseObject);
 <a class="jxr_linenumber" name="L111" href="#L111">111</a> 
@@ -149,7 +149,7 @@
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>       limitDAO = DAO_FACTORY.getLimitDAO();
 <a class="jxr_linenumber" name="L143" href="#L143">143</a> 
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">if</strong> (!limitDAO.exist(SERVER_NAME)) {
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">if</strong> (!limitDAO.exist(serverName())) {
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">final</strong> ObjectNode requestObject = JsonUtils.deserializeRequest(request);
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>         <strong class="jxr_keyword">final</strong> <a name="Limit" href="../../../../../../../org/waarp/openr66/pojo/Limit.html#Limit">Limit</a> limits = LimitsConverter.nodeToNewLimit(requestObject);
 <a class="jxr_linenumber" name="L147" href="#L147">147</a>         limitDAO.insert(limits);
@@ -164,7 +164,7 @@
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>         <strong class="jxr_keyword">final</strong> String responseText = JsonUtils.nodeToString(responseObject);
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>         responder.sendJson(CREATED, responseText);
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="RestErrorException" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestErrorException.html#RestErrorException">RestErrorException</a>(ALREADY_EXISTING(SERVER_NAME));
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="RestErrorException" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestErrorException.html#RestErrorException">RestErrorException</a>(ALREADY_EXISTING(serverName()));
 <a class="jxr_linenumber" name="L160" href="#L160">160</a>       }
 <a class="jxr_linenumber" name="L161" href="#L161">161</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAOConnectionException" href="../../../../../../../org/waarp/openr66/dao/exception/DAOConnectionException.html#DAOConnectionException">DAOConnectionException</a> e) {
 <a class="jxr_linenumber" name="L162" href="#L162">162</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> InternalServerErrorException(e);
@@ -190,14 +190,14 @@
 <a class="jxr_linenumber" name="L182" href="#L182">182</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L183" href="#L183">183</a>       limitDAO = DAO_FACTORY.getLimitDAO();
 <a class="jxr_linenumber" name="L184" href="#L184">184</a> 
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>       <strong class="jxr_keyword">if</strong> (!limitDAO.exist(SERVER_NAME)) {
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>       <strong class="jxr_keyword">if</strong> (!limitDAO.exist(serverName())) {
 <a class="jxr_linenumber" name="L186" href="#L186">186</a>         responder.sendStatus(NOT_FOUND);
 <a class="jxr_linenumber" name="L187" href="#L187">187</a>         <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L188" href="#L188">188</a>       }
 <a class="jxr_linenumber" name="L189" href="#L189">189</a> 
 <a class="jxr_linenumber" name="L190" href="#L190">190</a>       <strong class="jxr_keyword">final</strong> ObjectNode requestObject = JsonUtils.deserializeRequest(request);
 <a class="jxr_linenumber" name="L191" href="#L191">191</a> 
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>       <strong class="jxr_keyword">final</strong> <a name="Limit" href="../../../../../../../org/waarp/openr66/pojo/Limit.html#Limit">Limit</a> oldLimits = limitDAO.select(SERVER_NAME);
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>       <strong class="jxr_keyword">final</strong> <a name="Limit" href="../../../../../../../org/waarp/openr66/pojo/Limit.html#Limit">Limit</a> oldLimits = limitDAO.select(serverName());
 <a class="jxr_linenumber" name="L193" href="#L193">193</a>       <strong class="jxr_keyword">final</strong> <a name="Limit" href="../../../../../../../org/waarp/openr66/pojo/Limit.html#Limit">Limit</a> newLimits =
 <a class="jxr_linenumber" name="L194" href="#L194">194</a>           LimitsConverter.nodeToUpdatedLimit(requestObject, oldLimits);
 <a class="jxr_linenumber" name="L195" href="#L195">195</a> 
@@ -239,8 +239,8 @@
 <a class="jxr_linenumber" name="L231" href="#L231">231</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L232" href="#L232">232</a>       limitDAO = DAO_FACTORY.getLimitDAO();
 <a class="jxr_linenumber" name="L233" href="#L233">233</a> 
-<a class="jxr_linenumber" name="L234" href="#L234">234</a>       <strong class="jxr_keyword">if</strong> (limitDAO.exist(SERVER_NAME)) {
-<a class="jxr_linenumber" name="L235" href="#L235">235</a>         limitDAO.delete(limitDAO.select(SERVER_NAME));
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>       <strong class="jxr_keyword">if</strong> (limitDAO.exist(serverName())) {
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>         limitDAO.delete(limitDAO.select(serverName()));
 <a class="jxr_linenumber" name="L236" href="#L236">236</a>         configuration.changeNetworkLimit(0, 0, 0, 0, 0);
 <a class="jxr_linenumber" name="L237" href="#L237">237</a>         responder.sendStatus(NO_CONTENT);
 <a class="jxr_linenumber" name="L238" href="#L238">238</a>       } <strong class="jxr_keyword">else</strong> {

@@ -32,40 +32,40 @@ import java.util.List;
 /**
  * STAT command
  */
-<span class="fc" id="L35">public class STAT extends AbstractCommand {</span>
+<span class="nc" id="L35">public class STAT extends AbstractCommand {</span>
   @Override
   public void exec() throws CommandAbstractException {
     String path;
     String message;
-<span class="fc" id="L40">    message = &quot;STATUS information\nNo FtpFile currently in transfer\n&quot;;</span>
-<span class="fc" id="L41">    FtpFile file = null;</span>
+<span class="nc" id="L40">    message = &quot;STATUS information\nNo FtpFile currently in transfer\n&quot;;</span>
+<span class="nc" id="L41">    FtpFile file = null;</span>
     try {
-<span class="fc" id="L43">      file = getSession().getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L43">      file = getSession().getDataConn().getFtpTransferControl()</span>
 <span class="nc" id="L44">                         .getExecutingFtpTransfer().getFtpFile();</span>
 <span class="nc" id="L45">    } catch (final FtpNoFileException ignored) {</span>
       // nothing
-<span class="fc" id="L47">    } catch (final FtpNoTransferException ignored) {</span>
+<span class="nc" id="L47">    } catch (final FtpNoTransferException ignored) {</span>
       // nothing
 <span class="nc" id="L49">    }</span>
-<span class="pc bpc" id="L50" title="1 of 2 branches missed.">    if (file != null) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">    if (file != null) {</span>
 <span class="nc bnc" id="L51" title="All 2 branches missed.">      if (file.isInReading()) {</span>
 <span class="nc" id="L52">        message = &quot;STATUS information\nFile currently in Retrieve transfer\n&quot;;</span>
 <span class="nc bnc" id="L53" title="All 2 branches missed.">      } else if (file.isInWriting()) {</span>
 <span class="nc" id="L54">        message = &quot;STATUS information\nFile currently in Store transfer\n&quot;;</span>
       }
     }
-<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (!hasArg()) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (!hasArg()) {</span>
       // Current status of connection
-<span class="fc" id="L59">      message += getSession().getDataConn().getStatus();</span>
-<span class="fc" id="L60">      message += &quot;\nControl: &quot; +</span>
-<span class="fc" id="L61">                 FtpChannelUtils.nbCommandChannels(getConfiguration()) +</span>
+<span class="nc" id="L59">      message += getSession().getDataConn().getStatus();</span>
+<span class="nc" id="L60">      message += &quot;\nControl: &quot; +</span>
+<span class="nc" id="L61">                 FtpChannelUtils.nbCommandChannels(getConfiguration()) +</span>
                  &quot; Data: &quot; +
-<span class="fc" id="L63">                 FtpChannelUtils.nbDataChannels(getConfiguration()) +</span>
-<span class="fc" id="L64">                 &quot; Binded: &quot; + getConfiguration().getFtpInternalConfiguration()</span>
-<span class="fc" id="L65">                                                 .getNbBindedPassive();</span>
-<span class="fc" id="L66">      message += &quot;\nEnd of Status&quot;;</span>
-<span class="fc" id="L67">      getSession()</span>
-<span class="fc" id="L68">          .setReplyCode(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY, message);</span>
+<span class="nc" id="L63">                 FtpChannelUtils.nbDataChannels(getConfiguration()) +</span>
+<span class="nc" id="L64">                 &quot; Binded: &quot; + getConfiguration().getFtpInternalConfiguration()</span>
+<span class="nc" id="L65">                                                 .getNbBindedPassive();</span>
+<span class="nc" id="L66">      message += &quot;\nEnd of Status&quot;;</span>
+<span class="nc" id="L67">      getSession()</span>
+<span class="nc" id="L68">          .setReplyCode(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY, message);</span>
     } else {
       // List of files from path
 <span class="nc" id="L71">      path = getArg();</span>
@@ -80,7 +80,7 @@ import java.util.List;
 <span class="nc" id="L80">      message += builder.toString();</span>
 <span class="nc" id="L81">      getSession().setReplyCode(ReplyCode.REPLY_212_DIRECTORY_STATUS, message);</span>
     }
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L83">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

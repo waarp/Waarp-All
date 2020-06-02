@@ -34,6 +34,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.xample.custnodes.FFileDialog;
 
 import javax.swing.ButtonGroup;
@@ -125,7 +126,7 @@ public class XAmple extends JFrame
   public static final String BOUNDS_WIDTH = &quot;BOUNDS_WIDTH&quot;;
   public static final String BOUNDS_HEIGHT = &quot;BOUNDS_HEIGHT&quot;;
 
-<span class="nc" id="L128">  transient final History history = new History(&quot;&quot;);</span>
+<span class="nc" id="L129">  transient final History history = new History(&quot;&quot;);</span>
 
   final FHistoryButton btnOpenXSD;
   final FHistoryButton btnOpenXML;
@@ -133,621 +134,622 @@ public class XAmple extends JFrame
   final JButton btnSaveXML;
   final JToggleButton btnHorizSplit;
   final JToggleButton btnVertSplit;
-<span class="nc" id="L136">  final ButtonGroup splitGroup = new ButtonGroup();</span>
+<span class="nc" id="L137">  final ButtonGroup splitGroup = new ButtonGroup();</span>
   final JToggleButton btnSync;
 
-<span class="nc" id="L139">  final JMenuBar jMenuBar = new JMenuBar();</span>
-<span class="nc" id="L140">  final JMenu menuFile = new JMenu(&quot;File&quot;);</span>
-<span class="nc" id="L141">  final JMenuItem mOpenXSD = new JMenuItem(&quot;Open XML Configuration Schema&quot;);</span>
-<span class="nc" id="L142">  final JMenuItem mOpenXML = new JMenuItem(&quot;Open XML Configuration Document&quot;);</span>
-<span class="nc" id="L143">  final JMenuItem mNewXML = new JMenuItem(&quot;New XML Configuration Document&quot;);</span>
-<span class="nc" id="L144">  final JMenuItem mSaveXML = new JMenuItem(&quot;Save XML Configuration Document&quot;);</span>
-<span class="nc" id="L145">  final JMenuItem mExit = new JMenuItem(&quot;Exit&quot;);</span>
+<span class="nc" id="L140">  final JMenuBar jMenuBar = new JMenuBar();</span>
+<span class="nc" id="L141">  final JMenu menuFile = new JMenu(&quot;File&quot;);</span>
+<span class="nc" id="L142">  final JMenuItem mOpenXSD = new JMenuItem(&quot;Open XML Configuration Schema&quot;);</span>
+<span class="nc" id="L143">  final JMenuItem mOpenXML = new JMenuItem(&quot;Open XML Configuration Document&quot;);</span>
+<span class="nc" id="L144">  final JMenuItem mNewXML = new JMenuItem(&quot;New XML Configuration Document&quot;);</span>
+<span class="nc" id="L145">  final JMenuItem mSaveXML = new JMenuItem(&quot;Save XML Configuration Document&quot;);</span>
+<span class="nc" id="L146">  final JMenuItem mExit = new JMenuItem(&quot;Exit&quot;);</span>
 
-<span class="nc" id="L147">  final JMenu menuLF = new JMenu(&quot;Look &amp; Feel&quot;);</span>
+<span class="nc" id="L148">  final JMenu menuLF = new JMenu(&quot;Look &amp; Feel&quot;);</span>
 
-<span class="nc" id="L149">  final JMenu menuHelp = new JMenu(&quot;Help&quot;);</span>
-<span class="nc" id="L150">  final JMenuItem mAbout = new JMenuItem(&quot;About...&quot;);</span>
+<span class="nc" id="L150">  final JMenu menuHelp = new JMenu(&quot;Help&quot;);</span>
+<span class="nc" id="L151">  final JMenuItem mAbout = new JMenuItem(&quot;About...&quot;);</span>
 
   final FXDoubleView dblView;
   transient final FXDocumentModel model;
 
   final JFileChooser fileDlg;
-<span class="nc" id="L156">  transient final TheFileFilter xsdFilter =</span>
+<span class="nc" id="L157">  transient final TheFileFilter xsdFilter =</span>
       new TheFileFilter(&quot;xsd&quot;, &quot;XML Schema files *.xsd&quot;);
-<span class="nc" id="L158">  transient final TheFileFilter xmlFilter =</span>
+<span class="nc" id="L159">  transient final TheFileFilter xmlFilter =</span>
       new TheFileFilter(&quot;xml&quot;, &quot;XML files *.xml&quot;);
 
-<span class="nc" id="L161">  final FFileDialog fFileDialog = new FFileDialog();</span>
+<span class="nc" id="L162">  final FFileDialog fFileDialog = new FFileDialog();</span>
 
-<span class="nc" id="L163">  String xsdFileName = &quot;&quot;;</span>
-<span class="nc" id="L164">  String xmlFileName = &quot;&quot;;</span>
+<span class="nc" id="L164">  String xsdFileName = &quot;&quot;;</span>
+<span class="nc" id="L165">  String xmlFileName = &quot;&quot;;</span>
 
-<span class="nc" id="L166">  public XAmple() {</span>
-<span class="nc" id="L167">    HistoryIO.load(history);</span>
-<span class="nc" id="L168">    setTitle(&quot;XAmple-Waarp&quot;);</span>
-<span class="nc" id="L169">    getContentPane().setLayout(new BorderLayout());</span>
-<span class="nc" id="L170">    final ImageIcon icoOpenXSD = FLoader.getIcon(this, &quot;OpenXSD.gif&quot;);</span>
-<span class="nc" id="L171">    final ImageIcon icoOpenXML = FLoader.getIcon(this, &quot;OpenXML.gif&quot;);</span>
-<span class="nc" id="L172">    final ImageIcon icoNewXML = FLoader.getIcon(this, &quot;NewXML.gif&quot;);</span>
-<span class="nc" id="L173">    final ImageIcon icoSaveXML = FLoader.getIcon(this, &quot;SaveXML.gif&quot;);</span>
-<span class="nc" id="L174">    final ImageIcon imgHorizSplit = FLoader.getIcon(this, &quot;HorizSplit.gif&quot;);</span>
-<span class="nc" id="L175">    final ImageIcon imgVertSplit = FLoader.getIcon(this, &quot;VertSplit.gif&quot;);</span>
-<span class="nc" id="L176">    final ImageIcon imgSync = FLoader.getIcon(this, &quot;Sync.gif&quot;);</span>
+<span class="nc" id="L167">  public XAmple() {</span>
+<span class="nc" id="L168">    HistoryIO.load(history);</span>
+<span class="nc" id="L169">    setTitle(&quot;XAmple-Waarp&quot;);</span>
+<span class="nc" id="L170">    getContentPane().setLayout(new BorderLayout());</span>
+<span class="nc" id="L171">    final ImageIcon icoOpenXSD = FLoader.getIcon(this, &quot;OpenXSD.gif&quot;);</span>
+<span class="nc" id="L172">    final ImageIcon icoOpenXML = FLoader.getIcon(this, &quot;OpenXML.gif&quot;);</span>
+<span class="nc" id="L173">    final ImageIcon icoNewXML = FLoader.getIcon(this, &quot;NewXML.gif&quot;);</span>
+<span class="nc" id="L174">    final ImageIcon icoSaveXML = FLoader.getIcon(this, &quot;SaveXML.gif&quot;);</span>
+<span class="nc" id="L175">    final ImageIcon imgHorizSplit = FLoader.getIcon(this, &quot;HorizSplit.gif&quot;);</span>
+<span class="nc" id="L176">    final ImageIcon imgVertSplit = FLoader.getIcon(this, &quot;VertSplit.gif&quot;);</span>
+<span class="nc" id="L177">    final ImageIcon imgSync = FLoader.getIcon(this, &quot;Sync.gif&quot;);</span>
 
-<span class="nc" id="L178">    final JToolBar toolBar = new JToolBar();</span>
+<span class="nc" id="L179">    final JToolBar toolBar = new JToolBar();</span>
 
-<span class="nc" id="L180">    btnOpenXSD = new FHistoryButton(icoOpenXSD, &quot;Open XML Configuration Schema&quot;,</span>
+<span class="nc" id="L181">    btnOpenXSD = new FHistoryButton(icoOpenXSD, &quot;Open XML Configuration Schema&quot;,</span>
                                     &quot;Reopen XML Configuration Schema&quot;);
-<span class="nc" id="L182">    btnOpenXSD.addActionListener(this);</span>
-<span class="nc" id="L183">    btnOpenXSD.addItemListener(this);</span>
-<span class="nc" id="L184">    btnOpenXSD.setItems(history.items);</span>
-<span class="nc" id="L185">    toolBar.add(btnOpenXSD);</span>
-<span class="nc" id="L186">    toolBar.addSeparator(new Dimension(2, 1));</span>
-<span class="nc" id="L187">    btnOpenXML =</span>
+<span class="nc" id="L183">    btnOpenXSD.addActionListener(this);</span>
+<span class="nc" id="L184">    btnOpenXSD.addItemListener(this);</span>
+<span class="nc" id="L185">    btnOpenXSD.setItems(history.items);</span>
+<span class="nc" id="L186">    toolBar.add(btnOpenXSD);</span>
+<span class="nc" id="L187">    toolBar.addSeparator(new Dimension(2, 1));</span>
+<span class="nc" id="L188">    btnOpenXML =</span>
         new FHistoryButton(icoOpenXML, &quot;Open XML Configuration Document&quot;,
                            &quot;Reopen XML Configuration Document&quot;);
-<span class="nc" id="L190">    btnOpenXML.setEnabled(false);</span>
-<span class="nc" id="L191">    btnOpenXML.addActionListener(this);</span>
-<span class="nc" id="L192">    btnOpenXML.addItemListener(this);</span>
-<span class="nc" id="L193">    toolBar.add(btnOpenXML);</span>
-<span class="nc" id="L194">    toolBar.addSeparator();</span>
-<span class="nc" id="L195">    btnNewXML = new Btn(icoNewXML, &quot;New XML Configuration Document&quot;);</span>
-<span class="nc" id="L196">    toolBar.add(btnNewXML);</span>
-<span class="nc" id="L197">    btnSaveXML = new Btn(icoSaveXML, &quot;Save XML Configuration Document&quot;);</span>
-<span class="nc" id="L198">    toolBar.add(btnSaveXML);</span>
-<span class="nc" id="L199">    toolBar.addSeparator();</span>
-<span class="nc" id="L200">    btnHorizSplit = new ToggleBtn(imgHorizSplit, &quot;Horizontal Split&quot;);</span>
-<span class="nc" id="L201">    splitGroup.add(btnHorizSplit);</span>
-<span class="nc" id="L202">    toolBar.add(btnHorizSplit);</span>
-<span class="nc" id="L203">    btnVertSplit = new ToggleBtn(imgVertSplit, &quot;Vertical Split&quot;);</span>
-<span class="nc" id="L204">    splitGroup.add(btnVertSplit);</span>
-<span class="nc" id="L205">    toolBar.add(btnVertSplit);</span>
-<span class="nc" id="L206">    toolBar.addSeparator();</span>
-<span class="nc" id="L207">    btnSync = new ToggleBtn(imgSync, &quot;Synchronized Node Selection&quot;);</span>
-<span class="nc" id="L208">    toolBar.add(btnSync);</span>
+<span class="nc" id="L191">    btnOpenXML.setEnabled(false);</span>
+<span class="nc" id="L192">    btnOpenXML.addActionListener(this);</span>
+<span class="nc" id="L193">    btnOpenXML.addItemListener(this);</span>
+<span class="nc" id="L194">    toolBar.add(btnOpenXML);</span>
+<span class="nc" id="L195">    toolBar.addSeparator();</span>
+<span class="nc" id="L196">    btnNewXML = new Btn(icoNewXML, &quot;New XML Configuration Document&quot;);</span>
+<span class="nc" id="L197">    toolBar.add(btnNewXML);</span>
+<span class="nc" id="L198">    btnSaveXML = new Btn(icoSaveXML, &quot;Save XML Configuration Document&quot;);</span>
+<span class="nc" id="L199">    toolBar.add(btnSaveXML);</span>
+<span class="nc" id="L200">    toolBar.addSeparator();</span>
+<span class="nc" id="L201">    btnHorizSplit = new ToggleBtn(imgHorizSplit, &quot;Horizontal Split&quot;);</span>
+<span class="nc" id="L202">    splitGroup.add(btnHorizSplit);</span>
+<span class="nc" id="L203">    toolBar.add(btnHorizSplit);</span>
+<span class="nc" id="L204">    btnVertSplit = new ToggleBtn(imgVertSplit, &quot;Vertical Split&quot;);</span>
+<span class="nc" id="L205">    splitGroup.add(btnVertSplit);</span>
+<span class="nc" id="L206">    toolBar.add(btnVertSplit);</span>
+<span class="nc" id="L207">    toolBar.addSeparator();</span>
+<span class="nc" id="L208">    btnSync = new ToggleBtn(imgSync, &quot;Synchronized Node Selection&quot;);</span>
+<span class="nc" id="L209">    toolBar.add(btnSync);</span>
 
-<span class="nc" id="L210">    mOpenXSD.addActionListener(this);</span>
-<span class="nc" id="L211">    menuFile.add(mOpenXSD);</span>
+<span class="nc" id="L211">    mOpenXSD.addActionListener(this);</span>
+<span class="nc" id="L212">    menuFile.add(mOpenXSD);</span>
 
-<span class="nc" id="L213">    mOpenXML.setEnabled(false);</span>
-<span class="nc" id="L214">    mOpenXML.addActionListener(this);</span>
-<span class="nc" id="L215">    menuFile.add(mOpenXML);</span>
+<span class="nc" id="L214">    mOpenXML.setEnabled(false);</span>
+<span class="nc" id="L215">    mOpenXML.addActionListener(this);</span>
+<span class="nc" id="L216">    menuFile.add(mOpenXML);</span>
 
-<span class="nc" id="L217">    mNewXML.setEnabled(false);</span>
-<span class="nc" id="L218">    mNewXML.addActionListener(this);</span>
-<span class="nc" id="L219">    menuFile.add(mNewXML);</span>
+<span class="nc" id="L218">    mNewXML.setEnabled(false);</span>
+<span class="nc" id="L219">    mNewXML.addActionListener(this);</span>
+<span class="nc" id="L220">    menuFile.add(mNewXML);</span>
 
-<span class="nc" id="L221">    menuFile.addSeparator();</span>
+<span class="nc" id="L222">    menuFile.addSeparator();</span>
 
-<span class="nc" id="L223">    mSaveXML.setEnabled(false);</span>
-<span class="nc" id="L224">    mSaveXML.addActionListener(this);</span>
-<span class="nc" id="L225">    menuFile.add(mSaveXML);</span>
+<span class="nc" id="L224">    mSaveXML.setEnabled(false);</span>
+<span class="nc" id="L225">    mSaveXML.addActionListener(this);</span>
+<span class="nc" id="L226">    menuFile.add(mSaveXML);</span>
 
-<span class="nc" id="L227">    menuFile.addSeparator();</span>
+<span class="nc" id="L228">    menuFile.addSeparator();</span>
 
-<span class="nc" id="L229">    mExit.addActionListener(this);</span>
-<span class="nc" id="L230">    menuFile.add(mExit);</span>
+<span class="nc" id="L230">    mExit.addActionListener(this);</span>
+<span class="nc" id="L231">    menuFile.add(mExit);</span>
 
     final UIManager.LookAndFeelInfo[] lfi =
-<span class="nc" id="L233">        UIManager.getInstalledLookAndFeels();</span>
-<span class="nc" id="L234">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
-<span class="nc" id="L235">    final ButtonGroup group = new ButtonGroup();</span>
-<span class="nc bnc" id="L236" title="All 2 branches missed.">    for (final LookAndFeelInfo element : lfi) {</span>
-<span class="nc" id="L237">      final JRadioButtonMenuItem mi =</span>
-<span class="nc" id="L238">          new JRadioButtonMenuItem(element.getName());</span>
-<span class="nc" id="L239">      group.add(mi);</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">      if (element.getClassName().equals(lf.getClass().getName())) {</span>
-<span class="nc" id="L241">        mi.setSelected(true);</span>
+<span class="nc" id="L234">        UIManager.getInstalledLookAndFeels();</span>
+<span class="nc" id="L235">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
+<span class="nc" id="L236">    final ButtonGroup group = new ButtonGroup();</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">    for (final LookAndFeelInfo element : lfi) {</span>
+<span class="nc" id="L238">      final JRadioButtonMenuItem mi =</span>
+<span class="nc" id="L239">          new JRadioButtonMenuItem(element.getName());</span>
+<span class="nc" id="L240">      group.add(mi);</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">      if (element.getClassName().equals(lf.getClass().getName())) {</span>
+<span class="nc" id="L242">        mi.setSelected(true);</span>
       }
-<span class="nc" id="L243">      mi.addActionListener(this);</span>
-<span class="nc" id="L244">      menuLF.add(mi);</span>
+<span class="nc" id="L244">      mi.addActionListener(this);</span>
+<span class="nc" id="L245">      menuLF.add(mi);</span>
     }
 
-<span class="nc" id="L247">    mAbout.addActionListener(this);</span>
-<span class="nc" id="L248">    menuHelp.add(mAbout);</span>
+<span class="nc" id="L248">    mAbout.addActionListener(this);</span>
+<span class="nc" id="L249">    menuHelp.add(mAbout);</span>
 
-<span class="nc" id="L250">    jMenuBar.add(menuFile);</span>
-<span class="nc" id="L251">    jMenuBar.add(menuLF);</span>
-<span class="nc" id="L252">    jMenuBar.add(menuHelp);</span>
-<span class="nc" id="L253">    setJMenuBar(jMenuBar);</span>
+<span class="nc" id="L251">    jMenuBar.add(menuFile);</span>
+<span class="nc" id="L252">    jMenuBar.add(menuLF);</span>
+<span class="nc" id="L253">    jMenuBar.add(menuHelp);</span>
+<span class="nc" id="L254">    setJMenuBar(jMenuBar);</span>
 
-<span class="nc" id="L255">    getContentPane().add(toolBar, BorderLayout.NORTH);</span>
-<span class="nc" id="L256">    model = new FXDocumentModelImpl();</span>
-<span class="nc" id="L257">    model.addModelStatusListener(this);</span>
-<span class="nc" id="L258">    dblView = new FXDoubleView(model);</span>
-<span class="nc" id="L259">    dblView.addExternalDialog(&quot;FileDialog&quot;, fFileDialog);</span>
-<span class="nc" id="L260">    getContentPane().add(dblView, BorderLayout.CENTER);</span>
-<span class="nc" id="L261">    fileDlg = new JFileChooser(new File(&quot;.&quot;).getAbsolutePath());</span>
-<span class="nc" id="L262">    fileDlg.addChoosableFileFilter(xsdFilter);</span>
-<span class="nc" id="L263">    fileDlg.addChoosableFileFilter(xmlFilter);</span>
-<span class="nc" id="L264">  }</span>
+<span class="nc" id="L256">    getContentPane().add(toolBar, BorderLayout.NORTH);</span>
+<span class="nc" id="L257">    model = new FXDocumentModelImpl();</span>
+<span class="nc" id="L258">    model.addModelStatusListener(this);</span>
+<span class="nc" id="L259">    dblView = new FXDoubleView(model);</span>
+<span class="nc" id="L260">    dblView.addExternalDialog(&quot;FileDialog&quot;, fFileDialog);</span>
+<span class="nc" id="L261">    getContentPane().add(dblView, BorderLayout.CENTER);</span>
+<span class="nc" id="L262">    fileDlg = new JFileChooser(new File(&quot;.&quot;).getAbsolutePath());</span>
+<span class="nc" id="L263">    fileDlg.addChoosableFileFilter(xsdFilter);</span>
+<span class="nc" id="L264">    fileDlg.addChoosableFileFilter(xmlFilter);</span>
+<span class="nc" id="L265">  }</span>
 
   public static void main(String[] args) {
-<span class="nc" id="L267">    assignDefaultFont();</span>
-<span class="nc" id="L268">    final Properties props = new Properties();</span>
-<span class="nc" id="L269">    InputStream in = null;</span>
+<span class="nc" id="L268">    assignDefaultFont();</span>
+<span class="nc" id="L269">    final Properties props = new Properties();</span>
+<span class="nc" id="L270">    InputStream in = null;</span>
     try {
-<span class="nc" id="L271">      final File file = new File(FILE_RUNTIME);</span>
-<span class="nc bnc" id="L272" title="All 2 branches missed.">      if (file.exists()) {</span>
-<span class="nc" id="L273">        in = new FileInputStream(file);</span>
-<span class="nc" id="L274">        props.load(in);</span>
+<span class="nc" id="L272">      final File file = new File(FILE_RUNTIME);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">      if (file.exists()) {</span>
+<span class="nc" id="L274">        in = new FileInputStream(file);</span>
+<span class="nc" id="L275">        props.load(in);</span>
       }
-<span class="nc" id="L276">      final String lfName = props.getProperty(LOOK_AND_FEEL);</span>
-<span class="nc" id="L277">      String lfClassName = null;</span>
+<span class="nc" id="L277">      final String lfName = props.getProperty(LOOK_AND_FEEL);</span>
+<span class="nc" id="L278">      String lfClassName = null;</span>
       final UIManager.LookAndFeelInfo[] lfi =
-<span class="nc" id="L279">          UIManager.getInstalledLookAndFeels();</span>
-<span class="nc bnc" id="L280" title="All 4 branches missed.">      for (int i = 0; i &lt; lfi.length &amp;&amp; lfClassName == null; i++) {</span>
-<span class="nc bnc" id="L281" title="All 2 branches missed.">        if (lfi[i].getName().equals(lfName)) {</span>
-<span class="nc" id="L282">          lfClassName = lfi[i].getClassName();</span>
+<span class="nc" id="L280">          UIManager.getInstalledLookAndFeels();</span>
+<span class="nc bnc" id="L281" title="All 4 branches missed.">      for (int i = 0; i &lt; lfi.length &amp;&amp; lfClassName == null; i++) {</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        if (lfi[i].getName().equals(lfName)) {</span>
+<span class="nc" id="L283">          lfClassName = lfi[i].getClassName();</span>
         }
       }
-<span class="nc bnc" id="L285" title="All 2 branches missed.">      if (lfClassName != null) {</span>
-<span class="nc" id="L286">        UIManager.setLookAndFeel(lfClassName);</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">      if (lfClassName != null) {</span>
+<span class="nc" id="L287">        UIManager.setLookAndFeel(lfClassName);</span>
       } else {
         UIManager
-<span class="nc" id="L289">            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());</span>
+<span class="nc" id="L290">            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());</span>
       }
-<span class="nc" id="L291">    } catch (final Exception ex) {</span>
+<span class="nc" id="L292">    } catch (final Exception ex) {</span>
       try {
         UIManager
-<span class="nc" id="L294">            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());</span>
-<span class="nc" id="L295">      } catch (final Exception ex1) {</span>
-<span class="nc" id="L296">        SysErrLogger.FAKE_LOGGER.syserr(ex1);</span>
-<span class="nc" id="L297">      }</span>
+<span class="nc" id="L295">            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());</span>
+<span class="nc" id="L296">      } catch (final Exception ex1) {</span>
+<span class="nc" id="L297">        SysErrLogger.FAKE_LOGGER.syserr(ex1);</span>
+<span class="nc" id="L298">      }</span>
     } finally {
-<span class="nc" id="L299">      FileUtils.close(in);</span>
+<span class="nc" id="L300">      FileUtils.close(in);</span>
     }
-<span class="nc" id="L301">    final XAmple frame = new XAmple();</span>
-<span class="nc" id="L302">    final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();</span>
+<span class="nc" id="L302">    final XAmple frame = new XAmple();</span>
+<span class="nc" id="L303">    final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();</span>
     try {
-<span class="nc" id="L304">      final Rectangle r = new Rectangle();</span>
-<span class="nc" id="L305">      r.x = Integer.parseInt(props.getProperty(BOUNDS_LEFT));</span>
-<span class="nc" id="L306">      r.y = Integer.parseInt(props.getProperty(BOUNDS_TOP));</span>
-<span class="nc" id="L307">      r.width = Integer.parseInt(props.getProperty(BOUNDS_WIDTH));</span>
-<span class="nc" id="L308">      r.height = Integer.parseInt(props.getProperty(BOUNDS_HEIGHT));</span>
-<span class="nc bnc" id="L309" title="All 2 branches missed.">      if (r.width &gt; screenSize.width) {</span>
-<span class="nc" id="L310">        r.width = screenSize.width;</span>
+<span class="nc" id="L305">      final Rectangle r = new Rectangle();</span>
+<span class="nc" id="L306">      r.x = Integer.parseInt(props.getProperty(BOUNDS_LEFT));</span>
+<span class="nc" id="L307">      r.y = Integer.parseInt(props.getProperty(BOUNDS_TOP));</span>
+<span class="nc" id="L308">      r.width = Integer.parseInt(props.getProperty(BOUNDS_WIDTH));</span>
+<span class="nc" id="L309">      r.height = Integer.parseInt(props.getProperty(BOUNDS_HEIGHT));</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">      if (r.width &gt; screenSize.width) {</span>
+<span class="nc" id="L311">        r.width = screenSize.width;</span>
       }
-<span class="nc bnc" id="L312" title="All 2 branches missed.">      if (r.height &gt; screenSize.height) {</span>
-<span class="nc" id="L313">        r.height = screenSize.height;</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">      if (r.height &gt; screenSize.height) {</span>
+<span class="nc" id="L314">        r.height = screenSize.height;</span>
       }
-<span class="nc bnc" id="L315" title="All 2 branches missed.">      if (r.x + r.width &gt; screenSize.width) {</span>
-<span class="nc" id="L316">        r.x = screenSize.width - r.width;</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">      if (r.x + r.width &gt; screenSize.width) {</span>
+<span class="nc" id="L317">        r.x = screenSize.width - r.width;</span>
       }
-<span class="nc bnc" id="L318" title="All 2 branches missed.">      if (r.y + r.height &gt; screenSize.height) {</span>
-<span class="nc" id="L319">        r.y = screenSize.height - r.height;</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">      if (r.y + r.height &gt; screenSize.height) {</span>
+<span class="nc" id="L320">        r.y = screenSize.height - r.height;</span>
       }
-<span class="nc" id="L321">      frame.setBounds(r.x, r.y, r.width, r.height);</span>
-<span class="nc" id="L322">      frame.validate();</span>
-<span class="nc" id="L323">    } catch (final Exception ex) {</span>
-<span class="nc" id="L324">      frame.pack();</span>
-<span class="nc" id="L325">      final Dimension d = frame.getSize();</span>
-<span class="nc bnc" id="L326" title="All 2 branches missed.">      if (d.height &gt; screenSize.height) {</span>
-<span class="nc" id="L327">        d.height = screenSize.height;</span>
+<span class="nc" id="L322">      frame.setBounds(r.x, r.y, r.width, r.height);</span>
+<span class="nc" id="L323">      frame.validate();</span>
+<span class="nc" id="L324">    } catch (final Exception ex) {</span>
+<span class="nc" id="L325">      frame.pack();</span>
+<span class="nc" id="L326">      final Dimension d = frame.getSize();</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">      if (d.height &gt; screenSize.height) {</span>
+<span class="nc" id="L328">        d.height = screenSize.height;</span>
       }
-<span class="nc bnc" id="L329" title="All 2 branches missed.">      if (d.width &gt; screenSize.width) {</span>
-<span class="nc" id="L330">        d.width = screenSize.width;</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">      if (d.width &gt; screenSize.width) {</span>
+<span class="nc" id="L331">        d.width = screenSize.width;</span>
       }
-<span class="nc" id="L332">      frame.setLocation((screenSize.width - d.width) / 2,</span>
+<span class="nc" id="L333">      frame.setLocation((screenSize.width - d.width) / 2,</span>
                         (screenSize.height - d.height) / 2);
-<span class="nc" id="L334">    }</span>
-<span class="nc" id="L335">    frame.setVisible(true);</span>
-<span class="nc" id="L336">  }</span>
+<span class="nc" id="L335">    }</span>
+<span class="nc" id="L336">    frame.setVisible(true);</span>
+<span class="nc" id="L337">  }</span>
 
   static void assignDefaultFont() {
-<span class="nc" id="L339">    final Properties props = new Properties();</span>
-<span class="nc" id="L340">    InputStream in = null;</span>
+<span class="nc" id="L340">    final Properties props = new Properties();</span>
+<span class="nc" id="L341">    InputStream in = null;</span>
     String fontName;
-<span class="nc" id="L342">    int fontSize = 12;</span>
+<span class="nc" id="L343">    int fontSize = 12;</span>
     try {
-<span class="nc" id="L344">      final File file = new File(FILE_GUI);</span>
-<span class="nc bnc" id="L345" title="All 2 branches missed.">      if (!file.exists()) {</span>
-<span class="nc" id="L346">        return;</span>
+<span class="nc" id="L345">      final File file = new File(FILE_GUI);</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (!file.exists()) {</span>
+<span class="nc" id="L347">        return;</span>
       }
-<span class="nc" id="L348">      in = new FileInputStream(file);</span>
-<span class="nc" id="L349">      props.load(in);</span>
-<span class="nc" id="L350">      fontName = props.getProperty(FONT_NAME);</span>
-<span class="nc bnc" id="L351" title="All 4 branches missed.">      if (fontName == null || fontName.length() == 0) {</span>
-<span class="nc" id="L352">        return;</span>
+<span class="nc" id="L349">      in = new FileInputStream(file);</span>
+<span class="nc" id="L350">      props.load(in);</span>
+<span class="nc" id="L351">      fontName = props.getProperty(FONT_NAME);</span>
+<span class="nc bnc" id="L352" title="All 4 branches missed.">      if (fontName == null || fontName.length() == 0) {</span>
+<span class="nc" id="L353">        return;</span>
       }
       try {
-<span class="nc" id="L355">        fontSize = Integer.parseInt(props.getProperty(FONT_SIZE, &quot;12&quot;));</span>
-<span class="nc" id="L356">      } catch (final Exception ignore) {</span>
+<span class="nc" id="L356">        fontSize = Integer.parseInt(props.getProperty(FONT_SIZE, &quot;12&quot;));</span>
+<span class="nc" id="L357">      } catch (final Exception ignore) {</span>
         // nothing
-<span class="nc" id="L358">      }</span>
-<span class="nc" id="L359">    } catch (final Exception ex) {</span>
-<span class="nc" id="L360">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
-<span class="nc" id="L361">      return;</span>
+<span class="nc" id="L359">      }</span>
+<span class="nc" id="L360">    } catch (final Exception ex) {</span>
+<span class="nc" id="L361">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L362">      return;</span>
     } finally {
-<span class="nc" id="L363">      FileUtils.close(in);</span>
+<span class="nc" id="L364">      FileUtils.close(in);</span>
     }
-<span class="nc" id="L365">    final Font font = new Font(fontName, Font.PLAIN, fontSize);</span>
-<span class="nc" id="L366">    final Enumeration&lt;Object&gt; keys = UIManager.getDefaults().keys();</span>
-<span class="nc bnc" id="L367" title="All 2 branches missed.">    while (keys.hasMoreElements()) {</span>
-<span class="nc" id="L368">      final Object key = keys.nextElement();</span>
-<span class="nc" id="L369">      final Object value = UIManager.get(key);</span>
-<span class="nc bnc" id="L370" title="All 2 branches missed.">      if (value instanceof FontUIResource) {</span>
-<span class="nc" id="L371">        UIManager.put(key, font);</span>
+<span class="nc" id="L366">    final Font font = new Font(fontName, Font.PLAIN, fontSize);</span>
+<span class="nc" id="L367">    final Enumeration&lt;Object&gt; keys = UIManager.getDefaults().keys();</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">    while (keys.hasMoreElements()) {</span>
+<span class="nc" id="L369">      final Object key = keys.nextElement();</span>
+<span class="nc" id="L370">      final Object value = UIManager.get(key);</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">      if (value instanceof FontUIResource) {</span>
+<span class="nc" id="L372">        UIManager.put(key, font);</span>
       }
-<span class="nc" id="L373">    }</span>
-<span class="nc" id="L374">  }</span>
+<span class="nc" id="L374">    }</span>
+<span class="nc" id="L375">  }</span>
 
   @Override
   protected void processWindowEvent(WindowEvent e) {
-<span class="nc bnc" id="L378" title="All 2 branches missed.">    if (e.getID() == WindowEvent.WINDOW_CLOSING) {</span>
-<span class="nc bnc" id="L379" title="All 2 branches missed.">      if (confirmation()) {</span>
-<span class="nc" id="L380">        saveRuntimeProperties();</span>
-<span class="nc" id="L381">        System.exit(0);//NOSONAR</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">    if (e.getID() == WindowEvent.WINDOW_CLOSING) {</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">      if (confirmation()) {</span>
+<span class="nc" id="L381">        saveRuntimeProperties();</span>
+<span class="nc" id="L382">        System.exit(0);//NOSONAR</span>
       }
     }
-<span class="nc" id="L384">  }</span>
+<span class="nc" id="L385">  }</span>
 
   boolean confirmation() {
-<span class="nc bnc" id="L387" title="All 2 branches missed.">    if (dblView.isDocChanged()) {</span>
-<span class="nc" id="L388">      final int option = JOptionPane.showConfirmDialog(this,</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">    if (dblView.isDocChanged()) {</span>
+<span class="nc" id="L389">      final int option = JOptionPane.showConfirmDialog(this,</span>
                                                        &quot;The XML Configuration Document has been changed. Do you like to save it?&quot;,
                                                        &quot;information&quot;,
                                                        JOptionPane.YES_NO_CANCEL_OPTION,
                                                        JOptionPane.INFORMATION_MESSAGE);
-<span class="nc bnc" id="L393" title="All 2 branches missed.">      if (option == JOptionPane.CANCEL_OPTION) {</span>
-<span class="nc" id="L394">        return false;</span>
-<span class="nc bnc" id="L395" title="All 2 branches missed.">      } else if (option == JOptionPane.YES_OPTION) {</span>
-<span class="nc" id="L396">        return saveXML();</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">      if (option == JOptionPane.CANCEL_OPTION) {</span>
+<span class="nc" id="L395">        return false;</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">      } else if (option == JOptionPane.YES_OPTION) {</span>
+<span class="nc" id="L397">        return saveXML();</span>
       } else {
-<span class="nc" id="L398">        return true;</span>
+<span class="nc" id="L399">        return true;</span>
       }
     } else {
-<span class="nc" id="L401">      return true;</span>
+<span class="nc" id="L402">      return true;</span>
     }
   }
 
   void saveRuntimeProperties() {
-<span class="nc" id="L406">    final Properties props = new Properties();</span>
-<span class="nc" id="L407">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
-<span class="nc bnc" id="L408" title="All 2 branches missed.">    if (lf != null) {</span>
-<span class="nc" id="L409">      props.setProperty(LOOK_AND_FEEL, lf.getName());</span>
+<span class="nc" id="L407">    final Properties props = new Properties();</span>
+<span class="nc" id="L408">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">    if (lf != null) {</span>
+<span class="nc" id="L410">      props.setProperty(LOOK_AND_FEEL, lf.getName());</span>
     }
-<span class="nc" id="L411">    final Rectangle r = getBounds();</span>
-<span class="nc" id="L412">    props.setProperty(BOUNDS_LEFT, String.valueOf(r.x));</span>
-<span class="nc" id="L413">    props.setProperty(BOUNDS_TOP, String.valueOf(r.y));</span>
-<span class="nc" id="L414">    props.setProperty(BOUNDS_WIDTH, String.valueOf(r.width));</span>
-<span class="nc" id="L415">    props.setProperty(BOUNDS_HEIGHT, String.valueOf(r.height));</span>
-<span class="nc" id="L416">    OutputStream out = null;</span>
+<span class="nc" id="L412">    final Rectangle r = getBounds();</span>
+<span class="nc" id="L413">    props.setProperty(BOUNDS_LEFT, String.valueOf(r.x));</span>
+<span class="nc" id="L414">    props.setProperty(BOUNDS_TOP, String.valueOf(r.y));</span>
+<span class="nc" id="L415">    props.setProperty(BOUNDS_WIDTH, String.valueOf(r.width));</span>
+<span class="nc" id="L416">    props.setProperty(BOUNDS_HEIGHT, String.valueOf(r.height));</span>
+<span class="nc" id="L417">    OutputStream out = null;</span>
     try {
-<span class="nc" id="L418">      final File file = new File(FILE_RUNTIME);</span>
-<span class="nc" id="L419">      file.createNewFile();</span>
-<span class="nc" id="L420">      out = new FileOutputStream(file);</span>
-<span class="nc" id="L421">      props.store(out, &quot;XAmple-Waarp XML Editor runtime properties&quot;);</span>
-<span class="nc" id="L422">    } catch (final Exception ex) {</span>
-<span class="nc" id="L423">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L419">      final File file = new File(FILE_RUNTIME);</span>
+<span class="nc" id="L420">      file.createNewFile();</span>
+<span class="nc" id="L421">      out = new FileOutputStream(file);</span>
+<span class="nc" id="L422">      props.store(out, &quot;XAmple-Waarp XML Editor runtime properties&quot;);</span>
+<span class="nc" id="L423">    } catch (final Exception ex) {</span>
+<span class="nc" id="L424">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
     } finally {
-<span class="nc" id="L425">      FileUtils.close(out);</span>
+<span class="nc" id="L426">      FileUtils.close(out);</span>
     }
-<span class="nc" id="L427">    HistoryIO.save(history);</span>
-<span class="nc" id="L428">  }</span>
+<span class="nc" id="L428">    HistoryIO.save(history);</span>
+<span class="nc" id="L429">  }</span>
 
   boolean saveXML() {
-<span class="nc" id="L431">    final Document doc = model.getDocument();</span>
-<span class="nc bnc" id="L432" title="All 2 branches missed.">    if (doc == null) {</span>
-<span class="nc" id="L433">      return false;</span>
+<span class="nc" id="L432">    final Document doc = model.getDocument();</span>
+<span class="nc bnc" id="L433" title="All 2 branches missed.">    if (doc == null) {</span>
+<span class="nc" id="L434">      return false;</span>
     }
-<span class="nc" id="L435">    fileDlg.setFileFilter(xmlFilter);</span>
-<span class="nc bnc" id="L436" title="All 2 branches missed.">    if (fileDlg.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {</span>
-<span class="nc" id="L437">      File file = fileDlg.getSelectedFile();</span>
-<span class="nc bnc" id="L438" title="All 2 branches missed.">      if (file == null) {</span>
-<span class="nc" id="L439">        return false;</span>
+<span class="nc" id="L436">    fileDlg.setFileFilter(xmlFilter);</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">    if (fileDlg.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {</span>
+<span class="nc" id="L438">      File file = fileDlg.getSelectedFile();</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">      if (file == null) {</span>
+<span class="nc" id="L440">        return false;</span>
       }
-<span class="nc bnc" id="L441" title="All 2 branches missed.">      if (file.getName().indexOf('.') &lt; 0) {</span>
-<span class="nc" id="L442">        file = new File(file.getAbsolutePath() + &quot;.xml&quot;);</span>
+<span class="nc bnc" id="L442" title="All 2 branches missed.">      if (file.getName().indexOf('.') &lt; 0) {</span>
+<span class="nc" id="L443">        file = new File(file.getAbsolutePath() + &quot;.xml&quot;);</span>
       }
-<span class="nc" id="L444">      FileOutputStream out = null;</span>
-<span class="nc" id="L445">      Writer writer = null;</span>
+<span class="nc" id="L445">      FileOutputStream out = null;</span>
+<span class="nc" id="L446">      Writer writer = null;</span>
       try {
-<span class="nc" id="L447">        file.createNewFile();</span>
-<span class="nc" id="L448">        out = new FileOutputStream(file);</span>
-<span class="nc" id="L449">        final OutputFormat format = new OutputFormat(doc, &quot;UTF-8&quot;, true);</span>
-<span class="nc" id="L450">        writer = new OutputStreamWriter(out, &quot;UTF-8&quot;);</span>
-<span class="nc" id="L451">        final XMLSerializer serial = new XMLSerializer(writer, format);</span>
-<span class="nc" id="L452">        serial.asDOMSerializer();</span>
-<span class="nc" id="L453">        serial.serialize(doc);</span>
-<span class="nc" id="L454">        model.setDocumentChanged(false);</span>
-<span class="nc" id="L455">        xmlFileName = file.getName();</span>
-<span class="nc" id="L456">        showXMLTitle();</span>
-<span class="nc" id="L457">        final History childHistory = history.getFirstChild();</span>
-<span class="nc bnc" id="L458" title="All 2 branches missed.">        if (childHistory != null) {</span>
-<span class="nc" id="L459">          childHistory.put(file.getAbsolutePath());</span>
-<span class="nc" id="L460">          btnOpenXML.setItems(childHistory.items);</span>
+<span class="nc" id="L448">        file.createNewFile();</span>
+<span class="nc" id="L449">        out = new FileOutputStream(file);</span>
+<span class="nc" id="L450">        final OutputFormat format =</span>
+            new OutputFormat(doc, WaarpStringUtils.UTF_8, true);
+<span class="nc" id="L452">        writer = new OutputStreamWriter(out, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L453">        final XMLSerializer serial = new XMLSerializer(writer, format);</span>
+<span class="nc" id="L454">        serial.asDOMSerializer();</span>
+<span class="nc" id="L455">        serial.serialize(doc);</span>
+<span class="nc" id="L456">        model.setDocumentChanged(false);</span>
+<span class="nc" id="L457">        xmlFileName = file.getName();</span>
+<span class="nc" id="L458">        showXMLTitle();</span>
+<span class="nc" id="L459">        final History childHistory = history.getFirstChild();</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">        if (childHistory != null) {</span>
+<span class="nc" id="L461">          childHistory.put(file.getAbsolutePath());</span>
+<span class="nc" id="L462">          btnOpenXML.setItems(childHistory.items);</span>
         }
-<span class="nc" id="L462">        return true;</span>
-<span class="nc" id="L463">      } catch (final Exception ex) {</span>
-<span class="nc" id="L464">        dblView.showErrorMessage(&quot;Error: &quot; + ex.getMessage());</span>
-<span class="nc" id="L465">        return false;</span>
+<span class="nc" id="L464">        return true;</span>
+<span class="nc" id="L465">      } catch (final Exception ex) {</span>
+<span class="nc" id="L466">        dblView.showErrorMessage(&quot;Error: &quot; + ex.getMessage());</span>
+<span class="nc" id="L467">        return false;</span>
       } finally {
-<span class="nc" id="L467">        FileUtils.close(writer);</span>
-<span class="nc" id="L468">        FileUtils.close(out);</span>
+<span class="nc" id="L469">        FileUtils.close(writer);</span>
+<span class="nc" id="L470">        FileUtils.close(out);</span>
       }
     } else {
-<span class="nc" id="L471">      return false;</span>
+<span class="nc" id="L473">      return false;</span>
     }
   }
 
   void showXMLTitle() {
-<span class="nc" id="L476">    setTitle(&quot;XAmple-GG  -  &quot; + xsdFileName + &quot;  :  &quot; + xmlFileName);</span>
-<span class="nc" id="L477">  }</span>
+<span class="nc" id="L478">    setTitle(&quot;XAmple-GG  -  &quot; + xsdFileName + &quot;  :  &quot; + xmlFileName);</span>
+<span class="nc" id="L479">  }</span>
 
   @Override
   public void itemStateChanged(ItemEvent e) {
-<span class="nc bnc" id="L481" title="All 2 branches missed.">    if (!confirmation()) {</span>
-<span class="nc" id="L482">      return;</span>
+<span class="nc bnc" id="L483" title="All 2 branches missed.">    if (!confirmation()) {</span>
+<span class="nc" id="L484">      return;</span>
     }
-<span class="nc" id="L484">    final ItemSelectable source = e.getItemSelectable();</span>
-<span class="nc" id="L485">    final String path = ((History) e.getItem()).path;</span>
-<span class="nc" id="L486">    final File file = new File(path);</span>
-<span class="nc bnc" id="L487" title="All 2 branches missed.">    if (source == btnOpenXSD) {</span>
-<span class="nc" id="L488">      loadXMLSchema(file);</span>
-<span class="nc bnc" id="L489" title="All 2 branches missed.">    } else if (source == btnOpenXML) {</span>
-<span class="nc" id="L490">      loadXMLDocument(file);</span>
+<span class="nc" id="L486">    final ItemSelectable source = e.getItemSelectable();</span>
+<span class="nc" id="L487">    final String path = ((History) e.getItem()).path;</span>
+<span class="nc" id="L488">    final File file = new File(path);</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">    if (source == btnOpenXSD) {</span>
+<span class="nc" id="L490">      loadXMLSchema(file);</span>
+<span class="nc bnc" id="L491" title="All 2 branches missed.">    } else if (source == btnOpenXML) {</span>
+<span class="nc" id="L492">      loadXMLDocument(file);</span>
     }
-<span class="nc" id="L492">    fileDlg.setCurrentDirectory(file.getParentFile());</span>
-<span class="nc" id="L493">  }</span>
+<span class="nc" id="L494">    fileDlg.setCurrentDirectory(file.getParentFile());</span>
+<span class="nc" id="L495">  }</span>
 
   boolean loadXMLSchema(File file) {
     try {
-<span class="nc" id="L497">      model.newDocument(file.toURI().toURL());</span>
-<span class="nc" id="L498">      setSchemaEnabled(true);</span>
-<span class="nc" id="L499">      xsdFileName = file.getName();</span>
-<span class="nc" id="L500">      showXSDTitle();</span>
-<span class="nc" id="L501">      final History childHistory = history.put(file.getAbsolutePath());</span>
-<span class="nc" id="L502">      btnOpenXSD.setItems(history.items);</span>
-<span class="nc" id="L503">      btnOpenXML.setItems(childHistory.items);</span>
-<span class="nc" id="L504">      dblView.showInfoMessage(</span>
-<span class="nc" id="L505">          &quot;XML Configuration Schema: &quot; + file.getAbsolutePath());</span>
-<span class="nc" id="L506">      return true;</span>
-<span class="nc" id="L507">    } catch (final Exception ex) {</span>
-<span class="nc" id="L508">      history.remove(file.getAbsolutePath());</span>
-<span class="nc" id="L509">      btnOpenXSD.setItems(history.items);</span>
-<span class="nc" id="L510">      btnOpenXML.setItems(null);</span>
-<span class="nc" id="L511">      dblView.showErrorMessage(&quot;Error: &quot; + ex);</span>
-<span class="nc" id="L512">      setSchemaEnabled(false);</span>
-<span class="nc" id="L513">      JOptionPane</span>
-<span class="nc" id="L514">          .showMessageDialog(this, &quot;Can't load the XML Configuration Schema&quot;,</span>
+<span class="nc" id="L499">      model.newDocument(file.toURI().toURL());</span>
+<span class="nc" id="L500">      setSchemaEnabled(true);</span>
+<span class="nc" id="L501">      xsdFileName = file.getName();</span>
+<span class="nc" id="L502">      showXSDTitle();</span>
+<span class="nc" id="L503">      final History childHistory = history.put(file.getAbsolutePath());</span>
+<span class="nc" id="L504">      btnOpenXSD.setItems(history.items);</span>
+<span class="nc" id="L505">      btnOpenXML.setItems(childHistory.items);</span>
+<span class="nc" id="L506">      dblView.showInfoMessage(</span>
+<span class="nc" id="L507">          &quot;XML Configuration Schema: &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L508">      return true;</span>
+<span class="nc" id="L509">    } catch (final Exception ex) {</span>
+<span class="nc" id="L510">      history.remove(file.getAbsolutePath());</span>
+<span class="nc" id="L511">      btnOpenXSD.setItems(history.items);</span>
+<span class="nc" id="L512">      btnOpenXML.setItems(null);</span>
+<span class="nc" id="L513">      dblView.showErrorMessage(&quot;Error: &quot; + ex);</span>
+<span class="nc" id="L514">      setSchemaEnabled(false);</span>
+<span class="nc" id="L515">      JOptionPane</span>
+<span class="nc" id="L516">          .showMessageDialog(this, &quot;Can't load the XML Configuration Schema&quot;,</span>
                              &quot;Error&quot;, JOptionPane.ERROR_MESSAGE);
-<span class="nc" id="L516">      setTitle(&quot;XAmple&quot;);</span>
-<span class="nc" id="L517">      return false;</span>
+<span class="nc" id="L518">      setTitle(&quot;XAmple&quot;);</span>
+<span class="nc" id="L519">      return false;</span>
     }
   }
 
   boolean loadXMLDocument(File file) {
-<span class="nc" id="L522">    final History childHistory = history.getFirstChild();</span>
+<span class="nc" id="L524">    final History childHistory = history.getFirstChild();</span>
     try {
-<span class="nc" id="L524">      final URL url = file.toURI().toURL();</span>
-<span class="nc" id="L525">      final List&lt;?&gt; lostElements =</span>
-<span class="nc" id="L526">          model.openDocument(model.getSchemaURL(), url);</span>
-<span class="nc bnc" id="L527" title="All 2 branches missed.">      if (lostElements != null) {</span>
-<span class="nc" id="L528">        final StringBuilder sb = new StringBuilder(</span>
+<span class="nc" id="L526">      final URL url = file.toURI().toURL();</span>
+<span class="nc" id="L527">      final List&lt;?&gt; lostElements =</span>
+<span class="nc" id="L528">          model.openDocument(model.getSchemaURL(), url);</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">      if (lostElements != null) {</span>
+<span class="nc" id="L530">        final StringBuilder sb = new StringBuilder(</span>
             &quot;Error: The source XML Configuration document is invalid.\n&quot; +
             &quot;The following elements have not been loaded:&quot;);
-<span class="nc bnc" id="L531" title="All 2 branches missed.">        for (int i = 0; i &lt; lostElements.size(); i++) {</span>
-<span class="nc" id="L532">          sb.append('\n');</span>
-<span class="nc" id="L533">          final int k = sb.length();</span>
-<span class="nc" id="L534">          final Node element = (Node) lostElements.get(i);</span>
-<span class="nc" id="L535">          sb.append(element.getNodeName());</span>
-<span class="nc" id="L536">          Node node = element.getParentNode();</span>
-<span class="nc bnc" id="L537" title="All 4 branches missed.">          while (node != null &amp;&amp; !(node instanceof Document)) {</span>
-<span class="nc" id="L538">            sb.insert(k, node.getNodeName() + '/');</span>
-<span class="nc" id="L539">            node = node.getParentNode();</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">        for (int i = 0; i &lt; lostElements.size(); i++) {</span>
+<span class="nc" id="L534">          sb.append('\n');</span>
+<span class="nc" id="L535">          final int k = sb.length();</span>
+<span class="nc" id="L536">          final Node element = (Node) lostElements.get(i);</span>
+<span class="nc" id="L537">          sb.append(element.getNodeName());</span>
+<span class="nc" id="L538">          Node node = element.getParentNode();</span>
+<span class="nc bnc" id="L539" title="All 4 branches missed.">          while (node != null &amp;&amp; !(node instanceof Document)) {</span>
+<span class="nc" id="L540">            sb.insert(k, node.getNodeName() + '/');</span>
+<span class="nc" id="L541">            node = node.getParentNode();</span>
           }
         }
-<span class="nc" id="L542">        dblView.showErrorMessage(sb.toString());</span>
+<span class="nc" id="L544">        dblView.showErrorMessage(sb.toString());</span>
       }
-<span class="nc" id="L544">      setXMLEnabled(true);</span>
-<span class="nc" id="L545">      xmlFileName = file.getName();</span>
-<span class="nc" id="L546">      showXMLTitle();</span>
-<span class="nc" id="L547">      childHistory.put(file.getAbsolutePath());</span>
-<span class="nc" id="L548">      btnOpenXML.setItems(childHistory.items);</span>
-<span class="nc" id="L549">      dblView.showInfoMessage(</span>
-<span class="nc" id="L550">          &quot;XML Configuration Document: &quot; + file.getAbsolutePath());</span>
-<span class="nc" id="L551">      return true;</span>
-<span class="nc" id="L552">    } catch (final Exception ex) {</span>
-<span class="nc" id="L553">      childHistory.remove(file.getAbsolutePath());</span>
-<span class="nc" id="L554">      btnOpenXML.setItems(childHistory.items);</span>
+<span class="nc" id="L546">      setXMLEnabled(true);</span>
+<span class="nc" id="L547">      xmlFileName = file.getName();</span>
+<span class="nc" id="L548">      showXMLTitle();</span>
+<span class="nc" id="L549">      childHistory.put(file.getAbsolutePath());</span>
+<span class="nc" id="L550">      btnOpenXML.setItems(childHistory.items);</span>
+<span class="nc" id="L551">      dblView.showInfoMessage(</span>
+<span class="nc" id="L552">          &quot;XML Configuration Document: &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L553">      return true;</span>
+<span class="nc" id="L554">    } catch (final Exception ex) {</span>
+<span class="nc" id="L555">      childHistory.remove(file.getAbsolutePath());</span>
+<span class="nc" id="L556">      btnOpenXML.setItems(childHistory.items);</span>
       // dblView.clear()
-<span class="nc" id="L556">      setXMLEnabled(false);</span>
-<span class="nc" id="L557">      dblView.showErrorMessage(&quot;Error: &quot; + ex.getMessage());</span>
-<span class="nc" id="L558">      JOptionPane</span>
-<span class="nc" id="L559">          .showMessageDialog(this, &quot;Can't load the XML Configuration Document&quot;,</span>
+<span class="nc" id="L558">      setXMLEnabled(false);</span>
+<span class="nc" id="L559">      dblView.showErrorMessage(&quot;Error: &quot; + ex.getMessage());</span>
+<span class="nc" id="L560">      JOptionPane</span>
+<span class="nc" id="L561">          .showMessageDialog(this, &quot;Can't load the XML Configuration Document&quot;,</span>
                              &quot;Error&quot;, JOptionPane.ERROR_MESSAGE);
-<span class="nc" id="L561">      showXSDTitle();</span>
-<span class="nc" id="L562">      return false;</span>
+<span class="nc" id="L563">      showXSDTitle();</span>
+<span class="nc" id="L564">      return false;</span>
     }
   }
 
   void setSchemaEnabled(boolean enabled) {
-<span class="nc" id="L567">    btnOpenXML.setEnabled(enabled);</span>
-<span class="nc" id="L568">    mOpenXML.setEnabled(enabled);</span>
-<span class="nc" id="L569">    btnNewXML.setEnabled(enabled);</span>
-<span class="nc" id="L570">    mNewXML.setEnabled(enabled);</span>
-<span class="nc" id="L571">    setXMLEnabled(enabled);</span>
-<span class="nc" id="L572">  }</span>
+<span class="nc" id="L569">    btnOpenXML.setEnabled(enabled);</span>
+<span class="nc" id="L570">    mOpenXML.setEnabled(enabled);</span>
+<span class="nc" id="L571">    btnNewXML.setEnabled(enabled);</span>
+<span class="nc" id="L572">    mNewXML.setEnabled(enabled);</span>
+<span class="nc" id="L573">    setXMLEnabled(enabled);</span>
+<span class="nc" id="L574">  }</span>
 
   void showXSDTitle() {
-<span class="nc" id="L575">    setTitle(&quot;XAmple-GG  -  &quot; + xsdFileName + &quot;  :  &lt;noname&gt;.xml&quot;);</span>
-<span class="nc" id="L576">  }</span>
+<span class="nc" id="L577">    setTitle(&quot;XAmple-GG  -  &quot; + xsdFileName + &quot;  :  &lt;noname&gt;.xml&quot;);</span>
+<span class="nc" id="L578">  }</span>
 
   void setXMLEnabled(boolean enabled) {
-<span class="nc" id="L579">    btnSaveXML.setEnabled(enabled);</span>
-<span class="nc" id="L580">    mSaveXML.setEnabled(enabled);</span>
-<span class="nc" id="L581">  }</span>
+<span class="nc" id="L581">    btnSaveXML.setEnabled(enabled);</span>
+<span class="nc" id="L582">    mSaveXML.setEnabled(enabled);</span>
+<span class="nc" id="L583">  }</span>
 
   @Override
   public void actionPerformed(ActionEvent e) {
-<span class="nc" id="L585">    final Object source = e.getSource();</span>
-<span class="nc bnc" id="L586" title="All 4 branches missed.">    if (source == btnOpenXSD || source == mOpenXSD) {</span>
-<span class="nc" id="L587">      openXSD();</span>
-<span class="nc bnc" id="L588" title="All 4 branches missed.">    } else if (source == btnOpenXML || source == mOpenXML) {</span>
-<span class="nc" id="L589">      openXML();</span>
-<span class="nc bnc" id="L590" title="All 4 branches missed.">    } else if (source == btnNewXML || source == mNewXML) {</span>
-<span class="nc" id="L591">      newXML();</span>
-<span class="nc bnc" id="L592" title="All 4 branches missed.">    } else if (source == btnSaveXML || source == mSaveXML) {</span>
-<span class="nc" id="L593">      saveXML();</span>
-<span class="nc bnc" id="L594" title="All 2 branches missed.">    } else if (source == btnHorizSplit) {</span>
-<span class="nc" id="L595">      dblView.setOrientation(JSplitPane.HORIZONTAL_SPLIT);</span>
-<span class="nc bnc" id="L596" title="All 2 branches missed.">    } else if (source == btnVertSplit) {</span>
-<span class="nc" id="L597">      dblView.setOrientation(JSplitPane.VERTICAL_SPLIT);</span>
-<span class="nc bnc" id="L598" title="All 2 branches missed.">    } else if (source == btnSync) {</span>
-<span class="nc" id="L599">      dblView.setSyncSelectNodes(btnSync.getModel().isSelected());</span>
-<span class="nc bnc" id="L600" title="All 2 branches missed.">    } else if (source instanceof JRadioButtonMenuItem) {</span>
-<span class="nc" id="L601">      updateLookAndFeel(((JRadioButtonMenuItem) source).getText());</span>
-<span class="nc bnc" id="L602" title="All 2 branches missed.">    } else if (source == mAbout) {</span>
-<span class="nc" id="L603">      showDlgAbout();</span>
-<span class="nc bnc" id="L604" title="All 2 branches missed.">    } else if (source == mExit) {</span>
-<span class="nc" id="L605">      exit();</span>
+<span class="nc" id="L587">    final Object source = e.getSource();</span>
+<span class="nc bnc" id="L588" title="All 4 branches missed.">    if (source == btnOpenXSD || source == mOpenXSD) {</span>
+<span class="nc" id="L589">      openXSD();</span>
+<span class="nc bnc" id="L590" title="All 4 branches missed.">    } else if (source == btnOpenXML || source == mOpenXML) {</span>
+<span class="nc" id="L591">      openXML();</span>
+<span class="nc bnc" id="L592" title="All 4 branches missed.">    } else if (source == btnNewXML || source == mNewXML) {</span>
+<span class="nc" id="L593">      newXML();</span>
+<span class="nc bnc" id="L594" title="All 4 branches missed.">    } else if (source == btnSaveXML || source == mSaveXML) {</span>
+<span class="nc" id="L595">      saveXML();</span>
+<span class="nc bnc" id="L596" title="All 2 branches missed.">    } else if (source == btnHorizSplit) {</span>
+<span class="nc" id="L597">      dblView.setOrientation(JSplitPane.HORIZONTAL_SPLIT);</span>
+<span class="nc bnc" id="L598" title="All 2 branches missed.">    } else if (source == btnVertSplit) {</span>
+<span class="nc" id="L599">      dblView.setOrientation(JSplitPane.VERTICAL_SPLIT);</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">    } else if (source == btnSync) {</span>
+<span class="nc" id="L601">      dblView.setSyncSelectNodes(btnSync.getModel().isSelected());</span>
+<span class="nc bnc" id="L602" title="All 2 branches missed.">    } else if (source instanceof JRadioButtonMenuItem) {</span>
+<span class="nc" id="L603">      updateLookAndFeel(((JRadioButtonMenuItem) source).getText());</span>
+<span class="nc bnc" id="L604" title="All 2 branches missed.">    } else if (source == mAbout) {</span>
+<span class="nc" id="L605">      showDlgAbout();</span>
+<span class="nc bnc" id="L606" title="All 2 branches missed.">    } else if (source == mExit) {</span>
+<span class="nc" id="L607">      exit();</span>
     }
-<span class="nc" id="L607">  }</span>
+<span class="nc" id="L609">  }</span>
 
   void updateLookAndFeel(String lfName) {
-<span class="nc" id="L610">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
-<span class="nc bnc" id="L611" title="All 4 branches missed.">    if (lf != null &amp;&amp; lf.getName().equals(lfName)) {</span>
-<span class="nc" id="L612">      return;</span>
+<span class="nc" id="L612">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
+<span class="nc bnc" id="L613" title="All 4 branches missed.">    if (lf != null &amp;&amp; lf.getName().equals(lfName)) {</span>
+<span class="nc" id="L614">      return;</span>
     }
     final UIManager.LookAndFeelInfo[] lfi =
-<span class="nc" id="L615">        UIManager.getInstalledLookAndFeels();</span>
-<span class="nc bnc" id="L616" title="All 2 branches missed.">    for (final LookAndFeelInfo element : lfi) {</span>
-<span class="nc bnc" id="L617" title="All 2 branches missed.">      if (element.getName().equals(lfName)) {</span>
+<span class="nc" id="L617">        UIManager.getInstalledLookAndFeels();</span>
+<span class="nc bnc" id="L618" title="All 2 branches missed.">    for (final LookAndFeelInfo element : lfi) {</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">      if (element.getName().equals(lfName)) {</span>
         try {
           // dblView.stopEditing()
-<span class="nc" id="L620">          UIManager.setLookAndFeel(element.getClassName());</span>
-<span class="nc" id="L621">          SwingUtilities.updateComponentTreeUI(this);</span>
-<span class="nc" id="L622">          final FileFilter currFilter = fileDlg.getFileFilter();</span>
-<span class="nc" id="L623">          fileDlg.setAcceptAllFileFilterUsed(</span>
-<span class="nc bnc" id="L624" title="All 2 branches missed.">              fileDlg.getAcceptAllFileFilter() == null);</span>
-<span class="nc" id="L625">          SwingUtilities.updateComponentTreeUI(fileDlg);</span>
-<span class="nc" id="L626">          fileDlg.setAcceptAllFileFilterUsed(true);</span>
-<span class="nc" id="L627">          fileDlg.setFileFilter(currFilter);</span>
-<span class="nc" id="L628">          SwingUtilities.updateComponentTreeUI(fFileDialog);</span>
-<span class="nc" id="L629">          return;</span>
-<span class="nc" id="L630">        } catch (final Exception ignore) {</span>
+<span class="nc" id="L622">          UIManager.setLookAndFeel(element.getClassName());</span>
+<span class="nc" id="L623">          SwingUtilities.updateComponentTreeUI(this);</span>
+<span class="nc" id="L624">          final FileFilter currFilter = fileDlg.getFileFilter();</span>
+<span class="nc" id="L625">          fileDlg.setAcceptAllFileFilterUsed(</span>
+<span class="nc bnc" id="L626" title="All 2 branches missed.">              fileDlg.getAcceptAllFileFilter() == null);</span>
+<span class="nc" id="L627">          SwingUtilities.updateComponentTreeUI(fileDlg);</span>
+<span class="nc" id="L628">          fileDlg.setAcceptAllFileFilterUsed(true);</span>
+<span class="nc" id="L629">          fileDlg.setFileFilter(currFilter);</span>
+<span class="nc" id="L630">          SwingUtilities.updateComponentTreeUI(fFileDialog);</span>
+<span class="nc" id="L631">          return;</span>
+<span class="nc" id="L632">        } catch (final Exception ignore) {</span>
           // nothing
         }
       }
     }
-<span class="nc" id="L635">  }</span>
+<span class="nc" id="L637">  }</span>
 
   void showDlgAbout() {
-<span class="nc" id="L638">    final DlgAbout dlg = new DlgAbout(this);</span>
-<span class="nc" id="L639">    final Dimension dlgSize = dlg.getPreferredSize();</span>
-<span class="nc" id="L640">    final Dimension frmSize = getSize();</span>
-<span class="nc" id="L641">    final Point loc = getLocation();</span>
-<span class="nc" id="L642">    dlg.setLocation((frmSize.width - dlgSize.width) / 2 + loc.x,</span>
+<span class="nc" id="L640">    final DlgAbout dlg = new DlgAbout(this);</span>
+<span class="nc" id="L641">    final Dimension dlgSize = dlg.getPreferredSize();</span>
+<span class="nc" id="L642">    final Dimension frmSize = getSize();</span>
+<span class="nc" id="L643">    final Point loc = getLocation();</span>
+<span class="nc" id="L644">    dlg.setLocation((frmSize.width - dlgSize.width) / 2 + loc.x,</span>
                     (frmSize.height - dlgSize.height) / 2 + loc.y);
-<span class="nc" id="L644">    dlg.setModal(true);</span>
-<span class="nc" id="L645">    dlg.setVisible(true);</span>
-<span class="nc" id="L646">  }</span>
+<span class="nc" id="L646">    dlg.setModal(true);</span>
+<span class="nc" id="L647">    dlg.setVisible(true);</span>
+<span class="nc" id="L648">  }</span>
 
   void openXSD() {
-<span class="nc bnc" id="L649" title="All 2 branches missed.">    if (!confirmation()) {</span>
-<span class="nc" id="L650">      return;</span>
+<span class="nc bnc" id="L651" title="All 2 branches missed.">    if (!confirmation()) {</span>
+<span class="nc" id="L652">      return;</span>
     }
-<span class="nc" id="L652">    fileDlg.setFileFilter(xsdFilter);</span>
-<span class="nc bnc" id="L653" title="All 2 branches missed.">    if (fileDlg.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {</span>
-<span class="nc" id="L654">      final File file = fileDlg.getSelectedFile();</span>
-<span class="nc bnc" id="L655" title="All 2 branches missed.">      if (file == null) {</span>
-<span class="nc" id="L656">        return;</span>
+<span class="nc" id="L654">    fileDlg.setFileFilter(xsdFilter);</span>
+<span class="nc bnc" id="L655" title="All 2 branches missed.">    if (fileDlg.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {</span>
+<span class="nc" id="L656">      final File file = fileDlg.getSelectedFile();</span>
+<span class="nc bnc" id="L657" title="All 2 branches missed.">      if (file == null) {</span>
+<span class="nc" id="L658">        return;</span>
       }
-<span class="nc" id="L658">      loadXMLSchema(file);</span>
+<span class="nc" id="L660">      loadXMLSchema(file);</span>
     }
-<span class="nc" id="L660">  }</span>
+<span class="nc" id="L662">  }</span>
 
   void openXML() {
-<span class="nc bnc" id="L663" title="All 2 branches missed.">    if (!confirmation()) {</span>
-<span class="nc" id="L664">      return;</span>
+<span class="nc bnc" id="L665" title="All 2 branches missed.">    if (!confirmation()) {</span>
+<span class="nc" id="L666">      return;</span>
     }
-<span class="nc" id="L666">    fileDlg.setFileFilter(xmlFilter);</span>
-<span class="nc bnc" id="L667" title="All 2 branches missed.">    if (fileDlg.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {</span>
-<span class="nc" id="L668">      final File file = fileDlg.getSelectedFile();</span>
-<span class="nc bnc" id="L669" title="All 2 branches missed.">      if (file == null) {</span>
-<span class="nc" id="L670">        return;</span>
+<span class="nc" id="L668">    fileDlg.setFileFilter(xmlFilter);</span>
+<span class="nc bnc" id="L669" title="All 2 branches missed.">    if (fileDlg.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {</span>
+<span class="nc" id="L670">      final File file = fileDlg.getSelectedFile();</span>
+<span class="nc bnc" id="L671" title="All 2 branches missed.">      if (file == null) {</span>
+<span class="nc" id="L672">        return;</span>
       }
-<span class="nc" id="L672">      loadXMLDocument(file);</span>
+<span class="nc" id="L674">      loadXMLDocument(file);</span>
     }
-<span class="nc" id="L674">  }</span>
+<span class="nc" id="L676">  }</span>
 
   void newXML() {
-<span class="nc bnc" id="L677" title="All 2 branches missed.">    if (!confirmation()) {</span>
-<span class="nc" id="L678">      return;</span>
+<span class="nc bnc" id="L679" title="All 2 branches missed.">    if (!confirmation()) {</span>
+<span class="nc" id="L680">      return;</span>
     }
     try {
-<span class="nc bnc" id="L681" title="All 2 branches missed.">      if (model.getSchemaURL() == null) {</span>
-<span class="nc" id="L682">        throw new FXModelException(&quot;No XML Configuration Schema loaded&quot;);</span>
+<span class="nc bnc" id="L683" title="All 2 branches missed.">      if (model.getSchemaURL() == null) {</span>
+<span class="nc" id="L684">        throw new FXModelException(&quot;No XML Configuration Schema loaded&quot;);</span>
       }
-<span class="nc" id="L684">      final NewDocumentDialog dlg = new NewDocumentDialog(this, model);</span>
-<span class="nc" id="L685">      dlg.pack();</span>
-<span class="nc" id="L686">      dlg.setLocationRelativeTo(dblView);</span>
-<span class="nc" id="L687">      dlg.setVisible(true);</span>
-<span class="nc bnc" id="L688" title="All 2 branches missed.">      if (!dlg.isStatusOK()) {</span>
-<span class="nc" id="L689">        return;</span>
+<span class="nc" id="L686">      final NewDocumentDialog dlg = new NewDocumentDialog(this, model);</span>
+<span class="nc" id="L687">      dlg.pack();</span>
+<span class="nc" id="L688">      dlg.setLocationRelativeTo(dblView);</span>
+<span class="nc" id="L689">      dlg.setVisible(true);</span>
+<span class="nc bnc" id="L690" title="All 2 branches missed.">      if (!dlg.isStatusOK()) {</span>
+<span class="nc" id="L691">        return;</span>
       }
-<span class="nc" id="L691">      model.newDocument(model.getSchemaURL(), dlg.getRootNamespace(),</span>
-<span class="nc" id="L692">                        dlg.getRootElementName());</span>
-<span class="nc" id="L693">      setXMLEnabled(true);</span>
-<span class="nc" id="L694">    } catch (final Exception ex) {</span>
-<span class="nc" id="L695">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
-<span class="nc" id="L696">      setXMLEnabled(false);</span>
-<span class="nc" id="L697">      dblView.showErrorMessage(&quot;Error: &quot; + ex.getMessage());</span>
-<span class="nc" id="L698">      JOptionPane</span>
-<span class="nc" id="L699">          .showMessageDialog(this, &quot;Can't open new XML Configuration Document&quot;,</span>
+<span class="nc" id="L693">      model.newDocument(model.getSchemaURL(), dlg.getRootNamespace(),</span>
+<span class="nc" id="L694">                        dlg.getRootElementName());</span>
+<span class="nc" id="L695">      setXMLEnabled(true);</span>
+<span class="nc" id="L696">    } catch (final Exception ex) {</span>
+<span class="nc" id="L697">      SysErrLogger.FAKE_LOGGER.syserr(ex);</span>
+<span class="nc" id="L698">      setXMLEnabled(false);</span>
+<span class="nc" id="L699">      dblView.showErrorMessage(&quot;Error: &quot; + ex.getMessage());</span>
+<span class="nc" id="L700">      JOptionPane</span>
+<span class="nc" id="L701">          .showMessageDialog(this, &quot;Can't open new XML Configuration Document&quot;,</span>
                              &quot;Error&quot;, JOptionPane.ERROR_MESSAGE);
-<span class="nc" id="L701">    }</span>
-<span class="nc" id="L702">    showXSDTitle();</span>
-<span class="nc" id="L703">  }</span>
+<span class="nc" id="L703">    }</span>
+<span class="nc" id="L704">    showXSDTitle();</span>
+<span class="nc" id="L705">  }</span>
 
   void exit() {
-<span class="nc bnc" id="L706" title="All 2 branches missed.">    if (!confirmation()) {</span>
-<span class="nc" id="L707">      return;</span>
+<span class="nc bnc" id="L708" title="All 2 branches missed.">    if (!confirmation()) {</span>
+<span class="nc" id="L709">      return;</span>
     }
-<span class="nc" id="L709">    saveRuntimeProperties();</span>
-<span class="nc" id="L710">    System.exit(0);//NOSONAR</span>
-<span class="nc" id="L711">  }</span>
+<span class="nc" id="L711">    saveRuntimeProperties();</span>
+<span class="nc" id="L712">    System.exit(0);//NOSONAR</span>
+<span class="nc" id="L713">  }</span>
 
   @Override
   public void newDocumentLoaded(FXStatusEvent e) {
     // Nothing
-<span class="nc" id="L716">  }</span>
+<span class="nc" id="L718">  }</span>
 
   @Override
   public void docValidityStatusChanged(FXStatusEvent e) {
     // Nothing
-<span class="nc" id="L721">  }</span>
+<span class="nc" id="L723">  }</span>
 
   class TheFileFilter extends FileFilter {
     final String extension;
     final String description;
 
-<span class="nc" id="L727">    TheFileFilter(String extension, String description) {</span>
-<span class="nc" id="L728">      this.extension = extension;</span>
-<span class="nc" id="L729">      this.description = description;</span>
-<span class="nc" id="L730">    }</span>
+<span class="nc" id="L729">    TheFileFilter(String extension, String description) {</span>
+<span class="nc" id="L730">      this.extension = extension;</span>
+<span class="nc" id="L731">      this.description = description;</span>
+<span class="nc" id="L732">    }</span>
 
     @Override
     public boolean accept(File f) {
-<span class="nc bnc" id="L734" title="All 2 branches missed.">      if (f.isDirectory()) {</span>
-<span class="nc" id="L735">        return true;</span>
+<span class="nc bnc" id="L736" title="All 2 branches missed.">      if (f.isDirectory()) {</span>
+<span class="nc" id="L737">        return true;</span>
       }
       String ext;
-<span class="nc" id="L738">      final String name = f.getName();</span>
-<span class="nc" id="L739">      final int i = name.lastIndexOf('.');</span>
-<span class="nc bnc" id="L740" title="All 4 branches missed.">      if (i &gt; 0 &amp;&amp; i &lt; name.length() - 1) {</span>
-<span class="nc" id="L741">        ext = name.substring(i + 1).toLowerCase();</span>
+<span class="nc" id="L740">      final String name = f.getName();</span>
+<span class="nc" id="L741">      final int i = name.lastIndexOf('.');</span>
+<span class="nc bnc" id="L742" title="All 4 branches missed.">      if (i &gt; 0 &amp;&amp; i &lt; name.length() - 1) {</span>
+<span class="nc" id="L743">        ext = name.substring(i + 1).toLowerCase();</span>
       } else {
-<span class="nc" id="L743">        ext = &quot;&quot;;</span>
+<span class="nc" id="L745">        ext = &quot;&quot;;</span>
       }
-<span class="nc" id="L745">      return ext.equals(extension);</span>
+<span class="nc" id="L747">      return ext.equals(extension);</span>
     }
 
     @Override
     public String getDescription() {
-<span class="nc" id="L750">      return description;</span>
+<span class="nc" id="L752">      return description;</span>
     }
   }
 
@@ -757,17 +759,17 @@ public class XAmple extends JFrame
      */
     private static final long serialVersionUID = 2143658918908443792L;
 
-<span class="nc" id="L760">    Btn(ImageIcon icon, String toolTipText) {</span>
-<span class="nc" id="L761">      super(icon);</span>
-<span class="nc" id="L762">      setFocusPainted(false);</span>
-<span class="nc" id="L763">      setDisabledIcon(FadingFilter.fade(icon));</span>
-<span class="nc" id="L764">      setToolTipText(toolTipText);</span>
-<span class="nc" id="L765">      setEnabled(false);</span>
-<span class="nc" id="L766">      setPreferredSize(new Dimension(35, 27));</span>
-<span class="nc" id="L767">      setMinimumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L768">      setMaximumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L769">      addActionListener(XAmple.this);</span>
-<span class="nc" id="L770">    }</span>
+<span class="nc" id="L762">    Btn(ImageIcon icon, String toolTipText) {</span>
+<span class="nc" id="L763">      super(icon);</span>
+<span class="nc" id="L764">      setFocusPainted(false);</span>
+<span class="nc" id="L765">      setDisabledIcon(FadingFilter.fade(icon));</span>
+<span class="nc" id="L766">      setToolTipText(toolTipText);</span>
+<span class="nc" id="L767">      setEnabled(false);</span>
+<span class="nc" id="L768">      setPreferredSize(new Dimension(35, 27));</span>
+<span class="nc" id="L769">      setMinimumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L770">      setMaximumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L771">      addActionListener(XAmple.this);</span>
+<span class="nc" id="L772">    }</span>
   }
 
   class ToggleBtn extends JToggleButton {
@@ -776,16 +778,16 @@ public class XAmple extends JFrame
      */
     private static final long serialVersionUID = 4742196038942810167L;
 
-<span class="nc" id="L779">    ToggleBtn(ImageIcon icon, String toolTipText) {</span>
-<span class="nc" id="L780">      super(icon);</span>
-<span class="nc" id="L781">      setFocusPainted(false);</span>
-<span class="nc" id="L782">      setDisabledIcon(FadingFilter.fade(icon));</span>
-<span class="nc" id="L783">      setToolTipText(toolTipText);</span>
-<span class="nc" id="L784">      setPreferredSize(new Dimension(35, 27));</span>
-<span class="nc" id="L785">      setMinimumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L786">      setMaximumSize(new Dimension(35, 27));</span>
-<span class="nc" id="L787">      addActionListener(XAmple.this);</span>
-<span class="nc" id="L788">    }</span>
+<span class="nc" id="L781">    ToggleBtn(ImageIcon icon, String toolTipText) {</span>
+<span class="nc" id="L782">      super(icon);</span>
+<span class="nc" id="L783">      setFocusPainted(false);</span>
+<span class="nc" id="L784">      setDisabledIcon(FadingFilter.fade(icon));</span>
+<span class="nc" id="L785">      setToolTipText(toolTipText);</span>
+<span class="nc" id="L786">      setPreferredSize(new Dimension(35, 27));</span>
+<span class="nc" id="L787">      setMinimumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L788">      setMaximumSize(new Dimension(35, 27));</span>
+<span class="nc" id="L789">      addActionListener(XAmple.this);</span>
+<span class="nc" id="L790">    }</span>
   }
 
 }

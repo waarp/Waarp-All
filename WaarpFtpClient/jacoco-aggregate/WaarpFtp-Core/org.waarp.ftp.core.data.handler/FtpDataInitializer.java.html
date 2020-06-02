@@ -63,10 +63,10 @@ public class FtpDataInitializer extends ChannelInitializer&lt;SocketChannel&gt; 
    */
   public static final String HANDLER = &quot;handler&quot;;
 
-<span class="fc" id="L66">  protected static final FtpDataTypeCodec ftpDataTypeCodec =</span>
+<span class="nc" id="L66">  protected static final FtpDataTypeCodec ftpDataTypeCodec =</span>
       new FtpDataTypeCodec(TransferType.ASCII, TransferSubType.NONPRINT);
 
-<span class="fc" id="L69">  protected static final FtpDataStructureCodec ftpDataStructureCodec =</span>
+<span class="nc" id="L69">  protected static final FtpDataStructureCodec ftpDataStructureCodec =</span>
       new FtpDataStructureCodec(TransferStructure.FILE);
 
   /**
@@ -93,39 +93,39 @@ public class FtpDataInitializer extends ChannelInitializer&lt;SocketChannel&gt; 
    */
   public FtpDataInitializer(
       Class&lt;? extends DataBusinessHandler&gt; dataBusinessHandler,
-<span class="fc" id="L96">      FtpConfiguration configuration, boolean active) {</span>
-<span class="fc" id="L97">    this.dataBusinessHandler = dataBusinessHandler;</span>
-<span class="fc" id="L98">    this.configuration = configuration;</span>
-<span class="fc" id="L99">    isActive = active;</span>
-<span class="fc" id="L100">  }</span>
+<span class="nc" id="L96">      FtpConfiguration configuration, boolean active) {</span>
+<span class="nc" id="L97">    this.dataBusinessHandler = dataBusinessHandler;</span>
+<span class="nc" id="L98">    this.configuration = configuration;</span>
+<span class="nc" id="L99">    isActive = active;</span>
+<span class="nc" id="L100">  }</span>
 
   /**
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
   public void initChannel(SocketChannel ch) throws Exception {
-<span class="fc" id="L107">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="nc" id="L107">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Add default codec but they will change during the channelConnected
-<span class="fc" id="L109">    pipeline.addFirst(CODEC_MODE, new FtpDataModeCodec(TransferMode.STREAM,</span>
+<span class="nc" id="L109">    pipeline.addFirst(CODEC_MODE, new FtpDataModeCodec(TransferMode.STREAM,</span>
                                                        TransferStructure.FILE));
-<span class="fc" id="L111">    pipeline.addLast(CODEC_LIMIT, configuration.getFtpInternalConfiguration()</span>
-<span class="fc" id="L112">                                               .getGlobalTrafficShapingHandler());</span>
-<span class="fc" id="L113">    final ChannelTrafficShapingHandler limitChannel =</span>
-<span class="fc" id="L114">        configuration.getFtpInternalConfiguration()</span>
-<span class="fc" id="L115">                     .newChannelTrafficShapingHandler();</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (limitChannel != null) {</span>
+<span class="nc" id="L111">    pipeline.addLast(CODEC_LIMIT, configuration.getFtpInternalConfiguration()</span>
+<span class="nc" id="L112">                                               .getGlobalTrafficShapingHandler());</span>
+<span class="nc" id="L113">    final ChannelTrafficShapingHandler limitChannel =</span>
+<span class="nc" id="L114">        configuration.getFtpInternalConfiguration()</span>
+<span class="nc" id="L115">                     .newChannelTrafficShapingHandler();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (limitChannel != null) {</span>
 <span class="nc" id="L117">      pipeline.addLast(CODEC_LIMIT + &quot;CHANNEL&quot;, limitChannel);</span>
     }
-<span class="fc" id="L119">    pipeline.addLast(CODEC_TYPE, ftpDataTypeCodec);</span>
-<span class="fc" id="L120">    pipeline.addLast(CODEC_STRUCTURE, ftpDataStructureCodec);</span>
+<span class="nc" id="L119">    pipeline.addLast(CODEC_TYPE, ftpDataTypeCodec);</span>
+<span class="nc" id="L120">    pipeline.addLast(CODEC_STRUCTURE, ftpDataStructureCodec);</span>
     // and then business logic. New one on every connection
-<span class="fc" id="L122">    final DataBusinessHandler newbusiness =</span>
-<span class="fc" id="L123">        dataBusinessHandler.getDeclaredConstructor().newInstance();</span>
-<span class="fc" id="L124">    final DataNetworkHandler newNetworkHandler =</span>
+<span class="nc" id="L122">    final DataBusinessHandler newbusiness =</span>
+<span class="nc" id="L123">        dataBusinessHandler.getDeclaredConstructor().newInstance();</span>
+<span class="nc" id="L124">    final DataNetworkHandler newNetworkHandler =</span>
         new DataNetworkHandler(configuration, newbusiness, isActive);
-<span class="fc" id="L126">    pipeline</span>
-<span class="fc" id="L127">        .addLast(configuration.getFtpInternalConfiguration().getDataExecutor(),</span>
+<span class="nc" id="L126">    pipeline</span>
+<span class="nc" id="L127">        .addLast(configuration.getFtpInternalConfiguration().getDataExecutor(),</span>
                  HANDLER, newNetworkHandler);
-<span class="fc" id="L129">  }</span>
+<span class="nc" id="L129">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

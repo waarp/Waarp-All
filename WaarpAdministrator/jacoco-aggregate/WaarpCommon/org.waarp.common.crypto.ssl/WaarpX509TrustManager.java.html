@@ -31,7 +31,7 @@ import java.security.cert.X509Certificate;
  * Waarp X509 Trust Manager implementation
  */
 public class WaarpX509TrustManager implements X509TrustManager {
-<span class="fc" id="L34">  private static final X509Certificate[] X_509_CERTIFICATES_0_LENGTH =</span>
+<span class="nc" id="L34">  private static final X509Certificate[] X_509_CERTIFICATES_0_LENGTH =</span>
       new X509Certificate[0];
   /**
    * First using default X509TrustManager returned by the global TrustManager.
@@ -43,9 +43,9 @@ public class WaarpX509TrustManager implements X509TrustManager {
   /**
    * Create an &quot;always-valid&quot; X509TrustManager
    */
-<span class="fc" id="L46">  public WaarpX509TrustManager() {</span>
-<span class="fc" id="L47">    defaultX509TrustManager = null;</span>
-<span class="fc" id="L48">  }</span>
+<span class="nc" id="L46">  public WaarpX509TrustManager() {</span>
+<span class="nc" id="L47">    defaultX509TrustManager = null;</span>
+<span class="nc" id="L48">  }</span>
 
   /**
    * Create a &quot;default&quot; X509TrustManager
@@ -54,15 +54,15 @@ public class WaarpX509TrustManager implements X509TrustManager {
    *
    * @throws CryptoException
    */
-<span class="fc" id="L57">  public WaarpX509TrustManager(TrustManagerFactory tmf) throws CryptoException {</span>
-<span class="fc" id="L58">    final TrustManager[] tms = tmf.getTrustManagers();</span>
+<span class="nc" id="L57">  public WaarpX509TrustManager(TrustManagerFactory tmf) throws CryptoException {</span>
+<span class="nc" id="L58">    final TrustManager[] tms = tmf.getTrustManagers();</span>
     /**
      * Iterate over the returned trustmanagers, look for an instance of X509TrustManager and use it as the default
      */
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    for (final TrustManager tm : tms) {</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">      if (tm instanceof X509TrustManager) {</span>
-<span class="fc" id="L64">        defaultX509TrustManager = (X509TrustManager) tm;</span>
-<span class="fc" id="L65">        return;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    for (final TrustManager tm : tms) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">      if (tm instanceof X509TrustManager) {</span>
+<span class="nc" id="L64">        defaultX509TrustManager = (X509TrustManager) tm;</span>
+<span class="nc" id="L65">        return;</span>
       }
     }
     /**
@@ -74,27 +74,27 @@ public class WaarpX509TrustManager implements X509TrustManager {
   @Override
   public void checkClientTrusted(X509Certificate[] arg0, String arg1)
       throws CertificateException {
-<span class="pc bpc" id="L77" title="1 of 2 branches missed.">    if (defaultX509TrustManager == null) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (defaultX509TrustManager == null) {</span>
 <span class="nc" id="L78">      return; // valid</span>
     }
-<span class="fc" id="L80">    defaultX509TrustManager.checkClientTrusted(arg0, arg1);</span>
-<span class="fc" id="L81">  }</span>
+<span class="nc" id="L80">    defaultX509TrustManager.checkClientTrusted(arg0, arg1);</span>
+<span class="nc" id="L81">  }</span>
 
   @Override
   public void checkServerTrusted(X509Certificate[] arg0, String arg1)
       throws CertificateException {
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">    if (defaultX509TrustManager == null) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (defaultX509TrustManager == null) {</span>
 <span class="nc" id="L87">      return; // valid</span>
     }
-<span class="fc" id="L89">    defaultX509TrustManager.checkServerTrusted(arg0, arg1);</span>
-<span class="fc" id="L90">  }</span>
+<span class="nc" id="L89">    defaultX509TrustManager.checkServerTrusted(arg0, arg1);</span>
+<span class="nc" id="L90">  }</span>
 
   @Override
   public X509Certificate[] getAcceptedIssuers() {
-<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (defaultX509TrustManager == null) {</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (defaultX509TrustManager == null) {</span>
 <span class="nc" id="L95">      return X_509_CERTIFICATES_0_LENGTH; // none valid</span>
     }
-<span class="fc" id="L97">    return defaultX509TrustManager.getAcceptedIssuers();</span>
+<span class="nc" id="L97">    return defaultX509TrustManager.getAcceptedIssuers();</span>
   }
 
 }

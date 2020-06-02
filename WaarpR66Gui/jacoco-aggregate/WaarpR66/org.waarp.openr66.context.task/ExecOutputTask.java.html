@@ -58,8 +58,8 @@ public class ExecOutputTask extends AbstractExecTask {
   /**
    * Internal Logger
    */
-<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(ExecOutputTask.class);</span>
+<span class="nc" id="L61">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L62">      WaarpLoggerFactory.getLogger(ExecOutputTask.class);</span>
   /**
    * In the final line output, the filename must prefixed by the following
    * field
@@ -74,8 +74,8 @@ public class ExecOutputTask extends AbstractExecTask {
    */
   public ExecOutputTask(String argRule, int delay, String argTransfer,
                         R66Session session) {
-<span class="fc" id="L77">    super(TaskType.EXECOUTPUT, delay, argRule, argTransfer, session);</span>
-<span class="fc" id="L78">  }</span>
+<span class="nc" id="L77">    super(TaskType.EXECOUTPUT, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L78">  }</span>
 
   @Override
   public void run() {
@@ -85,13 +85,13 @@ public class ExecOutputTask extends AbstractExecTask {
      * else 1 for a warning else as an error. In case of an error (&gt; 0), all the line from output will be send
      * back to the partner with the Error code. No change is made to the file.
      */
-<span class="fc" id="L88">    logger.info(&quot;ExecOutput with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
+<span class="nc" id="L88">    logger.info(&quot;ExecOutput with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
                 session);
-<span class="fc" id="L90">    final String finalname = applyTransferSubstitutions(argRule);</span>
+<span class="nc" id="L90">    final String finalname = applyTransferSubstitutions(argRule);</span>
     //
     // Force the WaitForValidation
-<span class="fc" id="L93">    waitForValidation = true;</span>
-<span class="pc bpc" id="L94" title="3 of 4 branches missed.">    if (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {</span>
+<span class="nc" id="L93">    waitForValidation = true;</span>
+<span class="nc bnc" id="L94" title="All 4 branches missed.">    if (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {</span>
 <span class="nc" id="L95">      final LocalExecClient localExecClient = new LocalExecClient();</span>
 <span class="nc bnc" id="L96" title="All 2 branches missed.">      if (localExecClient.connect()) {</span>
 <span class="nc" id="L97">        localExecClient.runOneCommand(finalname, delay, waitForValidation,</span>
@@ -103,55 +103,55 @@ public class ExecOutputTask extends AbstractExecTask {
       } // else continue
     }
 
-<span class="fc" id="L106">    PrepareCommandExec prepareCommandExec =</span>
-<span class="fc" id="L107">        new PrepareCommandExec(finalname, false, waitForValidation).invoke();</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
+<span class="nc" id="L106">    PrepareCommandExec prepareCommandExec =</span>
+<span class="nc" id="L107">        new PrepareCommandExec(finalname, false, waitForValidation).invoke();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
 <span class="nc" id="L109">      return;</span>
     }
-<span class="fc" id="L111">    CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
-<span class="fc" id="L112">    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();</span>
-<span class="fc" id="L113">    PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
-<span class="fc" id="L114">    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
-<span class="fc" id="L115">    PumpStreamHandler pumpStreamHandler =</span>
-<span class="fc" id="L116">        prepareCommandExec.getPumpStreamHandler();</span>
-<span class="fc" id="L117">    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
+<span class="nc" id="L111">    CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
+<span class="nc" id="L112">    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();</span>
+<span class="nc" id="L113">    PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
+<span class="nc" id="L114">    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
+<span class="nc" id="L115">    PumpStreamHandler pumpStreamHandler =</span>
+<span class="nc" id="L116">        prepareCommandExec.getPumpStreamHandler();</span>
+<span class="nc" id="L117">    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
 
-<span class="fc" id="L119">    final AllLineReader allLineReader = new AllLineReader(inputStream);</span>
-<span class="fc" id="L120">    final Thread thread = new Thread(allLineReader, &quot;ExecRename&quot; +</span>
-<span class="fc" id="L121">                                                    session.getRunner()</span>
-<span class="fc" id="L122">                                                           .getSpecialId());</span>
-<span class="fc" id="L123">    thread.setDaemon(true);</span>
-<span class="fc" id="L124">    Configuration.configuration.getExecutorService().execute(thread);</span>
-<span class="fc" id="L125">    ExecuteCommand executeCommand =</span>
+<span class="nc" id="L119">    final AllLineReader allLineReader = new AllLineReader(inputStream);</span>
+<span class="nc" id="L120">    final Thread thread = new Thread(allLineReader, &quot;ExecRename&quot; +</span>
+<span class="nc" id="L121">                                                    session.getRunner()</span>
+<span class="nc" id="L122">                                                           .getSpecialId());</span>
+<span class="nc" id="L123">    thread.setDaemon(true);</span>
+<span class="nc" id="L124">    Configuration.configuration.getExecutorService().execute(thread);</span>
+<span class="nc" id="L125">    ExecuteCommand executeCommand =</span>
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
-<span class="fc" id="L127">                           outputStream, pumpStreamHandler, thread).invoke();</span>
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (executeCommand.isError()) {</span>
+<span class="nc" id="L127">                           outputStream, pumpStreamHandler, thread).invoke();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (executeCommand.isError()) {</span>
 <span class="nc" id="L129">      return;</span>
     }
-<span class="fc" id="L131">    int status = executeCommand.getStatus();</span>
+<span class="nc" id="L131">    int status = executeCommand.getStatus();</span>
     String newname;
-<span class="pc bpc" id="L133" title="3 of 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
 <span class="nc bnc" id="L134" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
       // kill by the watchdoc (time out)
 <span class="nc" id="L136">      status = -1;</span>
 <span class="nc" id="L137">      newname = &quot;TimeOut&quot;;</span>
     } else {
-<span class="fc" id="L139">      newname = allLineReader.getLastLine().toString();</span>
+<span class="nc" id="L139">      newname = allLineReader.getLastLine().toString();</span>
     }
-<span class="fc" id="L141">    finalizeExec(status, newname, commandLine.toString());</span>
-<span class="fc" id="L142">  }</span>
+<span class="nc" id="L141">    finalizeExec(status, newname, commandLine.toString());</span>
+<span class="nc" id="L142">  }</span>
 
   private void finalizeExec(int status, String newName, String commandLine) {
-<span class="fc" id="L145">    String newname = newName;</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">    if (status == 0) {</span>
-<span class="fc" id="L147">      final R66Result result =</span>
+<span class="nc" id="L145">    String newname = newName;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (status == 0) {</span>
+<span class="nc" id="L147">      final R66Result result =</span>
           new R66Result(session, true, ErrorCode.CompleteOk,
-<span class="fc" id="L149">                        session.getRunner());</span>
-<span class="fc" id="L150">      result.setOther(newName);</span>
-<span class="fc" id="L151">      futureCompletion.setResult(result);</span>
-<span class="fc" id="L152">      futureCompletion.setSuccess();</span>
-<span class="fc" id="L153">      logger.info(&quot;Exec OK with {} returns {}&quot;, commandLine, newname);</span>
-<span class="pc bnc" id="L154" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L149">                        session.getRunner());</span>
+<span class="nc" id="L150">      result.setOther(newName);</span>
+<span class="nc" id="L151">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L152">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L153">      logger.info(&quot;Exec OK with {} returns {}&quot;, commandLine, newname);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    } else if (status == 1) {</span>
 <span class="nc" id="L155">      final R66Result result =</span>
 <span class="nc" id="L156">          new R66Result(session, true, ErrorCode.Warning, session.getRunner());</span>
 <span class="nc" id="L157">      result.setOther(newName);</span>
@@ -191,7 +191,7 @@ public class ExecOutputTask extends AbstractExecTask {
           &quot;&lt;STATUS&gt;&quot; + status + &quot;&lt;/STATUS&gt;&lt;ERROR&gt;&quot; + newname + &quot;&lt;/ERROR&gt;&quot;);
 <span class="nc" id="L192">      futureCompletion.setFailure(exc);</span>
     }
-<span class="fc" id="L194">  }</span>
+<span class="nc" id="L194">  }</span>
 
   @Override
   void finalizeFromError(Runnable threadReader, int status,

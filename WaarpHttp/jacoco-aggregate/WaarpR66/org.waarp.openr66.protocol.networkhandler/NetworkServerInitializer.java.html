@@ -45,36 +45,36 @@ public class NetworkServerInitializer
 
   protected final boolean server;
 
-<span class="fc" id="L48">  public NetworkServerInitializer(boolean server) {</span>
-<span class="fc" id="L49">    this.server = server;</span>
-<span class="fc" id="L50">  }</span>
+<span class="nc" id="L48">  public NetworkServerInitializer(boolean server) {</span>
+<span class="nc" id="L49">    this.server = server;</span>
+<span class="nc" id="L50">  }</span>
 
   @Override
   protected void initChannel(SocketChannel ch) throws Exception {
-<span class="fc" id="L54">    final ChannelPipeline pipeline = ch.pipeline();</span>
-<span class="fc" id="L55">    pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0,</span>
+<span class="nc" id="L54">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="nc" id="L55">    pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0,</span>
                                                    Configuration.configuration
-<span class="fc" id="L57">                                                       .getTimeoutCon(),</span>
+<span class="nc" id="L57">                                                       .getTimeoutCon(),</span>
                                                    TimeUnit.MILLISECONDS));
     // Global limitation
-<span class="fc" id="L60">    final GlobalTrafficShapingHandler handler =</span>
-<span class="fc" id="L61">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (handler == null) {</span>
+<span class="nc" id="L60">    final GlobalTrafficShapingHandler handler =</span>
+<span class="nc" id="L61">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (handler == null) {</span>
 <span class="nc" id="L63">      throw new OpenR66ProtocolNetworkException(</span>
           &quot;Error at pipeline initialization,&quot; +
           &quot; GlobalTrafficShapingHandler configured.&quot;);
     }
-<span class="fc" id="L67">    pipeline.addLast(LIMITGLOBAL, handler);</span>
+<span class="nc" id="L67">    pipeline.addLast(LIMITGLOBAL, handler);</span>
     // Per channel limitation
-<span class="fc" id="L69">    pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(</span>
-<span class="fc" id="L70">        Configuration.configuration.getServerChannelWriteLimit(),</span>
-<span class="fc" id="L71">        Configuration.configuration.getServerChannelReadLimit(),</span>
-<span class="fc" id="L72">        Configuration.configuration.getDelayLimit(),</span>
-<span class="fc" id="L73">        Configuration.configuration.getTimeoutCon()));</span>
-<span class="fc" id="L74">    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());</span>
-<span class="fc" id="L75">    pipeline</span>
-<span class="fc" id="L76">        .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,</span>
+<span class="nc" id="L69">    pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(</span>
+<span class="nc" id="L70">        Configuration.configuration.getServerChannelWriteLimit(),</span>
+<span class="nc" id="L71">        Configuration.configuration.getServerChannelReadLimit(),</span>
+<span class="nc" id="L72">        Configuration.configuration.getDelayLimit(),</span>
+<span class="nc" id="L73">        Configuration.configuration.getTimeoutCon()));</span>
+<span class="nc" id="L74">    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());</span>
+<span class="nc" id="L75">    pipeline</span>
+<span class="nc" id="L76">        .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,</span>
                  new NetworkServerHandler(server));
-<span class="fc" id="L78">  }</span>
+<span class="nc" id="L78">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

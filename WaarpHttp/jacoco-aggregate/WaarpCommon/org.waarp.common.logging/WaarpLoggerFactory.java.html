@@ -62,24 +62,24 @@ import io.netty.util.internal.logging.Slf4JLoggerFactory;
 public abstract class WaarpLoggerFactory {
   private static volatile WaarpLoggerFactory defaultFactory;
   protected static WaarpLogLevel currentLevel;
-<span class="fc" id="L65">  static String localName = null;</span>
+<span class="nc" id="L65">  static String localName = null;</span>
 
   static {
-<span class="fc" id="L68">    final String name = WaarpLoggerFactory.class.getName();</span>
+<span class="nc" id="L68">    final String name = WaarpLoggerFactory.class.getName();</span>
     WaarpLoggerFactory f;
     try {
-<span class="fc" id="L71">      f = new WaarpSlf4JLoggerFactory(true);//NOSONAR</span>
-<span class="fc" id="L72">      f.newInstance(name)</span>
-<span class="fc" id="L73">       .debug(&quot;Using Logback (SLF4J) as the default logging framework&quot;);</span>
-<span class="fc" id="L74">      defaultFactory = f;</span>
+<span class="nc" id="L71">      f = new WaarpSlf4JLoggerFactory(true);//NOSONAR</span>
+<span class="nc" id="L72">      f.newInstance(name)</span>
+<span class="nc" id="L73">       .debug(&quot;Using Logback (SLF4J) as the default logging framework&quot;);</span>
+<span class="nc" id="L74">      defaultFactory = f;</span>
 <span class="nc" id="L75">    } catch (final Throwable t1) {</span>
 <span class="nc" id="L76">      f = new WaarpJdkLoggerFactory(null);//NOSONAR</span>
 <span class="nc" id="L77">      f.newInstance(name)</span>
 <span class="nc" id="L78">       .debug(&quot;Using java.util.logging as the default logging framework&quot;, t1);</span>
-<span class="fc" id="L79">    }</span>
+<span class="nc" id="L79">    }</span>
 
-<span class="fc" id="L81">    defaultFactory = f;</span>
-<span class="fc" id="L82">  }</span>
+<span class="nc" id="L81">    defaultFactory = f;</span>
+<span class="nc" id="L82">  }</span>
 
   /**
    * Returns the default factory. The initial default factory is {@link
@@ -88,7 +88,7 @@ public abstract class WaarpLoggerFactory {
    * @return the current default Factory
    */
   public static WaarpLoggerFactory getDefaultFactory() {
-<span class="fc" id="L91">    return defaultFactory;</span>
+<span class="nc" id="L91">    return defaultFactory;</span>
   }
 
   /**
@@ -98,17 +98,17 @@ public abstract class WaarpLoggerFactory {
    */
   public static void setDefaultFactory(
       final WaarpLoggerFactory defaultFactory) {
-<span class="fc bfc" id="L101" title="All 2 branches covered.">    if (defaultFactory == null) {</span>
-<span class="fc" id="L102">      throw new IllegalArgumentException(&quot;defaultFactory&quot;);</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (defaultFactory == null) {</span>
+<span class="nc" id="L102">      throw new IllegalArgumentException(&quot;defaultFactory&quot;);</span>
     }
-<span class="fc" id="L104">    WaarpLoggerFactory.defaultFactory = defaultFactory;</span>
-<span class="fc bfc" id="L105" title="All 2 branches covered.">    if (defaultFactory instanceof WaarpJdkLoggerFactory) {</span>
-<span class="fc" id="L106">      InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);</span>
-<span class="fc bfc" id="L107" title="All 2 branches covered.">    } else if (defaultFactory instanceof WaarpSlf4JLoggerFactory) {</span>
-<span class="fc" id="L108">      InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);</span>
+<span class="nc" id="L104">    WaarpLoggerFactory.defaultFactory = defaultFactory;</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (defaultFactory instanceof WaarpJdkLoggerFactory) {</span>
+<span class="nc" id="L106">      InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    } else if (defaultFactory instanceof WaarpSlf4JLoggerFactory) {</span>
+<span class="nc" id="L108">      InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);</span>
     }
-<span class="fc" id="L110">    defaultFactory.seLevelSpecific(defaultFactory.getLevelSpecific());</span>
-<span class="fc" id="L111">  }</span>
+<span class="nc" id="L110">    defaultFactory.seLevelSpecific(defaultFactory.getLevelSpecific());</span>
+<span class="nc" id="L111">  }</span>
 
   /**
    * Creates a new logger instance with the name of the specified class.
@@ -118,7 +118,7 @@ public abstract class WaarpLoggerFactory {
    * @return the logger instance
    */
   public static WaarpLogger getInstance(final Class&lt;?&gt; clazz) {
-<span class="fc" id="L121">    return getInstance(clazz.getName());</span>
+<span class="nc" id="L121">    return getInstance(clazz.getName());</span>
   }
 
   /**
@@ -129,7 +129,7 @@ public abstract class WaarpLoggerFactory {
    * @return the logger instance
    */
   public static WaarpLogger getInstance(final String name) {
-<span class="fc" id="L132">    return getDefaultFactory().newInstance(name);</span>
+<span class="nc" id="L132">    return getDefaultFactory().newInstance(name);</span>
   }
 
   /**
@@ -140,7 +140,7 @@ public abstract class WaarpLoggerFactory {
    * @return the logger instance
    */
   public static WaarpLogger getLogger(final Class&lt;?&gt; clazz) {
-<span class="fc" id="L143">    return getInstance(clazz.getName());</span>
+<span class="nc" id="L143">    return getInstance(clazz.getName());</span>
   }
 
   /**
@@ -158,39 +158,39 @@ public abstract class WaarpLoggerFactory {
    * @param level
    */
   public static void setLogLevel(final WaarpLogLevel level) {
-<span class="fc" id="L161">    setInternalLogLevel(level);</span>
-<span class="pc bpc" id="L162" title="1 of 2 branches missed.">    if (currentLevel != null) {</span>
-<span class="fc" id="L163">      getDefaultFactory().seLevelSpecific(currentLevel);</span>
+<span class="nc" id="L161">    setInternalLogLevel(level);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (currentLevel != null) {</span>
+<span class="nc" id="L163">      getDefaultFactory().seLevelSpecific(currentLevel);</span>
     }
-<span class="fc" id="L165">  }</span>
+<span class="nc" id="L165">  }</span>
 
   public static WaarpLogLevel getLogLevel() {
-<span class="fc" id="L168">    return currentLevel;</span>
+<span class="nc" id="L168">    return currentLevel;</span>
   }
 
   protected static synchronized void setInternalLogLevel(
       final WaarpLogLevel level) {
-<span class="fc bfc" id="L173" title="All 2 branches covered.">    if (level != null) {</span>
-<span class="fc" id="L174">      currentLevel = level;</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    if (level != null) {</span>
+<span class="nc" id="L174">      currentLevel = level;</span>
     }
-<span class="fc" id="L176">  }</span>
+<span class="nc" id="L176">  }</span>
 
   /**
    * @param level
    */
-<span class="fc" id="L181">  protected WaarpLoggerFactory(final WaarpLogLevel level) {</span>
-<span class="fc" id="L182">    setInternalLogLevel(level);</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">    if (currentLevel == null) {</span>
-<span class="fc" id="L184">      setInternalLogLevel(getLevelSpecific());</span>
+<span class="nc" id="L181">  protected WaarpLoggerFactory(final WaarpLogLevel level) {</span>
+<span class="nc" id="L182">    setInternalLogLevel(level);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">    if (currentLevel == null) {</span>
+<span class="nc" id="L184">      setInternalLogLevel(getLevelSpecific());</span>
     }
-<span class="fc" id="L186">  }</span>
+<span class="nc" id="L186">  }</span>
 
   /**
    * @param localNameNew if set, will be added to each line of log
    */
   public static void setLocalName(String localNameNew) {
-<span class="fc" id="L192">    localName = localNameNew;</span>
-<span class="fc" id="L193">  }</span>
+<span class="nc" id="L192">    localName = localNameNew;</span>
+<span class="nc" id="L193">  }</span>
 
   /**
    * @return should return the current Level for the specific implementation

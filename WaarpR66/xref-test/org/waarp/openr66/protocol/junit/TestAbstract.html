@@ -280,177 +280,179 @@
 <a class="jxr_linenumber" name="L272" href="#L272">272</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> finalizeDriver() <strong class="jxr_keyword">throws</strong> InterruptedException {
 <a class="jxr_linenumber" name="L273" href="#L273">273</a>     <em class="jxr_comment">// 17 | close |  |  |</em>
 <a class="jxr_linenumber" name="L274" href="#L274">274</a>     <em class="jxr_comment">// driver.close();</em>
-<a class="jxr_linenumber" name="L275" href="#L275">275</a>     driver.quit();
-<a class="jxr_linenumber" name="L276" href="#L276">276</a>     driver = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L277" href="#L277">277</a>     Thread.sleep(10);
-<a class="jxr_linenumber" name="L278" href="#L278">278</a>   }
-<a class="jxr_linenumber" name="L279" href="#L279">279</a> 
-<a class="jxr_linenumber" name="L280" href="#L280">280</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> initiateDb(String serverInit) {
-<a class="jxr_linenumber" name="L281" href="#L281">281</a>     DetectionUtils.setJunit(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L282" href="#L282">282</a>     <strong class="jxr_keyword">final</strong> File file = <strong class="jxr_keyword">new</strong> File(dir, serverInit);
-<a class="jxr_linenumber" name="L283" href="#L283">283</a>     logger.warn(<span class="jxr_string">"File {} exists? {}"</span>, file, file.isFile());
-<a class="jxr_linenumber" name="L284" href="#L284">284</a>     <strong class="jxr_keyword">final</strong> File fileAuth = <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"OpenR66-authent-A.xml"</span>);
-<a class="jxr_linenumber" name="L285" href="#L285">285</a>     <strong class="jxr_keyword">final</strong> File fileLimit = <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"limitConfiga.xml"</span>);
-<a class="jxr_linenumber" name="L286" href="#L286">286</a>     logger.warn(<span class="jxr_string">"File {} exists? {}"</span>, fileAuth, fileAuth.isFile());
-<a class="jxr_linenumber" name="L287" href="#L287">287</a>     logger.warn(<span class="jxr_string">"File {} exists? {}"</span>, fileLimit, fileLimit.isFile());
-<a class="jxr_linenumber" name="L288" href="#L288">288</a> 
-<a class="jxr_linenumber" name="L289" href="#L289">289</a>     <strong class="jxr_keyword">final</strong> String[] args = {
-<a class="jxr_linenumber" name="L290" href="#L290">290</a>         file.getAbsolutePath(), <span class="jxr_string">"-initdb"</span>, <span class="jxr_string">"-dir"</span>, dir.getAbsolutePath(),
-<a class="jxr_linenumber" name="L291" href="#L291">291</a>         <span class="jxr_string">"-auth"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"OpenR66-authent-A.xml"</span>).getAbsolutePath(),
-<a class="jxr_linenumber" name="L292" href="#L292">292</a>         <span class="jxr_string">"-limit"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"limitConfiga.xml"</span>).getAbsolutePath()
-<a class="jxr_linenumber" name="L293" href="#L293">293</a>     };
-<a class="jxr_linenumber" name="L294" href="#L294">294</a>     Processes
-<a class="jxr_linenumber" name="L295" href="#L295">295</a>         .executeJvm(project, homeDir, ServerInitDatabase.<strong class="jxr_keyword">class</strong>, args, false);
-<a class="jxr_linenumber" name="L296" href="#L296">296</a>   }
-<a class="jxr_linenumber" name="L297" href="#L297">297</a> 
-<a class="jxr_linenumber" name="L298" href="#L298">298</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L299" href="#L299">299</a> <em class="jxr_javadoccomment">   * @throws Exception</em>
-<a class="jxr_linenumber" name="L300" href="#L300">300</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L301" href="#L301">301</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClassServer(String serverInit,
-<a class="jxr_linenumber" name="L302" href="#L302">302</a>                                             String serverConfig, <strong class="jxr_keyword">boolean</strong> start)
-<a class="jxr_linenumber" name="L303" href="#L303">303</a>       <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L304" href="#L304">304</a> 
-<a class="jxr_linenumber" name="L305" href="#L305">305</a>     <strong class="jxr_keyword">if</strong> (Configuration.configuration != <strong class="jxr_keyword">null</strong> &amp;&amp;
-<a class="jxr_linenumber" name="L306" href="#L306">306</a>         Configuration.configuration.isConfigured()) {
-<a class="jxr_linenumber" name="L307" href="#L307">307</a>       <em class="jxr_comment">// Ensure we redo configuration</em>
-<a class="jxr_linenumber" name="L308" href="#L308">308</a>       Configuration.configuration.setConfigured(false);
-<a class="jxr_linenumber" name="L309" href="#L309">309</a>       Configuration.configuration = <strong class="jxr_keyword">new</strong> Configuration();
-<a class="jxr_linenumber" name="L310" href="#L310">310</a>     }
-<a class="jxr_linenumber" name="L311" href="#L311">311</a>     <strong class="jxr_keyword">final</strong> ClassLoader classLoader = TestAbstract.<strong class="jxr_keyword">class</strong>.getClassLoader();
-<a class="jxr_linenumber" name="L312" href="#L312">312</a>     <strong class="jxr_keyword">final</strong> File file;
-<a class="jxr_linenumber" name="L313" href="#L313">313</a>     <strong class="jxr_keyword">if</strong> (serverInit.startsWith(<span class="jxr_string">"/"</span>)) {
-<a class="jxr_linenumber" name="L314" href="#L314">314</a>       file = <strong class="jxr_keyword">new</strong> File(serverInit);
-<a class="jxr_linenumber" name="L315" href="#L315">315</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L316" href="#L316">316</a>       file = <strong class="jxr_keyword">new</strong> File(classLoader.getResource(serverInit).getFile());
-<a class="jxr_linenumber" name="L317" href="#L317">317</a>     }
-<a class="jxr_linenumber" name="L318" href="#L318">318</a>     <strong class="jxr_keyword">if</strong> (file.exists()) {
-<a class="jxr_linenumber" name="L319" href="#L319">319</a>       dir = file.getParentFile();
-<a class="jxr_linenumber" name="L320" href="#L320">320</a>       System.err.println(<span class="jxr_string">"Find serverInit file: "</span> + file.getAbsolutePath());
-<a class="jxr_linenumber" name="L321" href="#L321">321</a>       ServerInitDatabase.main(<strong class="jxr_keyword">new</strong> String[] {
-<a class="jxr_linenumber" name="L322" href="#L322">322</a>           file.getAbsolutePath(), <span class="jxr_string">"-initdb"</span>, <span class="jxr_string">"-dir"</span>, dir.getAbsolutePath(),
-<a class="jxr_linenumber" name="L323" href="#L323">323</a>           <span class="jxr_string">"-auth"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"OpenR66-authent-A.xml"</span>).getAbsolutePath(),
-<a class="jxr_linenumber" name="L324" href="#L324">324</a>           <span class="jxr_string">"-limit"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"limitConfiga.xml"</span>).getAbsolutePath()
-<a class="jxr_linenumber" name="L325" href="#L325">325</a>       });
-<a class="jxr_linenumber" name="L326" href="#L326">326</a>       Configuration.configuration.setTimeoutCon(100);
-<a class="jxr_linenumber" name="L327" href="#L327">327</a>       logger.warn(<span class="jxr_string">"Init Done"</span>);
-<a class="jxr_linenumber" name="L328" href="#L328">328</a>       <strong class="jxr_keyword">if</strong> (start) {
-<a class="jxr_linenumber" name="L329" href="#L329">329</a>         <strong class="jxr_keyword">final</strong> File file2;
-<a class="jxr_linenumber" name="L330" href="#L330">330</a>         <strong class="jxr_keyword">if</strong> (serverConfig.startsWith(<span class="jxr_string">"/"</span>)) {
-<a class="jxr_linenumber" name="L331" href="#L331">331</a>           file2 = <strong class="jxr_keyword">new</strong> File(serverConfig);
-<a class="jxr_linenumber" name="L332" href="#L332">332</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L333" href="#L333">333</a>           file2 = <strong class="jxr_keyword">new</strong> File(dir, serverConfig);
-<a class="jxr_linenumber" name="L334" href="#L334">334</a>         }
-<a class="jxr_linenumber" name="L335" href="#L335">335</a>         <strong class="jxr_keyword">if</strong> (file2.exists()) {
-<a class="jxr_linenumber" name="L336" href="#L336">336</a>           System.err.println(<span class="jxr_string">"Find server file: "</span> + file2.getAbsolutePath());
-<a class="jxr_linenumber" name="L337" href="#L337">337</a>           R66Server.main(<strong class="jxr_keyword">new</strong> String[] { file2.getAbsolutePath() });
-<a class="jxr_linenumber" name="L338" href="#L338">338</a>           logger.warn(<span class="jxr_string">"Start Done"</span>);
-<a class="jxr_linenumber" name="L339" href="#L339">339</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L340" href="#L340">340</a>           System.err
-<a class="jxr_linenumber" name="L341" href="#L341">341</a>               .println(<span class="jxr_string">"Cannot find server file: "</span> + file2.getAbsolutePath());
-<a class="jxr_linenumber" name="L342" href="#L342">342</a>         }
-<a class="jxr_linenumber" name="L343" href="#L343">343</a>       }
-<a class="jxr_linenumber" name="L344" href="#L344">344</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L345" href="#L345">345</a>       System.err
-<a class="jxr_linenumber" name="L346" href="#L346">346</a>           .println(<span class="jxr_string">"Cannot find serverInit file: "</span> + file.getAbsolutePath());
-<a class="jxr_linenumber" name="L347" href="#L347">347</a>     }
-<a class="jxr_linenumber" name="L348" href="#L348">348</a>   }
-<a class="jxr_linenumber" name="L349" href="#L349">349</a> 
-<a class="jxr_linenumber" name="L350" href="#L350">350</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> tearDownAfterClassServer() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L351" href="#L351">351</a>     Configuration.configuration.setTimeoutCon(100);
-<a class="jxr_linenumber" name="L352" href="#L352">352</a>     ChannelUtils.exit();
-<a class="jxr_linenumber" name="L353" href="#L353">353</a>     deleteBase();
-<a class="jxr_linenumber" name="L354" href="#L354">354</a>   }
-<a class="jxr_linenumber" name="L355" href="#L355">355</a> 
-<a class="jxr_linenumber" name="L356" href="#L356">356</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> deleteBase() {
-<a class="jxr_linenumber" name="L357" href="#L357">357</a>     <strong class="jxr_keyword">final</strong> File tmp = <strong class="jxr_keyword">new</strong> File(<span class="jxr_string">"/tmp"</span>);
-<a class="jxr_linenumber" name="L358" href="#L358">358</a>     <strong class="jxr_keyword">final</strong> File[] files = tmp.listFiles(<strong class="jxr_keyword">new</strong> FileFilter() {
-<a class="jxr_linenumber" name="L359" href="#L359">359</a>       @Override
-<a class="jxr_linenumber" name="L360" href="#L360">360</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> accept(File file) {
-<a class="jxr_linenumber" name="L361" href="#L361">361</a>         <strong class="jxr_keyword">return</strong> file.getName().startsWith(<span class="jxr_string">"openr66"</span>);
-<a class="jxr_linenumber" name="L362" href="#L362">362</a>       }
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>     });
-<a class="jxr_linenumber" name="L364" href="#L364">364</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">final</strong> File file : files) {
-<a class="jxr_linenumber" name="L365" href="#L365">365</a>       file.delete();
-<a class="jxr_linenumber" name="L366" href="#L366">366</a>     }
-<a class="jxr_linenumber" name="L367" href="#L367">367</a>   }
-<a class="jxr_linenumber" name="L368" href="#L368">368</a> 
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClassClient(String clientConfig)
-<a class="jxr_linenumber" name="L370" href="#L370">370</a>       <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L371" href="#L371">371</a>     <strong class="jxr_keyword">final</strong> File clientConfigFile;
-<a class="jxr_linenumber" name="L372" href="#L372">372</a>     <strong class="jxr_keyword">if</strong> (clientConfig.startsWith(<span class="jxr_string">"/"</span>)) {
-<a class="jxr_linenumber" name="L373" href="#L373">373</a>       clientConfigFile = <strong class="jxr_keyword">new</strong> File(clientConfig);
-<a class="jxr_linenumber" name="L374" href="#L374">374</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L375" href="#L375">375</a>       clientConfigFile = <strong class="jxr_keyword">new</strong> File(dir, clientConfig);
-<a class="jxr_linenumber" name="L376" href="#L376">376</a>     }
-<a class="jxr_linenumber" name="L377" href="#L377">377</a>     <strong class="jxr_keyword">if</strong> (clientConfigFile.isFile()) {
-<a class="jxr_linenumber" name="L378" href="#L378">378</a>       System.err.println(
-<a class="jxr_linenumber" name="L379" href="#L379">379</a>           <span class="jxr_string">"Find serverInit file: "</span> + clientConfigFile.getAbsolutePath());
-<a class="jxr_linenumber" name="L380" href="#L380">380</a>       <strong class="jxr_keyword">if</strong> (!FileBasedConfiguration
-<a class="jxr_linenumber" name="L381" href="#L381">381</a>           .setClientConfigurationFromXml(Configuration.configuration,
-<a class="jxr_linenumber" name="L382" href="#L382">382</a>                                          clientConfigFile.getAbsolutePath())) {
-<a class="jxr_linenumber" name="L383" href="#L383">383</a>         logger.error(<span class="jxr_string">"Needs a correct configuration file as first argument"</span>);
-<a class="jxr_linenumber" name="L384" href="#L384">384</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L385" href="#L385">385</a>       }
-<a class="jxr_linenumber" name="L386" href="#L386">386</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L387" href="#L387">387</a>       logger.error(<span class="jxr_string">"Needs a correct configuration file as first argument: {}"</span>,
-<a class="jxr_linenumber" name="L388" href="#L388">388</a>                    clientConfigFile.getAbsolutePath());
-<a class="jxr_linenumber" name="L389" href="#L389">389</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L390" href="#L390">390</a>     }
-<a class="jxr_linenumber" name="L391" href="#L391">391</a>     Configuration.configuration.setTimeoutCon(100);
-<a class="jxr_linenumber" name="L392" href="#L392">392</a>     Configuration.configuration.pipelineInit();
-<a class="jxr_linenumber" name="L393" href="#L393">393</a>     networkTransaction = <strong class="jxr_keyword">new</strong> NetworkTransaction();
-<a class="jxr_linenumber" name="L394" href="#L394">394</a>     DbTaskRunner.clearCache();
-<a class="jxr_linenumber" name="L395" href="#L395">395</a>     TransferDAO transferAccess = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L396" href="#L396">396</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L397" href="#L397">397</a>       transferAccess = DAOFactory.getInstance().getTransferDAO();
-<a class="jxr_linenumber" name="L398" href="#L398">398</a>       transferAccess.deleteAll();
-<a class="jxr_linenumber" name="L399" href="#L399">399</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DAOConnectionException e) {
-<a class="jxr_linenumber" name="L400" href="#L400">400</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> WaarpDatabaseException(e);
-<a class="jxr_linenumber" name="L401" href="#L401">401</a>     } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L402" href="#L402">402</a>       <strong class="jxr_keyword">if</strong> (transferAccess != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L403" href="#L403">403</a>         transferAccess.close();
-<a class="jxr_linenumber" name="L404" href="#L404">404</a>       }
-<a class="jxr_linenumber" name="L405" href="#L405">405</a>     }
-<a class="jxr_linenumber" name="L406" href="#L406">406</a>   }
-<a class="jxr_linenumber" name="L407" href="#L407">407</a> 
-<a class="jxr_linenumber" name="L408" href="#L408">408</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClassClient() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L409" href="#L409">409</a>     Configuration.configuration.setTimeoutCon(100);
-<a class="jxr_linenumber" name="L410" href="#L410">410</a>     networkTransaction =
-<a class="jxr_linenumber" name="L411" href="#L411">411</a>         Configuration.configuration.getInternalRunner().getNetworkTransaction();
-<a class="jxr_linenumber" name="L412" href="#L412">412</a>     DbTaskRunner.clearCache();
-<a class="jxr_linenumber" name="L413" href="#L413">413</a>     TransferDAO transferAccess = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L414" href="#L414">414</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L415" href="#L415">415</a>       transferAccess = DAOFactory.getInstance().getTransferDAO();
-<a class="jxr_linenumber" name="L416" href="#L416">416</a>       transferAccess.deleteAll();
-<a class="jxr_linenumber" name="L417" href="#L417">417</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DAOConnectionException e) {
-<a class="jxr_linenumber" name="L418" href="#L418">418</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> WaarpDatabaseException(e);
-<a class="jxr_linenumber" name="L419" href="#L419">419</a>     } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L420" href="#L420">420</a>       <strong class="jxr_keyword">if</strong> (transferAccess != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L421" href="#L421">421</a>         transferAccess.close();
-<a class="jxr_linenumber" name="L422" href="#L422">422</a>       }
-<a class="jxr_linenumber" name="L423" href="#L423">423</a>     }
-<a class="jxr_linenumber" name="L424" href="#L424">424</a>   }
-<a class="jxr_linenumber" name="L425" href="#L425">425</a> 
-<a class="jxr_linenumber" name="L426" href="#L426">426</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> tearDownAfterClassClient() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L427" href="#L427">427</a>     Configuration.configuration.setTimeoutCon(100);
-<a class="jxr_linenumber" name="L428" href="#L428">428</a>     <strong class="jxr_keyword">if</strong> (networkTransaction != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L429" href="#L429">429</a>       networkTransaction.closeAll();
-<a class="jxr_linenumber" name="L430" href="#L430">430</a>     }
-<a class="jxr_linenumber" name="L431" href="#L431">431</a>   }
-<a class="jxr_linenumber" name="L432" href="#L432">432</a> 
-<a class="jxr_linenumber" name="L433" href="#L433">433</a>   @Before
-<a class="jxr_linenumber" name="L434" href="#L434">434</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUp() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L435" href="#L435">435</a>     Configuration.configuration.setTimeoutCon(10000);
-<a class="jxr_linenumber" name="L436" href="#L436">436</a>     Configuration.configuration
-<a class="jxr_linenumber" name="L437" href="#L437">437</a>         .changeNetworkLimit(1000000000, 1000000000, 1000000000, 1000000000,
-<a class="jxr_linenumber" name="L438" href="#L438">438</a>                             1000);
-<a class="jxr_linenumber" name="L439" href="#L439">439</a>   }
-<a class="jxr_linenumber" name="L440" href="#L440">440</a> 
-<a class="jxr_linenumber" name="L441" href="#L441">441</a>   @After
-<a class="jxr_linenumber" name="L442" href="#L442">442</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> tearDown() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L443" href="#L443">443</a>     Configuration.configuration.setTimeoutCon(100);
-<a class="jxr_linenumber" name="L444" href="#L444">444</a>   }
-<a class="jxr_linenumber" name="L445" href="#L445">445</a> }
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>     <strong class="jxr_keyword">if</strong> (driver != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L276" href="#L276">276</a>       driver.quit();
+<a class="jxr_linenumber" name="L277" href="#L277">277</a>       driver = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>     }
+<a class="jxr_linenumber" name="L279" href="#L279">279</a>     Thread.sleep(10);
+<a class="jxr_linenumber" name="L280" href="#L280">280</a>   }
+<a class="jxr_linenumber" name="L281" href="#L281">281</a> 
+<a class="jxr_linenumber" name="L282" href="#L282">282</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> initiateDb(String serverInit) {
+<a class="jxr_linenumber" name="L283" href="#L283">283</a>     DetectionUtils.setJunit(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>     <strong class="jxr_keyword">final</strong> File file = <strong class="jxr_keyword">new</strong> File(dir, serverInit);
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>     logger.warn(<span class="jxr_string">"File {} exists? {}"</span>, file, file.isFile());
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>     <strong class="jxr_keyword">final</strong> File fileAuth = <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"OpenR66-authent-A.xml"</span>);
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>     <strong class="jxr_keyword">final</strong> File fileLimit = <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"limitConfiga.xml"</span>);
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>     logger.warn(<span class="jxr_string">"File {} exists? {}"</span>, fileAuth, fileAuth.isFile());
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>     logger.warn(<span class="jxr_string">"File {} exists? {}"</span>, fileLimit, fileLimit.isFile());
+<a class="jxr_linenumber" name="L290" href="#L290">290</a> 
+<a class="jxr_linenumber" name="L291" href="#L291">291</a>     <strong class="jxr_keyword">final</strong> String[] args = {
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>         file.getAbsolutePath(), <span class="jxr_string">"-initdb"</span>, <span class="jxr_string">"-dir"</span>, dir.getAbsolutePath(),
+<a class="jxr_linenumber" name="L293" href="#L293">293</a>         <span class="jxr_string">"-auth"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"OpenR66-authent-A.xml"</span>).getAbsolutePath(),
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>         <span class="jxr_string">"-limit"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"limitConfiga.xml"</span>).getAbsolutePath()
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>     };
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>     Processes
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>         .executeJvm(project, homeDir, ServerInitDatabase.<strong class="jxr_keyword">class</strong>, args, false);
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>   }
+<a class="jxr_linenumber" name="L299" href="#L299">299</a> 
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L301" href="#L301">301</a> <em class="jxr_javadoccomment">   * @throws Exception</em>
+<a class="jxr_linenumber" name="L302" href="#L302">302</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClassServer(String serverInit,
+<a class="jxr_linenumber" name="L304" href="#L304">304</a>                                             String serverConfig, <strong class="jxr_keyword">boolean</strong> start)
+<a class="jxr_linenumber" name="L305" href="#L305">305</a>       <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L306" href="#L306">306</a> 
+<a class="jxr_linenumber" name="L307" href="#L307">307</a>     <strong class="jxr_keyword">if</strong> (Configuration.configuration != <strong class="jxr_keyword">null</strong> &amp;&amp;
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>         Configuration.configuration.isConfigured()) {
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>       <em class="jxr_comment">// Ensure we redo configuration</em>
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>       Configuration.configuration.setConfigured(false);
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>       Configuration.configuration = <strong class="jxr_keyword">new</strong> Configuration();
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>     }
+<a class="jxr_linenumber" name="L313" href="#L313">313</a>     <strong class="jxr_keyword">final</strong> ClassLoader classLoader = TestAbstract.<strong class="jxr_keyword">class</strong>.getClassLoader();
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>     <strong class="jxr_keyword">final</strong> File file;
+<a class="jxr_linenumber" name="L315" href="#L315">315</a>     <strong class="jxr_keyword">if</strong> (serverInit.startsWith(<span class="jxr_string">"/"</span>)) {
+<a class="jxr_linenumber" name="L316" href="#L316">316</a>       file = <strong class="jxr_keyword">new</strong> File(serverInit);
+<a class="jxr_linenumber" name="L317" href="#L317">317</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L318" href="#L318">318</a>       file = <strong class="jxr_keyword">new</strong> File(classLoader.getResource(serverInit).getFile());
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>     }
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>     <strong class="jxr_keyword">if</strong> (file.exists()) {
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>       dir = file.getParentFile();
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>       System.err.println(<span class="jxr_string">"Find serverInit file: "</span> + file.getAbsolutePath());
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>       ServerInitDatabase.main(<strong class="jxr_keyword">new</strong> String[] {
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>           file.getAbsolutePath(), <span class="jxr_string">"-initdb"</span>, <span class="jxr_string">"-dir"</span>, dir.getAbsolutePath(),
+<a class="jxr_linenumber" name="L325" href="#L325">325</a>           <span class="jxr_string">"-auth"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"OpenR66-authent-A.xml"</span>).getAbsolutePath(),
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>           <span class="jxr_string">"-limit"</span>, <strong class="jxr_keyword">new</strong> File(dir, <span class="jxr_string">"limitConfiga.xml"</span>).getAbsolutePath()
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>       });
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>       Configuration.configuration.setTimeoutCon(100);
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>       logger.warn(<span class="jxr_string">"Init Done"</span>);
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>       <strong class="jxr_keyword">if</strong> (start) {
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>         <strong class="jxr_keyword">final</strong> File file2;
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>         <strong class="jxr_keyword">if</strong> (serverConfig.startsWith(<span class="jxr_string">"/"</span>)) {
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>           file2 = <strong class="jxr_keyword">new</strong> File(serverConfig);
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L335" href="#L335">335</a>           file2 = <strong class="jxr_keyword">new</strong> File(dir, serverConfig);
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>         }
+<a class="jxr_linenumber" name="L337" href="#L337">337</a>         <strong class="jxr_keyword">if</strong> (file2.exists()) {
+<a class="jxr_linenumber" name="L338" href="#L338">338</a>           System.err.println(<span class="jxr_string">"Find server file: "</span> + file2.getAbsolutePath());
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>           R66Server.main(<strong class="jxr_keyword">new</strong> String[] { file2.getAbsolutePath() });
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>           logger.warn(<span class="jxr_string">"Start Done"</span>);
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>           System.err
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>               .println(<span class="jxr_string">"Cannot find server file: "</span> + file2.getAbsolutePath());
+<a class="jxr_linenumber" name="L344" href="#L344">344</a>         }
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>       }
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L347" href="#L347">347</a>       System.err
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>           .println(<span class="jxr_string">"Cannot find serverInit file: "</span> + file.getAbsolutePath());
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>     }
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>   }
+<a class="jxr_linenumber" name="L351" href="#L351">351</a> 
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> tearDownAfterClassServer() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L353" href="#L353">353</a>     Configuration.configuration.setTimeoutCon(100);
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>     ChannelUtils.exit();
+<a class="jxr_linenumber" name="L355" href="#L355">355</a>     deleteBase();
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>   }
+<a class="jxr_linenumber" name="L357" href="#L357">357</a> 
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> deleteBase() {
+<a class="jxr_linenumber" name="L359" href="#L359">359</a>     <strong class="jxr_keyword">final</strong> File tmp = <strong class="jxr_keyword">new</strong> File(<span class="jxr_string">"/tmp"</span>);
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>     <strong class="jxr_keyword">final</strong> File[] files = tmp.listFiles(<strong class="jxr_keyword">new</strong> FileFilter() {
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>       @Override
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> accept(File file) {
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>         <strong class="jxr_keyword">return</strong> file.getName().startsWith(<span class="jxr_string">"openr66"</span>);
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>       }
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>     });
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">final</strong> File file : files) {
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>       file.delete();
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>     }
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>   }
+<a class="jxr_linenumber" name="L370" href="#L370">370</a> 
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClassClient(String clientConfig)
+<a class="jxr_linenumber" name="L372" href="#L372">372</a>       <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>     <strong class="jxr_keyword">final</strong> File clientConfigFile;
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>     <strong class="jxr_keyword">if</strong> (clientConfig.startsWith(<span class="jxr_string">"/"</span>)) {
+<a class="jxr_linenumber" name="L375" href="#L375">375</a>       clientConfigFile = <strong class="jxr_keyword">new</strong> File(clientConfig);
+<a class="jxr_linenumber" name="L376" href="#L376">376</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>       clientConfigFile = <strong class="jxr_keyword">new</strong> File(dir, clientConfig);
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>     }
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>     <strong class="jxr_keyword">if</strong> (clientConfigFile.isFile()) {
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>       System.err.println(
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>           <span class="jxr_string">"Find serverInit file: "</span> + clientConfigFile.getAbsolutePath());
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>       <strong class="jxr_keyword">if</strong> (!FileBasedConfiguration
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>           .setClientConfigurationFromXml(Configuration.configuration,
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>                                          clientConfigFile.getAbsolutePath())) {
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>         logger.error(<span class="jxr_string">"Needs a correct configuration file as first argument"</span>);
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>       }
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>       logger.error(<span class="jxr_string">"Needs a correct configuration file as first argument: {}"</span>,
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>                    clientConfigFile.getAbsolutePath());
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>     }
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>     Configuration.configuration.setTimeoutCon(100);
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>     Configuration.configuration.pipelineInit();
+<a class="jxr_linenumber" name="L395" href="#L395">395</a>     networkTransaction = <strong class="jxr_keyword">new</strong> NetworkTransaction();
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>     DbTaskRunner.clearCache();
+<a class="jxr_linenumber" name="L397" href="#L397">397</a>     TransferDAO transferAccess = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>       transferAccess = DAOFactory.getInstance().getTransferDAO();
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>       transferAccess.deleteAll();
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DAOConnectionException e) {
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> WaarpDatabaseException(e);
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>       <strong class="jxr_keyword">if</strong> (transferAccess != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>         transferAccess.close();
+<a class="jxr_linenumber" name="L406" href="#L406">406</a>       }
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>     }
+<a class="jxr_linenumber" name="L408" href="#L408">408</a>   }
+<a class="jxr_linenumber" name="L409" href="#L409">409</a> 
+<a class="jxr_linenumber" name="L410" href="#L410">410</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setUpBeforeClassClient() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L411" href="#L411">411</a>     Configuration.configuration.setTimeoutCon(100);
+<a class="jxr_linenumber" name="L412" href="#L412">412</a>     networkTransaction =
+<a class="jxr_linenumber" name="L413" href="#L413">413</a>         Configuration.configuration.getInternalRunner().getNetworkTransaction();
+<a class="jxr_linenumber" name="L414" href="#L414">414</a>     DbTaskRunner.clearCache();
+<a class="jxr_linenumber" name="L415" href="#L415">415</a>     TransferDAO transferAccess = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L417" href="#L417">417</a>       transferAccess = DAOFactory.getInstance().getTransferDAO();
+<a class="jxr_linenumber" name="L418" href="#L418">418</a>       transferAccess.deleteAll();
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DAOConnectionException e) {
+<a class="jxr_linenumber" name="L420" href="#L420">420</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> WaarpDatabaseException(e);
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>       <strong class="jxr_keyword">if</strong> (transferAccess != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L423" href="#L423">423</a>         transferAccess.close();
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>       }
+<a class="jxr_linenumber" name="L425" href="#L425">425</a>     }
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>   }
+<a class="jxr_linenumber" name="L427" href="#L427">427</a> 
+<a class="jxr_linenumber" name="L428" href="#L428">428</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> tearDownAfterClassClient() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L429" href="#L429">429</a>     Configuration.configuration.setTimeoutCon(100);
+<a class="jxr_linenumber" name="L430" href="#L430">430</a>     <strong class="jxr_keyword">if</strong> (networkTransaction != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L431" href="#L431">431</a>       networkTransaction.closeAll();
+<a class="jxr_linenumber" name="L432" href="#L432">432</a>     }
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>   }
+<a class="jxr_linenumber" name="L434" href="#L434">434</a> 
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>   @Before
+<a class="jxr_linenumber" name="L436" href="#L436">436</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUp() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L437" href="#L437">437</a>     Configuration.configuration.setTimeoutCon(10000);
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>     Configuration.configuration
+<a class="jxr_linenumber" name="L439" href="#L439">439</a>         .changeNetworkLimit(1000000000, 1000000000, 1000000000, 1000000000,
+<a class="jxr_linenumber" name="L440" href="#L440">440</a>                             1000);
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>   }
+<a class="jxr_linenumber" name="L442" href="#L442">442</a> 
+<a class="jxr_linenumber" name="L443" href="#L443">443</a>   @After
+<a class="jxr_linenumber" name="L444" href="#L444">444</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> tearDown() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L445" href="#L445">445</a>     Configuration.configuration.setTimeoutCon(100);
+<a class="jxr_linenumber" name="L446" href="#L446">446</a>   }
+<a class="jxr_linenumber" name="L447" href="#L447">447</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

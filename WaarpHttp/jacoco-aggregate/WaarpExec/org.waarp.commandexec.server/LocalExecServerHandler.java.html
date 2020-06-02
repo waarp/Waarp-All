@@ -58,15 +58,15 @@ public class LocalExecServerHandler
   private static final String EXEC_IN_ERROR_WITH = &quot; Exec in error with &quot;;
   private static final String EXCEPTION = &quot;Exception: &quot;;
   // Fixed delay, but could change if necessary at construction
-<span class="fc" id="L61">  private long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+<span class="nc" id="L61">  private long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
   protected final LocalExecServerInitializer factory;
   protected static boolean isShutdown;
 
   /**
    * Internal Logger
    */
-<span class="fc" id="L68">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L69">      WaarpLoggerFactory.getLogger(LocalExecServerHandler.class);</span>
+<span class="nc" id="L68">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L69">      WaarpLoggerFactory.getLogger(LocalExecServerHandler.class);</span>
 
   protected volatile boolean answered;
 
@@ -78,7 +78,7 @@ public class LocalExecServerHandler
    * @return True if in Shutdown
    */
   public static boolean isShutdown(Channel channel) {
-<span class="pc bpc" id="L81" title="1 of 2 branches missed.">    if (isShutdown) {</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (isShutdown) {</span>
 <span class="nc" id="L82">      channel.writeAndFlush(</span>
 <span class="nc" id="L83">          LocalExecDefaultResult.ConnectionRefused.getStatus() + &quot; &quot; +</span>
 <span class="nc" id="L84">          LocalExecDefaultResult.ConnectionRefused.getResult() + '\n');</span>
@@ -88,12 +88,12 @@ public class LocalExecServerHandler
 <span class="nc" id="L88">      WaarpSslUtility.closingSslChannel(channel);</span>
 <span class="nc" id="L89">      return true;</span>
     }
-<span class="fc" id="L91">    return false;</span>
+<span class="nc" id="L91">    return false;</span>
   }
 
   public static void junitSetNotShutdown() {
-<span class="fc" id="L95">    isShutdown = false;</span>
-<span class="fc" id="L96">  }</span>
+<span class="nc" id="L95">    isShutdown = false;</span>
+<span class="nc" id="L96">  }</span>
 
   /**
    * Print stack trace
@@ -121,19 +121,19 @@ public class LocalExecServerHandler
     static final long DELAY = 3000;
     final LocalExecServerInitializer factory;
 
-<span class="fc" id="L124">    private GGLEThreadShutdown(LocalExecServerInitializer factory) {</span>
-<span class="fc" id="L125">      this.factory = factory;</span>
-<span class="fc" id="L126">    }</span>
+<span class="nc" id="L124">    private GGLEThreadShutdown(LocalExecServerInitializer factory) {</span>
+<span class="nc" id="L125">      this.factory = factory;</span>
+<span class="nc" id="L126">    }</span>
 
     @Override
     public void run() {
       Timer timer;
-<span class="fc" id="L131">      timer = new Timer(true);</span>
-<span class="fc" id="L132">      final GGLETimerTask ggleTimerTask = new GGLETimerTask();</span>
-<span class="fc" id="L133">      timer.schedule(ggleTimerTask, DELAY);</span>
-<span class="fc" id="L134">      factory.releaseResources();</span>
+<span class="nc" id="L131">      timer = new Timer(true);</span>
+<span class="nc" id="L132">      final GGLETimerTask ggleTimerTask = new GGLETimerTask();</span>
+<span class="nc" id="L133">      timer.schedule(ggleTimerTask, DELAY);</span>
+<span class="nc" id="L134">      factory.releaseResources();</span>
       //FBGEXIT DetectionUtils.SystemExit(0)
-<span class="fc" id="L136">    }</span>
+<span class="nc" id="L136">    }</span>
 
   }
 
@@ -144,8 +144,8 @@ public class LocalExecServerHandler
     /**
      * Internal Logger
      */
-<span class="fc" id="L147">    private static final WaarpLogger logger =</span>
-<span class="fc" id="L148">        WaarpLoggerFactory.getLogger(GGLETimerTask.class);</span>
+<span class="nc" id="L147">    private static final WaarpLogger logger =</span>
+<span class="nc" id="L148">        WaarpLoggerFactory.getLogger(GGLETimerTask.class);</span>
 
     @Override
     public void run() {
@@ -168,20 +168,20 @@ public class LocalExecServerHandler
    * @param newdelay
    */
   public LocalExecServerHandler(LocalExecServerInitializer factory,
-<span class="fc" id="L171">                                long newdelay) {</span>
-<span class="fc" id="L172">    this.factory = factory;</span>
-<span class="fc" id="L173">    delay = newdelay;</span>
-<span class="fc" id="L174">  }</span>
+<span class="nc" id="L171">                                long newdelay) {</span>
+<span class="nc" id="L172">    this.factory = factory;</span>
+<span class="nc" id="L173">    delay = newdelay;</span>
+<span class="nc" id="L174">  }</span>
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-<span class="pc bpc" id="L178" title="1 of 2 branches missed.">    if (isShutdown(ctx.channel())) {</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">    if (isShutdown(ctx.channel())) {</span>
 <span class="nc" id="L179">      answered = true;</span>
 <span class="nc" id="L180">      return;</span>
     }
-<span class="fc" id="L182">    answered = false;</span>
-<span class="fc" id="L183">    factory.addChannel(ctx.channel());</span>
-<span class="fc" id="L184">  }</span>
+<span class="nc" id="L182">    answered = false;</span>
+<span class="nc" id="L183">    factory.addChannel(ctx.channel());</span>
+<span class="nc" id="L184">  }</span>
 
   /**
    * Change the delay to the specific value. Need to be called before any
@@ -196,41 +196,41 @@ public class LocalExecServerHandler
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, String msg)
       throws Exception {
-<span class="fc" id="L199">    answered = false;</span>
+<span class="nc" id="L199">    answered = false;</span>
 
     // Generate and write a response.
     String response;
-<span class="fc" id="L203">    response = LocalExecDefaultResult.NoStatus.getStatus() + &quot; &quot; +</span>
-<span class="fc" id="L204">               LocalExecDefaultResult.NoStatus.getResult();</span>
-<span class="fc" id="L205">    ExecuteWatchdog watchdog = null;</span>
+<span class="nc" id="L203">    response = LocalExecDefaultResult.NoStatus.getStatus() + &quot; &quot; +</span>
+<span class="nc" id="L204">               LocalExecDefaultResult.NoStatus.getResult();</span>
+<span class="nc" id="L205">    ExecuteWatchdog watchdog = null;</span>
     try {
-<span class="pc bpc" id="L207" title="1 of 2 branches missed.">      if (msg.length() == 0) {</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">      if (msg.length() == 0) {</span>
         // No command
 <span class="nc" id="L209">        response = LocalExecDefaultResult.NoCommand.getStatus() + &quot; &quot; +</span>
 <span class="nc" id="L210">                   LocalExecDefaultResult.NoCommand.getResult();</span>
       } else {
-<span class="fc" id="L212">        final String[] args = msg.split(&quot; &quot;);</span>
-<span class="fc" id="L213">        int cpt = 0;</span>
+<span class="nc" id="L212">        final String[] args = msg.split(&quot; &quot;);</span>
+<span class="nc" id="L213">        int cpt = 0;</span>
         long tempDelay;
         try {
-<span class="fc" id="L216">          tempDelay = Long.parseLong(args[0]);</span>
-<span class="fc" id="L217">          cpt++;</span>
-<span class="fc" id="L218">        } catch (final NumberFormatException e) {</span>
-<span class="fc" id="L219">          tempDelay = delay;</span>
-<span class="fc" id="L220">        }</span>
-<span class="fc bfc" id="L221" title="All 2 branches covered.">        if (tempDelay &lt; 0) {</span>
+<span class="nc" id="L216">          tempDelay = Long.parseLong(args[0]);</span>
+<span class="nc" id="L217">          cpt++;</span>
+<span class="nc" id="L218">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L219">          tempDelay = delay;</span>
+<span class="nc" id="L220">        }</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        if (tempDelay &lt; 0) {</span>
           // Shutdown Order
-<span class="fc" id="L223">          isShutdown = true;</span>
-<span class="fc" id="L224">          logger.warn(&quot;Shutdown order received&quot;);</span>
-<span class="fc" id="L225">          response = LocalExecDefaultResult.ShutdownOnGoing.getStatus() + &quot; &quot; +</span>
-<span class="fc" id="L226">                     LocalExecDefaultResult.ShutdownOnGoing.getResult();</span>
-<span class="fc" id="L227">          final Thread thread = new GGLEThreadShutdown(factory);</span>
-<span class="fc" id="L228">          thread.start();</span>
-<span class="fc" id="L229">          return;</span>
+<span class="nc" id="L223">          isShutdown = true;</span>
+<span class="nc" id="L224">          logger.warn(&quot;Shutdown order received&quot;);</span>
+<span class="nc" id="L225">          response = LocalExecDefaultResult.ShutdownOnGoing.getStatus() + &quot; &quot; +</span>
+<span class="nc" id="L226">                     LocalExecDefaultResult.ShutdownOnGoing.getResult();</span>
+<span class="nc" id="L227">          final Thread thread = new GGLEThreadShutdown(factory);</span>
+<span class="nc" id="L228">          thread.start();</span>
+<span class="nc" id="L229">          return;</span>
         }
-<span class="fc" id="L231">        final String binary = args[cpt++];</span>
-<span class="fc" id="L232">        final File exec = new File(binary);</span>
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (exec.isAbsolute()) {</span>
+<span class="nc" id="L231">        final String binary = args[cpt++];</span>
+<span class="nc" id="L232">        final File exec = new File(binary);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (exec.isAbsolute()) {</span>
           // If true file, is it executable
 <span class="nc bnc" id="L235" title="All 2 branches missed.">          if (!exec.canExecute()) {</span>
 <span class="nc" id="L236">            logger.error(&quot;Exec command is not executable: &quot; + msg);</span>
@@ -240,27 +240,27 @@ public class LocalExecServerHandler
           }
         }
         // Create command with parameters
-<span class="fc" id="L243">        final CommandLine commandLine = new CommandLine(binary);</span>
-<span class="fc bfc" id="L244" title="All 2 branches covered.">        for (; cpt &lt; args.length; cpt++) {</span>
-<span class="fc" id="L245">          commandLine.addArgument(args[cpt]);</span>
+<span class="nc" id="L243">        final CommandLine commandLine = new CommandLine(binary);</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        for (; cpt &lt; args.length; cpt++) {</span>
+<span class="nc" id="L245">          commandLine.addArgument(args[cpt]);</span>
         }
-<span class="fc" id="L247">        final DefaultExecutor defaultExecutor = new DefaultExecutor();</span>
+<span class="nc" id="L247">        final DefaultExecutor defaultExecutor = new DefaultExecutor();</span>
         ByteArrayOutputStream outputStream;
-<span class="fc" id="L249">        outputStream = new ByteArrayOutputStream();</span>
-<span class="fc" id="L250">        final PumpStreamHandler pumpStreamHandler =</span>
+<span class="nc" id="L249">        outputStream = new ByteArrayOutputStream();</span>
+<span class="nc" id="L250">        final PumpStreamHandler pumpStreamHandler =</span>
             new PumpStreamHandler(outputStream);
-<span class="fc" id="L252">        defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
-<span class="fc" id="L253">        final int[] correctValues = { 0, 1 };</span>
-<span class="fc" id="L254">        defaultExecutor.setExitValues(correctValues);</span>
-<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        if (tempDelay &gt; 0) {</span>
+<span class="nc" id="L252">        defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
+<span class="nc" id="L253">        final int[] correctValues = { 0, 1 };</span>
+<span class="nc" id="L254">        defaultExecutor.setExitValues(correctValues);</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (tempDelay &gt; 0) {</span>
           // If delay (max time), then setup Watchdog
-<span class="fc" id="L257">          watchdog = new ExecuteWatchdog(tempDelay);</span>
-<span class="fc" id="L258">          defaultExecutor.setWatchdog(watchdog);</span>
+<span class="nc" id="L257">          watchdog = new ExecuteWatchdog(tempDelay);</span>
+<span class="nc" id="L258">          defaultExecutor.setWatchdog(watchdog);</span>
         }
-<span class="fc" id="L260">        int status = -1;</span>
+<span class="nc" id="L260">        int status = -1;</span>
         try {
           // Execute the command
-<span class="fc" id="L263">          status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L263">          status = defaultExecutor.execute(commandLine);//NOSONAR</span>
 <span class="nc" id="L264">        } catch (final ExecuteException e) {</span>
 <span class="nc bnc" id="L265" title="All 2 branches missed.">          if (e.getExitValue() == -559038737) {</span>
             // Cannot run immediately so retry once
@@ -321,13 +321,13 @@ public class LocalExecServerHandler
 <span class="nc" id="L321">                     LocalExecDefaultResult.BadExecution.getResult();</span>
 <span class="nc" id="L322">          FileUtils.close(outputStream);</span>
 <span class="nc" id="L323">          return;</span>
-<span class="pc" id="L324">        }</span>
+<span class="nc" id="L324">        }</span>
         try {
-<span class="fc" id="L326">          pumpStreamHandler.stop();</span>
+<span class="nc" id="L326">          pumpStreamHandler.stop();</span>
 <span class="nc" id="L327">        } catch (final IOException ignored) {</span>
           // nothing
-<span class="fc" id="L329">        }</span>
-<span class="pc bpc" id="L330" title="3 of 4 branches missed.">        if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
+<span class="nc" id="L329">        }</span>
+<span class="nc bnc" id="L330" title="All 4 branches missed.">        if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
 <span class="nc bnc" id="L331" title="All 2 branches missed.">            watchdog.killedProcess()) {</span>
           // kill by the watchdoc (time out)
 <span class="nc" id="L333">          logger.error(&quot;Exec is in Time Out&quot;);</span>
@@ -336,27 +336,27 @@ public class LocalExecServerHandler
 <span class="nc" id="L336">          FileUtils.close(outputStream);</span>
         } else {
           try {
-<span class="fc" id="L339">            response = status + &quot; &quot; +</span>
-<span class="fc" id="L340">                       outputStream.toString(WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L339">            response = status + &quot; &quot; +</span>
+<span class="nc" id="L340">                       outputStream.toString(WaarpStringUtils.UTF8.name());</span>
 <span class="nc" id="L341">          } catch (final UnsupportedEncodingException e) {</span>
 <span class="nc" id="L342">            response = status + &quot; &quot; + outputStream;</span>
-<span class="fc" id="L343">          }</span>
-<span class="fc" id="L344">          FileUtils.close(outputStream);</span>
+<span class="nc" id="L343">          }</span>
+<span class="nc" id="L344">          FileUtils.close(outputStream);</span>
         }
       }
     } finally {
       // We do not need to write a ByteBuf here.
       // We know the encoder inserted at LocalExecInitializer will do the
       // conversion.
-<span class="fc" id="L351">      ctx.channel().writeAndFlush(response + '\n');</span>
-<span class="fc" id="L352">      answered = true;</span>
-<span class="fc bfc" id="L353" title="All 2 branches covered.">      if (watchdog != null) {</span>
-<span class="fc" id="L354">        watchdog.stop();</span>
+<span class="nc" id="L351">      ctx.channel().writeAndFlush(response + '\n');</span>
+<span class="nc" id="L352">      answered = true;</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">      if (watchdog != null) {</span>
+<span class="nc" id="L354">        watchdog.stop();</span>
       }
-<span class="fc" id="L356">      logger.info(&quot;End of Command: &quot; + msg + &quot; : &quot; + response);</span>
-<span class="fc" id="L357">      ctx.channel().writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + '\n');</span>
+<span class="nc" id="L356">      logger.info(&quot;End of Command: &quot; + msg + &quot; : &quot; + response);</span>
+<span class="nc" id="L357">      ctx.channel().writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + '\n');</span>
     }
-<span class="fc" id="L359">  }</span>
+<span class="nc" id="L359">  }</span>
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)

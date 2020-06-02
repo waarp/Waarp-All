@@ -111,7 +111,7 @@
 <a class="jxr_linenumber" name="L103" href="#L103">103</a>     <a name="BusinessDAO" href="../../../../../../../org/waarp/openr66/dao/BusinessDAO.html#BusinessDAO">BusinessDAO</a> businessDAO = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L104" href="#L104">104</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L105" href="#L105">105</a>       businessDAO = DAO_FACTORY.getBusinessDAO();
-<a class="jxr_linenumber" name="L106" href="#L106">106</a>       <strong class="jxr_keyword">final</strong> <a name="Business" href="../../../../../../../org/waarp/openr66/pojo/Business.html#Business">Business</a> business = businessDAO.select(SERVER_NAME);
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>       <strong class="jxr_keyword">final</strong> <a name="Business" href="../../../../../../../org/waarp/openr66/pojo/Business.html#Business">Business</a> business = businessDAO.select(serverName());
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>       <strong class="jxr_keyword">if</strong> (business != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>         <strong class="jxr_keyword">final</strong> ObjectNode responseObject =
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>             HostConfigConverter.businessToNode(business);
@@ -149,7 +149,7 @@
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>       businessDAO = DAO_FACTORY.getBusinessDAO();
 <a class="jxr_linenumber" name="L143" href="#L143">143</a> 
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">if</strong> (!businessDAO.exist(SERVER_NAME)) {
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">if</strong> (!businessDAO.exist(serverName())) {
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">final</strong> ObjectNode requestObject = JsonUtils.deserializeRequest(request);
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>         <strong class="jxr_keyword">final</strong> <a name="Business" href="../../../../../../../org/waarp/openr66/pojo/Business.html#Business">Business</a> config =
 <a class="jxr_linenumber" name="L147" href="#L147">147</a>             HostConfigConverter.nodeToNewBusiness(requestObject);
@@ -160,7 +160,7 @@
 <a class="jxr_linenumber" name="L152" href="#L152">152</a>         <strong class="jxr_keyword">final</strong> String responseText = JsonUtils.nodeToString(responseObject);
 <a class="jxr_linenumber" name="L153" href="#L153">153</a>         responder.sendJson(CREATED, responseText);
 <a class="jxr_linenumber" name="L154" href="#L154">154</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="RestErrorException" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestErrorException.html#RestErrorException">RestErrorException</a>(ALREADY_EXISTING(SERVER_NAME));
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="RestErrorException" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestErrorException.html#RestErrorException">RestErrorException</a>(ALREADY_EXISTING(serverName()));
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>       }
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAOConnectionException" href="../../../../../../../org/waarp/openr66/dao/exception/DAOConnectionException.html#DAOConnectionException">DAOConnectionException</a> e) {
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> InternalServerErrorException(e);
@@ -187,12 +187,12 @@
 <a class="jxr_linenumber" name="L179" href="#L179">179</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L180" href="#L180">180</a>       businessDAO = DAO_FACTORY.getBusinessDAO();
 <a class="jxr_linenumber" name="L181" href="#L181">181</a> 
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>       <strong class="jxr_keyword">if</strong> (!businessDAO.exist(SERVER_NAME)) {
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>       <strong class="jxr_keyword">if</strong> (!businessDAO.exist(serverName())) {
 <a class="jxr_linenumber" name="L183" href="#L183">183</a>         responder.sendStatus(NOT_FOUND);
 <a class="jxr_linenumber" name="L184" href="#L184">184</a>       }
 <a class="jxr_linenumber" name="L185" href="#L185">185</a> 
 <a class="jxr_linenumber" name="L186" href="#L186">186</a>       <strong class="jxr_keyword">final</strong> ObjectNode requestObject = JsonUtils.deserializeRequest(request);
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>       <strong class="jxr_keyword">final</strong> <a name="Business" href="../../../../../../../org/waarp/openr66/pojo/Business.html#Business">Business</a> oldConfig = businessDAO.select(SERVER_NAME);
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>       <strong class="jxr_keyword">final</strong> <a name="Business" href="../../../../../../../org/waarp/openr66/pojo/Business.html#Business">Business</a> oldConfig = businessDAO.select(serverName());
 <a class="jxr_linenumber" name="L188" href="#L188">188</a>       <strong class="jxr_keyword">final</strong> <a name="Business" href="../../../../../../../org/waarp/openr66/pojo/Business.html#Business">Business</a> newConfig =
 <a class="jxr_linenumber" name="L189" href="#L189">189</a>           HostConfigConverter.nodeToUpdatedBusiness(requestObject, oldConfig);
 <a class="jxr_linenumber" name="L190" href="#L190">190</a>       businessDAO.update(newConfig);
@@ -225,8 +225,8 @@
 <a class="jxr_linenumber" name="L217" href="#L217">217</a>     <a name="BusinessDAO" href="../../../../../../../org/waarp/openr66/dao/BusinessDAO.html#BusinessDAO">BusinessDAO</a> businessDAO = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L218" href="#L218">218</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L219" href="#L219">219</a>       businessDAO = DAO_FACTORY.getBusinessDAO();
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>       <strong class="jxr_keyword">if</strong> (businessDAO.exist(SERVER_NAME)) {
-<a class="jxr_linenumber" name="L221" href="#L221">221</a>         businessDAO.delete(businessDAO.select(SERVER_NAME));
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>       <strong class="jxr_keyword">if</strong> (businessDAO.exist(serverName())) {
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>         businessDAO.delete(businessDAO.select(serverName()));
 <a class="jxr_linenumber" name="L222" href="#L222">222</a>         responder.sendStatus(NO_CONTENT);
 <a class="jxr_linenumber" name="L223" href="#L223">223</a>       } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L224" href="#L224">224</a>         responder.sendStatus(NOT_FOUND);

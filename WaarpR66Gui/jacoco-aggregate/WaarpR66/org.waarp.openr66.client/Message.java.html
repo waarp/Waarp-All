@@ -53,8 +53,8 @@ public class Message implements Runnable {
    */
   private static WaarpLogger logger;
 
-<span class="fc" id="L56">  protected static String _infoArgs = Messages.getString(&quot;Message.0&quot;) + Messages</span>
-<span class="fc" id="L57">      .getString(&quot;Message.OutputFormat&quot;);</span>
+<span class="nc" id="L56">  protected static String _infoArgs = Messages.getString(&quot;Message.0&quot;) + Messages</span>
+<span class="nc" id="L57">      .getString(&quot;Message.OutputFormat&quot;);</span>
   //$NON-NLS-1$
 
   private final NetworkTransaction networkTransaction;
@@ -68,7 +68,7 @@ public class Message implements Runnable {
   private final TestPacket testPacket;
 
   static String srequested;
-<span class="fc" id="L71">  static String smessage = &quot;MESSAGE&quot;;</span>
+<span class="nc" id="L71">  static String smessage = &quot;MESSAGE&quot;;</span>
 
   /**
    * Parse the parameter and set current values
@@ -112,16 +112,16 @@ public class Message implements Runnable {
   }
 
   public Message(NetworkTransaction networkTransaction, R66Future future,
-<span class="fc" id="L115">                 String requested, TestPacket packet) {</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="fc" id="L117">      logger = WaarpLoggerFactory.getLogger(Message.class);</span>
+<span class="nc" id="L115">                 String requested, TestPacket packet) {</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L117">      logger = WaarpLoggerFactory.getLogger(Message.class);</span>
     }
-<span class="fc" id="L119">    this.networkTransaction = networkTransaction;</span>
-<span class="fc" id="L120">    this.future = future;</span>
-<span class="fc" id="L121">    this.requested = requested;</span>
-<span class="fc" id="L122">    testPacket = packet;</span>
-<span class="fc" id="L123">    hostAuth = null;</span>
-<span class="fc" id="L124">  }</span>
+<span class="nc" id="L119">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L120">    this.future = future;</span>
+<span class="nc" id="L121">    this.requested = requested;</span>
+<span class="nc" id="L122">    testPacket = packet;</span>
+<span class="nc" id="L123">    hostAuth = null;</span>
+<span class="nc" id="L124">  }</span>
 
   public Message(NetworkTransaction networkTransaction, R66Future future,
 <span class="nc" id="L127">                 DbHostAuth hostAuth, TestPacket packet) {</span>
@@ -137,17 +137,17 @@ public class Message implements Runnable {
 
   @Override
   public void run() {
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L141">      logger = WaarpLoggerFactory.getLogger(Message.class);</span>
     }
     // Connection
     DbHostAuth host;
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    if (hostAuth == null) {</span>
-<span class="fc" id="L146">      host = R66Auth.getServerAuth(requested);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (hostAuth == null) {</span>
+<span class="nc" id="L146">      host = R66Auth.getServerAuth(requested);</span>
     } else {
 <span class="nc" id="L148">      host = hostAuth;</span>
     }
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (host == null) {</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (host == null) {</span>
 <span class="nc" id="L151">      logger.debug(</span>
 <span class="nc" id="L152">          Messages.getString(&quot;Message.HostNotFound&quot;) + requested); //$NON-NLS-1$</span>
 <span class="nc" id="L153">      final R66Result result =</span>
@@ -156,7 +156,7 @@ public class Message implements Runnable {
 <span class="nc" id="L156">      future.cancel();</span>
 <span class="nc" id="L157">      return;</span>
     }
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">    if (host.isClient()) {</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (host.isClient()) {</span>
 <span class="nc" id="L160">      logger.error(</span>
 <span class="nc" id="L161">          Messages.getString(&quot;Message.HostIsClient&quot;) + requested); //$NON-NLS-1$</span>
 <span class="nc" id="L162">      final R66Result result =</span>
@@ -165,13 +165,13 @@ public class Message implements Runnable {
 <span class="nc" id="L165">      future.cancel();</span>
 <span class="nc" id="L166">      return;</span>
     }
-<span class="fc" id="L168">    SocketAddress socketAddress = host.getSocketAddress();</span>
-<span class="fc" id="L169">    final boolean isSSL = host.isSsl();</span>
+<span class="nc" id="L168">    SocketAddress socketAddress = host.getSocketAddress();</span>
+<span class="nc" id="L169">    final boolean isSSL = host.isSsl();</span>
     LocalChannelReference localChannelReference;
-<span class="fc" id="L171">    localChannelReference = networkTransaction</span>
-<span class="fc" id="L172">        .createConnectionWithRetry(socketAddress, isSSL, future);</span>
-<span class="fc" id="L173">    socketAddress = null;</span>
-<span class="pc bpc" id="L174" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L171">    localChannelReference = networkTransaction</span>
+<span class="nc" id="L172">        .createConnectionWithRetry(socketAddress, isSSL, future);</span>
+<span class="nc" id="L173">    socketAddress = null;</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
 <span class="nc" id="L175">      logger.debug(Messages.getString(&quot;AdminR66OperationsGui.188&quot;) +</span>
                    requested); //$NON-NLS-1$
 <span class="nc" id="L177">      final R66Result result =</span>
@@ -180,16 +180,16 @@ public class Message implements Runnable {
 <span class="nc" id="L180">      future.cancel();</span>
 <span class="nc" id="L181">      return;</span>
     }
-<span class="fc" id="L183">    localChannelReference.sessionNewState(R66FiniteDualStates.TEST);</span>
+<span class="nc" id="L183">    localChannelReference.sessionNewState(R66FiniteDualStates.TEST);</span>
     try {
-<span class="fc" id="L185">      ChannelUtils</span>
-<span class="fc" id="L186">          .writeAbstractLocalPacket(localChannelReference, testPacket, false);</span>
+<span class="nc" id="L185">      ChannelUtils</span>
+<span class="nc" id="L186">          .writeAbstractLocalPacket(localChannelReference, testPacket, false);</span>
 <span class="nc" id="L187">    } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L188">      future.setResult(null);</span>
 <span class="nc" id="L189">      future.setFailure(e);</span>
 <span class="nc" id="L190">      localChannelReference.close();</span>
-<span class="fc" id="L191">    }</span>
-<span class="fc" id="L192">  }</span>
+<span class="nc" id="L191">    }</span>
+<span class="nc" id="L192">  }</span>
 
   public static void main(String[] args) {
 <span class="nc" id="L195">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>

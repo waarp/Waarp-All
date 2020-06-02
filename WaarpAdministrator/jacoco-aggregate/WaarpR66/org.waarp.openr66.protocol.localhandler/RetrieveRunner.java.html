@@ -50,8 +50,8 @@ public class RetrieveRunner extends Thread {
   /**
    * Internal Logger
    */
-<span class="fc" id="L53">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L54">      WaarpLoggerFactory.getLogger(RetrieveRunner.class);</span>
+<span class="nc" id="L53">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L54">      WaarpLoggerFactory.getLogger(RetrieveRunner.class);</span>
 
   private final R66Session session;
 
@@ -59,7 +59,7 @@ public class RetrieveRunner extends Thread {
 
   private boolean done;
 
-<span class="pc" id="L62">  protected final AtomicBoolean running = new AtomicBoolean(true);</span>
+<span class="nc" id="L62">  protected final AtomicBoolean running = new AtomicBoolean(true);</span>
   private final String nameThread;
 
 <span class="nc" id="L65">  protected RetrieveRunner() {</span>
@@ -74,13 +74,13 @@ public class RetrieveRunner extends Thread {
   /**
    * @param session
    */
-<span class="fc" id="L77">  public RetrieveRunner(R66Session session) {</span>
-<span class="fc" id="L78">    this.session = session;</span>
-<span class="fc" id="L79">    localChannelReference = this.session.getLocalChannelReference();</span>
-<span class="fc" id="L80">    nameThread = &quot;RetrieveRunner: &quot; + localChannelReference.getLocalId();</span>
-<span class="fc" id="L81">    setName(nameThread);</span>
-<span class="fc" id="L82">    setDaemon(true);</span>
-<span class="fc" id="L83">  }</span>
+<span class="nc" id="L77">  public RetrieveRunner(R66Session session) {</span>
+<span class="nc" id="L78">    this.session = session;</span>
+<span class="nc" id="L79">    localChannelReference = this.session.getLocalChannelReference();</span>
+<span class="nc" id="L80">    nameThread = &quot;RetrieveRunner: &quot; + localChannelReference.getLocalId();</span>
+<span class="nc" id="L81">    setName(nameThread);</span>
+<span class="nc" id="L82">    setDaemon(true);</span>
+<span class="nc" id="L83">  }</span>
 
   /**
    * Try to stop the runner
@@ -91,12 +91,12 @@ public class RetrieveRunner extends Thread {
 
   @Override
   public void run() {
-<span class="fc" id="L94">    boolean requestValidDone = false;</span>
-<span class="fc" id="L95">    setName(nameThread);</span>
+<span class="nc" id="L94">    boolean requestValidDone = false;</span>
+<span class="nc" id="L95">    setName(nameThread);</span>
     try {
       try {
-<span class="fc" id="L98">        if (session.getRunner().getGloballaststep() ==</span>
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            TASKSTEP.POSTTASK.ordinal()) {</span>
+<span class="nc" id="L98">        if (session.getRunner().getGloballaststep() ==</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            TASKSTEP.POSTTASK.ordinal()) {</span>
 <span class="nc" id="L100">          logger.debug(&quot;Restart from POSTTASK: EndTransfer&quot;);</span>
           // restart from PostTask global step so just end now
           try {
@@ -107,8 +107,8 @@ public class RetrieveRunner extends Thread {
 <span class="nc" id="L107">            return;</span>
 <span class="nc" id="L108">          }</span>
         } else {
-<span class="fc" id="L110">          logger.debug(&quot;Start retrieve operation (send)&quot;);</span>
-<span class="fc" id="L111">          session.getFile().retrieveBlocking(running);</span>
+<span class="nc" id="L110">          logger.debug(&quot;Start retrieve operation (send)&quot;);</span>
+<span class="nc" id="L111">          session.getFile().retrieveBlocking(running);</span>
         }
 <span class="nc" id="L113">      } catch (final OpenR66RunnerErrorException e) {</span>
 <span class="nc" id="L114">        transferInError(e);</span>
@@ -118,32 +118,32 @@ public class RetrieveRunner extends Thread {
 <span class="nc" id="L118">        transferInError(e);</span>
 <span class="nc" id="L119">        logger.info(END_RETRIEVE_IN_ERROR);</span>
 <span class="nc" id="L120">        return;</span>
-<span class="fc" id="L121">      }</span>
-<span class="fc" id="L122">      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();</span>
-<span class="fc" id="L123">      logger.debug(&quot;Await future End Transfer done: &quot; +</span>
-<span class="fc" id="L124">                   localChannelReference.getFutureEndTransfer().isSuccess());</span>
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">      if (localChannelReference.getFutureEndTransfer().isDone() &amp;&amp;</span>
-<span class="fc bfc" id="L126" title="All 2 branches covered.">          localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
+<span class="nc" id="L121">      }</span>
+<span class="nc" id="L122">      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();</span>
+<span class="nc" id="L123">      logger.debug(&quot;Await future End Transfer done: &quot; +</span>
+<span class="nc" id="L124">                   localChannelReference.getFutureEndTransfer().isSuccess());</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (localChannelReference.getFutureEndTransfer().isDone() &amp;&amp;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">          localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
         // send a validation
-<span class="fc" id="L128">        requestValidDone = true;</span>
-<span class="fc" id="L129">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
-<span class="fc" id="L130">        final EndRequestPacket validPacket =</span>
-<span class="fc" id="L131">            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());</span>
-<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (session.getExtendedProtocol() &amp;&amp;</span>
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">            session.getBusinessObject() != null &amp;&amp;</span>
+<span class="nc" id="L128">        requestValidDone = true;</span>
+<span class="nc" id="L129">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
+<span class="nc" id="L130">        final EndRequestPacket validPacket =</span>
+<span class="nc" id="L131">            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (session.getExtendedProtocol() &amp;&amp;</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            session.getBusinessObject() != null &amp;&amp;</span>
 <span class="nc bnc" id="L134" title="All 2 branches missed.">            session.getBusinessObject().getInfo(session) != null) {</span>
 <span class="nc" id="L135">          validPacket.setOptional(session.getBusinessObject().getInfo(session));</span>
         }
         try {
-<span class="fc" id="L138">          ChannelUtils</span>
-<span class="fc" id="L139">              .writeAbstractLocalPacket(localChannelReference, validPacket,</span>
+<span class="nc" id="L138">          ChannelUtils</span>
+<span class="nc" id="L139">              .writeAbstractLocalPacket(localChannelReference, validPacket,</span>
                                         true);
 <span class="nc" id="L141">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
           // nothing
-<span class="fc" id="L143">        }</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (!localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
-<span class="fc" id="L145">            Configuration.configuration.getTimeoutCon()) ||</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">            Thread.interrupted()) {</span>
+<span class="nc" id="L143">        }</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().awaitOrInterruptible(</span>
+<span class="nc" id="L145">            Configuration.configuration.getTimeoutCon()) ||</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            Thread.interrupted()) {</span>
           // valid it however
 <span class="nc" id="L148">          session.getRunner().setAllDone();</span>
           try {
@@ -154,14 +154,14 @@ public class RetrieveRunner extends Thread {
 <span class="nc" id="L154">          localChannelReference.validateRequest(</span>
 <span class="nc" id="L155">              localChannelReference.getFutureEndTransfer().getResult());</span>
         }
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        if (session.getRunner() != null &amp;&amp;</span>
-<span class="pc bpc" id="L158" title="1 of 2 branches missed.">            session.getRunner().isSelfRequested()) {</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (session.getRunner() != null &amp;&amp;</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            session.getRunner().isSelfRequested()) {</span>
 <span class="nc" id="L159">          localChannelReference.close();</span>
         }
-<span class="fc" id="L161">        done = true;</span>
-<span class="fc" id="L162">      } else {</span>
-<span class="fc" id="L163">        checkDoneNotAnswered();</span>
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="nc" id="L161">        done = true;</span>
+<span class="nc" id="L162">      } else {</span>
+<span class="nc" id="L163">        checkDoneNotAnswered();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
 <span class="nc" id="L165">          R66Result result =</span>
 <span class="nc" id="L166">              localChannelReference.getFutureEndTransfer().getResult();</span>
 <span class="nc bnc" id="L167" title="All 2 branches missed.">          if (result == null) {</span>
@@ -170,26 +170,26 @@ public class RetrieveRunner extends Thread {
           }
 <span class="nc" id="L171">          localChannelReference.invalidateRequest(result);</span>
         }
-<span class="fc" id="L173">        done = true;</span>
-<span class="fc" id="L174">        logger.info(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L173">        done = true;</span>
+<span class="nc" id="L174">        logger.info(END_RETRIEVE_IN_ERROR);</span>
       }
     } finally {
       try {
-<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        if (!done) {</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (!done) {</span>
 <span class="nc" id="L179">          finalizeRequestDone(requestValidDone);</span>
         }
-<span class="fc" id="L181">        NetworkTransaction.normalEndRetrieve(localChannelReference);</span>
+<span class="nc" id="L181">        NetworkTransaction.normalEndRetrieve(localChannelReference);</span>
       } finally {
-<span class="fc" id="L183">        setName(&quot;Finished_&quot; + nameThread);</span>
+<span class="nc" id="L183">        setName(&quot;Finished_&quot; + nameThread);</span>
       }
     }
-<span class="fc" id="L186">  }</span>
+<span class="nc" id="L186">  }</span>
 
   private boolean checkDoneNotAnswered() {
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (localChannelReference.getFutureEndTransfer().isDone()) {</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    if (localChannelReference.getFutureEndTransfer().isDone()) {</span>
       // Done and Not Success =&gt; error
-<span class="fc" id="L191">      if (!localChannelReference.getFutureEndTransfer().getResult()</span>
-<span class="pc bpc" id="L192" title="1 of 2 branches missed.">                                .isAnswered()) {</span>
+<span class="nc" id="L191">      if (!localChannelReference.getFutureEndTransfer().getResult()</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                                .isAnswered()) {</span>
 <span class="nc" id="L193">        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
 <span class="nc" id="L194">        final ErrorPacket error =</span>
 <span class="nc" id="L195">            new ErrorPacket(localChannelReference.getErrorMessage(),</span>
@@ -204,7 +204,7 @@ public class RetrieveRunner extends Thread {
           // ignore
 <span class="nc" id="L205">        }</span>
       }
-<span class="fc" id="L207">      return true;</span>
+<span class="nc" id="L207">      return true;</span>
     }
 <span class="nc" id="L209">    return false;</span>
   }
@@ -289,7 +289,7 @@ public class RetrieveRunner extends Thread {
                                                 LocalChannelReference localChannelReference)
       throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
              OpenR66ProtocolSystemException {
-<span class="fc" id="L292">    return ChannelUtils.writeBackDataBlock(localChannelReference, block);</span>
+<span class="nc" id="L292">    return ChannelUtils.writeBackDataBlock(localChannelReference, block);</span>
   }
 
   /**
