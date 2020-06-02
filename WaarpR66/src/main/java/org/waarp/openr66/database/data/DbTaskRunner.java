@@ -2151,6 +2151,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
+   * @param blocksize the block size to set
+   */
+  public void setBlocksize(int blocksize) {
+    pojo.setBlockSize(blocksize);
+  }
+
+  /**
    * @param filename the filename to set
    */
   public void setFilename(String filename) {

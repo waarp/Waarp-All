@@ -24,6 +24,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
@@ -35,7 +36,11 @@ import org.waarp.common.logging.SysErrLogger;
 public final class WaarpNettyUtil {
 
   private static final int TIMEOUT_MILLIS = 1000;
+  // Default optimal value for Waarp
   private static final int BUFFER_SIZE_1MB = 1048576;
+  // Default optimal value from Netty (tested as correct for Waarp)
+  private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;
+  private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024;
 
   private WaarpNettyUtil() {
   }
@@ -57,6 +62,9 @@ public final class WaarpNettyUtil {
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
     bootstrap.option(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
     bootstrap.option(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
+    bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,
+                     new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK,
+                                              DEFAULT_HIGH_WATER_MARK));
     bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }
 
@@ -79,6 +87,9 @@ public final class WaarpNettyUtil {
     bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
     bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
     bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
+    bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
+                          new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK,
+                                                   DEFAULT_HIGH_WATER_MARK));
     bootstrap
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }

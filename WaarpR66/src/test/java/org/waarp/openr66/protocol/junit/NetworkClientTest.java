@@ -705,6 +705,51 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
+  public void test5_DirectTransferMultipleBlockSize() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 1000000);
+    final ExecutorService executorService = Executors.newCachedThreadPool();
+    final int nb = 10;
+    final R66Future[] arrayFuture = new R66Future[nb];
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    for (int i = 0; i < nb; i++) {
+      arrayFuture[i] = new R66Future(true);
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(arrayFuture[i], "hostas", "testTask.txt",
+                               "rule3", "Test SendDirect Small", true,
+                               8192 * (i + 1) * 2, DbConstantR66.ILLEGALVALUE,
+                               networkTransaction);
+      executorService.execute(transaction);
+    }
+    int success = 0;
+    int error = 0;
+    for (int i = 0; i < nb; i++) {
+      arrayFuture[i].awaitOrInterruptible();
+      if (arrayFuture[i].getRunner() != null) {
+        logger.warn("{} {}", arrayFuture[i].getRunner().getBlocksize(),
+                    8192 * (i + 1) * 2);
+        assertTrue(
+            arrayFuture[i].getRunner().getBlocksize() <= 8192 * (i + 1) * 2);
+        assertTrue(arrayFuture[i].getRunner().getBlocksize() <=
+                   Configuration.configuration.getBlockSize());
+        dbTaskRunners.add(arrayFuture[i].getRunner());
+      }
+      if (arrayFuture[i].isSuccess()) {
+        success++;
+      } else {
+        error++;
+      }
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    executorService.shutdown();
+    totest.delete();
+    assertEquals("Success should be total", nb, success);
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  @Test
   public void test5_DirectTransferThroughId() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     logger.warn("Start Test of DirectTransfer");
