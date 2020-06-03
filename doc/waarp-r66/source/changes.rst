@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.3.4 (2020-06-01)
+Waarp R66 3.3.4 (2020-06-02)
 ============================
 
 Correctifs
@@ -21,21 +21,21 @@ Correctifs
 - Corrige les dépendences dans les shading jars et les pom
 - Corrige l'interface DbHostConfiguration dans le Web Admin
 - Corrige la classe HttpWriteCacheEnable
-- Corrige le Web Admin sur les écrans Listing et CancelRestart pour le tri selon
-  le specialId et pour le boutton "Clear"
-  (issue [`#35 <https://github.com/waarp/Waarp-All/issues/35>`__])
-- Corrige l'interface RESTV2 pour les accès avec droits non pris en compte
-  (issue [`#37 <https://github.com/waarp/Waarp-All/issues/37>`__])
+- [`#35 <https://github.com/waarp/Waarp-All/issues/35>`__] Corrige le Web Admin
+  sur les écrans Listing et CancelRestart pour le tri selon le specialId et pour
+  le boutton "Clear"
+- [`#37 <https://github.com/waarp/Waarp-All/issues/37>`__] Corrige l'interface
+  RESTV2 pour les accès avec droits non pris en compte
 - Nettoyage du code
 - Corrige l'intégration de SonarQube avec Maven
-- Corrige l'exemple de la documentation sur l'authentification HMAC (pull
-  request [`#38 <https://github.com/waarp/Waarp-All/pull/38>`__])
-- Correction de la signature des requêtes dans l'API REST v2 (pull
-  request [`#42 <https://github.com/waarp/Waarp-All/pull/42>`__])
-- Correction de l'authentification HMAC de l'API REST v2 (pull
-  request [`#43 <https://github.com/waarp/Waarp-All/pull/43>`__])
-- Correction d'un bug sur la taille des paquets (pull
-  request [`#45 <https://github.com/waarp/Waarp-All/pull/45>`__])
+- [`#38 <https://github.com/waarp/Waarp-All/pull/38>`__] Corrige l'exemple de
+  la documentation sur l'authentification HMAC
+- [`#42 <https://github.com/waarp/Waarp-All/pull/42>`__] Correction de la
+  signature des requêtes dans l'API REST v2
+- [`#43 <https://github.com/waarp/Waarp-All/pull/43>`__] Correction de
+  l'authentification HMAC de l'API REST v2
+- [`#45 <https://github.com/waarp/Waarp-All/pull/45>`__] Correction d'un bug
+  sur la taille des paquets
 
 Waarp R66 3.3.3 (2020-05-07)
 ============================
