@@ -1,0 +1,82 @@
+Waarp ICAP
+
+  The Waarp ICAP client project contains several classes that are common with different
+  sub projects of Waarp (FTP, R66, ...).
+
+  These classes are for ICAP client implementation.
+
+Dependency
+
+  This project has Netty framework (NIO great framework support at {{http://netty.io}}
+  as dependency. It is tend to be really efficient, both in term of memory, threads and network
+  bandwidth..
+  It contains a re implementation of the FastMD5 library from Santeri Paavolainen and Timothy W Macinta.
+
+Specificities
+
+  These classes are for ICAP Client implementation (RFC 3507).
+
+  The command line is as follow:
+
+  `IcapScanFile -file arg -to arg -service arg [other options]`
+
+  Options:
+
+  * `-file arg`              Specify the file path to operate on (if arg is EICARTEST, will send a fake virus
+                             based on EICAR test)
+
+  * `-to arg`                Specify the requested Host
+
+  * `[-port arg]`            Specify the port on remote host to use (default 1344)
+
+  * `-service arg | -model arg`           Specify the service or model on remote host to use
+
+  * `[-previewSize size]`    Specify the Preview size to use (default negociated)
+
+  * `[-maxSize size]`        Specify the Max file size to use (default MAX_INTEGER)
+
+  * `[-blocSize size]`       Specify the Block size to use (default 8192)
+
+  * `[-receiveSize size]`    Specify the Receive size to use (default 65536)
+
+  * `[-timeout inMs]`        Specify the timeout to use (default equiv to 10 min)
+
+  * `[-keyPreview arg]`      Specify the key for Options to validate (default none)
+
+  * `[-stringPreview arg]`   Specify the substring for key for Options to validate (default none)
+
+  * `[-key204 arg]`          Specify the key for 204 ICAP to validate (default none)
+
+  * `[-string204 arg]`       Specify the substring for key for 204 ICAP to validate (default none)
+
+  * `[-key200 arg]`          Specify the key for 200 ICAP to validate (default none)
+
+  * `[-string200 arg]`       Specify the substring for key for 200 ICAP to validate (default none)
+
+  * `[-stringHttp arg]`      Specify the substring for HTTP 200 ICAP status to validate (default none)
+
+  * `[-logger arg]`          Specify the level of log between DEBUG | INFO | WARN | ERROR (default WARN)
+
+  * `[-errorDelete | -errorMove arg | -sendOnError]`    Specify the error delete action if wrong scan or
+    Specify the path to use if wrong scan or
+    Specify to send the file in error somewhere (mutual exclusive) (default none)
+
+  * '[-ignoreNetworkError]'  Specify that on network error, the file will be considered as OK
+
+  It returns exit value as follow:
+
+  * `0`: File is OK
+
+  * `1`: Bad arguments
+
+  * `2`: ICAP protocol error
+
+  * `3`: Network error
+
+  * `4`: Scan KO
+
+  * '5': Scan KO but post action required in error
+
+[images/waarp.jpg] Waarp Main Project Logo
+
+  See global Waarp project at {{http://waarp.github.com/Waarp/}}
