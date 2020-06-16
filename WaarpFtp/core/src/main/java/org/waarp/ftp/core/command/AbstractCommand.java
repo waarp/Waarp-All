@@ -22,6 +22,7 @@ package org.waarp.ftp.core.command;
 import org.waarp.common.command.CommandInterface;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.SessionInterface;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.session.FtpSession;
 
@@ -31,7 +32,7 @@ import java.util.regex.Pattern;
  * Abstract definition of an FTP Command
  */
 public abstract class AbstractCommand implements CommandInterface {
-  private static final Pattern COMPILE_BLANK = Pattern.compile(" ");
+  private static final Pattern COMPILE_BLANK = WaarpStringUtils.BLANK;
   /**
    * Code of Command
    */

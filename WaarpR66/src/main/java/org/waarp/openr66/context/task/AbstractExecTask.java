@@ -29,6 +29,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -62,7 +63,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractExecTask.class);
-  private static final Pattern COMPILE_BLANK = Pattern.compile(" ");
+  private static final Pattern COMPILE_BLANK = WaarpStringUtils.BLANK;
   private static final Pattern COMPILE_REPLACE_ALL =
       Pattern.compile("#([A-Z]+)#");
   private static final Pattern COMPILE_HASH =

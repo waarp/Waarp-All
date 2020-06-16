@@ -47,7 +47,7 @@ public abstract class AbstractTask implements Runnable {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractTask.class);
-  protected static final Pattern BLANK = Pattern.compile(" ");
+  protected static final Pattern BLANK = WaarpStringUtils.BLANK;
   /**
    * Current full path of current FILENAME
    */
@@ -237,8 +237,17 @@ public abstract class AbstractTask implements Runnable {
                R66Session session) {
     this.type = type;
     this.delay = delay;
-    this.argRule = argRule;
-    this.argTransfer = argTransfer;
+    if (argRule != null) {
+      this.argRule = argRule.replaceAll(WaarpStringUtils.BLANK_REGEX, " ");
+    } else {
+      this.argRule = null;
+    }
+    if (argTransfer != null) {
+      this.argTransfer =
+          argTransfer.replaceAll(WaarpStringUtils.BLANK_REGEX, " ");
+    } else {
+      this.argTransfer = null;
+    }
     this.session = session;
     futureCompletion = new R66Future(true);
   }

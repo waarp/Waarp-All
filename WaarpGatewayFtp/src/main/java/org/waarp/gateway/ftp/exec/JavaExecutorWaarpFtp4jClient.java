@@ -22,6 +22,7 @@ package org.waarp.gateway.ftp.exec;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.client.WaarpFtp4jClient;
 import org.waarp.openr66.context.task.FtpArgs;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
@@ -87,7 +88,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(JavaExecutorWaarpFtp4jClient.class);
-  private static final Pattern BLANK = Pattern.compile(" ");
+  private static final Pattern BLANK = WaarpStringUtils.BLANK;
 
   boolean waitForValidation;
   boolean useLocalExec;

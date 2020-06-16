@@ -110,7 +110,7 @@ public class AdminR66OperationsGui extends JFrame {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AdminR66OperationsGui.class);
-  private static final Pattern BLANCK_COMPILE = Pattern.compile(" ");
+  private static final Pattern BLANCK_COMPILE = WaarpStringUtils.BLANK;
   private static final String ADMIN_R_66_OPERATIONS_GUI_HOSTS =
       "AdminR66OperationsGui.Hosts";
   private static final String ADMIN_R_66_OPERATIONS_GUI_RULES =

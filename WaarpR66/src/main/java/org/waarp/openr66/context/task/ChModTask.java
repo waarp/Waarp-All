@@ -22,6 +22,7 @@ package org.waarp.openr66.context.task;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 
@@ -64,7 +65,7 @@ public class ChModTask extends AbstractTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(ChModTask.class);
-  private static final Pattern BLANK = Pattern.compile(" ");
+  private static final Pattern BLANK = WaarpStringUtils.BLANK;
 
   /**
    * @param argRule
