@@ -45,6 +45,7 @@ import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
@@ -760,7 +761,7 @@ public class Configuration {
                                      rejectedExecutionHandler);
     localTransaction = new LocalTransaction();
     WaarpLoggerFactory
-        .setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (isWarnOnStartup()) {
       logger.warn("Server Thread: " + getServerThread() + " Client Thread: " +
                   getClientThread() + " Runner Thread: " + getRunnerThread());

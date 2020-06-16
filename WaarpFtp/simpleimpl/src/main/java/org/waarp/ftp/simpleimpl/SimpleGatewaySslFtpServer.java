@@ -53,7 +53,8 @@ public class SimpleGatewaySslFtpServer {
           " <config-file> <ssl-config-file> SSL|AUTH");
       return;
     }
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(SimpleGatewaySslFtpServer.class);
     final String config = args[0];
     final FileBasedConfiguration configuration =

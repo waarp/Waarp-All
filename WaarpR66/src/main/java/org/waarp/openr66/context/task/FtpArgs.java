@@ -36,49 +36,62 @@ import java.io.File;
  * Class to parse arguments for FTP command
  */
 public class FtpArgs {
-  private static Option FILE_OPTION =
+  private static final Option FILE_OPTION =
       Option.builder("file").required(true).hasArg(true)
             .desc("Specify the file path to operate on").build();
-  private static Option HOST_OPTION =
+  private static final Option HOST_OPTION =
       Option.builder("to").required(true).hasArg(true)
             .desc("Specify the requested Host").build();
-  private static Option PORT_OPTION =
+  private static final Option PORT_OPTION =
       Option.builder("port").required(true).hasArg(true)
             .desc("Specify the port on remote host to use").type(Number.class)
             .build();
-  private static Option USER_OPTION =
+  private static final Option USER_OPTION =
       Option.builder("user").required(true).hasArg(true)
             .desc("Specify the user on remote host to use").build();
-  private static Option PWD_OPTION =
+  private static final Option PWD_OPTION =
       Option.builder("pwd").required(true).hasArg(true)
             .desc("Specify the password on remote host to use").build();
-  private static Option ACCOUNT_OPTION = Option.builder("account").hasArg(true)
-                                               .desc(
-                                                   "Specify the account on remote host to use")
-                                               .build();
-  private static Option MODE_OPTION = Option.builder("mode").hasArg(true).desc(
-      "Specify the mode active of" + " passive to use").build();
-  private static Option SSL_OPTION = Option.builder("ssl").hasArg(true).desc(
-      "Specify the ssl mode to use between no / explicit / implicit").build();
-  private static Option CWD_OPTION = Option.builder("cwd").hasArg(true).desc(
-      "Specify the remote path on remote host to use").build();
-  private static Option DIGEST_OPTION = Option.builder("digest").hasArg(true)
-                                              .desc("Specify the digest to " +
-                                                    "use between crc, md5, " +
-                                                    "sha1, sha256, sha384, " +
-                                                    "sha512").build();
-  private static Option PRE_OPTION = Option.builder("pre").hasArg(true).desc(
-      "Specify the extra command as pre operation to use, using ',' as " +
-      "separator of arguments").build();
-  private static Option POST_OPTION = Option.builder("post").hasArg(true).desc(
-      "Specify the extra command " + "as post operation to use, using ',' as" +
-      " separator of arguments").build();
-  private static Option CMD_OPTION = Option.builder("command").hasArg(true)
-                                           .desc("Specify the command as one " +
-                                                 "of get, put, append ")
-                                           .build();
+  private static final Option ACCOUNT_OPTION =
+      Option.builder("account").hasArg(true)
+            .desc("Specify the account on remote host to use").build();
+  private static final Option MODE_OPTION = Option.builder("mode").hasArg(true)
+                                                  .desc(
+                                                      "Specify the mode active of" +
+                                                      " passive to use")
+                                                  .build();
+  private static final Option SSL_OPTION = Option.builder("ssl").hasArg(true)
+                                                 .desc(
+                                                     "Specify the ssl mode to use " +
+                                                     "between no / explicit / implicit")
+                                                 .build();
+  private static final Option CWD_OPTION = Option.builder("cwd").hasArg(true)
+                                                 .desc(
+                                                     "Specify the remote path on " +
+                                                     "remote host to use")
+                                                 .build();
+  private static final Option DIGEST_OPTION =
+      Option.builder("digest").hasArg(true).desc(
+          "Specify the digest to use between crc, md5, " +
+          "sha1, sha256, sha384, sha512").build();
+  private static final Option PRE_OPTION = Option.builder("pre").hasArg(true)
+                                                 .desc(
+                                                     "Specify the extra command as " +
+                                                     "pre operation to use, using ',' as " +
+                                                     "separator of arguments")
+                                                 .build();
+  private static final Option POST_OPTION = Option.builder("post").hasArg(true)
+                                                  .desc(
+                                                      "Specify the extra command " +
+                                                      "as post operation to use, " +
+                                                      "using ',' as" +
+                                                      " separator of arguments")
+                                                  .build();
+  private static final Option CMD_OPTION =
+      Option.builder("command").hasArg(true)
+            .desc("Specify the command as one of get, put, append ").build();
 
-  private static Options FTP_OPTIONS =
+  private static final Options FTP_OPTIONS =
       new Options().addOption(FILE_OPTION).addOption(HOST_OPTION)
                    .addOption(PORT_OPTION).addOption(USER_OPTION)
                    .addOption(PWD_OPTION).addOption(ACCOUNT_OPTION)

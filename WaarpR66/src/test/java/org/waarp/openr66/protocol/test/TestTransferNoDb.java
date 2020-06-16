@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.protocol.test;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.guid.JvmProcessId;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -55,7 +57,9 @@ public class TestTransferNoDb extends DirectTransfer {
   }
 
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);
     }

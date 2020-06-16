@@ -384,7 +384,7 @@ public class RestHandlerHook implements HandlerHook {
   }
 
   protected void validateHMACCredentials(Host host, String authDate,
-                                       String authUser, String authKey)
+                                         String authUser, String authKey)
       throws InternalServerErrorException {
     String pswd;
     try {

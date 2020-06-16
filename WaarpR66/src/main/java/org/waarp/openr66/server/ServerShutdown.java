@@ -60,7 +60,8 @@ public class ServerShutdown {
    * @throws OpenR66ProtocolPacketException
    */
   public static void main(String[] args) throws OpenR66ProtocolPacketException {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     final WaarpLogger logger =
         WaarpLoggerFactory.getLogger(ServerShutdown.class);
     if (args.length < 1) {

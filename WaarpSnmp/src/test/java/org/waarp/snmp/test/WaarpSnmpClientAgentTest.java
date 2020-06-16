@@ -19,6 +19,8 @@
  */
 package org.waarp.snmp.test;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.Test;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.event.ResponseListener;
@@ -56,8 +58,9 @@ public class WaarpSnmpClientAgentTest {
 
   @Test
   public void allTests() throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final ClassLoader classLoader =
         WaarpSnmpClientAgentTest.class.getClassLoader();
     final File file =

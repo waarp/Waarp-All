@@ -39,7 +39,8 @@ public class ExampleUsageMachineState {
    */
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
 
     // Example
 

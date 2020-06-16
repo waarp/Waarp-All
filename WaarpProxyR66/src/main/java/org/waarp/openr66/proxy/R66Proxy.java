@@ -42,7 +42,8 @@ public class R66Proxy {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
     if (args.length < 1) {
       logger.error("Needs the configuration file as first argument");

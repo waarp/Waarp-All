@@ -51,8 +51,8 @@ public abstract class TestAbstractMinimal {
    */
   public static void setUpBeforeClassMinimal(String serverInitBaseDirectory)
       throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);

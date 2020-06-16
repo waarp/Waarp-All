@@ -155,8 +155,8 @@ public abstract class AbstractFtpClientTest {
   }
 
   public static void startServer0() throws IOException {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
 
     FtpServer.startFtpServer("config.xml", "src/test/resources/sslconfig.xml",

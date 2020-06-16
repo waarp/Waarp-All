@@ -58,9 +58,9 @@ public class DynamicKeyObjectTest {
   @Test
   public void testDecryptHexInString() throws Exception {
     final INSTANCES keyAlgo = INSTANCES.DES;
-    final DynamicKeyObject dyn = new DynamicKeyObject(
-      keyAlgo.size, keyAlgo.name(), keyAlgo.name(), keyAlgo.name()
-    );
+    final DynamicKeyObject dyn =
+        new DynamicKeyObject(keyAlgo.size, keyAlgo.name(), keyAlgo.name(),
+                             keyAlgo.name());
 
     dyn.generateKey();
     final String original = "mypassword";
@@ -68,7 +68,8 @@ public class DynamicKeyObjectTest {
     final String cryptedHex = dyn.encodeHex(crypted);
     final String decrypted = dyn.decryptHexInString(cryptedHex);
 
-    assertEquals("decrypted password should be equal to the original", original, decrypted);
+    assertEquals("decrypted password should be equal to the original", original,
+                 decrypted);
   }
 
   /**

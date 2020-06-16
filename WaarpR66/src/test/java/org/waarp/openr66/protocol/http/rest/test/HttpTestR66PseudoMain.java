@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.protocol.http.rest.test;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -63,7 +65,9 @@ public class HttpTestR66PseudoMain {
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final WaarpLogger logger =
         WaarpLoggerFactory.getLogger(HttpTestR66PseudoMain.class);
     final String pathTemp = "/tmp";

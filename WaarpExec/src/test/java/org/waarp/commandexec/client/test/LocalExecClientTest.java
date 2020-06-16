@@ -96,8 +96,8 @@ public class LocalExecClientTest extends Thread {
 
   @Test
   public void testClient() throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     DetectionUtils.setJunit(true);
     InetAddress addr;

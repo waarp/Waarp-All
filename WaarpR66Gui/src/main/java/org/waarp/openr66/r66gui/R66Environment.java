@@ -75,7 +75,8 @@ public class R66Environment {
   }
 
   public void initialize(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     initLog();
     if (args.length < 1) {
       SysErrLogger.FAKE_LOGGER

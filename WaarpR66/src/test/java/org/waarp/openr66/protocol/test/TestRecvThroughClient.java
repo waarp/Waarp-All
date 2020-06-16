@@ -20,6 +20,8 @@
 package org.waarp.openr66.protocol.test;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
@@ -60,7 +62,9 @@ public class TestRecvThroughClient extends RecvThroughClient {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestRecvThroughHandler.class);
     }

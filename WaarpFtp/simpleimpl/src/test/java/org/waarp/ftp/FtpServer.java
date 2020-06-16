@@ -45,7 +45,8 @@ public class FtpServer {
 
   public static void startFtpServer(String config, String sslconfig,
                                     boolean useSsl, boolean useNative) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(FtpServer.class);
     }

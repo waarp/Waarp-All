@@ -22,6 +22,8 @@ package org.waarp.openr66.protocol.http.rest.test;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.joda.time.DateTime;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
@@ -128,11 +130,13 @@ public class HttpTestRestR66Client implements Runnable {
   @SuppressWarnings("unused")
   public static void main(String[] args) {
     if (args.length > 2) {
-      WaarpLoggerFactory
-          .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.DEBUG));
+      WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+          new WaarpSlf4JLoggerFactory(WaarpLogLevel.DEBUG));
     } else {
-      WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+      WaarpLoggerFactory
+          .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     }
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     logger = WaarpLoggerFactory.getLogger(HttpTestRestR66Client.class);
     Configuration.configuration.setHostId(hostid);
     // If RestV2 started
