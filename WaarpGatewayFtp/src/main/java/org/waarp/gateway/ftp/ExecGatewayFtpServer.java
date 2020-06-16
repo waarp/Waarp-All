@@ -59,7 +59,8 @@ public class ExecGatewayFtpServer {
           " <config-file> [<r66config-file>]");
       return;
     }
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.class);
     initialize(args[0], args.length > 1? args[1] : null);
   }

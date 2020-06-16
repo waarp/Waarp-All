@@ -100,8 +100,8 @@ public abstract class CommonUtil {
   public static DriverType driverType = DriverType.PHANTOMJS;
 
   public static void launchServers() throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     logger = WaarpLoggerFactory.getLogger(CommonUtil.class);
     // Setup directories : /tmp/R66 and sub dirs

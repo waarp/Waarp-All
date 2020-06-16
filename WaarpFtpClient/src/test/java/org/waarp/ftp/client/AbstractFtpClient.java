@@ -76,8 +76,8 @@ public abstract class AbstractFtpClient {
   private static final int port = 2021;
 
   public static void startServer0() throws IOException {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     DetectionUtils.setJunit(true);
     final File file = new File("/tmp/GGFTP/fred/a");

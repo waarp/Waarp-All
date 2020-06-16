@@ -1,14 +1,15 @@
 <configuration>
   <statusListener class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
   <appender name="FILE"
-    class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>{ROOTDIR}/data/log/waarpr66-client.log</file>
+            class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/tmp/testJunit.log</file>
     <append>true</append>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>{ROOTDIR}/data/log/waarpr66-client.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+      <fileNamePattern>/tmp/testJunit.%d{yyyy-MM-dd}.%i.log
+        .zip</fileNamePattern>
       <maxHistory>30</maxHistory>
       <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-          <maxFileSize>10MB</maxFileSize>
+        <maxFileSize>20MB</maxFileSize>
       </timeBasedFileNamingAndTriggeringPolicy>
     </rollingPolicy>
 
@@ -19,16 +20,19 @@
     </encoder>
   </appender>
 
-  <appender name="STDOUT"
-    class="ch.qos.logback.core.ConsoleAppender">
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-      <Pattern>%date{dd/MM/yyyy/HH:mm:ss.SSS} %level [%logger] [%thread] %msg%n</Pattern>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
     </encoder>
   </appender>
 
-  <root>
-    <level value="warn" />
+  <root level="warn">
     <appender-ref ref="FILE" />
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="STDOUT"/>
   </root>
+
+  <logger name="org.testcontainers" level="INFO"/>
+  <logger name="org.apache.http" level="WARN"/>
+  <logger name="com.github.dockerjava" level="WARN"/>
+  <logger name="org.zeroturnaround.exec" level="WARN"/>
 </configuration>

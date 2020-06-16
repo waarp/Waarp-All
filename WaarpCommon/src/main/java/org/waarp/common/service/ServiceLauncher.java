@@ -74,10 +74,8 @@ public abstract class ServiceLauncher implements Daemon {
   }
 
   protected static void initStatic() {
-    if (!(WaarpLoggerFactory
-        .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory)) {
-      WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
-    }
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);
     }

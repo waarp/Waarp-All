@@ -20,6 +20,8 @@
 package org.waarp.openr66.protocol.test;
 
 import io.netty.channel.ChannelFuture;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.exception.FileEndOfTransferException;
 import org.waarp.common.exception.FileTransferException;
@@ -67,7 +69,9 @@ public class TestSendThroughClient extends SendThroughClient {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestSendThroughClient.class);
     }

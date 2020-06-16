@@ -20,6 +20,8 @@
 
 package org.waarp.ftp.client;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.BeforeClass;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -44,7 +46,9 @@ public class FtpClientTest extends AbstractFtpClientTest {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     System.setProperty("javax.net.debug", "false");
 
     String server = null;

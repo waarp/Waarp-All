@@ -83,8 +83,8 @@ public class FtpPrivateMibTest {
 
   @BeforeClass
   public static void startServer() throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     DetectionUtils.setJunit(true);
     // R66 Home
@@ -173,8 +173,9 @@ public class FtpPrivateMibTest {
 
   @Test
   public void allTests() throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final ClassLoader classLoader = FtpPrivateMibTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("snmpconfig.xml").getFile());

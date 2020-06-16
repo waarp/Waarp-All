@@ -92,22 +92,37 @@ public abstract class WaarpLoggerFactory {
   }
 
   /**
+   * Changes the default factory if not already the same type, or just change
+   * the level
+   *
+   * @param factory
+   */
+  public static void setDefaultFactoryIfNotSame(
+      final WaarpLoggerFactory factory) {
+    WaarpLoggerFactory current = getDefaultFactory();
+    if (current != null && current.getClass() == factory.getClass()) {
+      current.seLevelSpecific(factory.getLevelSpecific());
+    } else {
+      setDefaultFactory(factory);
+    }
+  }
+
+  /**
    * Changes the default factory.
    *
-   * @param defaultFactory
+   * @param factory
    */
-  public static void setDefaultFactory(
-      final WaarpLoggerFactory defaultFactory) {
-    if (defaultFactory == null) {
+  public static void setDefaultFactory(final WaarpLoggerFactory factory) {
+    if (factory == null) {
       throw new IllegalArgumentException("defaultFactory");
     }
-    WaarpLoggerFactory.defaultFactory = defaultFactory;
-    if (defaultFactory instanceof WaarpJdkLoggerFactory) {
+    WaarpLoggerFactory.defaultFactory = factory;
+    if (factory instanceof WaarpJdkLoggerFactory) {
       InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
-    } else if (defaultFactory instanceof WaarpSlf4JLoggerFactory) {
+    } else if (factory instanceof WaarpSlf4JLoggerFactory) {
       InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);
     }
-    defaultFactory.seLevelSpecific(defaultFactory.getLevelSpecific());
+    factory.seLevelSpecific(factory.getLevelSpecific());
   }
 
   /**

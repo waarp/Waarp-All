@@ -57,7 +57,8 @@ public class LocalExecServer {
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     int port = 9999;
     InetAddress addr;
     long delay = LocalExecDefaultResult.MAXWAITPROCESS;

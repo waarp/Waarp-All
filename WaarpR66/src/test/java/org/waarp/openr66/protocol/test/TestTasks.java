@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.protocol.test;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -73,8 +75,9 @@ public class TestTasks {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     if (args.length < 4) {
       System.err.println(
           "Need config inDirectory outDirectory filename (in inDirectory)");

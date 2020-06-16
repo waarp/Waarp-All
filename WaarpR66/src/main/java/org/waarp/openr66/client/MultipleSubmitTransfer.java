@@ -172,7 +172,8 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
    *     blocksize if different than default
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(MultipleSubmitTransfer.class);
     }

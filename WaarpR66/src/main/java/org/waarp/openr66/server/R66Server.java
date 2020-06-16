@@ -44,7 +44,8 @@ public class R66Server {
    * @throws OpenR66ProtocolPacketException
    */
   public static void main(String[] args) throws OpenR66ProtocolPacketException {
-    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory
+        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Server.class);
     if (args.length < 1) {
       logger

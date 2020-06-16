@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.protocol.snmp;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.Test;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.event.ResponseListener;
@@ -66,8 +68,9 @@ public class R66PrivateMibTest {
 
   @Test
   public void allTests() throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final ClassLoader classLoader = R66PrivateMibTest.class.getClassLoader();
     final File file = new File(
         classLoader.getResource("Linux/config/snmpconfig.xml").getFile());

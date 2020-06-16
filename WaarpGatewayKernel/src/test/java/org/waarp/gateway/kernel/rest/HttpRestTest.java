@@ -41,8 +41,8 @@ public class HttpRestTest {
 
   @Test
   public void testSimpleRest() {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     RestConfiguration configuration =
         HttpRestHandlerTest.getTestConfiguration();
