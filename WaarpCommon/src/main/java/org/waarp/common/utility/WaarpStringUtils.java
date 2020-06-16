@@ -36,23 +36,26 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.regex.Pattern;
 
 /**
  * Various utilities for reading files, transforming dates, ...
  */
 public final class WaarpStringUtils {
-  public static final String UTF_8 = "UTF-8";
-
   /**
    * Internal Logger
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpStringUtils.class);
 
+  public static final String UTF_8 = "UTF-8";
   /**
    * Format used for Files
    */
   public static final Charset UTF8 = Charset.forName(UTF_8);
+
+  public static final String BLANK_REGEX = "\\s+";
+  public static final Pattern BLANK = Pattern.compile(BLANK_REGEX);
 
   private WaarpStringUtils() {
   }

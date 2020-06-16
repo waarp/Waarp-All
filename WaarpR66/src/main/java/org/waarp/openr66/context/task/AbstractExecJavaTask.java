@@ -22,6 +22,7 @@ package org.waarp.openr66.context.task;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
@@ -43,7 +44,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractExecJavaTask.class);
-  protected static final Pattern BLANK = Pattern.compile(" ");
+  protected static final Pattern BLANK = WaarpStringUtils.BLANK;
 
   protected int delay;
   protected int status = -1;

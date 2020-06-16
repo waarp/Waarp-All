@@ -30,6 +30,7 @@ import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class ExecuteExecutor extends AbstractExecutor {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(ExecuteExecutor.class);
-  private static final Pattern BLANK = Pattern.compile(" ");
+  private static final Pattern BLANK = WaarpStringUtils.BLANK;
   private final String[] args;
   private final String arg;
   private final WaarpFuture futureCompletion;

@@ -46,6 +46,8 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.Version;
+import org.waarp.icap.server.IcapServer;
+import org.waarp.icap.server.IcapServerHandler;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.client.MultipleDirectTransfer;
 import org.waarp.openr66.client.MultipleSubmitTransfer;
@@ -1239,6 +1241,192 @@ public class NetworkClientTest extends TestAbstract {
       runner.delete();
       // This time, the delete shall be ok
       newRule.delete();
+    }
+  }
+
+  @Test
+  public void test51_Transfer_With_Icap_Send() throws Exception {
+    IcapServerHandler.resetJunitStatus();
+    IcapServer.main(new String[] { "127.0.0.1", "9999" });
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer with Icap");
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3icap",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    DbTaskRunner runner = null;
+    if (future.getRunner() != null) {
+      runner = future.getRunner();
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    logger.warn("Success: " + success + " Error: " + error);
+    totest.delete();
+    assertEquals("Success should be total", 1, success);
+    assertEquals("Errors should be 0", 0, error);
+    if (runner != null) {
+      runner.delete();
+    }
+    IcapServer.shutdown();
+    logger.debug("Server stopped");
+  }
+
+  @Test
+  public void test52_Transfer_With_Icap_Send_Virus() throws Exception {
+    IcapServerHandler.resetJunitStatus();
+    IcapServer.main(new String[] { "127.0.0.1", "9999" });
+    IcapServerHandler.setFinalStatus(200);
+    try {
+      final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100);
+      final R66Future future = new R66Future(true);
+      logger.warn("Start Test of DirectTransfer with Icap");
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3icap",
+                               "Test SendDirect Small", true, 8192,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      transaction.run();
+      int success = 0;
+      int error = 0;
+      future.awaitOrInterruptible();
+      DbTaskRunner runner = null;
+      if (future.getRunner() != null) {
+        runner = future.getRunner();
+      }
+      if (future.isSuccess()) {
+        success++;
+      } else {
+        if (runner != null) {
+          DbTaskRunner dbTaskRunner =
+              new DbTaskRunner(runner.getSpecialId() + 1, runner.getRequester(),
+                               runner.getRequested());
+          logger.warn("Start wait for re-transfer: {}",
+                      dbTaskRunner.toShortString());
+          waitForAllDone(dbTaskRunner);
+          DbTaskRunner checkedRunner =
+              new DbTaskRunner(dbTaskRunner.getSpecialId(),
+                               dbTaskRunner.getRequester(),
+                               dbTaskRunner.getRequested());
+          logger.warn("End wait for re-transfer: {}",
+                      checkedRunner.toShortString());
+          if (checkedRunner.isAllDone()) {
+            success++;
+          } else {
+            error++;
+          }
+        }
+        error++;
+      }
+      logger.warn("Success: " + success + " Error: " + error);
+      assertEquals("Success should be total", 1, success);
+      assertEquals("Errors should be 0", 1, error);
+      totest.delete();
+      if (runner != null) {
+        runner.delete();
+      }
+    } finally {
+      IcapServer.shutdown();
+      logger.debug("Server stopped");
+    }
+  }
+
+  @Test
+  public void test53_Transfer_With_Icap_Recv() throws Exception {
+    IcapServerHandler.resetJunitStatus();
+    IcapServer.main(new String[] { "127.0.0.1", "9999" });
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer with Icap");
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt", "rule4icap",
+                             "Test RecvDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    DbTaskRunner runner = null;
+    if (future.getRunner() != null) {
+      runner = future.getRunner();
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    logger.warn("Success: " + success + " Error: " + error);
+    totest.delete();
+    assertEquals("Success should be total", 1, success);
+    assertEquals("Errors should be 0", 0, error);
+    if (runner != null) {
+      runner.delete();
+    }
+    IcapServer.shutdown();
+    logger.debug("Server stopped");
+  }
+
+  @Test
+  public void test54_Transfer_With_Icap_Recv_Virus() throws Exception {
+    IcapServerHandler.resetJunitStatus();
+    IcapServer.main(new String[] { "127.0.0.1", "9999" });
+    IcapServerHandler.setFinalStatus(200);
+    try {
+      final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100);
+      final R66Future future = new R66Future(true);
+      logger.warn("Start Test of DirectTransfer with Icap");
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(future, "hostas", "testTask.txt", "rule4icap",
+                               "Test RecvDirect Small", true, 8192,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      transaction.run();
+      int success = 0;
+      int error = 0;
+      future.awaitOrInterruptible();
+      DbTaskRunner runner = null;
+      if (future.getRunner() != null) {
+        runner = future.getRunner();
+      }
+      if (future.isSuccess()) {
+        success++;
+      } else {
+        if (runner != null) {
+          DbTaskRunner dbTaskRunner =
+              new DbTaskRunner(runner.getSpecialId() + 1, runner.getRequester(),
+                               runner.getRequested());
+          logger.warn("Start wait for re-transfer: {}",
+                      dbTaskRunner.toShortString());
+          waitForAllDone(dbTaskRunner);
+          DbTaskRunner checkedRunner =
+              new DbTaskRunner(dbTaskRunner.getSpecialId(),
+                               dbTaskRunner.getRequester(),
+                               dbTaskRunner.getRequested());
+          logger.warn("End wait for re-transfer: {}",
+                      checkedRunner.toShortString());
+          if (checkedRunner.isAllDone()) {
+            success++;
+          } else {
+            error++;
+          }
+        }
+        error++;
+      }
+      logger.warn("Success: " + success + " Error: " + error);
+      assertEquals("Success should be total", 1, success);
+      assertEquals("Errors should be 0", 1, error);
+      totest.delete();
+      if (runner != null) {
+        runner.delete();
+      }
+    } finally {
+      IcapServer.shutdown();
+      logger.debug("Server stopped");
     }
   }
 

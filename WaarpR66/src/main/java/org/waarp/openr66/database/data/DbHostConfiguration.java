@@ -38,6 +38,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlType;
@@ -76,7 +77,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbHostConfiguration.class);
-  private static final Pattern WHITESPACES = Pattern.compile("\\s+");
+  private static final Pattern WHITESPACES = WaarpStringUtils.BLANK;
   private static final Pattern SPACE_BACKSLASH = Pattern.compile(" |\\|");
   private static final Pattern COMMA = Pattern.compile(",");
 

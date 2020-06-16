@@ -24,6 +24,7 @@ import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.guid.GUID;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.session.CommandExecutorInterface;
 import org.waarp.gateway.kernel.session.HttpAuthInterface;
 
@@ -66,7 +67,7 @@ public abstract class AbstractExecutor {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractExecutor.class);
-  protected static final Pattern BLANK = Pattern.compile(" ");
+  protected static final Pattern BLANK = WaarpStringUtils.BLANK;
 
   protected static final String USER = "#USER#";
   protected static final String ACCOUNT = "#ACCOUNT#";
