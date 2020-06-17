@@ -75,7 +75,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -93,7 +93,7 @@ public class IcapScanFileTest {
       fullArgs = new String[] {
           IcapScanFile.MODEL_ARG, IcapModel.DEFAULT_MODEL.name(),
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
-          "-port", "9999", "-previewSize", "2048", "-blocSize", "2048",
+          "-port", "9999", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -112,7 +112,7 @@ public class IcapScanFileTest {
       fullArgs = new String[] {
           IcapScanFile.MODEL_ARG, IcapModel.ICAP_VIRUS_SCAN.name(),
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
-          "-port", "9999", "-previewSize", "2048", "-blocSize", "2048",
+          "-port", "9999", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -131,7 +131,7 @@ public class IcapScanFileTest {
       fullArgs = new String[] {
           IcapScanFile.MODEL_ARG, IcapModel.ICAP_CLAMAV.name(),
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
-          "-port", "9999", "-previewSize", "2048", "-blocSize", "2048",
+          "-port", "9999", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -150,7 +150,7 @@ public class IcapScanFileTest {
       fullArgs = new String[] {
           IcapScanFile.MODEL_ARG, IcapModel.ICAP_AVSCAN.name(),
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
-          "-port", "9999", "-previewSize", "2048", "-blocSize", "2048",
+          "-port", "9999", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -169,7 +169,7 @@ public class IcapScanFileTest {
       fullArgs = new String[] {
           IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
           file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -184,7 +184,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -200,7 +200,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -218,7 +218,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -235,7 +235,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -252,7 +252,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -271,7 +271,7 @@ public class IcapScanFileTest {
       fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), IcapScanFile.TO_ARG,
           "127" + ".0.0.1", "-port", "9999", IcapScanFile.SERVICE_ARG, "avscan",
-          "-previewSize", "2048", "-blocSize", "2048", "-receiveSize", "2048",
+          "-previewSize", "2048", "-blockSize", "2048", "-receiveSize", "2048",
           "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
           "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
           "600", "-key200", "Options-TTL", "-string200", "600", "-stringHttp",
@@ -291,7 +291,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-keyPreview",
           "Methods", "-stringPreview", "RESPMOD", "-key204", "Options-TTL",
           "-string204", "600", "-key200", "Options-TTL", "-string200", "600",
@@ -308,7 +308,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-keyPreview",
           "Methods", "-stringPreview", "RESPMOD", "-key204", "Options-TTL",
           "-string204", "600", "-key200", "Options-TTL", "-string200", "600",
@@ -326,7 +326,25 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
+          "-receiveSize", "2048", "-maxSize", "100000", "-keyPreview",
+          "Methods", "-stringPreview", "RESPMOD", "-key204", "Options-TTL",
+          "-string204", "600", "-key200", "Options-TTL", "-string200", "600",
+          "-stringHttp", "WaarpFakeIcap", "-timeout", "100000",
+          "-ignoreTooBigFileError"
+      };
+      IcapScanFile icapScanFile = IcapScanFile.getIcapScanFileArgs(fullArgs);
+      assertEquals(file.getAbsolutePath(), icapScanFile.getFilePath());
+      assertEquals(null, icapScanFile.getPathMoveError());
+      assertFalse(icapScanFile.isDeleteOnError());
+      assertTrue(icapScanFile.isIgnoreTooBigFileError());
+    } catch (IcapException e) {
+      fail("Should not raised an exception");
+    }
+    try {
+      fullArgs = new String[] {
+          "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -343,7 +361,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -360,7 +378,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "-1",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -374,7 +392,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "-1", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "-1", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -388,7 +406,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "10",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "10",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -402,7 +420,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "10", "-maxSize", "100000", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -416,7 +434,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "10", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -430,7 +448,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "10", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -444,7 +462,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "10", "-errorDelete",
           "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
           "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -458,7 +476,7 @@ public class IcapScanFileTest {
     try {
       fullArgs = new String[] {
           "-file", file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-          "-service", "avscan", "-previewSize", "2048", "-blocSize", "2048",
+          "-service", "avscan", "-previewSize", "2048", "-blockSize", "2048",
           "-receiveSize", "2048", "-maxSize", "100000", "-errorMove",
           "/tmp/error.bin", "-keyPreview", "Methods", "-stringPreview",
           "RESPMOD", "-key204", "Options-TTL", "-string204", "600", "-key200",
@@ -498,7 +516,7 @@ public class IcapScanFileTest {
       String[] fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
           "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-          "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+          "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
           "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
           "-key204", "Options-TTL", "-string204", "600", "-key200",
           "Options-TTL", "-string200", "600", "-stringHttp", "WaarpFakeIcap",
@@ -576,7 +594,7 @@ public class IcapScanFileTest {
       String[] fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
           "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-          "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+          "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
           "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
           "-key204", "Options-TTL", "-string204", "600", "-key200",
           "Options-TTL", "-string200", "600", "-stringHttp", "WaarpFakeIcap"
@@ -596,7 +614,7 @@ public class IcapScanFileTest {
       String[] fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
           "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-          "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+          "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
           "-errorMove", error.getAbsolutePath(), "-keyPreview", "Methods",
           "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
           "600", "-key200", "Options-TTL", "-string200", "600", "-stringHttp",
@@ -618,7 +636,7 @@ public class IcapScanFileTest {
       String[] fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
           "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-          "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+          "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
           "-errorMove", dirError.getAbsolutePath(), "-keyPreview", "Methods",
           "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
           "600", "-key200", "Options-TTL", "-string200", "600", "-stringHttp",
@@ -640,7 +658,7 @@ public class IcapScanFileTest {
       String[] fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
           "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-          "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+          "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
           "-errorMove", dirNotExist.getAbsolutePath(), "-keyPreview", "Methods",
           "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
           "600", "-key200", "Options-TTL", "-string200", "600", "-stringHttp",
@@ -699,7 +717,7 @@ public class IcapScanFileTest {
     String[] fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap"
@@ -716,19 +734,43 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp",
         "This is data that was returned by an origin server"
     };
     assertEquals(IcapScanFile.STATUS_OK, IcapScanFile.scanFile(fullArgs));
+    // With bad size
+    fullArgs = new String[] {
+        IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
+        "-port", "9999", "-service", "avscan", "-previewSize", "2048",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100",
+        "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
+        "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
+        "-string200", "600", "-stringHttp",
+        "This is data that was returned by an origin server"
+    };
+    assertEquals(IcapScanFile.STATUS_BAD_ARGUMENT,
+                 IcapScanFile.scanFile(fullArgs));
+    fullArgs = new String[] {
+        IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
+        "-port", "9999", "-service", "avscan", "-previewSize", "2048",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100",
+        "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
+        "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
+        "-string200", "600", "-stringHttp",
+        "This is data that was returned by an origin server",
+        "-ignoreTooBigFileError"
+    };
+    assertEquals(IcapScanFile.STATUS_OK, IcapScanFile.scanFile(fullArgs));
+
     // With TRACE
     logger.warn("With trace activated");
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap", "-logger", "Trace"
@@ -740,7 +782,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap", "-logger", "DEbug"
@@ -752,7 +794,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap", "-logger", "Info"
@@ -764,7 +806,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap", "-logger", "Warn"
@@ -776,7 +818,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap", "-logger", "Error"
@@ -787,7 +829,7 @@ public class IcapScanFileTest {
     logger.warn("With Model");
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
-        "-port", "9999", "-previewSize", "2048", "-blocSize", "2048",
+        "-port", "9999", "-previewSize", "2048", "-blockSize", "2048",
         "-receiveSize", "2048", "-maxSize", "100000", "-errorDelete",
         "-keyPreview", "Methods", "-stringPreview", "RESPMOD", "-key204",
         "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
@@ -805,7 +847,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
         file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-        "-previewSize", "2048", "-blocSize", "2048", "-receiveSize", "2048",
+        "-previewSize", "2048", "-blockSize", "2048", "-receiveSize", "2048",
         "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
         "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
         "600", "-key200", "Options-TTL", "-string200", "600", "-stringHttp",
@@ -825,7 +867,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "WRONG", "-key200",
         "Options-TTL", "-string200", "600", "-stringHttp"
@@ -833,13 +875,27 @@ public class IcapScanFileTest {
     assertEquals(IcapScanFile.STATUS_BAD_ARGUMENT,
                  IcapScanFile.scanFile(fullArgs));
     assertTrue(file.exists());
+    // With 404
+    logger.warn("With 404");
+    IcapServerHandler.setFinalStatus(404);
+    fullArgs = new String[] {
+        IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
+        file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
+        "-previewSize", "2048", "-blockSize", "2048", "-receiveSize",
+        "2048", "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
+        "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
+        "600", "-stringHttp",
+        "This is data that was returned by an origin server"
+    };
+    assertEquals(IcapScanFile.STATUS_ICAP_ISSUE,
+                 IcapScanFile.scanFile(fullArgs));
     // With 200 but OK
     logger.warn("With 200 result but OK");
     IcapServerHandler.setFinalStatus(200);
     fullArgs = new String[] {
         IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
         file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999", "-service",
-        "avscan", "-previewSize", "2048", "-blocSize", "2048", "-receiveSize",
+        "avscan", "-previewSize", "2048", "-blockSize", "2048", "-receiveSize",
         "2048", "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
         "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
         "600", "-stringHttp",
@@ -850,7 +906,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
         file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-        "-previewSize", "2048", "-blocSize", "2048", "-receiveSize", "2048",
+        "-previewSize", "2048", "-blockSize", "2048", "-receiveSize", "2048",
         "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
         "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
         "600", "-stringHttp",
@@ -860,7 +916,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
         file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-        "-previewSize", "2048", "-blocSize", "2048", "-receiveSize", "2048",
+        "-previewSize", "2048", "-blockSize", "2048", "-receiveSize", "2048",
         "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
         "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
         "600", "-stringHttp",
@@ -876,7 +932,7 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
         "-port", "9999", "-service", "avscan", "-previewSize", "2048",
-        "-blocSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
         "-errorDelete", "-keyPreview", "Methods", "-stringPreview", "RESPMOD",
         "-key204", "Options-TTL", "-string204", "WRONG", "-key200",
         "Options-TTL", "-string200", "600", "-stringHttp", "WaarpFakeIcap"

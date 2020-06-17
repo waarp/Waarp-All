@@ -363,7 +363,7 @@ public class IcapClient implements Closeable {
                      file.getAbsolutePath());
         throw new IcapException(
             "File exceed limit size: " + file.getAbsolutePath(),
-            IcapError.ICAP_ARGUMENT_ERROR);
+            IcapError.ICAP_FILE_LENGTH_ERROR);
       }
       try {
         inputStream = new FileInputStream(file);

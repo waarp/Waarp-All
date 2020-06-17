@@ -5,3 +5,4 @@ Utilisation
    :maxdepth: 2
 
    filewatcher
+   icap-configuration

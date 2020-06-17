@@ -49,12 +49,13 @@ import java.util.Map;
  * [-port port, default 1344] <br>
  * -service name | -model name <br>
  * [-previewSize size, default none] <br>
- * [-blocSize size, default 8192] <br>
+ * [-blockSize size, default 8192] <br>
  * [-receiveSize size, default 65536] <br>
  * [-maxSize size, default MAX_INTEGER] <br>
  * [-timeout in_ms, default equiv to 10 min] <br>
  * [-errorMove path | -errorDelete | -sendOnError] <br>
  * [-ignoreNetworkError] <br>
+ * [-ignoreTooBigFileError] <br>
  * [-keyPreview key -stringPreview string, default none] <br>
  * [-key204 key -string204 string, default none] <br>
  * [-key200 key -string200 string, default none] <br>
@@ -114,9 +115,9 @@ public class IcapScanFile {
   private static final Option PREVIEW_OPTION =
       Option.builder(PREVIEW_SIZE).required(false).hasArg(true)
             .desc("Specify the Preview size to use").build();
-  private static final String BLOC_SIZE = "blocSize";
+  private static final String BLOCK_SIZE = "blockSize";
   private static final Option BLOCK_OPTION =
-      Option.builder(BLOC_SIZE).required(false).hasArg(true)
+      Option.builder(BLOCK_SIZE).required(false).hasArg(true)
             .desc("Specify the Block size to use").build();
   private static final String RECEIVE_SIZE = "receiveSize";
   private static final Option RECEIVE_OPTION =
@@ -148,6 +149,12 @@ public class IcapScanFile {
   private static final Option IGNORE_NETWORK_CONTINUE_OPTION =
       Option.builder(IGNORE_NETWORK_CONTINUE).required(false).hasArg(false)
             .desc("Specify that a network error should not be followed by a ko")
+            .build();
+  private static final String IGNORE_TOO_BIG_FILE_CONTINUE =
+      "ignoreTooBigFileError";
+  private static final Option IGNORE_TOO_BIG_FILE_CONTINUE_OPTION =
+      Option.builder(IGNORE_TOO_BIG_FILE_CONTINUE).required(false).hasArg(false)
+            .desc("Specify that a too big file should not be followed by a ko")
             .build();
   private static final String KEY_PREVIEW = "keyPreview";
   private static final Option PREVIEW_KEY_OPTION =
@@ -204,6 +211,7 @@ public class IcapScanFile {
                    .addOption(RECEIVE_OPTION).addOption(MAX_SIZE_OPTION)
                    .addOption(TIMEOUT_OPTION)
                    .addOption(IGNORE_NETWORK_CONTINUE_OPTION)
+                   .addOption(IGNORE_TOO_BIG_FILE_CONTINUE_OPTION)
                    .addOption(PREVIEW_KEY_OPTION)
                    .addOption(PREVIEW_STRING_OPTION)
                    .addOption(ICAP_200_KEY_OPTION)
@@ -217,6 +225,7 @@ public class IcapScanFile {
                    .addOption(RECEIVE_OPTION).addOption(MAX_SIZE_OPTION)
                    .addOption(TIMEOUT_OPTION)
                    .addOption(IGNORE_NETWORK_CONTINUE_OPTION)
+                   .addOption(IGNORE_TOO_BIG_FILE_CONTINUE_OPTION)
                    .addOption(PREVIEW_KEY_OPTION)
                    .addOption(PREVIEW_STRING_OPTION)
                    .addOption(ICAP_200_KEY_OPTION)
@@ -250,6 +259,7 @@ public class IcapScanFile {
   private boolean deleteOnError = false;
   private boolean sendOnError = false;
   private boolean ignoreNetworkError = false;
+  private boolean ignoreTooBigFileError = false;
   private WaarpLogLevel logLevel = null;
 
   private Map<String, String> result = null;
@@ -285,6 +295,7 @@ public class IcapScanFile {
     this.deleteOnError = from.deleteOnError;
     this.sendOnError = from.sendOnError;
     this.ignoreNetworkError = from.ignoreNetworkError;
+    this.ignoreTooBigFileError = from.ignoreTooBigFileError;
     this.logLevel = from.getLogLevel();
     return this;
   }
@@ -305,12 +316,13 @@ public class IcapScanFile {
    * [-port port, default 1344] <br>
    * -service name | -model name <br>
    * [-previewSize size, default none] <br>
-   * [-blocSize size, default 8192] <br>
+   * [-blockSize size, default 8192] <br>
    * [-receiveSize size, default 65536] <br>
    * [-maxSize size, default MAX_INTEGER] <br>
    * [-timeout in_ms, default equiv to 10 min] <br>
    * [-errorMove path | -errorDelete | -sendOnError] <br>
    * [-ignoreNetworkError] <br>
+   * [-ignoreTooBigFileError] <br>
    * [-keyPreview key -stringPreview string, default none] <br>
    * [-key204 key -string204 string, default none] <br>
    * [-key200 key -string200 string, default none] <br>
@@ -427,6 +439,9 @@ public class IcapScanFile {
     if (cmd.hasOption(IGNORE_NETWORK_CONTINUE)) {
       icapScanFile.ignoreNetworkError = true;
     }
+    if (cmd.hasOption(IGNORE_TOO_BIG_FILE_CONTINUE)) {
+      icapScanFile.ignoreTooBigFileError = true;
+    }
     if (cmd.hasOption(KEY_PREVIEW)) {
       icapScanFile.keyIcapPreview = cmd.getOptionValue(KEY_PREVIEW);
     }
@@ -469,9 +484,9 @@ public class IcapScanFile {
           throw new NumberFormatException("Preview size must be positive or 0");
         }
       }
-      if (cmd.hasOption(BLOC_SIZE)) {
+      if (cmd.hasOption(BLOCK_SIZE)) {
         icapScanFile.sendLength =
-            Integer.parseInt(cmd.getOptionValue(BLOC_SIZE));
+            Integer.parseInt(cmd.getOptionValue(BLOCK_SIZE));
         if (icapScanFile.sendLength < IcapClient.MINIMAL_SIZE) {
           throw new NumberFormatException(
               "Block size must be greater than " + IcapClient.MINIMAL_SIZE);
@@ -670,6 +685,13 @@ public class IcapScanFile {
   }
 
   /**
+   * @return True if a too big file error option is set to ignore such
+   */
+  public boolean isIgnoreTooBigFileError() {
+    return ignoreTooBigFileError;
+  }
+
+  /**
    * @return the Logger Level desired during ICAP operation or null if none
    */
   public WaarpLogLevel getLogLevel() {
@@ -691,12 +713,13 @@ public class IcapScanFile {
    * [-port port, default 1344] <br>
    * -service name | -model name <br>
    * [-previewSize size, default none] <br>
-   * [-blocSize size, default 8192] <br>
+   * [-blockSize size, default 8192] <br>
    * [-receiveSize size, default 65536] <br>
    * [-maxSize size, default MAX_INTEGER] <br>
    * [-timeout in_ms, default equiv to 10 min] <br>
    * [-errorMove path | -errorDelete | -sendOnError] <br>
    * [-ignoreNetworkError] <br>
+   * [-ignoreTooBigFileError] <br>
    * [-keyPreview key -stringPreview string, default none] <br>
    * [-key204 key -string204 string, default none] <br>
    * [-key200 key -string200 string, default none] <br>
@@ -730,12 +753,13 @@ public class IcapScanFile {
    * [-port port, default 1344] <br>
    * Not -service name | -model name (should be set through Model)<br>
    * [-previewSize size, default none] <br>
-   * [-blocSize size, default 8192] <br>
+   * [-blockSize size, default 8192] <br>
    * [-receiveSize size, default 65536] <br>
    * [-maxSize size, default MAX_INTEGER] <br>
    * [-timeout in_ms, default equiv to 10 min] <br>
    * [-errorMove path | -errorDelete | -sendOnError] <br>
    * [-ignoreNetworkError] <br>
+   * [-ignoreTooBigFileError] <br>
    * [-keyPreview key -stringPreview string, default none] <br>
    * [-key204 key -string204 string, default none] <br>
    * [-key200 key -string200 string, default none] <br>
@@ -768,12 +792,13 @@ public class IcapScanFile {
    * [-port port, default 1344] <br>
    * -service name | -model name
    * [-previewSize size, default none] <br>
-   * [-blocSize size, default 8192] <br>
+   * [-blockSize size, default 8192] <br>
    * [-receiveSize size, default 65536] <br>
    * [-maxSize size, default MAX_INTEGER] <br>
    * [-timeout in_ms, default equiv to 10 min] <br>
    * [-errorMove path | -errorDelete | -sendOnError] <br>
    * [-ignoreNetworkError] <br>
+   * [-ignoreTooBigFileError] <br>
    * [-keyPreview key -stringPreview string, default none] <br>
    * [-key204 key -string204 string, default none] <br>
    * [-key200 key -string200 string, default none] <br>
@@ -812,6 +837,14 @@ public class IcapScanFile {
           return STATUS_OK;
         }
         return STATUS_NETWORK_ISSUE;
+      }
+      if (e.getError() == IcapError.ICAP_ARGUMENT_ERROR ||
+          e.getError() == IcapError.ICAP_FILE_LENGTH_ERROR) {
+        if (icapScanFile.ignoreTooBigFileError &&
+            e.getError() == IcapError.ICAP_FILE_LENGTH_ERROR) {
+          return STATUS_OK;
+        }
+        return STATUS_BAD_ARGUMENT;
       }
       return STATUS_ICAP_ISSUE;
     } catch (IOException e) {

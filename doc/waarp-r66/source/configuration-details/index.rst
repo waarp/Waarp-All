@@ -9,4 +9,5 @@ Référence des fichiers de configuration
    client
    snmp
    rule
+   detail-tasks
    authent
