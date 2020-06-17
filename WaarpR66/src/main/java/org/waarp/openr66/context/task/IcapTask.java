@@ -29,13 +29,13 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 /**
  * ICAP task:<br>
  * <p>
- * Result of arguments will be as follow.<br>
+ * List of arguments will be as follow.<br>
  * -file filename <br>
  * -to hostname <br>
  * [-port port, default 1344] <br>
  * -service name | -model name <br>
  * [-previewSize size, default none] <br>
- * [-blocSize size, default 8192] <br>
+ * [-blockSize size, default 8192] <br>
  * [-receiveSize size, default 65536] <br>
  * [-maxSize size, default MAX_INTEGER] <br>
  * [-timeout in_ms, default equiv to 10 min] <br>
@@ -46,6 +46,7 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
  * [-logger DEBUG|INFO|WARN|ERROR, default none] <br>
  * [-errorMove path | -errorDelete | -sendOnError] <br>
  * [-ignoreNetworkError] <br>
+ * [-ignoreTooBigFileError] <br>
  * <br>
  * Then if r66send command in case of -sendOnError option is specified, the
  * very last option of ICAP must be "--" then followed by usual r66send
@@ -63,19 +64,19 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
  * <br>
  * Example:<br>
  * -file #TRUEFULLPATH# -to hostname -service name -previewSize size
- * -blocSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
+ * -blockSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
  * key -stringPreview string -key204 key -string204 string -key200 key
  * -string200 string -stringHttp string -logger WARN -errorDelete
  * -ignoreNetworkError<br>
  * <br>
  * -file #TRUEFULLPATH# -to hostname -model name -previewSize size
- * -blocSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
+ * -blockSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
  * key -stringPreview string -key204 key -string204 string -key200 key
  * -string200 string -stringHttp string -logger WARN -errorMove path
  * -ignoreNetworkError<br>
  * <br>
  * -file #TRUEFULLPATH# -to hostname -model name -previewSize size
- * -blocSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
+ * -blockSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
  * key -stringPreview string -key204 key -string204 string -key200 key
  * -string200 string -stringHttp string -logger WARN -sendOnError
  * -ignoreNetworkError -- -file #TRUEFULLPATH# -to

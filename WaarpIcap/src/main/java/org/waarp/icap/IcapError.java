@@ -87,7 +87,12 @@ public enum IcapError {
   /**
    * ICAP network operation has a timeout
    */
-  ICAP_TIMEOUT_ERROR(2002, "ICAP network operation has a timeout");
+  ICAP_TIMEOUT_ERROR(2002, "ICAP network operation has a timeout"),
+  /**
+   * ICAP Client has a too big file
+   */
+  ICAP_FILE_LENGTH_ERROR(2003, "ICAP Client has a too big file");
+
 
   private final int code;
   private final String message;
