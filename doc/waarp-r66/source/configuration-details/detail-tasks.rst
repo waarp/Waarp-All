@@ -521,6 +521,10 @@ ICAP
   Une documentation complète d'installation au regard des interactions avec un serveur ICAP est disponible
   :any:`ici <setup-icap>`
 
+Cette tâche permet l'échange avec un serveur répondant à la norme RFC 3507 dite `ICAP`.
+Elle permet de transférer le contenu du fichier vers un service ICAP via une commande
+`RESPMOD` et d'obtenir la validation de ce fichier par le service (status `204`).
+
 La liste des arguments est la suivante :
 
 * ``-file filename`` spécifie le chemin du fichier sur lequel opérer (si le nom
@@ -861,11 +865,26 @@ Soumet un nouveau transfert basé sur des arguments ``Path`` et ``Transfer Infor
 - ``Delay`` est ignoré
 - Le fichier n'est pas marqué comme déplacé.
 
+Arguments du transfert :
+
 ::
 
-  -file filepath -to requestedHost -rule rule [-md5]
-  [-start yyyyMMddHHmmss or -delay (delay or +delay)]
-  [-copyinfo] [-info transferInformation]
+  -to <arg>        Spécifie le partenaire distant
+  (-id <arg>|      Spécifie l'identifiant du transfert
+   (-file <arg>    Spécifie le fichier à opérer
+    -rule <arg>))  Spécifie la règle de transfert
+  [-block <arg>]   Spécifie la taille du bloc
+  [-follow]        Spécifie que le trasfert doit intégrer un "follow" id
+  [-md5]           Spécifie qu'un calcul d'empreinte doit être réalisé pour
+                    valider le transfert
+  [-delay <arg>|   Spécifie le délai comme un temps epoch ou un délai (+arg) en ms
+   -start <arg>]   Spécifie la date de démarrage yyyyMMddHHmmss
+  [-nolog]         Spécifie de ne rien conserver de ce transfert (en base)
+  [-notlogWarn |   Spécifie que le log final est en mode Info si OK
+   -logWarn]       Spécifie que le log final est en mode Warn si OK (défaut)
+  [-copyinfo]      Spécifie que les informations de transfert seront recopiées
+                    intégralement en préposition des nouvelles valeurs
+  [-info <arg>)    Spécifie les informations de transfert (en dernière position)
 
 
 Exemple:

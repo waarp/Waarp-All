@@ -7,6 +7,39 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.4.0 (2020-06-22)
+============================
+
+Nouvelles fonctionnalités
+=========================
+
+- [`#49 <https://github.com/waarp/Waarp-All/pull/49>`__]
+  Pour les transferts, une nouvelle option `-follow` permet de gérer le suivi
+  fin des retransferts (rebonds entre plusieurs serveurs R66). Cette option
+  positionne un champ dans la partie `information de transfert` de la forme
+  suivante : `{'follow': numeroUnique}` pour le premier transfert et les
+  transferts suivants récupèreront ainsi cette information nativement.
+- [`#48 <https://github.com/waarp/Waarp-All/pull/48>`__]
+  Une nouvelle tâche nommée `ICAP` est créée afin de permettre  l'échange avec
+  un serveur répondant à la norme RFC 3507 dite `ICAP`.
+  Elle permet de transférer le contenu du fichier vers un service ICAP via une
+  commande `RESPMOD` et d'obtenir la validation de ce fichier par le service
+  (status `204`).
+
+Correctifs
+==========
+
+- Le log géré par LogBack génère parfois des logs au démarrage d'information
+  ou de debug qui peuvent être évités (en conservant les Warnings et les Erreurs)
+  via l'ajout dans le fichier de configuration `logback.xml` les paramètres
+  suivants :
+
+.. code-block:: xml
+
+  <statusListener
+    class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
+
+
 Waarp R66 3.3.4 (2020-06-02)
 ============================
 
