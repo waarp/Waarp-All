@@ -23,17 +23,12 @@ import org.apache.commons.exec.CommandLine;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
-import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.R66Future;
-
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Transfer task:<br>
@@ -48,7 +43,29 @@ import java.util.Date;
  * -delay (delay or +delay)]
  * [-copyinfo] [-info information]" <br>
  * <br>
- * INFO is the only one field that can contains blank character.<br>
+ * INFO is the only one field that can contains blank character and must be
+ * the last field.<br>
+ * <br>
+ * Transfer arguments:<br>
+ * <br>
+ * -to <arg>        Specify the requested Host<br>
+ * (-id <arg>|      Specify the id of transfer<br>
+ * (-file <arg>     Specify the file path to operate on<br>
+ * -rule <arg>))    Specify the Rule<br>
+ * [-block <arg>]   Specify the block size<br>
+ * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+ * [-md5]           Specify the option to have a hash computed for the
+ * transfer<br>
+ * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>
+ * [-start <arg>]   Specify the start time as yyyyMMddHHmmss<br>
+ * [-copyinfo]      Specify to copy the original transfer information in
+ * front position back to the new transfer information (eventually in
+ * addition an added transfer information from -info option)<br>
+ * [-info <arg>)    Specify the transfer information (generally in last position)<br>
+ * [-nolog]         Specify to not log anything included database once the
+ * transfer is done<br>
+ * [-notlogWarn |   Specify to log final result as Info if OK<br>
+ * -logWarn]        Specify to log final result as Warn if OK<br>
  */
 public class TransferTask extends AbstractExecTask {
   /**
@@ -85,85 +102,28 @@ public class TransferTask extends AbstractExecTask {
           new OpenR66RunnerErrorException("Not enough argument in Transfer"));
       return;
     }
-    String filepath = null;
-    String requested = null;
-    String rule = null;
-    StringBuilder information = null;
-    String finalInformation = null;
-    boolean isMD5 = false;
-    int blocksize = Configuration.configuration.getBlockSize();
-    Timestamp timestart = null;
-    for (int i = 0; i < args.length; i++) {
-      if ("-to".equalsIgnoreCase(args[i])) {
-        i++;
-        requested = args[i];
-        if (Configuration.configuration.getAliases().containsKey(requested)) {
-          requested = Configuration.configuration.getAliases().get(requested);
-        }
-      } else if ("-file".equalsIgnoreCase(args[i])) {
-        i++;
-        filepath = args[i];
-      } else if ("-rule".equalsIgnoreCase(args[i])) {
-        i++;
-        rule = args[i];
-      } else if ("-copyinfo".equalsIgnoreCase(args[i])) {
-        finalInformation = argTransfer;
-      } else if ("-info".equalsIgnoreCase(args[i])) {
-        i++;
-        information = new StringBuilder(args[i]);
-        i++;
-        while (i < args.length) {
-          information.append(' ').append(args[i]);
-          i++;
-        }
-      } else if ("-md5".equalsIgnoreCase(args[i])) {
-        isMD5 = true;
-      } else if ("-block".equalsIgnoreCase(args[i])) {
-        i++;
-        blocksize = Integer.parseInt(args[i]);
-        if (blocksize < 100) {
-          logger.warn("Block size is too small: " + blocksize);
-          blocksize = Configuration.configuration.getBlockSize();
-        }
-      } else if ("-start".equalsIgnoreCase(args[i])) {
-        i++;
-        final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyyMMddHHmmss");
-        Date date;
-        try {
-          date = dateFormat.parse(args[i]);
-          timestart = new Timestamp(date.getTime());
-        } catch (final ParseException ignored) {
-          // nothing
-        }
-      } else if ("-delay".equalsIgnoreCase(args[i])) {
-        i++;
-        try {
-          if (args[i].charAt(0) == '+') {
-            timestart = new Timestamp(System.currentTimeMillis() +
-                                      Long.parseLong(args[i].substring(1)));
-          } else {
-            timestart = new Timestamp(Long.parseLong(args[i]));
-          }
-        } catch (final NumberFormatException ignored) {
-          // nothing
+    TransferArgs transferArgs = TransferArgs.getParamsInternal(0, args, false);
+    if (transferArgs != null) {
+      String copied = null;
+      for (int i = 0; i < args.length; i++) {
+        if ("-copyinfo".equalsIgnoreCase(args[i])) {
+          copied = argTransfer;
+          break;
         }
       }
-    }
-    if (information != null) {
-      if (finalInformation == null) {
-        finalInformation = information.toString();
-      } else {
-        finalInformation += " " + information;
-      }
-    } else if (finalInformation == null) {
-      finalInformation = "noinfo";
+      TransferArgs.getAllInfo(transferArgs, 0, args, copied);
+    } else {
+      futureCompletion.setFailure(
+          new OpenR66RunnerErrorException("Not enough argument in Transfer"));
+      return;
     }
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
-        new SubmitTransfer(future, requested, filepath, rule, finalInformation,
-                           isMD5, blocksize, DbConstantR66.ILLEGALVALUE,
-                           timestart);
+        new SubmitTransfer(future, transferArgs.remoteHost,
+                           transferArgs.filename, transferArgs.rulename,
+                           transferArgs.fileinfo, transferArgs.isMD5,
+                           transferArgs.blocksize, DbConstantR66.ILLEGALVALUE,
+                           transferArgs.startTime);
     transaction.run();
     future.awaitOrInterruptible();
     final DbTaskRunner runner;
@@ -172,7 +132,7 @@ public class TransferTask extends AbstractExecTask {
       runner = future.getResult().getRunner();
       logger.info(
           "Prepare transfer in     SUCCESS     " + runner.toShortString() +
-          "     <REMOTE>" + requested + "</REMOTE>");
+          "     <REMOTE>" + transferArgs.remoteHost + "</REMOTE>");
       futureCompletion.setSuccess();
     } else {
       if (future.getResult() != null) {
@@ -189,7 +149,8 @@ public class TransferTask extends AbstractExecTask {
         }
         logger.error(
             "Prepare transfer in     FAILURE      " + runner.toShortString() +
-            "     <REMOTE>" + requested + "</REMOTE>", future.getCause());
+            "     <REMOTE>" + transferArgs.remoteHost + "</REMOTE>",
+            future.getCause());
       } else {
         if (future.getCause() == null) {
           futureCompletion.cancel();

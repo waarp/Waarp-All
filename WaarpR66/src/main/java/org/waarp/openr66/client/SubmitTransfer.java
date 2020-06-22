@@ -68,7 +68,7 @@ public class SubmitTransfer extends AbstractTransfer {
       future.setFailure(result.getException());
       return;
     }
-    if (id != ILLEGALVALUE) {
+    if (transferArgs.id != ILLEGALVALUE) {
       // Resubmit call, some checks are needed
       if (!taskRunner.restart(true)) {
         // cannot be done from there => must be done through IHM

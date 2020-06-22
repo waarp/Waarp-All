@@ -157,8 +157,7 @@ public enum TaskType {
                                  session);
       case ICAP:
         return new IcapTask(argRule, delay,
-                            session.getRunner().getFileInformation(),
-                            session);
+                            session.getRunner().getFileInformation(), session);
       default:
         logger.error(NAME_UNKNOWN + type.name);
         throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);

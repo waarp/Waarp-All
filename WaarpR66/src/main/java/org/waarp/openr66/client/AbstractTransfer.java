@@ -22,7 +22,6 @@ package org.waarp.openr66.client;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
-import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -58,10 +57,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
 import java.io.File;
 import java.net.SocketAddress;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -83,25 +79,21 @@ public abstract class AbstractTransfer implements Runnable {
 
   protected static final String NO_INFO_ARGS = "noinfo";
 
+  protected final TransferArgs transferArgs = new TransferArgs();
   protected final R66Future future;
-
-  protected final String filename;
-
-  protected final String rulename;
-
-  protected final String fileinfo;
-
-  protected final boolean isMD5;
-
-  protected final String remoteHost;
-
-  protected final int blocksize;
-
-  protected final long id;
-
-  protected final Timestamp startTime;
-
   protected boolean normalInfoAsWarn = true;
+
+  /**
+   * @param clasz Class of Client Transfer
+   * @param future
+   * @param transferArgs
+   */
+  protected AbstractTransfer(Class<?> clasz, R66Future future,
+                             TransferArgs transferArgs) {
+    this(clasz, future, transferArgs.filename, transferArgs.rulename,
+         transferArgs.fileinfo, transferArgs.isMD5, transferArgs.remoteHost,
+         transferArgs.blocksize, transferArgs.id, transferArgs.startTime);
+  }
 
   /**
    * @param clasz Class of Client Transfer
@@ -122,19 +114,19 @@ public abstract class AbstractTransfer implements Runnable {
       logger = WaarpLoggerFactory.getLogger(clasz);
     }
     this.future = future;
-    this.filename = filename;
-    this.rulename = rulename;
-    this.fileinfo = fileinfo;
-    this.isMD5 = isMD5;
+    this.transferArgs.filename = filename;
+    this.transferArgs.rulename = rulename;
+    this.transferArgs.fileinfo = fileinfo;
+    this.transferArgs.isMD5 = isMD5;
     if (Configuration.configuration.getAliases().containsKey(remoteHost)) {
-      this.remoteHost =
+      this.transferArgs.remoteHost =
           Configuration.configuration.getAliases().get(remoteHost);
     } else {
-      this.remoteHost = remoteHost;
+      this.transferArgs.remoteHost = remoteHost;
     }
-    this.blocksize = blocksize;
-    this.id = id;
-    startTime = timestart;
+    this.transferArgs.blocksize = blocksize;
+    this.transferArgs.id = id;
+    transferArgs.startTime = timestart;
   }
 
   /**
@@ -176,9 +168,9 @@ public abstract class AbstractTransfer implements Runnable {
   protected DbTaskRunner initRequest() {
     DbRule dbRule;
     try {
-      dbRule = new DbRule(rulename);
+      dbRule = new DbRule(transferArgs.rulename);
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get Rule: " + rulename, e);
+      logger.error("Cannot get Rule: " + transferArgs.rulename, e);
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -186,13 +178,13 @@ public abstract class AbstractTransfer implements Runnable {
       return null;
     }
     int mode = dbRule.getMode();
-    if (isMD5) {
+    if (transferArgs.isMD5) {
       mode = RequestPacket.getModeMD5(mode);
     }
     DbTaskRunner taskRunner;
-    if (id != ILLEGALVALUE) {
+    if (transferArgs.id != ILLEGALVALUE) {
       try {
-        taskRunner = new DbTaskRunner(id, remoteHost);
+        taskRunner = new DbTaskRunner(transferArgs.id, transferArgs.remoteHost);
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot get task", e);
         future.setResult(
@@ -203,17 +195,18 @@ public abstract class AbstractTransfer implements Runnable {
       }
       // requested
       taskRunner.setSenderByRequestToValidate(true);
-      if (fileinfo != null && !fileinfo.equals(NO_INFO_ARGS)) {
-        taskRunner.setFileInformation(fileinfo);
+      if (transferArgs.fileinfo != null &&
+          !transferArgs.fileinfo.equals(NO_INFO_ARGS)) {
+        taskRunner.setFileInformation(transferArgs.fileinfo);
       }
-      if (startTime != null) {
-        taskRunner.setStart(startTime);
+      if (transferArgs.startTime != null) {
+        taskRunner.setStart(transferArgs.startTime);
       }
     } else {
       long originalSize = -1;
       if (RequestPacket.isSendMode(mode) &&
           !RequestPacket.isThroughMode(mode)) {
-        File file = new File(filename);
+        File file = new File(transferArgs.filename);
         // Change dir
         try {
           final R66Session session = new R66Session();
@@ -222,7 +215,8 @@ public abstract class AbstractTransfer implements Runnable {
                                                      .getHostId());
           session.getDir().changeDirectory(dbRule.getSendPath());
           final R66File filer66 = FileUtils
-              .getFile(logger, session, filename, true, true, false, null);
+              .getFile(logger, session, transferArgs.filename, true, true,
+                       false, null);
           file = filer66.getTrueFile();
         } catch (final CommandAbstractException ignored) {
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
@@ -237,15 +231,18 @@ public abstract class AbstractTransfer implements Runnable {
         }
       }
       logger.debug("Filesize: " + originalSize);
-      final String sep = PartnerConfiguration.getSeparator(remoteHost);
+      final String sep =
+          PartnerConfiguration.getSeparator(transferArgs.remoteHost);
       final RequestPacket request =
-          new RequestPacket(rulename, mode, filename, blocksize, 0, id,
-                            fileinfo, originalSize, sep);
+          new RequestPacket(transferArgs.rulename, mode, transferArgs.filename,
+                            transferArgs.blocksize, 0, transferArgs.id,
+                            transferArgs.fileinfo, originalSize, sep);
       // Not isRecv since it is the requester, so send => isRetrieve is true
       final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
       try {
-        taskRunner = new DbTaskRunner(dbRule, isRetrieve, request, remoteHost,
-                                      startTime);
+        taskRunner = new DbTaskRunner(dbRule, isRetrieve, request,
+                                      transferArgs.remoteHost,
+                                      transferArgs.startTime);
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot get task", e);
         future.setResult(
@@ -312,118 +309,60 @@ public abstract class AbstractTransfer implements Runnable {
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
     }
-    return getParamsInternal(args);
+    TransferArgs transferArgsLocal = getParamsInternal(1, args);
+    if (transferArgsLocal == null) {
+      return false;
+    }
+    rhost = transferArgsLocal.remoteHost;
+    localFilename = transferArgsLocal.filename;
+    rule = transferArgsLocal.rulename;
+    fileInfo = transferArgsLocal.fileinfo;
+    ismd5 = transferArgsLocal.isMD5;
+    block = transferArgsLocal.blocksize;
+    idt = transferArgsLocal.id;
+    ttimestart = transferArgsLocal.startTime;
+    return true;
   }
 
   /**
    * Internal getParams without configuration initialization, but still as
-   * first argument
+   * first argument<br>
+   * <br>
+   * Transfer arguments:<br>
+   * <br>
+   * -to <arg>        Specify the requested Host<br>
+   * (-id <arg>|      Specify the id of transfer<br>
+   * (-file <arg>     Specify the file path to operate on<br>
+   * -rule <arg>))    Specify the Rule<br>
+   * [-block <arg>]   Specify the block size<br>
+   * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+   * [-md5]           Specify the option to have a hash computed for the
+   * transfer<br>
+   * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>
+   * [-start <arg>]   Specify the start time as yyyyMMddHHmmss<br>
+   * [-info <arg>)    Specify the transfer information (generally in last position)<br>
+   * [-nolog]         Specify to not log anything included database once the
+   * transfer is done<br>
+   * [-notlogWarn |   Specify to log final result as Info if OK<br>
+   * -logWarn]        Specify to log final result as Warn if OK<br>
    *
+   * @param rank which rank to start on args
    * @param args
    *
-   * @return True if all parameters were found and correct
+   * @return TransferArgs if OK, null if wrong initialization
    */
-  protected static boolean getParamsInternal(String[] args) {
-    // Now set default values from configuration
-    block = Configuration.configuration.getBlockSize();
-    int i = 1;
-    try {
-      for (i = 1; i < args.length; i++) {
-        if ("-to".equalsIgnoreCase(args[i])) {
-          i++;
-          rhost = args[i];
-          if (Configuration.configuration.getAliases().containsKey(rhost)) {
-            rhost = Configuration.configuration.getAliases().get(rhost);
-          }
-        } else if ("-file".equalsIgnoreCase(args[i])) {
-          i++;
-          localFilename = args[i];
-          localFilename = localFilename.replace('§', '*');
-        } else if ("-rule".equalsIgnoreCase(args[i])) {
-          i++;
-          rule = args[i];
-        } else if ("-info".equalsIgnoreCase(args[i])) {
-          i++;
-          fileInfo = args[i];
-        } else if ("-md5".equalsIgnoreCase(args[i])) {
-          ismd5 = true;
-        } else if ("-logWarn".equalsIgnoreCase(args[i])) {
-          snormalInfoAsWarn = true;
-        } else if ("-notlogWarn".equalsIgnoreCase(args[i])) {
-          snormalInfoAsWarn = false;
-        } else if ("-block".equalsIgnoreCase(args[i])) {
-          i++;
-          block = Integer.parseInt(args[i]);
-          if (block < 100) {
-            logger.error(
-                Messages.getString("AbstractTransfer.1") + block); //$NON-NLS-1$
-            return false;
-          }
-        } else if ("-nolog".equalsIgnoreCase(args[i])) {
-          nolog = true;
-        } else if ("-id".equalsIgnoreCase(args[i])) {
-          i++;
-          idt = Long.parseLong(args[i]);
-        } else if ("-start".equalsIgnoreCase(args[i])) {
-          i++;
-          Date date;
-          final SimpleDateFormat dateFormat =
-              new SimpleDateFormat("yyyyMMddHHmmss");
-          try {
-            date = dateFormat.parse(args[i]);
-            ttimestart = new Timestamp(date.getTime());
-          } catch (final ParseException ignored) {
-            SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-          }
-        } else if ("-delay".equalsIgnoreCase(args[i])) {
-          i++;
-          if (args[i].charAt(0) == '+') {
-            ttimestart = new Timestamp(System.currentTimeMillis() +
-                                       Long.parseLong(args[i].substring(1)));
-          } else {
-            ttimestart = new Timestamp(Long.parseLong(args[i]));
-          }
-        }
-      }
-      OutputFormat.getParams(args);
-    } catch (final NumberFormatException e) {
-      logger.error(Messages.getString("AbstractTransfer.20") + i); //$NON-NLS-1$
-      return false;
+  public static TransferArgs getParamsInternal(int rank, String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
-    if (fileInfo == null) {
-      fileInfo = NO_INFO_ARGS;
+    TransferArgs transferArgs1 =
+        TransferArgs.getParamsInternal(rank, args, true);
+    if (transferArgs1 == null) {
+      return null;
     }
-    if (rhost != null && rule != null && localFilename != null) {
-      return true;
-    } else if (idt != ILLEGALVALUE && rhost != null) {
-      try {
-        final DbTaskRunner runner = new DbTaskRunner(idt, rhost);
-        rule = runner.getRuleId();
-        localFilename = runner.getOriginalFilename();
-        return true;
-      } catch (final WaarpDatabaseNoDataException e) {
-        logger.error("No transfer found with this id and partner");
-        logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
-                                        "(-to -rule -file | -to -id with " +
-                                        "existing id transfer)")
-                     //$NON-NLS-1$
-            , e);
-        return false;
-      } catch (final WaarpDatabaseException e) {
-        logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
-                                        "(-to -rule -file | -to -id) with a " +
-                                        "correct database connexion")
-                     //$NON-NLS-1$
-            , e);
-        return false;
-      }
-
-    }
-    logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
-                                    "(-to -rule -file | -to -id)") +
-                 //$NON-NLS-1$
-                 _INFO_ARGS);
-    return false;
+    snormalInfoAsWarn = transferArgs1.normalInfoAsWarn;
+    nolog = transferArgs1.nolog;
+    return transferArgs1;
   }
 
   /**
@@ -465,7 +404,8 @@ public abstract class AbstractTransfer implements Runnable {
         logger.info(Messages.getString("Transfer.3") + filenameNew + " to " +
                     requested); //$NON-NLS-1$
         final RequestInformation info =
-            new RequestInformation(futureInfo, requested, rulename, filenameNew,
+            new RequestInformation(futureInfo, requested, transferArgs.rulename,
+                                   filenameNew,
                                    (byte) ASKENUM.ASKLIST.ordinal(), -1, false,
                                    networkTransaction);
         info.run();

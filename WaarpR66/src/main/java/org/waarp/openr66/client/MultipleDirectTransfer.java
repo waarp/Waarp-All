@@ -74,14 +74,14 @@ public class MultipleDirectTransfer extends DirectTransfer {
 
   @Override
   public void run() {
-    final String[] localfilenames = filename.split(",");
-    final String[] rhosts = remoteHost.split(",");
+    final String[] localfilenames = transferArgs.filename.split(",");
+    final String[] rhosts = transferArgs.remoteHost.split(",");
     boolean inError = false;
     R66Result resultError = null;
     // first check if filenames contains wildcards
     DbRule dbrule;
     try {
-      dbrule = new DbRule(rulename);
+      dbrule = new DbRule(transferArgs.rulename);
     } catch (final WaarpDatabaseException e1) {
       logger.error(Messages.getString("Transfer.18"), e1); //$NON-NLS-1$
       future.setFailure(e1);
@@ -106,10 +106,13 @@ public class MultipleDirectTransfer extends DirectTransfer {
             final long time1 = System.currentTimeMillis();
             final R66Future future = new R66Future(true);
             final DirectTransfer transaction =
-                new DirectTransfer(future, host, filename, rulename, fileinfo,
-                                   isMD5, blocksize, id, networkTransaction);
+                new DirectTransfer(future, host, filename,
+                                   transferArgs.rulename, transferArgs.fileinfo,
+                                   transferArgs.isMD5, transferArgs.blocksize,
+                                   transferArgs.id, networkTransaction);
             transaction.normalInfoAsWarn = normalInfoAsWarn;
-            logger.debug("rhost: " + host + ':' + transaction.remoteHost);
+            logger.debug(
+                "rhost: " + host + ':' + transaction.transferArgs.remoteHost);
             transaction.run();
             future.awaitOrInterruptible();
             final long time2 = System.currentTimeMillis();

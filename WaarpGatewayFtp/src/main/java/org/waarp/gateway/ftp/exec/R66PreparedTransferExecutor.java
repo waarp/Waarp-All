@@ -29,17 +29,13 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
-import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 
 import java.io.File;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import static org.waarp.common.database.DbConstant.*;
 
@@ -55,10 +51,10 @@ import static org.waarp.common.database.DbConstant.*;
  * Format is like r66send command in any order except "-info" which should be
  * the last item:<br>
  * "-to Host -file FILE -rule RULE [-md5] [-nolog] [-start yyyyMMddHHmmss or
- * -delay (delay or +delay)] [-info
- * INFO]" <br>
+ * -delay (delay or +delay)] [-info INFO]" <br>
  * <br>
- * INFO is the only one field that can contains blank character.<br>
+ * INFO is the only one field that can contains blank character and MUST be
+ * the last argument.<br>
  * <br>
  * The following replacement are done dynamically before the command is
  * executed:<br>
@@ -90,89 +86,42 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
       WaarpLoggerFactory.getLogger(R66PreparedTransferExecutor.class);
 
   protected final WaarpFuture future;
-
-  protected String filename;
-
-  protected String rulename;
-
-  protected String fileinfo;
-
-  protected boolean isMD5;
+  protected final TransferArgs transferArgs;
 
   protected boolean nolog;
-
-  protected Timestamp timestart;
-
-  protected String remoteHost;
-
-  protected int blocksize = Configuration.configuration.getBlockSize();
 
   protected DbSession dbsession;
 
   /**
-   * @param command
-   * @param delay
-   * @param futureCompletion
+   * Transfer arguments:<br>
+   * <br>
+   * -to <arg>        Specify the requested Host<br>
+   * (-id <arg>|      Specify the id of transfer<br>
+   * (-file <arg>     Specify the file path to operate on<br>
+   * -rule <arg>))    Specify the Rule<br>
+   * [-block <arg>]   Specify the block size<br>
+   * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+   * [-md5]           Specify the option to have a hash computed for the
+   * transfer<br>
+   * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>
+   * [-start <arg>]   Specify the start time as yyyyMMddHHmmss<br>
+   * [-info <arg>)    Specify the transfer information (generally in last position)<br>
+   * [-nolog]         Specify to not log anything included database once the
+   * transfer is done<br>
+   * [-notlogWarn |   Specify to log final result as Info if OK<br>
+   * -logWarn]        Specify to log final result as Warn if OK<br>
+   *
+   * @param command transfer arguments
+   * @param delay delay
+   * @param futureCompletion future for completion
    */
   public R66PreparedTransferExecutor(String command, long delay,
                                      WaarpFuture futureCompletion) {
     final String[] args = BLANK.split(command);
-    for (int i = 0; i < args.length; i++) {
-      if ("-to".equalsIgnoreCase(args[i])) {
-        i++;
-        remoteHost = args[i];
-        if (Configuration.configuration.getAliases().containsKey(remoteHost)) {
-          remoteHost = Configuration.configuration.getAliases().get(remoteHost);
-        }
-      } else if ("-file".equalsIgnoreCase(args[i])) {
-        i++;
-        filename = args[i];
-      } else if ("-rule".equalsIgnoreCase(args[i])) {
-        i++;
-        rulename = args[i];
-      } else if ("-info".equalsIgnoreCase(args[i])) {
-        i++;
-        fileinfo = args[i];
-        i++;
-        while (i < args.length) {
-          fileinfo += ' ' + args[i];
-          i++;
-        }
-      } else if ("-md5".equalsIgnoreCase(args[i])) {
-        isMD5 = true;
-      } else if ("-block".equalsIgnoreCase(args[i])) {
-        i++;
-        blocksize = Integer.parseInt(args[i]);
-        if (blocksize < 100) {
-          logger.warn("Block size is too small: " + blocksize);
-          blocksize = Configuration.configuration.getBlockSize();
-        }
-      } else if ("-nolog".equalsIgnoreCase(args[i])) {
-        nolog = true;
-        i++;
-      } else if ("-start".equalsIgnoreCase(args[i])) {
-        i++;
-        final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyyMMddHHmmss");
-        Date date;
-        try {
-          date = dateFormat.parse(args[i]);
-          timestart = new Timestamp(date.getTime());
-        } catch (final ParseException ignored) {
-          // nothing
-        }
-      } else if ("-delay".equalsIgnoreCase(args[i])) {
-        i++;
-        if (args[i].charAt(0) == '+') {
-          timestart = new Timestamp(System.currentTimeMillis() +
-                                    Long.parseLong(args[i].substring(1)));
-        } else {
-          timestart = new Timestamp(Long.parseLong(args[i]));
-        }
-      }
-    }
-    if (fileinfo == null) {
-      fileinfo = "noinfo";
+    transferArgs = TransferArgs.getParamsInternal(0, args, false);
+    if (transferArgs != null) {
+      TransferArgs.getAllInfo(transferArgs, 0, args, null);
+      nolog = transferArgs.nolog;
     }
     future = futureCompletion;
   }
@@ -186,49 +135,61 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
 
   @Override
   public void run() throws CommandAbstractException {
-    final String message =
-        "R66Prepared with -to " + remoteHost + " -rule " + rulename +
-        " -file " + filename + " -nolog: " + nolog + " -isMD5: " + isMD5 +
-        " -info " + fileinfo;
-    if (remoteHost == null || rulename == null || filename == null) {
-      logger.error(
-          "Mandatory argument is missing: -to " + remoteHost + " -rule " +
-          rulename + " -file " + filename);
+    if (transferArgs == null) {
+      logger
+          .error("Mandatory argument is missing: -to  -rule  -file or -to -id");
       throw new Reply421Exception(
-          "Mandatory argument is missing\n    " + message);
+          "Mandatory argument is missing: -to  -rule  -file or -to -id");
     }
+    if (transferArgs.remoteHost == null || transferArgs.rulename == null ||
+        transferArgs.filename == null) {
+      logger.error(
+          "Mandatory argument is missing: -to " + transferArgs.remoteHost +
+          " -rule " + transferArgs.rulename + " -file " +
+          transferArgs.filename);
+      throw new Reply421Exception("Mandatory argument is missing");
+    }
+    final String message =
+        "R66Prepared with -to " + transferArgs.remoteHost + " -rule " +
+        transferArgs.rulename + " -file " + transferArgs.filename +
+        " -nolog: " + nolog + " -isMD5: " + transferArgs.isMD5 + " -info " +
+        transferArgs.fileinfo;
     logger.debug(message);
     DbRule rule;
     try {
-      rule = new DbRule(rulename);
+      rule = new DbRule(transferArgs.rulename);
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get Rule: " + rulename + " since {}\n    " + message,
-                   e.getMessage());
+      logger.error(
+          "Cannot get Rule: " + transferArgs.rulename + " since {}\n    " +
+          message, e.getMessage());
       throw new Reply421Exception(
-          "Cannot get Rule: " + rulename + "\n    " + message);
+          "Cannot get Rule: " + transferArgs.rulename + "\n    " + message);
     }
     int mode = rule.getMode();
-    if (isMD5) {
+    if (transferArgs.isMD5) {
       mode = RequestPacket.getModeMD5(mode);
     }
-    final String sep = PartnerConfiguration.getSeparator(remoteHost);
+    final String sep =
+        PartnerConfiguration.getSeparator(transferArgs.remoteHost);
     long originalSize = -1;
     if (RequestPacket.isSendMode(mode) && !RequestPacket.isThroughMode(mode)) {
-      final File file = new File(filename);
+      final File file = new File(transferArgs.filename);
       if (file.canRead()) {
         originalSize = file.length();
       }
     }
     final RequestPacket request =
-        new RequestPacket(rulename, mode, filename, blocksize, 0, ILLEGALVALUE,
-                          fileinfo, originalSize, sep);
+        new RequestPacket(transferArgs.rulename, mode, transferArgs.filename,
+                          transferArgs.blocksize, 0, ILLEGALVALUE,
+                          transferArgs.fileinfo, originalSize, sep);
     // Not isRecv since it is the requester, so send => isRetrieve is true
     final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
     logger.debug("Will prepare: {}", request);
     DbTaskRunner taskRunner;
     try {
       taskRunner =
-          new DbTaskRunner(rule, isRetrieve, request, remoteHost, timestart);
+          new DbTaskRunner(rule, isRetrieve, request, transferArgs.remoteHost,
+                           transferArgs.startTime);
     } catch (final WaarpDatabaseException e) {
       logger.error("Cannot get new task since {}\n    " + message,
                    e.getMessage());
