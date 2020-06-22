@@ -81,17 +81,17 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
 
   @Override
   public void run() {
-    final String[] localfilenames = filename.split(",");
-    final String[] rhosts = remoteHost.split(",");
+    final String[] localfilenames = transferArgs.filename.split(",");
+    final String[] rhosts = transferArgs.remoteHost.split(",");
     R66Result resultError = null;
 
     // first check if filenames contains wildcards
     DbRule dbrule = null;
     try {
-      dbrule = new DbRule(rulename);
+      dbrule = new DbRule(transferArgs.rulename);
     } catch (final WaarpDatabaseException e) {
-      logger.error(
-          Messages.getString("SubmitTransfer.2") + rulename); //$NON-NLS-1$
+      logger.error(Messages.getString("SubmitTransfer.2") +
+                   transferArgs.rulename); //$NON-NLS-1$
       if (DetectionUtils.isJunit()) {
         return;
       }
@@ -126,8 +126,10 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
           if (filename != null && !filename.isEmpty()) {
             final R66Future future = new R66Future(true);
             final SubmitTransfer transaction =
-                new SubmitTransfer(future, host, filename, rulename, fileinfo,
-                                   isMD5, blocksize, id, startTime);
+                new SubmitTransfer(future, host, filename,
+                                   transferArgs.rulename, transferArgs.fileinfo,
+                                   transferArgs.isMD5, transferArgs.blocksize,
+                                   transferArgs.id, transferArgs.startTime);
             transaction.normalInfoAsWarn = normalInfoAsWarn;
             transaction.run();
             future.awaitOrInterruptible();

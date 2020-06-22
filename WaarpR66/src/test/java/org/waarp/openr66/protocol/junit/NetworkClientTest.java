@@ -56,6 +56,7 @@ import org.waarp.openr66.client.RequestTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
 import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
@@ -783,9 +784,10 @@ public class NetworkClientTest extends TestAbstract {
     // Now second transfer based on ID
     String[] args =
         { "falsConfigFile", "-id", "" + specialId, "-to", "hostas" };
-    if (SubmitTransferTest.checkInternalParams(args)) {
-      String rule = SubmitTransferTest.getParamRule();
-      String localFilename = SubmitTransferTest.getParamLocalFilename();
+    TransferArgs transferArgs = SubmitTransferTest.getParamsInternal(1, args);
+    if (transferArgs != null) {
+      String rule = transferArgs.rulename;
+      String localFilename = transferArgs.filename;
       logger.warn("Success for finding previous transfer {} {} {}", specialId,
                   rule, localFilename);
       final R66Future future2 = new R66Future(true);
@@ -827,7 +829,7 @@ public class NetworkClientTest extends TestAbstract {
     }
     SubmitTransferTest.clearInternal();
     String[] args2 = { "falsConfigFile", "-id", "1", "-to", "hostas" };
-    assertFalse(SubmitTransferTest.checkInternalParams(args2));
+    assertNull(SubmitTransferTest.getParamsInternal(1, args2));
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 2 * success * 1000 / (time2 - time1));
@@ -2031,20 +2033,8 @@ public class NetworkClientTest extends TestAbstract {
             id, starttime);
     }
 
-    static public boolean checkInternalParams(String[] args) {
-      return getParamsInternal(args);
-    }
-
     static public void clearInternal() {
       clear();
-    }
-
-    static public String getParamRule() {
-      return rule;
-    }
-
-    static public String getParamLocalFilename() {
-      return localFilename;
     }
   }
 

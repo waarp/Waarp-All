@@ -156,9 +156,9 @@ public abstract class SendThroughClient extends AbstractTransfer {
     }
     DbRule rule;
     try {
-      rule = new DbRule(rulename);
+      rule = new DbRule(transferArgs.rulename);
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get Rule: " + rulename, e);
+      logger.error("Cannot get Rule: " + transferArgs.rulename, e);
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -166,20 +166,23 @@ public abstract class SendThroughClient extends AbstractTransfer {
       return false;
     }
     int mode = rule.getMode();
-    if (isMD5) {
+    if (transferArgs.isMD5) {
       mode = RequestPacket.getModeMD5(mode);
     }
-    final String sep = PartnerConfiguration.getSeparator(remoteHost);
+    final String sep =
+        PartnerConfiguration.getSeparator(transferArgs.remoteHost);
     final RequestPacket request =
-        new RequestPacket(rulename, mode, filename, blocksize, 0, id, fileinfo,
-                          -1, sep);
+        new RequestPacket(transferArgs.rulename, mode, transferArgs.filename,
+                          transferArgs.blocksize, 0, transferArgs.id,
+                          transferArgs.fileinfo, -1, sep);
     // Not isRecv since it is the requester, so send => isSender is true
     final boolean isSender = true;
     try {
       try {
         // no starttime since immediate
         taskRunner =
-            new DbTaskRunner(rule, isSender, request, remoteHost, null);
+            new DbTaskRunner(rule, isSender, request, transferArgs.remoteHost,
+                             null);
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot get task", e);
         future.setResult(

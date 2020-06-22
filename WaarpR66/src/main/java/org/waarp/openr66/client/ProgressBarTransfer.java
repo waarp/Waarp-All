@@ -91,7 +91,7 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
     final DbTaskRunner taskRunner = initRequest();
     if (taskRunner == null) {
       // already an error from there
-      lastCallBack(false, 0, blocksize);
+      lastCallBack(false, 0, transferArgs.blocksize);
       return;
     }
     final ClientRunner runner =
