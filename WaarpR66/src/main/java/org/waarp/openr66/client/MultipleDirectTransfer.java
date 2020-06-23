@@ -74,14 +74,14 @@ public class MultipleDirectTransfer extends DirectTransfer {
 
   @Override
   public void run() {
-    final String[] localfilenames = transferArgs.filename.split(",");
-    final String[] rhosts = transferArgs.remoteHost.split(",");
+    final String[] localfilenames = transferArgs.getFilename().split(",");
+    final String[] rhosts = transferArgs.getRemoteHost().split(",");
     boolean inError = false;
     R66Result resultError = null;
     // first check if filenames contains wildcards
     DbRule dbrule;
     try {
-      dbrule = new DbRule(transferArgs.rulename);
+      dbrule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e1) {
       logger.error(Messages.getString("Transfer.18"), e1); //$NON-NLS-1$
       future.setFailure(e1);
@@ -107,12 +107,14 @@ public class MultipleDirectTransfer extends DirectTransfer {
             final R66Future future = new R66Future(true);
             final DirectTransfer transaction =
                 new DirectTransfer(future, host, filename,
-                                   transferArgs.rulename, transferArgs.fileinfo,
-                                   transferArgs.isMD5, transferArgs.blocksize,
-                                   transferArgs.id, networkTransaction);
+                                   transferArgs.getRulename(),
+                                   transferArgs.getFileinfo(),
+                                   transferArgs.isMD5(),
+                                   transferArgs.getBlockSize(),
+                                   transferArgs.getId(), networkTransaction);
             transaction.normalInfoAsWarn = normalInfoAsWarn;
-            logger.debug(
-                "rhost: " + host + ':' + transaction.transferArgs.remoteHost);
+            logger.debug("rhost: " + host + ':' +
+                         transaction.transferArgs.getRemoteHost());
             transaction.run();
             future.awaitOrInterruptible();
             final long time2 = System.currentTimeMillis();

@@ -34,6 +34,7 @@ import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
@@ -114,6 +115,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
    * @param filename filter transfers of a particular file
    * @param startTrans lower bound for the transfers' starting date
    * @param stopTrans upper bound for the transfers' starting date
+   * @param followId the followId to find, should be the only one, except
+   *     LIMIT, OFFSET, ORDER
    */
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
@@ -136,7 +139,9 @@ public class TransfersHandler extends AbstractRestDbHandler {
                              @QueryParam(START_TRANS) @DefaultValue("")
                                  String startTrans,
                              @QueryParam(STOP_TRANS) @DefaultValue("")
-                                 String stopTrans) {
+                                 String stopTrans,
+                             @QueryParam(FOLLOW_ID) @DefaultValue("")
+                                 String followId) {
 
     final ArrayList<RestError> errors = new ArrayList<RestError>();
 
@@ -193,6 +198,9 @@ public class TransfersHandler extends AbstractRestDbHandler {
       } catch (final IllegalArgumentException e) {
         errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));
       }
+    }
+    if (!followId.isEmpty()) {
+      filters.add(DbTaskRunner.getFollowIdFilter(followId));
     }
 
     if (!errors.isEmpty()) {

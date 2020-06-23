@@ -33,6 +33,14 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.Version;
+import org.waarp.openr66.client.TransferArgsTest;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.dao.TransferDAO;
+import org.waarp.openr66.dao.database.DBDAOFactory;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.pojo.Transfer.TASKSTEP;
+import org.waarp.openr66.pojo.UpdatedInfo;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.rest.handler.DbConfigurationR66RestMethodHandler;
 import org.waarp.openr66.protocol.http.rest.handler.DbHostAuthR66RestMethodHandler;
@@ -53,6 +61,8 @@ import org.waarp.openr66.protocol.junit.NetworkClientTest.RestHandlerHookForTest
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -177,6 +187,157 @@ public class RestNoAuthentTest extends TestAbstract {
       driver.get(v2BaseUri + "server/status");
       SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
       assertTrue(driver.getPageSource().contains("serverName"));
+    } catch (NoSuchElementException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } catch (StaleElementReferenceException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } finally {
+      // Nothing
+    }
+  }
+
+  @Test
+  public void testRestR66NoAuthentFollowId() throws Exception {
+    try {
+      final String baseUri = "http://localhost:8088/";
+      // 2 | type | V2 [  |
+      String v2BaseUri = baseUri + "v2/";
+      TransferDAO transferDAO = DBDAOFactory.getInstance().getTransferDAO();
+      long id = 1;
+      String rule = "rule3";
+      int mode = 1;
+      String filename = "test.txt";
+      String originalName = "test.txt";
+      String fileInfo = "";
+      boolean isMoved = false;
+      int blockSize = 8192;
+      boolean retrieveMode = false;
+      String ownerReq = "hosta";
+      String requester = "hosta";
+      String requested = "hosta";
+      String followId = "12345";
+      String transferInfo =
+          TransferArgsTest.FOLLOWARGJSON + " " + followId + "}";
+      TASKSTEP globalStep = TASKSTEP.ALLDONETASK;
+      TASKSTEP lastGlobalStep = TASKSTEP.ALLDONETASK;
+      int step = 0;
+      ErrorCode stepStatus = ErrorCode.CompleteOk;
+      ErrorCode infoStatus = ErrorCode.CompleteOk;
+      int rank = 1;
+      Timestamp start = new Timestamp(new Date().getTime());
+      Timestamp stop = new Timestamp(new Date().getTime() + 100);
+      UpdatedInfo updatedInfo = UpdatedInfo.DONE;
+      Transfer transfer =
+          new Transfer(id, rule, mode, filename, originalName, fileInfo,
+                       isMoved, blockSize, retrieveMode, ownerReq, requester,
+                       requested, transferInfo, globalStep, lastGlobalStep,
+                       step, stepStatus, infoStatus, rank, start, stop,
+                       updatedInfo);
+      transferDAO.insert(transfer);
+      id++;
+      start = new Timestamp(new Date().getTime() + 200);
+      stop = new Timestamp(new Date().getTime() + 300);
+      Transfer transfer2 =
+          new Transfer(id, rule, mode, filename, originalName, fileInfo,
+                       isMoved, blockSize, retrieveMode, ownerReq, requester,
+                       requested, transferInfo, globalStep, lastGlobalStep,
+                       step, stepStatus, infoStatus, rank, start, stop,
+                       updatedInfo);
+      transferDAO.insert(transfer2);
+      id++;
+      start = new Timestamp(new Date().getTime() + 400);
+      stop = new Timestamp(new Date().getTime() + 500);
+      Transfer transfer3 =
+          new Transfer(id, rule, mode, filename, originalName, fileInfo,
+                       isMoved, blockSize, retrieveMode, ownerReq, requester,
+                       requested, transferInfo, globalStep, lastGlobalStep,
+                       step, stepStatus, infoStatus, rank, start, stop,
+                       updatedInfo);
+      transferDAO.insert(transfer3);
+      id++;
+      start = new Timestamp(new Date().getTime() + 400);
+      stop = new Timestamp(new Date().getTime() + 500);
+      Transfer transfer4 =
+          new Transfer(id, rule, mode, filename, originalName, fileInfo,
+                       isMoved, blockSize, retrieveMode, ownerReq, requester,
+                       requested, "transferInfo", globalStep, lastGlobalStep,
+                       step, stepStatus, infoStatus, rank, start, stop,
+                       updatedInfo);
+      transferDAO.insert(transfer4);
+
+      driver.get(v2BaseUri + "transfers");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      String page = driver.getPageSource();
+      assertTrue(driver.getPageSource().contains("results"));
+      int first = page.indexOf(followId);
+      assertTrue(first != -1);
+      int second = page.indexOf(followId, first + 1);
+      assertTrue(second != -1);
+      int third = page.indexOf(followId, second + 1);
+      assertTrue(third != -1);
+      int fourth = page.indexOf(followId, third + 1);
+      assertFalse(fourth != -1);
+      first = page.indexOf(rule);
+      assertTrue(first != -1);
+      second = page.indexOf(rule, first + 1);
+      assertTrue(second != -1);
+      third = page.indexOf(rule, second + 1);
+      assertTrue(third != -1);
+      fourth = page.indexOf(rule, third + 1);
+      assertTrue(fourth != -1);
+
+      // Now with args
+      driver.get(v2BaseUri + "transfers?followId=" + followId);
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      page = driver.getPageSource();
+      assertTrue(driver.getPageSource().contains("results"));
+      first = page.indexOf(followId);
+      assertTrue(first != -1);
+      second = page.indexOf(followId, first + 1);
+      assertTrue(second != -1);
+      third = page.indexOf(followId, second + 1);
+      assertTrue(third != -1);
+      fourth = page.indexOf(followId, third + 1);
+      assertFalse(fourth != -1);
+      first = page.indexOf(rule);
+      assertTrue(first != -1);
+      second = page.indexOf(rule, first + 1);
+      assertTrue(second != -1);
+      third = page.indexOf(rule, second + 1);
+      assertTrue(third != -1);
+      fourth = page.indexOf(rule, third + 1);
+      assertFalse(fourth != -1);
+
+      // Now directly
+      DbTaskRunner[] taskRunners =
+          DbTaskRunner.getSelectSameFollowId(followId, true, 20);
+      assertEquals(3, taskRunners.length);
+      taskRunners = DbTaskRunner.getSelectSameFollowId(followId, false, 20);
+      assertEquals(3, taskRunners.length);
+      taskRunners = DbTaskRunner.getSelectSameFollowId(followId, true, 2);
+      assertEquals(2, taskRunners.length);
+
+      // Now with args
+      driver.get(v2BaseUri + "transfers/" + taskRunners[0].getSpecialId());
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      page = driver.getPageSource();
+      assertTrue(driver.getPageSource().contains(taskRunners[0].getFollowId()));
+
+      // Now with wrong args
+      driver.get(v2BaseUri + "transfers?followId=125");
+      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
+      page = driver.getPageSource();
+      assertTrue(driver.getPageSource().contains("results"));
+      first = page.indexOf(followId);
+      assertFalse(first != -1);
+      first = page.indexOf(rule);
+      assertFalse(first != -1);
+
+      // Now directly
+      taskRunners = DbTaskRunner.getSelectSameFollowId("125", true, 20);
+      assertEquals(0, taskRunners.length);
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       fail(e.getMessage());

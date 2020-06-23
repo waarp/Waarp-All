@@ -22,13 +22,20 @@ package org.waarp.openr66.pojo;
 
 import org.junit.Test;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.database.data.DbTaskRunner;
 
 import java.sql.Timestamp;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class TransferTest {
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(TransferTest.class);
+
   @Test
   public void testJsonSerialisation() {
     Transfer transfer =
@@ -86,4 +93,95 @@ public class TransferTest {
 
     assertEquals(expected, got);
   }
+
+
+  @Test
+  public void testMapCapture() {
+    String testNoMap = "test1 test 2";
+    Map<String, Object> map = DbTaskRunner.getMapFromString(testNoMap);
+    String nomap = DbTaskRunner.getOutOfMapFromString(testNoMap);
+    assertEquals(testNoMap, nomap);
+    assertEquals(0, map.size());
+    logger.warn("{} = {} + {}", testNoMap, map, nomap);
+
+    String testSingleMap = "{}";
+    map = DbTaskRunner.getMapFromString(testSingleMap);
+    nomap = DbTaskRunner.getOutOfMapFromString(testSingleMap);
+    assertEquals("", nomap);
+    assertEquals(0, map.size());
+    logger.warn("{} = {} + {}", testSingleMap, map, nomap);
+
+    String testSingleMapKey = "{'key': 'value'}";
+    map = DbTaskRunner.getMapFromString(testSingleMapKey);
+    nomap = DbTaskRunner.getOutOfMapFromString(testSingleMapKey);
+    assertEquals("", nomap);
+    assertEquals(1, map.size());
+    logger.warn("{} = {} + {}", testSingleMapKey, map, nomap);
+
+    String testMultipleMap = "{} {}";
+    map = DbTaskRunner.getMapFromString(testMultipleMap);
+    nomap = DbTaskRunner.getOutOfMapFromString(testMultipleMap);
+    assertEquals(" ", nomap);
+    assertEquals(0, map.size());
+    logger.warn("{} = {} + {}", testMultipleMap, map, nomap);
+
+    String testMultipleMapKey = "{'key': 'value'} {}";
+    map = DbTaskRunner.getMapFromString(testMultipleMapKey);
+    nomap = DbTaskRunner.getOutOfMapFromString(testMultipleMapKey);
+    assertEquals(" ", nomap);
+    assertEquals(1, map.size());
+    logger.warn("{} = {} + {}", testMultipleMapKey, map, nomap);
+
+    String testMultipleMapKeyReverse = "{} {'key': 'value'} ";
+    map = DbTaskRunner.getMapFromString(testMultipleMapKeyReverse);
+    nomap = DbTaskRunner.getOutOfMapFromString(testMultipleMapKeyReverse);
+    assertEquals("  ", nomap);
+    assertEquals(1, map.size());
+    logger.warn("{} = {} + {}", testMultipleMapKeyReverse, map, nomap);
+
+    String testMultipleMapKeys =
+        "{} {'key': 'value'}{'key2': 'value'}{'key3': 'value'}";
+    map = DbTaskRunner.getMapFromString(testMultipleMapKeys);
+    nomap = DbTaskRunner.getOutOfMapFromString(testMultipleMapKeys);
+    assertEquals(" ", nomap);
+    assertEquals(3, map.size());
+    logger.warn("{} = {} + {}", testMultipleMapKeys, map, nomap);
+
+    String testMultipleMap2Key = "{'key': 'value'} {'key2': 'value2'}";
+    map = DbTaskRunner.getMapFromString(testMultipleMap2Key);
+    nomap = DbTaskRunner.getOutOfMapFromString(testMultipleMap2Key);
+    assertEquals(" ", nomap);
+    assertEquals(2, map.size());
+    logger.warn("{} = {} + {}", testMultipleMap2Key, map, nomap);
+
+    String testMultipleMap2SameKey = "{'key': 'value'} {'key': 'value2'}";
+    map = DbTaskRunner.getMapFromString(testMultipleMap2SameKey);
+    nomap = DbTaskRunner.getOutOfMapFromString(testMultipleMap2SameKey);
+    assertEquals(" ", nomap);
+    assertEquals(1, map.size());
+    logger.warn("{} = {} + {}", testMultipleMap2SameKey, map, nomap);
+
+    String testMultipleMap2SameKeyAndNotMap =
+        "extra information {'key': 'value'} other" +
+        "{'key2': 'value2'}and another one";
+    map = DbTaskRunner.getMapFromString(testMultipleMap2SameKeyAndNotMap);
+    nomap =
+        DbTaskRunner.getOutOfMapFromString(testMultipleMap2SameKeyAndNotMap);
+    assertEquals("extra information  other" + "and another one", nomap);
+    assertEquals(2, map.size());
+    logger.warn("{} = {} + {}", testMultipleMap2SameKeyAndNotMap, map, nomap);
+
+
+    String testMultipleMap2SameKeyAndNotMapEnding =
+        "extra information {'key': 'value'} other" + "{'key2': 'value2'}";
+    map = DbTaskRunner.getMapFromString(testMultipleMap2SameKeyAndNotMapEnding);
+    nomap = DbTaskRunner
+        .getOutOfMapFromString(testMultipleMap2SameKeyAndNotMapEnding);
+    assertEquals("extra information  other", nomap);
+    assertEquals(2, map.size());
+    logger.warn("{} = {} + {}", testMultipleMap2SameKeyAndNotMapEnding, map,
+                nomap);
+
+  }
+
 }

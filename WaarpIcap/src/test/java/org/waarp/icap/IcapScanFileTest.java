@@ -881,8 +881,8 @@ public class IcapScanFileTest {
     fullArgs = new String[] {
         IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,
         file.getAbsolutePath(), "-to", "127.0.0.1", "-port", "9999",
-        "-previewSize", "2048", "-blockSize", "2048", "-receiveSize",
-        "2048", "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
+        "-previewSize", "2048", "-blockSize", "2048", "-receiveSize", "2048",
+        "-maxSize", "100000", "-errorDelete", "-keyPreview", "Methods",
         "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
         "600", "-stringHttp",
         "This is data that was returned by an origin server"

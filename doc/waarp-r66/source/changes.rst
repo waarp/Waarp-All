@@ -14,25 +14,38 @@ Nouvelles fonctionnalités
 =========================
 
 - [`#49 <https://github.com/waarp/Waarp-All/pull/49>`__]
-  Pour les transferts, une nouvelle option `-follow` permet de gérer le suivi
+  Pour les transferts, une nouvelle option ``-follow`` permet de gérer le suivi
   fin des retransferts (rebonds entre plusieurs serveurs R66). Cette option
-  positionne un champ dans la partie `information de transfert` de la forme
-  suivante : `{'follow': numeroUnique}` pour le premier transfert et les
+  positionne un champ dans la partie ``information de transfert`` de la forme
+  suivante : ``{"follow": numeroUnique}`` pour le premier transfert et les
   transferts suivants récupèreront ainsi cette information nativement.
+
+  Pour les anciennes versions, il est possible de simuler cette option manuellement
+  en spécifiant pour le premier transfert dans le champ ``-info`` (``information de transfert``)
+  un Json de type ``{"follow": numeroUnique}`` en attribuant un numéro unique
+  (comme un timestamp).
+- L'interface REST V2 intègre l'option de recherche par ``followId``
+  (``GET /v2/transfers/?followId=number``). ``number`` étant possiblement un entier
+  long, il est conseillé de le manipuler en chaîne de caractères.
+
+  Pour les anciennes versions, il faut requêter tous les transferts et filtrer ensuite
+  sur le champ ``transferInformation`` selon la présence d'un champ ``follow`` suivi
+  d'un numéro au format Json.
 - [`#48 <https://github.com/waarp/Waarp-All/pull/48>`__]
-  Une nouvelle tâche nommée `ICAP` est créée afin de permettre  l'échange avec
-  un serveur répondant à la norme RFC 3507 dite `ICAP`.
+  Une nouvelle tâche nommée ``ICAP`` est créée afin de permettre  l'échange avec
+  un serveur répondant à la norme RFC 3507 dite ``ICAP``.
   Elle permet de transférer le contenu du fichier vers un service ICAP via une
-  commande `RESPMOD` et d'obtenir la validation de ce fichier par le service
-  (status `204`).
+  commande ``RESPMOD`` et d'obtenir la validation de ce fichier par le service
+  (status ``204``).
 
 Correctifs
 ==========
 
-- Le log géré par LogBack génère parfois des logs au démarrage d'information
+- [`#50 <https://github.com/waarp/Waarp-All/pull/50>`__]
+  Le log géré par LogBack génère parfois des logs au démarrage d'information
   ou de debug qui peuvent être évités (en conservant les Warnings et les Erreurs)
-  via l'ajout dans le fichier de configuration `logback.xml` les paramètres
-  suivants :
+  via l'ajout dans le fichier de configuration ``logback.xml`` les paramètres
+  suivants en tête des options :
 
 .. code-block:: xml
 

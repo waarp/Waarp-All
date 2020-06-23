@@ -90,9 +90,10 @@ public abstract class AbstractTransfer implements Runnable {
    */
   protected AbstractTransfer(Class<?> clasz, R66Future future,
                              TransferArgs transferArgs) {
-    this(clasz, future, transferArgs.filename, transferArgs.rulename,
-         transferArgs.fileinfo, transferArgs.isMD5, transferArgs.remoteHost,
-         transferArgs.blocksize, transferArgs.id, transferArgs.startTime);
+    this(clasz, future, transferArgs.getFilename(), transferArgs.getRulename(),
+         transferArgs.getFileinfo(), transferArgs.isMD5(),
+         transferArgs.getRemoteHost(), transferArgs.getBlockSize(),
+         transferArgs.getId(), transferArgs.getStartTime());
   }
 
   /**
@@ -114,19 +115,19 @@ public abstract class AbstractTransfer implements Runnable {
       logger = WaarpLoggerFactory.getLogger(clasz);
     }
     this.future = future;
-    this.transferArgs.filename = filename;
-    this.transferArgs.rulename = rulename;
-    this.transferArgs.fileinfo = fileinfo;
-    this.transferArgs.isMD5 = isMD5;
+    this.transferArgs.setFilename(filename);
+    this.transferArgs.setRulename(rulename);
+    this.transferArgs.setFileinfo(fileinfo);
+    this.transferArgs.setMD5(isMD5);
     if (Configuration.configuration.getAliases().containsKey(remoteHost)) {
-      this.transferArgs.remoteHost =
-          Configuration.configuration.getAliases().get(remoteHost);
+      this.transferArgs.setRemoteHost(
+          Configuration.configuration.getAliases().get(remoteHost));
     } else {
-      this.transferArgs.remoteHost = remoteHost;
+      this.transferArgs.setRemoteHost(remoteHost);
     }
-    this.transferArgs.blocksize = blocksize;
-    this.transferArgs.id = id;
-    transferArgs.startTime = timestart;
+    this.transferArgs.setBlockSize(blocksize);
+    this.transferArgs.setId(id);
+    transferArgs.setStartTime(timestart);
   }
 
   /**
@@ -168,9 +169,9 @@ public abstract class AbstractTransfer implements Runnable {
   protected DbTaskRunner initRequest() {
     DbRule dbRule;
     try {
-      dbRule = new DbRule(transferArgs.rulename);
+      dbRule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get Rule: " + transferArgs.rulename, e);
+      logger.error("Cannot get Rule: " + transferArgs.getRulename(), e);
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -178,13 +179,14 @@ public abstract class AbstractTransfer implements Runnable {
       return null;
     }
     int mode = dbRule.getMode();
-    if (transferArgs.isMD5) {
+    if (transferArgs.isMD5()) {
       mode = RequestPacket.getModeMD5(mode);
     }
     DbTaskRunner taskRunner;
-    if (transferArgs.id != ILLEGALVALUE) {
+    if (transferArgs.getId() != ILLEGALVALUE) {
       try {
-        taskRunner = new DbTaskRunner(transferArgs.id, transferArgs.remoteHost);
+        taskRunner = new DbTaskRunner(transferArgs.getId(),
+                                      transferArgs.getRemoteHost());
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot get task", e);
         future.setResult(
@@ -195,18 +197,18 @@ public abstract class AbstractTransfer implements Runnable {
       }
       // requested
       taskRunner.setSenderByRequestToValidate(true);
-      if (transferArgs.fileinfo != null &&
-          !transferArgs.fileinfo.equals(NO_INFO_ARGS)) {
-        taskRunner.setFileInformation(transferArgs.fileinfo);
+      if (transferArgs.getFileinfo() != null &&
+          !transferArgs.getFileinfo().equals(NO_INFO_ARGS)) {
+        taskRunner.setFileInformation(transferArgs.getFileinfo());
       }
-      if (transferArgs.startTime != null) {
-        taskRunner.setStart(transferArgs.startTime);
+      if (transferArgs.getStartTime() != null) {
+        taskRunner.setStart(transferArgs.getStartTime());
       }
     } else {
       long originalSize = -1;
       if (RequestPacket.isSendMode(mode) &&
           !RequestPacket.isThroughMode(mode)) {
-        File file = new File(transferArgs.filename);
+        File file = new File(transferArgs.getFilename());
         // Change dir
         try {
           final R66Session session = new R66Session();
@@ -215,7 +217,7 @@ public abstract class AbstractTransfer implements Runnable {
                                                      .getHostId());
           session.getDir().changeDirectory(dbRule.getSendPath());
           final R66File filer66 = FileUtils
-              .getFile(logger, session, transferArgs.filename, true, true,
+              .getFile(logger, session, transferArgs.getFilename(), true, true,
                        false, null);
           file = filer66.getTrueFile();
         } catch (final CommandAbstractException ignored) {
@@ -232,17 +234,19 @@ public abstract class AbstractTransfer implements Runnable {
       }
       logger.debug("Filesize: " + originalSize);
       final String sep =
-          PartnerConfiguration.getSeparator(transferArgs.remoteHost);
+          PartnerConfiguration.getSeparator(transferArgs.getRemoteHost());
       final RequestPacket request =
-          new RequestPacket(transferArgs.rulename, mode, transferArgs.filename,
-                            transferArgs.blocksize, 0, transferArgs.id,
-                            transferArgs.fileinfo, originalSize, sep);
+          new RequestPacket(transferArgs.getRulename(), mode,
+                            transferArgs.getFilename(),
+                            transferArgs.getBlockSize(), 0,
+                            transferArgs.getId(), transferArgs.getFileinfo(),
+                            originalSize, sep);
       // Not isRecv since it is the requester, so send => isRetrieve is true
       final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
       try {
         taskRunner = new DbTaskRunner(dbRule, isRetrieve, request,
-                                      transferArgs.remoteHost,
-                                      transferArgs.startTime);
+                                      transferArgs.getRemoteHost(),
+                                      transferArgs.getStartTime());
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot get task", e);
         future.setResult(
@@ -313,14 +317,14 @@ public abstract class AbstractTransfer implements Runnable {
     if (transferArgsLocal == null) {
       return false;
     }
-    rhost = transferArgsLocal.remoteHost;
-    localFilename = transferArgsLocal.filename;
-    rule = transferArgsLocal.rulename;
-    fileInfo = transferArgsLocal.fileinfo;
-    ismd5 = transferArgsLocal.isMD5;
-    block = transferArgsLocal.blocksize;
-    idt = transferArgsLocal.id;
-    ttimestart = transferArgsLocal.startTime;
+    rhost = transferArgsLocal.getRemoteHost();
+    localFilename = transferArgsLocal.getFilename();
+    rule = transferArgsLocal.getRulename();
+    fileInfo = transferArgsLocal.getFileinfo();
+    ismd5 = transferArgsLocal.isMD5();
+    block = transferArgsLocal.getBlockSize();
+    idt = transferArgsLocal.getId();
+    ttimestart = transferArgsLocal.getStartTime();
     return true;
   }
 
@@ -360,8 +364,8 @@ public abstract class AbstractTransfer implements Runnable {
     if (transferArgs1 == null) {
       return null;
     }
-    snormalInfoAsWarn = transferArgs1.normalInfoAsWarn;
-    nolog = transferArgs1.nolog;
+    snormalInfoAsWarn = transferArgs1.isNormalInfoAsWarn();
+    nolog = transferArgs1.isNolog();
     return transferArgs1;
   }
 
@@ -404,8 +408,8 @@ public abstract class AbstractTransfer implements Runnable {
         logger.info(Messages.getString("Transfer.3") + filenameNew + " to " +
                     requested); //$NON-NLS-1$
         final RequestInformation info =
-            new RequestInformation(futureInfo, requested, transferArgs.rulename,
-                                   filenameNew,
+            new RequestInformation(futureInfo, requested,
+                                   transferArgs.getRulename(), filenameNew,
                                    (byte) ASKENUM.ASKLIST.ordinal(), -1, false,
                                    networkTransaction);
         info.run();

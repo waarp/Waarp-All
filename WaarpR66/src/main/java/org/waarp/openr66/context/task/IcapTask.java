@@ -143,46 +143,8 @@ public class IcapTask extends AbstractExecTask {
             .setFailure(new OpenR66RunnerErrorException("ICAP Network error"));
         return;
       case IcapScanFile.STATUS_KO_SCAN:
-        for (int i = 0; i < args.length; i++) {
-          if (IcapScanFile.ERROR_SEND_ARG.equalsIgnoreCase(args[i])) {
-            for (i++; i < args.length; i++) {
-              if (IcapScanFile.SEPARATOR_SEND.equals(args[i])) {
-                StringBuilder newArgs = new StringBuilder();
-                for (i++; i < args.length; i++) {
-                  newArgs.append(args[i]).append(' ');
-                }
-                // Now launch send
-                TransferTask transferTask =
-                    new TransferTask(newArgs.toString(), 0, argTransfer,
-                                     session);
-                transferTask.run();
-                transferTask.futureCompletion.awaitOrInterruptible();
-                if (transferTask.futureCompletion.isSuccess()) {
-                  futureCompletion
-                      .setResult(transferTask.futureCompletion.getResult());
-                  logger
-                      .info("ICAP ended in KO on file but resend is OK for {}",
-                            session.getFile().getTrueFile().getAbsolutePath());
-                  futureCompletion.setFailure(new OpenR66RunnerErrorException(
-                      "ICAP ended in KO on file but resend is OK"));
-                } else {
-                  logger.error(
-                      "ICAP KO with Resend in error with " + argRule + ':' +
-                      argTransfer + ':' + delay + " and " + session,
-                      transferTask.futureCompletion.getCause());
-                  if (transferTask.futureCompletion.getCause() == null) {
-                    futureCompletion.setFailure(new OpenR66RunnerErrorException(
-                        "ICAP ended in KO on file and Resend is KO too"));
-                  } else {
-                    futureCompletion.setFailure(new OpenR66RunnerErrorException(
-                        "ICAP ended in KO on file and Resend is KO too",
-                        transferTask.futureCompletion.getCause()));
-                  }
-                }
-                return;
-              }
-            }
-          }
+        if (finalizeIcapOnError(args)) {
+          return;
         }
         // No send required so real error
         logger.error(
@@ -205,6 +167,56 @@ public class IcapTask extends AbstractExecTask {
         futureCompletion
             .setFailure(new OpenR66RunnerErrorException("ICAP Unknown error"));
     }
+  }
+
+  /**
+   * finalize Icap on Error
+   *
+   * @param args
+   *
+   * @return True if OK
+   */
+  private boolean finalizeIcapOnError(final String[] args) {
+    for (int i = 0; i < args.length; i++) {
+      if (IcapScanFile.ERROR_SEND_ARG.equalsIgnoreCase(args[i])) {
+        for (i++; i < args.length; i++) {
+          if (IcapScanFile.SEPARATOR_SEND.equals(args[i])) {
+            StringBuilder newArgs = new StringBuilder();
+            for (i++; i < args.length; i++) {
+              newArgs.append(args[i]).append(' ');
+            }
+            // Now launch send
+            TransferTask transferTask =
+                new TransferTask(newArgs.toString(), 0, argTransfer, session);
+            transferTask.run();
+            transferTask.futureCompletion.awaitOrInterruptible();
+            if (transferTask.futureCompletion.isSuccess()) {
+              futureCompletion
+                  .setResult(transferTask.futureCompletion.getResult());
+              logger.info("ICAP ended in KO on file but resend is OK for {}",
+                          session.getFile().getTrueFile().getAbsolutePath());
+              futureCompletion.setFailure(new OpenR66RunnerErrorException(
+                  "ICAP ended in KO on file but resend is OK"));
+            } else {
+              logger.error(
+                  "ICAP KO with Resend in error with " + argRule + ':' +
+                  argTransfer + ':' + delay + " and " + session,
+                  transferTask.futureCompletion.getCause());
+              if (transferTask.futureCompletion.getCause() == null) {
+                futureCompletion.setFailure(new OpenR66RunnerErrorException(
+                    "ICAP ended in KO on file and Resend is KO too"));
+              } else {
+                futureCompletion.setFailure(new OpenR66RunnerErrorException(
+                    "ICAP ended in KO on file and Resend is KO too",
+                    transferTask.futureCompletion.getCause()));
+              }
+            }
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
 }
