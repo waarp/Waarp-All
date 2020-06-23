@@ -2,6 +2,90 @@
 Type de Task
 ############
 
+Format général d'une tâche
+--------------------------
+
+Une tâche est définie selon un format unifié XML :
+
+.. code-block:: xml
+
+  <tasks>
+   <task>
+    <type>NAME</type>
+    <path>path</path>
+    <delay>x</delay>
+    <rank>n</rank>
+   </task>
+  </tasks>
+
+- ``Type`` est l'identifiant du type de tâche à exécuter (les types sont présentés ci-après.
+
+- ``Path`` est un argument fixé par la règle et dont des remplacements de mots clefs sont opérés :
+
+  - ``#TRUEFULLPATH#`` : Chemin complet du fichier courant
+  - ``#TRUEFILENAME#`` : Nom du fichier courant (hors chemin) (différent côté réception)
+  - ``#ORIGINALFULLPATH#`` : Chemin complet du fichier d'origine (avant changement côté réception)
+  - ``#ORIGINALFILENAME#`` : Nom du fichier d'origine (avant changement côté réception)
+  - ``#FILESIZE#`` : Taille du fichier s'il existe
+  - ``#INPATH#`` : Chemin du dossier de réception
+  - ``#OUTPATH#`` : Chemin du dossier d'émission
+  - ``#WORKPATH#`` : Chemin du dossier de travail
+  - ``#ARCHPATH#`` : Chemin du dossier d'archive
+  - ``#HOMEPATH#`` : Chemin du dossier du répertoire "racine" de Waarp
+  - ``#RULE#`` : Règle utilisé pour le transfert
+  - ``#DATE#`` : Date courante au format yyyyMMdd
+  - ``#HOUR#`` : Heure courante au format HHmmss
+  - ``#REMOTEHOST#`` : Nom DNS du partenaire
+  - ``#REMOTEHOSTIP#`` : IP du partenaire
+  - ``#LOCALHOST#`` : Nom DNS local du serveur Waarp
+  - ``#LOCALHOSTIP#`` : IP du serveur Waarp
+  - ``#TRANSFERID#`` : Identifiant de transfert
+  - ``#REQUESTERHOST#`` : Nom du partenaire initiateur du transfert
+  - ``#REQUESTEDHOST#`` : Nom du partenaire recevant la demande de transfert
+  - ``#FULLTRANSFERID#`` : Identifiant complet du transfert comme ``TRANSFERID_REQUESTERHOST_REQUESTEDHOST``
+  - ``#RANKTRANSFER#`` : Rang du bloc courant ou final du fichier transféré
+  - ``#BLOCKSIZE#`` : Taille du bloc utilisé
+  - ``#ERRORMSG#`` : Le message d'erreur courant ou "NoError" si aucune erreur n'a été levée jusqu'à cet
+    appel
+  - ``#ERRORCODE#`` : Le code erreur courant ou ``-`` (``Unknown``) si aucune erreur n'a été levée jusqu'à
+    cet appel
+  - ``#ERRORSTRCODE#`` : Le message lié au code d'erreur courant ou ``Unknown`` si aucune erreur n'a été
+    levée jusqu'à cet appel
+  - ``#NOWAIT#`` : Utilisé par la tâche EXEC pour spécifier que la commande est à exécuter en mode asynchrone,
+    sans en attendre le résultat
+  - ``#LOCALEXEC#`` : Utilisé par la tâche EXEC pour spécifier que la commande est à exécuter de manière
+    distante (pas dans la JVM courante) mais au travers d'un démon ``LocalExec`` (spécifié dans la
+    configuration globale
+
+Par exemple, un ``Path`` défini comme :
+``some #DATE# some2 #TRANSFERID# some3 #REMOTEHOST# some4``
+donnera
+``some 20130529 some2 123456789123 some3 remotehostid some4``
+
+- ``Delay`` est généralement le délai (si précisé) maximum pour l'exécution d'une tâche avant qu'elle tombe
+  en erreur pour dépassement de délai.
+- ``Rank`` est optionnel et permet d'indiquer un rang d'exécution des tâches, laissant une souplesse sur
+  l'ordre d'écriture en période de tests. Il n'est pas conseillé de l'utiliser par défaut hormis pour les
+  tests et validation de plusieurs tâches.
+
+De plus, une tâche utilisera les arguments de transfert eux-même (``Transfer Information``) pour déduire
+les paramètres finaux en utilisant la fonction
+``String.format(path règle, info transfert.éclaté en sous chaînes via le séparateur " ")``
+
+L'argument de transfert (spécifié par ``-info`` dans les commandes de transferts) ou le ``path`` peuvent
+contenir une MAP au format JSON qui intègre des éléments utiles aux tâches ou au fonctionnement de Waarp
+(comme le ``DIGEST``, le ``RESCHDEDULE``, l'option ``-follow``).
+
+Ceci permet de rendre les arguments très adaptatifs.
+
+Par exemple :
+
+- si la règle définie ``Path`` comme ``some %s some2 %d some3 %s some4``
+- et si les informations de transferts sont ``info1 1 info2``
+- Le résultat sera pour cette tâche : ``some info1 some2 1 some3 info2 some4``
+
+
+
 Tâches informatives
 -------------------
 

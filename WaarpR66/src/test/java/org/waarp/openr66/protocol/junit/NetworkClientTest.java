@@ -786,8 +786,8 @@ public class NetworkClientTest extends TestAbstract {
         { "falsConfigFile", "-id", "" + specialId, "-to", "hostas" };
     TransferArgs transferArgs = SubmitTransferTest.getParamsInternal(1, args);
     if (transferArgs != null) {
-      String rule = transferArgs.rulename;
-      String localFilename = transferArgs.filename;
+      String rule = transferArgs.getRulename();
+      String localFilename = transferArgs.getFilename();
       logger.warn("Success for finding previous transfer {} {} {}", specialId,
                   rule, localFilename);
       final R66Future future2 = new R66Future(true);

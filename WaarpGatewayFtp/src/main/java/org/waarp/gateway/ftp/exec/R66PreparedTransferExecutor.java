@@ -121,7 +121,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
     transferArgs = TransferArgs.getParamsInternal(0, args, false);
     if (transferArgs != null) {
       TransferArgs.getAllInfo(transferArgs, 0, args, null);
-      nolog = transferArgs.nolog;
+      nolog = transferArgs.isNolog();
     }
     future = futureCompletion;
   }
@@ -141,55 +141,58 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
       throw new Reply421Exception(
           "Mandatory argument is missing: -to  -rule  -file or -to -id");
     }
-    if (transferArgs.remoteHost == null || transferArgs.rulename == null ||
-        transferArgs.filename == null) {
+    if (transferArgs.getRemoteHost() == null ||
+        transferArgs.getRulename() == null ||
+        transferArgs.getFilename() == null) {
       logger.error(
-          "Mandatory argument is missing: -to " + transferArgs.remoteHost +
-          " -rule " + transferArgs.rulename + " -file " +
-          transferArgs.filename);
+          "Mandatory argument is missing: -to " + transferArgs.getRemoteHost() +
+          " -rule " + transferArgs.getRulename() + " -file " +
+          transferArgs.getFilename());
       throw new Reply421Exception("Mandatory argument is missing");
     }
     final String message =
-        "R66Prepared with -to " + transferArgs.remoteHost + " -rule " +
-        transferArgs.rulename + " -file " + transferArgs.filename +
-        " -nolog: " + nolog + " -isMD5: " + transferArgs.isMD5 + " -info " +
-        transferArgs.fileinfo;
+        "R66Prepared with -to " + transferArgs.getRemoteHost() + " -rule " +
+        transferArgs.getRulename() + " -file " + transferArgs.getFilename() +
+        " -nolog: " + nolog + " -isMD5: " + transferArgs.isMD5() + " -info " +
+        transferArgs.getFileinfo();
     logger.debug(message);
     DbRule rule;
     try {
-      rule = new DbRule(transferArgs.rulename);
+      rule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
       logger.error(
-          "Cannot get Rule: " + transferArgs.rulename + " since {}\n    " +
+          "Cannot get Rule: " + transferArgs.getRulename() + " since {}\n    " +
           message, e.getMessage());
       throw new Reply421Exception(
-          "Cannot get Rule: " + transferArgs.rulename + "\n    " + message);
+          "Cannot get Rule: " + transferArgs.getRulename() + "\n    " +
+          message);
     }
     int mode = rule.getMode();
-    if (transferArgs.isMD5) {
+    if (transferArgs.isMD5()) {
       mode = RequestPacket.getModeMD5(mode);
     }
     final String sep =
-        PartnerConfiguration.getSeparator(transferArgs.remoteHost);
+        PartnerConfiguration.getSeparator(transferArgs.getRemoteHost());
     long originalSize = -1;
     if (RequestPacket.isSendMode(mode) && !RequestPacket.isThroughMode(mode)) {
-      final File file = new File(transferArgs.filename);
+      final File file = new File(transferArgs.getFilename());
       if (file.canRead()) {
         originalSize = file.length();
       }
     }
     final RequestPacket request =
-        new RequestPacket(transferArgs.rulename, mode, transferArgs.filename,
-                          transferArgs.blocksize, 0, ILLEGALVALUE,
-                          transferArgs.fileinfo, originalSize, sep);
+        new RequestPacket(transferArgs.getRulename(), mode,
+                          transferArgs.getFilename(),
+                          transferArgs.getBlockSize(), 0, ILLEGALVALUE,
+                          transferArgs.getFileinfo(), originalSize, sep);
     // Not isRecv since it is the requester, so send => isRetrieve is true
     final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
     logger.debug("Will prepare: {}", request);
     DbTaskRunner taskRunner;
     try {
-      taskRunner =
-          new DbTaskRunner(rule, isRetrieve, request, transferArgs.remoteHost,
-                           transferArgs.startTime);
+      taskRunner = new DbTaskRunner(rule, isRetrieve, request,
+                                    transferArgs.getRemoteHost(),
+                                    transferArgs.getStartTime());
     } catch (final WaarpDatabaseException e) {
       logger.error("Cannot get new task since {}\n    " + message,
                    e.getMessage());

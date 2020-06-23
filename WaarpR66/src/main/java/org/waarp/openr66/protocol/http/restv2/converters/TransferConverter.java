@@ -174,7 +174,7 @@ public final class TransferConverter {
     defaultTransfer.setRequester(serverName());
     defaultTransfer.setOwnerRequest(serverName());
     defaultTransfer.setBlockSize(Configuration.configuration.getBlockSize());
-    defaultTransfer.setTransferInfo("");
+    defaultTransfer.setTransferInfo("{}");
     defaultTransfer.setStart(new Timestamp(DateTime.now().getMillis()));
     final Transfer transfer = parseNode(object, defaultTransfer);
 

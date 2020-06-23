@@ -119,11 +119,13 @@ public class TransferTask extends AbstractExecTask {
     }
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
-        new SubmitTransfer(future, transferArgs.remoteHost,
-                           transferArgs.filename, transferArgs.rulename,
-                           transferArgs.fileinfo, transferArgs.isMD5,
-                           transferArgs.blocksize, DbConstantR66.ILLEGALVALUE,
-                           transferArgs.startTime);
+        new SubmitTransfer(future, transferArgs.getRemoteHost(),
+                           transferArgs.getFilename(),
+                           transferArgs.getRulename(),
+                           transferArgs.getFileinfo(), transferArgs.isMD5(),
+                           transferArgs.getBlockSize(),
+                           DbConstantR66.ILLEGALVALUE,
+                           transferArgs.getStartTime());
     transaction.run();
     future.awaitOrInterruptible();
     final DbTaskRunner runner;
@@ -132,7 +134,7 @@ public class TransferTask extends AbstractExecTask {
       runner = future.getResult().getRunner();
       logger.info(
           "Prepare transfer in     SUCCESS     " + runner.toShortString() +
-          "     <REMOTE>" + transferArgs.remoteHost + "</REMOTE>");
+          "     <REMOTE>" + transferArgs.getRemoteHost() + "</REMOTE>");
       futureCompletion.setSuccess();
     } else {
       if (future.getResult() != null) {
@@ -149,7 +151,7 @@ public class TransferTask extends AbstractExecTask {
         }
         logger.error(
             "Prepare transfer in     FAILURE      " + runner.toShortString() +
-            "     <REMOTE>" + transferArgs.remoteHost + "</REMOTE>",
+            "     <REMOTE>" + transferArgs.getRemoteHost() + "</REMOTE>",
             future.getCause());
       } else {
         if (future.getCause() == null) {

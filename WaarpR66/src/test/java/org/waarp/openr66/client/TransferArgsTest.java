@@ -27,6 +27,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.NetworkClientTest;
 import org.waarp.openr66.protocol.junit.TestAbstract;
@@ -45,6 +46,7 @@ import java.util.Date;
 
 import static org.junit.Assert.*;
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.client.TransferArgs.*;
 
 /**
  * AbstractTransfer Tester.
@@ -55,6 +57,7 @@ public class TransferArgsTest extends TestAbstract {
   private static final String LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML =
       "Linux/config/config-serverInitA.xml";
   private static final String CONFIG_CLIENT_A_XML = "config-clientA.xml";
+  public static final String FOLLOWARGJSON = "{\"" + FOLLOW_JSON_KEY + "\":";
 
   /**
    * @throws Exception
@@ -173,14 +176,14 @@ public class TransferArgsTest extends TestAbstract {
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsComplete);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertNull(transferArgs.startTime);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
 
     // Check complete example
     String[] argsCompleteSeparator = {
@@ -191,14 +194,14 @@ public class TransferArgsTest extends TestAbstract {
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsCompleteSeparator);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertNull(transferArgs.startTime);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
 
     String[] argsCompleteRankNot0 = {
         TransferArgs.SEPARATOR_SEND, TransferArgs.DELAY_ARG, "abc",
@@ -208,14 +211,14 @@ public class TransferArgsTest extends TestAbstract {
     };
     transferArgs = AbstractTransfer.getParamsInternal(3, argsCompleteRankNot0);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertNull(transferArgs.startTime);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
 
     String[] argsCompleteAlias = {
         TransferArgs.TO_ARG, "myhosta", TransferArgs.FILE_ARG,
@@ -225,14 +228,14 @@ public class TransferArgsTest extends TestAbstract {
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsCompleteAlias);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertNull(transferArgs.startTime);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
 
     // Check complete example
     String[] argsCompleteWithId = {
@@ -243,14 +246,14 @@ public class TransferArgsTest extends TestAbstract {
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsCompleteWithId);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertNull(transferArgs.startTime);
-    assertEquals(1234, transferArgs.id);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(1234, transferArgs.getId());
 
     // Check complete example
     String[] argsCompleteWithTimeStart = {
@@ -263,22 +266,23 @@ public class TransferArgsTest extends TestAbstract {
     transferArgs =
         AbstractTransfer.getParamsInternal(0, argsCompleteWithTimeStart);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
     Date date;
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
     try {
       date = dateFormat.parse("20200601211201");
-      assertTrue(transferArgs.startTime.equals(new Timestamp(date.getTime())));
+      assertTrue(
+          transferArgs.getStartTime().equals(new Timestamp(date.getTime())));
     } catch (final ParseException ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       fail(ignored.getMessage());
     }
-    assertEquals(ILLEGALVALUE, transferArgs.id);
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
 
     // Check complete example
     String[] argsCompleteWithDelay = {
@@ -290,17 +294,17 @@ public class TransferArgsTest extends TestAbstract {
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsCompleteWithDelay);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertTrue(transferArgs.startTime
-                   .before(new Timestamp(System.currentTimeMillis() + 101)));
-    assertEquals(ILLEGALVALUE, transferArgs.id);
-    assertFalse(transferArgs.nolog);
-    assertFalse(transferArgs.normalInfoAsWarn);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertTrue(transferArgs.getStartTime().before(
+        new Timestamp(System.currentTimeMillis() + 101)));
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertFalse(transferArgs.isNolog());
+    assertFalse(transferArgs.isNormalInfoAsWarn());
 
     // Check complete example
     String[] argsCompleteWithNotLog = {
@@ -313,16 +317,16 @@ public class TransferArgsTest extends TestAbstract {
     transferArgs =
         AbstractTransfer.getParamsInternal(0, argsCompleteWithNotLog);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertTrue(transferArgs.nolog);
-    assertTrue(transferArgs.normalInfoAsWarn);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
-    assertNull(transferArgs.follow);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertTrue(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertNull(transferArgs.getFollowId());
 
     // Check complete example
     String[] argsCompleteWithFollow = {
@@ -334,45 +338,80 @@ public class TransferArgsTest extends TestAbstract {
     transferArgs =
         AbstractTransfer.getParamsInternal(0, argsCompleteWithFollow);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertTrue(transferArgs.fileinfo
-                   .startsWith("no_information " + TransferArgs.FOLLOWARGJSON));
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertFalse(transferArgs.nolog);
-    assertTrue(transferArgs.normalInfoAsWarn);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
-    assertFalse(transferArgs.follow.isEmpty());
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    logger.warn(transferArgs.getFileinfo());
+    assertTrue(transferArgs.getFileinfo().endsWith("no_information"));
+    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertFalse(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertFalse(transferArgs.getFollowId().isEmpty());
 
     // Check complete example
     String[] argsCompleteWithFollowIncluded = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
         TransferArgs.BLOCK_ARG, "1000", TransferArgs.FOLLOW_ARG,
-        TransferArgs.INFO_ARG, "no_information", TransferArgs.FOLLOWARGJSON,
-        "1234}"
+        TransferArgs.INFO_ARG, "no_information", FOLLOWARGJSON, "1234}"
     };
     transferArgs = TransferArgs
         .getParamsInternal(0, argsCompleteWithFollowIncluded, false);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertFalse(transferArgs.nolog);
-    assertTrue(transferArgs.normalInfoAsWarn);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
-    assertTrue(transferArgs.follow.isEmpty());
-    assertNotEquals("1234", transferArgs.follow);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertFalse(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(transferArgs.getFollowId().isEmpty());
+    assertNotEquals("1234", transferArgs.getFollowId());
     TransferArgs
         .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncluded, null);
-    assertEquals("1234", transferArgs.follow);
-    assertEquals("no_information " + TransferArgs.FOLLOWARGJSON + " 1234}",
-                 transferArgs.fileinfo);
+    logger.warn(transferArgs.getFileinfo());
+    assertEquals("1234", transferArgs.getFollowId());
+    assertTrue(transferArgs.getFileinfo().endsWith("no_information"));
+    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
+
+    String[] argsCompleteWithFollowIncludedAndMore = {
+        TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
+        TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
+        TransferArgs.BLOCK_ARG, "1000", TransferArgs.FOLLOW_ARG,
+        TransferArgs.INFO_ARG, "no_information", FOLLOWARGJSON,
+        "1234} {'key': 'value'} test after"
+    };
+    transferArgs = TransferArgs
+        .getParamsInternal(0, argsCompleteWithFollowIncludedAndMore, false);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertFalse(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(transferArgs.getFollowId().isEmpty());
+    assertNotEquals("1234", transferArgs.getFollowId());
+    TransferArgs
+        .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncludedAndMore,
+                    null);
+    logger.warn(transferArgs.getFileinfo());
+    assertEquals("1234", transferArgs.getFollowId());
+    assertTrue(
+        transferArgs.getFileinfo().endsWith("no_information   test after"));
+    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
+    assertTrue(DbTaskRunner.getMapFromString(transferArgs.getFileinfo())
+                           .containsKey("key"));
+    assertTrue(DbTaskRunner.getMapFromString(transferArgs.getFileinfo())
+                           .containsKey(FOLLOW_JSON_KEY));
 
     String[] argsCompleteWithFollowCopied = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
@@ -383,21 +422,23 @@ public class TransferArgsTest extends TestAbstract {
     transferArgs =
         TransferArgs.getParamsInternal(0, argsCompleteWithFollowCopied, false);
     assertNotNull(transferArgs);
-    assertEquals("hosta", transferArgs.remoteHost);
-    assertEquals("testTaskBig.txt", transferArgs.filename);
-    assertEquals("rule3", transferArgs.rulename);
-    assertEquals("no_information", transferArgs.fileinfo);
-    assertEquals(true, transferArgs.isMD5);
-    assertEquals(1000, transferArgs.blocksize);
-    assertFalse(transferArgs.nolog);
-    assertTrue(transferArgs.normalInfoAsWarn);
-    assertEquals(ILLEGALVALUE, transferArgs.id);
-    assertTrue(transferArgs.follow.isEmpty());
-    assertNotEquals("1234", transferArgs.follow);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertFalse(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(transferArgs.getFollowId().isEmpty());
+    assertNotEquals("1234", transferArgs.getFollowId());
     TransferArgs.getAllInfo(transferArgs, 0, argsCompleteWithFollowCopied,
-                            TransferArgs.FOLLOWARGJSON + " 1234}");
-    assertEquals("1234", transferArgs.follow);
-    assertEquals(TransferArgs.FOLLOWARGJSON + " 1234} " + "no_information " +
-                 "extra-info", transferArgs.fileinfo);
+                            FOLLOWARGJSON + " 1234}");
+    logger.warn(transferArgs.getFileinfo());
+    assertEquals("1234", transferArgs.getFollowId());
+    assertTrue(
+        transferArgs.getFileinfo().endsWith("no_information extra-info"));
+    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
   }
 } 

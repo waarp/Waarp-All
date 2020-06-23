@@ -31,6 +31,7 @@ import org.apache.commons.cli.ParseException;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.guid.LongUuid;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -42,6 +43,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 
 import static org.waarp.common.database.DbConstant.*;
 
@@ -83,17 +85,17 @@ public class TransferArgs {
   private static final Option RULE_OPTION =
       Option.builder(RULE).required(false).hasArg(true).desc("Specify the Rule")
             .build();
-  private static final String ID = "id";
-  public static final String ID_ARG = "-" + ID;
+  private static final String ID_FIELD = "id";
+  public static final String ID_ARG = "-" + ID_FIELD;
   private static final Option ID_OPTION =
-      Option.builder(ID).required(false).hasArg(true)
+      Option.builder(ID_FIELD).required(false).hasArg(true)
             .desc("Specify the id of transfer").build();
   private static final String FOLLOW = "follow";
   public static final String FOLLOW_ARG = "-" + FOLLOW;
   private static final Option FOLLOW_OPTION =
       Option.builder(FOLLOW).required(false).hasArg(false)
-            .desc("Specify the transfer should integrate a FOLLOW id").build();
-  public static final String FOLLOWARGJSON = "{'follow':";
+            .desc("Specify if the transfer should integrate a FOLLOW id").build();
+  public static final String FOLLOW_JSON_KEY = "follow";
   private static final String INFO = "info";
   public static final String INFO_ARG = "-" + INFO;
   private static final Option INFO_OPTION =
@@ -142,13 +144,15 @@ public class TransferArgs {
 
   private static final OptionGroup LOGWARN_OPTIONS =
       new OptionGroup().addOption(LOGWARN_OPTION).addOption(NOTLOGWARN_OPTION);
+  private static final OptionGroup DELAY_OPTIONS =
+      new OptionGroup().addOption(DELAY_OPTION).addOption(START_OPTION);
   private static final Options TRANSFER_OPTIONS =
       new Options().addOption(FILE_OPTION).addOption(TO_OPTION)
                    .addOption(FOLLOW_OPTION).addOption(RULE_OPTION)
                    .addOption(ID_OPTION).addOption(INFO_OPTION)
                    .addOption(HASH_OPTION).addOption(BLOCK_OPTION)
-                   .addOption(START_OPTION).addOption(DELAY_OPTION)
-                   .addOption(NOTLOG_OPTION).addOptionGroup(LOGWARN_OPTIONS);
+                   .addOptionGroup(DELAY_OPTIONS).addOption(NOTLOG_OPTION)
+                   .addOptionGroup(LOGWARN_OPTIONS);
 
   public static final String SEPARATOR_SEND = "--";
 
@@ -195,6 +199,121 @@ public class TransferArgs {
       logger.error("Arguments cannot be empty or null");
       return null;
     }
+    String[] realArgs = getRealArgs(rank, args);
+
+    // Now set default values from configuration
+    TransferArgs transferArgs1 = new TransferArgs();
+    transferArgs1.setBlockSize(Configuration.configuration.getBlockSize());
+
+    CommandLineParser parser = new DefaultParser();
+    try {
+      CommandLine cmd = parser.parse(TRANSFER_OPTIONS, realArgs, true);
+      if (getTransferMinimalArgs(transferArgs1, cmd)) {
+        return null;
+      }
+      if (checkDelayStart(transferArgs1, cmd)) {
+        return null;
+      }
+      if (checkExtraTransferArgs(transferArgs1, cmd)) {
+        return null;
+      }
+      checkLog(transferArgs1, cmd);
+    } catch (ParseException e) {
+      printHelp();
+      logger.error("Arguments are incorrect", e);
+      return null;
+    }
+    return finalizeTransferArgs(analyseFollow, transferArgs1);
+  }
+
+  /**
+   * Check extra arguments for Transfer
+   *
+   * @param transferArgs1
+   * @param cmd
+   *
+   * @return the TransferArgs or null
+   */
+  private static boolean checkExtraTransferArgs(
+      final TransferArgs transferArgs1, final CommandLine cmd) {
+    if (cmd.hasOption(FOLLOW)) {
+      transferArgs1.setFollowId("");
+    }
+    if (cmd.hasOption(INFO)) {
+      transferArgs1.setFileinfo(cmd.getOptionValue(INFO));
+    }
+    if (cmd.hasOption(HASH)) {
+      transferArgs1.setMD5(true);
+    }
+    if (cmd.hasOption(BLOCK)) {
+      try {
+        transferArgs1.setBlockSize(Integer.parseInt(cmd.getOptionValue(BLOCK)));
+      } catch (NumberFormatException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+        logger.error(Messages.getString("AbstractTransfer.20") + " block");
+        //$NON-NLS-1$
+        return true;
+      }
+      if (transferArgs1.getBlockSize() < 100) {
+        logger.error(Messages.getString("AbstractTransfer.1") +
+                     transferArgs1.getBlockSize());
+        //$NON-NLS-1$
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check minimal argyments for Transfer
+   *
+   * @param transferArgs1
+   * @param cmd
+   *
+   * @return True if an error occurs
+   */
+  private static boolean getTransferMinimalArgs(
+      final TransferArgs transferArgs1, final CommandLine cmd) {
+    if (cmd.hasOption(TO)) {
+      transferArgs1.setRemoteHost(cmd.getOptionValue(TO));
+      if (Configuration.configuration.getAliases().containsKey(
+          transferArgs1.getRemoteHost())) {
+        transferArgs1.setRemoteHost(Configuration.configuration.getAliases()
+                                                               .get(
+                                                                   transferArgs1
+                                                                       .getRemoteHost()));
+      }
+    }
+    if (cmd.hasOption(FILE)) {
+      transferArgs1.setFilename(cmd.getOptionValue(FILE));
+      transferArgs1.setFilename(transferArgs1.getFilename().replace('§', '*'));
+    }
+    if (cmd.hasOption(RULE)) {
+      transferArgs1.setRulename(cmd.getOptionValue(RULE));
+    }
+    if (cmd.hasOption(ID_FIELD)) {
+      try {
+        transferArgs1.setId(Long.parseLong(cmd.getOptionValue(ID_FIELD)));
+      } catch (NumberFormatException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+        logger.error(Messages.getString("AbstractTransfer.20") + " id");
+        //$NON-NLS-1$
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Finalize the real arguments to parse (stopping at "--" and starting at
+   * rank)
+   *
+   * @param rank
+   * @param args
+   *
+   * @return the real arguments
+   */
+  private static String[] getRealArgs(final int rank, final String[] args) {
     String[] realArgs =
         rank == 0? args : Arrays.copyOfRange(args, rank, args.length);
     for (int i = rank; i < args.length; i++) {
@@ -203,128 +322,37 @@ public class TransferArgs {
         break;
       }
     }
+    return realArgs;
+  }
 
-    // Now set default values from configuration
-    TransferArgs transferArgs1 = new TransferArgs();
-    transferArgs1.blocksize = Configuration.configuration.getBlockSize();
-
-    CommandLineParser parser = new DefaultParser();
-    try {
-      CommandLine cmd = parser.parse(TRANSFER_OPTIONS, realArgs, true);
-      if (cmd.hasOption(TO)) {
-        transferArgs1.remoteHost = cmd.getOptionValue(TO);
-        if (Configuration.configuration.getAliases()
-                                       .containsKey(transferArgs1.remoteHost)) {
-          transferArgs1.remoteHost = Configuration.configuration.getAliases()
-                                                                .get(
-                                                                    transferArgs1.remoteHost);
-        }
-      }
-      if (cmd.hasOption(FILE)) {
-        transferArgs1.filename = cmd.getOptionValue(FILE);
-        transferArgs1.filename = transferArgs1.filename.replace('§', '*');
-      }
-      if (cmd.hasOption(RULE)) {
-        transferArgs1.rulename = cmd.getOptionValue(RULE);
-      }
-      if (cmd.hasOption(ID)) {
-        try {
-          transferArgs1.id = Long.parseLong(cmd.getOptionValue(ID));
-        } catch (NumberFormatException ignored) {
-          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-          logger.error(Messages.getString("AbstractTransfer.20") + " id");
-          //$NON-NLS-1$
-          return null;
-        }
-      }
-      if (cmd.hasOption(START)) {
-        Date date;
-        final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyyMMddHHmmss");
-        try {
-          date = dateFormat.parse(cmd.getOptionValue(START));
-          transferArgs1.startTime = new Timestamp(date.getTime());
-        } catch (java.text.ParseException ignored) {
-          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-          logger
-              .error(Messages.getString("AbstractTransfer.20") + " StartTime");
-          //$NON-NLS-1$
-          return null;
-        }
-      }
-      if (cmd.hasOption(DELAY)) {
-        String delay = cmd.getOptionValue(DELAY);
-        try {
-          if (delay.charAt(0) == '+') {
-            transferArgs1.startTime = new Timestamp(System.currentTimeMillis() +
-                                                    Long.parseLong(
-                                                        delay.substring(1)));
-          } else {
-            transferArgs1.startTime = new Timestamp(Long.parseLong(delay));
-          }
-        } catch (NumberFormatException ignored) {
-          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-          logger.error(Messages.getString("AbstractTransfer.20") + " Delay");
-          //$NON-NLS-1$
-          return null;
-        }
-      }
-      if (cmd.hasOption(FOLLOW)) {
-        transferArgs1.follow = "";
-      }
-      if (cmd.hasOption(INFO)) {
-        transferArgs1.fileinfo = cmd.getOptionValue(INFO);
-      }
-      if (cmd.hasOption(HASH)) {
-        transferArgs1.isMD5 = true;
-      }
-      if (cmd.hasOption(BLOCK)) {
-        try {
-          transferArgs1.blocksize = Integer.parseInt(cmd.getOptionValue(BLOCK));
-        } catch (NumberFormatException ignored) {
-          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-          logger.error(Messages.getString("AbstractTransfer.20") + " block");
-          //$NON-NLS-1$
-          return null;
-        }
-        if (transferArgs1.blocksize < 100) {
-          logger.error(Messages.getString("AbstractTransfer.1") +
-                       transferArgs1.blocksize);
-          //$NON-NLS-1$
-          return null;
-        }
-      }
-      if (cmd.hasOption(LOGWARN)) {
-        transferArgs1.normalInfoAsWarn = true;
-      }
-      if (cmd.hasOption(NOTLOGWARN)) {
-        transferArgs1.normalInfoAsWarn = false;
-      }
-      if (cmd.hasOption(NOTLOG)) {
-        transferArgs1.nolog = true;
-      }
-
-    } catch (ParseException e) {
-      printHelp();
-      logger.error("Arguments are incorrect", e);
-      return null;
-    }
-    if (transferArgs1.fileinfo == null) {
-      transferArgs1.fileinfo = AbstractTransfer.NO_INFO_ARGS;
+  /**
+   * Finalize the TransferArgs
+   *
+   * @param analyseFollow
+   * @param transferArgs1
+   *
+   * @return the TransferArgs or null
+   */
+  private static TransferArgs finalizeTransferArgs(final boolean analyseFollow,
+                                                   final TransferArgs transferArgs1) {
+    if (transferArgs1.getFileinfo() == null) {
+      transferArgs1.setFileinfo(AbstractTransfer.NO_INFO_ARGS);
     }
     if (analyseFollow) {
       analyzeFollow(transferArgs1);
     }
-    if (transferArgs1.remoteHost != null && transferArgs1.rulename != null &&
-        transferArgs1.filename != null) {
+    if (transferArgs1.getRemoteHost() != null &&
+        transferArgs1.getRulename() != null &&
+        transferArgs1.getFilename() != null) {
       return transferArgs1;
-    } else if (transferArgs1.id != ILLEGALVALUE &&
-               transferArgs1.remoteHost != null) {
+    } else if (transferArgs1.getId() != ILLEGALVALUE &&
+               transferArgs1.getRemoteHost() != null) {
       try {
-        final DbTaskRunner runner =
-            new DbTaskRunner(transferArgs1.id, transferArgs1.remoteHost);
-        transferArgs1.rulename = runner.getRuleId();
-        transferArgs1.filename = runner.getOriginalFilename();
+        final DbTaskRunner runner = new DbTaskRunner(transferArgs1.getId(),
+                                                     transferArgs1
+                                                         .getRemoteHost());
+        transferArgs1.setRulename(runner.getRuleId());
+        transferArgs1.setFilename(runner.getOriginalFilename());
         return transferArgs1;
       } catch (final WaarpDatabaseNoDataException e) {
         logger.error("No transfer found with this id and partner");
@@ -348,6 +376,68 @@ public class TransferArgs {
                  //$NON-NLS-1$
                  AbstractTransfer._INFO_ARGS);
     return null;
+  }
+
+  /**
+   * Check LOG and NOT LOG options
+   *
+   * @param transferArgs1
+   * @param cmd
+   */
+  private static void checkLog(final TransferArgs transferArgs1,
+                               final CommandLine cmd) {
+    if (cmd.hasOption(LOGWARN)) {
+      transferArgs1.setNormalInfoAsWarn(true);
+    }
+    if (cmd.hasOption(NOTLOGWARN)) {
+      transferArgs1.setNormalInfoAsWarn(false);
+    }
+    if (cmd.hasOption(NOTLOG)) {
+      transferArgs1.setNolog(true);
+    }
+  }
+
+  /**
+   * Check DELAY or START
+   *
+   * @param transferArgs1
+   * @param cmd
+   *
+   * @return True if an error occurs
+   */
+  private static boolean checkDelayStart(final TransferArgs transferArgs1,
+                                         final CommandLine cmd) {
+    if (cmd.hasOption(START)) {
+      Date date;
+      final SimpleDateFormat dateFormat =
+          new SimpleDateFormat("yyyyMMddHHmmss");
+      try {
+        date = dateFormat.parse(cmd.getOptionValue(START));
+        transferArgs1.setStartTime(new Timestamp(date.getTime()));
+      } catch (java.text.ParseException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+        logger.error(Messages.getString("AbstractTransfer.20") + " StartTime");
+        //$NON-NLS-1$
+        return true;
+      }
+    }
+    if (cmd.hasOption(DELAY)) {
+      String delay = cmd.getOptionValue(DELAY);
+      try {
+        if (delay.charAt(0) == '+') {
+          transferArgs1.setStartTime(new Timestamp(
+              System.currentTimeMillis() + Long.parseLong(delay.substring(1))));
+        } else {
+          transferArgs1.setStartTime(new Timestamp(Long.parseLong(delay)));
+        }
+      } catch (NumberFormatException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+        logger.error(Messages.getString("AbstractTransfer.20") + " Delay");
+        //$NON-NLS-1$
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -380,7 +470,7 @@ public class TransferArgs {
           }
         }
       }
-      transferArgs.fileinfo = builder.toString();
+      transferArgs.setFileinfo(builder.toString());
       TransferArgs.analyzeFollow(transferArgs);
     }
   }
@@ -391,33 +481,145 @@ public class TransferArgs {
    * @param transferArgs1 the current TransferArgs
    */
   public static void analyzeFollow(final TransferArgs transferArgs1) {
-    if (transferArgs1.follow != null && transferArgs1.fileinfo != null) {
-      String[] split = transferArgs1.fileinfo.split(" ");
-      for (int i = 0; i < split.length; i++) {
-        if (FOLLOWARGJSON.equalsIgnoreCase(split[i])) {
-          i++;
-          transferArgs1.follow = split[i].replace("}", "").trim();
-          break;
-        }
+    if (transferArgs1.getFollowId() != null &&
+        transferArgs1.getFileinfo() != null) {
+      Map<String, Object> map =
+          DbTaskRunner.getMapFromString(transferArgs1.getFileinfo());
+      if (map.containsKey(FOLLOW_JSON_KEY)) {
+        transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());
       }
-      if (transferArgs1.follow.isEmpty()) {
+      if (transferArgs1.getFollowId().isEmpty()) {
         LongUuid longUuid = new LongUuid();
-        transferArgs1.follow = "" + longUuid.getLong();
-        transferArgs1.fileinfo +=
-            " " + FOLLOWARGJSON + " " + longUuid.getLong() + "}";
+        map.put(FOLLOW_JSON_KEY, longUuid.getLong());
+        String originalWithoutMap =
+            DbTaskRunner.getOutOfMapFromString(transferArgs1.getFileinfo());
+        transferArgs1.setFileinfo(
+            JsonHandler.writeAsString(map) + " " + originalWithoutMap.trim());
+        transferArgs1.setFollowId("" + longUuid.getLong());
+      } else {
+        String originalWithoutMap =
+            DbTaskRunner.getOutOfMapFromString(transferArgs1.getFileinfo());
+        transferArgs1.setFileinfo(
+            JsonHandler.writeAsString(map) + " " + originalWithoutMap.trim());
       }
     }
   }
 
-  public String filename;
-  public String rulename;
-  public String fileinfo;
-  public boolean isMD5;
-  public String remoteHost;
-  public int blocksize = 0x10000; // 64K
-  public long id = ILLEGALVALUE;
-  public Timestamp startTime;
-  public String follow;
-  public boolean normalInfoAsWarn = true;
-  public boolean nolog = false;
+  private String filename;
+  private String rulename;
+  private String fileinfo;
+  private boolean isMD5;
+  private String remoteHost;
+  private int blocksize = 0x10000; // 64K
+  private long id = ILLEGALVALUE;
+  private Timestamp startTime;
+  private String followId;
+  private boolean normalInfoAsWarn = true;
+  private boolean nolog = false;
+
+  /**
+   * Empty constructor
+   */
+  public TransferArgs() {
+    // Empty
+  }
+
+  public String getFilename() {
+    return filename;
+  }
+
+  public TransferArgs setFilename(String filename) {
+    this.filename = filename;
+    return this;
+  }
+
+  public String getRulename() {
+    return rulename;
+  }
+
+  public TransferArgs setRulename(String rulename) {
+    this.rulename = rulename;
+    return this;
+  }
+
+  public String getFileinfo() {
+    return fileinfo;
+  }
+
+  public TransferArgs setFileinfo(String fileinfo) {
+    this.fileinfo = fileinfo;
+    return this;
+  }
+
+  public boolean isMD5() {
+    return isMD5;
+  }
+
+  public TransferArgs setMD5(boolean md5) {
+    isMD5 = md5;
+    return this;
+  }
+
+  public String getRemoteHost() {
+    return remoteHost;
+  }
+
+  public TransferArgs setRemoteHost(String remoteHost) {
+    this.remoteHost = remoteHost;
+    return this;
+  }
+
+  public int getBlockSize() {
+    return blocksize;
+  }
+
+  public TransferArgs setBlockSize(int blocksize) {
+    this.blocksize = blocksize;
+    return this;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public TransferArgs setId(long id) {
+    this.id = id;
+    return this;
+  }
+
+  public Timestamp getStartTime() {
+    return startTime;
+  }
+
+  public TransferArgs setStartTime(Timestamp startTime) {
+    this.startTime = startTime;
+    return this;
+  }
+
+  public String getFollowId() {
+    return followId;
+  }
+
+  public TransferArgs setFollowId(String followId) {
+    this.followId = followId;
+    return this;
+  }
+
+  public boolean isNormalInfoAsWarn() {
+    return normalInfoAsWarn;
+  }
+
+  public TransferArgs setNormalInfoAsWarn(boolean normalInfoAsWarn) {
+    this.normalInfoAsWarn = normalInfoAsWarn;
+    return this;
+  }
+
+  public boolean isNolog() {
+    return nolog;
+  }
+
+  public TransferArgs setNolog(boolean nolog) {
+    this.nolog = nolog;
+    return this;
+  }
 }

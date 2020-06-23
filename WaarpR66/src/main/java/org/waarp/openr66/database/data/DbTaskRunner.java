@@ -46,6 +46,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
@@ -94,6 +95,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.waarp.common.database.DbConstant.*;
 
@@ -613,9 +616,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             }
             pojo.setStop(new Timestamp(stop));
             break;
-          case TRANSFERINFO:
-            pojo.setTransferInfo(item.asText());
+          case TRANSFERINFO: {
+            String text = item.asText().trim();
+            if (text.isEmpty()) {
+              text = "{}";
+            }
+            pojo.setTransferInfo(text);
             break;
+          }
           case UPDATEDINFO:
             // ignore
             break;
@@ -1328,10 +1336,61 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
+   * @param followId the followId to find
+   *
+   * @return the associated Filter
+   */
+  public static Filter getFollowIdFilter(String followId) {
+    return new Filter(DBTransferDAO.TRANSFER_INFO_FIELD, "LIKE",
+                      "%" + TransferArgs.FOLLOW_JSON_KEY + "%" + followId +
+                      "%");
+  }
+
+  /**
+   * @param followId the followId to find
+   * @param orderByStart If true, sort on Start ; If false, does not
+   *     set the limit on start
+   * @param limit the limit of items
+   *
+   * @return the DbPreparedStatement for getting Updated Object
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  public static DbTaskRunner[] getSelectSameFollowId(final String followId,
+                                                     boolean orderByStart,
+                                                     final int limit)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+    final List<Filter> filters = new ArrayList<Filter>(1);
+    filters.add(getFollowIdFilter(followId));
+    TransferDAO transferAccess = null;
+    List<Transfer> transfers;
+    try {
+      transferAccess = DAOFactory.getInstance().getTransferDAO();
+      if (orderByStart) {
+        transfers = transferAccess
+            .find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, limit);
+      } else {
+        transfers = transferAccess.find(filters, limit);
+      }
+    } catch (final DAOConnectionException e) {
+      throw new WaarpDatabaseNoConnectionException(e);
+    } finally {
+      DAOFactory.closeDAO(transferAccess);
+    }
+    final DbTaskRunner[] res = new DbTaskRunner[transfers.size()];
+    int i = 0;
+    for (final Transfer transfer : transfers) {
+      res[i] = new DbTaskRunner(transfer);
+      i++;
+    }
+    return res;
+  }
+
+  /**
    * @param info
    * @param orderByStart If true, sort on Start ; If false, does not
-   *     set the
-   *     limit on start
+   *     set the limit on start
    * @param limit
    *
    * @return the DbPreparedStatement for getting Updated Object
@@ -2246,18 +2305,56 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
-   * @return the Map<String, Object> for the content of the
-   *     transferInformation
+   * @param smap the source of the map
+   *
+   * @return the Map<String, Object> from the content of the
+   *     argument
    */
-  public Map<String, Object> getTransferMap() {
-    return JsonHandler.getMapFromString(pojo.getTransferInfo());
+  public static Map<String, Object> getMapFromString(String smap) {
+    Pattern pattern = Pattern.compile("\\{[^\\}]*\\}");
+    Matcher matcher = pattern.matcher(smap);
+    StringBuilder map = new StringBuilder("{");
+    while (matcher.find()) {
+      String temp = matcher.group(0);
+      if (temp.length() > 5) { // {a:a} = 5
+        if (map.length() != 1) {
+          map.append(", ");
+        }
+        map.append(temp.substring(1, temp.length() - 1));
+      }
+    }
+    map.append("}");
+    return JsonHandler.getMapFromString(map.toString());
   }
 
   /**
-   * @param map the Map to set as XML string to transferInformation
+   * @param smap the source of the map
+   *
+   * @return the String without the Map<String, Object> from the content of the
+   *     argument
+   */
+  public static String getOutOfMapFromString(String smap) {
+    return smap.replaceAll("\\{[^\\}]*\\}", "");
+  }
+
+  /**
+   * @return the Map<String, Object> from the content of the
+   *     transferInformation
+   */
+  public Map<String, Object> getTransferMap() {
+    return getMapFromString(pojo.getTransferInfo());
+  }
+
+  private String getOtherInfoOutOfMap() {
+    return getOutOfMapFromString(pojo.getTransferInfo());
+  }
+
+  /**
+   * @param map the Map to set as Json string to transferInformation
    */
   public void setTransferMap(Map<String, Object> map) {
-    setTransferInfo(JsonHandler.writeAsString(map));
+    pojo.setTransferInfo(
+        JsonHandler.writeAsString(map) + " " + getOtherInfoOutOfMap().trim());
   }
 
   /**
@@ -2304,6 +2401,20 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
+   * @return the Follow Id or null if not exists
+   */
+  public String getFollowId() {
+    return getTransferMap().get(TransferArgs.FOLLOW_JSON_KEY).toString();
+  }
+
+  /**
+   * @param followId the Follow Id to add to transfer information
+   */
+  public void setFollowId(long followId) {
+    addToTransferMap(TransferArgs.FOLLOW_JSON_KEY, followId);
+  }
+
+  /**
    * Set a new File information for this transfer
    *
    * @param newFileInformation
@@ -2314,16 +2425,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   public String getTransferInfo() {
     return pojo.getTransferInfo();
-  }
-
-  /**
-   * @param transferInformation the transferInformation to set
-   */
-  private void setTransferInfo(String transferInformation) {
-    if (transferInformation == null) {
-      transferInformation = "{}";
-    }
-    pojo.setTransferInfo(transferInformation);
   }
 
   /**
@@ -3898,9 +3999,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             }
             pojo.setStop(new Timestamp(stop));
             break;
-          case TRANSFERINFO:
-            pojo.setTransferInfo(value.asText());
+          case TRANSFERINFO: {
+            String text = value.asText().trim();
+            if (text.isEmpty()) {
+              text = "{}";
+            }
+            pojo.setTransferInfo(text);
             break;
+          }
           case UPDATEDINFO:
             pojo.setUpdatedInfo(
                 org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));
@@ -3928,9 +4034,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   /**
    * Set the given runner from the root element of the runner itself
-   * (XMLRUNNER
-   * but not XMLRUNNERS). Need to
-   * call 'setFromArray' after.
+   * (XMLRUNNER but not XMLRUNNERS).
    *
    * @param runner
    * @param root

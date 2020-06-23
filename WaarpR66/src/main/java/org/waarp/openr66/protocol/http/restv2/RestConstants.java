@@ -429,6 +429,7 @@ public final class RestConstants {
     public static final String FILENAME = "filename";
     public static final String START_TRANS = "startTrans";
     public static final String STOP_TRANS = "stopTrans";
+    public static final String FOLLOW_ID = "followId";
 
     private GetTransfersParams() {
     }
