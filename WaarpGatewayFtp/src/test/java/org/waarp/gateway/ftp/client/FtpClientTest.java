@@ -25,7 +25,9 @@ import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Platform;
@@ -46,6 +48,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.ServerInitDatabase;
 import org.waarp.gateway.ftp.client.transaction.Ftp4JClientTransactionTest;
@@ -74,6 +77,9 @@ import static org.junit.Assert.fail;
  * command)
  */
 public class FtpClientTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   public static AtomicLong numberOK = new AtomicLong(0);
   public static AtomicLong numberKO = new AtomicLong(0);
   static String key;

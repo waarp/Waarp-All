@@ -20,7 +20,14 @@
 
 package org.waarp.common.lru;
 
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
+
 public class StrongReferenceCacheEntryTest extends LruCacheEntryTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Override
   protected InterfaceLruCacheEntry<String> createCacheEntry(String value,

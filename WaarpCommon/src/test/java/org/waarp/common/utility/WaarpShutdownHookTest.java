@@ -21,7 +21,9 @@
 package org.waarp.common.utility;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.utility.WaarpShutdownHook.ShutdownConfiguration;
 import org.waarp.common.utility.WaarpShutdownHook.ShutdownTimerTask;
@@ -31,6 +33,9 @@ import java.util.Timer;
 import static org.junit.Assert.*;
 
 public class WaarpShutdownHookTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private class WaarpShutdownHookForTest extends WaarpShutdownHook {
 
     public WaarpShutdownHookForTest(ShutdownConfiguration configuration) {

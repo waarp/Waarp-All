@@ -23,15 +23,21 @@ package org.waarp.openr66.protocol.it;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScenarioPostGreSqlIT extends ScenarioBase {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   protected static final Map<String, String> TMPFSMAP =
       new HashMap<String, String>();
 

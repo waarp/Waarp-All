@@ -24,7 +24,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,9 @@ import java.nio.CharBuffer;
 import static org.junit.Assert.*;
 
 public class Base64Test {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {

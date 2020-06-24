@@ -21,7 +21,10 @@
 package org.waarp.openr66.protocol.junit;
 
 import io.netty.channel.Channel;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 
 import java.net.InetSocketAddress;
@@ -30,6 +33,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class NetworkTransactionTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public void testisBlacklistedPreventNPE() {

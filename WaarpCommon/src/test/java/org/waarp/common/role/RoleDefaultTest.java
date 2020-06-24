@@ -20,12 +20,18 @@
 
 package org.waarp.common.role;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
 public class RoleDefaultTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public void testRoleDefault() {

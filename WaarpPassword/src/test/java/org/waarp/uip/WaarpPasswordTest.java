@@ -21,13 +21,19 @@
 package org.waarp.uip;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
 
 public class WaarpPasswordTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public void testWaarpPassword() throws Exception {

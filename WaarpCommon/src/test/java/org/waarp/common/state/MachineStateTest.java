@@ -20,9 +20,12 @@
 
 package org.waarp.common.state;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.exception.IllegalFiniteStateException;
 import org.waarp.common.state.MachineStateTest.ExampleEnumState.ExampleTransition;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.junit.Assert.*;
 
 public class MachineStateTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   @Test
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public void testMachineStateEnumStateConcurrentHashMapOfEnumStateEnumSetOfQ() {

@@ -24,7 +24,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -32,6 +34,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
@@ -41,6 +44,9 @@ import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminTest extends TestAbstract {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AdminTest.class);
   private static final String CONFIG_SERVER_A_MINIMAL_XML =

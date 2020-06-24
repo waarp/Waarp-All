@@ -21,8 +21,11 @@
 package org.waarp.openr66.dao.database.postgres;
 
 import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.dao.database.DBAllDAOTest;
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -32,6 +35,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBPostgreSQLDAOTest extends DBAllDAOTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   static {
     TMPFSMAP.clear();
     TMPFSMAP.put("/var/lib/postgresql/data", "rw");

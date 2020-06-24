@@ -23,11 +23,14 @@ package org.waarp.ftp.client;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.IOException;
 
@@ -36,6 +39,9 @@ import java.io.IOException;
  * command)
  */
 public class FtpClientTest extends AbstractFtpClientTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   /**
    * Internal Logger
    */

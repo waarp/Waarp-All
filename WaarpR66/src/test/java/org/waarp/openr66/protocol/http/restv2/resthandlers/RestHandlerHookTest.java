@@ -1,8 +1,11 @@
 package org.waarp.openr66.protocol.http.restv2.resthandlers;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.HmacSha256;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
@@ -16,6 +19,9 @@ import static org.junit.Assert.*;
  * RestHandlerHook
  */
 public class RestHandlerHookTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   public static final class RestHandlerHookForTest extends RestHandlerHook {
     public RestHandlerHookForTest(final boolean authenticated,

@@ -24,8 +24,11 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.IOException;
@@ -39,6 +42,9 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class XmlTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   public static final String ROOT = "rule";
   public static final String XIDRULE = "idrule";
   public static final String XTASKS = "tasks";

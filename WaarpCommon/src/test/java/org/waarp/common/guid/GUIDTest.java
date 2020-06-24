@@ -19,11 +19,14 @@
  */
 package org.waarp.common.guid;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.util.Arrays;
 
@@ -31,6 +34,9 @@ import static org.junit.Assert.*;
 
 @SuppressWarnings("javadoc")
 public class GUIDTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final WaarpLogger LOGGER =
       WaarpLoggerFactory.getInstance(GUIDTest.class);
 

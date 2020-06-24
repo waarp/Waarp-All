@@ -20,7 +20,9 @@
 
 package org.waarp.common.utility;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +36,9 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class StringUtilsTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final byte[] BYTES_0_LENGTH = {};
 
   @Test

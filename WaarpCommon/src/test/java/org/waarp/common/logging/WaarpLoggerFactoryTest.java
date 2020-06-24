@@ -22,13 +22,19 @@ package org.waarp.common.logging;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("javadoc")
 public class WaarpLoggerFactoryTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final Exception e = new Exception();
   private WaarpLoggerFactory oldLoggerFactory;
   private WaarpLogger mock;

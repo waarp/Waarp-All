@@ -20,7 +20,10 @@
 
 package org.waarp.openr66.dao.database.h2;
 
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.dao.database.DBAllDAOTest;
 import org.waarp.openr66.dao.database.DBTransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -30,6 +33,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DbH2DAOTest extends DBAllDAOTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   private final String createScript = "h2/create.sql";
   private final String populateScript = "h2/populate.sql";

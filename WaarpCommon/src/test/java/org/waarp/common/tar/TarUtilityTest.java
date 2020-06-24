@@ -20,8 +20,11 @@
 
 package org.waarp.common.tar;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +35,9 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class TarUtilityTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public void createTarFromDirectory() throws IOException {

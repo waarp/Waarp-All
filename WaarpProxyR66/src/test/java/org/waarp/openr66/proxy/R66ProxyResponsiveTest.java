@@ -21,15 +21,21 @@
 package org.waarp.openr66.proxy;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
 public class R66ProxyResponsiveTest extends CommonUtil {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @BeforeClass
   public static void launchConfig() throws Exception {

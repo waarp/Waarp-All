@@ -22,7 +22,10 @@ package org.waarp.http.protocol;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
@@ -34,6 +37,9 @@ import static org.junit.Assert.*;
  * @since <pre>nov. 23, 2019</pre>
  */
 public class HttpHelperTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Before
   public void before() throws Exception {

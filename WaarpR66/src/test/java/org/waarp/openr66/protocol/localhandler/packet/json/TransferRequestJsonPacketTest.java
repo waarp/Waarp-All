@@ -21,11 +21,17 @@
 package org.waarp.openr66.protocol.localhandler.packet.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
 public class TransferRequestJsonPacketTest extends JsonPacket {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public void testItIsDeserialized() {

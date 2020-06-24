@@ -29,7 +29,9 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.commandexec.server.LocalExecServerHandler;
 import org.waarp.commandexec.ssl.client.LocalExecSslClientHandler;
 import org.waarp.commandexec.ssl.client.LocalExecSslClientInitializer;
@@ -44,6 +46,7 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 
@@ -78,6 +81,9 @@ import static org.junit.Assert.*;
  * sequential<br>
  */
 public class LocalExecSslClientTest extends Thread {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   static int nit = 20;
   static int nth = 4;
   static String command = "echo";

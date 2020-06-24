@@ -22,14 +22,20 @@ package org.waarp.openr66.database.data;
 
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.pojo.UpdatedInfo;
 
 import static org.junit.Assert.*;
 
 public class DbHostConfigurationTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   @Test
   public void testJsonSerialisation() {
     Business business =

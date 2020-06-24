@@ -20,7 +20,9 @@
 
 package org.waarp.common.utility;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.utility.SystemPropertyUtil.Platform;
 
 import java.io.IOException;
@@ -31,6 +33,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.Assert.*;
 
 public class SystemPropertyUtilTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   private static final String OS_NAME = "os.name";
   private static final String OTHER = "other";

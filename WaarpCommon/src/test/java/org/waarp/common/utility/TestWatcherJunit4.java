@@ -18,34 +18,34 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.waarp.ftp.client;
+package org.waarp.common.utility;
 
-import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.rules.TestWatcher;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.TestWatcherJunit4;
-
-import java.io.IOException;
+import org.junit.runner.Description;
+import org.waarp.common.logging.SysErrLogger;
 
 /**
- * Simple test example using predefined scenario (Note: this uses the configuration example for user shutdown
- * command)
+ * Logger for each method to print current test name and duration.<br>
+ * <br>
+ * Include in each Junit4 Test classes:<br>
+ * <pre>
+ *  @Rule(order = Integer.MIN_VALUE)
+ *  public TestWatcher watchman= new TestWatcherJunit4();
+ * </pre>
  */
-public class FtpsDynamicClientTest extends AbstractFtpClientTest {
-  @Rule(order = Integer.MIN_VALUE)
-  public TestWatcher watchman = new TestWatcherJunit4();
+public class TestWatcherJunit4 extends TestWatcher {
+  private long startTime;
 
-  /**
-   * Internal Logger
-   */
-  protected static WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(FtpsDynamicClientTest.class);
+  protected void starting(Description description) {
+    SysErrLogger.FAKE_LOGGER.sysout(
+        "==============\nStarting test: " + description.getMethodName());
+    startTime = System.nanoTime();
+  }
 
-  @BeforeClass
-  public static void startServer() throws IOException {
-    SSL_MODE = 1;
-    startServer0();
+  protected void finished(Description description) {
+    long time = (System.nanoTime() - startTime) / 1000000;
+    SysErrLogger.FAKE_LOGGER.sysout(
+        "Ending test: " + description.getMethodName() + " in " + time +
+        " ms\n==============");
   }
 }
