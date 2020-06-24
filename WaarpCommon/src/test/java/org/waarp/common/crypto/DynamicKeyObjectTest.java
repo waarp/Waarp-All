@@ -20,13 +20,19 @@
 
 package org.waarp.common.crypto;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.crypto.DynamicKeyObject.INSTANCES;
 import org.waarp.common.crypto.DynamicKeyObject.INSTANCESMAX;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
 public class DynamicKeyObjectTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public void simpleTest() {

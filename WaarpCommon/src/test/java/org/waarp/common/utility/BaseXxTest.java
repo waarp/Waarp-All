@@ -20,7 +20,9 @@
 
 package org.waarp.common.utility;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,6 +30,9 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 public class BaseXxTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test(expected = IllegalArgumentException.class)
   public void testBase16() throws IOException {

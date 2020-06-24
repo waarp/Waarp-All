@@ -22,7 +22,10 @@ package org.waarp.common.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,6 +36,9 @@ import static org.junit.Assert.*;
  *
  */
 public class JsonHandlerTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   /**
    * Test method for {@link JsonHandler#createObjectNode()}.

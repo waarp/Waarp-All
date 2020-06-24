@@ -40,9 +40,9 @@ import java.util.List;
 /**
  *
  */
-public class HttpRestHandlerTest extends HttpRestHandler {
+public class HttpRestTestHandler extends HttpRestHandler {
   private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(HttpRestHandlerTest.class);
+      WaarpLoggerFactory.getLogger(HttpRestTestHandler.class);
   private static final METHOD[] METHOD_0_LENGTH = new METHOD[0];
   static final int PORT = 8088;
   static final String HOST = "127.0.0.1";
@@ -92,7 +92,7 @@ public class HttpRestHandlerTest extends HttpRestHandler {
     }
   }
 
-  public HttpRestHandlerTest(RestConfiguration config) {
+  public HttpRestTestHandler(RestConfiguration config) {
     super(config);
     restHashMap = config.restHashMap;
   }

@@ -20,12 +20,17 @@
 
 package org.waarp.common.cpu;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
 public class CpuManagementTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
 
   @Test
   public void testGetLoadAverage() {

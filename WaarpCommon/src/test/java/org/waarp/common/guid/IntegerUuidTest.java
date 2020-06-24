@@ -19,7 +19,10 @@
  */
 package org.waarp.common.guid;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,6 +31,9 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class IntegerUuidTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final int NB = 1000000;
 
   @Test

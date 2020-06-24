@@ -21,10 +21,16 @@
 package org.waarp.ftp.client;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.IOException;
 
 public class FtpClient2TLSDynamicTest extends AbstractFtpClient {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   @BeforeClass
   public static void startServer() throws IOException {
     SSL_MODE = 1;

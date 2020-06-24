@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.4.0 (2020-07-01)
+Waarp R66 3.4.0 (2020-07-02)
 ============================
 
 Nouvelles fonctionnalités
@@ -56,6 +56,7 @@ Correctifs
   <statusListener
     class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
 
+- Mise à jour des dépendances
 
 Waarp R66 3.3.4 (2020-06-02)
 ============================

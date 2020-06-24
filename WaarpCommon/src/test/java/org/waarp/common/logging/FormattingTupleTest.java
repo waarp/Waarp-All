@@ -20,11 +20,17 @@
 
 package org.waarp.common.logging;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
 public class FormattingTupleTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final String NON_SENSICAL_EMPTY_OR_NULL_ARGUMENT_ARRAY =
       "non-sensical empty or null argument array";
   private static final Object[] OBJECT_ARRAY_0 = new Object[0];

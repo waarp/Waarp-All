@@ -28,8 +28,11 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.thrift.r66.Action;
 import org.waarp.thrift.r66.R66Request;
 import org.waarp.thrift.r66.R66Result;
@@ -49,6 +52,9 @@ import static org.junit.Assert.*;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClientExampleTest implements Runnable {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final int tries = 1000;
   private static boolean isBlocking = true;
   private static boolean isBlockingServer = true;

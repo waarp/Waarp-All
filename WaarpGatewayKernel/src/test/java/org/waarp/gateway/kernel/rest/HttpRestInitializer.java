@@ -50,8 +50,8 @@ public class HttpRestInitializer extends ChannelInitializer<SocketChannel> {
 
     pipeline.addLast("codec", new HttpServerCodec());
     pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
-    final HttpRestHandlerTest r66handler =
-        new HttpRestHandlerTest(restConfiguration);
+    final HttpRestTestHandler r66handler =
+        new HttpRestTestHandler(restConfiguration);
     pipeline.addLast(executor, "handler", r66handler);
   }
 

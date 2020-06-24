@@ -20,8 +20,11 @@
 
 package org.waarp.openr66.protocol.junit;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.context.task.FtpArgs;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 
@@ -31,7 +34,8 @@ import static org.junit.Assert.*;
  * FtpArgs Tester.
  */
 public class FtpArgsTest {
-
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
 
   /**
    * Method: getFtpArgs(String[] args)

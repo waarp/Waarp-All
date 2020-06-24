@@ -21,7 +21,9 @@ package org.waarp.snmp.test;
 
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.event.ResponseListener;
 import org.snmp4j.mp.SnmpConstants;
@@ -37,6 +39,7 @@ import org.snmp4j.smi.OctetString;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.snmp.WaarpMOFactory;
 import org.waarp.snmp.WaarpSnmpAgent;
 import org.waarp.snmp.utils.WaarpMOScalar;
@@ -50,6 +53,9 @@ import static org.junit.Assert.*;
  * Test class for Agent and simple Client
  */
 public class WaarpSnmpClientAgentTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   static WaarpSnmpAgent agent;
 
   static WaarpSimpleSnmpClient client;

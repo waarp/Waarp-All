@@ -22,11 +22,17 @@ package org.waarp.openr66.protocol.it;
 
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScenarioH2IT extends ScenarioBase {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   public JdbcDatabaseContainer getJDC() {
     return null;

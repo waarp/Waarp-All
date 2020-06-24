@@ -32,7 +32,9 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.waarp.common.crypto.HmacSha256;
 import org.waarp.common.database.DbConstant;
@@ -45,6 +47,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
 import org.waarp.icap.server.IcapServer;
 import org.waarp.icap.server.IcapServerHandler;
@@ -124,6 +127,9 @@ import static org.junit.Assert.*;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NetworkClientTest extends TestAbstract {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   private static final int nbThread = 10;
   private static final ArrayList<DbTaskRunner> dbTaskRunners =

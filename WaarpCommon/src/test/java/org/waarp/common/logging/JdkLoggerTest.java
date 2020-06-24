@@ -22,7 +22,10 @@ package org.waarp.common.logging;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import javax.management.RuntimeErrorException;
@@ -34,6 +37,9 @@ import java.util.logging.Logger;
 import static org.junit.Assert.*;
 
 public class JdkLoggerTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final Exception e = new Exception();
   private static final PrintStream out = System.out;
   // NOSONAR since Logger test

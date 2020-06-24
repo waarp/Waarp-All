@@ -22,14 +22,20 @@ package org.waarp.ftp.client;
 
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.IOException;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FtpClient2Test extends AbstractFtpClientWithApache {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   /**
    * Internal Logger
    */

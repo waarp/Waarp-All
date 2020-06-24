@@ -21,11 +21,14 @@
 package org.waarp.common.file;
 
 import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -35,6 +38,9 @@ import java.security.NoSuchAlgorithmException;
 import static org.junit.Assert.*;
 
 public class FileUtilsTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static File file1;
   private static File file2;
   private static File dirSource;

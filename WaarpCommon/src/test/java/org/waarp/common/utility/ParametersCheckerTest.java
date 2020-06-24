@@ -20,7 +20,9 @@
 
 package org.waarp.common.utility;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,9 @@ import static org.junit.Assert.*;
  * Parameters Checker Test
  */
 public class ParametersCheckerTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @Test
   public final void testCheckParamaterStringStringArray() {

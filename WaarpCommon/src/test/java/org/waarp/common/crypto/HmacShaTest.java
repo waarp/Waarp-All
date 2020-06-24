@@ -19,7 +19,10 @@
  */
 package org.waarp.common.crypto;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
 
@@ -27,6 +30,9 @@ import static org.junit.Assert.*;
  *
  */
 public class HmacShaTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   /**
    * Test method

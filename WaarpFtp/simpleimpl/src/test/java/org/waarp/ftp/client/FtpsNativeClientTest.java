@@ -21,8 +21,11 @@
 package org.waarp.ftp.client;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.IOException;
 
@@ -31,6 +34,9 @@ import java.io.IOException;
  * command)
  */
 public class FtpsNativeClientTest extends AbstractFtpClientTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   /**
    * Internal Logger
    */

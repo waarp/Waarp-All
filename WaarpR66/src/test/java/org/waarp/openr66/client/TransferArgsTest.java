@@ -22,9 +22,12 @@ package org.waarp.openr66.client;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -52,6 +55,9 @@ import static org.waarp.openr66.client.TransferArgs.*;
  * AbstractTransfer Tester.
  */
 public class TransferArgsTest extends TestAbstract {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final String CONFIG_SERVER_A_MINIMAL_XML =
       "config-serverA-minimal.xml";
   private static final String LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML =

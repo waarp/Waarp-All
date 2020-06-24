@@ -20,7 +20,10 @@
 
 package org.waarp.openr66.dao.database.xml;
 
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
@@ -48,6 +51,9 @@ import static org.junit.Assert.*;
  * Not ready for tests
  */
 public abstract class DbXmlDAOTestNo extends DBAllDAOTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   static final String path = "/tmp/R66/arch";
   DAOFactoryTest factoryTest = new DAOFactoryTest();
 

@@ -24,12 +24,15 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.filemonitor.FileMonitor.FileItem;
 import org.waarp.common.filemonitor.FileMonitor.Status;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -39,6 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
 public class FileMonitorTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(FileMonitorTest.class);
   private static final int LARGE_WAIT = 800;

@@ -24,7 +24,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.waarp.common.transcode.CharsetsUtil;
 
 import java.io.File;
@@ -36,6 +38,9 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class FileConvertTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {

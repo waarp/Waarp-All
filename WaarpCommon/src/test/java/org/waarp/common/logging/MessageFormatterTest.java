@@ -20,7 +20,10 @@
 
 package org.waarp.common.logging;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +31,9 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class MessageFormatterTest {
+  @Rule(order = Integer.MIN_VALUE)
+  public TestWatcher watchman = new TestWatcherJunit4();
+
 
   private static final Object[] OBJECT_ARRAY_0 = new Object[0];
 
