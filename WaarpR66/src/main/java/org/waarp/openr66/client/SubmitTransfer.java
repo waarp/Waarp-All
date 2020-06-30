@@ -44,9 +44,9 @@ import static org.waarp.common.database.DbConstant.*;
 public class SubmitTransfer extends AbstractTransfer {
 
   public SubmitTransfer(R66Future future, String remoteHost, String filename,
-                        String rulename, String fileinfo, boolean isMD5,
+                        String rulename, String transferInfo, boolean isMD5,
                         int blocksize, long id, Timestamp starttime) {
-    super(SubmitTransfer.class, future, filename, rulename, fileinfo, isMD5,
+    super(SubmitTransfer.class, future, filename, rulename, transferInfo, isMD5,
           remoteHost, blocksize, id, starttime);
   }
 
@@ -141,8 +141,8 @@ public class SubmitTransfer extends AbstractTransfer {
     }
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
-        new SubmitTransfer(future, rhost, localFilename, rule, fileInfo, ismd5,
-                           block, idt, ttimestart);
+        new SubmitTransfer(future, rhost, localFilename, rule, transferInfo,
+                           ismd5, block, idt, ttimestart);
     transaction.normalInfoAsWarn = snormalInfoAsWarn;
     transaction.run();
     future.awaitOrInterruptible();

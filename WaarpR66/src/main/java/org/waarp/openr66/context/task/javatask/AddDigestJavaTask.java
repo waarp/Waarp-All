@@ -112,6 +112,9 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
                                .replaceAll(Matcher.quoteReplacement(key));
     }
     session.getRunner().setFileInformation(fileInfo);
+    session.getRunner().setTransferInfo(
+        session.getRunner().getTransferInfo().replaceAll(sDIGEST, key));
+    session.getRunner().addToTransferMap("digest", key);
     try {
       session.getRunner().update();
     } catch (final WaarpDatabaseException e) {

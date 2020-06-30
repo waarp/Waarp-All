@@ -110,7 +110,7 @@ public class TestTransferNoDb extends DirectTransfer {
         arrayFuture[i] = new R66Future(true);
         final TestTransferNoDb transaction =
             new TestTransferNoDb(arrayFuture[i], rhost, localFilename, rule,
-                                 fileInfo, ismd5, block,
+                                 transferInfo, ismd5, block,
                                  DbConstantR66.ILLEGALVALUE,
                                  networkTransaction);
         transaction.normalInfoAsWarn = snormalInfoAsWarn;

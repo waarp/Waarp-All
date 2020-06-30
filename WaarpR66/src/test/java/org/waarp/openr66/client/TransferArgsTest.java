@@ -171,15 +171,15 @@ public class TransferArgsTest extends TestAbstract {
     String[] argsComplete = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
-        "otherNotTaken"
+        TransferArgs.NO_FOLLOW_ARG, TransferArgs.BLOCK_ARG, "1000",
+        TransferArgs.INFO_ARG, "no_information", "otherNotTaken"
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsComplete);
     assertNotNull(transferArgs);
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertNull(transferArgs.getStartTime());
@@ -189,15 +189,16 @@ public class TransferArgsTest extends TestAbstract {
     String[] argsCompleteSeparator = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
-        TransferArgs.SEPARATOR_SEND, TransferArgs.DELAY_ARG, "abc"
+        TransferArgs.NO_FOLLOW_ARG, TransferArgs.BLOCK_ARG, "1000",
+        TransferArgs.INFO_ARG, "no_information", TransferArgs.SEPARATOR_SEND,
+        TransferArgs.DELAY_ARG, "abc"
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsCompleteSeparator);
     assertNotNull(transferArgs);
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertNull(transferArgs.getStartTime());
@@ -207,14 +208,15 @@ public class TransferArgsTest extends TestAbstract {
         TransferArgs.SEPARATOR_SEND, TransferArgs.DELAY_ARG, "abc",
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information"
+        TransferArgs.NO_FOLLOW_ARG, TransferArgs.BLOCK_ARG, "1000",
+        TransferArgs.INFO_ARG, "no_information"
     };
     transferArgs = AbstractTransfer.getParamsInternal(3, argsCompleteRankNot0);
     assertNotNull(transferArgs);
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertNull(transferArgs.getStartTime());
@@ -231,7 +233,7 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertNull(transferArgs.getStartTime());
@@ -249,7 +251,7 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertNull(transferArgs.getStartTime());
@@ -269,7 +271,7 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     Date date;
@@ -289,15 +291,15 @@ public class TransferArgsTest extends TestAbstract {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
         TransferArgs.NOTLOGWARN_ARG, TransferArgs.BLOCK_ARG, "1000",
-        TransferArgs.DELAY_ARG, "+100", TransferArgs.INFO_ARG, "no_information",
-        "otherNotTaken"
+        TransferArgs.NO_FOLLOW_ARG, TransferArgs.DELAY_ARG, "+100",
+        TransferArgs.INFO_ARG, "no_information", "otherNotTaken"
     };
     transferArgs = AbstractTransfer.getParamsInternal(0, argsCompleteWithDelay);
     assertNotNull(transferArgs);
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertTrue(transferArgs.getStartTime().before(
@@ -320,20 +322,20 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertTrue(transferArgs.isNolog());
     assertTrue(transferArgs.isNormalInfoAsWarn());
     assertEquals(ILLEGALVALUE, transferArgs.getId());
-    assertNull(transferArgs.getFollowId());
+    assertNotNull(transferArgs.getFollowId());
 
     // Check complete example
     String[] argsCompleteWithFollow = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.FOLLOW_ARG,
-        TransferArgs.INFO_ARG, "no_information", "otherNotTaken"
+        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
+        "otherNotTaken"
     };
     transferArgs =
         AbstractTransfer.getParamsInternal(0, argsCompleteWithFollow);
@@ -341,9 +343,9 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    logger.warn(transferArgs.getFileinfo());
-    assertTrue(transferArgs.getFileinfo().endsWith("no_information"));
-    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
+    logger.warn(transferArgs.getTransferInfo());
+    assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
+    assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertFalse(transferArgs.isNolog());
@@ -355,8 +357,8 @@ public class TransferArgsTest extends TestAbstract {
     String[] argsCompleteWithFollowIncluded = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.FOLLOW_ARG,
-        TransferArgs.INFO_ARG, "no_information", FOLLOWARGJSON, "1234}"
+        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
+        FOLLOWARGJSON, "1234}"
     };
     transferArgs = TransferArgs
         .getParamsInternal(0, argsCompleteWithFollowIncluded, false);
@@ -364,7 +366,7 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertFalse(transferArgs.isNolog());
@@ -374,17 +376,16 @@ public class TransferArgsTest extends TestAbstract {
     assertNotEquals("1234", transferArgs.getFollowId());
     TransferArgs
         .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncluded, null);
-    logger.warn(transferArgs.getFileinfo());
+    logger.warn(transferArgs.getTransferInfo());
     assertEquals("1234", transferArgs.getFollowId());
-    assertTrue(transferArgs.getFileinfo().endsWith("no_information"));
-    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
+    assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
+    assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
 
     String[] argsCompleteWithFollowIncludedAndMore = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.FOLLOW_ARG,
-        TransferArgs.INFO_ARG, "no_information", FOLLOWARGJSON,
-        "1234} {'key': 'value'} test after"
+        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
+        FOLLOWARGJSON, "1234} {'key': 'value'} test after"
     };
     transferArgs = TransferArgs
         .getParamsInternal(0, argsCompleteWithFollowIncludedAndMore, false);
@@ -392,7 +393,7 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertFalse(transferArgs.isNolog());
@@ -403,21 +404,21 @@ public class TransferArgsTest extends TestAbstract {
     TransferArgs
         .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncludedAndMore,
                     null);
-    logger.warn(transferArgs.getFileinfo());
+    logger.warn(transferArgs.getTransferInfo());
     assertEquals("1234", transferArgs.getFollowId());
-    assertTrue(
-        transferArgs.getFileinfo().endsWith("no_information   test after"));
-    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
-    assertTrue(DbTaskRunner.getMapFromString(transferArgs.getFileinfo())
+    assertTrue(transferArgs.getTransferInfo()
+                           .startsWith("no_information   test after {"));
+    assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
+    assertTrue(DbTaskRunner.getMapFromString(transferArgs.getTransferInfo())
                            .containsKey("key"));
-    assertTrue(DbTaskRunner.getMapFromString(transferArgs.getFileinfo())
+    assertTrue(DbTaskRunner.getMapFromString(transferArgs.getTransferInfo())
                            .containsKey(FOLLOW_JSON_KEY));
 
     String[] argsCompleteWithFollowCopied = {
         TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
         TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
-        TransferArgs.BLOCK_ARG, "1000", TransferArgs.FOLLOW_ARG,
-        TransferArgs.INFO_ARG, "no_information", "extra-info"
+        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
+        "extra-info"
     };
     transferArgs =
         TransferArgs.getParamsInternal(0, argsCompleteWithFollowCopied, false);
@@ -425,7 +426,7 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
     assertEquals("rule3", transferArgs.getRulename());
-    assertEquals("no_information", transferArgs.getFileinfo());
+    assertEquals("no_information", transferArgs.getTransferInfo());
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     assertFalse(transferArgs.isNolog());
@@ -435,10 +436,10 @@ public class TransferArgsTest extends TestAbstract {
     assertNotEquals("1234", transferArgs.getFollowId());
     TransferArgs.getAllInfo(transferArgs, 0, argsCompleteWithFollowCopied,
                             FOLLOWARGJSON + " 1234}");
-    logger.warn(transferArgs.getFileinfo());
+    logger.warn(transferArgs.getTransferInfo());
     assertEquals("1234", transferArgs.getFollowId());
     assertTrue(
-        transferArgs.getFileinfo().endsWith("no_information extra-info"));
-    assertTrue(transferArgs.getFileinfo().contains(FOLLOW_JSON_KEY));
+        transferArgs.getTransferInfo().startsWith("no_information extra-info"));
+    assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
   }
 } 

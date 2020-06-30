@@ -142,8 +142,8 @@ public class TestSendThroughForward extends SendThroughClient {
         new RequestPacket(transferArgs.getRulename(), mode,
                           transferArgs.getFilename(),
                           transferArgs.getBlockSize(), sourceRunner.getRank(),
-                          transferArgs.getId(), transferArgs.getFileinfo(), -1,
-                          sep);
+                          transferArgs.getId(), transferArgs.getTransferInfo(),
+                          -1, sep);
     // Not isRecv since it is the requester, so send => isSender is true
     final boolean isSender = true;
     try {

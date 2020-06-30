@@ -100,7 +100,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
    * (-file <arg>     Specify the file path to operate on<br>
    * -rule <arg>))    Specify the Rule<br>
    * [-block <arg>]   Specify the block size<br>
-   * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+   * [-nofollow]      Specify the transfer should not integrate a FOLLOW id<br>
    * [-md5]           Specify the option to have a hash computed for the
    * transfer<br>
    * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>
@@ -154,7 +154,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
         "R66Prepared with -to " + transferArgs.getRemoteHost() + " -rule " +
         transferArgs.getRulename() + " -file " + transferArgs.getFilename() +
         " -nolog: " + nolog + " -isMD5: " + transferArgs.isMD5() + " -info " +
-        transferArgs.getFileinfo();
+        transferArgs.getTransferInfo();
     logger.debug(message);
     DbRule rule;
     try {
@@ -184,7 +184,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
         new RequestPacket(transferArgs.getRulename(), mode,
                           transferArgs.getFilename(),
                           transferArgs.getBlockSize(), 0, ILLEGALVALUE,
-                          transferArgs.getFileinfo(), originalSize, sep);
+                          transferArgs.getTransferInfo(), originalSize, sep);
     // Not isRecv since it is the requester, so send => isRetrieve is true
     final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
     logger.debug("Will prepare: {}", request);

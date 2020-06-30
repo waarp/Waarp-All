@@ -55,7 +55,7 @@ import static org.waarp.common.database.DbConstant.*;
  * (-file <arg>     Specify the file path to operate on<br>
  * -rule <arg>))    Specify the Rule<br>
  * [-block <arg>]   Specify the block size<br>
- * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+ * [-nofollow]      Specify the transfer should not integrate a FOLLOW id<br>
  * [-md5]           Specify the option to have a hash computed for the
  * transfer<br>
  * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>
@@ -90,11 +90,12 @@ public class TransferArgs {
   private static final Option ID_OPTION =
       Option.builder(ID_FIELD).required(false).hasArg(true)
             .desc("Specify the id of transfer").build();
-  private static final String FOLLOW = "follow";
-  public static final String FOLLOW_ARG = "-" + FOLLOW;
-  private static final Option FOLLOW_OPTION =
-      Option.builder(FOLLOW).required(false).hasArg(false)
-            .desc("Specify if the transfer should integrate a FOLLOW id").build();
+  private static final String NO_FOLLOW = "nofollow";
+  public static final String NO_FOLLOW_ARG = "-" + NO_FOLLOW;
+  private static final Option NO_FOLLOW_OPTION =
+      Option.builder(NO_FOLLOW).required(false).hasArg(false)
+            .desc("Specify if the transfer should not integrate a FOLLOW id")
+            .build();
   public static final String FOLLOW_JSON_KEY = "follow";
   private static final String INFO = "info";
   public static final String INFO_ARG = "-" + INFO;
@@ -148,7 +149,7 @@ public class TransferArgs {
       new OptionGroup().addOption(DELAY_OPTION).addOption(START_OPTION);
   private static final Options TRANSFER_OPTIONS =
       new Options().addOption(FILE_OPTION).addOption(TO_OPTION)
-                   .addOption(FOLLOW_OPTION).addOption(RULE_OPTION)
+                   .addOption(NO_FOLLOW_OPTION).addOption(RULE_OPTION)
                    .addOption(ID_OPTION).addOption(INFO_OPTION)
                    .addOption(HASH_OPTION).addOption(BLOCK_OPTION)
                    .addOptionGroup(DELAY_OPTIONS).addOption(NOTLOG_OPTION)
@@ -175,7 +176,7 @@ public class TransferArgs {
    * (-file <arg>     Specify the file path to operate on<br>
    * -rule <arg>))    Specify the Rule<br>
    * [-block <arg>]   Specify the block size<br>
-   * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+   * [-nofollow]      Specify the transfer should not integrate a FOLLOW id<br>
    * [-md5]           Specify the option to have a hash computed for the
    * transfer<br>
    * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>
@@ -236,11 +237,11 @@ public class TransferArgs {
    */
   private static boolean checkExtraTransferArgs(
       final TransferArgs transferArgs1, final CommandLine cmd) {
-    if (cmd.hasOption(FOLLOW)) {
+    if (!cmd.hasOption(NO_FOLLOW)) {
       transferArgs1.setFollowId("");
     }
     if (cmd.hasOption(INFO)) {
-      transferArgs1.setFileinfo(cmd.getOptionValue(INFO));
+      transferArgs1.setTransferInfo(cmd.getOptionValue(INFO));
     }
     if (cmd.hasOption(HASH)) {
       transferArgs1.setMD5(true);
@@ -335,8 +336,8 @@ public class TransferArgs {
    */
   private static TransferArgs finalizeTransferArgs(final boolean analyseFollow,
                                                    final TransferArgs transferArgs1) {
-    if (transferArgs1.getFileinfo() == null) {
-      transferArgs1.setFileinfo(AbstractTransfer.NO_INFO_ARGS);
+    if (transferArgs1.getTransferInfo() == null) {
+      transferArgs1.setTransferInfo(AbstractTransfer.NO_INFO_ARGS);
     }
     if (analyseFollow) {
       analyzeFollow(transferArgs1);
@@ -459,18 +460,18 @@ public class TransferArgs {
         if (INFO_ARG.equalsIgnoreCase(args[i])) {
           i++;
           if (builder.length() == 0) {
-            builder.append(args[i]);
+            builder.append(args[i].trim());
           } else {
-            builder.append(' ').append(args[i]);
+            builder.append(' ').append(args[i].trim());
           }
           i++;
           while (i < args.length) {
-            builder.append(' ').append(args[i]);
+            builder.append(' ').append(args[i].trim());
             i++;
           }
         }
       }
-      transferArgs.setFileinfo(builder.toString());
+      transferArgs.setTransferInfo(builder.toString());
       TransferArgs.analyzeFollow(transferArgs);
     }
   }
@@ -482,9 +483,9 @@ public class TransferArgs {
    */
   public static void analyzeFollow(final TransferArgs transferArgs1) {
     if (transferArgs1.getFollowId() != null &&
-        transferArgs1.getFileinfo() != null) {
+        transferArgs1.getTransferInfo() != null) {
       Map<String, Object> map =
-          DbTaskRunner.getMapFromString(transferArgs1.getFileinfo());
+          DbTaskRunner.getMapFromString(transferArgs1.getTransferInfo());
       if (map.containsKey(FOLLOW_JSON_KEY)) {
         transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());
       }
@@ -492,22 +493,22 @@ public class TransferArgs {
         LongUuid longUuid = new LongUuid();
         map.put(FOLLOW_JSON_KEY, longUuid.getLong());
         String originalWithoutMap =
-            DbTaskRunner.getOutOfMapFromString(transferArgs1.getFileinfo());
-        transferArgs1.setFileinfo(
-            JsonHandler.writeAsString(map) + " " + originalWithoutMap.trim());
+            DbTaskRunner.getOutOfMapFromString(transferArgs1.getTransferInfo());
+        transferArgs1.setTransferInfo(
+            originalWithoutMap.trim() + " " + JsonHandler.writeAsString(map));
         transferArgs1.setFollowId("" + longUuid.getLong());
       } else {
         String originalWithoutMap =
-            DbTaskRunner.getOutOfMapFromString(transferArgs1.getFileinfo());
-        transferArgs1.setFileinfo(
-            JsonHandler.writeAsString(map) + " " + originalWithoutMap.trim());
+            DbTaskRunner.getOutOfMapFromString(transferArgs1.getTransferInfo());
+        transferArgs1.setTransferInfo(
+            originalWithoutMap.trim() + " " + JsonHandler.writeAsString(map));
       }
     }
   }
 
   private String filename;
   private String rulename;
-  private String fileinfo;
+  private String transferInfo;
   private boolean isMD5;
   private String remoteHost;
   private int blocksize = 0x10000; // 64K
@@ -542,12 +543,12 @@ public class TransferArgs {
     return this;
   }
 
-  public String getFileinfo() {
-    return fileinfo;
+  public String getTransferInfo() {
+    return transferInfo;
   }
 
-  public TransferArgs setFileinfo(String fileinfo) {
-    this.fileinfo = fileinfo;
+  public TransferArgs setTransferInfo(String transferInfo) {
+    this.transferInfo = transferInfo;
     return this;
   }
 

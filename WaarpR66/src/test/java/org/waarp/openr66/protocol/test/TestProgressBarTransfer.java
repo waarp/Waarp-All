@@ -87,7 +87,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
     try {
       final TestProgressBarTransfer transaction =
           new TestProgressBarTransfer(future, rhost, localFilename, rule,
-                                      fileInfo, ismd5, block, idt,
+                                      transferInfo, ismd5, block, idt,
                                       networkTransaction, 100);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       transaction.run();

@@ -300,7 +300,7 @@ public class TransferActions extends ServerActions {
         packet = new RequestPacket(packet.getRulename(), packet.getMode(),
                                    packet.getFilename(), blocksize,
                                    packet.getRank(), packet.getSpecialId(),
-                                   packet.getFileInformation(),
+                                   packet.getTransferInformation(),
                                    packet.getOriginalSize(), sep);
       }
     }
@@ -372,7 +372,7 @@ public class TransferActions extends ServerActions {
         "Filesize: " + packet.getOriginalSize() + ':' + runner.isSender());
     if (!shouldInformBack) {
       shouldInformBack =
-          !packet.getFileInformation().equals(runner.getFileInformation());
+          !packet.getTransferInformation().equals(runner.getFileInformation());
     }
     if (runner.isFileMoved() && runner.isSender() && runner.isInTransfer() &&
         runner.getRank() == 0 && !packet.isToValidate()) {
@@ -731,7 +731,7 @@ public class TransferActions extends ServerActions {
       request.setFilesize(packet.getOriginalSize());
       final String infoTransfer = runner.getFileInformation();
       if (infoTransfer != null &&
-          !infoTransfer.equals(packet.getFileInformation())) {
+          !infoTransfer.equals(packet.getTransferInformation())) {
         request.setFileInfo(runner.getFileInformation());
       }
       final JsonCommandPacket validPacket =
@@ -742,13 +742,13 @@ public class TransferActions extends ServerActions {
       final String infoTransfer = runner.getFileInformation();
       ValidPacket validPacket;
       if (infoTransfer != null &&
-          !infoTransfer.equals(packet.getFileInformation()) &&
+          !infoTransfer.equals(packet.getTransferInformation()) &&
           localChannelReference.getPartner().changeFileInfoEnabled()) {
         validPacket = new ValidPacket(info, runner.getFilename() +
                                             PartnerConfiguration.BAR_SEPARATOR_FIELD +
                                             packet.getOriginalSize() +
                                             PartnerConfiguration.BAR_SEPARATOR_FIELD +
-                                            packet.getFileInformation(),
+                                            packet.getTransferInformation(),
                                       LocalPacketFactory.REQUESTPACKET);
       } else {
         validPacket = new ValidPacket(info, runner.getFilename() +

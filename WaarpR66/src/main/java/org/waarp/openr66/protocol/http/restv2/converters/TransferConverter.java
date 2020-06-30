@@ -360,6 +360,12 @@ public final class TransferConverter {
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
         }
+      } else if (name.equalsIgnoreCase(TRANSFER_INFO)) {
+        if (value.isTextual()) {
+          transfer.setTransferInfo(value.asText());
+        } else {
+          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
+        }
       } else if (name.equalsIgnoreCase(START)) {
         if (value.isTextual()) {
           try {

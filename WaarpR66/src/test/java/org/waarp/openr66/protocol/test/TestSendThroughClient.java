@@ -89,7 +89,8 @@ public class TestSendThroughClient extends SendThroughClient {
       final R66Future future = new R66Future(true);
       final TestSendThroughClient transaction =
           new TestSendThroughClient(future, rhost, localFilename, rule,
-                                    fileInfo, ismd5, block, networkTransaction);
+                                    transferInfo, ismd5, block,
+                                    networkTransaction);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       final long time1 = System.currentTimeMillis();
       if (!transaction.initiateRequest()) {

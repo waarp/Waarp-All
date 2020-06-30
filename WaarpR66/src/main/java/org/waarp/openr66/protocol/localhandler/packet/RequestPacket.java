@@ -85,7 +85,7 @@ public class RequestPacket extends AbstractLocalPacket {
 
   protected long limit;
 
-  protected final String fileInformation;
+  protected final String transferInformation;
 
   protected String separator = PartnerConfiguration.getSEPARATOR_FIELD();
 
@@ -294,14 +294,14 @@ public class RequestPacket extends AbstractLocalPacket {
    * @param rank
    * @param specialId
    * @param valid
-   * @param fileInformation
+   * @param transferInformation
    * @param code
    * @param originalSize
    */
   private RequestPacket(String rulename, int mode, String filename,
                         int blocksize, int rank, long specialId, byte valid,
-                        String fileInformation, char code, long originalSize,
-                        String separator) {
+                        String transferInformation, char code,
+                        long originalSize, String separator) {
     this.rulename = rulename;
     this.mode = mode;
     this.filename = filename;
@@ -313,7 +313,7 @@ public class RequestPacket extends AbstractLocalPacket {
     this.rank = rank;
     this.specialId = specialId;
     way = valid;
-    this.fileInformation = fileInformation;
+    this.transferInformation = transferInformation;
     this.code = code;
     this.originalSize = originalSize;
     this.separator = separator;
@@ -326,14 +326,14 @@ public class RequestPacket extends AbstractLocalPacket {
    * @param blocksize
    * @param rank
    * @param specialId
-   * @param fileInformation
+   * @param transferInformation
    */
   public RequestPacket(String rulename, int mode, String filename,
                        int blocksize, int rank, long specialId,
-                       String fileInformation, long originalSize,
+                       String transferInformation, long originalSize,
                        String separator) {
     this(rulename, mode, filename, blocksize, rank, specialId, REQVALIDATE,
-         fileInformation, ErrorCode.InitOk.code, originalSize, separator);
+         transferInformation, ErrorCode.InitOk.code, originalSize, separator);
   }
 
   /**
@@ -341,18 +341,18 @@ public class RequestPacket extends AbstractLocalPacket {
    */
   private RequestPacket(String rulename, int mode, String filename,
                         int blocksize, int rank, long specialId, byte valid,
-                        String fileInformation, char code, long originalSize,
-                        long limit, String separator) {
+                        String transferInformation, char code,
+                        long originalSize, long limit, String separator) {
     this(rulename, mode, filename, blocksize, rank, specialId, valid,
-         fileInformation, code, originalSize, separator);
+         transferInformation, code, originalSize, separator);
     this.limit = limit;
   }
 
   @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    if (fileInformation != null) {
-      end = Unpooled.wrappedBuffer(fileInformation.getBytes());
+    if (transferInformation != null) {
+      end = Unpooled.wrappedBuffer(transferInformation.getBytes());
     }
   }
 
@@ -421,7 +421,7 @@ public class RequestPacket extends AbstractLocalPacket {
   @Override
   public String toString() {
     return "RequestPacket: " + specialId + " : " + rulename + " : " + mode +
-           " :  " + filename + " : " + fileInformation + " : " + blocksize +
+           " :  " + filename + " : " + transferInformation + " : " + blocksize +
            " : " + rank + " : " + way + " : " + code + " : " + originalSize +
            " : " + limit;
   }
@@ -457,8 +457,8 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @return the fileInformation
    */
-  public String getFileInformation() {
-    return fileInformation;
+  public String getTransferInformation() {
+    return transferInformation;
   }
 
   /**

@@ -75,7 +75,7 @@ public class TestSubmitTransfer extends SubmitTransfer {
       }
       final TestSubmitTransfer transaction =
           new TestSubmitTransfer(arrayFuture[i], rhost, localFilename, rule,
-                                 fileInfo, ismd5, block, newstart);
+                                 transferInfo, ismd5, block, newstart);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       // executorService.execute(transaction);
       transaction.run();
