@@ -57,7 +57,7 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
  * while still having the
  * possibility to add new informations through "-info":<br>
  * "-file filepath -to requestedHost -rule rule [-md5] [-start yyyyMMddHHmmss or
- * -delay (delay or +delay)] [-follow)
+ * -delay (delay or +delay)] [-nofollow)
  * [-copyinfo] [-info information]" <br>
  * <br>
  * INFO is the only one field that can contains blank character.<br>

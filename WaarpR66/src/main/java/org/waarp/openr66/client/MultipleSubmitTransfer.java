@@ -128,7 +128,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
             final SubmitTransfer transaction =
                 new SubmitTransfer(future, host, filename,
                                    transferArgs.getRulename(),
-                                   transferArgs.getFileinfo(),
+                                   transferArgs.getTransferInfo(),
                                    transferArgs.isMD5(),
                                    transferArgs.getBlockSize(),
                                    transferArgs.getId(),
@@ -213,8 +213,8 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
       final R66Future future = new R66Future(true);
       final MultipleSubmitTransfer transaction =
           new MultipleSubmitTransfer(future, rhost, localFilename, rule,
-                                     fileInfo, ismd5, block, idt, ttimestart,
-                                     networkTransaction);
+                                     transferInfo, ismd5, block, idt,
+                                     ttimestart, networkTransaction);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       transaction.run();
       future.awaitOrInterruptible();

@@ -74,7 +74,7 @@ les paramètres finaux en utilisant la fonction
 
 L'argument de transfert (spécifié par ``-info`` dans les commandes de transferts) ou le ``path`` peuvent
 contenir une MAP au format JSON qui intègre des éléments utiles aux tâches ou au fonctionnement de Waarp
-(comme le ``DIGEST``, le ``RESCHDEDULE``, l'option ``-follow``).
+(comme le ``DIGEST``, le ``RESCHDEDULE``, l'option ``follow``).
 
 Ceci permet de rendre les arguments très adaptatifs.
 
@@ -958,7 +958,7 @@ Arguments du transfert :
    (-file <arg>    Spécifie le fichier à opérer
     -rule <arg>))  Spécifie la règle de transfert
   [-block <arg>]   Spécifie la taille du bloc
-  [-follow]        Spécifie que le trasfert doit intégrer un "follow" id
+  [-nofollow]      Spécifie que le trasfert ne devra pas intégrer un "follow" id
   [-md5]           Spécifie qu'un calcul d'empreinte doit être réalisé pour
                     valider le transfert
   [-delay <arg>|   Spécifie le délai comme un temps epoch ou un délai (+arg) en ms

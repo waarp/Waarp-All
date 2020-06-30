@@ -91,7 +91,7 @@ public abstract class AbstractTransfer implements Runnable {
   protected AbstractTransfer(Class<?> clasz, R66Future future,
                              TransferArgs transferArgs) {
     this(clasz, future, transferArgs.getFilename(), transferArgs.getRulename(),
-         transferArgs.getFileinfo(), transferArgs.isMD5(),
+         transferArgs.getTransferInfo(), transferArgs.isMD5(),
          transferArgs.getRemoteHost(), transferArgs.getBlockSize(),
          transferArgs.getId(), transferArgs.getStartTime());
   }
@@ -101,23 +101,23 @@ public abstract class AbstractTransfer implements Runnable {
    * @param future
    * @param filename
    * @param rulename
-   * @param fileinfo
+   * @param transferInfo
    * @param isMD5
    * @param remoteHost
    * @param blocksize
    * @param id
    */
   protected AbstractTransfer(Class<?> clasz, R66Future future, String filename,
-                             String rulename, String fileinfo, boolean isMD5,
-                             String remoteHost, int blocksize, long id,
-                             Timestamp timestart) {
+                             String rulename, String transferInfo,
+                             boolean isMD5, String remoteHost, int blocksize,
+                             long id, Timestamp timestart) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(clasz);
     }
     this.future = future;
     this.transferArgs.setFilename(filename);
     this.transferArgs.setRulename(rulename);
-    this.transferArgs.setFileinfo(fileinfo);
+    this.transferArgs.setTransferInfo(transferInfo);
     this.transferArgs.setMD5(isMD5);
     if (Configuration.configuration.getAliases().containsKey(remoteHost)) {
       this.transferArgs.setRemoteHost(
@@ -197,9 +197,9 @@ public abstract class AbstractTransfer implements Runnable {
       }
       // requested
       taskRunner.setSenderByRequestToValidate(true);
-      if (transferArgs.getFileinfo() != null &&
-          !transferArgs.getFileinfo().equals(NO_INFO_ARGS)) {
-        taskRunner.setFileInformation(transferArgs.getFileinfo());
+      if (transferArgs.getTransferInfo() != null &&
+          !transferArgs.getTransferInfo().equals(NO_INFO_ARGS)) {
+        taskRunner.setTransferInfo(transferArgs.getTransferInfo());
       }
       if (transferArgs.getStartTime() != null) {
         taskRunner.setStart(transferArgs.getStartTime());
@@ -239,8 +239,8 @@ public abstract class AbstractTransfer implements Runnable {
           new RequestPacket(transferArgs.getRulename(), mode,
                             transferArgs.getFilename(),
                             transferArgs.getBlockSize(), 0,
-                            transferArgs.getId(), transferArgs.getFileinfo(),
-                            originalSize, sep);
+                            transferArgs.getId(),
+                            transferArgs.getTransferInfo(), originalSize, sep);
       // Not isRecv since it is the requester, so send => isRetrieve is true
       final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
       try {
@@ -262,7 +262,7 @@ public abstract class AbstractTransfer implements Runnable {
   protected static String rhost;
   protected static String localFilename;
   protected static String rule;
-  protected static String fileInfo;
+  protected static String transferInfo;
   protected static boolean ismd5;
   protected static int block = 0x10000; // 64K
   // as
@@ -276,7 +276,7 @@ public abstract class AbstractTransfer implements Runnable {
     rhost = null;
     localFilename = null;
     rule = null;
-    fileInfo = null;
+    transferInfo = null;
     ismd5 = false;
     block = 0x10000; // 64K
     nolog = false;
@@ -320,7 +320,7 @@ public abstract class AbstractTransfer implements Runnable {
     rhost = transferArgsLocal.getRemoteHost();
     localFilename = transferArgsLocal.getFilename();
     rule = transferArgsLocal.getRulename();
-    fileInfo = transferArgsLocal.getFileinfo();
+    transferInfo = transferArgsLocal.getTransferInfo();
     ismd5 = transferArgsLocal.isMD5();
     block = transferArgsLocal.getBlockSize();
     idt = transferArgsLocal.getId();
@@ -339,7 +339,7 @@ public abstract class AbstractTransfer implements Runnable {
    * (-file <arg>     Specify the file path to operate on<br>
    * -rule <arg>))    Specify the Rule<br>
    * [-block <arg>]   Specify the block size<br>
-   * [-follow]        Specify the transfer should integrate a FOLLOW id<br>
+   * [-nofollow]      Specify the transfer should not integrate a FOLLOW id<br>
    * [-md5]           Specify the option to have a hash computed for the
    * transfer<br>
    * [-delay <arg>]   Specify the delay time as an epoch time or '+' a delay in ms<br>

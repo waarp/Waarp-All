@@ -83,7 +83,8 @@ public class TestRecvThroughClient extends RecvThroughClient {
       final TestRecvThroughHandler handler = new TestRecvThroughHandler();
       final TestRecvThroughClient transaction =
           new TestRecvThroughClient(future, handler, rhost, localFilename, rule,
-                                    fileInfo, ismd5, block, networkTransaction);
+                                    transferInfo, ismd5, block,
+                                    networkTransaction);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       final long time1 = System.currentTimeMillis();
       transaction.run();

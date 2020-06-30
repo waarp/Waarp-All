@@ -369,12 +369,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (startTime != null) {
       pojo = new Transfer(requested, rule.getIdRule(), requestPacket.getMode(),
                           isSender, requestPacket.getFilename(),
-                          requestPacket.getFileInformation(),
+                          requestPacket.getTransferInformation(),
                           requestPacket.getBlocksize(), startTime);
     } else {
       pojo = new Transfer(requested, rule.getIdRule(), requestPacket.getMode(),
                           isSender, requestPacket.getFilename(),
-                          requestPacket.getFileInformation(),
+                          requestPacket.getTransferInformation(),
                           requestPacket.getBlocksize());
     }
 
@@ -423,7 +423,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     pojo = new Transfer(getRequested(session, requestPacket), rule.getIdRule(),
                         requestPacket.getMode(), isSender,
                         requestPacket.getFilename(),
-                        requestPacket.getFileInformation(),
+                        requestPacket.getTransferInformation(),
                         requestPacket.getBlocksize());
     pojo.setRequester(getRequester(session, requestPacket));
     pojo.setRank(requestPacket.getRank());
@@ -2350,11 +2350,20 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
-   * @param map the Map to set as Json string to transferInformation
+   * @param map the Map to add as Json string to transferInformation
    */
   public void setTransferMap(Map<String, Object> map) {
     pojo.setTransferInfo(
-        JsonHandler.writeAsString(map) + " " + getOtherInfoOutOfMap().trim());
+        getOtherInfoOutOfMap().trim() + " " + JsonHandler.writeAsString(map));
+  }
+
+  /**
+   * @param transferInfo the transfer Information to set
+   */
+  public void setTransferInfo(String transferInfo) {
+    pojo.setTransferInfo(getOutOfMapFromString(transferInfo).trim() + " " +
+                         JsonHandler
+                             .writeAsString(getMapFromString(transferInfo)));
   }
 
   /**
@@ -3577,8 +3586,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     }
     return new RequestPacket(pojo.getRule(), pojo.getTransferMode(),
                              pojo.getOriginalName(), pojo.getBlockSize(),
-                             pojo.getRank(), pojo.getId(), pojo.getFileInfo(),
-                             originalSize, sep);
+                             pojo.getRank(), pojo.getId(),
+                             pojo.getTransferInfo(), originalSize, sep);
   }
 
   /**

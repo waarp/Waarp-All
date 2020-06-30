@@ -51,11 +51,11 @@ public class DirectTransfer extends AbstractTransfer {
   protected boolean limitRetryConnection = true;
 
   public DirectTransfer(R66Future future, String remoteHost, String filename,
-                        String rulename, String fileinfo, boolean isMD5,
+                        String rulename, String transferInfo, boolean isMD5,
                         int blocksize, long id,
                         NetworkTransaction networkTransaction) {
     // no starttime since it is direct (blocking request, no delay)
-    super(DirectTransfer.class, future, filename, rulename, fileinfo, isMD5,
+    super(DirectTransfer.class, future, filename, rulename, transferInfo, isMD5,
           remoteHost, blocksize, id, null);
     this.networkTransaction = networkTransaction;
   }
@@ -180,7 +180,7 @@ public class DirectTransfer extends AbstractTransfer {
     final NetworkTransaction networkTransaction = new NetworkTransaction();
     try {
       final DirectTransfer transaction =
-          new DirectTransfer(future, rhost, localFilename, rule, fileInfo,
+          new DirectTransfer(future, rhost, localFilename, rule, transferInfo,
                              ismd5, block, idt, networkTransaction);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       logger.debug(

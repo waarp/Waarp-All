@@ -7,14 +7,14 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.4.0 (2020-06-22)
+Waarp R66 3.4.0 (2020-07-01)
 ============================
 
 Nouvelles fonctionnalités
 =========================
 
 - [`#49 <https://github.com/waarp/Waarp-All/pull/49>`__]
-  Pour les transferts, une nouvelle option ``-follow`` permet de gérer le suivi
+  Pour les transferts, une nouvelle fonctionnalité permet de gérer le suivi
   fin des retransferts (rebonds entre plusieurs serveurs R66). Cette option
   positionne un champ dans la partie ``information de transfert`` de la forme
   suivante : ``{"follow": numeroUnique}`` pour le premier transfert et les
@@ -24,6 +24,10 @@ Nouvelles fonctionnalités
   en spécifiant pour le premier transfert dans le champ ``-info`` (``information de transfert``)
   un Json de type ``{"follow": numeroUnique}`` en attribuant un numéro unique
   (comme un timestamp).
+
+  Cette option est active par défaut. Pour la désactiver, il faut préciser l'option
+  ``-nofolow``.
+
 - L'interface REST V2 intègre l'option de recherche par ``followId``
   (``GET /v2/transfers/?followId=number``). ``number`` étant possiblement un entier
   long, il est conseillé de le manipuler en chaîne de caractères.

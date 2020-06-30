@@ -73,6 +73,7 @@ public class XMLTransferDAO implements TransferDAO {
   public static final String BLOCK_SIZE_FIELD = "blocksz";
   public static final String ORIGINAL_NAME_FIELD = "originalname";
   public static final String FILE_INFO_FIELD = "fileinfo";
+  public static final String TRANSFER_INFO_FIELD = "transferInfo";
   public static final String TRANSFER_MODE_FIELD = "modetrans";
   public static final String START_FIELD = "starttrans";
   public static final String STOP_FIELD = "stoptrans";
@@ -445,6 +446,8 @@ public class XMLTransferDAO implements TransferDAO {
         res.setOriginalName(node.getTextContent());
       } else if (node.getNodeName().equals(FILE_INFO_FIELD)) {
         res.setFileInfo(node.getTextContent());
+      } else if (node.getNodeName().equals(TRANSFER_INFO_FIELD)) {
+        res.setTransferInfo(node.getTextContent());
       } else if (node.getNodeName().equals(IS_MOVED_FIELD)) {
         res.setIsMoved(Boolean.parseBoolean(node.getTextContent()));
       } else if (node.getNodeName().equals(BLOCK_SIZE_FIELD)) {
@@ -495,6 +498,8 @@ public class XMLTransferDAO implements TransferDAO {
         XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getOriginalName()));
     res.appendChild(
         XMLUtils.createNode(doc, FILE_INFO_FIELD, transfer.getFileInfo()));
+    res.appendChild(XMLUtils.createNode(doc, TRANSFER_INFO_FIELD,
+                                        transfer.getTransferInfo()));
     res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean
         .toString(transfer.getIsMoved())));
     res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer

@@ -108,7 +108,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
             final DirectTransfer transaction =
                 new DirectTransfer(future, host, filename,
                                    transferArgs.getRulename(),
-                                   transferArgs.getFileinfo(),
+                                   transferArgs.getTransferInfo(),
                                    transferArgs.isMD5(),
                                    transferArgs.getBlockSize(),
                                    transferArgs.getId(), networkTransaction);
@@ -203,7 +203,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
       final long time1 = System.currentTimeMillis();
       final MultipleDirectTransfer multipleDirectTransfer =
           new MultipleDirectTransfer(future, rhost, localFilename, rule,
-                                     fileInfo, ismd5, block, idt,
+                                     transferInfo, ismd5, block, idt,
                                      networkTransaction);
       multipleDirectTransfer.normalInfoAsWarn = snormalInfoAsWarn;
       multipleDirectTransfer.run();

@@ -175,7 +175,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
         new RequestPacket(transferArgs.getRulename(), mode,
                           transferArgs.getFilename(),
                           transferArgs.getBlockSize(), 0, transferArgs.getId(),
-                          transferArgs.getFileinfo(), -1, sep);
+                          transferArgs.getTransferInfo(), -1, sep);
     // Not isRecv since it is the requester, so send => isSender is true
     final boolean isSender = true;
     try {

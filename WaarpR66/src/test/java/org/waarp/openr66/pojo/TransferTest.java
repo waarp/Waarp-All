@@ -182,6 +182,16 @@ public class TransferTest {
     logger.warn("{} = {} + {}", testMultipleMap2SameKeyAndNotMapEnding, map,
                 nomap);
 
+    String testMultipleMap2SameKeyAndTrueNotMapEnding =
+        "extra information {'key': 'value'} other" + " {'key2': 'value2'";
+    map = DbTaskRunner
+        .getMapFromString(testMultipleMap2SameKeyAndTrueNotMapEnding);
+    nomap = DbTaskRunner
+        .getOutOfMapFromString(testMultipleMap2SameKeyAndTrueNotMapEnding);
+    assertEquals("extra information  other {'key2': 'value2'", nomap);
+    assertEquals(1, map.size());
+    logger.warn("{} = {} + {}", testMultipleMap2SameKeyAndTrueNotMapEnding, map,
+                nomap);
   }
 
 }
