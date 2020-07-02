@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -536,7 +535,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     final StringReader reader = new StringReader(idsref);
     Document document;
     try {
-      document = new SAXReader().read(reader);
+      document = XmlUtil.getNewSaxReader().read(reader);
       final XmlValue[] values =
           XmlUtil.read(document, RuleFileBasedConfiguration.hostsDecls);
       return RuleFileBasedConfiguration.getHostIds(values[0]);
@@ -567,7 +566,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     final StringReader reader = new StringReader(tasks);
     Document document;
     try {
-      document = new SAXReader().read(reader);
+      document = XmlUtil.getNewSaxReader().read(reader);
     } catch (final DocumentException e) {
       logger.info("Unable to read the tasks for Rule: " + tasks, e);
       // No tasks so setting to the default!

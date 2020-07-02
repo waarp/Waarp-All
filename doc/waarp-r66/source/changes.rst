@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.4.0 (2020-07-02)
+Waarp R66 3.4.0 (2020-07-03)
 ============================
 
 Nouvelles fonctionnalités
@@ -50,6 +50,10 @@ Correctifs
   ou de debug qui peuvent être évités (en conservant les Warnings et les Erreurs)
   via l'ajout dans le fichier de configuration ``logback.xml`` les paramètres
   suivants en tête des options :
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__]
+  Diminution de l'empreinte mémoire pour le cas des clients simples et diminution
+  de la mémoire côté serveur pour les parties Web et REST.
+  (issue [`#52 <https://github.com/waarp/Waarp-All/issues/52>`__])
 
 .. code-block:: xml
 

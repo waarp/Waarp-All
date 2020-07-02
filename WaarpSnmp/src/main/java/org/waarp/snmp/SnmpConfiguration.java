@@ -21,7 +21,6 @@ package org.waarp.snmp;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.snmp4j.agent.mo.snmp.StorageType;
 import org.snmp4j.agent.mo.snmp.TransportDomains;
 import org.snmp4j.security.AuthMD5;
@@ -602,7 +601,7 @@ public final class SnmpConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(file);
+      document = XmlUtil.getNewSaxReader().read(file);
     } catch (final DocumentException e) {
       logger.error(
           "Unable to read the XML Config file: " + file.getAbsolutePath(), e);

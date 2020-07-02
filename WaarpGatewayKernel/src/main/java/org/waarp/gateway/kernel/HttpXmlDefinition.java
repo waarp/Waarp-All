@@ -23,7 +23,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.dom4j.tree.DefaultElement;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogger;
@@ -419,7 +418,7 @@ public final class HttpXmlDefinition {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error("Unable to read the XML Config file: " + filename, e);
       throw new InvalidArgumentException(

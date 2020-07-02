@@ -52,7 +52,8 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
     pipeline.addLast("ssl", sslhandler);
 
     pipeline.addLast("codec", new HttpServerCodec());
-    pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
+    pipeline.addLast("aggregator", new HttpObjectAggregator(
+        FileBasedConfiguration.fileBasedConfiguration.getMaxGlobalMemory()));
     pipeline.addLast("streamer", new ChunkedWriteHandler());
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());

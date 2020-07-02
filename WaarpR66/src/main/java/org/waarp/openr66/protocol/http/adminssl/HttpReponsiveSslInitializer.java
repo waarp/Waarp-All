@@ -49,7 +49,8 @@ public class HttpReponsiveSslInitializer
     pipeline.addLast("ssl", sslhandler);
 
     pipeline.addLast("decoder", new HttpServerCodec());
-    pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
+    pipeline.addLast("aggregator", new HttpObjectAggregator(
+        Configuration.configuration.getMaxGlobalMemory()));
     pipeline.addLast("streamer", new ChunkedWriteHandler());
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());

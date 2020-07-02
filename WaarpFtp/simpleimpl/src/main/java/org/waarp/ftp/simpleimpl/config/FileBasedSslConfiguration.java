@@ -21,7 +21,6 @@ package org.waarp.ftp.simpleimpl.config;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
 import org.waarp.common.exception.CryptoException;
@@ -204,7 +203,7 @@ public class FileBasedSslConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error("Unable to read the XML Config file: " + filename, e);
       return false;

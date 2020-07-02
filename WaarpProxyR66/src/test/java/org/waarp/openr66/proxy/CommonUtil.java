@@ -60,6 +60,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +93,7 @@ public abstract class CommonUtil {
   static int r66pid = 0;
   static boolean testShouldFailed;
   public static WebDriver driver = null;
+  public static PrintStream err = System.err;
 
   public enum DriverType {
     PHANTOMJS // Works for R66
@@ -127,6 +129,7 @@ public abstract class CommonUtil {
 
   @AfterClass
   public static void stopServers() throws Exception {
+    System.setErr(err);
     Configuration.configuration.setTimeoutCon(100);
     finalizeDriver();
     // Stop R66 remote server using resources/r66 directory

@@ -34,18 +34,44 @@ import org.waarp.common.logging.SysErrLogger;
  * </pre>
  */
 public class TestWatcherJunit4 extends TestWatcher {
+  enum Color {
+    /**
+     * Color end string, color reset
+     */
+    RESET("\033[0m"),
+    /**
+     * YELLOW
+     */
+    YELLOW("\033[0;33m"),
+    /**
+     * BLUE
+     */
+    BLUE("\033[0;34m");
+    private final String code;
+
+    Color(String code) {
+      this.code = code;
+    }
+
+    @Override
+    public String toString() {
+      return code;
+    }
+  }
+
   private long startTime;
 
   protected void starting(Description description) {
     SysErrLogger.FAKE_LOGGER.sysout(
-        "==============\nStarting test: " + description.getMethodName());
+        Color.YELLOW.toString() + "==============\nStarting test: " +
+        description.getMethodName() + Color.RESET.toString());
     startTime = System.nanoTime();
   }
 
   protected void finished(Description description) {
     long time = (System.nanoTime() - startTime) / 1000000;
     SysErrLogger.FAKE_LOGGER.sysout(
-        "Ending test: " + description.getMethodName() + " in " + time +
-        " ms\n==============");
+        Color.BLUE.toString() + "Ending test: " + description.getMethodName() +
+        " in " + time + " ms\n==============" + Color.RESET.toString());
   }
 }

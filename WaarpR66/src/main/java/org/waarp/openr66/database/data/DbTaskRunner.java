@@ -46,6 +46,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.xml.XmlUtil;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -4187,7 +4188,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       throw new OpenR66ProtocolBusinessException(
           "Backend XML file cannot be read");
     }
-    final SAXReader reader = new SAXReader();
+    final SAXReader reader = XmlUtil.getNewSaxReader();
     Document document;
     try {
       document = reader.read(file);
@@ -4233,7 +4234,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (!logsFile.canRead()) {
       throw new OpenR66ProtocolBusinessException("XML file cannot be read");
     }
-    final SAXReader reader = new SAXReader();
+    final SAXReader reader = XmlUtil.getNewSaxReader();
     Document document;
     try {
       document = reader.read(logsFile);

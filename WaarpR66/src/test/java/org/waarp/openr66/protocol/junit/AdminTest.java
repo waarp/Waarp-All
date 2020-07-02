@@ -34,11 +34,13 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
+import java.io.PrintStream;
 
 import static org.junit.Assert.*;
 
@@ -57,9 +59,12 @@ public class AdminTest extends TestAbstract {
       "Linux/config/config-serverInitA.xml";
 
   private static final int WAIT = 300;
+  private static PrintStream err;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    err = System.err;
+    System.setErr(new NullPrintStream());
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
@@ -79,6 +84,7 @@ public class AdminTest extends TestAbstract {
   public static void tearDownAfterClass() throws Exception {
     Thread.sleep(100);
     finalizeDriver();
+    System.setErr(err);
     // Shutdown server
     logger.warn("Shutdown Server");
     Configuration.configuration.setTimeoutCon(100);
@@ -94,7 +100,7 @@ public class AdminTest extends TestAbstract {
   }
 
   @Test
-  public void testHttpSimpleAdmin() throws InterruptedException {
+  public void test05_HttpSimpleAdmin() throws InterruptedException {
     try {
       // Test name: TestResponsiveMonitor
       // Step # | name | target | value | comment
@@ -157,9 +163,8 @@ public class AdminTest extends TestAbstract {
     }
   }
 
-
   @Test
-  public void testBasic() throws InterruptedException {
+  public void test01_Basic() throws InterruptedException {
     try {
       // Test name: TestResponsiveAdmin
       // Step # | name | target | value | comment
@@ -280,7 +285,7 @@ public class AdminTest extends TestAbstract {
   }
 
   @Test
-  public void testRestR66V2Simple() throws Exception {
+  public void test06_RestR66V2Simple() throws Exception {
     // Must be executed AFTER testCreateUserAdmin since it will use testb2
     // First with no authent: should fail
     try {
@@ -338,7 +343,7 @@ public class AdminTest extends TestAbstract {
   }
 
   @Test
-  public void testBusiness() throws InterruptedException {
+  public void test02_Business() throws InterruptedException {
     try {
       // Test name: HostConfig
       // Step # | name | target | value
@@ -452,7 +457,7 @@ public class AdminTest extends TestAbstract {
   }
 
   @Test
-  public void testSystem() throws InterruptedException {
+  public void test08_System() throws InterruptedException {
     try {
       // Step # | name | target | value
       // 1 | open | / |
@@ -578,7 +583,7 @@ public class AdminTest extends TestAbstract {
   }
 
   @Test
-  public void testCreateUser() throws InterruptedException {
+  public void test03_CreateUser() throws InterruptedException {
     // Test name: TestCreateUser2
     try {
       // Step # | name | target | value
@@ -680,7 +685,7 @@ public class AdminTest extends TestAbstract {
   }
 
   @Test
-  public void testCreateUserAdmin() throws InterruptedException {
+  public void test04_CreateUserAdmin() throws InterruptedException {
     // Test name: TestCreateUser2
     try {
       // Step # | name | target | value

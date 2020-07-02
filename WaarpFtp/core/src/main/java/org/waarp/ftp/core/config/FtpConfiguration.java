@@ -178,9 +178,9 @@ public abstract class FtpConfiguration {
   private boolean deleteOnAbort;
 
   /**
-   * Max global memory limit: default is 4GB
+   * Max global memory limit: default is 1GB
    */
-  private long maxGlobalMemory = 0x100000000L;
+  private int maxGlobalMemory = 1073741824;
 
   /**
    * General Configuration Object
@@ -692,14 +692,14 @@ public abstract class FtpConfiguration {
   /**
    * @return the maxGlobalMemory
    */
-  public long getMaxGlobalMemory() {
+  public int getMaxGlobalMemory() {
     return maxGlobalMemory;
   }
 
   /**
    * @param maxGlobalMemory the maxGlobalMemory to set
    */
-  public void setMaxGlobalMemory(long maxGlobalMemory) {
+  public void setMaxGlobalMemory(int maxGlobalMemory) {
     this.maxGlobalMemory = maxGlobalMemory;
   }
 

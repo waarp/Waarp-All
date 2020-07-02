@@ -41,7 +41,6 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
-import org.waarp.openr66.protocol.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -137,10 +136,12 @@ public class R66File extends FilesystemBasedFileImpl {
       ChannelFuture future2;
       if (block != null && running.get() && !Thread.interrupted()) {
         block.getBlock().retain();
-        future1 =
-            RetrieveRunner.writeWhenPossible(block, localChannelReference);
         if (Configuration.configuration.isGlobalDigest()) {
-          FileUtils.computeGlobalHash(digest, block.getBlock());
+          future1 = RetrieveRunner
+              .writeWhenPossible(block, localChannelReference, digest);
+        } else {
+          future1 = RetrieveRunner
+              .writeWhenPossible(block, localChannelReference, null);
         }
       }
       // While not last block
@@ -164,10 +165,12 @@ public class R66File extends FilesystemBasedFileImpl {
           return;
         }
         block.getBlock().retain();
-        future2 =
-            RetrieveRunner.writeWhenPossible(block, localChannelReference);
         if (Configuration.configuration.isGlobalDigest()) {
-          FileUtils.computeGlobalHash(digest, block.getBlock());
+          future2 = RetrieveRunner
+              .writeWhenPossible(block, localChannelReference, digest);
+        } else {
+          future2 = RetrieveRunner
+              .writeWhenPossible(block, localChannelReference, null);
         }
         future1 = future2;
       }

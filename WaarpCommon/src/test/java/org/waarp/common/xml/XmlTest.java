@@ -269,7 +269,7 @@ public class XmlTest {
     final XmlDecl[] ruleDecls =
         { new XmlDecl(ROOT, XmlType.XVAL, ROOT, subruleDecls, false) };
 
-    new SAXReader();
+    XmlUtil.getNewSaxReader();
     Document document = null;
     final long time = System.currentTimeMillis();
     final String badchars = " \n\t\n ";

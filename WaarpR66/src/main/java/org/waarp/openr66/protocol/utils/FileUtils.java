@@ -31,6 +31,7 @@ import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * File Utils
@@ -112,14 +113,29 @@ public final class FileUtils {
 
   /**
    * @param buffer
+   * @param algo for packet only
+   * @param digestGlobal
    *
    * @return the hash from the given Buffer
    */
-  public static final ByteBuf getHash(ByteBuf buffer, DigestAlgo algo) {
+  public static final ByteBuf getHash(ByteBuf buffer, DigestAlgo algo,
+                                      FilesystemBasedDigest digestGlobal) {
     byte[] newkey;
     try {
-      newkey = FilesystemBasedDigest.getHash(buffer, algo);
+      if (digestGlobal == null) {
+        newkey = FilesystemBasedDigest.getHash(buffer, algo);
+      } else {
+        FilesystemBasedDigest digestPacket = new FilesystemBasedDigest(algo);
+        byte[] bytes = digestGlobal.getBytes(buffer);
+        int start = digestGlobal.getOffset(buffer);
+        int length = buffer.readableBytes();
+        digestPacket.Update(bytes, start, length);
+        newkey = digestPacket.Final();
+        digestGlobal.Update(bytes, start, length);
+      }
     } catch (final IOException e) {
+      return Unpooled.EMPTY_BUFFER;
+    } catch (NoSuchAlgorithmException e) {
       return Unpooled.EMPTY_BUFFER;
     }
     return Unpooled.wrappedBuffer(newkey);
@@ -131,12 +147,38 @@ public final class FileUtils {
    * @param digest
    * @param buffer
    */
-  public static void computeGlobalHash(FilesystemBasedDigest digest,
-                                       ByteBuf buffer) {
+  public static void computeGlobalHash(final FilesystemBasedDigest digest,
+                                       final ByteBuf buffer) {
     if (digest == null) {
       return;
     }
     digest.Update(buffer);
+  }
+
+  /**
+   * Compute global hash and local hash (if possible)
+   *
+   * @param digestGlobal
+   * @param digestLocal
+   * @param buffer
+   */
+  public static void computeGlobalHash(final FilesystemBasedDigest digestGlobal,
+                                       final FilesystemBasedDigest digestLocal,
+                                       final ByteBuf buffer) {
+    if (digestGlobal != null && digestLocal != null) {
+      final byte[] bytes = digestGlobal.getBytes(buffer);
+      final int length = buffer.readableBytes();
+      final int offset = digestGlobal.getOffset(buffer);
+      digestGlobal.Update(bytes, offset, length);
+      digestLocal.Update(bytes, offset, length);
+      return;
+    }
+    if (digestGlobal != null) {
+      digestGlobal.Update(buffer);
+    }
+    if (digestLocal != null) {
+      digestLocal.Update(buffer);
+    }
   }
 
 }

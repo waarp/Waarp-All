@@ -77,6 +77,7 @@ public class PartnerConfiguration {
   private final ObjectNode root = JsonHandler.createObjectNode();
   private final boolean useJson;
   private boolean changeFileInfoEnabled;
+  private DigestAlgo digestAlgo;
 
   /**
    * Constructor for an external HostId
@@ -134,6 +135,7 @@ public class PartnerConfiguration {
     if (isProxified()) {
       Configuration.configuration.setBlacklistBadAuthent(false);
     }
+    digestAlgo = getDigestAlgoInternal();
     logger.debug("Info HostId: " + root);
   }
 
@@ -155,6 +157,7 @@ public class PartnerConfiguration {
                          Configuration.configuration.isHostProxyfied());
     JsonHandler.setValue(root, FIELDS.SEPARATOR, getSEPARATOR_FIELD());
     useJson = true;
+    digestAlgo = getDigestAlgoInternal();
     logger.debug("Info HostId: " + root);
   }
 
@@ -189,9 +192,18 @@ public class PartnerConfiguration {
   }
 
   /**
-   * @return True if this Host returns Digest Algo used
+   * @return DigestAlgo if this Host returns Digest Algo used
    */
   public DigestAlgo getDigestAlgo() {
+    return digestAlgo;
+  }
+
+  /**
+   * Used to initialize the DigestAlgo for this partner
+   *
+   * @return the DigestAlgo
+   */
+  private DigestAlgo getDigestAlgoInternal() {
     final String algo = root.path(FIELDS.DIGESTALGO.name).asText();
     return getDigestAlgo(algo);
   }

@@ -21,6 +21,7 @@ package org.waarp.openr66.protocol.localhandler;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
+import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -278,6 +279,7 @@ public class RetrieveRunner extends Thread {
    *
    * @param block
    * @param localChannelReference
+   * @param digestGlobal
    *
    * @return the ChannelFuture on the write operation
    *
@@ -286,10 +288,12 @@ public class RetrieveRunner extends Thread {
    * @throws OpenR66ProtocolSystemException
    */
   public static ChannelFuture writeWhenPossible(DataBlock block,
-                                                LocalChannelReference localChannelReference)
+                                                LocalChannelReference localChannelReference,
+                                                FilesystemBasedDigest digestGlobal)
       throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
              OpenR66ProtocolSystemException {
-    return ChannelUtils.writeBackDataBlock(localChannelReference, block);
+    return ChannelUtils
+        .writeBackDataBlock(localChannelReference, digestGlobal, block);
   }
 
   /**

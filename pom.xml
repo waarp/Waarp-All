@@ -190,6 +190,8 @@
     <module.project>false</module.project>
     <reuseThreadTest>false</reuseThreadTest>
     <java.version>1.6</java.version>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <attach-distribution>false</attach-distribution>
@@ -234,7 +236,7 @@
 
     <!-- Dependencies versions -->
     <netty.version>4.1.50.Final</netty.version>
-    <netty-tcnative.version>2.0.30.Final</netty-tcnative.version>
+    <netty-tcnative.version>2.0.31.Final</netty-tcnative.version>
     <waarp-shaded.version>1.0.1</waarp-shaded.version><!-- Netty HTTP and
     Selenuum -->
     <netty.http.version>1.3.1</netty.http.version><!--Java6 shaded version -->
@@ -243,7 +245,8 @@
     <guava.version>20.0</guava.version><!--Java6 version -->
     <commons.compress.version>1.20</commons.compress.version>
     <commons.daemon.version>1.2.2</commons.daemon.version>
-    <commons.io.version>2.7</commons.io.version>
+    <commons.io.version>2.6</commons.io.version> <!-- 2.6 last version 1.6
+    JVM -->
     <commons.dbcp.version>1.4</commons.dbcp.version>
     <commons.pool.version>2.4.3</commons.pool.version>
     <commons.pool1.version>1.6</commons.pool1.version>
@@ -262,6 +265,7 @@
     <jackson-databind.version>2.7.9.6</jackson-databind.version><!--Java6 version -->
     <jaxen.version>1.2.0</jaxen.version>
     <dom4j.version>2.0.3</dom4j.version>
+    <xerces.version>2.12.1</xerces.version>
     <javasysmon.version>0.3.6</javasysmon.version>
     <gson.version>2.8.6</gson.version>
     <resteasy.jaxrs.version>3.12.1.Final</resteasy.jaxrs.version>
@@ -270,8 +274,8 @@
     <resteasyold.client.version>3.6.3.SP1</resteasyold.client.version>
     <javax.ws.rs.version>2.0.1</javax.ws.rs.version><!--Java6 version -->
     <jetty.version>9.4.30.v20200611</jetty.version>
-    <snmp4j.version>2.8.3</snmp4j.version><!-- 2.6.3 -->
-    <snmp4j-agent.version>2.7.3</snmp4j-agent.version><!-- 2.6.3 -->
+    <snmp4j.version>2.6.3</snmp4j.version><!-- 2.6.3 -->
+    <snmp4j-agent.version>2.6.3</snmp4j-agent.version><!-- 2.6.3 -->
     <libthrift.version>0.9.3-1</libthrift.version><!--Java6 version -->
     <httpclient.version>4.5.12</httpclient.version>
     <httpcore.version>4.4.13</httpcore.version>
@@ -279,12 +283,12 @@
     version, 3.1.0 Java7     -->
     <ftp4j.version>1.7.2</ftp4j.version>
     <joda-time.version>2.10.6</joda-time.version>
-    <jersey-common.version>2.31</jersey-common.version>
+    <jersey-common.version>2.25.1</jersey-common.version>
     <bytebuddy.version>1.10.12</bytebuddy.version>
     <jna.version>5.5.0</jna.version>
     <jnr-posix-version>3.0.57</jnr-posix-version>
     <junit.version>4.13</junit.version>
-    <javaassist.version>3.27.0-GA</javaassist.version>
+    <javaassist.version>3.25.0-GA</javaassist.version>
     <assertj.version>3.16.1</assertj.version>
     <easymock.version>4.2</easymock.version>
     <rest-assured.version>3.3.0</rest-assured.version>
@@ -798,6 +802,18 @@
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>${maven-enforcer-plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.3</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>animal-sniffer-enforcer-rule</artifactId>
+            <version>1.18</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>enforce-tools</id>
@@ -807,10 +823,10 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <!-- Enforce java 1.8 as minimum for compiling -->
+                  <!-- Enforce java 1.6 as minimum for compiling -->
                   <!-- This is needed because of java.util.zip.Deflater and NIO UDP multicast-->
                   <!-- And for testing -->
-                  <version>[1.6,)</version>
+                  <version>1.6</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>[3.3.9,)</version>
@@ -829,6 +845,25 @@
             <goals>
               <goal>enforce</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.7</maxJdkVersion>
+                  <excludes>
+                    <exclude>org.mariadb.jdbc:mariadb-java-client</exclude>
+                    <exclude>mysql:mysql-connector-java</exclude>
+                  </excludes>
+                  <ignoredScopes>test</ignoredScopes>
+                </enforceBytecodeVersion>
+              </rules>
+              <fail>true</fail>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -2358,6 +2393,11 @@
             <groupId>maven-plugins</groupId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.exist-db.thirdparty.xerces</groupId>
+        <artifactId>xercesImpl</artifactId>
+        <version>${xerces.version}</version>
       </dependency>
       <dependency>
         <groupId>javasysmon</groupId>
