@@ -23,7 +23,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.dom4j.tree.DefaultElement;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -71,7 +70,7 @@ public class AuthenticationFileBasedConfiguration {
                                            String filename) {
     Document document;
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger
           .error("Unable to read the XML Authentication file: " + filename, e);

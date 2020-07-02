@@ -34,6 +34,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
 import org.waarp.openr66.client.TransferArgsTest;
@@ -63,6 +64,7 @@ import org.waarp.openr66.protocol.http.restv2.dbhandlers.RequiredRole;
 import org.waarp.openr66.protocol.junit.NetworkClientTest.RestHandlerHookForTest;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -85,9 +87,11 @@ public class RestNoAuthentTest extends TestAbstract {
       "Linux/config/config-serverInitA.xml";
 
   private static final int WAIT = 300;
+  private static PrintStream err = System.err;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    System.setErr(new NullPrintStream());
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
@@ -106,6 +110,7 @@ public class RestNoAuthentTest extends TestAbstract {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     Thread.sleep(100);
+    System.setErr(err);
     finalizeDriver();
     // Shutdown server
     logger.warn("Shutdown Server");

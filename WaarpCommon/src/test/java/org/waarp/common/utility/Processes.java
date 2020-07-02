@@ -306,12 +306,34 @@ public final class Processes {
       final List<String> vmArguments =
           ManagementFactory.getRuntimeMXBean().getInputArguments();
       final StringBuilder vmArgsOneLine = new StringBuilder();
+      boolean xms = false;
+      boolean xmx = false;
       for (final String arg : vmArguments) {
         // if it's the agent argument : we ignore it otherwise the
         // address of the old application and the new one will be in conflict
         if (!arg.contains("-agentlib")) {
           vmArgsOneLine.append(arg).append(' ');
         }
+        if (arg.contains("-Xms")) {
+          xms = true;
+        }
+        if (arg.contains("-Xmx")) {
+          xmx = true;
+        }
+      }
+      if (jvmArgsDefault != null) {
+        if (jvmArgsDefault.contains("-Xms")) {
+          xms = true;
+        }
+        if (jvmArgsDefault.contains("-Xmx")) {
+          xmx = true;
+        }
+      }
+      if (!xms) {
+        vmArgsOneLine.append("-Xms1024m ");
+      }
+      if (!xmx) {
+        vmArgsOneLine.append("-Xmx1024m ");
       }
       if (jvmArgsDefault != null) {
         vmArgsOneLine.append(' ').append(jvmArgsDefault).append(' ');
@@ -366,9 +388,13 @@ public final class Processes {
       // add some vm args
       final Argument jvmArgs = javaTask.createJvmarg();
       if (jvmArgsDefault != null) {
-        jvmArgs.setLine("-Xms512m -Xmx1024m " + jvmArgsDefault);
+        if (jvmArgsDefault.contains("-Xmx")) {
+          jvmArgs.setLine(jvmArgsDefault);
+        } else {
+          jvmArgs.setLine("-Xms1024m -Xmx1024m " + jvmArgsDefault);
+        }
       } else {
-        jvmArgs.setLine("-Xms512m -Xmx1024m");
+        jvmArgs.setLine("-Xms1024m -Xmx1024m ");
       }
 
       // added some args for to class to launch

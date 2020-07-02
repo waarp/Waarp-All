@@ -99,9 +99,9 @@ Balise            Type    Obl. Défaut     Signification
 ================= ======= ==== ========== =============
 serverthread      Integer N    8          Nombre de threads utilisés par les serveur Waarp R66 (valeur recommandée: nombre de cœurs du processeur)
 clientthread      Integer N    80         Nombre de threads utilisés par le client Waarp R66 (valeur recommandée: serverthread*10)
-memorylimit       Integer N    4000000000 Quantité maximale de mémoire utilisée par le processus Java du serveur Waarp R66 (en octets)
-sessionlimit      Integer N    8388608    Bande passante maximale utilisée pour une session (en octets)
-globallimit       Integer N    67108864   Bande passante globale maximale utilisée (en octets)
+memorylimit       Integer N    1000000000 Quantité maximale de mémoire utilisée pour les services Web et REST (en octets)
+sessionlimit      Integer N    1GB        Bande passante maximale utilisée pour une session (en octets)
+globallimit       Integer N    100GB      Bande passante globale maximale utilisée (en octets)
 delaylimit        Integer N    10000      Délais entre deux vérifications de bande passante. Plus cette valeur est faible, plus le contrôle de la bande passante sera précis. Attention toutefois à ne pas donner de valeur trop faible (en ms)
 runlimit          Integer N    10000      Nombre maximal de transferts actifs simultanés
 delaycommand      Integer N    5000       Délais entre deux exécutions du Commander (en ms)
@@ -191,6 +191,59 @@ Exemple complet
      <limit>
          <serverthread>8</serverthread>
          <clientthread>80</clientthread>
+         <usefastmd5>False</usefastmd5>
+         <timeoutcon>10000</timeoutcon>
+         <delayretry>10000</delayretry>
+     </limit>
+     <db>
+           <dbdriver>postgresql</dbdriver>
+           <dbserver>jdbc:postgresql://localhost:5432/waarp_r66</dbserver>
+           <dbuser>username</dbuser>
+           <dbpasswd>password</dbpasswd>
+           <autoUpgrade>false</autoUpgrade>
+     </db>
+   </config>
+
+
+Exemple complet minimaliste pour empreinte mémoire minimale
+-----------------------------------------------------------
+
+Launching the client using the option ``-Xmx128m`` on command line option, in addition
+to the following example configuration file for the client only.
+
+.. code-block:: xml
+
+   <?xml version="1.0" encoding="UTF-8"?>
+   <config xmlns:x0="http://www.w3.org/2001/XMLSchema">
+     <comment>Client configuration template</comment>
+     <identity>
+        <hostid>monserveur</hostid>
+        <sslhostid>monserveur-ssl</sslhostid>
+        <cryptokey>/etc/waarp/cryptokey.des</cryptokey>
+        <usenossl>True</usenossl> <!-- Might be False if not needed -->
+        <usessl>True</usessl> <!-- Might be False if not needed -->
+     </identity>
+     <client/>
+     <ssl>
+        <keypath>/etc/waarp/key.jks</keypath>
+        <keystorepass>password</keystorepass>
+        <keypass>password</keypass>
+        <trustkeypath>/etc/waarp/trustkey.jks</trustkeypath>
+        <trustkeystorepass>password</trustkeystorepass>
+        <trustuseclientauthenticate>True</trustuseclientauthenticate>
+     </ssl>
+     <directory>
+           <serverhome>/var/lib/waarp</serverhome>
+           <in>in</in>
+           <out>out</out>
+           <arch>arch</arch>
+           <work>work</work>
+           <conf>conf</conf>
+     </directory>
+     <limit>
+         <serverthread>1</serverthread>
+         <clientthread>1</clientthread>
+         <runlimit>1</runlimit>
          <usefastmd5>False</usefastmd5>
          <timeoutcon>10000</timeoutcon>
          <delayretry>10000</delayretry>

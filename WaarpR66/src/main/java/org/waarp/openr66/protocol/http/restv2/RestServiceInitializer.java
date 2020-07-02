@@ -23,6 +23,7 @@ package org.waarp.openr66.protocol.http.restv2;
 import io.cdap.http.ChannelPipelineModifier;
 import io.cdap.http.NettyHttpService;
 import io.cdap.http.SSLConfig;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.cors.CorsConfig;
@@ -32,6 +33,7 @@ import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.AbstractRestDbHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostConfigHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostIdHandler;
@@ -165,6 +167,11 @@ public final class RestServiceInitializer {
     final NettyHttpService.Builder restServiceBuilder =
         NettyHttpService.builder("R66_RESTv2").setPort(config.getRestPort())
                         .setHost(config.getRestAddress())
+                        .setExecThreadPoolSize(20).setHttpChunkLimit(
+            Configuration.configuration.getMaxGlobalMemory())
+                        .setChannelConfig(ChannelOption.SO_REUSEADDR, true)
+                        .setChildChannelConfig(ChannelOption.TCP_NODELAY, false)
+                        .setChildChannelConfig(ChannelOption.SO_REUSEADDR, true)
                         .setHttpHandlers(handlers).setHandlerHooks(Collections
                                                                        .singleton(
                                                                            new RestHandlerHook(
@@ -183,7 +190,8 @@ public final class RestServiceInitializer {
                                   ChannelPipeline channelPipeline) {
                                 channelPipeline.addBefore(ROUTER, "aggregator",
                                                           new HttpObjectAggregator(
-                                                              Integer.MAX_VALUE));
+                                                              Configuration.configuration
+                                                                  .getMaxGlobalMemory()));
                                 channelPipeline.addBefore(ROUTER,
                                                           RestVersionHandler.HANDLER_NAME,
                                                           new RestVersionHandler(

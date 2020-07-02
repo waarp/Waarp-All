@@ -22,7 +22,6 @@ package org.waarp.openr66.configuration;
 import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.cpu.WaarpConstraintLimitHandler;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
@@ -752,10 +751,6 @@ public class FileBasedConfiguration {
       logger.info("SessionInterface Limit: {}",
                   config.getServerChannelReadLimit());
     }
-    config.setAnyBandwidthLimitation(config.getServerGlobalReadLimit() > 0 ||
-                                     config.getServerGlobalWriteLimit() > 0 ||
-                                     config.getServerChannelReadLimit() > 0 ||
-                                     config.getServerChannelWriteLimit() > 0);
     config.setDelayLimit(AbstractTrafficShapingHandler.DEFAULT_CHECK_INTERVAL);
     value = hashConfig.get(XML_LIMITDELAY);
     if (value != null && !value.isEmpty()) {
@@ -885,7 +880,11 @@ public class FileBasedConfiguration {
     }
     value = hashConfig.get(XML_MEMORY_LIMIT);
     if (value != null && !value.isEmpty()) {
-      config.setMaxGlobalMemory(value.getLong());
+      long lvalue = value.getLong();
+      if (lvalue > Integer.MAX_VALUE) {
+        lvalue = Integer.MAX_VALUE;
+      }
+      config.setMaxGlobalMemory((int) lvalue);
     }
     Configuration.getFileParameter().deleteOnAbort = false;
     value = hashConfig.get(XML_USENIO);
@@ -1660,7 +1659,7 @@ public class FileBasedConfiguration {
     alreadySetLimit = false;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
@@ -1707,7 +1706,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
@@ -1779,7 +1778,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
@@ -1863,7 +1862,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
@@ -1946,7 +1945,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
@@ -2054,7 +2053,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
@@ -2159,7 +2158,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +

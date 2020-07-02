@@ -26,7 +26,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -356,7 +355,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     final StringReader reader = new StringReader(input);
     // Open config file
     try {
-      document = new SAXReader().read(reader);
+      document = XmlUtil.getNewSaxReader().read(reader);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString("FileBasedConfiguration.CannotReadXml") + input,
@@ -718,7 +717,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       if (source != null && !source.isEmpty()) {
         try {
           reader = new StringReader(source);
-          document = new SAXReader().read(reader);
+          document = XmlUtil.getNewSaxReader().read(reader);
         } catch (final DocumentException e) {
           logger.error(
               "Unable to read the XML Config " + path + " string: " + source,
@@ -915,7 +914,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       if (source != null && !source.isEmpty()) {
         try {
           reader = new StringReader(source);
-          document = new SAXReader().read(reader);
+          document = XmlUtil.getNewSaxReader().read(reader);
         } catch (final DocumentException e) {
           logger.error(
               "Unable to read the XML Config " + path + " string: " + source,

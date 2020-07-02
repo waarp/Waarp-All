@@ -32,7 +32,6 @@ import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
@@ -988,7 +987,11 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
     value = hashConfig.get(XML_MEMORY_LIMIT);
     if (value != null && !value.isEmpty()) {
-      setMaxGlobalMemory(value.getLong());
+      long lvalue = value.getLong();
+      if (lvalue > Integer.MAX_VALUE) {
+        lvalue = Integer.MAX_VALUE;
+      }
+      setMaxGlobalMemory((int) lvalue);
     }
     ((FilesystemBasedFileParameterImpl) getFileParameter()).deleteOnAbort =
         false;
@@ -1275,7 +1278,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error("Unable to read the XML Config file: " + filename, e);
       return false;
@@ -1449,7 +1452,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     logger.debug("Load authent");
     Document document;
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger
           .error("Unable to read the XML Authentication file: " + filename, e);

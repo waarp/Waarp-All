@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 /**
  * Pipeline Factory for HTTP support
@@ -41,7 +42,8 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
   protected void initChannel(SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast("decoder", new HttpServerCodec());
-    pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
+    pipeline.addLast("aggregator", new HttpObjectAggregator(
+        Configuration.configuration.getMaxGlobalMemory()));
     pipeline.addLast("streamer", new ChunkedWriteHandler());
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());

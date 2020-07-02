@@ -144,9 +144,9 @@ Balise            Type    Obl. Défaut     Signification
 ================= ======= ==== ========== =============
 serverthread      Integer N    8          Nombre de threads utilisés par les serveur Waarp R66 (valeur recommandée: nombre de cœurs du processeur)
 clientthread      Integer N    80         Nombre de threads utilisés par le client Waarp R66 (valeur recommandée: serverthread*10)
-memorylimit       Integer N    4000000000 Quantité maximale de mémoire utilisée par le processus Java du serveur Waarp R66 (en octets)
-sessionlimit      Integer N    8388608    Bande passante maximale utilisée pour une session (en octets)
-globallimit       Integer N    67108864   Bande passante globale maximale utilisée (en octets)
+memorylimit       Integer N    1000000000 Quantité maximale de mémoire utilisée pour les services Web et REST (en octets)
+sessionlimit      Integer N    1GB        Bande passante maximale utilisée pour une session (en octets)
+globallimit       Integer N    100GB      Bande passante globale maximale utilisée (en octets)
 delaylimit        Integer N    10000      Délais entre deux vérifications de bande passante. Plus cette valeur est faible, plus le contrôle de la bande passante sera précis. Attention toutefois à ne pas donner de valeur trop faible (en ms)
 runlimit          Integer N    10000      Nombre maximal de transferts actifs simultanés
 delaycommand      Integer N    5000       Délais entre deux exécutions du Commander (en ms)
@@ -363,8 +363,8 @@ Exemple complet
        <server>
            <serveradmin>admin</serveradmin>
            <serverpasswd>5a4b7c6a66065cbb622acefec8c3a302</serverpasswd>
-           <usenossl>True</usenossl>
-           <usessl>True</usessl>
+           <usenossl>True</usenossl> <!-- Might be False if not needed -->
+           <usessl>True</usessl> <!-- Might be False if not needed -->
            <usehttpcomp>False</usehttpcomp>
            <uselocalexec>False</uselocalexec>
            <httpadmin>/etc/waarp/admin</httpadmin>
@@ -376,6 +376,7 @@ Exemple complet
            <pastlimit>86400000</pastlimit>
            <minimaldelay>5000</minimaldelay>
            <multiplemonitors>1</multiplemonitors>
+           <!-- Might be removed if not needed -->
            <snmpconfig>/etc/waarp/snmpconfig.xml</snmpconfig>
        </server>
        <network>
@@ -430,11 +431,17 @@ Exemple complet
            </restmethod>
        </rest>
        <limit>
+           <!-- Might be changed to number of cores -->
            <serverthread>8</serverthread>
+           <!-- Might be changed to number of cores x 10 -->
            <clientthread>80</clientthread>
            <usefastmd5>False</usefastmd5>
            <timeoutcon>10000</timeoutcon>
            <delayretry>10000</delayretry>
+           <!-- Might be changed to 100000 -->
+           <memorylimit>1000000</memorylimit>
+           <!-- Might be changed to 100 to 1000 according to activity -->
+           <runlimit>1000</runlimit>
        </limit>
        <db>
            <dbdriver>postgresql</dbdriver>

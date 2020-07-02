@@ -23,7 +23,6 @@ import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.FileParameterInterface;
@@ -31,6 +30,7 @@ import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
 import org.waarp.common.file.filesystembased.specific.FilesystemBasedDirJdkAbstract;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.xml.XmlUtil;
 import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.control.BusinessHandler;
 import org.waarp.ftp.core.data.handler.DataBusinessHandler;
@@ -195,7 +195,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error("Unable to read the XML Config file: " + filename, e);
       return false;
@@ -319,7 +319,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     final String fileauthent = node.getText();
     document = null;
     try {
-      document = new SAXReader().read(fileauthent);
+      document = XmlUtil.getNewSaxReader().read(fileauthent);
     } catch (final DocumentException e) {
       logger.error("Unable to read the XML Authentication file: " + fileauthent,
                    e);

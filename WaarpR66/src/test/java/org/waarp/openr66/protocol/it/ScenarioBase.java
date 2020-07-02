@@ -109,6 +109,7 @@ public abstract class ScenarioBase extends TestAbstract {
     createBaseR66Directory(r3, "/tmp/R66/scenario_1_2_3/R3");
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(100);
+    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
     }
@@ -298,6 +299,17 @@ public abstract class ScenarioBase extends TestAbstract {
     tearDownAfterClassClient();
     tearDownAfterClassMinimal();
     tearDownAfterClassServer();
+  }
+
+  private void checkBigIt() {
+    Assume.assumeTrue("If the Long term tests are allowed",
+                      SystemPropertyUtil.get(IT_LONG_TEST, false));
+    Runtime runtime = Runtime.getRuntime();
+    boolean isMemory1GB = runtime.totalMemory() <= 1024 * 1024 * 1024;
+    if (isMemory1GB) {
+      logger.warn("If the Long term tests are allowed, memory must be " +
+                  "greater than 1G: {}", runtime.totalMemory());
+    }
   }
 
   @Test
@@ -496,8 +508,7 @@ public abstract class ScenarioBase extends TestAbstract {
   @Test
   public void test04_5000_MultipleSends()
       throws IOException, InterruptedException {
-    Assume.assumeTrue("If the Long term tests are allowed",
-                      SystemPropertyUtil.get(IT_LONG_TEST, false));
+    checkBigIt();
     int lastNumber = NUMBER_FILES;
     NUMBER_FILES = 5000;
     test010_MultipleSends();
@@ -520,8 +531,7 @@ public abstract class ScenarioBase extends TestAbstract {
   @Test
   public void test04_5000_MultipleSends_ChangingBlockSize()
       throws IOException, InterruptedException {
-    Assume.assumeTrue("If the Long term tests are allowed",
-                      SystemPropertyUtil.get(IT_LONG_TEST, false));
+    checkBigIt();
     int lastNumber = NUMBER_FILES;
     NUMBER_FILES = 800;
     BLOCK_SIZE = 16 * 1024;

@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 
 import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
@@ -49,7 +50,8 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
     pipeline.addLast("ssl", sslhandler);
 
     pipeline.addLast("decoder", new HttpServerCodec());
-    pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
+    pipeline.addLast("aggregator", new HttpObjectAggregator(
+        ConfigurationProxyR66.configuration.getMaxGlobalMemory()));
     pipeline.addLast("streamer", new ChunkedWriteHandler());
     if (useHttpCompression) {
       pipeline.addLast("deflater", new HttpContentCompressor());

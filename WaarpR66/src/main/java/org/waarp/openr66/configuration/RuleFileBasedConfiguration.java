@@ -23,7 +23,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.dom4j.tree.DefaultElement;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -277,7 +276,7 @@ public final class RuleFileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(file);
+      document = XmlUtil.getNewSaxReader().read(file);
     } catch (final DocumentException e) {
       logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);
       throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,
@@ -314,7 +313,7 @@ public final class RuleFileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(file);
+      document = XmlUtil.getNewSaxReader().read(file);
     } catch (final DocumentException e) {
       logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);
       throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,

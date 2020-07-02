@@ -29,6 +29,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -54,6 +55,34 @@ public final class XmlUtil {
   private static final String NODE_NOT_FOUND = "Node not found: ";
 
   private XmlUtil() {
+  }
+
+  /**
+   * @return the newly created SAXReader
+   */
+  public static SAXReader getNewSaxReader() {
+    SAXReader saxReader = new SAXReader();
+    try {
+      saxReader.setFeature(
+          "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
+          false);
+      saxReader.setFeature(
+          "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+          false);
+      saxReader
+          .setFeature("http://xml.org/sax/features/resolve-dtd-uris", false);
+      saxReader
+          .setFeature("http://xml.org/sax/features/external-general-entities",
+                      false);
+      saxReader
+          .setFeature("http://xml.org/sax/features/external-parameter-entities",
+                      false);
+      saxReader.setFeature(
+          "http://apache.org/xml/features/validation/id-idref-checking", false);
+    } catch (SAXException e) {
+      //Parse with external resources downloading allowed.
+    }
+    return saxReader;
   }
 
   /**
@@ -86,7 +115,7 @@ public final class XmlUtil {
     if (!file.canRead()) {
       throw new IOException("File is not readable: " + file.getPath());
     }
-    final SAXReader reader = new SAXReader();
+    final SAXReader reader = getNewSaxReader();
     return reader.read(file);
   }
 

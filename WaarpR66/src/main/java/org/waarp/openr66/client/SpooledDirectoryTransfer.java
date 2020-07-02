@@ -21,7 +21,6 @@ package org.waarp.openr66.client;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.filemonitor.FileMonitor;
 import org.waarp.common.filemonitor.FileMonitor.FileItem;
@@ -953,7 +952,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString("FileBasedConfiguration.CannotReadXml") + filename,

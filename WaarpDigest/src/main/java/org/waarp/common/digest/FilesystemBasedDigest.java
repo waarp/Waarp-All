@@ -91,7 +91,7 @@ public class FilesystemBasedDigest {
    *
    * @throws NoSuchAlgorithmException
    */
-  public FilesystemBasedDigest(DigestAlgo algo)
+  public FilesystemBasedDigest(final DigestAlgo algo)
       throws NoSuchAlgorithmException {
     initialize(algo);
   }
@@ -140,9 +140,14 @@ public class FilesystemBasedDigest {
    *
    * @throws NoSuchAlgorithmException
    */
-  public void initialize(DigestAlgo algo) throws NoSuchAlgorithmException {
+  public void initialize(final DigestAlgo algo)
+      throws NoSuchAlgorithmException {
     this.algo = algo;
     initialize();
+  }
+
+  public DigestAlgo getAlgo() {
+    return algo;
   }
 
   /**
@@ -152,7 +157,7 @@ public class FilesystemBasedDigest {
    * @param offset
    * @param length
    */
-  public void Update(byte[] bytes, int offset, int length) {
+  public void Update(final byte[] bytes, final int offset, final int length) {
     if (md5 != null) {
       md5.Update(bytes, offset, length);
       return;
@@ -174,23 +179,35 @@ public class FilesystemBasedDigest {
 
   private byte[] reusableBytes;
 
-  /**
-   * Update the digest with new buffer
-   */
-  public void Update(ByteBuf buffer) {
+  public final byte[] getBytes(final ByteBuf buffer) {
     byte[] bytes;
-    int start = 0;
     final int length = buffer.readableBytes();
     if (buffer.hasArray()) {
-      start = buffer.arrayOffset();
       bytes = buffer.array();
     } else {
-      if (reusableBytes == null || reusableBytes.length != length) {
+      if (reusableBytes == null || reusableBytes.length < length) {
         reusableBytes = new byte[length];
       }
       bytes = reusableBytes;
-      buffer.getBytes(buffer.readerIndex(), bytes);
+      buffer.getBytes(buffer.readerIndex(), bytes, 0, length);
     }
+    return bytes;
+  }
+
+  public final int getOffset(final ByteBuf buffer) {
+    if (buffer.hasArray()) {
+      return buffer.arrayOffset();
+    }
+    return 0;
+  }
+
+  /**
+   * Update the digest with new buffer
+   */
+  public void Update(final ByteBuf buffer) {
+    byte[] bytes = getBytes(buffer);
+    int start = getOffset(buffer);
+    final int length = buffer.readableBytes();
     Update(bytes, start, length);
   }
 
@@ -225,7 +242,7 @@ public class FilesystemBasedDigest {
    *
    * @return True if the native library is loaded
    */
-  public static boolean initializeMd5(boolean mustUseFastMd5) {
+  public static boolean initializeMd5(final boolean mustUseFastMd5) {
     setUseFastMd5(mustUseFastMd5);
     return true;
   }
@@ -240,7 +257,7 @@ public class FilesystemBasedDigest {
   /**
    * @param useFastMd5 the useFastMd5 to set
    */
-  public static void setUseFastMd5(boolean useFastMd5) {
+  public static void setUseFastMd5(final boolean useFastMd5) {
     FilesystemBasedDigest.useFastMd5 = useFastMd5;
   }
 
@@ -269,12 +286,12 @@ public class FilesystemBasedDigest {
       return byteSize * 2;
     }
 
-    DigestAlgo(String algoName, int byteSize) {
+    DigestAlgo(final String algoName, final int byteSize) {
       this.algoName = algoName;
       this.byteSize = byteSize;
     }
 
-    public static DigestAlgo getFromName(String name) {
+    public static DigestAlgo getFromName(final String name) {
       try {
         return valueOf(name);
       } catch (IllegalArgumentException ignore) {//NOSONAR
@@ -313,7 +330,8 @@ public class FilesystemBasedDigest {
    *
    * @return True if the two digest are equals
    */
-  public static final boolean digestEquals(byte[] dig1, byte[] dig2) {
+  public static final boolean digestEquals(final byte[] dig1,
+                                           final byte[] dig2) {
     return MessageDigest.isEqual(dig1, dig2);
   }
 
@@ -323,7 +341,8 @@ public class FilesystemBasedDigest {
    *
    * @return True if the two digest are equals
    */
-  public static final boolean digestEquals(String dig1, byte[] dig2) {
+  public static final boolean digestEquals(final String dig1,
+                                           final byte[] dig2) {
     final byte[] bdig1 = getFromHex(dig1);
     return MessageDigest.isEqual(bdig1, dig2);
   }
@@ -338,7 +357,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static byte[] getHashMd5Nio(File f) throws IOException {
+  public static byte[] getHashMd5Nio(final File f) throws IOException {
     if (isUseFastMd5()) {
       return MD5.getHashNio(f);
     }
@@ -355,7 +374,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static byte[] getHashMd5(File f) throws IOException {
+  public static byte[] getHashMd5(final File f) throws IOException {
     if (isUseFastMd5()) {
       return MD5.getHash(f);
     }
@@ -372,7 +391,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static byte[] getHashSha1Nio(File f) throws IOException {
+  public static byte[] getHashSha1Nio(final File f) throws IOException {
     return getHash(f, true, DigestAlgo.SHA1);
   }
 
@@ -387,7 +406,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static byte[] getHashSha1(File f) throws IOException {
+  public static byte[] getHashSha1(final File f) throws IOException {
     return getHash(f, false, DigestAlgo.SHA1);
   }
 
@@ -402,8 +421,9 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  private static byte[] getHashNoNio(InputStream in, DigestAlgo algo,
-                                     byte[] buf) throws IOException {
+  private static byte[] getHashNoNio(final InputStream in,
+                                     final DigestAlgo algo, final byte[] buf)
+      throws IOException {
     // Not NIO
     Checksum checksum = null;
     int size;
@@ -411,11 +431,9 @@ public class FilesystemBasedDigest {
       switch (algo) {
         case ADLER32:
           checksum = new Adler32();
-          buf = getBytesCrc(in, buf, checksum);
-          break;
+          return getBytesCrc(in, buf, checksum);
         case CRC32:
-          buf = getBytesCrc(in, buf, checksum);
-          break;
+          return getBytesCrc(in, buf, checksum);
         case MD5:
         case MD2:
         case SHA1:
@@ -433,8 +451,7 @@ public class FilesystemBasedDigest {
           while ((size = in.read(buf)) >= 0) {
             digest.update(buf, 0, size);
           }
-          buf = digest.digest();
-          break;
+          return digest.digest();
         default:
           throw new IOException(
               algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
@@ -442,10 +459,9 @@ public class FilesystemBasedDigest {
     } finally {
       in.close();
     }
-    return buf;
   }
 
-  private static byte[] getBytesCrc(final InputStream in, byte[] buf,
+  private static byte[] getBytesCrc(final InputStream in, final byte[] buf,
                                     Checksum checksum) throws IOException {
     int size;
     if (checksum == null) { // not ADLER32
@@ -454,8 +470,7 @@ public class FilesystemBasedDigest {
     while ((size = in.read(buf)) >= 0) {
       checksum.update(buf, 0, size);
     }
-    buf = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
-    return buf;
+    return Long.toOctalString(checksum.getValue()).getBytes(UTF8);
   }
 
   /**
@@ -471,8 +486,8 @@ public class FilesystemBasedDigest {
    * @throws IOException
    */
   @SuppressWarnings("resource")
-  public static byte[] getHash(File f, boolean nio, DigestAlgo algo)
-      throws IOException {
+  public static byte[] getHash(final File f, final boolean nio,
+                               final DigestAlgo algo) throws IOException {
     if (!f.exists()) {
       throw new FileNotFoundException(f.toString());
     }
@@ -536,8 +551,7 @@ public class FilesystemBasedDigest {
           fileChannel.close();
         }
       } else { // Not NIO
-        buf = getHashNoNio(in, algo, buf);
-        return buf;
+        return getHashNoNio(in, algo, buf);
       }
       return buf;
     } finally {
@@ -551,7 +565,7 @@ public class FilesystemBasedDigest {
     }
   }
 
-  private static byte[] getBytesCrcFileChannel(byte[] buf,
+  private static byte[] getBytesCrcFileChannel(final byte[] buf,
                                                final FileChannel fileChannel,
                                                final ByteBuffer bb,
                                                Checksum checksum)
@@ -564,8 +578,7 @@ public class FilesystemBasedDigest {
       checksum.update(buf, 0, size);
       bb.clear();
     }
-    buf = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
-    return buf;
+    return Long.toOctalString(checksum.getValue()).getBytes(UTF8);
   }
 
   /**
@@ -579,7 +592,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static byte[] getHash(InputStream stream, DigestAlgo algo)
+  public static byte[] getHash(final InputStream stream, final DigestAlgo algo)
       throws IOException {
     if (stream == null) {
       throw new FileNotFoundException();
@@ -588,11 +601,10 @@ public class FilesystemBasedDigest {
       return MD5.getHash(stream);
     }
     try {
-      final long buf_size = 65536;
-      byte[] buf = new byte[(int) buf_size];
+      final int buf_size = 65536;
+      byte[] buf = new byte[buf_size];
       // Not NIO
-      buf = getHashNoNio(stream, algo, buf);
-      return buf;
+      return getHashNoNio(stream, algo, buf);
     } catch (final IOException e) {
       try {
         stream.close();
@@ -613,7 +625,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static byte[] getHash(ByteBuf buffer, DigestAlgo algo)
+  public static byte[] getHash(final ByteBuf buffer, final DigestAlgo algo)
       throws IOException {
     Checksum checksum = null;
     byte[] bytes;
@@ -652,9 +664,9 @@ public class FilesystemBasedDigest {
     }
   }
 
-  private static byte[] getBytesVarious(final DigestAlgo algo, byte[] bytes,
-                                        final int start, final int length)
-      throws IOException {
+  private static byte[] getBytesVarious(final DigestAlgo algo,
+                                        final byte[] bytes, final int start,
+                                        final int length) throws IOException {
     final String algoname = algo.algoName;
     MessageDigest digest;
     try {
@@ -663,18 +675,17 @@ public class FilesystemBasedDigest {
       throw new IOException(algoname + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);
     }
     digest.update(bytes, start, length);
-    bytes = digest.digest();
-    return bytes;
+    return digest.digest();
   }
 
-  private static byte[] getBytesCrcByteBuf(Checksum checksum, byte[] bytes,
-                                           final int start, final int length) {
+  private static byte[] getBytesCrcByteBuf(Checksum checksum,
+                                           final byte[] bytes, final int start,
+                                           final int length) {
     if (checksum == null) { // not ADLER32
       checksum = new CRC32();
     }
     checksum.update(bytes, start, length);
-    bytes = Long.toOctalString(checksum.getValue()).getBytes(UTF8);
-    return bytes;
+    return Long.toOctalString(checksum.getValue()).getBytes(UTF8);
   }
 
   /**
@@ -686,14 +697,13 @@ public class FilesystemBasedDigest {
    *
    * @return the hash
    */
-  public static byte[] getHashMd5(ByteBuf buffer) {
+  public static byte[] getHashMd5(final ByteBuf buffer) {
     try {
       return getHash(buffer, DigestAlgo.MD5);
     } catch (final IOException e) {
       MD5 md5 = new MD5();
       md5.Update(buffer);
-      final byte[] bytes = md5.Final();
-      return bytes;
+      return md5.Final();
     }
   }
 
@@ -712,7 +722,7 @@ public class FilesystemBasedDigest {
    *
    * @return the hexadecimal representation as a String of the array of bytes
    */
-  public static final String getHex(byte[] hash) {
+  public static final String getHex(final byte[] hash) {
     final char[] buf = new char[hash.length * 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
       buf[x++] = HEX_CHARS[hash[i] >>> 4 & 0xf];
@@ -728,7 +738,7 @@ public class FilesystemBasedDigest {
    *
    * @return the array of bytes representation of the hexadecimal String
    */
-  public static final byte[] getFromHex(String hex) {
+  public static final byte[] getFromHex(final String hex) {
     final byte[] from = hex.getBytes(UTF8);
     final byte[] hash = new byte[from.length / 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
@@ -761,7 +771,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static final String passwdCrypt(String pwd) {
+  public static final String passwdCrypt(final String pwd) {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
@@ -776,8 +786,7 @@ public class FilesystemBasedDigest {
       digest.update(bpwd, 0, bpwd.length);
       digest.update(salt, 0, salt.length);
     }
-    final byte[] buf = digest.digest();
-    return getHex(buf);
+    return getHex(digest.digest());
   }
 
   /**
@@ -789,7 +798,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static final byte[] passwdCrypt(byte[] pwd) {
+  public static final byte[] passwdCrypt(final byte[] pwd) {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
@@ -803,8 +812,7 @@ public class FilesystemBasedDigest {
       digest.update(pwd, 0, pwd.length);
       digest.update(salt, 0, salt.length);
     }
-    final byte[] buf = digest.digest();
-    return buf;
+    return digest.digest();
   }
 
   /**
@@ -815,7 +823,8 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static final boolean equalPasswd(String pwd, String cryptPwd) {
+  public static final boolean equalPasswd(final String pwd,
+                                          final String cryptPwd) {
     String asHex;
     asHex = passwdCrypt(pwd);
     return cryptPwd.equals(asHex);
@@ -827,7 +836,8 @@ public class FilesystemBasedDigest {
    *
    * @return True if the pwd is comparable with the cryptPwd
    */
-  public static final boolean equalPasswd(byte[] pwd, byte[] cryptPwd) {
+  public static final boolean equalPasswd(final byte[] pwd,
+                                          final byte[] cryptPwd) {
     byte[] bytes;
     bytes = passwdCrypt(pwd);
     return Arrays.equals(cryptPwd, bytes);

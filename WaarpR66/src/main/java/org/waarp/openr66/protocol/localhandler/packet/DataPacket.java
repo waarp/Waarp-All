@@ -21,6 +21,7 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -148,7 +149,34 @@ public class DataPacket extends AbstractLocalPacket {
     if (key == null || key == Unpooled.EMPTY_BUFFER) {
       return true;
     }
-    final ByteBuf newbufkey = FileUtils.getHash(data, algo);
+    final ByteBuf newbufkey = FileUtils.getHash(data, algo, null);
+    final boolean check = key.equals(newbufkey);
+    newbufkey.release();
+    return check;
+  }
+
+  /**
+   * @return True if the Hashed key is valid (or no key is set)
+   */
+  public boolean isKeyValid(DigestAlgo algo, FilesystemBasedDigest digestGlobal,
+                            FilesystemBasedDigest digestLocal) {
+    if (key == null || key == Unpooled.EMPTY_BUFFER) {
+      if (digestGlobal != null || digestLocal != null) {
+        FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
+      }
+      return true;
+    }
+    final ByteBuf newbufkey;
+    if (digestGlobal != null && digestLocal != null) {
+      newbufkey = FileUtils.getHash(data, algo, null);
+      FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
+    } else if (digestGlobal == null && digestLocal == null) {
+      newbufkey = FileUtils.getHash(data, algo, null);
+    } else if (digestGlobal != null) {
+      newbufkey = FileUtils.getHash(data, algo, digestGlobal);
+    } else {
+      newbufkey = FileUtils.getHash(data, algo, digestLocal);
+    }
     final boolean check = key.equals(newbufkey);
     newbufkey.release();
     return check;

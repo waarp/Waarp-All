@@ -21,7 +21,6 @@ package org.waarp.openr66.proxy.configuration;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -324,7 +323,7 @@ public class FileBasedConfiguration {
     Document document;
     // Open config file
     try {
-      document = new SAXReader().read(filename);
+      document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
       logger.error("Unable to read the XML Config file: " + filename, e);
       return false;

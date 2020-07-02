@@ -35,10 +35,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
+import java.io.PrintStream;
 
 import static org.junit.Assert.*;
 
@@ -57,9 +59,12 @@ public class AdminResponsiveTest extends TestAbstract {
       "Linux/config/config-serverInitA.xml";
 
   private static final int WAIT = 300;
+  private static PrintStream err;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    err = System.err;
+    System.setErr(new NullPrintStream());
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
@@ -79,6 +84,7 @@ public class AdminResponsiveTest extends TestAbstract {
   public static void tearDownAfterClass() throws Exception {
     Thread.sleep(100);
     finalizeDriver();
+    System.setErr(err);
     // Shutdown server
     logger.warn("Shutdown Server");
     Configuration.configuration.setTimeoutCon(100);

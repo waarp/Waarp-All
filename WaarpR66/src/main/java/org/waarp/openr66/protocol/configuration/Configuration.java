@@ -263,14 +263,14 @@ public class Configuration {
   private int clientThread = 10;
 
   /**
-   * Default session limit 64Mbit, so up to 16 full simultaneous clients
+   * Default session limit 1 Gbit, so up to 100 full simultaneous clients
    */
-  private static final long DEFAULT_SESSION_LIMIT = 0x800000L;
+  private static final long DEFAULT_SESSION_LIMIT = 1073741824L;
 
   /**
-   * Default global limit 1024Mbit
+   * Default global limit 100 Gbit
    */
-  private static final long DEFAULT_GLOBAL_LIMIT = 0x8000000L;
+  private static final long DEFAULT_GLOBAL_LIMIT = 107374182400L;
 
   /**
    * Default server port
@@ -305,9 +305,10 @@ public class Configuration {
   private int blockSize = 0x10000; // 64K
 
   /**
-   * Max global memory limit: default is 4GB
+   * Max global memory limit: default is 1GB
+   * (used in Web and REST API)
    */
-  private long maxGlobalMemory = 0x100000000L;
+  private int maxGlobalMemory = 1073741824;
 
   /**
    * Rest configuration list
@@ -381,10 +382,6 @@ public class Configuration {
    */
   private long serverChannelReadLimit = getDEFAULT_SESSION_LIMIT();
 
-  /**
-   * Any limitation on bandwidth active?
-   */
-  private boolean anyBandwidthLimitation;
   /**
    * Delay in ms between two checks
    */
@@ -599,7 +596,7 @@ public class Configuration {
 
   private int timeStat;
 
-  private int limitCache = 20000;
+  private int limitCache = 5000;
 
   private long timeLimitCache = 180000;
 
@@ -912,17 +909,6 @@ public class Configuration {
     }
   }
 
-  public void setupLimitHandler() {
-    if (globalTrafficShapingHandler != null) {
-      return;
-    }
-    globalTrafficShapingHandler = new GlobalTrafficShapingHandler(subTaskGroup,
-                                                                  getServerGlobalWriteLimit(),
-                                                                  getServerGlobalReadLimit(),
-                                                                  getDelayLimit());
-    getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
-  }
-
   public void startHttpSupport() throws ServerException {
     // Now start the HTTP support
     logger.info(
@@ -1200,6 +1186,17 @@ public class Configuration {
    */
   public void launchInFixedDelay(Thread thread, long delay, TimeUnit unit) {
     scheduledExecutorService.schedule(thread, delay, unit);
+  }
+
+  public void setupLimitHandler() {
+    if (globalTrafficShapingHandler != null) {
+      return;
+    }
+    globalTrafficShapingHandler = new GlobalTrafficShapingHandler(subTaskGroup,
+                                                                  getServerGlobalWriteLimit(),
+                                                                  getServerGlobalReadLimit(),
+                                                                  getDelayLimit());
+    getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
   }
 
   /**
@@ -1812,14 +1809,14 @@ public class Configuration {
   /**
    * @return the maxGlobalMemory
    */
-  public long getMaxGlobalMemory() {
+  public int getMaxGlobalMemory() {
     return maxGlobalMemory;
   }
 
   /**
    * @param maxGlobalMemory the maxGlobalMemory to set
    */
-  public void setMaxGlobalMemory(long maxGlobalMemory) {
+  public void setMaxGlobalMemory(int maxGlobalMemory) {
     this.maxGlobalMemory = maxGlobalMemory;
   }
 
@@ -2010,20 +2007,6 @@ public class Configuration {
    */
   public void setServerChannelReadLimit(long serverChannelReadLimit) {
     this.serverChannelReadLimit = serverChannelReadLimit;
-  }
-
-  /**
-   * @return the anyBandwidthLimitation
-   */
-  public boolean isAnyBandwidthLimitation() {
-    return anyBandwidthLimitation;
-  }
-
-  /**
-   * @param anyBandwidthLimitation the anyBandwidthLimitation to set
-   */
-  public void setAnyBandwidthLimitation(boolean anyBandwidthLimitation) {
-    this.anyBandwidthLimitation = anyBandwidthLimitation;
   }
 
   /**

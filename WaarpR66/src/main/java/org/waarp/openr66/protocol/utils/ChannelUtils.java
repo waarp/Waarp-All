@@ -28,6 +28,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.database.DbAdmin;
+import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -167,6 +168,7 @@ public class ChannelUtils extends Thread {
 
   /**
    * @param localChannelReference
+   * @param digestGlobal
    * @param block
    *
    * @return the ChannelFuture of this write operation
@@ -174,13 +176,17 @@ public class ChannelUtils extends Thread {
    * @throws OpenR66ProtocolPacketException
    */
   public static ChannelFuture writeBackDataBlock(
-      LocalChannelReference localChannelReference, DataBlock block)
+      LocalChannelReference localChannelReference,
+      FilesystemBasedDigest digestGlobal, DataBlock block)
       throws OpenR66ProtocolPacketException {
     ByteBuf md5 = Unpooled.EMPTY_BUFFER;
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
     if (RequestPacket.isMD5Mode(runner.getMode())) {
       md5 = FileUtils
-          .getHash(block.getBlock(), Configuration.configuration.getDigest());
+          .getHash(block.getBlock(), Configuration.configuration.getDigest(),
+                   digestGlobal);
+    } else if (digestGlobal != null) {
+      digestGlobal.Update(block.getBlock());
     }
     if (runner.getRank() % 100 == 1 ||
         localChannelReference.getSessionState() != R66FiniteDualStates.DATAS) {

@@ -897,7 +897,26 @@ public class TransferActions extends ServerActions {
     if (RequestPacket.isMD5Mode(session.getRunner().getMode())) {
       logger.debug("AlgoDigest: " + (localChannelReference.getPartner() != null?
           localChannelReference.getPartner().getDigestAlgo() : "usual algo"));
-      if (!packet
+      if (Configuration.configuration.isGlobalDigest()) {
+        prepareGlobalDigests();
+        // Cumulate all three digests
+        if (!packet
+            .isKeyValid(localChannelReference.getPartner().getDigestAlgo(),
+                        globalDigest, localDigest)) {
+          // Wrong packet
+          logger.error(Messages.getString("LocalServerHandler.17"), packet,
+                       //$NON-NLS-1$
+                       localChannelReference.getPartner()
+                                            .getDigestAlgo().algoName);
+          errorToSend("Transfer in error due to bad Hash on data packet (" +
+                      localChannelReference.getPartner()
+                                           .getDigestAlgo().algoName + ')',
+                      ErrorCode.MD5Error, 21);
+          packet.clear();
+          return;
+        }
+        // Only Packet digest
+      } else if (!packet
           .isKeyValid(localChannelReference.getPartner().getDigestAlgo())) {
         // Wrong packet
         logger.error(Messages.getString("LocalServerHandler.17"), packet,
@@ -911,40 +930,10 @@ public class TransferActions extends ServerActions {
         packet.clear();
         return;
       }
-    }
-    if (Configuration.configuration.isGlobalDigest()) {
-      if (globalDigest == null) {
-        try {
-          // check if first block, since if not, digest will be only partial
-          if (session.getRunner().getRank() > 0) {
-            localChannelReference.setPartialHash();
-          }
-          if (localChannelReference.getPartner() != null &&
-              localChannelReference.getPartner().useFinalHash()) {
-            final DigestAlgo algo =
-                localChannelReference.getPartner().getDigestAlgo();
-            if (algo != Configuration.configuration.getDigest()) {
-              globalDigest = new FilesystemBasedDigest(algo);
-              localDigest = new FilesystemBasedDigest(
-                  Configuration.configuration.getDigest());
-            }
-          }
-          if (globalDigest == null) {
-            globalDigest = new FilesystemBasedDigest(
-                Configuration.configuration.getDigest());
-            localDigest = null;
-          }
-        } catch (final NoSuchAlgorithmException ignored) {
-          // nothing
-        }
-        logger.debug("GlobalDigest: " +
-                     localChannelReference.getPartner().getDigestAlgo() +
-                     " different? " + (localDigest != null));
-      }
-      FileUtils.computeGlobalHash(globalDigest, packet.getData());
-      if (localDigest != null) {
-        FileUtils.computeGlobalHash(localDigest, packet.getData());
-      }
+    } else if (Configuration.configuration.isGlobalDigest()) {
+      // Only Global digests
+      prepareGlobalDigests();
+      FileUtils.computeGlobalHash(globalDigest, localDigest, packet.getData());
     }
     final DataBlock dataBlock = new DataBlock();
     if (session.getRunner().isRecvThrough() &&
@@ -975,6 +964,37 @@ public class TransferActions extends ServerActions {
         dataBlock.clear();
         packet.clear();
       }
+    }
+  }
+
+  private void prepareGlobalDigests() {
+    if (globalDigest == null) {
+      try {
+        // check if first block, since if not, digest will be only partial
+        if (session.getRunner().getRank() > 0) {
+          localChannelReference.setPartialHash();
+        }
+        if (localChannelReference.getPartner() != null &&
+            localChannelReference.getPartner().useFinalHash()) {
+          final DigestAlgo algo =
+              localChannelReference.getPartner().getDigestAlgo();
+          if (algo != Configuration.configuration.getDigest()) {
+            globalDigest = new FilesystemBasedDigest(algo);
+            localDigest = new FilesystemBasedDigest(
+                Configuration.configuration.getDigest());
+          }
+        }
+        if (globalDigest == null) {
+          globalDigest = new FilesystemBasedDigest(
+              Configuration.configuration.getDigest());
+          localDigest = null;
+        }
+      } catch (final NoSuchAlgorithmException ignored) {
+        // nothing
+      }
+      logger.debug("GlobalDigest: " +
+                   localChannelReference.getPartner().getDigestAlgo() +
+                   " different? " + (localDigest != null));
     }
   }
 

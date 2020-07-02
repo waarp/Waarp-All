@@ -29,6 +29,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.client.DirectTransfer;
 import org.waarp.openr66.database.DbConstantR66;
@@ -43,6 +44,7 @@ public class R66ProxyTest extends CommonUtil {
 
   @BeforeClass
   public static void launchConfig() throws Exception {
+    System.setErr(new NullPrintStream());
     CONFIG_PROXY_XML = "config-proxy.xml";
     launchServers();
   }
