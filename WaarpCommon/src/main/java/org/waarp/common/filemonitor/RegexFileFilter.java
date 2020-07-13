@@ -50,7 +50,7 @@ public class RegexFileFilter implements FileFilter {
   public boolean accept(File pathname) {
     if (pathname.isFile()) {
       if (pattern != null) {
-        return pattern.matcher(pathname.getPath()).matches() &&
+        return pattern.matcher(pathname.getPath()).find() &&
                (minimalSize == 0 || pathname.length() >= minimalSize);
       }
       return minimalSize == 0 || pathname.length() >= minimalSize;
