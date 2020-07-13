@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.4.0 (2020-07-03)
+Waarp R66 3.4.0 (2020-07-17)
 ============================
 
 Nouvelles fonctionnalités
@@ -50,16 +50,28 @@ Correctifs
   ou de debug qui peuvent être évités (en conservant les Warnings et les Erreurs)
   via l'ajout dans le fichier de configuration ``logback.xml`` les paramètres
   suivants en tête des options :
-- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__]
-  Diminution de l'empreinte mémoire pour le cas des clients simples et diminution
-  de la mémoire côté serveur pour les parties Web et REST.
-  (issue [`#52 <https://github.com/waarp/Waarp-All/issues/52>`__])
 
 .. code-block:: xml
 
   <statusListener
     class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
 
+
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__]
+  Diminution de l'empreinte mémoire pour le cas des clients simples et diminution
+  de la mémoire côté serveur pour les parties Web et REST.
+  (issue [`#52 <https://github.com/waarp/Waarp-All/issues/52>`__])
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] Si aucun argument
+  ``-Xms`` n'est passé à la JVM lors du démarrage, la valeur par défaut de la
+  JVM s'applique (en général 4Go).
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] Les valeurs par défaut
+  des limitations de bande passante ont changées : La limitation globale par
+  défaut est maintenant de 100Gbps, et celle par connexion est de 1Gbps (ces
+  valeurs peuvent être ajustées dans les fichiers de configuration).
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] La valeur par défaut
+  de la RAM maximale utilisée par les services WEB et REST a été abaissée à 1Go
+  (au lieu de 4Go) (cette valeur peut être ajustée dans les fichiers de
+  configuration).
 - Mise à jour des dépendances
 
 Waarp R66 3.3.4 (2020-06-02)
