@@ -12,8 +12,17 @@ Les prérequis pour WaarpR66 sont les suivants :
   MariaDB, Oracle SQL server et H2 sont supportés.
 * Les interfaces web nécessitent un navigateur récent (Chrome, Firefox, Internet
   Explorer 10+).
-* 128Mo de RAM minimum pour un client R66 (512Mo recommandés), 512Mo de RAM
-  minimum pour un serveur (1Go recommandé)
+* Mémoire vive :
+
+  * Pour un client : 128Mo de RAM minimum ; 512Mo recommandés
+  * Pour un serveur : 512Mo de RAM minimum ; au moins 1Go recommandés.
+    L'utilisation dépend de la charge du service. Par exemple, un serveur Waarp R66 a besoin
+    d'au moins 2Go pour traiter 5 000 transferts simultanés.
+
+  Par ailleurs, ces valeurs ne prennent en compte que les besoins des services
+  R66. Si des transferts lancent des processus externes dans les chaînes de
+  traitement (tâches `EXEC`), les besoins en RAM de ces processus viennent en
+  sus.
 
 Le chemin vers le dossier contenant Java peut être renseigné dans la variable
 d'environnement :envvar:`JAVA_HOME` (ex: ``export JAVA_HOME=/usr/lib/jvm/java8``
