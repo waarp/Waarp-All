@@ -8,9 +8,21 @@ Les prérequis pour WaarpR66 sont les suivants :
 
 * Un OS supporté : Linux (toutes distributions) et Windows 32 ou 64 bits
 * Java 1.6 minimum (java 1.8 recommandé)
-* Base de données PostgreSQL (version 9.4 minimum)
+* Base de données PostgreSQL (version 9.4 minimum) est recommandée, MySQL,
+  MariaDB, Oracle SQL server et H2 sont supportés.
+* Les interfaces web nécessitent un navigateur récent (Chrome, Firefox, Internet
+  Explorer 10+).
+* Mémoire vive :
 
-Les interfaces web nécessitent un navigateur récent (Chrome, Firefox, Internet Explorer 10+).
+  * Pour un client : 128Mo de RAM minimum ; 512Mo recommandés
+  * Pour un serveur : 512Mo de RAM minimum ; au moins 1Go recommandés.
+    L'utilisation dépend de la charge du service. Par exemple, un serveur Waarp R66 a besoin
+    d'au moins 2Go pour traiter 5 000 transferts simultanés.
+
+  Par ailleurs, ces valeurs ne prennent en compte que les besoins des services
+  R66. Si des transferts lancent des processus externes dans les chaînes de
+  traitement (tâches `EXEC`), les besoins en RAM de ces processus viennent en
+  sus.
 
 Le chemin vers le dossier contenant Java peut être renseigné dans la variable
 d'environnement :envvar:`JAVA_HOME` (ex: ``export JAVA_HOME=/usr/lib/jvm/java8``
