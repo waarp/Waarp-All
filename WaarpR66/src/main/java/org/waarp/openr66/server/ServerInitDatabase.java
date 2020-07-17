@@ -68,6 +68,9 @@ public class ServerInitDatabase {
   }
 
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
+    }
     if (args.length < 1) {
       logger.error(_INFO_ARGS);
       return false;

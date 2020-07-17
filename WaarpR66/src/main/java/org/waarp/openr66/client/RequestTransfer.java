@@ -104,6 +104,9 @@ public class RequestTransfer implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);
+    }
     _infoArgs = Messages.getString("RequestTransfer.0") +
                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
@@ -238,6 +241,9 @@ public class RequestTransfer implements Runnable {
     this.restart = restart;
     this.restarttime = restarttime;
     this.networkTransaction = networkTransaction;
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);
+    }
   }
 
   @Override

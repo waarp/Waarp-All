@@ -338,8 +338,7 @@ public class HttpRestClientHelper {
   public static void main(String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
-    final WaarpLogger logger =
-        WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
+    logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
     if (args.length < 5) {
       logger.error(
           NEED_MORE_ARGUMENTS_HTTP_HOST_PORT_URI_METHOD_USER_SIGN_PATH_NOSIGN_JSON);

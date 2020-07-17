@@ -452,6 +452,9 @@ public class SpooledDirectoryTransfer implements Runnable {
 
     public SpooledRunner(FileItem fileItem) {
       super(fileItem);
+      if (logger == null) {
+        logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
+      }
     }
 
     @Override
@@ -949,6 +952,9 @@ public class SpooledDirectoryTransfer implements Runnable {
 
   @SuppressWarnings("unchecked")
   protected static boolean getParamsFromConfigFile(String filename) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
+    }
     Document document;
     // Open config file
     try {
@@ -1110,6 +1116,9 @@ public class SpooledDirectoryTransfer implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
+    }
     _infoArgs = Messages.getString("SpooledDirectoryTransfer.0"); //$NON-NLS-1$
     if (args.length < 1) {
       logger.error(_infoArgs);

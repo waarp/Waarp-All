@@ -142,6 +142,9 @@ public abstract class AbstractTransfer implements Runnable {
                                         LocalChannelReference localChannelReference,
                                         AbstractLocalPacket packet,
                                         final R66Future future) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     try {
       ChannelUtils
           .writeAbstractLocalPacket(localChannelReference, packet, false);
@@ -295,6 +298,9 @@ public abstract class AbstractTransfer implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args, boolean submitOnly) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     if (args.length < 2) {
       logger.error(_INFO_ARGS);
       return false;
@@ -485,6 +491,9 @@ public abstract class AbstractTransfer implements Runnable {
   public static LocalChannelReference tryConnect(DbHostAuth host,
                                                  R66Future future,
                                                  NetworkTransaction networkTransaction) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     logger.info("Try RequestTransfer to " + host);
     SocketAddress socketAddress;
     try {
@@ -516,6 +525,9 @@ public abstract class AbstractTransfer implements Runnable {
   protected static void prepareKoOutputFormat(final R66Future future,
                                               final R66Result result,
                                               final OutputFormat outputFormat) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     partialOutputFormat(result.getRunner(), outputFormat);
     if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
       outputFormat.setValue(FIELDS.status.name(), 1);
@@ -543,6 +555,9 @@ public abstract class AbstractTransfer implements Runnable {
 
   protected static void prepareKoOutputFormat(final R66Future future,
                                               final OutputFormat outputFormat) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     outputFormat.setValue(FIELDS.status.name(), 2);
     outputFormat.setValue(FIELDS.statusTxt.name(), Messages
         .getString("Transfer.FailedNoId")); //$NON-NLS-1$
@@ -554,6 +569,9 @@ public abstract class AbstractTransfer implements Runnable {
   protected static void prepareOkOutputFormat(final long delay,
                                               final R66Result result,
                                               final OutputFormat outputFormat) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
       outputFormat.setValue(FIELDS.status.name(), 1);
       outputFormat.setValue(FIELDS.statusTxt.name(),
@@ -575,6 +593,9 @@ public abstract class AbstractTransfer implements Runnable {
 
   private static void partialOutputFormat(final DbTaskRunner runner,
                                           final OutputFormat outputFormat) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     outputFormat.setValue(FIELDS.remote.name(), rhost);
     outputFormat.setValue(FIELDS.ruleid.name(), runner.getRuleId());
     outputFormat.setValueString(runner.getJson());
@@ -594,6 +615,9 @@ public abstract class AbstractTransfer implements Runnable {
   protected static void prepareSubmitKoOutputFormat(final R66Future future,
                                                     final DbTaskRunner runner,
                                                     final OutputFormat outputFormat) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     outputFormat.setValue(FIELDS.status.name(), 2);
     if (runner == null) {
       outputFormat.setValue(FIELDS.statusTxt.name(),
@@ -617,6 +641,9 @@ public abstract class AbstractTransfer implements Runnable {
 
   protected static void prepareSubmitOkOutputFormat(final DbTaskRunner runner,
                                                     final OutputFormat outputFormat) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
+    }
     outputFormat.setValue(FIELDS.status.name(), 0);
     outputFormat.setValue(FIELDS.statusTxt.name(),
                           Messages.getString("SubmitTransfer.3") + Messages

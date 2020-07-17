@@ -78,6 +78,9 @@ public class Message implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(Message.class);
+    }
     _infoArgs = Messages.getString("Message.0") +
                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {

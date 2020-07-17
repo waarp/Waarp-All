@@ -74,6 +74,9 @@ public class MultipleDirectTransfer extends DirectTransfer {
 
   @Override
   public void run() {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(MultipleDirectTransfer.class);
+    }
     final String[] localfilenames = transferArgs.getFilename().split(",");
     final String[] rhosts = transferArgs.getRemoteHost().split(",");
     boolean inError = false;

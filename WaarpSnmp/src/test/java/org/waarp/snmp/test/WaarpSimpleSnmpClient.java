@@ -109,6 +109,12 @@ public class WaarpSimpleSnmpClient {
    **/
   public String getAsString(OID oid) throws IOException {
     final ResponseEvent event = get(new OID[] { oid });
+    if (event == null || event.getResponse() == null ||
+        event.getResponse().get(0) == null ||
+        event.getResponse().get(0).getVariable() == null) {
+      SysErrLogger.FAKE_LOGGER.syserr("Issue on getAsString in SNMP");
+      return "";
+    }
     return event.getResponse().get(0).getVariable().toString();
   }
 

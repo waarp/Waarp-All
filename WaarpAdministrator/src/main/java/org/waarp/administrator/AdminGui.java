@@ -166,6 +166,9 @@ public class AdminGui {
    * Create the application.
    */
   public AdminGui() {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AdminGui.class);
+    }
     initialize();
   }
 

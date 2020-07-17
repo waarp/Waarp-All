@@ -128,6 +128,9 @@ public class LogExtendedExport implements Runnable {
     this.statuserror = statuserror;
     this.networkTransaction = networkTransaction;
     this.host = host;
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);
+    }
   }
 
   /**
@@ -308,6 +311,9 @@ public class LogExtendedExport implements Runnable {
   protected static boolean stryimport;
 
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);
+    }
     if (args.length < 1) {
       logger.error(_INFO_ARGS);
       return false;
