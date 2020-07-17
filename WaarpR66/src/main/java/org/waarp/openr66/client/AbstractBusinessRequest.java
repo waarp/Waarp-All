@@ -210,6 +210,9 @@ public abstract class AbstractBusinessRequest implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.class);
+    }
     if (args.length < 3) {
       logger.error(_INFO_ARGS);
       return false;

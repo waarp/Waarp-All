@@ -79,6 +79,9 @@ public class LogExport implements Runnable {
     this.stop = stop;
     this.networkTransaction = networkTransaction;
     host = Configuration.configuration.getHostSslAuth();
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(LogExport.class);
+    }
   }
 
   public void setHost(DbHostAuth host) {
@@ -132,6 +135,9 @@ public class LogExport implements Runnable {
   protected static String stohost;
 
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(LogExport.class);
+    }
     if (args.length < 1) {
       logger.error(_INFO_ARGS);
       return false;

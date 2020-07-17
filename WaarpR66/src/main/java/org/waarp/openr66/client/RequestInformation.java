@@ -176,13 +176,13 @@ public class RequestInformation implements Runnable {
     this.id = id;
     this.isTo = isTo;
     this.networkTransaction = networkTransaction;
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(RequestInformation.class);
+    }
   }
 
   @Override
   public void run() {
-    if (logger == null) {
-      logger = WaarpLoggerFactory.getLogger(RequestInformation.class);
-    }
     InformationPacket request;
     if (code != REQUEST_CHECK) {
       request = new InformationPacket(rulename, code, filename);

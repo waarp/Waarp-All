@@ -102,6 +102,9 @@ public class ConfigImport implements Runnable {
     rolePurge = false;
     this.networkTransaction = networkTransaction;
     dbhost = Configuration.configuration.getHostSslAuth();
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
+    }
   }
 
   public ConfigImport(R66Future future, boolean hostPurge, boolean rulePurge,
@@ -122,6 +125,9 @@ public class ConfigImport implements Runnable {
     this.rolePurge = rolePurge;
     this.networkTransaction = networkTransaction;
     dbhost = Configuration.configuration.getHostSslAuth();
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
+    }
   }
 
   /**
@@ -212,6 +218,9 @@ public class ConfigImport implements Runnable {
   protected static long lrole = ILLEGALVALUE;
 
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
+    }
     if (args.length < 3) {
       logger.error(_INFO_ARGS);
       return false;

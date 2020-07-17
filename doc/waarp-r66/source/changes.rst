@@ -80,6 +80,17 @@ Correctifs
   correcte du filtrage par expression régulière dans le *file watcher* (il
   était impossible de filtrer juste sur le nom d'un fichier situé dans un
   sous-dossier).
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] Les valeurs par défaut
+  des limitations de bande passante ont changées : La limitation globale par
+  défaut est maintenant de 100Gbps, et celle par connexion est de 1Gbps (ces
+  valeurs peuvent être ajustées dans les fichiers de configuration).
+- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] La valeur par défaut
+  de la RAM maximale utilisée par les services WEB et REST a été abaissée à 1Go
+  (au lieu de 4Go) (cette valeur peut être ajustée dans les fichiers de
+  configuration).
+- [`#57 <https://github.com/waarp/Waarp-All/pull/57>`__] Certaines commandes
+  ne fonctionnaient plus suite à un bug sur les logs.
+  (issue [`#56 <https://github.com/waarp/Waarp-All/issues/56>`__])
 - Mise à jour des dépendances
 
 

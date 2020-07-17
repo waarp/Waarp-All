@@ -202,6 +202,9 @@ public class R66Environment {
   }
 
   public static String[] getHostIds() {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
+    }
     String[] results;
     DbHostAuth[] dbHostAuths;
     try {
@@ -224,6 +227,9 @@ public class R66Environment {
   }
 
   public static String[] getRules() {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
+    }
     String[] results;
     DbRule[] dbRules;
     try {
@@ -246,6 +252,9 @@ public class R66Environment {
   }
 
   public static String[] getRules(boolean sendMode) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
+    }
     String[] results;
     DbRule[] dbRules;
     try {
@@ -291,6 +300,9 @@ public class R66Environment {
   }
 
   public static String getHost(String id) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
+    }
     DbHostAuth host = null;
     try {
       host = new DbHostAuth(id);
@@ -317,6 +329,9 @@ public class R66Environment {
   }
 
   public static String getRule(String id) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
+    }
     DbRule rule = null;
     try {
       rule = new DbRule(id);

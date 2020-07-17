@@ -120,8 +120,10 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
 
   public String getServerConfigFile() {
     if (configFile != null) {
+      logger.warn("ConfigFile already set to {]", configFile);
       return configFile.getAbsolutePath();
     }
+    logger.warn("Build configFile");
     ClassLoader classLoader = ScenarioBaseBigFile.class.getClassLoader();
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
@@ -172,12 +174,16 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
       }
     }
     configFile = fileTo;
+    logger.warn("Config file created at {}", fileTo);
     File copy = new File(TMP_CONFIG_XML);
     try {
       FileUtils.copy(configFile, copy, false, false);
+      logger.warn("Copy from {} to {}", configFile, copy);
     } catch (Reply550Exception e) {
       e.printStackTrace();
     }
+    logger.warn("Copy from {} to {} and return {}", configFile, copy,
+                TMP_R66_CONFIG_R1);
     return TMP_R66_CONFIG_R1;
   }
 
@@ -204,6 +210,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     String fileconf = null;
     try {
       fileconf = scenarioBase.getServerConfigFile();
+      logger.warn("Config file found {}", fileconf);
       if (fileconf.charAt(0) != '/') {
         configFile = new File(dirResources, fileconf);
       }
@@ -220,6 +227,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
       } catch (Reply550Exception e) {
         //e.printStackTrace();
       }
+    } else {
+      logger.warn("Could not find {} or {}", copy, configFile);
     }
     initiateDb(configFile.getAbsolutePath());
     initiateDb(SERVER_2_XML);

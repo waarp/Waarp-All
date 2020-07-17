@@ -99,9 +99,12 @@ public abstract class TestAbstractMinimal {
       System.out.print(fileCopied.getAbsolutePath() + ' ');
     }
     System.out.println(" Done");
-    File webSrc = new File(
-        dir.getParentFile().getParentFile().getParentFile().getParentFile(),
-        "src/main/httpadmin/i18n");
+    File baseWeb =
+        dir.getParentFile().getParentFile().getParentFile().getParentFile();
+    if (baseWeb.getAbsolutePath().contains("src/test/resources")) {
+      baseWeb = baseWeb.getParentFile().getParentFile().getParentFile();
+    }
+    File webSrc = new File(baseWeb, "src/main/httpadmin/i18n");
     if (webSrc.isDirectory()) {
       logger.warn("Copy Web from {} to {}", webSrc, web);
       final File[] copiedWeb = FileUtils.copyRecursive(webSrc, web, false);

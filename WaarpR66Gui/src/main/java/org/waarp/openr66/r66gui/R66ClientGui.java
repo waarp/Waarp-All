@@ -475,6 +475,9 @@ public class R66ClientGui {
 
     R66ClientGuiActions(int method) {
       this.method = method;
+      if (logger == null) {
+        logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
+      }
     }
 
     @Override

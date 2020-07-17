@@ -79,6 +79,9 @@ public class ConfigExport implements Runnable {
     role = false;
     this.networkTransaction = networkTransaction;
     dbhost = Configuration.configuration.getHostSslAuth();
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ConfigExport.class);
+    }
   }
 
   public ConfigExport(R66Future future, boolean host, boolean rule,
@@ -92,6 +95,9 @@ public class ConfigExport implements Runnable {
     this.role = role;
     this.networkTransaction = networkTransaction;
     dbhost = Configuration.configuration.getHostSslAuth();
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ConfigExport.class);
+    }
   }
 
   public void setHost(DbHostAuth host) {
@@ -172,6 +178,9 @@ public class ConfigExport implements Runnable {
   protected static String stohost;
 
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ConfigExport.class);
+    }
     if (args.length < 2) {
       logger.error(_INFO_ARGS);
       return false;

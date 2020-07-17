@@ -78,6 +78,9 @@ public class ChangeBandwidthLimits implements Runnable {
     readSessionLimit = rsl;
     this.networkTransaction = networkTransaction;
     host = Configuration.configuration.getHostSslAuth();
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
+    }
   }
 
   public void setHost(DbHostAuth host) {
@@ -141,6 +144,9 @@ public class ChangeBandwidthLimits implements Runnable {
   protected static String stohost;
 
   protected static boolean getParams(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
+    }
     if (args.length < 3) {
       logger.error(_INFO_ARGS);
       return false;

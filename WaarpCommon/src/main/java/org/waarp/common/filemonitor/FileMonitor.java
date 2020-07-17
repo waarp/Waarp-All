@@ -830,6 +830,9 @@ public class FileMonitor {
      * @param fileMonitor
      */
     protected FileMonitorTimerTask(FileMonitor fileMonitor) {
+      if (logger == null) {
+        logger = WaarpLoggerFactory.getLogger(FileMonitor.class);
+      }
       this.fileMonitor = fileMonitor;
     }
 
@@ -878,6 +881,9 @@ public class FileMonitor {
      */
     protected FileMonitorTimerInformationTask(
         FileMonitorCommandRunnableFuture informationMonitorCommand) {
+      if (logger == null) {
+        logger = WaarpLoggerFactory.getLogger(FileMonitor.class);
+      }
       this.informationMonitorCommand = informationMonitorCommand;
     }
 
@@ -1038,6 +1044,9 @@ public class FileMonitor {
   }
 
   public static void main(String[] args) {
+    if (logger == null) {
+      logger = WaarpLoggerFactory.getLogger(FileMonitor.class);
+    }
     if (args.length < 3) {
       SysErrLogger.FAKE_LOGGER
           .syserr("Need a statusfile, a stopfile and a directory to test");
