@@ -30,6 +30,7 @@ import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,9 +65,9 @@ public class ExecuteExecutor extends AbstractExecutor {
   /**
    * Internal Logger
    */
-<span class="fc" id="L67">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L68">      WaarpLoggerFactory.getLogger(ExecuteExecutor.class);</span>
-<span class="fc" id="L69">  private static final Pattern BLANK = Pattern.compile(&quot; &quot;);</span>
+<span class="fc" id="L68">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L69">      WaarpLoggerFactory.getLogger(ExecuteExecutor.class);</span>
+<span class="fc" id="L70">  private static final Pattern BLANK = WaarpStringUtils.BLANK;</span>
   private final String[] args;
   private final String arg;
   private final WaarpFuture futureCompletion;
@@ -78,120 +79,120 @@ public class ExecuteExecutor extends AbstractExecutor {
    * @param futureCompletion
    */
   public ExecuteExecutor(String command, long delay,
-<span class="fc" id="L81">                         WaarpFuture futureCompletion) {</span>
-<span class="fc" id="L82">    args = BLANK.split(command);</span>
-<span class="fc" id="L83">    arg = command;</span>
-<span class="fc" id="L84">    this.futureCompletion = futureCompletion;</span>
-<span class="fc" id="L85">    this.delay = delay;</span>
-<span class="fc" id="L86">  }</span>
+<span class="fc" id="L82">                         WaarpFuture futureCompletion) {</span>
+<span class="fc" id="L83">    args = BLANK.split(command);</span>
+<span class="fc" id="L84">    arg = command;</span>
+<span class="fc" id="L85">    this.futureCompletion = futureCompletion;</span>
+<span class="fc" id="L86">    this.delay = delay;</span>
+<span class="fc" id="L87">  }</span>
 
   @Override
   public void run() throws Reply421Exception {
     // Check if the execution will be done through LocalExec daemon
-<span class="pc bpc" id="L91" title="1 of 2 branches missed.">    if (AbstractExecutor.useLocalExec) {</span>
-<span class="nc" id="L92">      final LocalExecClient localExecClient = new LocalExecClient();</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (localExecClient.connect()) {</span>
-<span class="nc" id="L94">        localExecClient.runOneCommand(arg, delay, futureCompletion);</span>
-<span class="nc" id="L95">        localExecClient.disconnect();</span>
-<span class="nc" id="L96">        return;</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    if (AbstractExecutor.useLocalExec) {</span>
+<span class="nc" id="L93">      final LocalExecClient localExecClient = new LocalExecClient();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">      if (localExecClient.connect()) {</span>
+<span class="nc" id="L95">        localExecClient.runOneCommand(arg, delay, futureCompletion);</span>
+<span class="nc" id="L96">        localExecClient.disconnect();</span>
+<span class="nc" id="L97">        return;</span>
       } // else continue
     }
     // Execution is done internally
-<span class="fc" id="L100">    final File exec = new File(args[0]);</span>
-<span class="pc bpc" id="L101" title="3 of 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
-<span class="nc" id="L102">      logger.error(&quot;Exec command is not executable: &quot; + args[0]);</span>
-<span class="nc" id="L103">      throw new Reply421Exception(&quot;Pre Exec command is not executable&quot;);</span>
+<span class="fc" id="L101">    final File exec = new File(args[0]);</span>
+<span class="pc bpc" id="L102" title="3 of 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
+<span class="nc" id="L103">      logger.error(&quot;Exec command is not executable: &quot; + args[0]);</span>
+<span class="nc" id="L104">      throw new Reply421Exception(&quot;Pre Exec command is not executable&quot;);</span>
     }
-<span class="fc" id="L105">    final CommandLine commandLine = new CommandLine(args[0]);</span>
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc" id="L107">      commandLine.addArgument(args[i]);</span>
+<span class="fc" id="L106">    final CommandLine commandLine = new CommandLine(args[0]);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc" id="L108">      commandLine.addArgument(args[i]);</span>
     }
-<span class="fc" id="L109">    final DefaultExecutor defaultExecutor = new DefaultExecutor();</span>
-<span class="fc" id="L110">    final PumpStreamHandler pumpStreamHandler =</span>
+<span class="fc" id="L110">    final DefaultExecutor defaultExecutor = new DefaultExecutor();</span>
+<span class="fc" id="L111">    final PumpStreamHandler pumpStreamHandler =</span>
         new PumpStreamHandler(null, null);
-<span class="fc" id="L112">    defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
-<span class="fc" id="L113">    final int[] correctValues = { 0, 1 };</span>
-<span class="fc" id="L114">    defaultExecutor.setExitValues(correctValues);</span>
-<span class="fc" id="L115">    ExecuteWatchdog watchdog = null;</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (delay &gt; 0) {</span>
-<span class="nc" id="L117">      watchdog = new ExecuteWatchdog(delay);</span>
-<span class="nc" id="L118">      defaultExecutor.setWatchdog(watchdog);</span>
+<span class="fc" id="L113">    defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
+<span class="fc" id="L114">    final int[] correctValues = { 0, 1 };</span>
+<span class="fc" id="L115">    defaultExecutor.setExitValues(correctValues);</span>
+<span class="fc" id="L116">    ExecuteWatchdog watchdog = null;</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">    if (delay &gt; 0) {</span>
+<span class="nc" id="L118">      watchdog = new ExecuteWatchdog(delay);</span>
+<span class="nc" id="L119">      defaultExecutor.setWatchdog(watchdog);</span>
     }
     int status;
     try {
-<span class="fc" id="L122">      status = defaultExecutor.execute(commandLine);//NOSONAR</span>
-<span class="nc" id="L123">    } catch (final ExecuteException e) {</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">      if (e.getExitValue() == -559038737) {</span>
+<span class="fc" id="L123">      status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L124">    } catch (final ExecuteException e) {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (e.getExitValue() == -559038737) {</span>
         // Cannot run immediately so retry once
         try {
-<span class="nc" id="L127">          Thread.sleep(10);</span>
-<span class="nc" id="L128">        } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L129">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L130">        }</span>
+<span class="nc" id="L128">          Thread.sleep(10);</span>
+<span class="nc" id="L129">        } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L130">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L131">        }</span>
         try {
-<span class="nc" id="L132">          status = defaultExecutor.execute(commandLine);//NOSONAR</span>
-<span class="nc" id="L133">        } catch (final ExecuteException e2) {</span>
+<span class="nc" id="L133">          status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L134">        } catch (final ExecuteException e2) {</span>
           try {
-<span class="nc" id="L135">            pumpStreamHandler.stop();</span>
-<span class="nc" id="L136">          } catch (final IOException ignored) {</span>
+<span class="nc" id="L136">            pumpStreamHandler.stop();</span>
+<span class="nc" id="L137">          } catch (final IOException ignored) {</span>
             // nothing
-<span class="nc" id="L138">          }</span>
-<span class="nc" id="L139">          logger.error(&quot;System Exception: &quot; + e.getMessage() +</span>
+<span class="nc" id="L139">          }</span>
+<span class="nc" id="L140">          logger.error(&quot;System Exception: &quot; + e.getMessage() +</span>
                        &quot;\n    Exec cannot execute command &quot; + commandLine);
-<span class="nc" id="L141">          throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
-<span class="nc" id="L142">        } catch (final IOException e2) {</span>
+<span class="nc" id="L142">          throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
+<span class="nc" id="L143">        } catch (final IOException e2) {</span>
           try {
-<span class="nc" id="L144">            pumpStreamHandler.stop();</span>
-<span class="nc" id="L145">          } catch (final IOException ignored) {</span>
+<span class="nc" id="L145">            pumpStreamHandler.stop();</span>
+<span class="nc" id="L146">          } catch (final IOException ignored) {</span>
             // nothing
-<span class="nc" id="L147">          }</span>
-<span class="nc" id="L148">          logger.error(</span>
-<span class="nc" id="L149">              EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);</span>
-<span class="nc" id="L150">          throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
-<span class="nc" id="L151">        }</span>
-<span class="nc" id="L152">        logger.info(&quot;System Exception: &quot; + e.getMessage() +</span>
+<span class="nc" id="L148">          }</span>
+<span class="nc" id="L149">          logger.error(</span>
+<span class="nc" id="L150">              EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);</span>
+<span class="nc" id="L151">          throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
+<span class="nc" id="L152">        }</span>
+<span class="nc" id="L153">        logger.info(&quot;System Exception: &quot; + e.getMessage() +</span>
                     &quot; but finally get the command executed &quot; + commandLine);
       } else {
         try {
-<span class="nc" id="L156">          pumpStreamHandler.stop();</span>
-<span class="nc" id="L157">        } catch (final IOException ignored) {</span>
+<span class="nc" id="L157">          pumpStreamHandler.stop();</span>
+<span class="nc" id="L158">        } catch (final IOException ignored) {</span>
           // nothing
-<span class="nc" id="L159">        }</span>
-<span class="nc" id="L160">        logger.error(</span>
-<span class="nc" id="L161">            EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);</span>
-<span class="nc" id="L162">        throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
+<span class="nc" id="L160">        }</span>
+<span class="nc" id="L161">        logger.error(</span>
+<span class="nc" id="L162">            EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);</span>
+<span class="nc" id="L163">        throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
       }
-<span class="nc" id="L164">    } catch (final IOException e) {</span>
+<span class="nc" id="L165">    } catch (final IOException e) {</span>
       try {
-<span class="nc" id="L166">        pumpStreamHandler.stop();</span>
-<span class="nc" id="L167">      } catch (final IOException ignored) {</span>
+<span class="nc" id="L167">        pumpStreamHandler.stop();</span>
+<span class="nc" id="L168">      } catch (final IOException ignored) {</span>
         // nothing
-<span class="nc" id="L169">      }</span>
-<span class="nc" id="L170">      logger</span>
-<span class="nc" id="L171">          .error(EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);</span>
-<span class="nc" id="L172">      throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
-<span class="pc" id="L173">    }</span>
+<span class="nc" id="L170">      }</span>
+<span class="nc" id="L171">      logger</span>
+<span class="nc" id="L172">          .error(EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);</span>
+<span class="nc" id="L173">      throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);</span>
+<span class="pc" id="L174">    }</span>
     try {
-<span class="fc" id="L175">      pumpStreamHandler.stop();</span>
-<span class="nc" id="L176">    } catch (final IOException ignored) {</span>
+<span class="fc" id="L176">      pumpStreamHandler.stop();</span>
+<span class="nc" id="L177">    } catch (final IOException ignored) {</span>
       // nothing
-<span class="fc" id="L178">    }</span>
-<span class="pc bpc" id="L179" title="3 of 4 branches missed.">    if (watchdog != null &amp;&amp; watchdog.killedProcess()) {</span>
+<span class="fc" id="L179">    }</span>
+<span class="pc bpc" id="L180" title="3 of 4 branches missed.">    if (watchdog != null &amp;&amp; watchdog.killedProcess()) {</span>
       // kill by the watchdoc (time out)
-<span class="nc" id="L181">      logger.error(&quot;Exec is in Time Out&quot;);</span>
-<span class="nc" id="L182">      status = -1;</span>
+<span class="nc" id="L182">      logger.error(&quot;Exec is in Time Out&quot;);</span>
+<span class="nc" id="L183">      status = -1;</span>
     }
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">    if (status == 0) {</span>
-<span class="fc" id="L185">      futureCompletion.setSuccess();</span>
-<span class="fc" id="L186">      logger.info(&quot;Exec OK with {}&quot;, commandLine);</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">    } else if (status == 1) {</span>
-<span class="nc" id="L188">      logger.warn(&quot;Exec in warning with {}&quot;, commandLine);</span>
-<span class="nc" id="L189">      futureCompletion.setSuccess();</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">    if (status == 0) {</span>
+<span class="fc" id="L186">      futureCompletion.setSuccess();</span>
+<span class="fc" id="L187">      logger.info(&quot;Exec OK with {}&quot;, commandLine);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L189">      logger.warn(&quot;Exec in warning with {}&quot;, commandLine);</span>
+<span class="nc" id="L190">      futureCompletion.setSuccess();</span>
     } else {
-<span class="nc bnc" id="L191" title="All 2 branches missed.">      logger.debug(&quot;Status: &quot; + status + (status == -1? &quot; Timeout&quot; : &quot;&quot;) +</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      logger.debug(&quot;Status: &quot; + status + (status == -1? &quot; Timeout&quot; : &quot;&quot;) +</span>
                    &quot; Exec in error with &quot; + commandLine);
-<span class="nc" id="L193">      throw new Reply421Exception(&quot;Pre command executed in error&quot;);</span>
+<span class="nc" id="L194">      throw new Reply421Exception(&quot;Pre command executed in error&quot;);</span>
     }
-<span class="fc" id="L195">  }</span>
+<span class="fc" id="L196">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -37,12 +37,12 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   /**
    *
    */
-<span class="nc" id="L40">  protected FileMonitorCommandRunnableFuture() {</span>
-<span class="nc" id="L41">  }</span>
+<span class="fc" id="L40">  protected FileMonitorCommandRunnableFuture() {</span>
+<span class="fc" id="L41">  }</span>
 
   public void setMonitor(FileMonitor monitor) {
-<span class="nc" id="L44">    this.monitor = monitor;</span>
-<span class="nc" id="L45">  }</span>
+<span class="fc" id="L44">    this.monitor = monitor;</span>
+<span class="fc" id="L45">  }</span>
 
   /**
    * @param fileItem
@@ -52,8 +52,8 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
 <span class="nc" id="L52">  }</span>
 
   public void setFileItem(FileItem fileItem) {
-<span class="nc" id="L55">    this.fileItem = fileItem;</span>
-<span class="nc" id="L56">  }</span>
+<span class="fc" id="L55">    this.fileItem = fileItem;</span>
+<span class="fc" id="L56">  }</span>
 
   @Override
   public void run() {
@@ -75,20 +75,20 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @param ignoreAlreadyUsed
    */
   protected void checkReuse(boolean ignoreAlreadyUsed) {
-<span class="nc bnc" id="L78" title="All 8 branches missed.">    if (!ignoreAlreadyUsed &amp;&amp; fileItem.used &amp;&amp;</span>
+<span class="pc bpc" id="L78" title="2 of 8 branches missed.">    if (!ignoreAlreadyUsed &amp;&amp; fileItem.used &amp;&amp;</span>
         fileItem.specialId != ILLEGALVALUE &amp;&amp;
         fileItem.status == Status.RESTART) {
-<span class="nc" id="L81">      fileItem.used = false;</span>
+<span class="fc" id="L81">      fileItem.used = false;</span>
     }
-<span class="nc" id="L83">  }</span>
+<span class="fc" id="L83">  }</span>
 
   protected boolean isReuse() {
-<span class="nc bnc" id="L86" title="All 6 branches missed.">    return fileItem.status == Status.RESTART &amp;&amp; !fileItem.used &amp;&amp;</span>
+<span class="pc bpc" id="L86" title="2 of 6 branches missed.">    return fileItem.status == Status.RESTART &amp;&amp; !fileItem.used &amp;&amp;</span>
            fileItem.specialId != ILLEGALVALUE;
   }
 
   protected boolean isIgnored(boolean ignoreAlreadyUsed) {
-<span class="nc bnc" id="L91" title="All 4 branches missed.">    return !ignoreAlreadyUsed &amp;&amp; fileItem.used;</span>
+<span class="pc bpc" id="L91" title="1 of 4 branches missed.">    return !ignoreAlreadyUsed &amp;&amp; fileItem.used;</span>
   }
 
   /**
@@ -100,7 +100,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    *     conditions (ignored)
    */
   protected boolean checkFileItemBusiness(FileItem fileItem) {
-<span class="nc bnc" id="L103" title="All 4 branches missed.">    return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;</span>
+<span class="fc bfc" id="L103" title="All 4 branches covered.">    return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;</span>
   }
 
   protected void setValid(FileItem fileItem) {
@@ -117,23 +117,23 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @param specialId the specialId associated with the task
    */
   protected void finalizeValidFile(boolean status, long specialId) {
-<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (getMonitor() != null) {</span>
-<span class="nc" id="L121">      final Date date = new Date();</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">      if (date.after(getMonitor().nextDay)) {</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (getMonitor() != null) {</span>
+<span class="fc" id="L121">      final Date date = new Date();</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">      if (date.after(getMonitor().nextDay)) {</span>
         // midnight is after last check
 <span class="nc" id="L124">        getMonitor().setNextDay();</span>
 <span class="nc" id="L125">        getMonitor().todayok.set(0);</span>
 <span class="nc" id="L126">        getMonitor().todayerror.set(0);</span>
       }
     }
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (status) {</span>
-<span class="nc" id="L130">      getFileItem().used = true;</span>
-<span class="nc" id="L131">      getFileItem().status = Status.DONE;</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">    if (status) {</span>
+<span class="fc" id="L130">      getFileItem().used = true;</span>
+<span class="fc" id="L131">      getFileItem().status = Status.DONE;</span>
       // Keep the hash: fileItem.hash = null
-<span class="nc" id="L133">      getFileItem().specialId = specialId;</span>
-<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (getMonitor() != null) {</span>
-<span class="nc" id="L135">        getMonitor().globalok.incrementAndGet();</span>
-<span class="nc" id="L136">        getMonitor().todayok.incrementAndGet();</span>
+<span class="fc" id="L133">      getFileItem().specialId = specialId;</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">      if (getMonitor() != null) {</span>
+<span class="fc" id="L135">        getMonitor().globalok.incrementAndGet();</span>
+<span class="fc" id="L136">        getMonitor().todayok.incrementAndGet();</span>
       }
     } else {
       // execution in error, will retry later on
@@ -146,7 +146,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
 <span class="nc" id="L146">        getMonitor().todayerror.incrementAndGet();</span>
       }
     }
-<span class="nc" id="L149">  }</span>
+<span class="fc" id="L149">  }</span>
 
   public void cancel() {
 <span class="nc bnc" id="L152" title="All 2 branches missed.">    if (currentThread != null) {</span>
@@ -158,14 +158,14 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @return the fileItem
    */
   public FileItem getFileItem() {
-<span class="nc" id="L161">    return fileItem;</span>
+<span class="fc" id="L161">    return fileItem;</span>
   }
 
   /**
    * @return the monitor
    */
   public FileMonitor getMonitor() {
-<span class="nc" id="L168">    return monitor;</span>
+<span class="fc" id="L168">    return monitor;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -70,12 +70,12 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
  * channelClosed, startup, authentication,
  * and error. Used to store and retrieve the session information.
  */
-<span class="nc" id="L73">public abstract class ConnectionActions {</span>
+<span class="fc" id="L73">public abstract class ConnectionActions {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L77">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L78">      WaarpLoggerFactory.getLogger(ConnectionActions.class);</span>
+<span class="fc" id="L77">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L78">      WaarpLoggerFactory.getLogger(ConnectionActions.class);</span>
 
   /**
    * Session
@@ -104,41 +104,41 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
    * @return the session
    */
   public R66Session getSession() {
-<span class="nc" id="L107">    return session;</span>
+<span class="fc" id="L107">    return session;</span>
   }
 
   /**
    * @return the localChannelReference
    */
   public LocalChannelReference getLocalChannelReference() {
-<span class="nc" id="L114">    return localChannelReference;</span>
+<span class="fc" id="L114">    return localChannelReference;</span>
   }
 
   /**
    * Operations to ensure that channel closing is done correctly
    */
   public void channelClosed() {
-<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (session.getState() == CLOSEDCHANNEL) {</span>
-<span class="nc" id="L122">      return;</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">    if (session.getState() == CLOSEDCHANNEL) {</span>
+<span class="fc" id="L122">      return;</span>
     }
-<span class="nc" id="L124">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L124">    final DbTaskRunner runner = session.getRunner();</span>
     try {
-<span class="nc bnc" id="L126" title="All 4 branches missed.">      logger.debug(&quot;Local Server Channel Closed: {} {}&quot;,</span>
+<span class="fc bfc" id="L126" title="All 4 branches covered.">      logger.debug(&quot;Local Server Channel Closed: {} {}&quot;,</span>
                    localChannelReference != null? localChannelReference :
                        &quot;no LocalChannelReference&quot;,
-<span class="nc" id="L129">                   runner != null? runner.toShortString() : &quot;no runner&quot;);</span>
+<span class="fc" id="L129">                   runner != null? runner.toShortString() : &quot;no runner&quot;);</span>
       // clean session objects like files
-<span class="nc" id="L131">      boolean mustFinalize = true;</span>
-<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (localChannelReference != null &amp;&amp;</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">          localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="fc" id="L131">      boolean mustFinalize = true;</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">      if (localChannelReference != null &amp;&amp;</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">          localChannelReference.getFutureRequest().isDone()) {</span>
         // already done
-<span class="nc" id="L135">        mustFinalize = false;</span>
+<span class="fc" id="L135">        mustFinalize = false;</span>
       } else {
-<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (localChannelReference != null) {</span>
-<span class="nc" id="L138">          final R66Future fvr = localChannelReference.getFutureValidRequest();</span>
-<span class="nc" id="L139">          fvr.awaitOrInterruptible(Configuration.configuration.getTimeoutCon());</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">          if (fvr.isDone()) {</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">            if (!fvr.isSuccess()) {</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (localChannelReference != null) {</span>
+<span class="fc" id="L138">          final R66Future fvr = localChannelReference.getFutureValidRequest();</span>
+<span class="fc" id="L139">          fvr.awaitOrInterruptible(Configuration.configuration.getTimeoutCon());</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">          if (fvr.isDone()) {</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">            if (!fvr.isSuccess()) {</span>
               // test if remote server was Overloaded
 <span class="nc bnc" id="L143" title="All 2 branches missed.">              if (fvr.getResult() != null &amp;&amp;</span>
 <span class="nc bnc" id="L144" title="All 2 branches missed.">                  fvr.getResult().getCode() == ErrorCode.ServerOverloaded) {</span>
@@ -146,26 +146,26 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="nc" id="L146">                mustFinalize = false;</span>
               }
             } else {
-<span class="nc" id="L149">              mustFinalize = false;</span>
+<span class="fc" id="L149">              mustFinalize = false;</span>
             }
           }
-<span class="nc" id="L152">          logger.debug(&quot;Must Finalize: &quot; + mustFinalize);</span>
-<span class="nc bnc" id="L153" title="All 2 branches missed.">          if (mustFinalize) {</span>
-<span class="nc" id="L154">            session.newState(ERROR);</span>
-<span class="nc" id="L155">            final R66Result finalValue = new R66Result(</span>
+<span class="fc" id="L152">          logger.debug(&quot;Must Finalize: &quot; + mustFinalize);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">          if (mustFinalize) {</span>
+<span class="fc" id="L154">            session.newState(ERROR);</span>
+<span class="fc" id="L155">            final R66Result finalValue = new R66Result(</span>
                 new OpenR66ProtocolSystemException(
-<span class="nc" id="L157">                    Messages.getString(&quot;LocalServerHandler.4&quot;)),</span>
+<span class="fc" id="L157">                    Messages.getString(&quot;LocalServerHandler.4&quot;)),</span>
                 //$NON-NLS-1$
                 session, true, ErrorCode.FinalOp, runner); // True since closed
             try {
-<span class="nc" id="L161">              tryFinalizeRequest(finalValue);</span>
+<span class="fc" id="L161">              tryFinalizeRequest(finalValue);</span>
 <span class="nc" id="L162">            } catch (final OpenR66Exception ignored) {</span>
               // ignore
-<span class="nc" id="L164">            }</span>
+<span class="fc" id="L164">            }</span>
           }
         }
       }
-<span class="nc bnc" id="L168" title="All 4 branches missed.">      if (mustFinalize &amp;&amp; runner != null) {</span>
+<span class="pc bpc" id="L168" title="1 of 4 branches missed.">      if (mustFinalize &amp;&amp; runner != null) {</span>
 <span class="nc bnc" id="L169" title="All 4 branches missed.">        if (runner.isSelfRequested() &amp;&amp; localChannelReference != null) {</span>
 <span class="nc" id="L170">          final R66Future transfer = localChannelReference.getFutureRequest();</span>
           // Since requested : log
@@ -179,26 +179,26 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
           }
         }
       }
-<span class="nc" id="L182">      session.setStatus(50);</span>
-<span class="nc" id="L183">      session.newState(CLOSEDCHANNEL);</span>
-<span class="nc" id="L184">      session.partialClear();</span>
-<span class="nc" id="L185">      session.setStatus(51);</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">        if (localChannelReference.getDbSession() != null) {</span>
-<span class="nc" id="L188">          localChannelReference.getDbSession().endUseConnection();</span>
-<span class="nc" id="L189">          logger.debug(&quot;End Use Connection&quot;);</span>
+<span class="fc" id="L182">      session.setStatus(50);</span>
+<span class="fc" id="L183">      session.newState(CLOSEDCHANNEL);</span>
+<span class="fc" id="L184">      session.partialClear();</span>
+<span class="fc" id="L185">      session.setStatus(51);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">      if (localChannelReference != null) {</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">        if (localChannelReference.getDbSession() != null) {</span>
+<span class="fc" id="L188">          localChannelReference.getDbSession().endUseConnection();</span>
+<span class="fc" id="L189">          logger.debug(&quot;End Use Connection&quot;);</span>
         }
-<span class="nc" id="L191">        NetworkTransaction.checkClosingNetworkChannel(</span>
-<span class="nc" id="L192">            localChannelReference.getNetworkChannelObject(),</span>
+<span class="fc" id="L191">        NetworkTransaction.checkClosingNetworkChannel(</span>
+<span class="fc" id="L192">            localChannelReference.getNetworkChannelObject(),</span>
             localChannelReference);
-<span class="nc" id="L194">        session.setStatus(52);</span>
+<span class="fc" id="L194">        session.setStatus(52);</span>
       } else {
-<span class="nc" id="L196">        logger</span>
-<span class="nc" id="L197">            .debug(&quot;Local Server Channel Closed but no LocalChannelReference&quot;);</span>
+<span class="fc" id="L196">        logger</span>
+<span class="fc" id="L197">            .debug(&quot;Local Server Channel Closed but no LocalChannelReference&quot;);</span>
       }
       // Now if runner is not yet finished, finish it by force
-<span class="nc bnc" id="L200" title="All 4 branches missed.">      if (mustFinalize &amp;&amp; localChannelReference != null &amp;&amp;</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">          !localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="fc bfc" id="L200" title="All 4 branches covered.">      if (mustFinalize &amp;&amp; localChannelReference != null &amp;&amp;</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">          !localChannelReference.getFutureRequest().isDone()) {</span>
 <span class="nc" id="L202">        final R66Result finalValue = new R66Result(</span>
             new OpenR66ProtocolSystemException(
 <span class="nc" id="L204">                Messages.getString(&quot;LocalServerHandler.11&quot;)),</span>
@@ -218,36 +218,36 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         }
       }
     } finally {
-<span class="nc bnc" id="L221" title="All 2 branches missed.">      if (runner != null) {</span>
-<span class="nc" id="L222">        runner.clean();</span>
+<span class="fc bfc" id="L221" title="All 2 branches covered.">      if (runner != null) {</span>
+<span class="fc" id="L222">        runner.clean();</span>
       }
-<span class="nc" id="L224">      LocalTransaction lt = Configuration.configuration.getLocalTransaction();</span>
-<span class="nc bnc" id="L225" title="All 4 branches missed.">      if (lt != null &amp;&amp; localChannelReference != null) {</span>
-<span class="nc" id="L226">        localChannelReference.close();</span>
+<span class="fc" id="L224">      LocalTransaction lt = Configuration.configuration.getLocalTransaction();</span>
+<span class="pc bpc" id="L225" title="1 of 4 branches missed.">      if (lt != null &amp;&amp; localChannelReference != null) {</span>
+<span class="fc" id="L226">        localChannelReference.close();</span>
       }
     }
-<span class="nc" id="L229">  }</span>
+<span class="fc" id="L229">  }</span>
 
   /**
    * Create a new Session at startup of the channel
    */
   public void newSession() {
-<span class="nc" id="L235">    session = new R66Session();</span>
-<span class="nc" id="L236">    session.setStatus(60);</span>
-<span class="nc" id="L237">    session.setBusinessObject(</span>
-<span class="nc" id="L238">        Configuration.configuration.getR66BusinessFactory()</span>
-<span class="nc" id="L239">                                   .getBusinessInterface(session));</span>
-<span class="nc" id="L240">  }</span>
+<span class="fc" id="L235">    session = new R66Session();</span>
+<span class="fc" id="L236">    session.setStatus(60);</span>
+<span class="fc" id="L237">    session.setBusinessObject(</span>
+<span class="fc" id="L238">        Configuration.configuration.getR66BusinessFactory()</span>
+<span class="fc" id="L239">                                   .getBusinessInterface(session));</span>
+<span class="fc" id="L240">  }</span>
 
   protected void setLocalChannelReference(
       LocalChannelReference localChannelReference) {
-<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (localChannelReference != null) {</span>
-<span class="nc" id="L245">      this.localChannelReference = localChannelReference;</span>
-<span class="nc bnc" id="L246" title="All 2 branches missed.">      if (session != null) {</span>
-<span class="nc" id="L247">        session.setLocalChannelReference(localChannelReference);</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">    if (localChannelReference != null) {</span>
+<span class="fc" id="L245">      this.localChannelReference = localChannelReference;</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">      if (session != null) {</span>
+<span class="fc" id="L247">        session.setLocalChannelReference(localChannelReference);</span>
       }
     }
-<span class="nc" id="L250">  }</span>
+<span class="fc" id="L250">  }</span>
 
   /**
    * Startup of the session and the local channel reference
@@ -258,14 +258,14 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
    */
   public void startup(StartupPacket packet)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L261">    packet.clear();</span>
-<span class="nc bnc" id="L262" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="fc" id="L261">    packet.clear();</span>
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
 <span class="nc" id="L263">      session.newState(ERROR);</span>
 <span class="nc" id="L264">      logger.error(Messages.getString(&quot;LocalServerHandler.1&quot;)); //$NON-NLS-1$</span>
 <span class="nc" id="L265">      session.setStatus(40);</span>
 <span class="nc" id="L266">      throw new OpenR66ProtocolPacketException(&quot;Cannot startup connection&quot;);</span>
     }
-<span class="nc bnc" id="L268" title="All 2 branches missed.">    if (session.getBusinessObject() != null) {</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    if (session.getBusinessObject() != null) {</span>
       try {
 <span class="nc" id="L270">        session.getBusinessObject().checkAtConnection(session);</span>
 <span class="nc" id="L271">      } catch (final OpenR66RunnerErrorException e) {</span>
@@ -279,11 +279,11 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="nc" id="L279">        return;</span>
 <span class="nc" id="L280">      }</span>
     }
-<span class="nc" id="L282">    session.newState(STARTUP);</span>
-<span class="nc" id="L283">    localChannelReference.validateStartup(true);</span>
-<span class="nc" id="L284">    session.setStatus(41);</span>
-<span class="nc" id="L285">    logger.debug(&quot;Startup done for {}&quot;, localChannelReference.getLocalId());</span>
-<span class="nc" id="L286">  }</span>
+<span class="fc" id="L282">    session.newState(STARTUP);</span>
+<span class="fc" id="L283">    localChannelReference.validateStartup(true);</span>
+<span class="fc" id="L284">    session.setStatus(41);</span>
+<span class="fc" id="L285">    logger.debug(&quot;Startup done for {}&quot;, localChannelReference.getLocalId());</span>
+<span class="fc" id="L286">  }</span>
 
   /**
    * Refuse a connection
@@ -351,18 +351,18 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
    */
   public void authent(AuthentPacket packet, boolean isSsl)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L354" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
-<span class="nc" id="L355">      session.newState(AUTHENTR);</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">    if (packet.isToValidate()) {</span>
+<span class="fc" id="L355">      session.newState(AUTHENTR);</span>
     }
 
-<span class="nc bnc" id="L358" title="All 2 branches missed.">    logger</span>
-<span class="nc" id="L359">        .debug(&quot;LocalChannelReference null? {}&quot;, localChannelReference == null);</span>
-<span class="nc bnc" id="L360" title="All 2 branches missed.">    if (localChannelReference.getDbSession() != null) {</span>
-<span class="nc" id="L361">      localChannelReference.getDbSession().useConnection();</span>
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">    logger</span>
+<span class="fc" id="L359">        .debug(&quot;LocalChannelReference null? {}&quot;, localChannelReference == null);</span>
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">    if (localChannelReference.getDbSession() != null) {</span>
+<span class="fc" id="L361">      localChannelReference.getDbSession().useConnection();</span>
     }
-<span class="nc bnc" id="L363" title="All 2 branches missed.">    if (localChannelReference.getNetworkChannelObject() != null) {</span>
-<span class="nc" id="L364">      localChannelReference.getNetworkChannelObject()</span>
-<span class="nc" id="L365">                           .setHostId(packet.getHostId());</span>
+<span class="pc bpc" id="L363" title="1 of 2 branches missed.">    if (localChannelReference.getNetworkChannelObject() != null) {</span>
+<span class="fc" id="L364">      localChannelReference.getNetworkChannelObject()</span>
+<span class="fc" id="L365">                           .setHostId(packet.getHostId());</span>
     } else {
 <span class="nc" id="L367">      session.newState(ERROR);</span>
 <span class="nc" id="L368">      logger.error(&quot;Service unavailable: &quot; + packet.getHostId());</span>
@@ -382,7 +382,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="nc" id="L382">      return;</span>
     }
     try {
-<span class="nc" id="L385">      session.getAuth().connection(packet.getHostId(), packet.getKey(), isSsl);</span>
+<span class="fc" id="L385">      session.getAuth().connection(packet.getHostId(), packet.getKey(), isSsl);</span>
 <span class="nc" id="L386">    } catch (final Reply530Exception e1) {</span>
 <span class="nc" id="L387">      refusedConnection(packet, e1);</span>
 <span class="nc" id="L388">      session.setStatus(42);</span>
@@ -404,10 +404,10 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="nc" id="L404">      session.setStatus(43);</span>
 <span class="nc" id="L405">      businessError();</span>
 <span class="nc" id="L406">      return;</span>
-<span class="nc" id="L407">    }</span>
-<span class="nc" id="L408">    localChannelReference.setPartner(packet.getHostId());</span>
+<span class="fc" id="L407">    }</span>
+<span class="fc" id="L408">    localChannelReference.setPartner(packet.getHostId());</span>
     // Now if configuration say to do so: check remote ip address
-<span class="nc bnc" id="L410" title="All 2 branches missed.">    if (Configuration.configuration.isCheckRemoteAddress() &amp;&amp;</span>
+<span class="pc bpc" id="L410" title="1 of 2 branches missed.">    if (Configuration.configuration.isCheckRemoteAddress() &amp;&amp;</span>
 <span class="nc bnc" id="L411" title="All 2 branches missed.">        !localChannelReference.getPartner().isProxified()) {</span>
 <span class="nc" id="L412">      final DbHostAuth host = R66Auth.getServerAuth(packet.getHostId());</span>
 <span class="nc" id="L413">      boolean toTest = false;</span>
@@ -453,7 +453,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         }
       }
     }
-<span class="nc bnc" id="L456" title="All 2 branches missed.">    if (session.getBusinessObject() != null) {</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">    if (session.getBusinessObject() != null) {</span>
       try {
 <span class="nc" id="L458">        session.getBusinessObject().checkAtAuthentication(session);</span>
 <span class="nc" id="L459">      } catch (final OpenR66RunnerErrorException e) {</span>
@@ -463,27 +463,27 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
 <span class="nc" id="L463">        return;</span>
 <span class="nc" id="L464">      }</span>
     }
-<span class="nc" id="L466">    final R66Result result =</span>
+<span class="fc" id="L466">    final R66Result result =</span>
         new R66Result(session, true, ErrorCode.InitOk, null);
-<span class="nc" id="L468">    session.newState(AUTHENTD);</span>
-<span class="nc" id="L469">    localChannelReference.validateConnection(true, result);</span>
-<span class="nc bnc" id="L470" title="All 2 branches missed.">    logger.debug(&quot;Local Server Channel Validated: {} &quot;,</span>
+<span class="fc" id="L468">    session.newState(AUTHENTD);</span>
+<span class="fc" id="L469">    localChannelReference.validateConnection(true, result);</span>
+<span class="pc bpc" id="L470" title="1 of 2 branches missed.">    logger.debug(&quot;Local Server Channel Validated: {} &quot;,</span>
                  localChannelReference != null? localChannelReference :
                      &quot;no LocalChannelReference&quot;);
-<span class="nc" id="L473">    session.setStatus(44);</span>
-<span class="nc" id="L474">    NetworkTransaction</span>
-<span class="nc" id="L475">        .addClient(localChannelReference.getNetworkChannelObject(),</span>
-<span class="nc" id="L476">                   packet.getHostId());</span>
-<span class="nc bnc" id="L477" title="All 2 branches missed.">    if (packet.isToValidate()) {</span>
+<span class="fc" id="L473">    session.setStatus(44);</span>
+<span class="fc" id="L474">    NetworkTransaction</span>
+<span class="fc" id="L475">        .addClient(localChannelReference.getNetworkChannelObject(),</span>
+<span class="fc" id="L476">                   packet.getHostId());</span>
+<span class="fc bfc" id="L477" title="All 2 branches covered.">    if (packet.isToValidate()) {</span>
       // only requested
-<span class="nc" id="L479">      packet.validate(session.getAuth().isSsl());</span>
-<span class="nc" id="L480">      ChannelUtils</span>
-<span class="nc" id="L481">          .writeAbstractLocalPacket(localChannelReference, packet, false);</span>
-<span class="nc" id="L482">      session.setStatus(98);</span>
+<span class="fc" id="L479">      packet.validate(session.getAuth().isSsl());</span>
+<span class="fc" id="L480">      ChannelUtils</span>
+<span class="fc" id="L481">          .writeAbstractLocalPacket(localChannelReference, packet, false);</span>
+<span class="fc" id="L482">      session.setStatus(98);</span>
     }
-<span class="nc" id="L484">    logger.debug(&quot;Partner: {} from {}&quot;, localChannelReference.getPartner(),</span>
-<span class="nc" id="L485">                 Configuration.configuration.getVersions());</span>
-<span class="nc" id="L486">  }</span>
+<span class="fc" id="L484">    logger.debug(&quot;Partner: {} from {}&quot;, localChannelReference.getPartner(),</span>
+<span class="fc" id="L485">                 Configuration.configuration.getVersions());</span>
+<span class="fc" id="L486">  }</span>
 
   /**
    * Receive a connection error
@@ -520,17 +520,17 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException {
     // do something according to the error
-<span class="nc bnc" id="L523" title="All 2 branches missed.">    if (session.getLocalChannelReference().getFutureRequest().isDone()) {</span>
+<span class="fc bfc" id="L523" title="All 2 branches covered.">    if (session.getLocalChannelReference().getFutureRequest().isDone()) {</span>
       // already canceled or successful
-<span class="nc" id="L525">      return;</span>
+<span class="fc" id="L525">      return;</span>
     }
-<span class="nc" id="L527">    logger.error(localChannelReference.getRequestId() + &quot;: &quot; + packet);</span>
-<span class="nc" id="L528">    session.setStatus(46);</span>
-<span class="nc" id="L529">    final ErrorCode code = ErrorCode.getFromCode(packet.getSmiddle());</span>
-<span class="nc" id="L530">    session.getLocalChannelReference()</span>
-<span class="nc" id="L531">           .setErrorMessage(packet.getSheader(), code);</span>
+<span class="fc" id="L527">    logger.error(localChannelReference.getRequestId() + &quot;: &quot; + packet);</span>
+<span class="fc" id="L528">    session.setStatus(46);</span>
+<span class="fc" id="L529">    final ErrorCode code = ErrorCode.getFromCode(packet.getSmiddle());</span>
+<span class="fc" id="L530">    session.getLocalChannelReference()</span>
+<span class="fc" id="L531">           .setErrorMessage(packet.getSheader(), code);</span>
     OpenR66ProtocolBusinessException exception;
-<span class="nc bnc" id="L533" title="All 2 branches missed.">    if (code.code == ErrorCode.CanceledTransfer.code) {</span>
+<span class="pc bpc" id="L533" title="1 of 2 branches missed.">    if (code.code == ErrorCode.CanceledTransfer.code) {</span>
 <span class="nc" id="L534">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
 <span class="nc" id="L535">      logger.debug(&quot;Stop retrieving file: the transfer has been canceled&quot;);</span>
 <span class="nc" id="L536">      exception =</span>
@@ -554,7 +554,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         // ignore
 <span class="nc" id="L555">      }</span>
 <span class="nc" id="L556">      return;</span>
-<span class="nc bnc" id="L557" title="All 2 branches missed.">    } else if (code.code == ErrorCode.StoppedTransfer.code) {</span>
+<span class="pc bpc" id="L557" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.StoppedTransfer.code) {</span>
 <span class="nc" id="L558">      NetworkTransaction.stopRetrieve(session.getLocalChannelReference());</span>
 <span class="nc" id="L559">      logger.debug(&quot;Stop retrieving file: the transfer has been stopped&quot;);</span>
 <span class="nc" id="L560">      exception = new OpenR66ProtocolBusinessStopException(packet.getSheader());</span>
@@ -581,7 +581,7 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         // ignore
 <span class="nc" id="L582">      }</span>
 <span class="nc" id="L583">      return;</span>
-<span class="nc bnc" id="L584" title="All 2 branches missed.">    } else if (code.code == ErrorCode.QueryAlreadyFinished.code) {</span>
+<span class="pc bpc" id="L584" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.QueryAlreadyFinished.code) {</span>
 <span class="nc" id="L585">      final DbTaskRunner runner = session.getRunner();</span>
 <span class="nc bnc" id="L586" title="All 2 branches missed.">      if (runner == null) {</span>
 <span class="nc" id="L587">        exception =</span>
@@ -599,26 +599,26 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
         }
       }
 <span class="nc" id="L601">      throw exception;</span>
-<span class="nc bnc" id="L602" title="All 2 branches missed.">    } else if (code.code == ErrorCode.QueryStillRunning.code) {</span>
+<span class="pc bpc" id="L602" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.QueryStillRunning.code) {</span>
 <span class="nc" id="L603">      exception = new OpenR66ProtocolBusinessQueryStillRunningException(</span>
 <span class="nc" id="L604">          packet.getSheader());</span>
 <span class="nc" id="L605">      throw exception;</span>
-<span class="nc bnc" id="L606" title="All 2 branches missed.">    } else if (code.code == ErrorCode.BadAuthent.code) {</span>
+<span class="pc bpc" id="L606" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.BadAuthent.code) {</span>
 <span class="nc" id="L607">      exception =</span>
 <span class="nc" id="L608">          new OpenR66ProtocolNotAuthenticatedException(packet.toString());</span>
-<span class="nc bnc" id="L609" title="All 2 branches missed.">    } else if (code.code == ErrorCode.QueryRemotelyUnknown.code) {</span>
+<span class="pc bpc" id="L609" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.QueryRemotelyUnknown.code) {</span>
 <span class="nc" id="L610">      exception = new OpenR66ProtocolBusinessCancelException(packet.toString());</span>
-<span class="nc bnc" id="L611" title="All 2 branches missed.">    } else if (code.code == ErrorCode.FileNotFound.code) {</span>
+<span class="pc bpc" id="L611" title="1 of 2 branches missed.">    } else if (code.code == ErrorCode.FileNotFound.code) {</span>
 <span class="nc" id="L612">      exception = new OpenR66ProtocolBusinessRemoteFileNotFoundException(</span>
 <span class="nc" id="L613">          packet.toString());</span>
     } else {
-<span class="nc" id="L615">      exception =</span>
-<span class="nc" id="L616">          new OpenR66ProtocolBusinessNoWriteBackException(packet.toString());</span>
+<span class="fc" id="L615">      exception =</span>
+<span class="fc" id="L616">          new OpenR66ProtocolBusinessNoWriteBackException(packet.toString());</span>
     }
-<span class="nc" id="L618">    session.setFinalizeTransfer(false,</span>
+<span class="fc" id="L618">    session.setFinalizeTransfer(false,</span>
                                 new R66Result(exception, session, true, code,
-<span class="nc" id="L620">                                              session.getRunner()));</span>
-<span class="nc" id="L621">    throw exception;</span>
+<span class="fc" id="L620">                                              session.getRunner()));</span>
+<span class="fc" id="L621">    throw exception;</span>
   }
 
   /**
@@ -631,8 +631,8 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
    */
   public final void tryFinalizeRequest(R66Result errorValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
-<span class="nc" id="L634">    session.tryFinalizeRequest(errorValue);</span>
-<span class="nc" id="L635">  }</span>
+<span class="fc" id="L634">    session.tryFinalizeRequest(errorValue);</span>
+<span class="fc" id="L635">  }</span>
 
   /**
    * Class to finalize a runner when the future is over

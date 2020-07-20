@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonCommandPacket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.localhandler.packet</a> &gt; <span class="el_source">JsonCommandPacket.java</span></div><h1>JsonCommandPacket.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.localhandler.packet;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+
+import java.io.IOException;
+
+/**
+ * Json Command Message class for packet
+ * &lt;p&gt;
+ * 2 strings and one byte: request,result,send
+ */
+public class JsonCommandPacket extends AbstractLocalPacket {
+  private final String request;
+
+  private String result;
+
+  private final byte send;
+
+  /**
+   * @param headerLength
+   * @param middleLength
+   * @param endLength
+   * @param buf
+   *
+   * @return the new ValidPacket from buffer
+   */
+  public static JsonCommandPacket createFromBuffer(int headerLength,
+                                                   int middleLength,
+                                                   int endLength, ByteBuf buf) {
+<span class="fc" id="L55">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L56">    final byte[] bmiddle = new byte[middleLength];</span>
+    final byte bend;
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L59">      buf.readBytes(bheader);</span>
+    }
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="nc" id="L62">      buf.readBytes(bmiddle);</span>
+    }
+<span class="fc" id="L64">    bend = buf.readByte();</span>
+<span class="fc" id="L65">    return new JsonCommandPacket(new String(bheader), new String(bmiddle),</span>
+                                 bend);
+  }
+
+  /**
+   * @param srequest
+   * @param sresult
+   * @param end
+   */
+<span class="fc" id="L74">  public JsonCommandPacket(String srequest, String sresult, byte end) {</span>
+<span class="fc" id="L75">    request = srequest;</span>
+<span class="fc" id="L76">    result = sresult;</span>
+<span class="fc" id="L77">    send = end;</span>
+<span class="fc" id="L78">  }</span>
+
+  /**
+   * @param jrequest
+   * @param end
+   */
+<span class="fc" id="L84">  public JsonCommandPacket(JsonPacket jrequest, byte end) {</span>
+<span class="fc" id="L85">    request = jrequest.toString();</span>
+<span class="fc" id="L86">    result = null;</span>
+<span class="fc" id="L87">    send = end;</span>
+<span class="fc" id="L88">  }</span>
+
+  /**
+   * @param jrequest
+   * @param sresult
+   * @param end
+   */
+<span class="nc" id="L95">  public JsonCommandPacket(JsonPacket jrequest, String sresult, byte end) {</span>
+<span class="nc" id="L96">    request = jrequest.toString();</span>
+<span class="nc" id="L97">    result = sresult;</span>
+<span class="nc" id="L98">    send = end;</span>
+<span class="nc" id="L99">  }</span>
+
+  @Override
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L104">    end = Unpooled.buffer(1);</span>
+<span class="fc" id="L105">    end.writeByte(send);</span>
+<span class="fc" id="L106">  }</span>
+
+  @Override
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (request != null) {</span>
+<span class="fc" id="L112">      header = Unpooled.wrappedBuffer(request.getBytes());</span>
+    }
+<span class="fc" id="L114">  }</span>
+
+  @Override
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">    if (result != null) {</span>
+<span class="nc" id="L120">      middle = Unpooled.wrappedBuffer(result.getBytes());</span>
+    }
+<span class="fc" id="L122">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L126">    return &quot;JsonCommandPacket: &quot; + request + ':' + result + ':' + send;</span>
+  }
+
+  @Override
+  public byte getType() {
+<span class="fc" id="L131">    return LocalPacketFactory.JSONREQUESTPACKET;</span>
+  }
+
+  /**
+   * @return the JsonPacket from request
+   */
+  public JsonPacket getJsonRequest() {
+    try {
+<span class="fc" id="L139">      return JsonPacket.createFromBuffer(request);</span>
+<span class="nc" id="L140">    } catch (final JsonParseException e) {</span>
+<span class="nc" id="L141">      return null;</span>
+<span class="nc" id="L142">    } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L143">      return null;</span>
+<span class="nc" id="L144">    } catch (final IOException e) {</span>
+<span class="nc" id="L145">      return null;</span>
+    }
+  }
+
+  /**
+   * @param result
+   */
+  public void setResult(String result) {
+<span class="nc" id="L153">    this.result = result;</span>
+<span class="nc" id="L154">    middle = null;</span>
+<span class="nc" id="L155">  }</span>
+
+  /**
+   * @return the request
+   */
+  public String getRequest() {
+<span class="nc" id="L161">    return request;</span>
+  }
+
+  /**
+   * @return the result
+   */
+  public String getResult() {
+<span class="nc" id="L168">    return result;</span>
+  }
+
+  /**
+   * @return the type
+   */
+  public byte getTypeValid() {
+<span class="fc" id="L175">    return send;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

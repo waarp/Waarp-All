@@ -62,8 +62,8 @@ public abstract class KeyObject {
   /**
    * Internal Logger
    */
-<span class="nc" id="L65">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L66">      WaarpLoggerFactory.getLogger(KeyObject.class);</span>
+<span class="fc" id="L65">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L66">      WaarpLoggerFactory.getLogger(KeyObject.class);</span>
 
   /**
    * The True Key associated with this object
@@ -73,8 +73,8 @@ public abstract class KeyObject {
   /**
    * Empty constructor
    */
-<span class="nc" id="L76">  protected KeyObject() {</span>
-<span class="nc" id="L77">  }</span>
+<span class="fc" id="L76">  protected KeyObject() {</span>
+<span class="fc" id="L77">  }</span>
 
   /**
    * @return the algorithm used (Java name)
@@ -107,7 +107,7 @@ public abstract class KeyObject {
    * @return True if this key is ready to be used
    */
   public boolean keyReady() {
-<span class="nc bnc" id="L110" title="All 2 branches missed.">    return secretKey != null;</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    return secretKey != null;</span>
   }
 
   /**
@@ -118,8 +118,8 @@ public abstract class KeyObject {
    * @return the key as an array of bytes (or null if not ready)
    */
   public byte[] getSecretKeyInBytes() {
-<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (keyReady()) {</span>
-<span class="nc" id="L122">      return secretKey.getEncoded();</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    if (keyReady()) {</span>
+<span class="fc" id="L122">      return secretKey.getEncoded();</span>
     } else {
 <span class="nc" id="L124">      return null;</span>
     }
@@ -138,8 +138,8 @@ public abstract class KeyObject {
    * Reconstruct a key from an array of bytes
    */
   public void setSecretKey(byte[] keyData) {
-<span class="nc" id="L141">    secretKey = new SecretKeySpec(keyData, getAlgorithm());</span>
-<span class="nc" id="L142">  }</span>
+<span class="fc" id="L141">    secretKey = new SecretKeySpec(keyData, getAlgorithm());</span>
+<span class="fc" id="L142">  }</span>
 
   /**
    * Create a Key from a File
@@ -150,22 +150,22 @@ public abstract class KeyObject {
    * @throws IOException
    */
   public void setSecretKey(File file) throws CryptoException, IOException {
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (file.canRead()) {</span>
-<span class="nc" id="L154">      final int len = (int) file.length();</span>
-<span class="nc" id="L155">      final byte[] key = new byte[len];</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (file.canRead()) {</span>
+<span class="fc" id="L154">      final int len = (int) file.length();</span>
+<span class="fc" id="L155">      final byte[] key = new byte[len];</span>
       FileInputStream inputStream;
-<span class="nc" id="L157">      inputStream = new FileInputStream(file);</span>
-<span class="nc" id="L158">      final DataInputStream dis = new DataInputStream(inputStream);</span>
+<span class="fc" id="L157">      inputStream = new FileInputStream(file);</span>
+<span class="fc" id="L158">      final DataInputStream dis = new DataInputStream(inputStream);</span>
       try {
-<span class="nc" id="L160">        dis.readFully(key);</span>
+<span class="fc" id="L160">        dis.readFully(key);</span>
       } finally {
-<span class="nc" id="L162">        FileUtils.close(dis);</span>
+<span class="fc" id="L162">        FileUtils.close(dis);</span>
       }
-<span class="nc" id="L164">      setSecretKey(key);</span>
-<span class="nc" id="L165">    } else {</span>
+<span class="fc" id="L164">      setSecretKey(key);</span>
+<span class="fc" id="L165">    } else {</span>
 <span class="nc" id="L166">      throw new CryptoException(&quot;Cannot read crypto file: &quot; + file);</span>
     }
-<span class="nc" id="L168">  }</span>
+<span class="fc" id="L168">  }</span>
 
   /**
    * Save a Key to a File
@@ -176,19 +176,19 @@ public abstract class KeyObject {
    * @throws IOException
    */
   public void saveSecretKey(File file) throws CryptoException, IOException {
-<span class="nc bnc" id="L179" title="All 6 branches missed.">    if (keyReady() &amp;&amp; (!file.exists() || file.canWrite())) {</span>
-<span class="nc" id="L180">      final byte[] key = getSecretKeyInBytes();</span>
-<span class="nc" id="L181">      final FileOutputStream outputStream = new FileOutputStream(file);</span>
+<span class="pc bpc" id="L179" title="4 of 6 branches missed.">    if (keyReady() &amp;&amp; (!file.exists() || file.canWrite())) {</span>
+<span class="fc" id="L180">      final byte[] key = getSecretKeyInBytes();</span>
+<span class="fc" id="L181">      final FileOutputStream outputStream = new FileOutputStream(file);</span>
       try {
-<span class="nc" id="L183">        outputStream.write(key);</span>
-<span class="nc" id="L184">        outputStream.flush();</span>
+<span class="fc" id="L183">        outputStream.write(key);</span>
+<span class="fc" id="L184">        outputStream.flush();</span>
       } finally {
-<span class="nc" id="L186">        FileUtils.close(outputStream);</span>
+<span class="fc" id="L186">        FileUtils.close(outputStream);</span>
       }
-<span class="nc" id="L188">    } else {</span>
+<span class="fc" id="L188">    } else {</span>
 <span class="nc" id="L189">      throw new CryptoException(&quot;Cannot read crypto file&quot;);</span>
     }
-<span class="nc" id="L191">  }</span>
+<span class="fc" id="L191">  }</span>
 
   /**
    * Generate a key from nothing
@@ -197,14 +197,14 @@ public abstract class KeyObject {
    */
   public void generateKey() throws Exception {
     try {
-<span class="nc" id="L200">      final KeyGenerator keyGen = KeyGenerator.getInstance(getAlgorithm());</span>
-<span class="nc" id="L201">      keyGen.init(getKeySize());</span>
-<span class="nc" id="L202">      secretKey = keyGen.generateKey();</span>
+<span class="fc" id="L200">      final KeyGenerator keyGen = KeyGenerator.getInstance(getAlgorithm());</span>
+<span class="fc" id="L201">      keyGen.init(getKeySize());</span>
+<span class="fc" id="L202">      secretKey = keyGen.generateKey();</span>
 <span class="nc" id="L203">    } catch (final Exception e) {</span>
 <span class="nc" id="L204">      logger.warn(&quot;GenerateKey Error&quot;, e);</span>
 <span class="nc" id="L205">      throw e;</span>
-<span class="nc" id="L206">    }</span>
-<span class="nc" id="L207">  }</span>
+<span class="fc" id="L206">    }</span>
+<span class="fc" id="L207">  }</span>
 
   /**
    * Returns a cipher for encryption associated with the key
@@ -234,13 +234,13 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] crypt(byte[] plaintext) throws Exception {
-<span class="nc bnc" id="L237" title="All 2 branches missed.">    if (!keyReady()) {</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (!keyReady()) {</span>
 <span class="nc" id="L238">      throw new CryptoException(&quot;Key not Ready&quot;);</span>
     }
     try {
-<span class="nc" id="L241">      final Cipher cipher = Cipher.getInstance(getInstance());</span>
-<span class="nc" id="L242">      cipher.init(Cipher.ENCRYPT_MODE, secretKey);</span>
-<span class="nc" id="L243">      return cipher.doFinal(plaintext);</span>
+<span class="fc" id="L241">      final Cipher cipher = Cipher.getInstance(getInstance());</span>
+<span class="fc" id="L242">      cipher.init(Cipher.ENCRYPT_MODE, secretKey);</span>
+<span class="fc" id="L243">      return cipher.doFinal(plaintext);</span>
 <span class="nc" id="L244">    } catch (final Exception e) {</span>
 <span class="nc" id="L245">      logger.warn(&quot;Crypt Error&quot;, e);</span>
 <span class="nc" id="L246">      throw e;</span>
@@ -257,8 +257,8 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public String cryptToHex(byte[] plaintext) throws Exception {
-<span class="nc" id="L260">    final byte[] result = crypt(plaintext);</span>
-<span class="nc" id="L261">    return encodeHex(result);</span>
+<span class="fc" id="L260">    final byte[] result = crypt(plaintext);</span>
+<span class="fc" id="L261">    return encodeHex(result);</span>
   }
 
   /**
@@ -271,7 +271,7 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] crypt(String plaintext) throws Exception {
-<span class="nc" id="L274">    return crypt(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L274">    return crypt(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
   }
 
   /**
@@ -284,7 +284,7 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public String cryptToHex(String plaintext) throws Exception {
-<span class="nc" id="L287">    return cryptToHex(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L287">    return cryptToHex(plaintext.getBytes(WaarpStringUtils.UTF8));</span>
   }
 
   /**
@@ -315,13 +315,13 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] decrypt(byte[] ciphertext) throws Exception {
-<span class="nc bnc" id="L318" title="All 2 branches missed.">    if (!keyReady()) {</span>
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">    if (!keyReady()) {</span>
 <span class="nc" id="L319">      throw new CryptoException(&quot;Key not Ready&quot;);</span>
     }
     try {
-<span class="nc" id="L322">      final Cipher cipher = Cipher.getInstance(getAlgorithm());</span>
-<span class="nc" id="L323">      cipher.init(Cipher.DECRYPT_MODE, secretKey);</span>
-<span class="nc" id="L324">      return cipher.doFinal(ciphertext);</span>
+<span class="fc" id="L322">      final Cipher cipher = Cipher.getInstance(getAlgorithm());</span>
+<span class="fc" id="L323">      cipher.init(Cipher.DECRYPT_MODE, secretKey);</span>
+<span class="fc" id="L324">      return cipher.doFinal(ciphertext);</span>
 <span class="nc" id="L325">    } catch (final Exception e) {</span>
 <span class="nc" id="L326">      logger.warn(&quot;Decrypt Error&quot;, e);</span>
 <span class="nc" id="L327">      throw e;</span>
@@ -338,7 +338,7 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public String decryptInString(byte[] ciphertext) throws Exception {
-<span class="nc" id="L341">    return new String(decrypt(ciphertext), WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L341">    return new String(decrypt(ciphertext), WaarpStringUtils.UTF8);</span>
   }
 
   /**
@@ -353,8 +353,8 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] decryptHexInBytes(String ciphertext) throws Exception {
-<span class="nc" id="L356">    final byte[] arrayBytes = decodeHex(ciphertext);</span>
-<span class="nc" id="L357">    return decrypt(arrayBytes);</span>
+<span class="fc" id="L356">    final byte[] arrayBytes = decodeHex(ciphertext);</span>
+<span class="fc" id="L357">    return decrypt(arrayBytes);</span>
   }
 
   /**
@@ -369,9 +369,9 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] decryptHexInBytes(byte[] ciphertext) throws Exception {
-<span class="nc" id="L372">    final byte[] arrayBytes =</span>
-<span class="nc" id="L373">        decodeHex(new String(ciphertext, WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L374">    return decrypt(arrayBytes);</span>
+<span class="fc" id="L372">    final byte[] arrayBytes =</span>
+<span class="fc" id="L373">        decodeHex(new String(ciphertext, WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L374">    return decrypt(arrayBytes);</span>
   }
 
   /**
@@ -385,7 +385,7 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public String decryptHexInString(String ciphertext) throws Exception {
-<span class="nc" id="L388">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L388">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
   }
 
   /**
@@ -399,7 +399,7 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public String decryptHexInString(byte[] ciphertext) throws Exception {
-<span class="nc" id="L402">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L402">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
   }
 
   /**
@@ -412,25 +412,25 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] decryptHexFile(File file) throws Exception {
-<span class="nc bnc" id="L415" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="pc bpc" id="L415" title="1 of 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
 <span class="nc" id="L416">      throw new IOException(</span>
           &quot;File too big to be decoded into an array of bytes&quot;);
     }
-<span class="nc" id="L419">    byte[] byteKeys = new byte[(int) file.length()];</span>
-<span class="nc" id="L420">    FileInputStream inputStream = null;</span>
-<span class="nc" id="L421">    DataInputStream dis = null;</span>
+<span class="fc" id="L419">    byte[] byteKeys = new byte[(int) file.length()];</span>
+<span class="fc" id="L420">    FileInputStream inputStream = null;</span>
+<span class="fc" id="L421">    DataInputStream dis = null;</span>
     try {
-<span class="nc" id="L423">      inputStream = new FileInputStream(file);</span>
-<span class="nc" id="L424">      dis = new DataInputStream(inputStream);</span>
-<span class="nc" id="L425">      dis.readFully(byteKeys);</span>
-<span class="nc" id="L426">      FileUtils.close(dis);</span>
-<span class="nc" id="L427">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L423">      inputStream = new FileInputStream(file);</span>
+<span class="fc" id="L424">      dis = new DataInputStream(inputStream);</span>
+<span class="fc" id="L425">      dis.readFully(byteKeys);</span>
+<span class="fc" id="L426">      FileUtils.close(dis);</span>
+<span class="fc" id="L427">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
       // decrypt it
-<span class="nc" id="L429">      byteKeys = decryptHexInBytes(skey);</span>
-<span class="nc" id="L430">      return byteKeys;</span>
+<span class="fc" id="L429">      byteKeys = decryptHexInBytes(skey);</span>
+<span class="fc" id="L430">      return byteKeys;</span>
     } finally {
-<span class="nc" id="L432">      FileUtils.close(dis);</span>
-<span class="nc" id="L433">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L432">      FileUtils.close(dis);</span>
+<span class="fc" id="L433">      FileUtils.close(inputStream);</span>
     }
   }
 
@@ -440,7 +440,7 @@ public abstract class KeyObject {
    * @return the array of bytes from encoded String (HEX)
    */
   public byte[] decodeHex(String encoded) {
-<span class="nc" id="L443">    return FilesystemBasedDigest.getFromHex(encoded);</span>
+<span class="fc" id="L443">    return FilesystemBasedDigest.getFromHex(encoded);</span>
   }
 
   /**
@@ -449,7 +449,7 @@ public abstract class KeyObject {
    * @return The encoded array of bytes in HEX
    */
   public String encodeHex(byte[] bytes) {
-<span class="nc" id="L452">    return FilesystemBasedDigest.getHex(bytes);</span>
+<span class="fc" id="L452">    return FilesystemBasedDigest.getHex(bytes);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

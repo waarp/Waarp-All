@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PartnerConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.configuration</a> &gt; <span class="el_source">PartnerConfiguration.java</span></div><h1>PartnerConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.configuration;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.protocol.utils.R66Versions;
+import org.waarp.openr66.protocol.utils.Version;
+
+import java.util.Map;
+
+/**
+ * Partner Configuration
+ */
+public class PartnerConfiguration {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(PartnerConfiguration.class);</span>
+
+  /**
+   * Uses as separator in field
+   */
+  public static final String BAR_JSON_FIELD = &quot;{&quot;;
+  /**
+   * Uses as separator in field
+   */
+  public static final String BAR_SEPARATOR_FIELD = &quot;;&quot;;
+  /**
+   * Uses as separator in field
+   */
+  public static final String BLANK_SEPARATOR_FIELD = &quot; &quot;;
+  /**
+   * Uses as separator in field
+   */
+<span class="fc" id="L57">  private static String SEPARATOR_FIELD = BAR_SEPARATOR_FIELD;</span>
+
+  /**
+   * JSON Fields
+   */
+<span class="fc" id="L62">  public enum FIELDS {</span>
+<span class="fc" id="L63">    HOSTID(&quot;nohostid&quot;), VERSION(R66Versions.V2_4_12.getVersion()),</span>
+<span class="fc" id="L64">    DIGESTALGO(DigestAlgo.MD5.algoName), FILESIZE(false), FINALHASH(false),</span>
+<span class="fc" id="L65">    PROXIFIED(false), SEPARATOR(BLANK_SEPARATOR_FIELD);</span>
+
+    final String name;
+    final Object defaultValue;
+
+<span class="fc" id="L70">    FIELDS(Object def) {</span>
+<span class="fc" id="L71">      name = name();</span>
+<span class="fc" id="L72">      defaultValue = def;</span>
+<span class="fc" id="L73">    }</span>
+  }
+
+  private final String id;
+<span class="fc" id="L77">  private final ObjectNode root = JsonHandler.createObjectNode();</span>
+  private final boolean useJson;
+  private boolean changeFileInfoEnabled;
+  private DigestAlgo digestAlgo;
+
+  /**
+   * Constructor for an external HostId
+   *
+   * @param id
+   * @param json mainly the version information
+   */
+<span class="fc" id="L88">  public PartnerConfiguration(String id, String json) {</span>
+<span class="fc" id="L89">    this.id = id;</span>
+<span class="fc" id="L90">    JsonHandler.setValue(root, FIELDS.HOSTID, id);</span>
+<span class="fc" id="L91">    final int pos = json.lastIndexOf('{');</span>
+    String version;
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (pos &gt; 1) {</span>
+<span class="fc" id="L94">      version = json.substring(0, pos - 1);</span>
+    } else {
+<span class="nc" id="L96">      version = json;</span>
+    }
+<span class="fc" id="L98">    JsonHandler.setValue(root, FIELDS.VERSION, version);</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">    if (isVersion2GEQVersion1(R66Versions.V2_4_12.getVersion(), version)) {</span>
+<span class="fc" id="L100">      JsonHandler.setValue(root, FIELDS.FILESIZE, true);</span>
+<span class="fc" id="L101">      JsonHandler.setValue(root, FIELDS.FINALHASH, true);</span>
+    } else {
+<span class="nc" id="L103">      JsonHandler.setValue(root, FIELDS.FILESIZE,</span>
+<span class="nc" id="L104">                           (Boolean) FIELDS.FILESIZE.defaultValue);</span>
+<span class="nc" id="L105">      JsonHandler.setValue(root, FIELDS.FINALHASH,</span>
+<span class="nc" id="L106">                           (Boolean) FIELDS.FINALHASH.defaultValue);</span>
+    }
+<span class="fc" id="L108">    JsonHandler.setValue(root, FIELDS.DIGESTALGO,</span>
+<span class="fc" id="L109">                         Configuration.configuration.getDigest().algoName);</span>
+<span class="fc" id="L110">    JsonHandler.setValue(root, FIELDS.PROXIFIED,</span>
+<span class="fc" id="L111">                         (Boolean) FIELDS.PROXIFIED.defaultValue);</span>
+<span class="fc" id="L112">    String sep = getSEPARATOR_FIELD();</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    if (!isVersion2GEQVersion1(R66Versions.V2_4_13.getVersion(), version)) {</span>
+<span class="nc" id="L114">      sep = BLANK_SEPARATOR_FIELD;</span>
+    }
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (isVersion2GEQVersion1(R66Versions.V2_4_17.getVersion(), version)) {</span>
+<span class="fc" id="L117">      logger.debug(&quot;UseJson for &quot; + id + ':' + json);</span>
+<span class="fc" id="L118">      useJson = true;</span>
+    } else {
+<span class="nc" id="L120">      logger.debug(&quot;NOT UseJson for &quot; + id + ':' + json);</span>
+<span class="nc" id="L121">      useJson = false;</span>
+    }
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (isVersion2GEQVersion1(R66Versions.V3_0_4.getVersion(), version)) {</span>
+<span class="fc" id="L124">      changeFileInfoEnabled = true;</span>
+    }
+<span class="fc" id="L126">    JsonHandler.setValue(root, FIELDS.SEPARATOR, sep);</span>
+
+<span class="pc bpc" id="L128" title="2 of 4 branches missed.">    if (json != null &amp;&amp; pos &gt; 1) {</span>
+<span class="fc" id="L129">      final String realjson = json.substring(pos);</span>
+<span class="fc" id="L130">      final ObjectNode info = JsonHandler.getFromString(realjson);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">      if (info != null) {</span>
+<span class="fc" id="L132">        root.setAll(info);</span>
+      }
+    }
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">    if (isProxified()) {</span>
+<span class="nc" id="L136">      Configuration.configuration.setBlacklistBadAuthent(false);</span>
+    }
+<span class="fc" id="L138">    digestAlgo = getDigestAlgoInternal();</span>
+<span class="fc" id="L139">    logger.debug(&quot;Info HostId: &quot; + root);</span>
+<span class="fc" id="L140">  }</span>
+
+  /**
+   * Self constructor
+   *
+   * @param id
+   */
+<span class="fc" id="L147">  public PartnerConfiguration(String id) {</span>
+<span class="fc" id="L148">    this.id = id;</span>
+<span class="fc" id="L149">    JsonHandler.setValue(root, FIELDS.HOSTID, id);</span>
+<span class="fc" id="L150">    JsonHandler.setValue(root, FIELDS.VERSION, Version.ID);</span>
+<span class="fc" id="L151">    JsonHandler.setValue(root, FIELDS.FILESIZE, true);</span>
+<span class="fc" id="L152">    JsonHandler.setValue(root, FIELDS.FINALHASH,</span>
+<span class="fc" id="L153">                         Configuration.configuration.isGlobalDigest());</span>
+<span class="fc" id="L154">    JsonHandler.setValue(root, FIELDS.DIGESTALGO,</span>
+<span class="fc" id="L155">                         Configuration.configuration.getDigest().algoName);</span>
+<span class="fc" id="L156">    JsonHandler.setValue(root, FIELDS.PROXIFIED,</span>
+<span class="fc" id="L157">                         Configuration.configuration.isHostProxyfied());</span>
+<span class="fc" id="L158">    JsonHandler.setValue(root, FIELDS.SEPARATOR, getSEPARATOR_FIELD());</span>
+<span class="fc" id="L159">    useJson = true;</span>
+<span class="fc" id="L160">    digestAlgo = getDigestAlgoInternal();</span>
+<span class="fc" id="L161">    logger.debug(&quot;Info HostId: &quot; + root);</span>
+<span class="fc" id="L162">  }</span>
+
+  /**
+   * @return the associated HostId
+   */
+  public String getId() {
+<span class="nc" id="L168">    return id;</span>
+  }
+
+  /**
+   * @return the version for this Host
+   */
+  public String getVersion() {
+<span class="fc" id="L175">    return root.path(FIELDS.VERSION.name).asText();</span>
+  }
+
+  /**
+   * @return True if this Host returns FileSize
+   */
+  public boolean useFileSize() {
+<span class="nc" id="L182">    return root.path(FIELDS.FILESIZE.name)</span>
+<span class="nc" id="L183">               .asBoolean((Boolean) FIELDS.FILESIZE.defaultValue);</span>
+  }
+
+  /**
+   * @return True if this Host returns a final hash
+   */
+  public boolean useFinalHash() {
+<span class="fc" id="L190">    return root.path(FIELDS.FINALHASH.name)</span>
+<span class="fc" id="L191">               .asBoolean((Boolean) FIELDS.FINALHASH.defaultValue);</span>
+  }
+
+  /**
+   * @return DigestAlgo if this Host returns Digest Algo used
+   */
+  public DigestAlgo getDigestAlgo() {
+<span class="fc" id="L198">    return digestAlgo;</span>
+  }
+
+  /**
+   * Used to initialize the DigestAlgo for this partner
+   *
+   * @return the DigestAlgo
+   */
+  private DigestAlgo getDigestAlgoInternal() {
+<span class="fc" id="L207">    final String algo = root.path(FIELDS.DIGESTALGO.name).asText();</span>
+<span class="fc" id="L208">    return getDigestAlgo(algo);</span>
+  }
+
+  /**
+   * @return True if this Host is proxified
+   */
+  public boolean isProxified() {
+<span class="fc" id="L215">    return root.path(FIELDS.PROXIFIED.name)</span>
+<span class="fc" id="L216">               .asBoolean((Boolean) FIELDS.PROXIFIED.defaultValue);</span>
+  }
+
+  /**
+   * @return the separator for this Host
+   */
+  public String getSeperator() {
+<span class="fc" id="L223">    return root.path(FIELDS.SEPARATOR.name).asText();</span>
+  }
+
+  /**
+   * @return the useJson
+   */
+  public boolean useJson() {
+<span class="fc" id="L230">    return useJson;</span>
+  }
+
+  /**
+   * @return the changeFileInfoEnabled
+   */
+  public boolean changeFileInfoEnabled() {
+<span class="nc" id="L237">    return changeFileInfoEnabled;</span>
+  }
+
+  /**
+   * @return the String representation as version.json
+   */
+  @Override
+  public String toString() {
+<span class="fc" id="L245">    return getVersion() + '.' + JsonHandler.writeAsString(root);</span>
+  }
+
+  public static final DigestAlgo getDigestAlgo(String algo) {
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">    for (final DigestAlgo alg : DigestAlgo.values()) {</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">      if (alg.algoName.equals(algo)) {</span>
+<span class="fc" id="L251">        return alg;</span>
+      }
+    }
+    try {
+<span class="nc" id="L255">      return DigestAlgo.valueOf(algo);</span>
+<span class="nc" id="L256">    } catch (final IllegalArgumentException ignored) {</span>
+      // ignore
+    }
+<span class="nc" id="L259">    return Configuration.configuration.getDigest();</span>
+  }
+
+  /**
+   * @param remoteHost
+   *
+   * @return the separator to be used
+   */
+  public static final String getSeparator(String remoteHost) {
+<span class="fc" id="L268">    logger.debug(&quot;Versions: search: &quot; + remoteHost + &quot; in {}&quot;,</span>
+<span class="fc" id="L269">                 Configuration.configuration.getVersions());</span>
+<span class="fc" id="L270">    final PartnerConfiguration partner =</span>
+<span class="fc" id="L271">        Configuration.configuration.getVersions().get(remoteHost);</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">    if (partner != null) {</span>
+<span class="fc" id="L273">      return partner.getSeperator();</span>
+    }
+<span class="fc" id="L275">    return BLANK_SEPARATOR_FIELD;</span>
+  }
+
+  /**
+   * Compare 2 versions
+   *
+   * @param version1
+   * @param version2
+   *
+   * @return True if version2 &gt;= version1
+   */
+  public static final boolean isVersion2GEQVersion1(String version1,
+                                                    String version2) {
+<span class="pc bpc" id="L288" title="2 of 4 branches missed.">    if (version1 == null || version2 == null) {</span>
+<span class="nc" id="L289">      return false;</span>
+    }
+    int major1;
+    int rank1;
+    int subversion1;
+<span class="fc" id="L294">    String[] vals = version1.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L295">    major1 = Integer.parseInt(vals[0]);</span>
+<span class="fc" id="L296">    rank1 = Integer.parseInt(vals[1]);</span>
+<span class="fc" id="L297">    subversion1 = Integer.parseInt(vals[2]);</span>
+    int major2;
+    int rank2;
+    int subversion2;
+<span class="fc" id="L301">    vals = version2.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L302">    major2 = Integer.parseInt(vals[0]);</span>
+<span class="fc" id="L303">    rank2 = Integer.parseInt(vals[1]);</span>
+<span class="fc" id="L304">    subversion2 = Integer.parseInt(vals[2]);</span>
+<span class="pc bpc" id="L305" title="3 of 10 branches missed.">    final boolean b = major1 &lt; major2 || major1 == major2 &amp;&amp; (rank1 &lt; rank2 ||</span>
+                                                              rank1 == rank2 &amp;&amp;
+                                                              subversion1 &lt;=
+                                                              subversion2);
+<span class="fc" id="L309">    logger.trace(</span>
+        &quot;1: &quot; + major1 + ':' + rank1 + ':' + subversion1 + &quot; &lt;=? &quot; + major2 +
+        ':' + rank2 + ':' + subversion2 + &quot; = &quot; + (b));
+<span class="fc" id="L312">    return b;</span>
+  }
+
+  /**
+   * Compare strictly 2 versions
+   *
+   * @param version1
+   * @param version2
+   *
+   * @return True if version2 &gt; version1
+   */
+  public static final boolean isVersion2GTVersion1(String version1,
+                                                   String version2) {
+<span class="pc bpc" id="L325" title="2 of 4 branches missed.">    if (version1 == null || version2 == null) {</span>
+<span class="nc" id="L326">      return false;</span>
+    }
+    int major1;
+    int rank1;
+    int subversion1;
+<span class="fc" id="L331">    String[] vals = version1.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L332">    major1 = Integer.parseInt(vals[0]);</span>
+<span class="fc" id="L333">    rank1 = Integer.parseInt(vals[1]);</span>
+<span class="fc" id="L334">    subversion1 = Integer.parseInt(vals[2]);</span>
+    int major2;
+    int rank2;
+    int subversion2;
+<span class="fc" id="L338">    vals = version2.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L339">    major2 = Integer.parseInt(vals[0]);</span>
+<span class="fc" id="L340">    rank2 = Integer.parseInt(vals[1]);</span>
+<span class="fc" id="L341">    subversion2 = Integer.parseInt(vals[2]);</span>
+<span class="pc bpc" id="L342" title="5 of 10 branches missed.">    final boolean b = major1 &lt; major2 || major1 == major2 &amp;&amp; (rank1 &lt; rank2 ||</span>
+                                                              rank1 == rank2 &amp;&amp;
+                                                              subversion1 &lt;
+                                                              subversion2);
+<span class="fc" id="L346">    logger.debug(</span>
+        &quot;1: &quot; + major1 + ':' + rank1 + ':' + subversion1 + &quot; &lt;? &quot; + major2 +
+        ':' + rank2 + ':' + subversion2 + &quot; = &quot; + (b));
+<span class="fc" id="L349">    return b;</span>
+  }
+
+  /**
+   * @param host
+   *
+   * @return True if this host is referenced as using Json
+   */
+  public static final boolean useJson(String host) {
+<span class="nc" id="L358">    logger.debug(&quot;UseJson host: '&quot; + host + &quot;':&quot; +</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">                 (Configuration.configuration.getVersions().containsKey(host)?</span>
+<span class="nc" id="L360">                     Configuration.configuration.getVersions().get(host)</span>
+<span class="nc" id="L361">                                                .useJson() : &quot;no:&quot; +</span>
+                                                             ((Map&lt;String, PartnerConfiguration&gt;) Configuration.configuration
+<span class="nc" id="L363">                                                                 .getVersions())</span>
+<span class="nc" id="L364">                                                                 .keySet()));</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">    return Configuration.configuration.getVersions().containsKey(host) &amp;&amp;</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">           Configuration.configuration.getVersions().get(host).useJson();</span>
+  }
+
+  /**
+   * @return the sEPARATOR_FIELD
+   */
+  public static String getSEPARATOR_FIELD() {
+<span class="fc" id="L373">    return SEPARATOR_FIELD;</span>
+  }
+
+  /**
+   * @param separatorFIELD the sEPARATOR_FIELD to set
+   */
+  public static void setSEPARATOR_FIELD(String separatorFIELD) {
+<span class="nc" id="L380">    SEPARATOR_FIELD = separatorFIELD;</span>
+<span class="nc" id="L381">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

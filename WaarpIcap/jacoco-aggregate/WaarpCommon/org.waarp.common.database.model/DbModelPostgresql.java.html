@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>DbModelPostgresql.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp ICAP Client</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.database.model</a> &gt; <span class="el_source">DbModelPostgresql.java</span></div><h1>DbModelPostgresql.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.database.model;
+
+import org.postgresql.Driver;
+import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.data.DbDataModel;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Types;
+
+/**
+ * PostGreSQL Database Model implementation
+ */
+public abstract class DbModelPostgresql extends DbModelAbstract {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(DbModelPostgresql.class);</span>
+
+<span class="nc" id="L49">  private static final DbType type = DbType.PostGreSQL;</span>
+
+<span class="nc" id="L51">  protected static class DbTypeResolverPostgreSQL</span>
+      extends DbModelAbstract.DbTypeResolver {
+
+    @Override
+    public String getType(final int sqlType) {
+<span class="nc" id="L56">      return DBType.getType(sqlType);</span>
+    }
+  }
+
+  static {
+<span class="nc" id="L61">    dbTypeResolver = new DbTypeResolverPostgreSQL();</span>
+<span class="nc" id="L62">  }</span>
+
+  protected Boolean useIsValid;
+
+  @Override
+  public DbType getDbType() {
+<span class="nc" id="L68">    return type;</span>
+  }
+
+  /**
+   * Create the object and initialize if necessary the driver
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   */
+<span class="nc" id="L76">  protected DbModelPostgresql() throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="nc" id="L78">      return;</span>
+    }
+    try {
+<span class="nc" id="L81">      DriverManager.registerDriver(new Driver());</span>
+<span class="nc" id="L82">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="nc" id="L83">    } catch (final SQLException e) {</span>
+      // SQLException
+<span class="nc" id="L85">      logger.error(</span>
+<span class="nc" id="L86">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
+<span class="nc" id="L87">      DbSession.error(e);</span>
+<span class="nc" id="L88">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L89">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
+<span class="nc" id="L90">    }</span>
+    // No pooling connection yet available through URL and not for production purpose
+    /*
+     * Quoting the PostgreSQL documentation: from http://jdbc.postgresql.org/documentation/head/ds-ds.html In
+     * general it is not recommended to use the PostgreSQL™ provided connection pool.
+     *
+     */
+    /*
+     * PGPoolingDataSource source = new PGPoolingDataSource(); source.setDataSourceName(&quot;A Data Source&quot;);
+     * source.setServerName(&quot;localhost&quot;); source.setDatabaseName(&quot;test&quot;); source.setUser(&quot;testuser&quot;);
+     * source.setPassword(&quot;testpassword&quot;); source.setMaxConnections(10);
+     */
+<span class="nc" id="L102">  }</span>
+
+<span class="nc" id="L104">  protected enum DBType {</span>
+<span class="nc" id="L105">    CHAR(Types.CHAR, &quot; CHAR(3) &quot;), VARCHAR(Types.VARCHAR, &quot; VARCHAR(8096) &quot;),</span>
+<span class="nc" id="L106">    NVARCHAR(Types.NVARCHAR, &quot; VARCHAR(8096) &quot;),</span>
+<span class="nc" id="L107">    LONGVARCHAR(Types.LONGVARCHAR, &quot; TEXT &quot;), BIT(Types.BIT, &quot; BOOLEAN &quot;),</span>
+<span class="nc" id="L108">    TINYINT(Types.TINYINT, &quot; INT2 &quot;), SMALLINT(Types.SMALLINT, &quot; SMALLINT &quot;),</span>
+<span class="nc" id="L109">    INTEGER(Types.INTEGER, &quot; INTEGER &quot;), BIGINT(Types.BIGINT, &quot; BIGINT &quot;),</span>
+<span class="nc" id="L110">    REAL(Types.REAL, &quot; REAL &quot;), DOUBLE(Types.DOUBLE, &quot; DOUBLE PRECISION &quot;),</span>
+<span class="nc" id="L111">    VARBINARY(Types.VARBINARY, &quot; BYTEA &quot;), DATE(Types.DATE, &quot; DATE &quot;),</span>
+<span class="nc" id="L112">    TIMESTAMP(Types.TIMESTAMP, &quot; TIMESTAMP &quot;);</span>
+
+    public final int type;
+
+    public final String constructor;
+
+<span class="nc" id="L118">    DBType(int type, String constructor) {</span>
+<span class="nc" id="L119">      this.type = type;</span>
+<span class="nc" id="L120">      this.constructor = constructor;</span>
+<span class="nc" id="L121">    }</span>
+
+    public static String getType(int sqltype) {
+<span class="nc bnc" id="L124" title="All 15 branches missed.">      switch (sqltype) {</span>
+        case Types.CHAR:
+<span class="nc" id="L126">          return CHAR.constructor;</span>
+        case Types.VARCHAR:
+<span class="nc" id="L128">          return VARCHAR.constructor;</span>
+        case Types.NVARCHAR:
+<span class="nc" id="L130">          return NVARCHAR.constructor;</span>
+        case Types.LONGVARCHAR:
+<span class="nc" id="L132">          return LONGVARCHAR.constructor;</span>
+        case Types.BIT:
+<span class="nc" id="L134">          return BIT.constructor;</span>
+        case Types.TINYINT:
+<span class="nc" id="L136">          return TINYINT.constructor;</span>
+        case Types.SMALLINT:
+<span class="nc" id="L138">          return SMALLINT.constructor;</span>
+        case Types.INTEGER:
+<span class="nc" id="L140">          return INTEGER.constructor;</span>
+        case Types.BIGINT:
+<span class="nc" id="L142">          return BIGINT.constructor;</span>
+        case Types.REAL:
+<span class="nc" id="L144">          return REAL.constructor;</span>
+        case Types.DOUBLE:
+<span class="nc" id="L146">          return DOUBLE.constructor;</span>
+        case Types.VARBINARY:
+<span class="nc" id="L148">          return VARBINARY.constructor;</span>
+        case Types.DATE:
+<span class="nc" id="L150">          return DATE.constructor;</span>
+        case Types.TIMESTAMP:
+<span class="nc" id="L152">          return TIMESTAMP.constructor;</span>
+        default:
+<span class="nc" id="L154">          return null;</span>
+      }
+    }
+  }
+
+  @Override
+  public void resetSequence(DbSession session, long newvalue)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L162">    final String action =</span>
+        &quot;ALTER SEQUENCE &quot; + DbDataModel.fieldseq + &quot; MINVALUE &quot; +
+        (DbConstant.ILLEGALVALUE + 1) + &quot; RESTART WITH &quot; + newvalue;
+<span class="nc" id="L165">    final DbRequest request = new DbRequest(session);</span>
+    try {
+<span class="nc" id="L167">      request.query(action);</span>
+<span class="nc" id="L168">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L169">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L170">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L171">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+    } finally {
+<span class="nc" id="L173">      request.close();</span>
+    }
+<span class="nc" id="L175">    logger.warn(action);</span>
+<span class="nc" id="L176">  }</span>
+
+  @Override
+  public long nextSequence(DbSession dbSession)
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+             WaarpDatabaseNoDataException {
+<span class="nc" id="L182">    long result = DbConstant.ILLEGALVALUE;</span>
+<span class="nc" id="L183">    final String action = &quot;SELECT NEXTVAL('&quot; + DbDataModel.fieldseq + &quot;')&quot;;</span>
+<span class="nc" id="L184">    final DbPreparedStatement preparedStatement =</span>
+        new DbPreparedStatement(dbSession);
+    try {
+<span class="nc" id="L187">      preparedStatement.createPrepareStatement(action);</span>
+      // Limit the search
+<span class="nc" id="L189">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+        try {
+<span class="nc" id="L192">          result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L193">        } catch (final SQLException e) {</span>
+<span class="nc" id="L194">          throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L195">        }</span>
+<span class="nc" id="L196">        return result;</span>
+      } else {
+<span class="nc" id="L198">        throw new WaarpDatabaseNoDataException(</span>
+            &quot;No sequence found. Must be initialized first&quot;);
+      }
+    } finally {
+<span class="nc" id="L202">      preparedStatement.realClose();</span>
+    }
+  }
+
+  @Override
+  protected String validConnectionString() {
+<span class="nc" id="L208">    return &quot;select 1&quot;;</span>
+  }
+
+  @Override
+  public String limitRequest(String allfields, String request, int nb) {
+<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="nc" id="L214">      return request;</span>
+    }
+<span class="nc" id="L216">    return request + &quot; LIMIT &quot; + nb;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

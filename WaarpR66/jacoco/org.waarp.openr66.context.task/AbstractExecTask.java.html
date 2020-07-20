@@ -29,6 +29,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -60,13 +61,13 @@ public abstract class AbstractExecTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="fc" id="L63">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L64">      WaarpLoggerFactory.getLogger(AbstractExecTask.class);</span>
-<span class="fc" id="L65">  private static final Pattern COMPILE_BLANK = Pattern.compile(&quot; &quot;);</span>
-<span class="fc" id="L66">  private static final Pattern COMPILE_REPLACE_ALL =</span>
-<span class="fc" id="L67">      Pattern.compile(&quot;#([A-Z]+)#&quot;);</span>
-<span class="fc" id="L68">  private static final Pattern COMPILE_HASH =</span>
-<span class="fc" id="L69">      Pattern.compile(&quot;#&quot;, Pattern.LITERAL);</span>
+<span class="fc" id="L64">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L65">      WaarpLoggerFactory.getLogger(AbstractExecTask.class);</span>
+<span class="fc" id="L66">  private static final Pattern COMPILE_BLANK = WaarpStringUtils.BLANK;</span>
+<span class="fc" id="L67">  private static final Pattern COMPILE_REPLACE_ALL =</span>
+<span class="fc" id="L68">      Pattern.compile(&quot;#([A-Z]+)#&quot;);</span>
+<span class="fc" id="L69">  private static final Pattern COMPILE_HASH =</span>
+<span class="fc" id="L70">      Pattern.compile(&quot;#&quot;, Pattern.LITERAL);</span>
 
   /**
    * Constructor
@@ -78,8 +79,8 @@ public abstract class AbstractExecTask extends AbstractTask {
    */
   AbstractExecTask(TaskType type, int delay, String argRule, String argTransfer,
                    R66Session session) {
-<span class="fc" id="L81">    super(type, delay, argRule, argTransfer, session);</span>
-<span class="fc" id="L82">  }</span>
+<span class="fc" id="L82">    super(type, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L83">  }</span>
 
   /**
    * Apply transferInfo substitutions
@@ -89,16 +90,16 @@ public abstract class AbstractExecTask extends AbstractTask {
    * @return the line after substitutions
    */
   protected String applyTransferSubstitutions(String line) {
-<span class="fc" id="L92">    final Object[] argFormat = COMPILE_BLANK.split(argTransfer);</span>
-<span class="pc bpc" id="L93" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
+<span class="fc" id="L93">    final Object[] argFormat = COMPILE_BLANK.split(argTransfer);</span>
+<span class="pc bpc" id="L94" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
       try {
-<span class="fc" id="L95">        return String.format(line, argFormat);</span>
-<span class="nc" id="L96">      } catch (final Exception e) {</span>
+<span class="fc" id="L96">        return String.format(line, argFormat);</span>
+<span class="nc" id="L97">      } catch (final Exception e) {</span>
         // ignored error since bad argument in static rule info
-<span class="nc" id="L98">        logger.error(&quot;Bad format in Rule: {&quot; + line + &quot;} &quot; + e.getMessage());</span>
+<span class="nc" id="L99">        logger.error(&quot;Bad format in Rule: {&quot; + line + &quot;} &quot; + e.getMessage());</span>
       }
     }
-<span class="nc" id="L101">    return line;</span>
+<span class="nc" id="L102">    return line;</span>
   }
 
   /**
@@ -107,31 +108,31 @@ public abstract class AbstractExecTask extends AbstractTask {
    * @param line the command to process as a string
    */
   protected CommandLine buildCommandLine(String line) {
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    if (line.contains(NOWAIT)) {</span>
-<span class="nc" id="L111">      waitForValidation = false;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (line.contains(NOWAIT)) {</span>
+<span class="nc" id="L112">      waitForValidation = false;</span>
     }
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    if (line.contains(LOCALEXEC)) {</span>
-<span class="nc" id="L114">      useLocalExec = true;</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">    if (line.contains(LOCALEXEC)) {</span>
+<span class="nc" id="L115">      useLocalExec = true;</span>
     }
 
-<span class="fc" id="L117">    final String replacedLine =</span>
-<span class="fc" id="L118">        COMPILE_REPLACE_ALL.matcher(line).replaceAll(&quot;\\${$1}&quot;);</span>
+<span class="fc" id="L118">    final String replacedLine =</span>
+<span class="fc" id="L119">        COMPILE_REPLACE_ALL.matcher(line).replaceAll(&quot;\\${$1}&quot;);</span>
 
-<span class="fc" id="L120">    final CommandLine commandLine =</span>
-<span class="fc" id="L121">        CommandLine.parse(replacedLine, getSubstitutionMap());</span>
+<span class="fc" id="L121">    final CommandLine commandLine =</span>
+<span class="fc" id="L122">        CommandLine.parse(replacedLine, getSubstitutionMap());</span>
 
-<span class="fc" id="L123">    final File exec = new File(commandLine.getExecutable());</span>
-<span class="pc bpc" id="L124" title="3 of 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
-<span class="nc" id="L125">      logger.error(&quot;Exec command is not executable: &quot; + line);</span>
-<span class="nc" id="L126">      final R66Result result =</span>
+<span class="fc" id="L124">    final File exec = new File(commandLine.getExecutable());</span>
+<span class="pc bpc" id="L125" title="3 of 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
+<span class="nc" id="L126">      logger.error(&quot;Exec command is not executable: &quot; + line);</span>
+<span class="nc" id="L127">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.CommandNotFound,
-<span class="nc" id="L128">                        session.getRunner());</span>
-<span class="nc" id="L129">      futureCompletion.setResult(result);</span>
-<span class="nc" id="L130">      futureCompletion.cancel();</span>
-<span class="nc" id="L131">      return null;</span>
+<span class="nc" id="L129">                        session.getRunner());</span>
+<span class="nc" id="L130">      futureCompletion.setResult(result);</span>
+<span class="nc" id="L131">      futureCompletion.cancel();</span>
+<span class="nc" id="L132">      return null;</span>
     }
 
-<span class="fc" id="L134">    return commandLine;</span>
+<span class="fc" id="L135">    return commandLine;</span>
   }
 
   /**
@@ -139,259 +140,259 @@ public abstract class AbstractExecTask extends AbstractTask {
    * CommandLine
    */
   protected Map&lt;String, Object&gt; getSubstitutionMap() {
-<span class="fc" id="L142">    final Map&lt;String, Object&gt; rv = new HashMap&lt;String, Object&gt;();</span>
-<span class="fc" id="L143">    rv.put(</span>
-<span class="fc" id="L144">        COMPILE_HASH.matcher(NOWAIT).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L143">    final Map&lt;String, Object&gt; rv = new HashMap&lt;String, Object&gt;();</span>
+<span class="fc" id="L144">    rv.put(</span>
+<span class="fc" id="L145">        COMPILE_HASH.matcher(NOWAIT).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
         &quot;&quot;);
-<span class="fc" id="L146">    rv.put(COMPILE_HASH.matcher(LOCALEXEC)</span>
-<span class="fc" id="L147">                       .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;&quot;);</span>
+<span class="fc" id="L147">    rv.put(COMPILE_HASH.matcher(LOCALEXEC)</span>
+<span class="fc" id="L148">                       .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;&quot;);</span>
 
-<span class="fc" id="L149">    File trueFile = null;</span>
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (session.getFile() != null) {</span>
-<span class="fc" id="L151">      trueFile = session.getFile().getTrueFile();</span>
+<span class="fc" id="L150">    File trueFile = null;</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    if (session.getFile() != null) {</span>
+<span class="fc" id="L152">      trueFile = session.getFile().getTrueFile();</span>
     }
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (trueFile != null) {</span>
-<span class="fc" id="L154">      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)</span>
-<span class="fc" id="L155">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L156">             trueFile.getAbsolutePath());</span>
-<span class="fc" id="L157">      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)</span>
-<span class="fc" id="L158">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L159">             R66Dir.getFinalUniqueFilename(session.getFile()));</span>
-<span class="fc" id="L160">      rv.put(COMPILE_HASH.matcher(FILESIZE)</span>
-<span class="fc" id="L161">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L162">             Long.toString(trueFile.length()));</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (trueFile != null) {</span>
+<span class="fc" id="L155">      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)</span>
+<span class="fc" id="L156">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L157">             trueFile.getAbsolutePath());</span>
+<span class="fc" id="L158">      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)</span>
+<span class="fc" id="L159">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L160">             R66Dir.getFinalUniqueFilename(session.getFile()));</span>
+<span class="fc" id="L161">      rv.put(COMPILE_HASH.matcher(FILESIZE)</span>
+<span class="fc" id="L162">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L163">             Long.toString(trueFile.length()));</span>
     } else {
-<span class="nc" id="L164">      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)</span>
-<span class="nc" id="L165">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;nofile&quot;);</span>
-<span class="nc" id="L166">      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)</span>
-<span class="nc" id="L167">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;nofile&quot;);</span>
-<span class="nc" id="L168">      rv.put(COMPILE_HASH.matcher(FILESIZE)</span>
-<span class="nc" id="L169">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;0&quot;);</span>
+<span class="nc" id="L165">      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)</span>
+<span class="nc" id="L166">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;nofile&quot;);</span>
+<span class="nc" id="L167">      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)</span>
+<span class="nc" id="L168">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;nofile&quot;);</span>
+<span class="nc" id="L169">      rv.put(COMPILE_HASH.matcher(FILESIZE)</span>
+<span class="nc" id="L170">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;0&quot;);</span>
     }
 
-<span class="fc" id="L172">    final DbTaskRunner runner = session.getRunner();</span>
-<span class="pc bpc" id="L173" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="fc" id="L174">      rv.put(COMPILE_HASH.matcher(ORIGINALFULLPATH)</span>
-<span class="fc" id="L175">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L176">             runner.getOriginalFilename());</span>
-<span class="fc" id="L177">      rv.put(COMPILE_HASH.matcher(ORIGINALFILENAME)</span>
-<span class="fc" id="L178">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L179">             R66File.getBasename(runner.getOriginalFilename()));</span>
-<span class="fc" id="L180">      rv.put(</span>
-<span class="fc" id="L181">          COMPILE_HASH.matcher(RULE).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L182">          runner.getRuleId());</span>
+<span class="fc" id="L173">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="fc" id="L175">      rv.put(COMPILE_HASH.matcher(ORIGINALFULLPATH)</span>
+<span class="fc" id="L176">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L177">             runner.getOriginalFilename());</span>
+<span class="fc" id="L178">      rv.put(COMPILE_HASH.matcher(ORIGINALFILENAME)</span>
+<span class="fc" id="L179">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L180">             R66File.getBasename(runner.getOriginalFilename()));</span>
+<span class="fc" id="L181">      rv.put(</span>
+<span class="fc" id="L182">          COMPILE_HASH.matcher(RULE).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L183">          runner.getRuleId());</span>
     }
 
-<span class="fc" id="L185">    DateFormat dateFormat = new SimpleDateFormat(&quot;yyyyMMdd&quot;);</span>
-<span class="fc" id="L186">    final Date date = new Date();</span>
-<span class="fc" id="L187">    rv.put(COMPILE_HASH.matcher(DATE).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L188">           dateFormat.format(date));</span>
-<span class="fc" id="L189">    dateFormat = new SimpleDateFormat(&quot;HHmmss&quot;);</span>
-<span class="fc" id="L190">    rv.put(COMPILE_HASH.matcher(HOUR).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L191">           dateFormat.format(date));</span>
+<span class="fc" id="L186">    DateFormat dateFormat = new SimpleDateFormat(&quot;yyyyMMdd&quot;);</span>
+<span class="fc" id="L187">    final Date date = new Date();</span>
+<span class="fc" id="L188">    rv.put(COMPILE_HASH.matcher(DATE).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L189">           dateFormat.format(date));</span>
+<span class="fc" id="L190">    dateFormat = new SimpleDateFormat(&quot;HHmmss&quot;);</span>
+<span class="fc" id="L191">    rv.put(COMPILE_HASH.matcher(HOUR).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L192">           dateFormat.format(date));</span>
 
-<span class="pc bpc" id="L193" title="1 of 2 branches missed.">    if (session.getAuth() != null) {</span>
-<span class="fc" id="L194">      rv.put(COMPILE_HASH.matcher(REMOTEHOST)</span>
-<span class="fc" id="L195">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L196">             session.getAuth().getUser());</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">    if (session.getAuth() != null) {</span>
+<span class="fc" id="L195">      rv.put(COMPILE_HASH.matcher(REMOTEHOST)</span>
+<span class="fc" id="L196">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L197">             session.getAuth().getUser());</span>
       String localhost;
       try {
-<span class="fc" id="L199">        localhost =</span>
-<span class="fc" id="L200">            Configuration.configuration.getHostId(session.getAuth().isSsl());</span>
-<span class="nc" id="L201">      } catch (final OpenR66ProtocolNoSslException e) {</span>
+<span class="fc" id="L200">        localhost =</span>
+<span class="fc" id="L201">            Configuration.configuration.getHostId(session.getAuth().isSsl());</span>
+<span class="nc" id="L202">      } catch (final OpenR66ProtocolNoSslException e) {</span>
         // replace by standard name
-<span class="nc" id="L203">        localhost = Configuration.configuration.getHostId();</span>
-<span class="fc" id="L204">      }</span>
-<span class="fc" id="L205">      rv.put(COMPILE_HASH.matcher(LOCALHOST)</span>
-<span class="fc" id="L206">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), localhost);</span>
+<span class="nc" id="L204">        localhost = Configuration.configuration.getHostId();</span>
+<span class="fc" id="L205">      }</span>
+<span class="fc" id="L206">      rv.put(COMPILE_HASH.matcher(LOCALHOST)</span>
+<span class="fc" id="L207">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), localhost);</span>
     }
-<span class="pc bpc" id="L208" title="1 of 2 branches missed.">    if (session.getRemoteAddress() != null) {</span>
-<span class="nc" id="L209">      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)</span>
-<span class="nc" id="L210">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L211">             session.getRemoteAddress().toString());</span>
-<span class="nc" id="L212">      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)</span>
-<span class="nc" id="L213">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L214">             session.getLocalAddress().toString());</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">    if (session.getRemoteAddress() != null) {</span>
+<span class="fc" id="L210">      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)</span>
+<span class="fc" id="L211">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L212">             session.getRemoteAddress().toString());</span>
+<span class="fc" id="L213">      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)</span>
+<span class="fc" id="L214">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L215">             session.getLocalAddress().toString());</span>
     } else {
-<span class="fc" id="L216">      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)</span>
-<span class="fc" id="L217">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;unknown&quot;);</span>
-<span class="fc" id="L218">      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)</span>
-<span class="fc" id="L219">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;unknown&quot;);</span>
+<span class="fc" id="L217">      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)</span>
+<span class="fc" id="L218">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;unknown&quot;);</span>
+<span class="fc" id="L219">      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)</span>
+<span class="fc" id="L220">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;unknown&quot;);</span>
     }
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="fc" id="L222">      rv.put(COMPILE_HASH.matcher(TRANSFERID)</span>
-<span class="fc" id="L223">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L224">             runner.getSpecialId());</span>
-<span class="fc" id="L225">      rv.put(COMPILE_HASH.matcher(REQUESTERHOST)</span>
-<span class="fc" id="L226">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L227">             runner.getRequester());</span>
-<span class="fc" id="L228">      rv.put(COMPILE_HASH.matcher(REQUESTEDHOST)</span>
-<span class="fc" id="L229">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L230">             runner.getRequested());</span>
-<span class="fc" id="L231">      rv.put(COMPILE_HASH.matcher(FULLTRANSFERID)</span>
-<span class="fc" id="L232">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L233">             runner.getSpecialId() + &quot;_&quot; + runner.getRequester() + '_' +</span>
-<span class="fc" id="L234">             runner.getRequested());</span>
-<span class="fc" id="L235">      rv.put(COMPILE_HASH.matcher(RANKTRANSFER)</span>
-<span class="fc" id="L236">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L237">             Integer.toString(runner.getRank()));</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="fc" id="L223">      rv.put(COMPILE_HASH.matcher(TRANSFERID)</span>
+<span class="fc" id="L224">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L225">             runner.getSpecialId());</span>
+<span class="fc" id="L226">      rv.put(COMPILE_HASH.matcher(REQUESTERHOST)</span>
+<span class="fc" id="L227">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L228">             runner.getRequester());</span>
+<span class="fc" id="L229">      rv.put(COMPILE_HASH.matcher(REQUESTEDHOST)</span>
+<span class="fc" id="L230">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L231">             runner.getRequested());</span>
+<span class="fc" id="L232">      rv.put(COMPILE_HASH.matcher(FULLTRANSFERID)</span>
+<span class="fc" id="L233">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L234">             runner.getSpecialId() + &quot;_&quot; + runner.getRequester() + '_' +</span>
+<span class="fc" id="L235">             runner.getRequested());</span>
+<span class="fc" id="L236">      rv.put(COMPILE_HASH.matcher(RANKTRANSFER)</span>
+<span class="fc" id="L237">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L238">             Integer.toString(runner.getRank()));</span>
     }
-<span class="fc" id="L239">    rv.put(COMPILE_HASH.matcher(BLOCKSIZE)</span>
-<span class="fc" id="L240">                       .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L241">           session.getBlockSize());</span>
+<span class="fc" id="L240">    rv.put(COMPILE_HASH.matcher(BLOCKSIZE)</span>
+<span class="fc" id="L241">                       .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L242">           session.getBlockSize());</span>
 
-<span class="fc" id="L243">    R66Dir dir = new R66Dir(session);</span>
-<span class="pc bpc" id="L244" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="pc bpc" id="L245" title="2 of 4 branches missed.">      if (runner.isRecvThrough() || runner.isSendThrough()) {</span>
+<span class="fc" id="L244">    R66Dir dir = new R66Dir(session);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="pc bpc" id="L246" title="2 of 4 branches missed.">      if (runner.isRecvThrough() || runner.isSendThrough()) {</span>
         try {
-<span class="nc" id="L247">          dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());</span>
-<span class="nc" id="L248">          rv.put(COMPILE_HASH.matcher(INPATH)</span>
-<span class="nc" id="L249">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L250">                 dir.getFullPath());</span>
-<span class="nc" id="L251">        } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L248">          dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());</span>
+<span class="nc" id="L249">          rv.put(COMPILE_HASH.matcher(INPATH)</span>
+<span class="nc" id="L250">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L251">                 dir.getFullPath());</span>
+<span class="nc" id="L252">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="nc" id="L253">        }</span>
-<span class="nc" id="L254">        dir = new R66Dir(session);</span>
+<span class="nc" id="L254">        }</span>
+<span class="nc" id="L255">        dir = new R66Dir(session);</span>
         try {
-<span class="nc" id="L256">          dir.changeDirectoryNotChecked(runner.getRule().getSendPath());</span>
-<span class="nc" id="L257">          rv.put(COMPILE_HASH.matcher(OUTPATH)</span>
-<span class="nc" id="L258">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L259">                 dir.getFullPath());</span>
-<span class="nc" id="L260">        } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L257">          dir.changeDirectoryNotChecked(runner.getRule().getSendPath());</span>
+<span class="nc" id="L258">          rv.put(COMPILE_HASH.matcher(OUTPATH)</span>
+<span class="nc" id="L259">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L260">                 dir.getFullPath());</span>
+<span class="nc" id="L261">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="nc" id="L262">        }</span>
-<span class="nc" id="L263">        dir = new R66Dir(session);</span>
+<span class="nc" id="L263">        }</span>
+<span class="nc" id="L264">        dir = new R66Dir(session);</span>
         try {
-<span class="nc" id="L265">          dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());</span>
-<span class="nc" id="L266">          rv.put(COMPILE_HASH.matcher(WORKPATH)</span>
-<span class="nc" id="L267">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L268">                 dir.getFullPath());</span>
-<span class="nc" id="L269">        } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L266">          dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());</span>
+<span class="nc" id="L267">          rv.put(COMPILE_HASH.matcher(WORKPATH)</span>
+<span class="nc" id="L268">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L269">                 dir.getFullPath());</span>
+<span class="nc" id="L270">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="nc" id="L271">        }</span>
-<span class="nc" id="L272">        dir = new R66Dir(session);</span>
+<span class="nc" id="L272">        }</span>
+<span class="nc" id="L273">        dir = new R66Dir(session);</span>
         try {
-<span class="nc" id="L274">          dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());</span>
-<span class="nc" id="L275">          rv.put(COMPILE_HASH.matcher(ARCHPATH)</span>
-<span class="nc" id="L276">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L277">                 dir.getFullPath());</span>
-<span class="nc" id="L278">        } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L275">          dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());</span>
+<span class="nc" id="L276">          rv.put(COMPILE_HASH.matcher(ARCHPATH)</span>
+<span class="nc" id="L277">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L278">                 dir.getFullPath());</span>
+<span class="nc" id="L279">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="nc" id="L280">        }</span>
+<span class="nc" id="L281">        }</span>
       } else {
         try {
-<span class="fc" id="L283">          dir.changeDirectory(runner.getRule().getRecvPath());</span>
-<span class="fc" id="L284">          rv.put(COMPILE_HASH.matcher(INPATH)</span>
-<span class="fc" id="L285">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L286">                 dir.getFullPath());</span>
-<span class="nc" id="L287">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L284">          dir.changeDirectory(runner.getRule().getRecvPath());</span>
+<span class="fc" id="L285">          rv.put(COMPILE_HASH.matcher(INPATH)</span>
+<span class="fc" id="L286">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L287">                 dir.getFullPath());</span>
+<span class="nc" id="L288">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L289">        }</span>
-<span class="fc" id="L290">        dir = new R66Dir(session);</span>
+<span class="fc" id="L290">        }</span>
+<span class="fc" id="L291">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L292">          dir.changeDirectory(runner.getRule().getSendPath());</span>
-<span class="fc" id="L293">          rv.put(COMPILE_HASH.matcher(OUTPATH)</span>
-<span class="fc" id="L294">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L295">                 dir.getFullPath());</span>
-<span class="nc" id="L296">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L293">          dir.changeDirectory(runner.getRule().getSendPath());</span>
+<span class="fc" id="L294">          rv.put(COMPILE_HASH.matcher(OUTPATH)</span>
+<span class="fc" id="L295">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L296">                 dir.getFullPath());</span>
+<span class="nc" id="L297">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L298">        }</span>
-<span class="fc" id="L299">        dir = new R66Dir(session);</span>
+<span class="fc" id="L299">        }</span>
+<span class="fc" id="L300">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L301">          dir.changeDirectory(runner.getRule().getWorkPath());</span>
-<span class="fc" id="L302">          rv.put(COMPILE_HASH.matcher(WORKPATH)</span>
-<span class="fc" id="L303">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L304">                 dir.getFullPath());</span>
-<span class="nc" id="L305">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L302">          dir.changeDirectory(runner.getRule().getWorkPath());</span>
+<span class="fc" id="L303">          rv.put(COMPILE_HASH.matcher(WORKPATH)</span>
+<span class="fc" id="L304">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L305">                 dir.getFullPath());</span>
+<span class="nc" id="L306">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L307">        }</span>
-<span class="fc" id="L308">        dir = new R66Dir(session);</span>
+<span class="fc" id="L308">        }</span>
+<span class="fc" id="L309">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L310">          dir.changeDirectory(runner.getRule().getArchivePath());</span>
-<span class="fc" id="L311">          rv.put(COMPILE_HASH.matcher(ARCHPATH)</span>
-<span class="fc" id="L312">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L313">                 dir.getFullPath());</span>
-<span class="nc" id="L314">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L311">          dir.changeDirectory(runner.getRule().getArchivePath());</span>
+<span class="fc" id="L312">          rv.put(COMPILE_HASH.matcher(ARCHPATH)</span>
+<span class="fc" id="L313">                             .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L314">                 dir.getFullPath());</span>
+<span class="nc" id="L315">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="pc" id="L316">        }</span>
+<span class="pc" id="L317">        }</span>
       }
     } else {
       try {
-<span class="nc" id="L320">        dir.changeDirectory(Configuration.configuration.getInPath());</span>
-<span class="nc" id="L321">        rv.put(COMPILE_HASH.matcher(INPATH)</span>
-<span class="nc" id="L322">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L323">               dir.getFullPath());</span>
-<span class="nc" id="L324">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L321">        dir.changeDirectory(Configuration.configuration.getInPath());</span>
+<span class="nc" id="L322">        rv.put(COMPILE_HASH.matcher(INPATH)</span>
+<span class="nc" id="L323">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L324">               dir.getFullPath());</span>
+<span class="nc" id="L325">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L326">      }</span>
-<span class="nc" id="L327">      dir = new R66Dir(session);</span>
+<span class="nc" id="L327">      }</span>
+<span class="nc" id="L328">      dir = new R66Dir(session);</span>
       try {
-<span class="nc" id="L329">        dir.changeDirectory(Configuration.configuration.getOutPath());</span>
-<span class="nc" id="L330">        rv.put(COMPILE_HASH.matcher(OUTPATH)</span>
-<span class="nc" id="L331">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L332">               dir.getFullPath());</span>
-<span class="nc" id="L333">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L330">        dir.changeDirectory(Configuration.configuration.getOutPath());</span>
+<span class="nc" id="L331">        rv.put(COMPILE_HASH.matcher(OUTPATH)</span>
+<span class="nc" id="L332">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L333">               dir.getFullPath());</span>
+<span class="nc" id="L334">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L335">      }</span>
-<span class="nc" id="L336">      dir = new R66Dir(session);</span>
+<span class="nc" id="L336">      }</span>
+<span class="nc" id="L337">      dir = new R66Dir(session);</span>
       try {
-<span class="nc" id="L338">        dir.changeDirectory(Configuration.configuration.getWorkingPath());</span>
-<span class="nc" id="L339">        rv.put(COMPILE_HASH.matcher(WORKPATH)</span>
-<span class="nc" id="L340">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L341">               dir.getFullPath());</span>
-<span class="nc" id="L342">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L339">        dir.changeDirectory(Configuration.configuration.getWorkingPath());</span>
+<span class="nc" id="L340">        rv.put(COMPILE_HASH.matcher(WORKPATH)</span>
+<span class="nc" id="L341">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L342">               dir.getFullPath());</span>
+<span class="nc" id="L343">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L344">      }</span>
-<span class="nc" id="L345">      dir = new R66Dir(session);</span>
+<span class="nc" id="L345">      }</span>
+<span class="nc" id="L346">      dir = new R66Dir(session);</span>
       try {
-<span class="nc" id="L347">        dir.changeDirectory(Configuration.configuration.getArchivePath());</span>
-<span class="nc" id="L348">        rv.put(COMPILE_HASH.matcher(ARCHPATH)</span>
-<span class="nc" id="L349">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L350">               dir.getFullPath());</span>
-<span class="nc" id="L351">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L348">        dir.changeDirectory(Configuration.configuration.getArchivePath());</span>
+<span class="nc" id="L349">        rv.put(COMPILE_HASH.matcher(ARCHPATH)</span>
+<span class="nc" id="L350">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L351">               dir.getFullPath());</span>
+<span class="nc" id="L352">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L353">      }</span>
+<span class="nc" id="L354">      }</span>
     }
-<span class="fc" id="L355">    rv.put(</span>
-<span class="fc" id="L356">        COMPILE_HASH.matcher(HOMEPATH).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L357">        Configuration.configuration.getBaseDirectory());</span>
-<span class="pc bpc" id="L358" title="1 of 2 branches missed.">    if (session.getLocalChannelReference() == null) {</span>
-<span class="fc" id="L359">      rv.put(COMPILE_HASH.matcher(ERRORMSG)</span>
-<span class="fc" id="L360">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;NoError&quot;);</span>
-<span class="fc" id="L361">      rv.put(COMPILE_HASH.matcher(ERRORCODE)</span>
-<span class="fc" id="L362">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;-&quot;);</span>
-<span class="fc" id="L363">      rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)</span>
-<span class="fc" id="L364">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="fc" id="L365">             ErrorCode.Unknown.name());</span>
+<span class="fc" id="L356">    rv.put(</span>
+<span class="fc" id="L357">        COMPILE_HASH.matcher(HOMEPATH).replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L358">        Configuration.configuration.getBaseDirectory());</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">    if (session.getLocalChannelReference() == null) {</span>
+<span class="fc" id="L360">      rv.put(COMPILE_HASH.matcher(ERRORMSG)</span>
+<span class="fc" id="L361">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;NoError&quot;);</span>
+<span class="fc" id="L362">      rv.put(COMPILE_HASH.matcher(ERRORCODE)</span>
+<span class="fc" id="L363">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;-&quot;);</span>
+<span class="fc" id="L364">      rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)</span>
+<span class="fc" id="L365">                         .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L366">             ErrorCode.Unknown.name());</span>
     } else {
       try {
-<span class="nc" id="L368">        rv.put(COMPILE_HASH.matcher(ERRORMSG)</span>
-<span class="nc" id="L369">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L370">               session.getLocalChannelReference().getErrorMessage());</span>
-<span class="nc" id="L371">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L372">        rv.put(COMPILE_HASH.matcher(ERRORMSG)</span>
-<span class="nc" id="L373">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L369">        rv.put(COMPILE_HASH.matcher(ERRORMSG)</span>
+<span class="fc" id="L370">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L371">               session.getLocalChannelReference().getErrorMessage());</span>
+<span class="nc" id="L372">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L373">        rv.put(COMPILE_HASH.matcher(ERRORMSG)</span>
+<span class="nc" id="L374">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
                &quot;NoError&quot;);
-<span class="nc" id="L375">      }</span>
+<span class="fc" id="L376">      }</span>
       try {
-<span class="nc" id="L377">        rv.put(COMPILE_HASH.matcher(ERRORCODE)</span>
-<span class="nc" id="L378">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L379">               session.getLocalChannelReference().getCurrentCode().getCode());</span>
-<span class="nc" id="L380">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L381">        rv.put(COMPILE_HASH.matcher(ERRORCODE)</span>
-<span class="nc" id="L382">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;-&quot;);</span>
-<span class="nc" id="L383">      }</span>
+<span class="fc" id="L378">        rv.put(COMPILE_HASH.matcher(ERRORCODE)</span>
+<span class="fc" id="L379">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L380">               session.getLocalChannelReference().getCurrentCode().getCode());</span>
+<span class="nc" id="L381">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L382">        rv.put(COMPILE_HASH.matcher(ERRORCODE)</span>
+<span class="nc" id="L383">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)), &quot;-&quot;);</span>
+<span class="fc" id="L384">      }</span>
       try {
-<span class="nc" id="L385">        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)</span>
-<span class="nc" id="L386">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L387">               session.getLocalChannelReference().getCurrentCode().name());</span>
-<span class="nc" id="L388">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L389">        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)</span>
-<span class="nc" id="L390">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
-<span class="nc" id="L391">               ErrorCode.Unknown.name());</span>
-<span class="nc" id="L392">      }</span>
+<span class="fc" id="L386">        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)</span>
+<span class="fc" id="L387">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="fc" id="L388">               session.getLocalChannelReference().getCurrentCode().name());</span>
+<span class="nc" id="L389">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L390">        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)</span>
+<span class="nc" id="L391">                           .replaceAll(Matcher.quoteReplacement(&quot;&quot;)),</span>
+<span class="nc" id="L392">               ErrorCode.Unknown.name());</span>
+<span class="fc" id="L393">      }</span>
     }
-<span class="fc" id="L394">    return rv;</span>
+<span class="fc" id="L395">    return rv;</span>
   }
 
   /**
@@ -410,76 +411,76 @@ public abstract class AbstractExecTask extends AbstractTask {
     private ExecuteWatchdog watchdog;
 
     PrepareCommandExec(final String finalname, final boolean noOutput,
-<span class="fc" id="L413">                       boolean waitForValidation) {</span>
-<span class="fc" id="L414">      this.finalname = finalname;</span>
-<span class="fc" id="L415">      this.noOutput = noOutput;</span>
-<span class="fc" id="L416">      this.waitForValidation = waitForValidation;</span>
-<span class="fc" id="L417">    }</span>
+<span class="fc" id="L414">                       boolean waitForValidation) {</span>
+<span class="fc" id="L415">      this.finalname = finalname;</span>
+<span class="fc" id="L416">      this.noOutput = noOutput;</span>
+<span class="fc" id="L417">      this.waitForValidation = waitForValidation;</span>
+<span class="fc" id="L418">    }</span>
 
     boolean isError() {
-<span class="fc" id="L420">      return myResult;</span>
+<span class="fc" id="L421">      return myResult;</span>
     }
 
     public CommandLine getCommandLine() {
-<span class="fc" id="L424">      return commandLine;</span>
+<span class="fc" id="L425">      return commandLine;</span>
     }
 
     public DefaultExecutor getDefaultExecutor() {
-<span class="fc" id="L428">      return defaultExecutor;</span>
+<span class="fc" id="L429">      return defaultExecutor;</span>
     }
 
     public PipedInputStream getInputStream() {
-<span class="fc" id="L432">      return inputStream;</span>
+<span class="fc" id="L433">      return inputStream;</span>
     }
 
     public PipedOutputStream getOutputStream() {
-<span class="fc" id="L436">      return outputStream;</span>
+<span class="fc" id="L437">      return outputStream;</span>
     }
 
     public PumpStreamHandler getPumpStreamHandler() {
-<span class="fc" id="L440">      return pumpStreamHandler;</span>
+<span class="fc" id="L441">      return pumpStreamHandler;</span>
     }
 
     public ExecuteWatchdog getWatchdog() {
-<span class="fc" id="L444">      return watchdog;</span>
+<span class="fc" id="L445">      return watchdog;</span>
     }
 
     public PrepareCommandExec invoke() {
-<span class="fc" id="L448">      commandLine = buildCommandLine(finalname);</span>
-<span class="pc bpc" id="L449" title="1 of 2 branches missed.">      if (commandLine == null) {</span>
-<span class="nc" id="L450">        myResult = true;</span>
-<span class="nc" id="L451">        return this;</span>
+<span class="fc" id="L449">      commandLine = buildCommandLine(finalname);</span>
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">      if (commandLine == null) {</span>
+<span class="nc" id="L451">        myResult = true;</span>
+<span class="nc" id="L452">        return this;</span>
       }
 
-<span class="fc" id="L454">      defaultExecutor = new DefaultExecutor();</span>
-<span class="fc bfc" id="L455" title="All 2 branches covered.">      if (noOutput) {</span>
-<span class="fc" id="L456">        pumpStreamHandler = new PumpStreamHandler(null, null);</span>
+<span class="fc" id="L455">      defaultExecutor = new DefaultExecutor();</span>
+<span class="fc bfc" id="L456" title="All 2 branches covered.">      if (noOutput) {</span>
+<span class="fc" id="L457">        pumpStreamHandler = new PumpStreamHandler(null, null);</span>
       } else {
-<span class="fc" id="L458">        inputStream = new PipedInputStream();</span>
-<span class="fc" id="L459">        outputStream = null;</span>
+<span class="fc" id="L459">        inputStream = new PipedInputStream();</span>
+<span class="fc" id="L460">        outputStream = null;</span>
         try {
-<span class="fc" id="L461">          outputStream = new PipedOutputStream(inputStream);</span>
-<span class="nc" id="L462">        } catch (final IOException e1) {</span>
-<span class="nc" id="L463">          FileUtils.close(inputStream);</span>
-<span class="nc" id="L464">          logger.error(</span>
-<span class="nc" id="L465">              &quot;Exception: &quot; + e1.getMessage() + &quot; Exec in error with &quot; +</span>
+<span class="fc" id="L462">          outputStream = new PipedOutputStream(inputStream);</span>
+<span class="nc" id="L463">        } catch (final IOException e1) {</span>
+<span class="nc" id="L464">          FileUtils.close(inputStream);</span>
+<span class="nc" id="L465">          logger.error(</span>
+<span class="nc" id="L466">              &quot;Exception: &quot; + e1.getMessage() + &quot; Exec in error with &quot; +</span>
               commandLine, e1);
-<span class="nc" id="L467">          futureCompletion.setFailure(e1);</span>
-<span class="nc" id="L468">          myResult = true;</span>
-<span class="nc" id="L469">          return this;</span>
-<span class="fc" id="L470">        }</span>
-<span class="fc" id="L471">        pumpStreamHandler = new PumpStreamHandler(outputStream, null);</span>
+<span class="nc" id="L468">          futureCompletion.setFailure(e1);</span>
+<span class="nc" id="L469">          myResult = true;</span>
+<span class="nc" id="L470">          return this;</span>
+<span class="fc" id="L471">        }</span>
+<span class="fc" id="L472">        pumpStreamHandler = new PumpStreamHandler(outputStream, null);</span>
       }
-<span class="fc" id="L473">      defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
-<span class="fc" id="L474">      final int[] correctValues = { 0, 1 };</span>
-<span class="fc" id="L475">      defaultExecutor.setExitValues(correctValues);</span>
-<span class="fc" id="L476">      watchdog = null;</span>
-<span class="pc bpc" id="L477" title="1 of 4 branches missed.">      if (delay &gt; 0 &amp;&amp; waitForValidation) {</span>
-<span class="fc" id="L478">        watchdog = new ExecuteWatchdog(delay);</span>
-<span class="fc" id="L479">        defaultExecutor.setWatchdog(watchdog);</span>
+<span class="fc" id="L474">      defaultExecutor.setStreamHandler(pumpStreamHandler);</span>
+<span class="fc" id="L475">      final int[] correctValues = { 0, 1 };</span>
+<span class="fc" id="L476">      defaultExecutor.setExitValues(correctValues);</span>
+<span class="fc" id="L477">      watchdog = null;</span>
+<span class="pc bpc" id="L478" title="1 of 4 branches missed.">      if (delay &gt; 0 &amp;&amp; waitForValidation) {</span>
+<span class="fc" id="L479">        watchdog = new ExecuteWatchdog(delay);</span>
+<span class="fc" id="L480">        defaultExecutor.setWatchdog(watchdog);</span>
       }
-<span class="fc" id="L481">      myResult = false;</span>
-<span class="fc" id="L482">      return this;</span>
+<span class="fc" id="L482">      myResult = false;</span>
+<span class="fc" id="L483">      return this;</span>
     }
   }
 
@@ -501,105 +502,105 @@ public abstract class AbstractExecTask extends AbstractTask {
                    final PipedInputStream inputStream,
                    final PipedOutputStream outputStream,
                    final PumpStreamHandler pumpStreamHandler,
-<span class="fc" id="L504">                   final Thread thread) {</span>
-<span class="fc" id="L505">      this.commandLine = commandLine;</span>
-<span class="fc" id="L506">      this.defaultExecutor = defaultExecutor;</span>
-<span class="fc" id="L507">      this.inputStream = inputStream;</span>
-<span class="fc" id="L508">      this.outputStream = outputStream;</span>
-<span class="fc" id="L509">      this.pumpStreamHandler = pumpStreamHandler;</span>
-<span class="fc" id="L510">      this.thread = thread;</span>
-<span class="fc" id="L511">    }</span>
+<span class="fc" id="L505">                   final Thread thread) {</span>
+<span class="fc" id="L506">      this.commandLine = commandLine;</span>
+<span class="fc" id="L507">      this.defaultExecutor = defaultExecutor;</span>
+<span class="fc" id="L508">      this.inputStream = inputStream;</span>
+<span class="fc" id="L509">      this.outputStream = outputStream;</span>
+<span class="fc" id="L510">      this.pumpStreamHandler = pumpStreamHandler;</span>
+<span class="fc" id="L511">      this.thread = thread;</span>
+<span class="fc" id="L512">    }</span>
 
     boolean isError() {
-<span class="fc" id="L514">      return myResult;</span>
+<span class="fc" id="L515">      return myResult;</span>
     }
 
     public int getStatus() {
-<span class="fc" id="L518">      return status;</span>
+<span class="fc" id="L519">      return status;</span>
     }
 
     public ExecuteCommand invoke() {
-<span class="fc" id="L522">      status = -1;</span>
+<span class="fc" id="L523">      status = -1;</span>
       try {
-<span class="fc" id="L524">        status = defaultExecutor.execute(commandLine);//NOSONAR</span>
-<span class="nc" id="L525">      } catch (final ExecuteException e) {</span>
-<span class="nc bnc" id="L526" title="All 2 branches missed.">        if (e.getExitValue() == -559038737) {</span>
+<span class="fc" id="L525">        status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L526">      } catch (final ExecuteException e) {</span>
+<span class="nc bnc" id="L527" title="All 2 branches missed.">        if (e.getExitValue() == -559038737) {</span>
           // Cannot run immediately so retry once
           try {
-<span class="nc" id="L529">            Thread.sleep(Configuration.RETRYINMS);</span>
-<span class="nc" id="L530">          } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L531">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L532">          }</span>
+<span class="nc" id="L530">            Thread.sleep(Configuration.RETRYINMS);</span>
+<span class="nc" id="L531">          } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L532">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L533">          }</span>
           try {
-<span class="nc" id="L534">            status = defaultExecutor.execute(commandLine);//NOSONAR</span>
-<span class="nc" id="L535">          } catch (final ExecuteException e1) {</span>
-<span class="nc" id="L536">            closeAllForExecution(true);</span>
-<span class="nc" id="L537">            finalizeFromError(thread, status, commandLine, e1);</span>
-<span class="nc" id="L538">            myResult = true;</span>
-<span class="nc" id="L539">            return this;</span>
-<span class="nc" id="L540">          } catch (final IOException e1) {</span>
-<span class="nc" id="L541">            closeAllForExecution(true);</span>
-<span class="nc" id="L542">            logger.error(</span>
-<span class="nc" id="L543">                &quot;IOException: &quot; + e.getMessage() + &quot; . Exec in error with &quot; +</span>
+<span class="nc" id="L535">            status = defaultExecutor.execute(commandLine);//NOSONAR</span>
+<span class="nc" id="L536">          } catch (final ExecuteException e1) {</span>
+<span class="nc" id="L537">            closeAllForExecution(true);</span>
+<span class="nc" id="L538">            finalizeFromError(thread, status, commandLine, e1);</span>
+<span class="nc" id="L539">            myResult = true;</span>
+<span class="nc" id="L540">            return this;</span>
+<span class="nc" id="L541">          } catch (final IOException e1) {</span>
+<span class="nc" id="L542">            closeAllForExecution(true);</span>
+<span class="nc" id="L543">            logger.error(</span>
+<span class="nc" id="L544">                &quot;IOException: &quot; + e.getMessage() + &quot; . Exec in error with &quot; +</span>
                 commandLine);
-<span class="nc" id="L545">            futureCompletion.setFailure(e);</span>
-<span class="nc" id="L546">            myResult = true;</span>
-<span class="nc" id="L547">            return this;</span>
-<span class="nc" id="L548">          }</span>
+<span class="nc" id="L546">            futureCompletion.setFailure(e);</span>
+<span class="nc" id="L547">            myResult = true;</span>
+<span class="nc" id="L548">            return this;</span>
+<span class="nc" id="L549">          }</span>
         } else {
-<span class="nc" id="L550">          closeAllForExecution(true);</span>
-<span class="nc" id="L551">          finalizeFromError(thread, status, commandLine, e);</span>
-<span class="nc" id="L552">          myResult = true;</span>
-<span class="nc" id="L553">          return this;</span>
+<span class="nc" id="L551">          closeAllForExecution(true);</span>
+<span class="nc" id="L552">          finalizeFromError(thread, status, commandLine, e);</span>
+<span class="nc" id="L553">          myResult = true;</span>
+<span class="nc" id="L554">          return this;</span>
         }
-<span class="nc" id="L555">      } catch (final IOException e) {</span>
-<span class="nc" id="L556">        closeAllForExecution(true);</span>
-<span class="nc" id="L557">        logger.error(</span>
-<span class="nc" id="L558">            &quot;IOException: &quot; + e.getMessage() + &quot; . Exec in error with &quot; +</span>
+<span class="nc" id="L556">      } catch (final IOException e) {</span>
+<span class="nc" id="L557">        closeAllForExecution(true);</span>
+<span class="nc" id="L558">        logger.error(</span>
+<span class="nc" id="L559">            &quot;IOException: &quot; + e.getMessage() + &quot; . Exec in error with &quot; +</span>
             commandLine);
-<span class="nc" id="L560">        futureCompletion.setFailure(e);</span>
-<span class="nc" id="L561">        myResult = true;</span>
-<span class="nc" id="L562">        return this;</span>
-<span class="pc" id="L563">      }</span>
-<span class="fc" id="L564">      closeAllForExecution(false);</span>
-<span class="fc bfc" id="L565" title="All 2 branches covered.">      if (thread != null) {</span>
+<span class="nc" id="L561">        futureCompletion.setFailure(e);</span>
+<span class="nc" id="L562">        myResult = true;</span>
+<span class="nc" id="L563">        return this;</span>
+<span class="pc" id="L564">      }</span>
+<span class="fc" id="L565">      closeAllForExecution(false);</span>
+<span class="fc bfc" id="L566" title="All 2 branches covered.">      if (thread != null) {</span>
         try {
-<span class="fc bfc" id="L567" title="All 2 branches covered.">          if (delay &gt; 0) {</span>
-<span class="fc" id="L568">            thread.join(delay);</span>
+<span class="fc bfc" id="L568" title="All 2 branches covered.">          if (delay &gt; 0) {</span>
+<span class="fc" id="L569">            thread.join(delay);</span>
           } else {
-<span class="fc" id="L570">            thread.join();</span>
+<span class="fc" id="L571">            thread.join();</span>
           }
-<span class="nc" id="L572">        } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L573">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L574">          Thread.currentThread().interrupt();</span>
-<span class="fc" id="L575">        }</span>
+<span class="nc" id="L573">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L574">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L575">          Thread.currentThread().interrupt();</span>
+<span class="fc" id="L576">        }</span>
       }
-<span class="fc" id="L577">      FileUtils.close(inputStream);</span>
-<span class="fc" id="L578">      myResult = false;</span>
-<span class="fc" id="L579">      return this;</span>
+<span class="fc" id="L578">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L579">      myResult = false;</span>
+<span class="fc" id="L580">      return this;</span>
     }
 
     private void closeAllForExecution(boolean interrupt) {
-<span class="fc" id="L583">      FileUtils.close(outputStream);</span>
-<span class="pc bpc" id="L584" title="3 of 4 branches missed.">      if (interrupt &amp;&amp; thread != null) {</span>
-<span class="nc" id="L585">        thread.interrupt();</span>
+<span class="fc" id="L584">      FileUtils.close(outputStream);</span>
+<span class="pc bpc" id="L585" title="3 of 4 branches missed.">      if (interrupt &amp;&amp; thread != null) {</span>
+<span class="nc" id="L586">        thread.interrupt();</span>
       }
-<span class="fc" id="L587">      FileUtils.close(inputStream);</span>
+<span class="fc" id="L588">      FileUtils.close(inputStream);</span>
       try {
-<span class="fc" id="L589">        pumpStreamHandler.stop();</span>
-<span class="nc" id="L590">      } catch (final IOException ignored) {</span>
+<span class="fc" id="L590">        pumpStreamHandler.stop();</span>
+<span class="nc" id="L591">      } catch (final IOException ignored) {</span>
         // nothing
-<span class="fc" id="L592">      }</span>
-<span class="fc" id="L593">    }</span>
+<span class="fc" id="L593">      }</span>
+<span class="fc" id="L594">    }</span>
   }
 
   void finalizeFromError(Runnable threadReader, int status,
                          CommandLine commandLine, Exception e) {
-<span class="nc" id="L598">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
-<span class="nc" id="L599">                 &quot; returns &quot; + e.getMessage());</span>
-<span class="nc" id="L600">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
-<span class="nc" id="L601">        &quot;&lt;STATUS&gt;&quot; + status + &quot;&lt;/STATUS&gt;&lt;ERROR&gt;&quot; + e.getMessage() + &quot;&lt;/ERROR&gt;&quot;);</span>
-<span class="nc" id="L602">    futureCompletion.setFailure(exc);</span>
-<span class="nc" id="L603">  }</span>
+<span class="nc" id="L599">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc" id="L600">                 &quot; returns &quot; + e.getMessage());</span>
+<span class="nc" id="L601">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L602">        &quot;&lt;STATUS&gt;&quot; + status + &quot;&lt;/STATUS&gt;&lt;ERROR&gt;&quot; + e.getMessage() + &quot;&lt;/ERROR&gt;&quot;);</span>
+<span class="nc" id="L603">    futureCompletion.setFailure(exc);</span>
+<span class="nc" id="L604">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

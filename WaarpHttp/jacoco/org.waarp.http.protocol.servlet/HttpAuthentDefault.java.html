@@ -32,8 +32,6 @@ import java.util.Map;
  * authentication
  */
 public class HttpAuthentDefault implements HttpAuthent {
-  private static final String FIELD_USER = &quot;user&quot;;
-  private static final String FIELD_KEY = &quot;key&quot;;
 
   /**
    * Package protected for the tests
@@ -44,33 +42,33 @@ public class HttpAuthentDefault implements HttpAuthent {
   /**
    * Empty for instantiation from class name
    */
-<span class="fc" id="L47">  public HttpAuthentDefault() {</span>
+<span class="fc" id="L45">  public HttpAuthentDefault() {</span>
     // Empty
-<span class="fc" id="L49">  }</span>
+<span class="fc" id="L47">  }</span>
 
   @Override
   public void initializeAuthent(Map&lt;String, String&gt; arguments) {
-<span class="fc" id="L53">    user = arguments.get(FIELD_USER);</span>
-<span class="fc" id="L54">    String skey = arguments.get(FIELD_KEY);</span>
-<span class="fc" id="L55">    key = org.waarp.common.digest.FilesystemBasedDigest.getFromHex(skey);</span>
-<span class="fc" id="L56">  }</span>
+<span class="fc" id="L51">    user = arguments.get(FIELD_USER);</span>
+<span class="fc" id="L52">    String skey = arguments.get(FIELD_KEY);</span>
+<span class="fc" id="L53">    key = org.waarp.common.digest.FilesystemBasedDigest.getFromHex(skey);</span>
+<span class="fc" id="L54">  }</span>
 
   @Override
   public void checkAuthent(final HttpSession httpSession,
                            final R66Session session)
       throws IllegalArgumentException {
     try {
-<span class="fc" id="L63">      session.getAuth().connection(user, key, false);</span>
-<span class="fc" id="L64">    } catch (Reply530Exception e) {</span>
+<span class="fc" id="L61">      session.getAuth().connection(user, key, false);</span>
+<span class="fc" id="L62">    } catch (Reply530Exception e) {</span>
+<span class="nc" id="L63">      httpSession.error(e, session.getBusinessObject());</span>
+<span class="nc" id="L64">    } catch (Reply421Exception e) {</span>
 <span class="nc" id="L65">      httpSession.error(e, session.getBusinessObject());</span>
-<span class="nc" id="L66">    } catch (Reply421Exception e) {</span>
-<span class="nc" id="L67">      httpSession.error(e, session.getBusinessObject());</span>
-<span class="pc" id="L68">    }</span>
-<span class="fc" id="L69">  }</span>
+<span class="pc" id="L66">    }</span>
+<span class="fc" id="L67">  }</span>
 
   @Override
   public String getUserId() {
-<span class="fc" id="L73">    return user;</span>
+<span class="fc" id="L71">    return user;</span>
   }
 
   @Override
@@ -78,6 +76,6 @@ public class HttpAuthentDefault implements HttpAuthent {
                                final R66Session session)
       throws IllegalArgumentException {
     // Do nothing
-<span class="fc" id="L81">  }</span>
+<span class="fc" id="L79">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -69,15 +69,15 @@ public class LimitsHandler extends AbstractRestDbHandler {
   private static final HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="nc" id="L72">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="nc" id="L73">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="nc" id="L74">    allow.add(HttpMethod.GET);</span>
-<span class="nc" id="L75">    allow.add(HttpMethod.POST);</span>
-<span class="nc" id="L76">    allow.add(HttpMethod.PUT);</span>
-<span class="nc" id="L77">    allow.add(HttpMethod.DELETE);</span>
-<span class="nc" id="L78">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="nc" id="L79">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="nc" id="L80">  }</span>
+<span class="fc" id="L72">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L73">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L74">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L75">    allow.add(HttpMethod.POST);</span>
+<span class="fc" id="L76">    allow.add(HttpMethod.PUT);</span>
+<span class="fc" id="L77">    allow.add(HttpMethod.DELETE);</span>
+<span class="fc" id="L78">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L79">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L80">  }</span>
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -85,8 +85,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
    * @param crud the CRUD mask for this handler
    */
   public LimitsHandler(byte crud) {
-<span class="nc" id="L88">    super(crud);</span>
-<span class="nc" id="L89">  }</span>
+<span class="fc" id="L88">    super(crud);</span>
+<span class="fc" id="L89">  }</span>
 
   /**
    * Method called to obtain a description of the host's current bandwidth
@@ -101,26 +101,26 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @RequiredRole(LIMIT)
   public void getLimits(HttpRequest request, HttpResponder responder) {
 
-<span class="nc" id="L104">    LimitDAO limitDAO = null;</span>
+<span class="fc" id="L104">    LimitDAO limitDAO = null;</span>
     try {
-<span class="nc" id="L106">      limitDAO = DAO_FACTORY.getLimitDAO();</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">      if (limitDAO.exist(serverName())) {</span>
+<span class="fc" id="L106">      limitDAO = DAO_FACTORY.getLimitDAO();</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">      if (limitDAO.exist(serverName())) {</span>
 <span class="nc" id="L108">        final Limit limits = limitDAO.select(serverName());</span>
 <span class="nc" id="L109">        final ObjectNode responseObject = LimitsConverter.limitToNode(limits);</span>
 <span class="nc" id="L110">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
 
 <span class="nc" id="L112">        responder.sendJson(OK, responseText);</span>
 <span class="nc" id="L113">      } else {</span>
-<span class="nc" id="L114">        responder.sendStatus(NOT_FOUND);</span>
+<span class="fc" id="L114">        responder.sendStatus(NOT_FOUND);</span>
       }
 <span class="nc" id="L116">    } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L117">      throw new InternalServerErrorException(e);</span>
 <span class="nc" id="L118">    } catch (final DAONoDataException e) {</span>
 <span class="nc" id="L119">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L121">      DAOFactory.closeDAO(limitDAO);</span>
+<span class="fc" id="L121">      DAOFactory.closeDAO(limitDAO);</span>
     }
-<span class="nc" id="L123">  }</span>
+<span class="fc" id="L123">  }</span>
 
   /**
    * Method called to initiate the entry for this host in the bandwidth limits

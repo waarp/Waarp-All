@@ -254,9 +254,9 @@ public class NetworkServerHandler
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-<span class="fc" id="L257">    final Channel channel = ctx.channel();</span>
-<span class="fc" id="L258">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
-<span class="pc bpc" id="L259" title="1 of 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
+<span class="nc" id="L257">    final Channel channel = ctx.channel();</span>
+<span class="nc" id="L258">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
 <span class="nc" id="L260">      final ReadTimeoutException exception = (ReadTimeoutException) cause;</span>
       // No read for too long
 <span class="nc" id="L262">      logger.error(&quot;ReadTimeout so Will close NETWORK channel {}&quot;,</span>
@@ -265,19 +265,19 @@ public class NetworkServerHandler
 <span class="nc" id="L265">      ChannelCloseTimer.closeFutureChannel(channel);</span>
 <span class="nc" id="L266">      return;</span>
     }
-<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    if (cause instanceof BindException) {</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">    if (cause instanceof BindException) {</span>
       // received when not yet connected
 <span class="nc" id="L270">      logger.debug(&quot;BindException&quot;);</span>
 <span class="nc" id="L271">      ChannelCloseTimer.closeFutureChannel(channel);</span>
 <span class="nc" id="L272">      return;</span>
     }
-<span class="fc" id="L274">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
-<span class="fc" id="L275">        .getExceptionFromTrappedException(channel, cause);</span>
-<span class="pc bpc" id="L276" title="1 of 2 branches missed.">    if (exception != null) {</span>
-<span class="pc bpc" id="L277" title="1 of 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
-<span class="fc" id="L278">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
-<span class="fc" id="L279">        ChannelCloseTimer.closeFutureChannel(channel);</span>
-<span class="fc" id="L280">        return;</span>
+<span class="nc" id="L274">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
+<span class="nc" id="L275">        .getExceptionFromTrappedException(channel, cause);</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
+<span class="nc" id="L278">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
+<span class="nc" id="L279">        ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="nc" id="L280">        return;</span>
 <span class="nc bnc" id="L281" title="All 2 branches missed.">      } else if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
 <span class="nc" id="L282">        logger.debug(&quot;Connection impossible with NETWORK channel {}&quot;,</span>
 <span class="nc" id="L283">                     exception.getMessage());</span>

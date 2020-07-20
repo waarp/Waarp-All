@@ -40,23 +40,23 @@ public class R66ThriftServerService implements Runnable {
   /**
    * Internal Logger
    */
-<span class="nc" id="L43">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L44">      WaarpLoggerFactory.getLogger(R66ThriftServerService.class);</span>
+<span class="fc" id="L43">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L44">      WaarpLoggerFactory.getLogger(R66ThriftServerService.class);</span>
 
-<span class="nc" id="L46">  protected int port = 4266;</span>
+<span class="fc" id="L46">  protected int port = 4266;</span>
   protected TServerTransport serverTransport;
   protected TServer server;
   protected final WaarpFuture serviceReady;
 
-<span class="nc" id="L51">  public R66ThriftServerService(WaarpFuture serviceReady, int port) {</span>
-<span class="nc" id="L52">    this.serviceReady = serviceReady;</span>
-<span class="nc" id="L53">    this.port = port;</span>
-<span class="nc" id="L54">  }</span>
+<span class="fc" id="L51">  public R66ThriftServerService(WaarpFuture serviceReady, int port) {</span>
+<span class="fc" id="L52">    this.serviceReady = serviceReady;</span>
+<span class="fc" id="L53">    this.port = port;</span>
+<span class="fc" id="L54">  }</span>
 
   public boolean awaitInitialization() {
-<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (serviceReady != null) {</span>
-<span class="nc" id="L58">      serviceReady.awaitOrInterruptible();</span>
-<span class="nc" id="L59">      return serviceReady.isSuccess();</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (serviceReady != null) {</span>
+<span class="fc" id="L58">      serviceReady.awaitOrInterruptible();</span>
+<span class="fc" id="L59">      return serviceReady.isSuccess();</span>
     }
 <span class="nc" id="L61">    return true;</span>
   }
@@ -64,11 +64,11 @@ public class R66ThriftServerService implements Runnable {
   @Override
   public void run() {
     try {
-<span class="nc" id="L67">      logger.warn(&quot;Will start Thrift service on port: &quot; + port);</span>
-<span class="nc" id="L68">      final byte[] local = { 127, 0, 0, 1 };</span>
+<span class="fc" id="L67">      logger.warn(&quot;Will start Thrift service on port: &quot; + port);</span>
+<span class="fc" id="L68">      final byte[] local = { 127, 0, 0, 1 };</span>
       InetAddress addr;
       try {
-<span class="nc" id="L71">        addr = InetAddress.getByAddress(local);</span>
+<span class="fc" id="L71">        addr = InetAddress.getByAddress(local);</span>
 <span class="nc" id="L72">      } catch (final UnknownHostException e) {</span>
         try {
 <span class="nc" id="L74">          addr = InetAddress.getLocalHost();</span>
@@ -78,34 +78,34 @@ public class R66ThriftServerService implements Runnable {
 <span class="nc" id="L78">          releaseResources();</span>
 <span class="nc" id="L79">          return;</span>
 <span class="nc" id="L80">        }</span>
-<span class="nc" id="L81">      }</span>
-<span class="nc" id="L82">      final InetSocketAddress address = new InetSocketAddress(addr, port);</span>
-<span class="nc" id="L83">      serverTransport = new TServerSocket(address);</span>
-<span class="nc" id="L84">      final R66Service.Processor&lt;R66EmbeddedServiceImpl&gt; processor =</span>
+<span class="fc" id="L81">      }</span>
+<span class="fc" id="L82">      final InetSocketAddress address = new InetSocketAddress(addr, port);</span>
+<span class="fc" id="L83">      serverTransport = new TServerSocket(address);</span>
+<span class="fc" id="L84">      final R66Service.Processor&lt;R66EmbeddedServiceImpl&gt; processor =</span>
           new R66Service.Processor&lt;R66EmbeddedServiceImpl&gt;(
               new R66EmbeddedServiceImpl());
-<span class="nc" id="L87">      server = new TThreadPoolServer(</span>
-<span class="nc" id="L88">          new TThreadPoolServer.Args(serverTransport).processor(processor));</span>
-<span class="nc" id="L89">      serviceReady.setSuccess();</span>
-<span class="nc" id="L90">      server.serve();</span>
+<span class="fc" id="L87">      server = new TThreadPoolServer(</span>
+<span class="fc" id="L88">          new TThreadPoolServer.Args(serverTransport).processor(processor));</span>
+<span class="fc" id="L89">      serviceReady.setSuccess();</span>
+<span class="fc" id="L90">      server.serve();</span>
 <span class="nc" id="L91">    } catch (final TTransportException e) {</span>
 <span class="nc" id="L92">      logger</span>
 <span class="nc" id="L93">          .error(&quot;An error occurs during initialization of Thrift support&quot;, e);</span>
 <span class="nc" id="L94">      serviceReady.setFailure(e);</span>
 <span class="nc" id="L95">      releaseResources();</span>
-<span class="nc" id="L96">    }</span>
-<span class="nc" id="L97">  }</span>
+<span class="fc" id="L96">    }</span>
+<span class="fc" id="L97">  }</span>
 
   public void releaseResources() {
-<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (server != null) {</span>
-<span class="nc" id="L101">      logger.debug(&quot;Stop Thrift Server&quot;);</span>
-<span class="nc" id="L102">      server.stop();</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    if (server != null) {</span>
+<span class="fc" id="L101">      logger.debug(&quot;Stop Thrift Server&quot;);</span>
+<span class="fc" id="L102">      server.stop();</span>
     }
-<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (serverTransport != null) {</span>
-<span class="nc" id="L105">      logger.debug(&quot;Stop Thrift Transport&quot;);</span>
-<span class="nc" id="L106">      serverTransport.close();</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">    if (serverTransport != null) {</span>
+<span class="fc" id="L105">      logger.debug(&quot;Stop Thrift Transport&quot;);</span>
+<span class="fc" id="L106">      serverTransport.close();</span>
     }
-<span class="nc" id="L108">    logger.debug(&quot;Thrift stopped&quot;);</span>
-<span class="nc" id="L109">  }</span>
+<span class="fc" id="L108">    logger.debug(&quot;Thrift stopped&quot;);</span>
+<span class="fc" id="L109">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

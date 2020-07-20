@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>BaseXx.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp ICAP Client</a> &gt; <a href="../index.html" class="el_bundle">WaarpCommon</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.utility</a> &gt; <span class="el_source">BaseXx.java</span></div><h1>BaseXx.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.common.utility;
+
+import com.google.common.io.BaseEncoding;
+
+/**
+ * Base16, Base32 and Base64 codecs
+ */
+public final class BaseXx {
+  private static final String ARGUMENT_NULL_NOT_ALLOWED =
+      &quot;argument null not allowed&quot;;
+  private static final BaseEncoding BASE64_URL_WITHOUT_PADDING =
+<span class="fc" id="L32">      BaseEncoding.base64Url().omitPadding();</span>
+  private static final BaseEncoding BASE64_URL_WITH_PADDING =
+<span class="fc" id="L34">      BaseEncoding.base64Url();</span>
+<span class="fc" id="L35">  private static final BaseEncoding BASE64 = BaseEncoding.base64();</span>
+  private static final BaseEncoding BASE32 =
+<span class="fc" id="L37">      BaseEncoding.base32().lowerCase().omitPadding();</span>
+<span class="fc" id="L38">  private static final BaseEncoding BASE16 =</span>
+<span class="fc" id="L39">      BaseEncoding.base16().lowerCase().omitPadding();</span>
+
+  private BaseXx() {
+    // empty
+  }
+
+  /**
+   * @param bytes to transform
+   *
+   * @return the Base 16 representation
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static String getBase16(byte[] bytes) {
+<span class="fc" id="L53">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);</span>
+<span class="fc" id="L54">    return BASE16.encode(bytes);</span>
+  }
+
+  /**
+   * @param bytes to transform
+   *
+   * @return the Base 32 representation
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static String getBase32(byte[] bytes) {
+<span class="fc" id="L65">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);</span>
+<span class="fc" id="L66">    return BASE32.encode(bytes);</span>
+  }
+
+  /**
+   * @param bytes to transform
+   *
+   * @return the Base 64 Without Padding representation (used only for url)
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static String getBase64UrlWithoutPadding(byte[] bytes) {
+<span class="fc" id="L77">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);</span>
+<span class="fc" id="L78">    return BASE64_URL_WITHOUT_PADDING.encode(bytes);</span>
+  }
+
+  /**
+   * @param bytes to transform
+   *
+   * @return the Base 64 With Padding representation (used only for url)
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static String getBase64UrlWithPadding(byte[] bytes) {
+<span class="fc" id="L89">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);</span>
+<span class="fc" id="L90">    return BASE64_URL_WITH_PADDING.encode(bytes);</span>
+  }
+
+  /**
+   * @param bytes to transform
+   *
+   * @return the Base 64 With Padding representation
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static String getBase64(byte[] bytes) {
+<span class="fc" id="L101">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes);</span>
+<span class="fc" id="L102">    return BASE64.encode(bytes);</span>
+  }
+
+  /**
+   * @param base16 to transform
+   *
+   * @return the byte from Base 16
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static byte[] getFromBase16(String base16) {
+<span class="fc" id="L113">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base16);</span>
+<span class="fc" id="L114">    return BASE16.decode(base16);</span>
+  }
+
+  /**
+   * @param base32 to transform
+   *
+   * @return the byte from Base 32
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static byte[] getFromBase32(String base32) {
+<span class="fc" id="L125">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base32);</span>
+<span class="fc" id="L126">    return BASE32.decode(base32);</span>
+  }
+
+  /**
+   * @param base64 to transform
+   *
+   * @return the byte from Base 64 Without Padding (used only for url)
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static byte[] getFromBase64UrlWithoutPadding(String base64) {
+<span class="fc" id="L137">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base64);</span>
+<span class="fc" id="L138">    return BASE64_URL_WITHOUT_PADDING.decode(base64);</span>
+  }
+
+  /**
+   * @param base64Padding to transform
+   *
+   * @return the byte from Base 64 With Padding (used only for url)
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static byte[] getFromBase64UrlPadding(String base64Padding) {
+<span class="fc" id="L149">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base64Padding);</span>
+<span class="fc" id="L150">    return BASE64_URL_WITH_PADDING.decode(base64Padding);</span>
+  }
+
+  /**
+   * @param base64Padding to transform
+   *
+   * @return the byte from Base 64 With Padding
+   *
+   * @throws IllegalArgumentException if argument is not compatible
+   */
+  public static byte[] getFromBase64(String base64Padding) {
+<span class="fc" id="L161">    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, base64Padding);</span>
+<span class="fc" id="L162">    return BASE64.decode(base64Padding);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

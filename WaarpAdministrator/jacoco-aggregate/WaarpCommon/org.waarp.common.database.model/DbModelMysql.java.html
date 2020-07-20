@@ -41,17 +41,17 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   /**
    * Internal Logger
    */
-<span class="nc" id="L44">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L45">      WaarpLoggerFactory.getLogger(DbModelMysql.class);</span>
+<span class="fc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L45">      WaarpLoggerFactory.getLogger(DbModelMysql.class);</span>
 
-<span class="nc" id="L47">  private static final DbType type = DbType.MySQL;</span>
+<span class="fc" id="L47">  private static final DbType type = DbType.MySQL;</span>
 
-<span class="nc" id="L49">  protected static class DbTypeResolverMySQL</span>
+<span class="fc" id="L49">  protected static class DbTypeResolverMySQL</span>
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
     public String getType(final int sqlType) {
-<span class="nc" id="L54">      return DBType.getType(sqlType);</span>
+<span class="fc" id="L54">      return DBType.getType(sqlType);</span>
     }
 
     @Override
@@ -67,15 +67,15 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   }
 
   static {
-<span class="nc" id="L70">    dbTypeResolver = new DbTypeResolverMySQL();</span>
-<span class="nc" id="L71">  }</span>
+<span class="fc" id="L70">    dbTypeResolver = new DbTypeResolverMySQL();</span>
+<span class="fc" id="L71">  }</span>
 
   protected MysqlConnectionPoolDataSource mysqlConnectionPoolDataSource;
   protected DbConnectionPool pool;
 
   @Override
   public DbType getDbType() {
-<span class="nc" id="L78">    return type;</span>
+<span class="fc" id="L78">    return type;</span>
   }
 
   /**
@@ -115,30 +115,30 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
    */
   protected DbModelMysql(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L118">    this();</span>
-<span class="nc" id="L119">    mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();</span>
-<span class="nc" id="L120">    mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
-<span class="nc" id="L121">    mysqlConnectionPoolDataSource.setUser(dbuser);</span>
-<span class="nc" id="L122">    mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="fc" id="L118">    this();</span>
+<span class="fc" id="L119">    mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();</span>
+<span class="fc" id="L120">    mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
+<span class="fc" id="L121">    mysqlConnectionPoolDataSource.setUser(dbuser);</span>
+<span class="fc" id="L122">    mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
     // Create a pool with no limit
-<span class="nc" id="L124">    pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
-<span class="nc" id="L125">    logger.warn(</span>
-<span class="nc" id="L126">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
-<span class="nc" id="L127">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
-<span class="nc" id="L128">  }</span>
+<span class="fc" id="L124">    pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
+<span class="fc" id="L125">    logger.warn(</span>
+<span class="fc" id="L126">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
+<span class="fc" id="L127">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
+<span class="fc" id="L128">  }</span>
 
   /**
    * Create the object and initialize if necessary the driver
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-<span class="nc" id="L135">  protected DbModelMysql() throws WaarpDatabaseNoConnectionException {</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
-<span class="nc" id="L137">      return;</span>
+<span class="fc" id="L135">  protected DbModelMysql() throws WaarpDatabaseNoConnectionException {</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="fc" id="L137">      return;</span>
     }
     try {
-<span class="nc" id="L140">      DriverManager.registerDriver(new Driver());</span>
-<span class="nc" id="L141">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="fc" id="L140">      DriverManager.registerDriver(new Driver());</span>
+<span class="fc" id="L141">      DbModelFactory.classLoaded.add(type.name());</span>
 <span class="nc" id="L142">    } catch (final SQLException e) {</span>
       // SQLException
 <span class="nc" id="L144">      logger.error(</span>
@@ -146,25 +146,25 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
 <span class="nc" id="L146">      DbSession.error(e);</span>
 <span class="nc" id="L147">      throw new WaarpDatabaseNoConnectionException(</span>
 <span class="nc" id="L148">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
-<span class="nc" id="L149">    }</span>
-<span class="nc" id="L150">  }</span>
+<span class="fc" id="L149">    }</span>
+<span class="fc" id="L150">  }</span>
 
   @Override
   public void releaseResources() {
-<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (pool != null) {</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">    if (pool != null) {</span>
       try {
-<span class="nc" id="L156">        pool.dispose();</span>
+<span class="fc" id="L156">        pool.dispose();</span>
 <span class="nc" id="L157">      } catch (final SQLException ignored) {</span>
 <span class="nc" id="L158">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="nc" id="L159">      }</span>
+<span class="fc" id="L159">      }</span>
     }
-<span class="nc" id="L161">    pool = null;</span>
-<span class="nc" id="L162">  }</span>
+<span class="fc" id="L161">    pool = null;</span>
+<span class="fc" id="L162">  }</span>
 
   @Override
   public int currentNumberOfPooledConnections() {
-<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (pool != null) {</span>
-<span class="nc" id="L167">      return pool.getActiveConnections();</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">    if (pool != null) {</span>
+<span class="fc" id="L167">      return pool.getActiveConnections();</span>
     }
 <span class="nc" id="L169">    return DbAdmin.getNbConnection();</span>
   }
@@ -172,10 +172,10 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   @Override
   public Connection getDbConnection(String server, String user, String passwd)
       throws SQLException {
-<span class="nc" id="L175">    synchronized (this) {</span>
-<span class="nc bnc" id="L176" title="All 2 branches missed.">      if (pool != null) {</span>
+<span class="fc" id="L175">    synchronized (this) {</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">      if (pool != null) {</span>
         try {
-<span class="nc" id="L178">          return pool.getConnection();</span>
+<span class="fc" id="L178">          return pool.getConnection();</span>
 <span class="nc" id="L179">        } catch (final SQLException e) {</span>
           // try to renew the pool
 <span class="nc" id="L181">          mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();</span>

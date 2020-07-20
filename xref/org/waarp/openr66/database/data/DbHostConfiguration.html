@@ -34,18 +34,18 @@
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.dom4j.DocumentHelper;
 <a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.dom4j.Element;
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.dom4j.Node;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.dom4j.io.SAXReader;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbPreparedStatement;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbSession;
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseException;
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoDataException;
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseSqlException;
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.file.FileUtils;
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLogger;
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLoggerFactory;
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.role.RoleDefault;
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.role.RoleDefault.ROLE;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbPreparedStatement;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbSession;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseException;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseSqlException;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.file.FileUtils;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLogger;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLoggerFactory;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.role.RoleDefault;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.role.RoleDefault.ROLE;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.utility.WaarpStringUtils;
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.xml.XmlDecl;
 <a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.xml.XmlHash;
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.xml.XmlType;
@@ -84,7 +84,7 @@
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="WaarpLogger" href="../../../../../org/waarp/common/logging/WaarpLogger.html#WaarpLogger">WaarpLogger</a> logger =
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>        WaarpLoggerFactory.getLogger(DbHostConfiguration.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Pattern WHITESPACES = Pattern.compile(<span class="jxr_string">"&#92;&#92;s+"</span>);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Pattern WHITESPACES = WaarpStringUtils.BLANK;
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Pattern SPACE_BACKSLASH = Pattern.compile(<span class="jxr_string">" |&#92;&#92;|"</span>);
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Pattern COMMA = Pattern.compile(<span class="jxr_string">","</span>);
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>  
@@ -363,7 +363,7 @@
 <a class="jxr_linenumber" name="L355" href="#L355">355</a>     <strong class="jxr_keyword">final</strong> StringReader reader = <strong class="jxr_keyword">new</strong> StringReader(input);
 <a class="jxr_linenumber" name="L356" href="#L356">356</a>     <em class="jxr_comment">// Open config file</em>
 <a class="jxr_linenumber" name="L357" href="#L357">357</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L358" href="#L358">358</a>       document = <strong class="jxr_keyword">new</strong> SAXReader().read(reader);
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>       document = XmlUtil.getNewSaxReader().read(reader);
 <a class="jxr_linenumber" name="L359" href="#L359">359</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DocumentException e) {
 <a class="jxr_linenumber" name="L360" href="#L360">360</a>       logger.error(
 <a class="jxr_linenumber" name="L361" href="#L361">361</a>           Messages.getString(<span class="jxr_string">"FileBasedConfiguration.CannotReadXml"</span>) + input,
@@ -725,7 +725,7 @@
 <a class="jxr_linenumber" name="L717" href="#L717">717</a>       <strong class="jxr_keyword">if</strong> (source != <strong class="jxr_keyword">null</strong> &amp;&amp; !source.isEmpty()) {
 <a class="jxr_linenumber" name="L718" href="#L718">718</a>         <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L719" href="#L719">719</a>           reader = <strong class="jxr_keyword">new</strong> StringReader(source);
-<a class="jxr_linenumber" name="L720" href="#L720">720</a>           document = <strong class="jxr_keyword">new</strong> SAXReader().read(reader);
+<a class="jxr_linenumber" name="L720" href="#L720">720</a>           document = XmlUtil.getNewSaxReader().read(reader);
 <a class="jxr_linenumber" name="L721" href="#L721">721</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DocumentException e) {
 <a class="jxr_linenumber" name="L722" href="#L722">722</a>           logger.error(
 <a class="jxr_linenumber" name="L723" href="#L723">723</a>               <span class="jxr_string">"Unable to read the XML Config "</span> + path + <span class="jxr_string">" string: "</span> + source,
@@ -922,7 +922,7 @@
 <a class="jxr_linenumber" name="L914" href="#L914">914</a>       <strong class="jxr_keyword">if</strong> (source != <strong class="jxr_keyword">null</strong> &amp;&amp; !source.isEmpty()) {
 <a class="jxr_linenumber" name="L915" href="#L915">915</a>         <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L916" href="#L916">916</a>           reader = <strong class="jxr_keyword">new</strong> StringReader(source);
-<a class="jxr_linenumber" name="L917" href="#L917">917</a>           document = <strong class="jxr_keyword">new</strong> SAXReader().read(reader);
+<a class="jxr_linenumber" name="L917" href="#L917">917</a>           document = XmlUtil.getNewSaxReader().read(reader);
 <a class="jxr_linenumber" name="L918" href="#L918">918</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DocumentException e) {
 <a class="jxr_linenumber" name="L919" href="#L919">919</a>           logger.error(
 <a class="jxr_linenumber" name="L920" href="#L920">920</a>               <span class="jxr_string">"Unable to read the XML Config "</span> + path + <span class="jxr_string">" string: "</span> + source,

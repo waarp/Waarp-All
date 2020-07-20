@@ -65,43 +65,44 @@
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>  <em class="jxr_javadoccomment">   * @throws Exception</em>
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>  <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(String[] args) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>      WaarpLoggerFactory.setDefaultFactory(<strong class="jxr_keyword">new</strong> WaarpSlf4JLoggerFactory(<strong class="jxr_keyword">null</strong>));
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>      <strong class="jxr_keyword">int</strong> port = 9999;
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>      InetAddress addr;
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>      <strong class="jxr_keyword">long</strong> delay = LocalExecDefaultResult.MAXWAITPROCESS;
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">if</strong> (args.length &gt;= 2) {
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>        addr = InetAddress.getByName(args[0]);
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>        port = Integer.parseInt(args[1]);
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>        <strong class="jxr_keyword">if</strong> (args.length &gt; 2) {
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>          delay = Long.parseLong(args[2]);
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>        }
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>      } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>        <strong class="jxr_keyword">final</strong> byte[] loop = { 127, 0, 0, 1 };
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>        addr = InetAddress.getByAddress(loop);
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>      }
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>      <em class="jxr_comment">// Configure the server.</em>
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>      <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>        <strong class="jxr_keyword">final</strong> ServerBootstrap bootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap();
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>        WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>  
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>        <em class="jxr_comment">// Configure the pipeline factory.</em>
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>        bootstrap.childHandler(<strong class="jxr_keyword">new</strong> <a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a>(delay, executor));
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>        <em class="jxr_comment">// Bind and start to accept incoming connections only on local address.</em>
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>        <strong class="jxr_keyword">final</strong> ChannelFuture future =
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>            bootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(addr, port));
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>        <em class="jxr_comment">// Wait until the server socket is closed.</em>
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>        future.channel().closeFuture().sync();
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>      } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>        <em class="jxr_comment">// Shut down all event loops to terminate all threads.</em>
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>        workerGroup.shutdownGracefully();
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>  
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>        <em class="jxr_comment">// Wait until all threads are terminated.</em>
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>        workerGroup.terminationFuture().sync();
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>      }
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>    }
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  }
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>      WaarpLoggerFactory
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>          .setDefaultFactoryIfNotSame(<strong class="jxr_keyword">new</strong> WaarpSlf4JLoggerFactory(<strong class="jxr_keyword">null</strong>));
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <strong class="jxr_keyword">int</strong> port = 9999;
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>      InetAddress addr;
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">long</strong> delay = LocalExecDefaultResult.MAXWAITPROCESS;
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">if</strong> (args.length &gt;= 2) {
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>        addr = InetAddress.getByName(args[0]);
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>        port = Integer.parseInt(args[1]);
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>        <strong class="jxr_keyword">if</strong> (args.length &gt; 2) {
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>          delay = Long.parseLong(args[2]);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>        }
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>      } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>        <strong class="jxr_keyword">final</strong> byte[] loop = { 127, 0, 0, 1 };
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>        addr = InetAddress.getByAddress(loop);
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>      }
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>      <em class="jxr_comment">// Configure the server.</em>
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>      <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>        <strong class="jxr_keyword">final</strong> ServerBootstrap bootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap();
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>        WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>        <em class="jxr_comment">// Configure the pipeline factory.</em>
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>        bootstrap.childHandler(<strong class="jxr_keyword">new</strong> <a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a>(delay, executor));
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>        <em class="jxr_comment">// Bind and start to accept incoming connections only on local address.</em>
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>        <strong class="jxr_keyword">final</strong> ChannelFuture future =
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>            bootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(addr, port));
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>        <em class="jxr_comment">// Wait until the server socket is closed.</em>
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>        future.channel().closeFuture().sync();
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>      } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>        <em class="jxr_comment">// Shut down all event loops to terminate all threads.</em>
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>        workerGroup.shutdownGracefully();
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>        <em class="jxr_comment">// Wait until all threads are terminated.</em>
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>        workerGroup.terminationFuture().sync();
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>      }
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>    }
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

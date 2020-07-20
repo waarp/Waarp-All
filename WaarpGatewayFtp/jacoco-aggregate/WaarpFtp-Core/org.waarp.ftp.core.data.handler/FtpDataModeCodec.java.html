@@ -105,24 +105,24 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
    * that the DataNetworkHandler is
    * ready
    */
-<span class="nc" id="L108">  private final WaarpFuture codecLocked = new WaarpFuture();</span>
+<span class="fc" id="L108">  private final WaarpFuture codecLocked = new WaarpFuture();</span>
 
   /**
    * @param mode
    * @param structure
    */
-<span class="nc" id="L114">  public FtpDataModeCodec(TransferMode mode, TransferStructure structure) {</span>
-<span class="nc" id="L115">    this.mode = mode;</span>
-<span class="nc" id="L116">    this.structure = structure;</span>
-<span class="nc" id="L117">  }</span>
+<span class="fc" id="L114">  public FtpDataModeCodec(TransferMode mode, TransferStructure structure) {</span>
+<span class="fc" id="L115">    this.mode = mode;</span>
+<span class="fc" id="L116">    this.structure = structure;</span>
+<span class="fc" id="L117">  }</span>
 
   /**
    * Inform the Codec that DataNetworkHandler is ready (called from
    * DataNetworkHandler after setCorrectCodec).
    */
   public void setCodecReady() {
-<span class="nc" id="L124">    codecLocked.setSuccess();</span>
-<span class="nc" id="L125">  }</span>
+<span class="fc" id="L124">    codecLocked.setSuccess();</span>
+<span class="fc" id="L125">  }</span>
 
   protected DataBlock decodeRecordStandard(ByteBuf buf, int length) {
 <span class="nc" id="L128">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length);</span>
@@ -223,26 +223,26 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
     // First test if the connection is fully ready (block might be
     // transfered
     // by client before connection is ready)
-<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (!isReady) {</span>
-<span class="nc bnc" id="L227" title="All 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
 <span class="nc" id="L228">        throw new InvalidArgumentException(</span>
             &quot;Codec not unlocked while should be&quot;);
       }
-<span class="nc" id="L231">      isReady = true;</span>
+<span class="fc" id="L231">      isReady = true;</span>
     }
-<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (buf.readableBytes() == 0) {</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    if (buf.readableBytes() == 0) {</span>
 <span class="nc" id="L234">      return;</span>
     }
     // If STREAM Mode, no task to do, just next filter
-<span class="nc bnc" id="L237" title="All 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
-<span class="nc" id="L238">      dataBlock = new DataBlock();</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">      if (structure != TransferStructure.RECORD) {</span>
-<span class="nc" id="L240">        final ByteBuf newbuf = Unpooled.wrappedBuffer(buf);</span>
-<span class="nc" id="L241">        buf.readerIndex(buf.readableBytes());</span>
-<span class="nc" id="L242">        newbuf.retain();</span>
-<span class="nc" id="L243">        dataBlock.setBlock(newbuf);</span>
-<span class="nc" id="L244">        out.add(dataBlock);</span>
-<span class="nc" id="L245">        return;</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
+<span class="fc" id="L238">      dataBlock = new DataBlock();</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">      if (structure != TransferStructure.RECORD) {</span>
+<span class="fc" id="L240">        final ByteBuf newbuf = Unpooled.wrappedBuffer(buf);</span>
+<span class="fc" id="L241">        buf.readerIndex(buf.readableBytes());</span>
+<span class="fc" id="L242">        newbuf.retain();</span>
+<span class="fc" id="L243">        dataBlock.setBlock(newbuf);</span>
+<span class="fc" id="L244">        out.add(dataBlock);</span>
+<span class="fc" id="L245">        return;</span>
       }
       // Except if RECORD Structure!
 <span class="nc" id="L248">      final int length = buf.readableBytes();</span>
@@ -379,17 +379,17 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
    * @throws InvalidArgumentException
    */
   protected ByteBuf encode(DataBlock msg) throws InvalidArgumentException {
-<span class="nc bnc" id="L382" title="All 2 branches missed.">    if (msg.isCleared()) {</span>
-<span class="nc" id="L383">      return null;</span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">    if (msg.isCleared()) {</span>
+<span class="fc" id="L383">      return null;</span>
     }
-<span class="nc" id="L385">    final ByteBuf buffer = msg.getBlock();</span>
-<span class="nc bnc" id="L386" title="All 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
+<span class="fc" id="L385">    final ByteBuf buffer = msg.getBlock();</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
       // If record structure, special attention
-<span class="nc bnc" id="L388" title="All 2 branches missed.">      if (structure == TransferStructure.RECORD) {</span>
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">      if (structure == TransferStructure.RECORD) {</span>
 <span class="nc" id="L389">        return encodeRecord(msg, buffer);</span>
       }
-<span class="nc" id="L391">      msg.clear();</span>
-<span class="nc" id="L392">      return buffer;</span>
+<span class="fc" id="L391">      msg.clear();</span>
+<span class="fc" id="L392">      return buffer;</span>
 <span class="nc bnc" id="L393" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
 <span class="nc" id="L394">      int length = msg.getByteCount();</span>
 <span class="nc bnc" id="L395" title="All 2 branches missed.">      final ByteBuf newbuf = ByteBufAllocator.DEFAULT</span>
@@ -466,8 +466,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
    * @param mode the mode to set
    */
   public void setMode(TransferMode mode) {
-<span class="nc" id="L469">    this.mode = mode;</span>
-<span class="nc" id="L470">  }</span>
+<span class="fc" id="L469">    this.mode = mode;</span>
+<span class="fc" id="L470">  }</span>
 
   /**
    * @return the structure
@@ -480,8 +480,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
    * @param structure the structure to set
    */
   public void setStructure(TransferStructure structure) {
-<span class="nc" id="L483">    this.structure = structure;</span>
-<span class="nc" id="L484">  }</span>
+<span class="fc" id="L483">    this.structure = structure;</span>
+<span class="fc" id="L484">  }</span>
 
   @Override
   protected void encode(ChannelHandlerContext ctx, DataBlock msg, ByteBuf out)
@@ -489,19 +489,19 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
     // First test if the connection is fully ready (block might be
     // transfered
     // by client before connection is ready)
-<span class="nc bnc" id="L492" title="All 2 branches missed.">    if (!isReady) {</span>
-<span class="nc bnc" id="L493" title="All 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
 <span class="nc" id="L494">        throw new InvalidArgumentException(</span>
             &quot;Codec not unlocked while should be&quot;);
       }
-<span class="nc" id="L497">      isReady = true;</span>
+<span class="fc" id="L497">      isReady = true;</span>
     }
-<span class="nc" id="L499">    ByteBuf next = encode(msg);</span>
+<span class="fc" id="L499">    ByteBuf next = encode(msg);</span>
     // Could be splitten in several block
-<span class="nc bnc" id="L501" title="All 2 branches missed.">    while (next != null) {</span>
-<span class="nc" id="L502">      out.writeBytes(next);</span>
-<span class="nc" id="L503">      next = encode(msg);</span>
+<span class="fc bfc" id="L501" title="All 2 branches covered.">    while (next != null) {</span>
+<span class="fc" id="L502">      out.writeBytes(next);</span>
+<span class="fc" id="L503">      next = encode(msg);</span>
     }
-<span class="nc" id="L505">  }</span>
+<span class="fc" id="L505">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

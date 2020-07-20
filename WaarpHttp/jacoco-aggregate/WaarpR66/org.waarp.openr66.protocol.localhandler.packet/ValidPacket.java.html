@@ -46,17 +46,17 @@ public class ValidPacket extends AbstractLocalPacket {
    */
   public static ValidPacket createFromBuffer(int headerLength, int middleLength,
                                              int endLength, ByteBuf buf) {
-<span class="nc" id="L49">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="nc" id="L50">    final byte[] bmiddle = new byte[middleLength];</span>
+<span class="fc" id="L49">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L50">    final byte[] bmiddle = new byte[middleLength];</span>
     final byte bend;
-<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="nc" id="L53">      buf.readBytes(bheader);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L53">      buf.readBytes(bheader);</span>
     }
-<span class="nc bnc" id="L55" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
-<span class="nc" id="L56">      buf.readBytes(bmiddle);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">    if (middleLength &gt; 0) {</span>
+<span class="fc" id="L56">      buf.readBytes(bmiddle);</span>
     }
-<span class="nc" id="L58">    bend = buf.readByte();</span>
-<span class="nc" id="L59">    return new ValidPacket(new String(bheader), new String(bmiddle), bend);</span>
+<span class="fc" id="L58">    bend = buf.readByte();</span>
+<span class="fc" id="L59">    return new ValidPacket(new String(bheader), new String(bmiddle), bend);</span>
   }
 
   /**
@@ -64,72 +64,72 @@ public class ValidPacket extends AbstractLocalPacket {
    * @param middle
    * @param end
    */
-<span class="nc" id="L67">  public ValidPacket(String header, String middle, byte end) {</span>
-<span class="nc" id="L68">    sheader = header;</span>
-<span class="nc" id="L69">    smiddle = middle;</span>
-<span class="nc" id="L70">    send = end;</span>
-<span class="nc" id="L71">  }</span>
+<span class="fc" id="L67">  public ValidPacket(String header, String middle, byte end) {</span>
+<span class="fc" id="L68">    sheader = header;</span>
+<span class="fc" id="L69">    smiddle = middle;</span>
+<span class="fc" id="L70">    send = end;</span>
+<span class="fc" id="L71">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L76">    end = Unpooled.buffer(1);</span>
-<span class="nc" id="L77">    end.writeByte(send);</span>
-<span class="nc" id="L78">  }</span>
+<span class="fc" id="L76">    end = Unpooled.buffer(1);</span>
+<span class="fc" id="L77">    end.writeByte(send);</span>
+<span class="fc" id="L78">  }</span>
 
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (sheader != null) {</span>
-<span class="nc" id="L84">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">    if (sheader != null) {</span>
+<span class="fc" id="L84">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
     }
-<span class="nc" id="L86">  }</span>
+<span class="fc" id="L86">  }</span>
 
   @Override
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L91" title="All 2 branches missed.">    if (smiddle != null) {</span>
-<span class="nc" id="L92">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    if (smiddle != null) {</span>
+<span class="fc" id="L92">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
     }
-<span class="nc" id="L94">  }</span>
+<span class="fc" id="L94">  }</span>
 
   @Override
   public String toString() {
-<span class="nc" id="L98">    return &quot;ValidPacket: &quot; + sheader + ':' + smiddle + ':' + send;</span>
+<span class="fc" id="L98">    return &quot;ValidPacket: &quot; + sheader + ':' + smiddle + ':' + send;</span>
   }
 
   @Override
   public byte getType() {
-<span class="nc" id="L103">    return LocalPacketFactory.VALIDPACKET;</span>
+<span class="fc" id="L103">    return LocalPacketFactory.VALIDPACKET;</span>
   }
 
   /**
    * @return the sheader
    */
   public String getSheader() {
-<span class="nc" id="L110">    return sheader;</span>
+<span class="fc" id="L110">    return sheader;</span>
   }
 
   /**
    * @return the smiddle
    */
   public String getSmiddle() {
-<span class="nc" id="L117">    return smiddle;</span>
+<span class="fc" id="L117">    return smiddle;</span>
   }
 
   /**
    * @param smiddle
    */
   public void setSmiddle(String smiddle) {
-<span class="nc" id="L124">    this.smiddle = smiddle;</span>
-<span class="nc" id="L125">    middle = null;</span>
-<span class="nc" id="L126">  }</span>
+<span class="fc" id="L124">    this.smiddle = smiddle;</span>
+<span class="fc" id="L125">    middle = null;</span>
+<span class="fc" id="L126">  }</span>
 
   /**
    * @return the type
    */
   public byte getTypeValid() {
-<span class="nc" id="L132">    return send;</span>
+<span class="fc" id="L132">    return send;</span>
   }
 
 }

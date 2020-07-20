@@ -52,9 +52,9 @@
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="SubmitTransfer" href="../../../../org/waarp/openr66/client/SubmitTransfer.html#SubmitTransfer">SubmitTransfer</a> <strong class="jxr_keyword">extends</strong> <a name="AbstractTransfer" href="../../../../org/waarp/openr66/client/AbstractTransfer.html#AbstractTransfer">AbstractTransfer</a> {
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>  
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>    <strong class="jxr_keyword">public</strong> <a name="SubmitTransfer" href="../../../../org/waarp/openr66/client/SubmitTransfer.html#SubmitTransfer">SubmitTransfer</a>(<a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a> future, String remoteHost, String filename,
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>                          String rulename, String fileinfo, <strong class="jxr_keyword">boolean</strong> isMD5,
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>                          String rulename, String transferInfo, <strong class="jxr_keyword">boolean</strong> isMD5,
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>                          <strong class="jxr_keyword">int</strong> blocksize, <strong class="jxr_keyword">long</strong> id, Timestamp starttime) {
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>      <strong class="jxr_keyword">super</strong>(SubmitTransfer.<strong class="jxr_keyword">class</strong>, future, filename, rulename, fileinfo, isMD5,
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>      <strong class="jxr_keyword">super</strong>(SubmitTransfer.<strong class="jxr_keyword">class</strong>, future, filename, rulename, transferInfo, isMD5,
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>            remoteHost, blocksize, id, starttime);
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>    }
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  
@@ -76,7 +76,7 @@
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>        future.setFailure(result.getException());
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>        <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>      }
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>      <strong class="jxr_keyword">if</strong> (id != ILLEGALVALUE) {
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>      <strong class="jxr_keyword">if</strong> (transferArgs.getId() != ILLEGALVALUE) {
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>        <em class="jxr_comment">// Resubmit call, some checks are needed</em>
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>        <strong class="jxr_keyword">if</strong> (!taskRunner.restart(<strong class="jxr_keyword">true</strong>)) {
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>          <em class="jxr_comment">// cannot be done from there =&gt; must be done through IHM</em>
@@ -127,65 +127,66 @@
 <a class="jxr_linenumber" name="L119" href="#L119">119</a> <em class="jxr_javadoccomment">   *     blocksize if different than default</em>
 <a class="jxr_linenumber" name="L120" href="#L120">120</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(String[] args) {
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>     WaarpLoggerFactory.setDefaultFactory(<strong class="jxr_keyword">new</strong> <a name="WaarpSlf4JLoggerFactory" href="../../../../org/waarp/common/logging/WaarpSlf4JLoggerFactory.html#WaarpSlf4JLoggerFactory">WaarpSlf4JLoggerFactory</a>(<strong class="jxr_keyword">null</strong>));
-<a class="jxr_linenumber" name="L123" href="#L123">123</a>     <strong class="jxr_keyword">if</strong> (logger == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>       logger = WaarpLoggerFactory.getLogger(SubmitTransfer.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L125" href="#L125">125</a>     }
-<a class="jxr_linenumber" name="L126" href="#L126">126</a>     <strong class="jxr_keyword">if</strong> (!getParams(args, <strong class="jxr_keyword">true</strong>)) {
-<a class="jxr_linenumber" name="L127" href="#L127">127</a>       logger.error(Messages.getString(<span class="jxr_string">"Configuration.WrongInit"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {
-<a class="jxr_linenumber" name="L129" href="#L129">129</a>         SysErrLogger.FAKE_LOGGER.sysout(
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>             Messages.getString(<span class="jxr_string">"Configuration.WrongInit"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L131" href="#L131">131</a>       }
-<a class="jxr_linenumber" name="L132" href="#L132">132</a>       <strong class="jxr_keyword">if</strong> (admin != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L133" href="#L133">133</a>         admin.close();
-<a class="jxr_linenumber" name="L134" href="#L134">134</a>       }
-<a class="jxr_linenumber" name="L135" href="#L135">135</a>       <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
-<a class="jxr_linenumber" name="L136" href="#L136">136</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L137" href="#L137">137</a>       }
-<a class="jxr_linenumber" name="L138" href="#L138">138</a>       ChannelUtils.stopLogger();
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>       System.exit(1);<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>     }
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>     <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/prot<a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a>s/R66Future.html#R66Future">R66Future</a> future = <strong class="jxr_keyword">new</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a>(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>     <strong class="jxr_keyword">final</strong> <a name="SubmitTransfer" href="../../../../org/waarp/openr66/client/SubmitTransfer.html#SubmitTransfer">SubmitTransfer</a> transaction =
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>         <strong class="jxr_keyword">new</strong> <a name="SubmitTransfer" href="../../../../org/waarp/openr66/client/SubmitTransfer.html#SubmitTransfer">SubmitTransfer</a>(future, rhost, localFilename, rule, fileInfo, ismd5,
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>                            block, idt, ttimestart);
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>     transaction.normalInfoAsWarn = snormalInfoAsWarn;
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>     transaction.run();
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>     future.awaitOrInterruptible();
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>     <strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner = future.getResult().getRunner();
-<a class="jxr_linenumber" name="L149" href="#L149">149</a>     <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat =
-<a class="jxr_linenumber" name="L150" href="#L150">150</a>         <strong class="jxr_keyword">new</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a>(SubmitTransfer.<strong class="jxr_keyword">class</strong>.getSimpleName(), args);
-<a class="jxr_linenumber" name="L151" href="#L151">151</a>     <strong class="jxr_keyword">if</strong> (future.isSuccess()) {
-<a class="jxr_linenumber" name="L152" href="#L152">152</a>       prepareSubmitOkOutputFormat(runner, outputFormat);
-<a class="jxr_linenumber" name="L153" href="#L153">153</a>       <strong class="jxr_keyword">if</strong> (transaction.normalInfoAsWarn) {
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>         logger.warn(outputFormat.loggerOut());
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L156" href="#L156">156</a>         logger.info(outputFormat.loggerOut());
-<a class="jxr_linenumber" name="L157" href="#L157">157</a>       }
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>         outputFormat.sysout();
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>       }
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>       prepareSubmitKoOutputFormat(future, runner, outputFormat);
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>         outputFormat.sysout();
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>       }
-<a class="jxr_linenumber" name="L166" href="#L166">166</a>       <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>       }
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>       admin.close();
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>       ChannelUtils.stopLogger();
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>       System.exit(future.getResult().getCode().ordinal());
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>     }
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>     admin.close();
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>     <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>     }
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>     System.exit(0);<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>   }
-<a class="jxr_linenumber" name="L179" href="#L179">179</a> 
-<a class="jxr_linenumber" name="L180" href="#L180">180</a> }
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>     <a name="WaarpLoggerFactory" href="../../../../org/waarp/common/logging/WaarpLoggerFactory.html#WaarpLoggerFactory">WaarpLoggerFactory</a>
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>         .setDefaultFactoryIfNotSame(<strong class="jxr_keyword">new</strong> <a name="WaarpSlf4JLoggerFactory" href="../../../../org/waarp/common/logging/WaarpSlf4JLoggerFactory.html#WaarpSlf4JLoggerFactory">WaarpSlf4JLoggerFactory</a>(<strong class="jxr_keyword">null</strong>));
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>     <strong class="jxr_keyword">if</strong> (logger == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>       logger = WaarpLoggerFactory.getLogger(SubmitTransfer.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>     }
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>     <strong class="jxr_keyword">if</strong> (!getParams(args, <strong class="jxr_keyword">true</strong>)) {
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>       logger.error(Messages.getString(<span class="jxr_string">"Configuration.WrongInit"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>         SysErrLogger.FAKE_LOGGER.sysout(
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>             Messages.getString(<span class="jxr_string">"Configuration.WrongInit"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>       }
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>       <strong class="jxr_keyword">if</strong> (admin != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>         admin.close();
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>       }
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>       <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>       }
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>       ChannelUtils.stopLogger();
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>       System.exit(1);<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>     }
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>     <strong class="jxr_keyword">final</strong> <a name="R66Future" href="../../../../org/waarp/openr66/prot<a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a>s/R66Future.html#R66Future">R66Future</a> future = <strong class="jxr_keyword">new</strong> <a name="R66Future" href="../../../../org/waarp/openr66/protocol/utils/R66Future.html#R66Future">R66Future</a>(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>     <strong class="jxr_keyword">final</strong> <a name="SubmitTransfer" href="../../../../org/waarp/openr66/client/SubmitTransfer.html#SubmitTransfer">SubmitTransfer</a> transaction =
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>         <strong class="jxr_keyword">new</strong> <a name="SubmitTransfer" href="../../../../org/waarp/openr66/client/SubmitTransfer.html#SubmitTransfer">SubmitTransfer</a>(future, rhost, localFilename, rule, transferInfo,
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>                            ismd5, block, idt, ttimestart);
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>     transaction.normalInfoAsWarn = snormalInfoAsWarn;
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>     transaction.run();
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>     future.awaitOrInterruptible();
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>     <strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> runner = future.getResult().getRunner();
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>     <strong class="jxr_keyword">final</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a> outputFormat =
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>         <strong class="jxr_keyword">new</strong> <a name="OutputFormat" href="../../../../org/waarp/openr66/client/utils/OutputFormat.html#OutputFormat">OutputFormat</a>(SubmitTransfer.<strong class="jxr_keyword">class</strong>.getSimpleName(), args);
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>     <strong class="jxr_keyword">if</strong> (future.isSuccess()) {
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>       prepareSubmitOkOutputFormat(runner, outputFormat);
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>       <strong class="jxr_keyword">if</strong> (transaction.normalInfoAsWarn) {
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>         logger.warn(outputFormat.loggerOut());
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>         logger.info(outputFormat.loggerOut());
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>       }
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>         outputFormat.sysout();
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>       }
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>       prepareSubmitKoOutputFormat(future, runner, outputFormat);
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>         outputFormat.sysout();
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>       }
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>       <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>       }
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>       admin.close();
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>       ChannelUtils.stopLogger();
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>       System.exit(future.getResult().getCode().ordinal());
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>     }
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>     admin.close();
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>     <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>     }
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>     System.exit(0);<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>   }
+<a class="jxr_linenumber" name="L180" href="#L180">180</a> 
+<a class="jxr_linenumber" name="L181" href="#L181">181</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

@@ -50,76 +50,77 @@ import static org.waarp.common.database.DbConstant.*;
    *     export
    */
   public static void main(String[] args) {
-<span class="nc" id="L53">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L55">      logger = WaarpLoggerFactory.getLogger(ServerExportConfiguration.class);</span>
+<span class="nc" id="L53">    WaarpLoggerFactory</span>
+<span class="nc" id="L54">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L56">      logger = WaarpLoggerFactory.getLogger(ServerExportConfiguration.class);</span>
     }
-<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
-<span class="nc" id="L58">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
+<span class="nc" id="L59">      SysErrLogger.FAKE_LOGGER.syserr(</span>
           &quot;Need configuration file and the directory &quot; + &quot;where to &quot; +
           &quot;export&quot;);
-<span class="nc" id="L61">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L62">      System.exit(1);//NOSONAR</span>
     }
     try {
-<span class="nc" id="L64">      if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L65" title="All 2 branches missed.">          .setConfigurationServerMinimalFromXml(Configuration.configuration,</span>
+<span class="nc" id="L65">      if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">          .setConfigurationServerMinimalFromXml(Configuration.configuration,</span>
                                                 args[0])) {
-<span class="nc" id="L67">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
-<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (admin != null) {</span>
-<span class="nc" id="L69">          admin.close();</span>
+<span class="nc" id="L68">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L70">          admin.close();</span>
         }
-<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L72">          return;</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L73">          return;</span>
         }
-<span class="nc" id="L74">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L75">        System.exit(1);//NOSONAR</span>
-<span class="nc" id="L76">        return;</span>
+<span class="nc" id="L75">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L76">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L77">        return;</span>
       }
-<span class="nc" id="L78">      final String directory = args[1];</span>
-<span class="nc" id="L79">      final String hostname = Configuration.configuration.getHostId();</span>
-<span class="nc" id="L80">      logger.info(&quot;Start of Export&quot;);</span>
-<span class="nc" id="L81">      final File dir = new File(directory);</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">      if (!dir.isDirectory()) {</span>
-<span class="nc" id="L83">        dir.mkdirs();</span>
+<span class="nc" id="L79">      final String directory = args[1];</span>
+<span class="nc" id="L80">      final String hostname = Configuration.configuration.getHostId();</span>
+<span class="nc" id="L81">      logger.info(&quot;Start of Export&quot;);</span>
+<span class="nc" id="L82">      final File dir = new File(directory);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">      if (!dir.isDirectory()) {</span>
+<span class="nc" id="L84">        dir.mkdirs();</span>
       }
-<span class="nc" id="L85">      final String[] filenames = ServerActions</span>
-<span class="nc" id="L86">          .staticConfigExport(dir.getAbsolutePath(), true, true, true, true,</span>
+<span class="nc" id="L86">      final String[] filenames = ServerActions</span>
+<span class="nc" id="L87">          .staticConfigExport(dir.getAbsolutePath(), true, true, true, true,</span>
                               true);
-<span class="nc bnc" id="L88" title="All 2 branches missed.">      for (final String string : filenames) {</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (string != null) {</span>
-<span class="nc" id="L90">          logger.info(&quot;Export: &quot; + string);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">      for (final String string : filenames) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (string != null) {</span>
+<span class="nc" id="L91">          logger.info(&quot;Export: &quot; + string);</span>
         }
       }
-<span class="nc" id="L93">      final String filename =</span>
-<span class="nc" id="L94">          dir.getAbsolutePath() + File.separator + hostname +</span>
+<span class="nc" id="L94">      final String filename =</span>
+<span class="nc" id="L95">          dir.getAbsolutePath() + File.separator + hostname +</span>
           &quot;_Runners.run.xml&quot;;
       try {
-<span class="nc" id="L97">        DbTaskRunner.writeXMLWriter(filename);</span>
-<span class="nc" id="L98">      } catch (final WaarpDatabaseException e1) {</span>
-<span class="nc" id="L99">        logger.error(&quot;Error&quot;, e1);</span>
-<span class="nc" id="L100">        admin.close();</span>
-<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L102">          return;</span>
+<span class="nc" id="L98">        DbTaskRunner.writeXMLWriter(filename);</span>
+<span class="nc" id="L99">      } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L100">        logger.error(&quot;Error&quot;, e1);</span>
+<span class="nc" id="L101">        admin.close();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L103">          return;</span>
         }
-<span class="nc" id="L104">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L105">        System.exit(2);//NOSONAR</span>
-<span class="nc" id="L106">      } catch (final OpenR66ProtocolBusinessException e1) {</span>
-<span class="nc" id="L107">        logger.error(&quot;Error&quot;, e1);</span>
-<span class="nc" id="L108">        admin.close();</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L110">          return;</span>
+<span class="nc" id="L105">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L106">        System.exit(2);//NOSONAR</span>
+<span class="nc" id="L107">      } catch (final OpenR66ProtocolBusinessException e1) {</span>
+<span class="nc" id="L108">        logger.error(&quot;Error&quot;, e1);</span>
+<span class="nc" id="L109">        admin.close();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L111">          return;</span>
         }
-<span class="nc" id="L112">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L113">        System.exit(2);//NOSONAR</span>
-<span class="nc" id="L114">      }</span>
-<span class="nc" id="L115">      logger.info(&quot;End of Export&quot;);</span>
+<span class="nc" id="L113">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L114">        System.exit(2);//NOSONAR</span>
+<span class="nc" id="L115">      }</span>
+<span class="nc" id="L116">      logger.info(&quot;End of Export&quot;);</span>
     } finally {
-<span class="nc bnc" id="L117" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L118">        admin.close();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L119">        admin.close();</span>
       }
-<span class="nc" id="L120">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L121">      System.exit(0);//NOSONAR</span>
     }
-<span class="nc" id="L122">  }</span>
+<span class="nc" id="L123">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

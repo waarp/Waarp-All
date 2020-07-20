@@ -49,8 +49,8 @@ public class DbSession {
   /**
    * Internal Logger
    */
-<span class="nc" id="L52">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L53">      WaarpLoggerFactory.getLogger(DbSession.class);</span>
+<span class="fc" id="L52">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L53">      WaarpLoggerFactory.getLogger(DbSession.class);</span>
   private static final String CANNOT_CREATE_CONNECTION =
       &quot;Cannot create Connection&quot;;
   private static final String THREAD_USING = &quot;ThreadUsing: &quot;;
@@ -68,12 +68,12 @@ public class DbSession {
   /**
    * Is this connection Read Only
    */
-<span class="nc" id="L71">  private boolean isReadOnly = true;</span>
+<span class="pc" id="L71">  private boolean isReadOnly = true;</span>
 
   /**
    * Is this session using AutoCommit (true by default)
    */
-<span class="nc" id="L76">  private boolean autoCommit = true;</span>
+<span class="pc" id="L76">  private boolean autoCommit = true;</span>
 
   /**
    * Internal Id
@@ -83,42 +83,42 @@ public class DbSession {
   /**
    * Number of threads using this connection
    */
-<span class="nc" id="L86">  private final AtomicInteger nbThread = new AtomicInteger(0);</span>
+<span class="pc" id="L86">  private final AtomicInteger nbThread = new AtomicInteger(0);</span>
 
   /**
    * To be used when a local Channel is over
    */
-<span class="nc" id="L91">  private volatile boolean isDisActive = true;</span>
+<span class="pc" id="L91">  private volatile boolean isDisActive = true;</span>
 
   /**
    * List all DbPrepareStatement with long term usage to enable the recreation
    * when the associated connection is reopened
    */
-<span class="nc" id="L97">  private final Set&lt;DbPreparedStatement&gt; listPreparedStatement =</span>
-<span class="nc" id="L98">      ConcurrentUtility.newConcurrentSet();</span>
+<span class="pc" id="L97">  private final Set&lt;DbPreparedStatement&gt; listPreparedStatement =</span>
+<span class="pc" id="L98">      ConcurrentUtility.newConcurrentSet();</span>
 
   private void initialize(DbModel dbModel, String server, String user,
                           String passwd, boolean isReadOnly, boolean autoCommit)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (!DbModelFactory.classLoaded.contains(dbModel.getDbType().name())) {</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">    if (!DbModelFactory.classLoaded.contains(dbModel.getDbType().name())) {</span>
 <span class="nc" id="L104">      throw new WaarpDatabaseNoConnectionException(&quot;DbAdmin not initialzed&quot;);</span>
     }
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (server == null) {</span>
-<span class="nc" id="L107">      setConn(null);</span>
-<span class="nc" id="L108">      logger.error(&quot;Cannot set a null Server&quot;);</span>
-<span class="nc" id="L109">      throw new WaarpDatabaseNoConnectionException(&quot;Cannot set a null Server&quot;);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    if (server == null) {</span>
+<span class="fc" id="L107">      setConn(null);</span>
+<span class="fc" id="L108">      logger.error(&quot;Cannot set a null Server&quot;);</span>
+<span class="fc" id="L109">      throw new WaarpDatabaseNoConnectionException(&quot;Cannot set a null Server&quot;);</span>
     }
     try {
-<span class="nc" id="L112">      setAutoCommit(autoCommit);</span>
-<span class="nc" id="L113">      setConn(dbModel.getDbConnection(server, user, passwd));</span>
-<span class="nc" id="L114">      getConn().setAutoCommit(isAutoCommit());</span>
-<span class="nc" id="L115">      setReadOnly(isReadOnly);</span>
-<span class="nc" id="L116">      getConn().setReadOnly(isReadOnly());</span>
-<span class="nc" id="L117">      setInternalId(new GUID());</span>
-<span class="nc" id="L118">      logger.debug(&quot;Open Db Conn: &quot; + getInternalId());</span>
-<span class="nc" id="L119">      DbAdmin.addConnection(getInternalId(), this);</span>
-<span class="nc" id="L120">      setDisActive(false);</span>
-<span class="nc" id="L121">      checkConnection();</span>
+<span class="fc" id="L112">      setAutoCommit(autoCommit);</span>
+<span class="fc" id="L113">      setConn(dbModel.getDbConnection(server, user, passwd));</span>
+<span class="fc" id="L114">      getConn().setAutoCommit(isAutoCommit());</span>
+<span class="fc" id="L115">      setReadOnly(isReadOnly);</span>
+<span class="fc" id="L116">      getConn().setReadOnly(isReadOnly());</span>
+<span class="fc" id="L117">      setInternalId(new GUID());</span>
+<span class="fc" id="L118">      logger.debug(&quot;Open Db Conn: &quot; + getInternalId());</span>
+<span class="fc" id="L119">      DbAdmin.addConnection(getInternalId(), this);</span>
+<span class="fc" id="L120">      setDisActive(false);</span>
+<span class="fc" id="L121">      checkConnection();</span>
 <span class="nc" id="L122">    } catch (final SQLException ex) {</span>
 <span class="nc" id="L123">      setDisActive(true);</span>
       // handle any errors
@@ -134,8 +134,8 @@ public class DbSession {
 <span class="nc" id="L134">      setConn(null);</span>
 <span class="nc" id="L135">      throw new WaarpDatabaseNoConnectionException(CANNOT_CREATE_CONNECTION,</span>
                                                    ex);
-<span class="nc" id="L137">    }</span>
-<span class="nc" id="L138">  }</span>
+<span class="fc" id="L137">    }</span>
+<span class="fc" id="L138">  }</span>
 
   /**
    * Create a session and connect the current object to the server using the
@@ -150,11 +150,11 @@ public class DbSession {
    * @throws WaarpDatabaseSqlException
    */
   public DbSession(DbAdmin admin, boolean isReadOnly)
-<span class="nc" id="L153">      throws WaarpDatabaseNoConnectionException {</span>
+<span class="fc" id="L153">      throws WaarpDatabaseNoConnectionException {</span>
     try {
-<span class="nc" id="L155">      setAdmin(admin);</span>
-<span class="nc" id="L156">      initialize(admin.getDbModel(), admin.getServer(), admin.getUser(),</span>
-<span class="nc" id="L157">                 admin.getPasswd(), isReadOnly, true);</span>
+<span class="fc" id="L155">      setAdmin(admin);</span>
+<span class="fc" id="L156">      initialize(admin.getDbModel(), admin.getServer(), admin.getUser(),</span>
+<span class="fc" id="L157">                 admin.getPasswd(), isReadOnly, true);</span>
 <span class="nc" id="L158">    } catch (final NullPointerException ex) {</span>
       // handle any errors
 <span class="nc" id="L160">      setDisActive(true);</span>
@@ -169,8 +169,8 @@ public class DbSession {
 <span class="nc" id="L169">      setConn(null);</span>
 <span class="nc" id="L170">      throw new WaarpDatabaseNoConnectionException(CANNOT_CREATE_CONNECTION,</span>
                                                    ex);
-<span class="nc" id="L172">    }</span>
-<span class="nc" id="L173">  }</span>
+<span class="fc" id="L172">    }</span>
+<span class="fc" id="L173">  }</span>
 
   /**
    * Create a session and connect the current object to the server using the
@@ -216,7 +216,7 @@ public class DbSession {
    */
   public void setAutoCommit(boolean autoCommit)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (getConn() != null) {</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (getConn() != null) {</span>
 <span class="nc" id="L220">      this.autoCommit = autoCommit;</span>
       try {
 <span class="nc" id="L222">        getConn().setAutoCommit(autoCommit);</span>
@@ -237,21 +237,21 @@ public class DbSession {
                                                      e);
 <span class="nc" id="L238">      }</span>
     }
-<span class="nc" id="L240">  }</span>
+<span class="fc" id="L240">  }</span>
 
   /**
    * @return the admin
    */
   public DbAdmin getAdmin() {
-<span class="nc" id="L246">    return admin;</span>
+<span class="fc" id="L246">    return admin;</span>
   }
 
   /**
    * @param admin the admin to set
    */
   protected void setAdmin(DbAdmin admin) {
-<span class="nc" id="L253">    this.admin = admin;</span>
-<span class="nc" id="L254">  }</span>
+<span class="fc" id="L253">    this.admin = admin;</span>
+<span class="fc" id="L254">  }</span>
 
   /**
    * Print the error from SQLException
@@ -260,43 +260,43 @@ public class DbSession {
    */
   public static void error(SQLException ex) {
     // handle any errors
-<span class="nc" id="L263">    logger.error(</span>
-<span class="nc" id="L264">        &quot;SQLException: &quot; + ex.getMessage() + &quot; SQLState: &quot; + ex.getSQLState() +</span>
-<span class="nc" id="L265">        &quot;VendorError: &quot; + ex.getErrorCode());</span>
-<span class="nc" id="L266">  }</span>
+<span class="fc" id="L263">    logger.error(</span>
+<span class="fc" id="L264">        &quot;SQLException: &quot; + ex.getMessage() + &quot; SQLState: &quot; + ex.getSQLState() +</span>
+<span class="fc" id="L265">        &quot;VendorError: &quot; + ex.getErrorCode());</span>
+<span class="fc" id="L266">  }</span>
 
   /**
    * To be called when a client will start to use this DbSession (once by
    * client)
    */
   public void useConnection() {
-<span class="nc" id="L273">    final int val = nbThread.incrementAndGet();</span>
-<span class="nc" id="L274">    synchronized (this) {</span>
-<span class="nc bnc" id="L275" title="All 2 branches missed.">      if (isDisActive()) {</span>
+<span class="fc" id="L273">    final int val = nbThread.incrementAndGet();</span>
+<span class="fc" id="L274">    synchronized (this) {</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">      if (isDisActive()) {</span>
         try {
-<span class="nc" id="L277">          initialize(getAdmin().getDbModel(), getAdmin().getServer(),</span>
-<span class="nc" id="L278">                     getAdmin().getUser(), getAdmin().getPasswd(), isReadOnly(),</span>
-<span class="nc" id="L279">                     isAutoCommit());</span>
+<span class="fc" id="L277">          initialize(getAdmin().getDbModel(), getAdmin().getServer(),</span>
+<span class="fc" id="L278">                     getAdmin().getUser(), getAdmin().getPasswd(), isReadOnly(),</span>
+<span class="fc" id="L279">                     isAutoCommit());</span>
 <span class="nc" id="L280">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L281">          logger.error(THREAD_USING + nbThread + &quot; but not connected&quot;);</span>
 <span class="nc" id="L282">          return;</span>
-<span class="nc" id="L283">        }</span>
+<span class="fc" id="L283">        }</span>
       }
-<span class="nc" id="L285">    }</span>
-<span class="nc" id="L286">    logger.debug(THREAD_USING + val);</span>
-<span class="nc" id="L287">  }</span>
+<span class="fc" id="L285">    }</span>
+<span class="fc" id="L286">    logger.debug(THREAD_USING + val);</span>
+<span class="fc" id="L287">  }</span>
 
   /**
    * To be called when a client will stop to use this DbSession (once by
    * client)
    */
   public void endUseConnection() {
-<span class="nc" id="L294">    final int val = nbThread.decrementAndGet();</span>
-<span class="nc" id="L295">    logger.debug(THREAD_USING + val);</span>
-<span class="nc bnc" id="L296" title="All 2 branches missed.">    if (val &lt;= 0) {</span>
-<span class="nc" id="L297">      disconnect();</span>
+<span class="fc" id="L294">    final int val = nbThread.decrementAndGet();</span>
+<span class="fc" id="L295">    logger.debug(THREAD_USING + val);</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">    if (val &lt;= 0) {</span>
+<span class="fc" id="L297">      disconnect();</span>
     }
-<span class="nc" id="L299">  }</span>
+<span class="fc" id="L299">  }</span>
 
   /**
    * To be called when a client will stop to use this DbSession (once by
@@ -340,87 +340,87 @@ public class DbSession {
 
   @Override
   public boolean equals(Object o) {
-<span class="nc bnc" id="L343" title="All 2 branches missed.">    if (!(o instanceof DbSession)) {</span>
-<span class="nc" id="L344">      return false;</span>
+<span class="fc bfc" id="L343" title="All 2 branches covered.">    if (!(o instanceof DbSession)) {</span>
+<span class="fc" id="L344">      return false;</span>
     }
-<span class="nc bnc" id="L346" title="All 4 branches missed.">    return this == o || getInternalId().equals(((DbSession) o).getInternalId());</span>
+<span class="pc bpc" id="L346" title="1 of 4 branches missed.">    return this == o || getInternalId().equals(((DbSession) o).getInternalId());</span>
   }
 
   /**
    * Force the close of the connection
    */
   public void forceDisconnect() {
-<span class="nc bnc" id="L353" title="All 2 branches missed.">    if (getInternalId().equals(getAdmin().getSession().getInternalId())) {</span>
-<span class="nc" id="L354">      logger.debug(&quot;Closing internal db connection&quot;);</span>
+<span class="fc bfc" id="L353" title="All 2 branches covered.">    if (getInternalId().equals(getAdmin().getSession().getInternalId())) {</span>
+<span class="fc" id="L354">      logger.debug(&quot;Closing internal db connection&quot;);</span>
     }
-<span class="nc" id="L356">    nbThread.set(0);</span>
-<span class="nc bnc" id="L357" title="All 2 branches missed.">    if (getConn() == null) {</span>
-<span class="nc" id="L358">      logger.debug(&quot;Connection already closed&quot;);</span>
-<span class="nc" id="L359">      return;</span>
+<span class="fc" id="L356">    nbThread.set(0);</span>
+<span class="fc bfc" id="L357" title="All 2 branches covered.">    if (getConn() == null) {</span>
+<span class="fc" id="L358">      logger.debug(&quot;Connection already closed&quot;);</span>
+<span class="fc" id="L359">      return;</span>
     }
     try {
-<span class="nc" id="L362">      Thread.sleep(DbAdmin.WAITFORNETOP);</span>
+<span class="fc" id="L362">      Thread.sleep(DbAdmin.WAITFORNETOP);</span>
 <span class="nc" id="L363">    } catch (final InterruptedException e1) {//NOSONAR</span>
 <span class="nc" id="L364">      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
 <span class="nc" id="L365">      Thread.currentThread().interrupt();</span>
-<span class="nc" id="L366">    }</span>
-<span class="nc" id="L367">    logger.debug(&quot;DbConnection still in use: &quot; + nbThread);</span>
-<span class="nc" id="L368">    removeLongTermPreparedStatements();</span>
-<span class="nc" id="L369">    DbAdmin.removeConnection(getInternalId());</span>
-<span class="nc" id="L370">    setDisActive(true);</span>
+<span class="fc" id="L366">    }</span>
+<span class="fc" id="L367">    logger.debug(&quot;DbConnection still in use: &quot; + nbThread);</span>
+<span class="fc" id="L368">    removeLongTermPreparedStatements();</span>
+<span class="fc" id="L369">    DbAdmin.removeConnection(getInternalId());</span>
+<span class="fc" id="L370">    setDisActive(true);</span>
     try {
-<span class="nc" id="L372">      logger.debug(&quot;Fore close Db Conn: &quot; + getInternalId());</span>
-<span class="nc bnc" id="L373" title="All 2 branches missed.">      if (getConn() != null) {</span>
-<span class="nc" id="L374">        getConn().close();</span>
-<span class="nc" id="L375">        setConn(null);</span>
+<span class="fc" id="L372">      logger.debug(&quot;Fore close Db Conn: &quot; + getInternalId());</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">      if (getConn() != null) {</span>
+<span class="fc" id="L374">        getConn().close();</span>
+<span class="fc" id="L375">        setConn(null);</span>
       }
 <span class="nc" id="L377">    } catch (final SQLException e) {</span>
 <span class="nc" id="L378">      logger.warn(&quot;Disconnection not OK&quot;);</span>
 <span class="nc" id="L379">      error(e);</span>
 <span class="nc" id="L380">    } catch (final ConcurrentModificationException e) {</span>
       // ignore
-<span class="nc" id="L382">    }</span>
-<span class="nc" id="L383">    logger.info(&quot;Current cached connection: &quot; +</span>
-<span class="nc" id="L384">                getAdmin().getDbModel().currentNumberOfPooledConnections());</span>
-<span class="nc" id="L385">  }</span>
+<span class="pc" id="L382">    }</span>
+<span class="fc" id="L383">    logger.info(&quot;Current cached connection: &quot; +</span>
+<span class="fc" id="L384">                getAdmin().getDbModel().currentNumberOfPooledConnections());</span>
+<span class="fc" id="L385">  }</span>
 
   /**
    * Close the connection
    */
   public void disconnect() {
-<span class="nc bnc" id="L391" title="All 2 branches missed.">    if (getInternalId().equals(getAdmin().getSession().getInternalId())) {</span>
-<span class="nc" id="L392">      logger.debug(&quot;Closing internal db connection: &quot; + nbThread.get());</span>
+<span class="fc bfc" id="L391" title="All 2 branches covered.">    if (getInternalId().equals(getAdmin().getSession().getInternalId())) {</span>
+<span class="fc" id="L392">      logger.debug(&quot;Closing internal db connection: &quot; + nbThread.get());</span>
     }
-<span class="nc bnc" id="L394" title="All 4 branches missed.">    if (getConn() == null || isDisActive()) {</span>
-<span class="nc" id="L395">      logger.debug(&quot;Connection already closed&quot;);</span>
-<span class="nc" id="L396">      return;</span>
+<span class="fc bfc" id="L394" title="All 4 branches covered.">    if (getConn() == null || isDisActive()) {</span>
+<span class="fc" id="L395">      logger.debug(&quot;Connection already closed&quot;);</span>
+<span class="fc" id="L396">      return;</span>
     }
-<span class="nc" id="L398">    logger.debug(&quot;DbConnection still in use: &quot; + nbThread);</span>
-<span class="nc bnc" id="L399" title="All 2 branches missed.">    if (nbThread.get() &gt; 0) {</span>
+<span class="fc" id="L398">    logger.debug(&quot;DbConnection still in use: &quot; + nbThread);</span>
+<span class="pc bpc" id="L399" title="1 of 2 branches missed.">    if (nbThread.get() &gt; 0) {</span>
 <span class="nc" id="L400">      logger.info(</span>
           &quot;Still some clients could use this Database Session: &quot; + nbThread);
 <span class="nc" id="L402">      return;</span>
     }
-<span class="nc" id="L404">    synchronized (this) {</span>
-<span class="nc" id="L405">      removeLongTermPreparedStatements();</span>
-<span class="nc" id="L406">      DbAdmin.removeConnection(getInternalId());</span>
-<span class="nc" id="L407">      setDisActive(true);</span>
+<span class="fc" id="L404">    synchronized (this) {</span>
+<span class="fc" id="L405">      removeLongTermPreparedStatements();</span>
+<span class="fc" id="L406">      DbAdmin.removeConnection(getInternalId());</span>
+<span class="fc" id="L407">      setDisActive(true);</span>
       try {
-<span class="nc" id="L409">        logger.debug(&quot;Close Db Conn: &quot; + getInternalId());</span>
-<span class="nc bnc" id="L410" title="All 2 branches missed.">        if (getConn() != null) {</span>
-<span class="nc" id="L411">          getConn().close();</span>
-<span class="nc" id="L412">          setConn(null);</span>
+<span class="fc" id="L409">        logger.debug(&quot;Close Db Conn: &quot; + getInternalId());</span>
+<span class="fc bfc" id="L410" title="All 2 branches covered.">        if (getConn() != null) {</span>
+<span class="fc" id="L411">          getConn().close();</span>
+<span class="fc" id="L412">          setConn(null);</span>
         }
 <span class="nc" id="L414">      } catch (final SQLException e) {</span>
 <span class="nc" id="L415">        logger.warn(&quot;Disconnection not OK&quot;);</span>
 <span class="nc" id="L416">        error(e);</span>
 <span class="nc" id="L417">      } catch (final ConcurrentModificationException e) {</span>
         // ignore
-<span class="nc" id="L419">      }</span>
-<span class="nc" id="L420">    }</span>
-<span class="nc" id="L421">    logger.info(&quot;Current cached connection: &quot; +</span>
-<span class="nc" id="L422">                getAdmin().getDbModel().currentNumberOfPooledConnections());</span>
-<span class="nc" id="L423">  }</span>
+<span class="pc" id="L419">      }</span>
+<span class="fc" id="L420">    }</span>
+<span class="fc" id="L421">    logger.info(&quot;Current cached connection: &quot; +</span>
+<span class="fc" id="L422">                getAdmin().getDbModel().currentNumberOfPooledConnections());</span>
+<span class="fc" id="L423">  }</span>
 
   /**
    * Check the connection to the Database and try to reopen it if possible
@@ -429,21 +429,21 @@ public class DbSession {
    */
   public void checkConnection() throws WaarpDatabaseNoConnectionException {
     try {
-<span class="nc" id="L432">      getAdmin().getDbModel().validConnection(this);</span>
-<span class="nc" id="L433">      setDisActive(false);</span>
+<span class="fc" id="L432">      getAdmin().getDbModel().validConnection(this);</span>
+<span class="fc" id="L433">      setDisActive(false);</span>
 <span class="nc" id="L434">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L435">      setDisActive(true);</span>
 <span class="nc" id="L436">      throw e;</span>
-<span class="nc" id="L437">    }</span>
-<span class="nc" id="L438">  }</span>
+<span class="fc" id="L437">    }</span>
+<span class="fc" id="L438">  }</span>
 
   /**
    * @return True if the connection was successfully reconnected
    */
   public boolean checkConnectionNoException() {
     try {
-<span class="nc" id="L445">      checkConnection();</span>
-<span class="nc" id="L446">      return true;</span>
+<span class="fc" id="L445">      checkConnection();</span>
+<span class="fc" id="L446">      return true;</span>
 <span class="nc" id="L447">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L448">      return false;</span>
     }
@@ -455,8 +455,8 @@ public class DbSession {
    * @param longterm
    */
   public void addLongTermPreparedStatement(DbPreparedStatement longterm) {
-<span class="nc" id="L458">    listPreparedStatement.add(longterm);</span>
-<span class="nc" id="L459">  }</span>
+<span class="fc" id="L458">    listPreparedStatement.add(longterm);</span>
+<span class="fc" id="L459">  }</span>
 
   /**
    * Due to a reconnection, recreate all associated long term
@@ -494,13 +494,13 @@ public class DbSession {
    * Remove all Long Term PreparedStatements (closing connection)
    */
   public void removeLongTermPreparedStatements() {
-<span class="nc bnc" id="L497" title="All 2 branches missed.">    for (final DbPreparedStatement longterm : listPreparedStatement) {</span>
+<span class="pc bpc" id="L497" title="1 of 2 branches missed.">    for (final DbPreparedStatement longterm : listPreparedStatement) {</span>
 <span class="nc bnc" id="L498" title="All 2 branches missed.">      if (longterm != null) {</span>
 <span class="nc" id="L499">        longterm.realClose();</span>
       }
 <span class="nc" id="L501">    }</span>
-<span class="nc" id="L502">    listPreparedStatement.clear();</span>
-<span class="nc" id="L503">  }</span>
+<span class="fc" id="L502">    listPreparedStatement.clear();</span>
+<span class="fc" id="L503">  }</span>
 
   /**
    * Remove one Long Term PreparedStatement
@@ -628,63 +628,63 @@ public class DbSession {
    * @return the isReadOnly
    */
   public boolean isReadOnly() {
-<span class="nc" id="L631">    return isReadOnly;</span>
+<span class="fc" id="L631">    return isReadOnly;</span>
   }
 
   /**
    * @param isReadOnly the isReadOnly to set
    */
   public void setReadOnly(boolean isReadOnly) {
-<span class="nc" id="L638">    this.isReadOnly = isReadOnly;</span>
-<span class="nc" id="L639">  }</span>
+<span class="fc" id="L638">    this.isReadOnly = isReadOnly;</span>
+<span class="fc" id="L639">  }</span>
 
   /**
    * @return the autoCommit
    */
   public boolean isAutoCommit() {
-<span class="nc" id="L645">    return autoCommit;</span>
+<span class="fc" id="L645">    return autoCommit;</span>
   }
 
   /**
    * @return the conn
    */
   public Connection getConn() {
-<span class="nc" id="L652">    return conn;</span>
+<span class="fc" id="L652">    return conn;</span>
   }
 
   /**
    * @param conn the conn to set
    */
   public void setConn(Connection conn) {
-<span class="nc" id="L659">    this.conn = conn;</span>
-<span class="nc" id="L660">  }</span>
+<span class="fc" id="L659">    this.conn = conn;</span>
+<span class="fc" id="L660">  }</span>
 
   /**
    * @return the internalId
    */
   public GUID getInternalId() {
-<span class="nc" id="L666">    return internalId;</span>
+<span class="fc" id="L666">    return internalId;</span>
   }
 
   /**
    * @param internalId the internalId to set
    */
   private void setInternalId(GUID internalId) {
-<span class="nc" id="L673">    this.internalId = internalId;</span>
-<span class="nc" id="L674">  }</span>
+<span class="fc" id="L673">    this.internalId = internalId;</span>
+<span class="fc" id="L674">  }</span>
 
   /**
    * @return the isDisActive
    */
   public boolean isDisActive() {
-<span class="nc" id="L680">    return isDisActive;</span>
+<span class="fc" id="L680">    return isDisActive;</span>
   }
 
   /**
    * @param isDisActive the isDisActive to set
    */
   public void setDisActive(boolean isDisActive) {
-<span class="nc" id="L687">    this.isDisActive = isDisActive;</span>
-<span class="nc" id="L688">  }</span>
+<span class="fc" id="L687">    this.isDisActive = isDisActive;</span>
+<span class="fc" id="L688">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

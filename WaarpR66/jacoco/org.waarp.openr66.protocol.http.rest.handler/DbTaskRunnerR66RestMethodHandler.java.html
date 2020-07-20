@@ -91,26 +91,26 @@ public class DbTaskRunnerR66RestMethodHandler
                                  Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L94">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L95">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L94">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L95">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="nc" id="L97">      final JsonNode node = RestArgument.getId(arg);</span>
+<span class="fc" id="L97">      final JsonNode node = RestArgument.getId(arg);</span>
       long id;
-<span class="nc bnc" id="L99" title="All 2 branches missed.">      if (node.isMissingNode()) {</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">      if (node.isMissingNode()) {</span>
         // shall not be but continue however
 <span class="nc" id="L101">        id = arg.path(DbTaskRunner.Columns.SPECIALID.name()).asLong();</span>
       } else {
-<span class="nc" id="L103">        id = node.asLong();</span>
+<span class="fc" id="L103">        id = node.asLong();</span>
       }
-<span class="nc" id="L105">      return new DbTaskRunner(id,</span>
-<span class="nc" id="L106">                              arg.path(DbTaskRunner.Columns.REQUESTER.name())</span>
-<span class="nc" id="L107">                                 .asText(),</span>
-<span class="nc" id="L108">                              arg.path(DbTaskRunner.Columns.REQUESTED.name())</span>
-<span class="nc" id="L109">                                 .asText(),</span>
-<span class="nc" id="L110">                              arg.path(DbTaskRunner.Columns.OWNERREQ.name())</span>
-<span class="nc" id="L111">                                 .asText());</span>
-<span class="nc" id="L112">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L113">      throw new HttpNotFoundRequestException(</span>
+<span class="fc" id="L105">      return new DbTaskRunner(id,</span>
+<span class="fc" id="L106">                              arg.path(DbTaskRunner.Columns.REQUESTER.name())</span>
+<span class="fc" id="L107">                                 .asText(),</span>
+<span class="fc" id="L108">                              arg.path(DbTaskRunner.Columns.REQUESTED.name())</span>
+<span class="fc" id="L109">                                 .asText(),</span>
+<span class="fc" id="L110">                              arg.path(DbTaskRunner.Columns.OWNERREQ.name())</span>
+<span class="fc" id="L111">                                 .asText());</span>
+<span class="fc" id="L112">    } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L113">      throw new HttpNotFoundRequestException(</span>
           &quot;Issue while reading from database &quot; + arg, e);
     }
   }
@@ -120,10 +120,10 @@ public class DbTaskRunnerR66RestMethodHandler
                                     RestArgument arguments, RestArgument result,
                                     Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="nc" id="L123">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="nc" id="L124">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L123">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L124">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="nc" id="L126">      return new DbTaskRunner(arg);</span>
+<span class="fc" id="L126">      return new DbTaskRunner(arg);</span>
 <span class="nc" id="L127">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L128">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while inserting into database&quot;, e);
@@ -166,7 +166,7 @@ public class DbTaskRunnerR66RestMethodHandler
 <span class="fc" id="L166">      req = null;</span>
     }
 <span class="fc" id="L168">    String owner = arg.path(DbTaskRunner.Columns.OWNERREQ.name()).asText();</span>
-<span class="pc bpc" id="L169" title="2 of 4 branches missed.">    if (owner == null || owner.isEmpty()) {</span>
+<span class="pc bpc" id="L169" title="1 of 4 branches missed.">    if (owner == null || owner.isEmpty()) {</span>
 <span class="fc" id="L170">      owner = null;</span>
     }
 <span class="fc" id="L172">    final boolean pending =</span>
@@ -188,13 +188,13 @@ public class DbTaskRunnerR66RestMethodHandler
     }
 <span class="fc" id="L189">    Timestamp stop = null;</span>
 <span class="fc" id="L190">    node = arg.path(FILTER_ARGS.STOPTRANS.name());</span>
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (!node.isMissingNode()) {</span>
-<span class="nc" id="L192">      long val = node.asLong();</span>
-<span class="nc bnc" id="L193" title="All 2 branches missed.">      if (val == 0) {</span>
-<span class="nc" id="L194">        final DateTime received = DateTime.parse(node.asText());</span>
-<span class="nc" id="L195">        val = received.getMillis();</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">    if (!node.isMissingNode()) {</span>
+<span class="fc" id="L192">      long val = node.asLong();</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">      if (val == 0) {</span>
+<span class="fc" id="L194">        final DateTime received = DateTime.parse(node.asText());</span>
+<span class="fc" id="L195">        val = received.getMillis();</span>
       }
-<span class="nc" id="L197">      stop = new Timestamp(val);</span>
+<span class="fc" id="L197">      stop = new Timestamp(val);</span>
     }
     try {
 <span class="fc" id="L200">      return DbTaskRunner</span>
@@ -227,99 +227,99 @@ public class DbTaskRunnerR66RestMethodHandler
 
   @Override
   protected ArrayNode getDetailedAllow() {
-<span class="nc" id="L230">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L230">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="nc" id="L232">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L233">    node1.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
-<span class="nc bnc" id="L234" title="All 2 branches missed.">    for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
-<span class="nc" id="L235">      node1.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L232">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L233">    node1.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">    for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
+<span class="fc" id="L235">      node1.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
     }
 
     ObjectNode node2;
-<span class="nc" id="L239">    ObjectNode node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="nc" id="L241">      node3.put(DbTaskRunner.Columns.SPECIALID.name(),</span>
+<span class="fc" id="L239">    ObjectNode node3 = JsonHandler.createObjectNode();</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L241">      node3.put(DbTaskRunner.Columns.SPECIALID.name(),</span>
                 SPECIAL_ID_AS_LONG_IN_URI_AS + path + &quot;/id&quot;);
-<span class="nc" id="L243">      node3.put(DbTaskRunner.Columns.REQUESTER.name(),</span>
+<span class="fc" id="L243">      node3.put(DbTaskRunner.Columns.REQUESTER.name(),</span>
                 PARTNER_AS_REQUESTER_AS_VARCHAR);
-<span class="nc" id="L245">      node3.put(DbTaskRunner.Columns.REQUESTED.name(),</span>
+<span class="fc" id="L245">      node3.put(DbTaskRunner.Columns.REQUESTED.name(),</span>
                 PARTNER_AS_REQUESTED_AS_VARCHAR);
-<span class="nc" id="L247">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
+<span class="fc" id="L247">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-<span class="nc" id="L249">      node2 = RestArgument</span>
-<span class="nc" id="L250">          .fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;, COMMAND_TYPE.GET.name(),</span>
+<span class="fc" id="L249">      node2 = RestArgument</span>
+<span class="fc" id="L250">          .fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;, COMMAND_TYPE.GET.name(),</span>
                              node3, node1);
-<span class="nc" id="L252">      node.add(node2);</span>
+<span class="fc" id="L252">      node.add(node2);</span>
 
-<span class="nc" id="L254">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L255" title="All 2 branches missed.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
-<span class="nc" id="L256">        node3.put(arg.name(), arg.type);</span>
+<span class="fc" id="L254">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
+<span class="fc" id="L256">        node3.put(arg.name(), arg.type);</span>
       }
-<span class="nc" id="L258">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
+<span class="fc" id="L258">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-<span class="nc" id="L260">      node2 = RestArgument</span>
-<span class="nc" id="L261">          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),</span>
-<span class="nc" id="L262">                             node3, JsonHandler.createArrayNode().add(node1));</span>
-<span class="nc" id="L263">      node.add(node2);</span>
+<span class="fc" id="L260">      node2 = RestArgument</span>
+<span class="fc" id="L261">          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),</span>
+<span class="fc" id="L262">                             node3, JsonHandler.createArrayNode().add(node1));</span>
+<span class="fc" id="L263">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L265" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="nc" id="L266">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L267">      node3.put(DbTaskRunner.Columns.SPECIALID.name(),</span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="fc" id="L266">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L267">      node3.put(DbTaskRunner.Columns.SPECIALID.name(),</span>
                 SPECIAL_ID_AS_LONG_IN_URI_AS + path + &quot;/id&quot;);
-<span class="nc" id="L269">      node3.put(DbTaskRunner.Columns.REQUESTER.name(),</span>
+<span class="fc" id="L269">      node3.put(DbTaskRunner.Columns.REQUESTER.name(),</span>
                 PARTNER_AS_REQUESTER_AS_VARCHAR);
-<span class="nc" id="L271">      node3.put(DbTaskRunner.Columns.REQUESTED.name(),</span>
+<span class="fc" id="L271">      node3.put(DbTaskRunner.Columns.REQUESTED.name(),</span>
                 PARTNER_AS_REQUESTED_AS_VARCHAR);
-<span class="nc" id="L273">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
+<span class="fc" id="L273">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-<span class="nc bnc" id="L275" title="All 2 branches missed.">      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
-<span class="nc" id="L276">        if (column.name()</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">                  .equalsIgnoreCase(DbTaskRunner.Columns.IDRULE.name())) {</span>
-<span class="nc" id="L278">          continue;</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
+<span class="fc" id="L276">        if (column.name()</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">                  .equalsIgnoreCase(DbTaskRunner.Columns.IDRULE.name())) {</span>
+<span class="fc" id="L278">          continue;</span>
         }
-<span class="nc" id="L280">        node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L280">        node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L282">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
-<span class="nc" id="L283">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
+<span class="fc" id="L282">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
+<span class="fc" id="L283">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L285">      node.add(node2);</span>
+<span class="fc" id="L285">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L287" title="All 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
-<span class="nc" id="L288">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L289">      node3.put(DbTaskRunner.Columns.SPECIALID.name(),</span>
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
+<span class="fc" id="L288">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L289">      node3.put(DbTaskRunner.Columns.SPECIALID.name(),</span>
                 SPECIAL_ID_AS_LONG_IN_URI_AS + path + &quot;/id&quot;);
-<span class="nc" id="L291">      node3.put(DbTaskRunner.Columns.REQUESTER.name(),</span>
+<span class="fc" id="L291">      node3.put(DbTaskRunner.Columns.REQUESTER.name(),</span>
                 PARTNER_AS_REQUESTER_AS_VARCHAR);
-<span class="nc" id="L293">      node3.put(DbTaskRunner.Columns.REQUESTED.name(),</span>
+<span class="fc" id="L293">      node3.put(DbTaskRunner.Columns.REQUESTED.name(),</span>
                 PARTNER_AS_REQUESTED_AS_VARCHAR);
-<span class="nc" id="L295">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
+<span class="fc" id="L295">      node3.put(DbTaskRunner.Columns.OWNERREQ.name(),</span>
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-<span class="nc" id="L297">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
-<span class="nc" id="L298">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
+<span class="fc" id="L297">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
+<span class="fc" id="L298">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
                                              node1);
-<span class="nc" id="L300">      node.add(node2);</span>
+<span class="fc" id="L300">      node.add(node2);</span>
     }
-<span class="nc bnc" id="L302" title="All 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
-<span class="nc" id="L303">      node3 = JsonHandler.createObjectNode();</span>
-<span class="nc bnc" id="L304" title="All 2 branches missed.">      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
-<span class="nc" id="L305">        node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="fc" id="L303">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L304" title="All 2 branches covered.">      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
+<span class="fc" id="L305">        node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
       }
-<span class="nc" id="L307">      node2 = RestArgument</span>
-<span class="nc" id="L308">          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),</span>
+<span class="fc" id="L307">      node2 = RestArgument</span>
+<span class="fc" id="L308">          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),</span>
                              node3, node1);
-<span class="nc" id="L310">      node.add(node2);</span>
+<span class="fc" id="L310">      node.add(node2);</span>
     }
-<span class="nc" id="L312">    node2 = RestArgument</span>
-<span class="nc" id="L313">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+<span class="fc" id="L312">    node2 = RestArgument</span>
+<span class="fc" id="L313">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
                            null, null);
-<span class="nc" id="L315">    node.add(node2);</span>
+<span class="fc" id="L315">    node.add(node2);</span>
 
-<span class="nc" id="L317">    return node;</span>
+<span class="fc" id="L317">    return node;</span>
   }
 
   @Override
   public String getPrimaryPropertyName() {
-<span class="nc" id="L322">    return Columns.SPECIALID.name();</span>
+<span class="fc" id="L322">    return Columns.SPECIALID.name();</span>
   }
 
   @Override

@@ -26,7 +26,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.dom4j.io.SAXReader;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -38,6 +37,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlType;
@@ -74,17 +74,17 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
   /**
    * Internal Logger
    */
-<span class="nc" id="L77">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L78">      WaarpLoggerFactory.getLogger(DbHostConfiguration.class);</span>
-<span class="nc" id="L79">  private static final Pattern WHITESPACES = Pattern.compile(&quot;\\s+&quot;);</span>
-<span class="nc" id="L80">  private static final Pattern SPACE_BACKSLASH = Pattern.compile(&quot; |\\|&quot;);</span>
-<span class="nc" id="L81">  private static final Pattern COMMA = Pattern.compile(&quot;,&quot;);</span>
+<span class="fc" id="L77">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L78">      WaarpLoggerFactory.getLogger(DbHostConfiguration.class);</span>
+<span class="fc" id="L79">  private static final Pattern WHITESPACES = WaarpStringUtils.BLANK;</span>
+<span class="fc" id="L80">  private static final Pattern SPACE_BACKSLASH = Pattern.compile(&quot; |\\|&quot;);</span>
+<span class="fc" id="L81">  private static final Pattern COMMA = Pattern.compile(&quot;,&quot;);</span>
 
-<span class="nc" id="L83">  public enum Columns {</span>
-<span class="nc" id="L84">    BUSINESS, ROLES, ALIASES, OTHERS, UPDATEDINFO, HOSTID</span>
+<span class="fc" id="L83">  public enum Columns {</span>
+<span class="fc" id="L84">    BUSINESS, ROLES, ALIASES, OTHERS, UPDATEDINFO, HOSTID</span>
   }
 
-<span class="nc" id="L87">  public static final int[] dbTypes = {</span>
+<span class="fc" id="L87">  public static final int[] dbTypes = {</span>
       Types.LONGVARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
       Types.LONGVARCHAR, Types.INTEGER, Types.NVARCHAR
   };
@@ -131,7 +131,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
    * Check version in protocol
    */
   public static final String XML_BUSINESSID = &quot;businessid&quot;;
-<span class="nc" id="L134">  private static final XmlDecl[] businessDecl = {</span>
+<span class="fc" id="L134">  private static final XmlDecl[] businessDecl = {</span>
       new XmlDecl(XML_BUSINESS, XmlType.STRING,
                   XML_BUSINESS + '/' + XML_BUSINESSID, true)
   };
@@ -139,52 +139,52 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
   /**
    * Structure of the Configuration file
    */
-<span class="nc" id="L142">  public static final XmlDecl[] configRoleDecls = {</span>
+<span class="fc" id="L142">  public static final XmlDecl[] configRoleDecls = {</span>
       // roles
       new XmlDecl(XmlType.STRING, XML_ROLEID),
       new XmlDecl(XmlType.STRING, XML_ROLESET)
   };
-<span class="nc" id="L147">  private static final XmlDecl[] roleDecl = {</span>
+<span class="fc" id="L147">  private static final XmlDecl[] roleDecl = {</span>
       new XmlDecl(XML_ROLES, XmlType.XVAL, XML_ROLES + '/' + XML_ROLE,
                   configRoleDecls, true)
   };
   /**
    * Structure of the Configuration file
    */
-<span class="nc" id="L154">  public static final XmlDecl[] configAliasDecls = {</span>
+<span class="fc" id="L154">  public static final XmlDecl[] configAliasDecls = {</span>
       // alias
       new XmlDecl(XmlType.STRING, XML_REALID),
       new XmlDecl(XmlType.STRING, XML_ALIASID)
   };
 
-<span class="nc" id="L160">  private static final XmlDecl[] aliasDecl = {</span>
+<span class="fc" id="L160">  private static final XmlDecl[] aliasDecl = {</span>
       new XmlDecl(XML_ALIASES, XmlType.XVAL, XML_ALIASES + '/' + XML_ALIAS,
                   configAliasDecls, true)
   };
 
-<span class="nc" id="L165">  public enum OtherFields {</span>
-<span class="nc" id="L166">    root, version, seeallid</span>
+<span class="fc" id="L165">  public enum OtherFields {</span>
+<span class="fc" id="L166">    root, version, seeallid</span>
   }
 
   // ALL TABLE SHOULD IMPLEMENT THIS
   public static final int NBPRKEY = 1;
 
-<span class="nc" id="L172">  protected static final String selectAllFields =</span>
-<span class="nc" id="L173">      Columns.BUSINESS.name() + ',' + Columns.ROLES.name() + ',' +</span>
-<span class="nc" id="L174">      Columns.ALIASES.name() + ',' + Columns.OTHERS.name() + ',' +</span>
-<span class="nc" id="L175">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
+<span class="fc" id="L172">  protected static final String selectAllFields =</span>
+<span class="fc" id="L173">      Columns.BUSINESS.name() + ',' + Columns.ROLES.name() + ',' +</span>
+<span class="fc" id="L174">      Columns.ALIASES.name() + ',' + Columns.OTHERS.name() + ',' +</span>
+<span class="fc" id="L175">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
 
-<span class="nc" id="L177">  protected static final String updateAllFields =</span>
-<span class="nc" id="L178">      Columns.BUSINESS.name() + &quot;=?,&quot; + Columns.ROLES.name() + &quot;=?,&quot; +</span>
-<span class="nc" id="L179">      Columns.ALIASES.name() + &quot;=?,&quot; + Columns.OTHERS.name() + &quot;=?,&quot; +</span>
-<span class="nc" id="L180">      Columns.UPDATEDINFO.name() + &quot;=?&quot;;</span>
+<span class="fc" id="L177">  protected static final String updateAllFields =</span>
+<span class="fc" id="L178">      Columns.BUSINESS.name() + &quot;=?,&quot; + Columns.ROLES.name() + &quot;=?,&quot; +</span>
+<span class="fc" id="L179">      Columns.ALIASES.name() + &quot;=?,&quot; + Columns.OTHERS.name() + &quot;=?,&quot; +</span>
+<span class="fc" id="L180">      Columns.UPDATEDINFO.name() + &quot;=?&quot;;</span>
 
   protected static final String insertAllValues = &quot; (?,?,?,?,?,?) &quot;;
 
   @Override
   protected void initObject() {
     //nothing
-<span class="nc" id="L187">  }</span>
+<span class="fc" id="L187">  }</span>
 
   @Override
   protected String getTable() {
@@ -193,7 +193,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 
   @Override
   protected AbstractDAO&lt;Business&gt; getDao() throws DAOConnectionException {
-<span class="nc" id="L196">    return DAOFactory.getInstance().getBusinessDAO();</span>
+<span class="fc" id="L196">    return DAOFactory.getInstance().getBusinessDAO();</span>
   }
 
   @Override
@@ -206,7 +206,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 
   @Override
   protected String getPrimaryField() {
-<span class="nc" id="L209">    return Columns.HOSTID.name();</span>
+<span class="fc" id="L209">    return Columns.HOSTID.name();</span>
   }
 
 
@@ -218,17 +218,17 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
    * @param others Other configuration
    */
   public DbHostConfiguration(String hostid, String business, String roles,
-<span class="nc" id="L221">                             String aliases, String others) {</span>
-<span class="nc" id="L222">    this.pojo = new Business(hostid, business, roles, aliases, others);</span>
-<span class="nc" id="L223">  }</span>
+<span class="fc" id="L221">                             String aliases, String others) {</span>
+<span class="fc" id="L222">    this.pojo = new Business(hostid, business, roles, aliases, others);</span>
+<span class="fc" id="L223">  }</span>
 
-<span class="nc" id="L225">  public DbHostConfiguration(Business business) {</span>
-<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (business == null) {</span>
+<span class="fc" id="L225">  public DbHostConfiguration(Business business) {</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">    if (business == null) {</span>
 <span class="nc" id="L227">      throw new IllegalArgumentException(</span>
           &quot;Argument in constructor cannot be null&quot;);
     }
-<span class="nc" id="L230">    this.pojo = business;</span>
-<span class="nc" id="L231">  }</span>
+<span class="fc" id="L230">    this.pojo = business;</span>
+<span class="fc" id="L231">  }</span>
 
   /**
    * Constructor from Json
@@ -238,243 +238,243 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
    * @throws WaarpDatabaseSqlException
    */
   public DbHostConfiguration(ObjectNode source)
-<span class="nc" id="L241">      throws WaarpDatabaseSqlException {</span>
-<span class="nc" id="L242">    pojo = new Business();</span>
-<span class="nc" id="L243">    setFromJson(source, false);</span>
-<span class="nc bnc" id="L244" title="All 4 branches missed.">    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
+<span class="fc" id="L241">      throws WaarpDatabaseSqlException {</span>
+<span class="fc" id="L242">    pojo = new Business();</span>
+<span class="fc" id="L243">    setFromJson(source, false);</span>
+<span class="pc bpc" id="L244" title="2 of 4 branches missed.">    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
 <span class="nc" id="L245">      throw new WaarpDatabaseSqlException(</span>
           &quot;Not enough argument to create the object&quot;);
     }
-<span class="nc" id="L248">    isSaved = false;</span>
-<span class="nc" id="L249">  }</span>
+<span class="fc" id="L248">    isSaved = false;</span>
+<span class="fc" id="L249">  }</span>
 
   /**
    * @param hostid
    *
    * @throws WaarpDatabaseException
    */
-<span class="nc" id="L256">  public DbHostConfiguration(String hostid) throws WaarpDatabaseException {</span>
-<span class="nc" id="L257">    BusinessDAO businessAccess = null;</span>
+<span class="fc" id="L256">  public DbHostConfiguration(String hostid) throws WaarpDatabaseException {</span>
+<span class="fc" id="L257">    BusinessDAO businessAccess = null;</span>
     try {
-<span class="nc" id="L259">      businessAccess = DAOFactory.getInstance().getBusinessDAO();</span>
-<span class="nc" id="L260">      pojo = businessAccess.select(hostid);</span>
+<span class="fc" id="L259">      businessAccess = DAOFactory.getInstance().getBusinessDAO();</span>
+<span class="fc" id="L260">      pojo = businessAccess.select(hostid);</span>
 <span class="nc" id="L261">    } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L262">      throw new WaarpDatabaseException(e);</span>
-<span class="nc" id="L263">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L264">      throw new WaarpDatabaseNoDataException(</span>
+<span class="fc" id="L263">    } catch (final DAONoDataException e) {</span>
+<span class="fc" id="L264">      throw new WaarpDatabaseNoDataException(</span>
           &quot;DbHostConfiguration not &quot; + &quot;found&quot;, e);
     } finally {
-<span class="nc" id="L267">      DAOFactory.closeDAO(businessAccess);</span>
+<span class="fc" id="L267">      DAOFactory.closeDAO(businessAccess);</span>
     }
-<span class="nc" id="L269">  }</span>
+<span class="fc" id="L269">  }</span>
 
   /**
    * @return the hostid
    */
   public String getHostid() {
-<span class="nc" id="L275">    return pojo.getHostid();</span>
+<span class="fc" id="L275">    return pojo.getHostid();</span>
   }
 
   /**
    * @return the business
    */
   public String getBusiness() {
-<span class="nc" id="L282">    return pojo.getBusiness();</span>
+<span class="fc" id="L282">    return pojo.getBusiness();</span>
   }
 
   /**
    * @param business the business to set
    */
   public void setBusiness(String business) {
-<span class="nc bnc" id="L289" title="All 2 branches missed.">    this.pojo.setBusiness(business == null? &quot;&quot; : business);</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    this.pojo.setBusiness(business == null? &quot;&quot; : business);</span>
     int len;
     do {
-<span class="nc" id="L292">      len = this.pojo.getBusiness().length();</span>
-<span class="nc" id="L293">      this.pojo.setBusiness(</span>
-<span class="nc" id="L294">          WHITESPACES.matcher(this.pojo.getBusiness()).replaceAll(&quot; &quot;));</span>
-<span class="nc bnc" id="L295" title="All 2 branches missed.">    } while (len != this.pojo.getBusiness().length());</span>
-<span class="nc" id="L296">    Configuration.configuration.getBusinessWhiteSet().clear();</span>
-<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (!this.pojo.getBusiness().isEmpty()) {</span>
-<span class="nc" id="L298">      readValuesFromXml(this.pojo.getBusiness(), businessDecl);</span>
+<span class="fc" id="L292">      len = this.pojo.getBusiness().length();</span>
+<span class="fc" id="L293">      this.pojo.setBusiness(</span>
+<span class="fc" id="L294">          WHITESPACES.matcher(this.pojo.getBusiness()).replaceAll(&quot; &quot;));</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">    } while (len != this.pojo.getBusiness().length());</span>
+<span class="fc" id="L296">    Configuration.configuration.getBusinessWhiteSet().clear();</span>
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">    if (!this.pojo.getBusiness().isEmpty()) {</span>
+<span class="fc" id="L298">      readValuesFromXml(this.pojo.getBusiness(), businessDecl);</span>
     }
-<span class="nc" id="L300">    isSaved = false;</span>
-<span class="nc" id="L301">  }</span>
+<span class="fc" id="L300">    isSaved = false;</span>
+<span class="fc" id="L301">  }</span>
 
   /**
    * @return the roles
    */
   public String getRoles() {
-<span class="nc" id="L307">    return pojo.getRoles();</span>
+<span class="fc" id="L307">    return pojo.getRoles();</span>
   }
 
   /**
    * @param roles the roles to set
    */
   public void setRoles(String roles) {
-<span class="nc bnc" id="L314" title="All 2 branches missed.">    pojo.setRoles(roles == null? &quot;&quot; : roles);</span>
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">    pojo.setRoles(roles == null? &quot;&quot; : roles);</span>
     int len;
     do {
-<span class="nc" id="L317">      len = getRoles().length();</span>
-<span class="nc" id="L318">      pojo.setRoles(WHITESPACES.matcher(pojo.getRoles()).replaceAll(&quot; &quot;));</span>
-<span class="nc bnc" id="L319" title="All 2 branches missed.">    } while (len != pojo.getRoles().length());</span>
-<span class="nc" id="L320">    Configuration.configuration.getRoles().clear();</span>
-<span class="nc bnc" id="L321" title="All 2 branches missed.">    if (!pojo.getRoles().isEmpty()) {</span>
-<span class="nc" id="L322">      readValuesFromXml(pojo.getRoles(), roleDecl);</span>
+<span class="fc" id="L317">      len = getRoles().length();</span>
+<span class="fc" id="L318">      pojo.setRoles(WHITESPACES.matcher(pojo.getRoles()).replaceAll(&quot; &quot;));</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">    } while (len != pojo.getRoles().length());</span>
+<span class="fc" id="L320">    Configuration.configuration.getRoles().clear();</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">    if (!pojo.getRoles().isEmpty()) {</span>
+<span class="fc" id="L322">      readValuesFromXml(pojo.getRoles(), roleDecl);</span>
     }
-<span class="nc" id="L324">    isSaved = false;</span>
-<span class="nc" id="L325">  }</span>
+<span class="fc" id="L324">    isSaved = false;</span>
+<span class="fc" id="L325">  }</span>
 
   /**
    * @return the aliases
    */
   public String getAliases() {
-<span class="nc" id="L331">    return pojo.getAliases();</span>
+<span class="fc" id="L331">    return pojo.getAliases();</span>
   }
 
   /**
    * @param aliases the aliases to set
    */
   public void setAliases(String aliases) {
-<span class="nc bnc" id="L338" title="All 2 branches missed.">    pojo.setAliases(aliases == null? &quot;&quot; : aliases);</span>
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">    pojo.setAliases(aliases == null? &quot;&quot; : aliases);</span>
     int len;
     do {
-<span class="nc" id="L341">      len = pojo.getAliases().length();</span>
-<span class="nc" id="L342">      pojo.setAliases(WHITESPACES.matcher(pojo.getAliases()).replaceAll(&quot; &quot;));</span>
-<span class="nc bnc" id="L343" title="All 2 branches missed.">    } while (len != pojo.getAliases().length());</span>
-<span class="nc" id="L344">    Configuration.configuration.getAliases().clear();</span>
-<span class="nc" id="L345">    Configuration.configuration.getReverseAliases().clear();</span>
-<span class="nc bnc" id="L346" title="All 2 branches missed.">    if (!pojo.getAliases().isEmpty()) {</span>
-<span class="nc" id="L347">      readValuesFromXml(pojo.getAliases(), aliasDecl);</span>
+<span class="fc" id="L341">      len = pojo.getAliases().length();</span>
+<span class="fc" id="L342">      pojo.setAliases(WHITESPACES.matcher(pojo.getAliases()).replaceAll(&quot; &quot;));</span>
+<span class="fc bfc" id="L343" title="All 2 branches covered.">    } while (len != pojo.getAliases().length());</span>
+<span class="fc" id="L344">    Configuration.configuration.getAliases().clear();</span>
+<span class="fc" id="L345">    Configuration.configuration.getReverseAliases().clear();</span>
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">    if (!pojo.getAliases().isEmpty()) {</span>
+<span class="fc" id="L347">      readValuesFromXml(pojo.getAliases(), aliasDecl);</span>
     }
-<span class="nc" id="L349">    isSaved = false;</span>
-<span class="nc" id="L350">  }</span>
+<span class="fc" id="L349">    isSaved = false;</span>
+<span class="fc" id="L350">  }</span>
 
   @SuppressWarnings(&quot;unchecked&quot;)
   private void readValuesFromXml(String input, XmlDecl[] config) {
     Document document;
-<span class="nc" id="L355">    final StringReader reader = new StringReader(input);</span>
+<span class="fc" id="L355">    final StringReader reader = new StringReader(input);</span>
     // Open config file
     try {
-<span class="nc" id="L358">      document = new SAXReader().read(reader);</span>
+<span class="fc" id="L358">      document = XmlUtil.getNewSaxReader().read(reader);</span>
 <span class="nc" id="L359">    } catch (final DocumentException e) {</span>
 <span class="nc" id="L360">      logger.error(</span>
 <span class="nc" id="L361">          Messages.getString(&quot;FileBasedConfiguration.CannotReadXml&quot;) + input,</span>
           e); //$NON-NLS-1$
 <span class="nc" id="L363">      return;</span>
-<span class="nc" id="L364">    }</span>
-<span class="nc bnc" id="L365" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="fc" id="L364">    }</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">    if (document == null) {</span>
 <span class="nc" id="L366">      logger.error(Messages.getString(&quot;FileBasedConfiguration.CannotReadXml&quot;) +</span>
                    input); //$NON-NLS-1$
 <span class="nc" id="L368">      return;</span>
     }
-<span class="nc" id="L370">    XmlValue[] configuration = XmlUtil.read(document, config);</span>
-<span class="nc" id="L371">    XmlHash hashConfig = new XmlHash(configuration);</span>
-<span class="nc" id="L372">    XmlValue value = hashConfig.get(XML_BUSINESS);</span>
-<span class="nc bnc" id="L373" title="All 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc" id="L374">      List&lt;String&gt; ids = (List&lt;String&gt;) value.getList();</span>
-<span class="nc bnc" id="L375" title="All 2 branches missed.">      if (ids != null) {</span>
-<span class="nc bnc" id="L376" title="All 2 branches missed.">        for (final String sval : ids) {</span>
-<span class="nc bnc" id="L377" title="All 2 branches missed.">          if (sval.isEmpty()) {</span>
+<span class="fc" id="L370">    XmlValue[] configuration = XmlUtil.read(document, config);</span>
+<span class="fc" id="L371">    XmlHash hashConfig = new XmlHash(configuration);</span>
+<span class="fc" id="L372">    XmlValue value = hashConfig.get(XML_BUSINESS);</span>
+<span class="pc bpc" id="L373" title="1 of 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="fc" id="L374">      List&lt;String&gt; ids = (List&lt;String&gt;) value.getList();</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">      if (ids != null) {</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">        for (final String sval : ids) {</span>
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">          if (sval.isEmpty()) {</span>
 <span class="nc" id="L378">            continue;</span>
           }
-<span class="nc" id="L380">          logger.info(&quot;Business Allow: &quot; + sval);</span>
-<span class="nc" id="L381">          Configuration.configuration.getBusinessWhiteSet().add(sval.trim());</span>
-<span class="nc" id="L382">        }</span>
-<span class="nc" id="L383">        ids.clear();</span>
+<span class="fc" id="L380">          logger.info(&quot;Business Allow: &quot; + sval);</span>
+<span class="fc" id="L381">          Configuration.configuration.getBusinessWhiteSet().add(sval.trim());</span>
+<span class="fc" id="L382">        }</span>
+<span class="fc" id="L383">        ids.clear();</span>
       }
     }
-<span class="nc" id="L386">    value = hashConfig.get(XML_ALIASES);</span>
-<span class="nc bnc" id="L387" title="All 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc bnc" id="L388" title="All 2 branches missed.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
-<span class="nc" id="L389">        final XmlHash subHash = new XmlHash(xml);</span>
-<span class="nc" id="L390">        value = subHash.get(XML_REALID);</span>
-<span class="nc bnc" id="L391" title="All 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L386">    value = hashConfig.get(XML_ALIASES);</span>
+<span class="pc bpc" id="L387" title="1 of 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="fc bfc" id="L388" title="All 2 branches covered.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
+<span class="fc" id="L389">        final XmlHash subHash = new XmlHash(xml);</span>
+<span class="fc" id="L390">        value = subHash.get(XML_REALID);</span>
+<span class="pc bpc" id="L391" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
 <span class="nc" id="L392">          continue;</span>
         }
-<span class="nc" id="L394">        final String refHostId = value.getString();</span>
-<span class="nc" id="L395">        value = subHash.get(XML_ALIASID);</span>
-<span class="nc bnc" id="L396" title="All 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L394">        final String refHostId = value.getString();</span>
+<span class="fc" id="L395">        value = subHash.get(XML_ALIASID);</span>
+<span class="pc bpc" id="L396" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
 <span class="nc" id="L397">          continue;</span>
         }
-<span class="nc" id="L399">        final String aliasset = value.getString();</span>
-<span class="nc" id="L400">        final String[] alias = SPACE_BACKSLASH.split(aliasset);</span>
-<span class="nc bnc" id="L401" title="All 2 branches missed.">        for (final String namealias : alias) {</span>
-<span class="nc" id="L402">          Configuration.configuration.getAliases().put(namealias, refHostId);</span>
+<span class="fc" id="L399">        final String aliasset = value.getString();</span>
+<span class="fc" id="L400">        final String[] alias = SPACE_BACKSLASH.split(aliasset);</span>
+<span class="fc bfc" id="L401" title="All 2 branches covered.">        for (final String namealias : alias) {</span>
+<span class="fc" id="L402">          Configuration.configuration.getAliases().put(namealias, refHostId);</span>
         }
-<span class="nc" id="L404">        Configuration.configuration.getReverseAliases().put(refHostId, alias);</span>
-<span class="nc" id="L405">        logger.info(&quot;Aliases for: &quot; + refHostId + &quot; = &quot; + aliasset);</span>
-<span class="nc" id="L406">      }</span>
+<span class="fc" id="L404">        Configuration.configuration.getReverseAliases().put(refHostId, alias);</span>
+<span class="fc" id="L405">        logger.info(&quot;Aliases for: &quot; + refHostId + &quot; = &quot; + aliasset);</span>
+<span class="fc" id="L406">      }</span>
     }
-<span class="nc" id="L408">    value = hashConfig.get(XML_ROLES);</span>
-<span class="nc bnc" id="L409" title="All 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
-<span class="nc bnc" id="L410" title="All 2 branches missed.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
-<span class="nc" id="L411">        final XmlHash subHash = new XmlHash(xml);</span>
-<span class="nc" id="L412">        value = subHash.get(XML_ROLEID);</span>
-<span class="nc bnc" id="L413" title="All 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L408">    value = hashConfig.get(XML_ROLES);</span>
+<span class="pc bpc" id="L409" title="1 of 4 branches missed.">    if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="fc bfc" id="L410" title="All 2 branches covered.">      for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
+<span class="fc" id="L411">        final XmlHash subHash = new XmlHash(xml);</span>
+<span class="fc" id="L412">        value = subHash.get(XML_ROLEID);</span>
+<span class="pc bpc" id="L413" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
 <span class="nc" id="L414">          continue;</span>
         }
-<span class="nc" id="L416">        final String refHostId = value.getString();</span>
-<span class="nc" id="L417">        value = subHash.get(XML_ROLESET);</span>
-<span class="nc bnc" id="L418" title="All 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L416">        final String refHostId = value.getString();</span>
+<span class="fc" id="L417">        value = subHash.get(XML_ROLESET);</span>
+<span class="pc bpc" id="L418" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
 <span class="nc" id="L419">          continue;</span>
         }
-<span class="nc" id="L421">        final String roleset = value.getString();</span>
-<span class="nc" id="L422">        final String[] roles = SPACE_BACKSLASH.split(roleset);</span>
-<span class="nc" id="L423">        final RoleDefault newrole = new RoleDefault();</span>
-<span class="nc bnc" id="L424" title="All 2 branches missed.">        for (final String role : roles) {</span>
+<span class="fc" id="L421">        final String roleset = value.getString();</span>
+<span class="fc" id="L422">        final String[] roles = SPACE_BACKSLASH.split(roleset);</span>
+<span class="fc" id="L423">        final RoleDefault newrole = new RoleDefault();</span>
+<span class="fc bfc" id="L424" title="All 2 branches covered.">        for (final String role : roles) {</span>
           try {
-<span class="nc" id="L426">            final ROLE roletype = ROLE.valueOf(role.toUpperCase());</span>
-<span class="nc bnc" id="L427" title="All 2 branches missed.">            if (roletype == ROLE.NOACCESS) {</span>
+<span class="fc" id="L426">            final ROLE roletype = ROLE.valueOf(role.toUpperCase());</span>
+<span class="pc bpc" id="L427" title="1 of 2 branches missed.">            if (roletype == ROLE.NOACCESS) {</span>
               // reset
 <span class="nc" id="L429">              newrole.setRole(roletype);</span>
             } else {
-<span class="nc" id="L431">              newrole.addRole(roletype);</span>
+<span class="fc" id="L431">              newrole.addRole(roletype);</span>
             }
 <span class="nc" id="L433">          } catch (final IllegalArgumentException e) {</span>
             // ignore
-<span class="nc" id="L435">          }</span>
+<span class="fc" id="L435">          }</span>
         }
-<span class="nc" id="L437">        logger.info(&quot;New Role: &quot; + refHostId + ':' + newrole);</span>
-<span class="nc" id="L438">        Configuration.configuration.getRoles().put(refHostId, newrole);</span>
-<span class="nc" id="L439">      }</span>
+<span class="fc" id="L437">        logger.info(&quot;New Role: &quot; + refHostId + ':' + newrole);</span>
+<span class="fc" id="L438">        Configuration.configuration.getRoles().put(refHostId, newrole);</span>
+<span class="fc" id="L439">      }</span>
     }
-<span class="nc" id="L441">    hashConfig.clear();</span>
-<span class="nc" id="L442">  }</span>
+<span class="fc" id="L441">    hashConfig.clear();</span>
+<span class="fc" id="L442">  }</span>
 
   /**
    * @return the others
    */
   public String getOthers() {
-<span class="nc" id="L448">    return pojo.getOthers();</span>
+<span class="fc" id="L448">    return pojo.getOthers();</span>
   }
 
   /**
    * @param others the others to set
    */
   public void setOthers(String others) {
-<span class="nc bnc" id="L455" title="All 2 branches missed.">    pojo.setOthers(others == null? &quot;&quot; : others);</span>
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">    pojo.setOthers(others == null? &quot;&quot; : others);</span>
     int len;
     do {
-<span class="nc" id="L458">      len = pojo.getOthers().length();</span>
-<span class="nc" id="L459">      pojo.setOthers(WHITESPACES.matcher(pojo.getOthers()).replaceAll(&quot; &quot;));</span>
-<span class="nc bnc" id="L460" title="All 2 branches missed.">    } while (len != pojo.getOthers().length());</span>
-<span class="nc" id="L461">    isSaved = false;</span>
-<span class="nc" id="L462">  }</span>
+<span class="fc" id="L458">      len = pojo.getOthers().length();</span>
+<span class="fc" id="L459">      pojo.setOthers(WHITESPACES.matcher(pojo.getOthers()).replaceAll(&quot; &quot;));</span>
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">    } while (len != pojo.getOthers().length());</span>
+<span class="fc" id="L461">    isSaved = false;</span>
+<span class="fc" id="L462">  }</span>
 
   /**
    * @return the element for the content of the other part
    */
   public Element getOtherElement() {
-<span class="nc bnc" id="L468" title="All 4 branches missed.">    if (pojo.getOthers() != null &amp;&amp; !pojo.getOthers().isEmpty()) {</span>
+<span class="pc bpc" id="L468" title="1 of 4 branches missed.">    if (pojo.getOthers() != null &amp;&amp; !pojo.getOthers().isEmpty()) {</span>
       Document document;
       try {
-<span class="nc" id="L471">        document = DocumentHelper.parseText(pojo.getOthers());</span>
+<span class="fc" id="L471">        document = DocumentHelper.parseText(pojo.getOthers());</span>
 <span class="nc" id="L472">      } catch (final DocumentException e) {</span>
 <span class="nc" id="L473">        return DocumentHelper.createElement(OtherFields.root.name());</span>
-<span class="nc" id="L474">      }</span>
-<span class="nc" id="L475">      return document.getRootElement();</span>
+<span class="fc" id="L474">      }</span>
+<span class="fc" id="L475">      return document.getRootElement();</span>
     } else {
-<span class="nc" id="L477">      return DocumentHelper.createElement(OtherFields.root.name());</span>
+<span class="fc" id="L477">      return DocumentHelper.createElement(OtherFields.root.name());</span>
     }
   }
 
@@ -482,68 +482,68 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
    * @param element the element to set as XML string to other part
    */
   public void setOtherElement(Element element) {
-<span class="nc" id="L485">    setOthers(element.asXML());</span>
-<span class="nc" id="L486">  }</span>
+<span class="fc" id="L485">    setOthers(element.asXML());</span>
+<span class="fc" id="L486">  }</span>
 
   @Override
   protected void setFromJson(final String field, final JsonNode value) {
-<span class="nc bnc" id="L490" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="pc bpc" id="L490" title="1 of 2 branches missed.">    if (value == null) {</span>
 <span class="nc" id="L491">      return;</span>
     }
-<span class="nc bnc" id="L493" title="All 2 branches missed.">    for (Columns column : Columns.values()) {</span>
-<span class="nc bnc" id="L494" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
+<span class="fc bfc" id="L493" title="All 2 branches covered.">    for (Columns column : Columns.values()) {</span>
+<span class="fc bfc" id="L494" title="All 2 branches covered.">      if (column.name().equalsIgnoreCase(field)) {</span>
         int len;
-<span class="nc bnc" id="L496" title="All 7 branches missed.">        switch (column) {</span>
+<span class="pc bpc" id="L496" title="2 of 7 branches missed.">        switch (column) {</span>
           case ALIASES:
-<span class="nc" id="L498">            String aliases = value.asText();</span>
+<span class="fc" id="L498">            String aliases = value.asText();</span>
             do {
-<span class="nc" id="L500">              len = aliases.length();</span>
-<span class="nc" id="L501">              aliases = WHITESPACES.matcher(aliases).replaceAll(&quot; &quot;);</span>
-<span class="nc bnc" id="L502" title="All 2 branches missed.">            } while (len != aliases.length());</span>
-<span class="nc" id="L503">            pojo.setAliases(aliases);</span>
-<span class="nc" id="L504">            break;</span>
+<span class="fc" id="L500">              len = aliases.length();</span>
+<span class="fc" id="L501">              aliases = WHITESPACES.matcher(aliases).replaceAll(&quot; &quot;);</span>
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">            } while (len != aliases.length());</span>
+<span class="fc" id="L503">            pojo.setAliases(aliases);</span>
+<span class="fc" id="L504">            break;</span>
           case BUSINESS:
-<span class="nc" id="L506">            String business = value.asText();</span>
+<span class="fc" id="L506">            String business = value.asText();</span>
             do {
-<span class="nc" id="L508">              len = business.length();</span>
-<span class="nc" id="L509">              business = WHITESPACES.matcher(business).replaceAll(&quot; &quot;);</span>
-<span class="nc bnc" id="L510" title="All 2 branches missed.">            } while (len != business.length());</span>
-<span class="nc" id="L511">            pojo.setBusiness(business);</span>
-<span class="nc" id="L512">            break;</span>
+<span class="fc" id="L508">              len = business.length();</span>
+<span class="fc" id="L509">              business = WHITESPACES.matcher(business).replaceAll(&quot; &quot;);</span>
+<span class="pc bpc" id="L510" title="1 of 2 branches missed.">            } while (len != business.length());</span>
+<span class="fc" id="L511">            pojo.setBusiness(business);</span>
+<span class="fc" id="L512">            break;</span>
           case OTHERS:
-<span class="nc" id="L514">            String others = value.asText();</span>
+<span class="fc" id="L514">            String others = value.asText();</span>
             do {
-<span class="nc" id="L516">              len = others.length();</span>
-<span class="nc" id="L517">              others = WHITESPACES.matcher(others).replaceAll(&quot; &quot;);</span>
-<span class="nc bnc" id="L518" title="All 2 branches missed.">            } while (len != others.length());</span>
-<span class="nc" id="L519">            pojo.setOthers(others);</span>
-<span class="nc" id="L520">            break;</span>
+<span class="fc" id="L516">              len = others.length();</span>
+<span class="fc" id="L517">              others = WHITESPACES.matcher(others).replaceAll(&quot; &quot;);</span>
+<span class="pc bpc" id="L518" title="1 of 2 branches missed.">            } while (len != others.length());</span>
+<span class="fc" id="L519">            pojo.setOthers(others);</span>
+<span class="fc" id="L520">            break;</span>
           case ROLES:
-<span class="nc" id="L522">            String roles = value.asText();</span>
+<span class="fc" id="L522">            String roles = value.asText();</span>
             do {
-<span class="nc" id="L524">              len = roles.length();</span>
-<span class="nc" id="L525">              roles = WHITESPACES.matcher(roles).replaceAll(&quot; &quot;);</span>
-<span class="nc bnc" id="L526" title="All 2 branches missed.">            } while (len != roles.length());</span>
-<span class="nc" id="L527">            pojo.setRoles(roles);</span>
-<span class="nc" id="L528">            break;</span>
+<span class="fc" id="L524">              len = roles.length();</span>
+<span class="fc" id="L525">              roles = WHITESPACES.matcher(roles).replaceAll(&quot; &quot;);</span>
+<span class="pc bpc" id="L526" title="1 of 2 branches missed.">            } while (len != roles.length());</span>
+<span class="fc" id="L527">            pojo.setRoles(roles);</span>
+<span class="fc" id="L528">            break;</span>
           case UPDATEDINFO:
 <span class="nc" id="L530">            pojo.setUpdatedInfo(</span>
 <span class="nc" id="L531">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
 <span class="nc" id="L532">            break;</span>
           case HOSTID:
-<span class="nc" id="L534">            pojo.setHostid(value.asText());</span>
+<span class="fc" id="L534">            pojo.setHostid(value.asText());</span>
             break;
         }
       }
     }
-<span class="nc" id="L539">  }</span>
+<span class="fc" id="L539">  }</span>
 
   /**
    * Private constructor for Commander only
    */
-<span class="nc" id="L544">  private DbHostConfiguration() {</span>
-<span class="nc" id="L545">    pojo = new Business();</span>
-<span class="nc" id="L546">  }</span>
+<span class="fc" id="L544">  private DbHostConfiguration() {</span>
+<span class="fc" id="L545">    pojo = new Business();</span>
+<span class="fc" id="L546">  }</span>
 
   /**
    * For instance from Commander when getting updated information
@@ -558,20 +558,20 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
   public static DbHostConfiguration getFromStatement(
       DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L561">    final DbHostConfiguration dbHostConfiguration = new DbHostConfiguration();</span>
-<span class="nc" id="L562">    AbstractDAO&lt;Business&gt; businessDAO = null;</span>
+<span class="fc" id="L561">    final DbHostConfiguration dbHostConfiguration = new DbHostConfiguration();</span>
+<span class="fc" id="L562">    AbstractDAO&lt;Business&gt; businessDAO = null;</span>
     try {
-<span class="nc" id="L564">      businessDAO = dbHostConfiguration.getDao();</span>
-<span class="nc" id="L565">      dbHostConfiguration.pojo = ((StatementExecutor&lt;Business&gt;) businessDAO)</span>
-<span class="nc" id="L566">          .getFromResultSet(preparedStatement.getResultSet());</span>
-<span class="nc" id="L567">      return dbHostConfiguration;</span>
+<span class="fc" id="L564">      businessDAO = dbHostConfiguration.getDao();</span>
+<span class="fc" id="L565">      dbHostConfiguration.pojo = ((StatementExecutor&lt;Business&gt;) businessDAO)</span>
+<span class="fc" id="L566">          .getFromResultSet(preparedStatement.getResultSet());</span>
+<span class="fc" id="L567">      return dbHostConfiguration;</span>
 <span class="nc" id="L568">    } catch (SQLException e) {</span>
 <span class="nc" id="L569">      DbSession.error(e);</span>
 <span class="nc" id="L570">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
 <span class="nc" id="L571">    } catch (DAOConnectionException e) {</span>
 <span class="nc" id="L572">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
     } finally {
-<span class="nc" id="L574">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="fc" id="L574">      DAOFactory.closeDAO(businessDAO);</span>
     }
   }
 
@@ -583,30 +583,30 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
    */
   public static DbHostConfiguration[] getUpdatedPrepareStament()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L586">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="nc" id="L587">    filters.add(new Filter(DBBusinessDAO.HOSTID_FIELD, &quot;=&quot;,</span>
-<span class="nc" id="L588">                           Configuration.configuration.getHostId()));</span>
-<span class="nc" id="L589">    filters.add(new Filter(DBBusinessDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
-<span class="nc" id="L590">                           UpdatedInfo.TOSUBMIT.ordinal()));</span>
+<span class="fc" id="L586">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="fc" id="L587">    filters.add(new Filter(DBBusinessDAO.HOSTID_FIELD, &quot;=&quot;,</span>
+<span class="fc" id="L588">                           Configuration.configuration.getHostId()));</span>
+<span class="fc" id="L589">    filters.add(new Filter(DBBusinessDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="fc" id="L590">                           UpdatedInfo.TOSUBMIT.ordinal()));</span>
 
-<span class="nc" id="L592">    BusinessDAO businessAccess = null;</span>
+<span class="fc" id="L592">    BusinessDAO businessAccess = null;</span>
     List&lt;Business&gt; businesses;
     try {
-<span class="nc" id="L595">      businessAccess = DAOFactory.getInstance().getBusinessDAO();</span>
-<span class="nc" id="L596">      businesses = businessAccess.find(filters);</span>
+<span class="fc" id="L595">      businessAccess = DAOFactory.getInstance().getBusinessDAO();</span>
+<span class="fc" id="L596">      businesses = businessAccess.find(filters);</span>
 <span class="nc" id="L597">    } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L598">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="nc" id="L600">      DAOFactory.closeDAO(businessAccess);</span>
+<span class="fc" id="L600">      DAOFactory.closeDAO(businessAccess);</span>
     }
-<span class="nc" id="L602">    final DbHostConfiguration[] res =</span>
-<span class="nc" id="L603">        new DbHostConfiguration[businesses.size()];</span>
-<span class="nc" id="L604">    int i = 0;</span>
-<span class="nc bnc" id="L605" title="All 2 branches missed.">    for (final Business business : businesses) {</span>
+<span class="fc" id="L602">    final DbHostConfiguration[] res =</span>
+<span class="fc" id="L603">        new DbHostConfiguration[businesses.size()];</span>
+<span class="fc" id="L604">    int i = 0;</span>
+<span class="pc bpc" id="L605" title="1 of 2 branches missed.">    for (final Business business : businesses) {</span>
 <span class="nc" id="L606">      res[i] = new DbHostConfiguration(business);</span>
 <span class="nc" id="L607">      i++;</span>
 <span class="nc" id="L608">    }</span>
-<span class="nc" id="L609">    return res;</span>
+<span class="fc" id="L609">    return res;</span>
   }
 
   /**
@@ -629,24 +629,24 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
                                                             String alias,
                                                             String other)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L632">    final DbPreparedStatement preparedStatement =</span>
+<span class="fc" id="L632">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(session);
-<span class="nc" id="L634">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
-<span class="nc" id="L635">    String condition = null;</span>
-<span class="nc bnc" id="L636" title="All 2 branches missed.">    if (hostid != null) {</span>
+<span class="fc" id="L634">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="fc" id="L635">    String condition = null;</span>
+<span class="pc bpc" id="L636" title="1 of 2 branches missed.">    if (hostid != null) {</span>
 <span class="nc" id="L637">      condition =</span>
 <span class="nc" id="L638">          &quot; WHERE &quot; + Columns.HOSTID.name() + &quot; LIKE '%&quot; + hostid + &quot;%' &quot;;</span>
     }
-<span class="nc bnc" id="L640" title="All 2 branches missed.">    if (business != null) {</span>
-<span class="nc bnc" id="L641" title="All 2 branches missed.">      if (condition != null) {</span>
+<span class="fc bfc" id="L640" title="All 2 branches covered.">    if (business != null) {</span>
+<span class="pc bpc" id="L641" title="1 of 2 branches missed.">      if (condition != null) {</span>
 <span class="nc" id="L642">        condition +=</span>
 <span class="nc" id="L643">            &quot; AND &quot; + Columns.BUSINESS.name() + &quot; LIKE '%&quot; + business + &quot;%' &quot;;</span>
       } else {
-<span class="nc" id="L645">        condition =</span>
-<span class="nc" id="L646">            &quot; WHERE &quot; + Columns.BUSINESS.name() + &quot; LIKE '%&quot; + business + &quot;%' &quot;;</span>
+<span class="fc" id="L645">        condition =</span>
+<span class="fc" id="L646">            &quot; WHERE &quot; + Columns.BUSINESS.name() + &quot; LIKE '%&quot; + business + &quot;%' &quot;;</span>
       }
     }
-<span class="nc bnc" id="L649" title="All 2 branches missed.">    if (role != null) {</span>
+<span class="pc bpc" id="L649" title="1 of 2 branches missed.">    if (role != null) {</span>
 <span class="nc bnc" id="L650" title="All 2 branches missed.">      if (condition != null) {</span>
 <span class="nc" id="L651">        condition += &quot; AND &quot; + Columns.ROLES.name() + &quot; LIKE '%&quot; + role + &quot;%' &quot;;</span>
       } else {
@@ -654,7 +654,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 <span class="nc" id="L654">            &quot; WHERE &quot; + Columns.ROLES.name() + &quot; LIKE '%&quot; + role + &quot;%' &quot;;</span>
       }
     }
-<span class="nc bnc" id="L657" title="All 2 branches missed.">    if (alias != null) {</span>
+<span class="pc bpc" id="L657" title="1 of 2 branches missed.">    if (alias != null) {</span>
 <span class="nc bnc" id="L658" title="All 2 branches missed.">      if (condition != null) {</span>
 <span class="nc" id="L659">        condition +=</span>
 <span class="nc" id="L660">            &quot; AND &quot; + Columns.ALIASES.name() + &quot; LIKE '%&quot; + alias + &quot;%' &quot;;</span>
@@ -663,7 +663,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 <span class="nc" id="L663">            &quot; WHERE &quot; + Columns.ALIASES.name() + &quot; LIKE '%&quot; + alias + &quot;%' &quot;;</span>
       }
     }
-<span class="nc bnc" id="L666" title="All 2 branches missed.">    if (other != null) {</span>
+<span class="pc bpc" id="L666" title="1 of 2 branches missed.">    if (other != null) {</span>
 <span class="nc bnc" id="L667" title="All 2 branches missed.">      if (condition != null) {</span>
 <span class="nc" id="L668">        condition +=</span>
 <span class="nc" id="L669">            &quot; AND &quot; + Columns.OTHERS.name() + &quot; LIKE '%&quot; + other + &quot;%' &quot;;</span>
@@ -672,20 +672,20 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 <span class="nc" id="L672">            &quot; WHERE &quot; + Columns.OTHERS.name() + &quot; LIKE '%&quot; + other + &quot;%' &quot;;</span>
       }
     }
-<span class="nc bnc" id="L675" title="All 2 branches missed.">    if (condition != null) {</span>
-<span class="nc" id="L676">      preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L677">          request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
+<span class="fc bfc" id="L675" title="All 2 branches covered.">    if (condition != null) {</span>
+<span class="fc" id="L676">      preparedStatement.createPrepareStatement(</span>
+<span class="fc" id="L677">          request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
     } else {
-<span class="nc" id="L679">      preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L680">          request + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
+<span class="fc" id="L679">      preparedStatement.createPrepareStatement(</span>
+<span class="fc" id="L680">          request + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
     }
-<span class="nc" id="L682">    return preparedStatement;</span>
+<span class="fc" id="L682">    return preparedStatement;</span>
   }
 
   @Override
   public void changeUpdatedInfo(UpdatedInfo info) {
-<span class="nc" id="L687">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
-<span class="nc" id="L688">  }</span>
+<span class="fc" id="L687">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
+<span class="fc" id="L688">  }</span>
 
   /**
    * Update configuration according to new values
@@ -717,7 +717,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 <span class="nc bnc" id="L717" title="All 4 branches missed.">      if (source != null &amp;&amp; !source.isEmpty()) {</span>
         try {
 <span class="nc" id="L719">          reader = new StringReader(source);</span>
-<span class="nc" id="L720">          document = new SAXReader().read(reader);</span>
+<span class="nc" id="L720">          document = XmlUtil.getNewSaxReader().read(reader);</span>
 <span class="nc" id="L721">        } catch (final DocumentException e) {</span>
 <span class="nc" id="L722">          logger.error(</span>
               &quot;Unable to read the XML Config &quot; + path + &quot; string: &quot; + source,
@@ -802,86 +802,86 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
    */
   public void updateFromConfiguration(Configuration configuration) {
     // Business
-<span class="nc bnc" id="L805" title="All 2 branches missed.">    if (!configuration.getBusinessWhiteSet().isEmpty()) {</span>
-<span class="nc" id="L806">      Document document = DocumentHelper</span>
-<span class="nc" id="L807">          .createDocument(DocumentHelper.createElement(XML_BUSINESS));</span>
-<span class="nc" id="L808">      final Element root = document.getRootElement();</span>
-<span class="nc bnc" id="L809" title="All 2 branches missed.">      for (final String sval : configuration.getBusinessWhiteSet()) {</span>
-<span class="nc" id="L810">        root.addElement(XML_BUSINESSID).setText(sval);</span>
-<span class="nc" id="L811">        logger.info(&quot;Business Allow: &quot; + sval);</span>
-<span class="nc" id="L812">      }</span>
-<span class="nc" id="L813">      String xml = root.asXML();</span>
-<span class="nc" id="L814">      this.pojo.setBusiness(xml);</span>
-<span class="nc" id="L815">      document.clearContent();</span>
+<span class="fc bfc" id="L805" title="All 2 branches covered.">    if (!configuration.getBusinessWhiteSet().isEmpty()) {</span>
+<span class="fc" id="L806">      Document document = DocumentHelper</span>
+<span class="fc" id="L807">          .createDocument(DocumentHelper.createElement(XML_BUSINESS));</span>
+<span class="fc" id="L808">      final Element root = document.getRootElement();</span>
+<span class="fc bfc" id="L809" title="All 2 branches covered.">      for (final String sval : configuration.getBusinessWhiteSet()) {</span>
+<span class="fc" id="L810">        root.addElement(XML_BUSINESSID).setText(sval);</span>
+<span class="fc" id="L811">        logger.info(&quot;Business Allow: &quot; + sval);</span>
+<span class="fc" id="L812">      }</span>
+<span class="fc" id="L813">      String xml = root.asXML();</span>
+<span class="fc" id="L814">      this.pojo.setBusiness(xml);</span>
+<span class="fc" id="L815">      document.clearContent();</span>
     }
     // Aliases
-<span class="nc bnc" id="L818" title="All 2 branches missed.">    if (!configuration.getAliases().isEmpty()) {</span>
-<span class="nc" id="L819">      Document document = DocumentHelper</span>
-<span class="nc" id="L820">          .createDocument(DocumentHelper.createElement(XML_ALIASES));</span>
-<span class="nc" id="L821">      final Element root = document.getRootElement();</span>
-<span class="nc bnc" id="L822" title="All 2 branches missed.">      for (final Entry&lt;String, String[]&gt; entry : configuration</span>
-<span class="nc" id="L823">          .getReverseAliases().entrySet()) {</span>
-<span class="nc" id="L824">        final Element elt = root.addElement(XML_ALIAS);</span>
-<span class="nc" id="L825">        elt.addElement(XML_REALID).setText(entry.getKey());</span>
-<span class="nc" id="L826">        StringBuilder cumul = null;</span>
-<span class="nc bnc" id="L827" title="All 2 branches missed.">        for (final String namealias : entry.getValue()) {</span>
-<span class="nc bnc" id="L828" title="All 2 branches missed.">          if (cumul == null) {</span>
-<span class="nc" id="L829">            cumul = new StringBuilder(namealias);</span>
+<span class="fc bfc" id="L818" title="All 2 branches covered.">    if (!configuration.getAliases().isEmpty()) {</span>
+<span class="fc" id="L819">      Document document = DocumentHelper</span>
+<span class="fc" id="L820">          .createDocument(DocumentHelper.createElement(XML_ALIASES));</span>
+<span class="fc" id="L821">      final Element root = document.getRootElement();</span>
+<span class="fc bfc" id="L822" title="All 2 branches covered.">      for (final Entry&lt;String, String[]&gt; entry : configuration</span>
+<span class="fc" id="L823">          .getReverseAliases().entrySet()) {</span>
+<span class="fc" id="L824">        final Element elt = root.addElement(XML_ALIAS);</span>
+<span class="fc" id="L825">        elt.addElement(XML_REALID).setText(entry.getKey());</span>
+<span class="fc" id="L826">        StringBuilder cumul = null;</span>
+<span class="fc bfc" id="L827" title="All 2 branches covered.">        for (final String namealias : entry.getValue()) {</span>
+<span class="fc bfc" id="L828" title="All 2 branches covered.">          if (cumul == null) {</span>
+<span class="fc" id="L829">            cumul = new StringBuilder(namealias);</span>
           } else {
-<span class="nc" id="L831">            cumul.append(' ').append(namealias);</span>
+<span class="fc" id="L831">            cumul.append(' ').append(namealias);</span>
           }
         }
-<span class="nc bnc" id="L834" title="All 2 branches missed.">        if (cumul == null) {</span>
+<span class="pc bpc" id="L834" title="1 of 2 branches missed.">        if (cumul == null) {</span>
 <span class="nc" id="L835">          cumul = new StringBuilder(&quot;&quot;);</span>
         }
-<span class="nc" id="L837">        elt.addElement(XML_ALIASID).setText(cumul.toString());</span>
-<span class="nc" id="L838">      }</span>
-<span class="nc" id="L839">      String xml = root.asXML();</span>
-<span class="nc" id="L840">      this.pojo.setAliases(xml);</span>
-<span class="nc" id="L841">      document.clearContent();</span>
+<span class="fc" id="L837">        elt.addElement(XML_ALIASID).setText(cumul.toString());</span>
+<span class="fc" id="L838">      }</span>
+<span class="fc" id="L839">      String xml = root.asXML();</span>
+<span class="fc" id="L840">      this.pojo.setAliases(xml);</span>
+<span class="fc" id="L841">      document.clearContent();</span>
     }
 
     // Role
-<span class="nc bnc" id="L845" title="All 2 branches missed.">    if (!configuration.getRoles().isEmpty()) {</span>
-<span class="nc" id="L846">      Document document = DocumentHelper</span>
-<span class="nc" id="L847">          .createDocument(DocumentHelper.createElement(XML_ROLES));</span>
-<span class="nc" id="L848">      final Element root = document.getRootElement();</span>
-<span class="nc bnc" id="L849" title="All 2 branches missed.">      for (final Entry&lt;String, RoleDefault&gt; entry : configuration.getRoles()</span>
-<span class="nc" id="L850">                                                                 .entrySet()) {</span>
-<span class="nc" id="L851">        final Element elt = root.addElement(XML_ROLE);</span>
-<span class="nc" id="L852">        elt.addElement(XML_ROLEID).setText(entry.getKey());</span>
-<span class="nc" id="L853">        StringBuilder cumul = null;</span>
-<span class="nc" id="L854">        RoleDefault roleDefault = entry.getValue();</span>
-<span class="nc bnc" id="L855" title="All 2 branches missed.">        if (roleDefault.hasNoAccess()) {</span>
+<span class="fc bfc" id="L845" title="All 2 branches covered.">    if (!configuration.getRoles().isEmpty()) {</span>
+<span class="fc" id="L846">      Document document = DocumentHelper</span>
+<span class="fc" id="L847">          .createDocument(DocumentHelper.createElement(XML_ROLES));</span>
+<span class="fc" id="L848">      final Element root = document.getRootElement();</span>
+<span class="fc bfc" id="L849" title="All 2 branches covered.">      for (final Entry&lt;String, RoleDefault&gt; entry : configuration.getRoles()</span>
+<span class="fc" id="L850">                                                                 .entrySet()) {</span>
+<span class="fc" id="L851">        final Element elt = root.addElement(XML_ROLE);</span>
+<span class="fc" id="L852">        elt.addElement(XML_ROLEID).setText(entry.getKey());</span>
+<span class="fc" id="L853">        StringBuilder cumul = null;</span>
+<span class="fc" id="L854">        RoleDefault roleDefault = entry.getValue();</span>
+<span class="pc bpc" id="L855" title="1 of 2 branches missed.">        if (roleDefault.hasNoAccess()) {</span>
 <span class="nc" id="L856">          cumul = new StringBuilder(ROLE.NOACCESS.name());</span>
         } else {
-<span class="nc bnc" id="L858" title="All 2 branches missed.">          for (ROLE role : ROLE.values()) {</span>
-<span class="nc bnc" id="L859" title="All 2 branches missed.">            if (role == ROLE.NOACCESS) {</span>
-<span class="nc" id="L860">              continue;</span>
+<span class="fc bfc" id="L858" title="All 2 branches covered.">          for (ROLE role : ROLE.values()) {</span>
+<span class="fc bfc" id="L859" title="All 2 branches covered.">            if (role == ROLE.NOACCESS) {</span>
+<span class="fc" id="L860">              continue;</span>
             }
-<span class="nc bnc" id="L862" title="All 2 branches missed.">            if (roleDefault.isContaining(role)) {</span>
-<span class="nc bnc" id="L863" title="All 2 branches missed.">              if (cumul == null) {</span>
-<span class="nc" id="L864">                cumul = new StringBuilder(role.name().toUpperCase());</span>
+<span class="fc bfc" id="L862" title="All 2 branches covered.">            if (roleDefault.isContaining(role)) {</span>
+<span class="fc bfc" id="L863" title="All 2 branches covered.">              if (cumul == null) {</span>
+<span class="fc" id="L864">                cumul = new StringBuilder(role.name().toUpperCase());</span>
               } else {
-<span class="nc" id="L866">                cumul.append(' ').append(role.name().toUpperCase());</span>
+<span class="fc" id="L866">                cumul.append(' ').append(role.name().toUpperCase());</span>
               }
             }
           }
         }
-<span class="nc bnc" id="L871" title="All 2 branches missed.">        if (cumul == null) {</span>
+<span class="pc bpc" id="L871" title="1 of 2 branches missed.">        if (cumul == null) {</span>
 <span class="nc" id="L872">          cumul = new StringBuilder(&quot;&quot;);</span>
         }
-<span class="nc" id="L874">        logger.info(&quot;New Role: &quot; + entry.getKey() + ':' + cumul.toString());</span>
-<span class="nc" id="L875">        elt.addElement(XML_ROLESET).setText(cumul.toString());</span>
-<span class="nc" id="L876">      }</span>
-<span class="nc" id="L877">      String xml = root.asXML();</span>
-<span class="nc" id="L878">      this.pojo.setRoles(xml);</span>
-<span class="nc" id="L879">      document.clearContent();</span>
+<span class="fc" id="L874">        logger.info(&quot;New Role: &quot; + entry.getKey() + ':' + cumul.toString());</span>
+<span class="fc" id="L875">        elt.addElement(XML_ROLESET).setText(cumul.toString());</span>
+<span class="fc" id="L876">      }</span>
+<span class="fc" id="L877">      String xml = root.asXML();</span>
+<span class="fc" id="L878">      this.pojo.setRoles(xml);</span>
+<span class="fc" id="L879">      document.clearContent();</span>
     }
 
     // Now save (insert or update)
     try {
-<span class="nc" id="L884">      update();</span>
+<span class="fc" id="L884">      update();</span>
 <span class="nc" id="L885">    } catch (final WaarpDatabaseException e) {</span>
       try {
 <span class="nc" id="L887">        insert();</span>
@@ -890,8 +890,8 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 <span class="nc" id="L890">        logger.error(&quot;Cannot update neither save DbHostConfiguration for &quot;,</span>
 <span class="nc" id="L891">                     this.pojo.getHostid());</span>
 <span class="nc" id="L892">      }</span>
-<span class="nc" id="L893">    }</span>
-<span class="nc" id="L894">  }</span>
+<span class="fc" id="L893">    }</span>
+<span class="fc" id="L894">  }</span>
 
   /**
    * Shortcut to add all paths element with key and value from source into map
@@ -914,7 +914,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
 <span class="nc bnc" id="L914" title="All 4 branches missed.">      if (source != null &amp;&amp; !source.isEmpty()) {</span>
         try {
 <span class="nc" id="L916">          reader = new StringReader(source);</span>
-<span class="nc" id="L917">          document = new SAXReader().read(reader);</span>
+<span class="nc" id="L917">          document = XmlUtil.getNewSaxReader().read(reader);</span>
 <span class="nc" id="L918">        } catch (final DocumentException e) {</span>
 <span class="nc" id="L919">          logger.error(</span>
               &quot;Unable to read the XML Config &quot; + path + &quot; string: &quot; + source,
@@ -1156,28 +1156,28 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
   public static String getVersionDb(String hostid) {
     DbHostConfiguration hostConfiguration;
     try {
-<span class="nc" id="L1159">      hostConfiguration = new DbHostConfiguration(hostid);</span>
+<span class="fc" id="L1159">      hostConfiguration = new DbHostConfiguration(hostid);</span>
 <span class="nc" id="L1160">    } catch (final WaarpDatabaseException e) {</span>
       // ignore and return
 <span class="nc" id="L1162">      return &quot;1.1.0&quot;;</span>
-<span class="nc" id="L1163">    }</span>
-<span class="nc" id="L1164">    final Element others = hostConfiguration.getOtherElement();</span>
-<span class="nc bnc" id="L1165" title="All 2 branches missed.">    if (others != null) {</span>
-<span class="nc" id="L1166">      final Element version =</span>
-<span class="nc" id="L1167">          (Element) others.selectSingleNode(OtherFields.version.name());</span>
-<span class="nc bnc" id="L1168" title="All 2 branches missed.">      if (version != null) {</span>
-<span class="nc" id="L1169">        return version.getText();</span>
+<span class="fc" id="L1163">    }</span>
+<span class="fc" id="L1164">    final Element others = hostConfiguration.getOtherElement();</span>
+<span class="pc bpc" id="L1165" title="1 of 2 branches missed.">    if (others != null) {</span>
+<span class="fc" id="L1166">      final Element version =</span>
+<span class="fc" id="L1167">          (Element) others.selectSingleNode(OtherFields.version.name());</span>
+<span class="pc bpc" id="L1168" title="1 of 2 branches missed.">      if (version != null) {</span>
+<span class="fc" id="L1169">        return version.getText();</span>
       }
     }
 <span class="nc" id="L1172">    return &quot;1.1.0&quot;;</span>
   }
 
   public boolean isSeeAllId(String id) {
-<span class="nc" id="L1176">    final Element others = getOtherElement();</span>
-<span class="nc bnc" id="L1177" title="All 2 branches missed.">    if (others != null) {</span>
-<span class="nc" id="L1178">      final Element seeallids =</span>
-<span class="nc" id="L1179">          (Element) others.selectSingleNode(OtherFields.seeallid.name());</span>
-<span class="nc bnc" id="L1180" title="All 2 branches missed.">      if (seeallids != null) {</span>
+<span class="fc" id="L1176">    final Element others = getOtherElement();</span>
+<span class="pc bpc" id="L1177" title="1 of 2 branches missed.">    if (others != null) {</span>
+<span class="fc" id="L1178">      final Element seeallids =</span>
+<span class="fc" id="L1179">          (Element) others.selectSingleNode(OtherFields.seeallid.name());</span>
+<span class="pc bpc" id="L1180" title="1 of 2 branches missed.">      if (seeallids != null) {</span>
 <span class="nc" id="L1181">        final String[] split = COMMA.split(seeallids.getText());</span>
 <span class="nc bnc" id="L1182" title="All 2 branches missed.">        for (final String string : split) {</span>
 <span class="nc bnc" id="L1183" title="All 2 branches missed.">          if (string.equals(id)) {</span>
@@ -1186,7 +1186,7 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
         }
       }
     }
-<span class="nc" id="L1189">    return false;</span>
+<span class="fc" id="L1189">    return false;</span>
   }
 
   /**
@@ -1198,42 +1198,42 @@ public class DbHostConfiguration extends AbstractDbDataDao&lt;Business&gt; {
   public static void updateVersionDb(String hostid, String version) {
     DbHostConfiguration hostConfiguration;
     try {
-<span class="nc" id="L1201">      hostConfiguration = new DbHostConfiguration(hostid);</span>
-<span class="nc" id="L1202">    } catch (final WaarpDatabaseNoDataException e) {</span>
-<span class="nc" id="L1203">      hostConfiguration = new DbHostConfiguration(hostid, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L1201">      hostConfiguration = new DbHostConfiguration(hostid);</span>
+<span class="fc" id="L1202">    } catch (final WaarpDatabaseNoDataException e) {</span>
+<span class="fc" id="L1203">      hostConfiguration = new DbHostConfiguration(hostid, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;);</span>
       try {
-<span class="nc" id="L1205">        hostConfiguration.insert();</span>
+<span class="fc" id="L1205">        hostConfiguration.insert();</span>
 <span class="nc" id="L1206">      } catch (final WaarpDatabaseException e1) {</span>
 <span class="nc" id="L1207">        logger.debug(&quot;Not inserted?&quot;, e1);</span>
         // ignore and return
 <span class="nc" id="L1209">        return;</span>
-<span class="nc" id="L1210">      }</span>
+<span class="fc" id="L1210">      }</span>
 <span class="nc" id="L1211">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L1212">      logger.debug(&quot;Not found?&quot;, e);</span>
       // ignore and return
 <span class="nc" id="L1214">      return;</span>
-<span class="nc" id="L1215">    }</span>
-<span class="nc" id="L1216">    Element others = hostConfiguration.getOtherElement();</span>
-<span class="nc bnc" id="L1217" title="All 2 branches missed.">    if (others != null) {</span>
-<span class="nc" id="L1218">      final Element eversion =</span>
-<span class="nc" id="L1219">          (Element) others.selectSingleNode(OtherFields.version.name());</span>
-<span class="nc bnc" id="L1220" title="All 2 branches missed.">      if (eversion != null) {</span>
-<span class="nc" id="L1221">        eversion.setText(version);</span>
+<span class="fc" id="L1215">    }</span>
+<span class="fc" id="L1216">    Element others = hostConfiguration.getOtherElement();</span>
+<span class="pc bpc" id="L1217" title="1 of 2 branches missed.">    if (others != null) {</span>
+<span class="fc" id="L1218">      final Element eversion =</span>
+<span class="fc" id="L1219">          (Element) others.selectSingleNode(OtherFields.version.name());</span>
+<span class="fc bfc" id="L1220" title="All 2 branches covered.">      if (eversion != null) {</span>
+<span class="fc" id="L1221">        eversion.setText(version);</span>
       } else {
-<span class="nc" id="L1223">        others.addElement(OtherFields.version.name()).addText(Version.ID);</span>
+<span class="fc" id="L1223">        others.addElement(OtherFields.version.name()).addText(Version.ID);</span>
       }
-<span class="nc" id="L1225">    } else {</span>
+<span class="fc" id="L1225">    } else {</span>
 <span class="nc" id="L1226">      others = DocumentHelper.createElement(OtherFields.root.name());</span>
 <span class="nc" id="L1227">      others.addElement(OtherFields.version.name()).addText(Version.ID);</span>
     }
-<span class="nc" id="L1229">    hostConfiguration.setOtherElement(others);</span>
+<span class="fc" id="L1229">    hostConfiguration.setOtherElement(others);</span>
     try {
-<span class="nc" id="L1231">      hostConfiguration.update();</span>
+<span class="fc" id="L1231">      hostConfiguration.update();</span>
 <span class="nc" id="L1232">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L1233">      logger.debug(&quot;Not update?&quot;, e);</span>
       // ignore
-<span class="nc" id="L1235">    }</span>
-<span class="nc" id="L1236">  }</span>
+<span class="fc" id="L1235">    }</span>
+<span class="fc" id="L1236">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

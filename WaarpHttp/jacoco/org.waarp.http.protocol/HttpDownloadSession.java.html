@@ -177,10 +177,10 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     // Try to reload it
     try {
 <span class="fc" id="L179">      logger.debug(&quot;{} {} &lt;-&gt; {}&quot;, specialId, requester, requested);</span>
-<span class="fc" id="L180">      runner = new DbTaskRunner(specialId, requested, requester);</span>
+<span class="fc" id="L180">      runner = new DbTaskRunner(specialId, requester, requested);</span>
 <span class="fc" id="L181">    } catch (WaarpDatabaseException e) {</span>
 <span class="fc" id="L182">      logger.debug(&quot;{} {} {}&quot;, specialId, requester, requested);</span>
-<span class="nc" id="L183">      runner = new DbTaskRunner(specialId, requester, requested);</span>
+<span class="nc" id="L183">      runner = new DbTaskRunner(specialId, requested, requester);</span>
 <span class="fc" id="L184">    }</span>
 <span class="fc" id="L185">    runner.setSender(true);</span>
     try {
@@ -207,46 +207,53 @@ public class HttpDownloadSession extends HttpSessionAbstract {
   }
 
   /**
+   * @return the identifier
+   */
+  public String getIdentifier() {
+<span class="nc" id="L213">    return identifier;</span>
+  }
+
+  /**
    * @return the corresponding Hash (SHA 256) or null if not possible
    */
   public String getHash() {
-<span class="fc" id="L213">    File file = session.getFile().getTrueFile();</span>
+<span class="fc" id="L220">    File file = session.getFile().getTrueFile();</span>
     byte[] bin;
     try {
-<span class="fc" id="L216">      bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);</span>
-<span class="nc" id="L217">    } catch (IOException ignore) {</span>
-<span class="nc" id="L218">      logger.warn(ignore);</span>
-<span class="nc" id="L219">      return null;</span>
-<span class="fc" id="L220">    }</span>
-<span class="fc" id="L221">    String hash = FilesystemBasedDigest.getHex(bin);</span>
-<span class="fc" id="L222">    session.getRunner().addToTransferMap(HASH, hash);</span>
-    try {
-<span class="fc" id="L224">      session.getRunner().saveStatus();</span>
-<span class="nc" id="L225">    } catch (OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L226">      logger.debug(e);</span>
+<span class="fc" id="L223">      bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);</span>
+<span class="nc" id="L224">    } catch (IOException e) {</span>
+<span class="nc" id="L225">      logger.warn(e);</span>
+<span class="nc" id="L226">      return null;</span>
 <span class="fc" id="L227">    }</span>
-<span class="fc" id="L228">    return hash;</span>
+<span class="fc" id="L228">    String hash = FilesystemBasedDigest.getHex(bin);</span>
+<span class="fc" id="L229">    session.getRunner().addToTransferMap(HASH, hash);</span>
+    try {
+<span class="fc" id="L231">      session.getRunner().saveStatus();</span>
+<span class="nc" id="L232">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L233">      logger.debug(e);</span>
+<span class="fc" id="L234">    }</span>
+<span class="fc" id="L235">    return hash;</span>
   }
 
   /**
    * @return the previously hash if computed, else null
    */
   public String getComputedHadh() {
-<span class="fc" id="L235">    logger.trace(&quot;Runner {}&quot;, session.getRunner());</span>
-<span class="fc" id="L236">    String hash = (String) session.getRunner().getFromTransferMap(HASH);</span>
-<span class="fc" id="L237">    logger.debug(&quot;Found {}&quot;, hash);</span>
-<span class="fc" id="L238">    return (String) hash;</span>
+<span class="fc" id="L242">    logger.trace(&quot;Runner {}&quot;, session.getRunner());</span>
+<span class="fc" id="L243">    String hash = (String) session.getRunner().getFromTransferMap(HASH);</span>
+<span class="fc" id="L244">    logger.debug(&quot;Found {}&quot;, hash);</span>
+<span class="fc" id="L245">    return hash;</span>
   }
 
   @Override
   public void error(Exception e, R66BusinessInterface business)
       throws IllegalArgumentException {
-<span class="fc" id="L244">    logger.error(e);</span>
-<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    if (business != null) {</span>
-<span class="nc" id="L246">      business.checkAtError(session);</span>
+<span class="fc" id="L251">    logger.error(e);</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">    if (business != null) {</span>
+<span class="nc" id="L253">      business.checkAtError(session);</span>
     }
-<span class="fc" id="L248">    session.newState(R66FiniteDualStates.ERROR);</span>
-<span class="fc" id="L249">    throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L255">    session.newState(R66FiniteDualStates.ERROR);</span>
+<span class="fc" id="L256">    throw new IllegalArgumentException(e);</span>
   }
 
   /**
@@ -259,12 +266,12 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    * @throws IOException
    */
   public boolean tryWrite(OutputStream stream) throws IOException {
-<span class="pc bpc" id="L262" title="2 of 4 branches missed.">    if (!session.isAuthenticated() || !session.isReady()) {</span>
-<span class="nc" id="L263">      logger.error(&quot;Not authenticated or not Ready&quot;);</span>
-<span class="nc" id="L264">      return false;</span>
+<span class="pc bpc" id="L269" title="2 of 4 branches missed.">    if (!session.isAuthenticated() || !session.isReady()) {</span>
+<span class="nc" id="L270">      logger.error(&quot;Not authenticated or not Ready&quot;);</span>
+<span class="nc" id="L271">      return false;</span>
     }
-<span class="fc" id="L266">    write(stream);</span>
-<span class="fc" id="L267">    return true;</span>
+<span class="fc" id="L273">    write(stream);</span>
+<span class="fc" id="L274">    return true;</span>
   }
 
   /**
@@ -275,52 +282,52 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    * @throws IOException
    */
   private void write(OutputStream stream) throws IOException {
-<span class="fc" id="L278">    startTransfer(runner);</span>
-<span class="fc" id="L279">    File file = session.getFile().getTrueFile();</span>
-<span class="fc" id="L280">    FileInputStream inputStream = new FileInputStream(file);</span>
+<span class="fc" id="L285">    startTransfer(runner);</span>
+<span class="fc" id="L286">    File file = session.getFile().getTrueFile();</span>
+<span class="fc" id="L287">    FileInputStream inputStream = new FileInputStream(file);</span>
     try {
-<span class="fc" id="L282">      byte[] bytes = new byte[Configuration.configuration.getBlockSize()];</span>
+<span class="fc" id="L289">      byte[] bytes = new byte[Configuration.configuration.getBlockSize()];</span>
       while (true) {
-<span class="fc" id="L284">        int r = inputStream.read(bytes);</span>
-<span class="fc bfc" id="L285" title="All 2 branches covered.">        if (r &lt; 0) {</span>
-<span class="fc" id="L286">          break;</span>
+<span class="fc" id="L291">        int r = inputStream.read(bytes);</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">        if (r &lt; 0) {</span>
+<span class="fc" id="L293">          break;</span>
         }
-<span class="fc" id="L288">        stream.write(bytes, 0, r);</span>
-<span class="fc" id="L289">        session.getRunner().incrementRank();</span>
-<span class="fc" id="L290">      }</span>
-<span class="nc" id="L291">    } catch (IOException e) {</span>
-<span class="nc" id="L292">      session.getRunner().setErrorExecutionStatus(ErrorCode.TransferError);</span>
-<span class="nc" id="L293">      session.getRunner().setErrorTask();</span>
+<span class="fc" id="L295">        stream.write(bytes, 0, r);</span>
+<span class="fc" id="L296">        session.getRunner().incrementRank();</span>
+<span class="fc" id="L297">      }</span>
+<span class="nc" id="L298">    } catch (IOException e) {</span>
+<span class="nc" id="L299">      session.getRunner().setErrorExecutionStatus(ErrorCode.TransferError);</span>
+<span class="nc" id="L300">      session.getRunner().setErrorTask();</span>
       try {
-<span class="nc" id="L295">        session.getRunner().run();</span>
-<span class="nc" id="L296">      } catch (OpenR66RunnerErrorException ex) {</span>
-<span class="nc" id="L297">        logger.info(e);</span>
-<span class="nc" id="L298">      }</span>
-<span class="nc" id="L299">      session.newState(R66FiniteDualStates.ERROR);</span>
-<span class="nc" id="L300">      throw e;</span>
+<span class="nc" id="L302">        session.getRunner().run();</span>
+<span class="nc" id="L303">      } catch (OpenR66RunnerErrorException ex) {</span>
+<span class="nc" id="L304">        logger.info(e);</span>
+<span class="nc" id="L305">      }</span>
+<span class="nc" id="L306">      session.newState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L307">      throw e;</span>
     } finally {
-<span class="fc" id="L302">      inputStream.close();</span>
-<span class="fc" id="L303">      stream.flush();</span>
-<span class="fc" id="L304">      stream.close();</span>
+<span class="fc" id="L309">      inputStream.close();</span>
+<span class="fc" id="L310">      stream.flush();</span>
+<span class="fc" id="L311">      stream.close();</span>
     }
 
-<span class="fc" id="L307">  }</span>
+<span class="fc" id="L314">  }</span>
 
   /**
    * Finalize the current download
    */
   public void downloadFinished() {
-<span class="pc bpc" id="L313" title="1 of 2 branches missed.">    if (session.getState() == CLOSEDCHANNEL) {</span>
-<span class="nc" id="L314">      return;</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">    if (session.getState() == CLOSEDCHANNEL) {</span>
+<span class="nc" id="L321">      return;</span>
     }
-<span class="fc" id="L316">    logger.debug(&quot;Final block received! {}&quot;, session);</span>
-<span class="fc" id="L317">    runPostTask();</span>
-<span class="fc" id="L318">    authent.finalizeTransfer(this, session);</span>
-<span class="fc" id="L319">  }</span>
+<span class="fc" id="L323">    logger.debug(&quot;Final block received! {}&quot;, session);</span>
+<span class="fc" id="L324">    runPostTask();</span>
+<span class="fc" id="L325">    authent.finalizeTransfer(this, session);</span>
+<span class="fc" id="L326">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L323">    return &quot;DS: {&quot; + session.toString() + &quot;, &quot; + filename + &quot;, &quot; + rulename +</span>
+<span class="fc" id="L330">    return &quot;DS: {&quot; + session.toString() + &quot;, &quot; + filename + &quot;, &quot; + rulename +</span>
            &quot;, &quot; + identifier + &quot;, &quot; + comment + &quot;, &quot; + finalFilename + &quot;}&quot;;
   }
 }

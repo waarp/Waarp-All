@@ -41,8 +41,8 @@ public class FtpSessionReference {
   /**
    * Internal Logger
    */
-<span class="nc" id="L44">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L45">      WaarpLoggerFactory.getLogger(FtpSessionReference.class);</span>
+<span class="fc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L45">      WaarpLoggerFactory.getLogger(FtpSessionReference.class);</span>
 
   /**
    * Index of FtpSession References
@@ -63,10 +63,10 @@ public class FtpSessionReference {
      *
      * @param channel
      */
-<span class="nc" id="L66">    public P2PAddress(Channel channel) {</span>
-<span class="nc" id="L67">      ipOnly = FtpChannelUtils.getRemoteInetAddress(channel);</span>
-<span class="nc" id="L68">      fullIp = (InetSocketAddress) channel.localAddress();</span>
-<span class="nc" id="L69">    }</span>
+<span class="fc" id="L66">    public P2PAddress(Channel channel) {</span>
+<span class="fc" id="L67">      ipOnly = FtpChannelUtils.getRemoteInetAddress(channel);</span>
+<span class="fc" id="L68">      fullIp = (InetSocketAddress) channel.localAddress();</span>
+<span class="fc" id="L69">    }</span>
 
     /**
      * Constructor from addresses
@@ -75,28 +75,28 @@ public class FtpSessionReference {
      * @param inetSocketAddress
      */
     public P2PAddress(InetAddress address,
-<span class="nc" id="L78">                      InetSocketAddress inetSocketAddress) {</span>
-<span class="nc" id="L79">      ipOnly = address;</span>
-<span class="nc" id="L80">      fullIp = inetSocketAddress;</span>
-<span class="nc" id="L81">    }</span>
+<span class="fc" id="L78">                      InetSocketAddress inetSocketAddress) {</span>
+<span class="fc" id="L79">      ipOnly = address;</span>
+<span class="fc" id="L80">      fullIp = inetSocketAddress;</span>
+<span class="fc" id="L81">    }</span>
 
     /**
      * @return True if the P2Paddress is valid
      */
     public boolean isValid() {
-<span class="nc bnc" id="L87" title="All 4 branches missed.">      return ipOnly != null &amp;&amp; fullIp != null;</span>
+<span class="pc bpc" id="L87" title="2 of 4 branches missed.">      return ipOnly != null &amp;&amp; fullIp != null;</span>
     }
 
     @Override
     public boolean equals(Object o) {
-<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (o == null) {</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">      if (o == null) {</span>
 <span class="nc" id="L93">        return false;</span>
       }
-<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (o instanceof P2PAddress) {</span>
-<span class="nc" id="L96">        final P2PAddress p2paddress = (P2PAddress) o;</span>
-<span class="nc bnc" id="L97" title="All 4 branches missed.">        if (p2paddress.isValid() &amp;&amp; isValid()) {</span>
-<span class="nc bnc" id="L98" title="All 2 branches missed.">          return p2paddress.fullIp.equals(fullIp) &amp;&amp;</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">                 p2paddress.ipOnly.equals(ipOnly);</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">      if (o instanceof P2PAddress) {</span>
+<span class="fc" id="L96">        final P2PAddress p2paddress = (P2PAddress) o;</span>
+<span class="pc bpc" id="L97" title="2 of 4 branches missed.">        if (p2paddress.isValid() &amp;&amp; isValid()) {</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">          return p2paddress.fullIp.equals(fullIp) &amp;&amp;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                 p2paddress.ipOnly.equals(ipOnly);</span>
         }
       }
 <span class="nc" id="L102">      return false;</span>
@@ -104,7 +104,7 @@ public class FtpSessionReference {
 
     @Override
     public int hashCode() {
-<span class="nc" id="L107">      return fullIp.hashCode() + ipOnly.hashCode();</span>
+<span class="fc" id="L107">      return fullIp.hashCode() + ipOnly.hashCode();</span>
     }
 
   }
@@ -112,15 +112,15 @@ public class FtpSessionReference {
   /**
    * Reference of FtpSession from InetSocketAddress
    */
-<span class="nc" id="L115">  private final ConcurrentHashMap&lt;P2PAddress, FtpSession&gt; hashMap =</span>
+<span class="fc" id="L115">  private final ConcurrentHashMap&lt;P2PAddress, FtpSession&gt; hashMap =</span>
       new ConcurrentHashMap&lt;P2PAddress, FtpSession&gt;();
 
   /**
    * Constructor
    */
-<span class="nc" id="L121">  public FtpSessionReference() {</span>
+<span class="fc" id="L121">  public FtpSessionReference() {</span>
     // nothing
-<span class="nc" id="L123">  }</span>
+<span class="fc" id="L123">  }</span>
 
   /**
    * Add a session from a couple of addresses
@@ -131,15 +131,15 @@ public class FtpSessionReference {
    */
   public void setNewFtpSession(InetAddress ipOnly, InetSocketAddress fullIp,
                                FtpSession session) {
-<span class="nc" id="L134">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L134">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L136">      logger.error(</span>
           &quot;Couple invalid in setNewFtpSession: &quot; + ipOnly + &quot; : &quot; + fullIp);
 <span class="nc" id="L138">      return;</span>
     }
-<span class="nc" id="L140">    hashMap.put(pAddress, session);</span>
+<span class="fc" id="L140">    hashMap.put(pAddress, session);</span>
     // logger.debug(&quot;Add: {} {}&quot;, ipOnly, fullIp)
-<span class="nc" id="L142">  }</span>
+<span class="fc" id="L142">  }</span>
 
   /**
    * Return and remove the FtpSession
@@ -150,19 +150,19 @@ public class FtpSessionReference {
    */
   public FtpSession getActiveFtpSession(Channel channel, boolean remove) {
     // First check Active connection
-<span class="nc" id="L153">    final P2PAddress pAddress = new P2PAddress(</span>
-<span class="nc" id="L154">        ((InetSocketAddress) channel.localAddress()).getAddress(),</span>
-<span class="nc" id="L155">        (InetSocketAddress) channel.remoteAddress());</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L153">    final P2PAddress pAddress = new P2PAddress(</span>
+<span class="fc" id="L154">        ((InetSocketAddress) channel.localAddress()).getAddress(),</span>
+<span class="fc" id="L155">        (InetSocketAddress) channel.remoteAddress());</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L157">      logger.error(&quot;Couple invalid in getActiveFtpSession: &quot; + channel +</span>
 <span class="nc" id="L158">                   channel.localAddress() + channel.remoteAddress());</span>
 <span class="nc" id="L159">      return null;</span>
     }
     // logger.debug(&quot;Get: {} {}&quot;, pAddress.ipOnly, pAddress.fullIp)
-<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (remove) {</span>
-<span class="nc" id="L163">      return hashMap.remove(pAddress);</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">    if (remove) {</span>
+<span class="fc" id="L163">      return hashMap.remove(pAddress);</span>
     } else {
-<span class="nc" id="L165">      return hashMap.get(pAddress);</span>
+<span class="fc" id="L165">      return hashMap.get(pAddress);</span>
     }
   }
 
@@ -175,16 +175,16 @@ public class FtpSessionReference {
    */
   public FtpSession getPassiveFtpSession(Channel channel, boolean remove) {
     // First check passive connection
-<span class="nc" id="L178">    final P2PAddress pAddress = new P2PAddress(channel);</span>
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L178">    final P2PAddress pAddress = new P2PAddress(channel);</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L180">      logger.error(&quot;Couple invalid in getPassiveFtpSession: &quot; + channel);</span>
 <span class="nc" id="L181">      return null;</span>
     }
     // logger.debug(&quot;Get: {} {}&quot;, pAddress.ipOnly, pAddress.fullIp)
-<span class="nc bnc" id="L184" title="All 2 branches missed.">    if (remove) {</span>
-<span class="nc" id="L185">      return hashMap.remove(pAddress);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">    if (remove) {</span>
+<span class="fc" id="L185">      return hashMap.remove(pAddress);</span>
     } else {
-<span class="nc" id="L187">      return hashMap.get(pAddress);</span>
+<span class="fc" id="L187">      return hashMap.get(pAddress);</span>
     }
   }
 
@@ -195,15 +195,15 @@ public class FtpSessionReference {
    * @param fullIp
    */
   public void delFtpSession(InetAddress ipOnly, InetSocketAddress fullIp) {
-<span class="nc" id="L198">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L198">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L200">      logger</span>
 <span class="nc" id="L201">          .error(&quot;Couple invalid in delFtpSession: &quot; + ipOnly + &quot; : &quot; + fullIp);</span>
 <span class="nc" id="L202">      return;</span>
     }
     // logger.debug(&quot;Del: {} {}&quot;, pAddress.ipOnly, pAddress.fullIp)
-<span class="nc" id="L205">    hashMap.remove(pAddress);</span>
-<span class="nc" id="L206">  }</span>
+<span class="fc" id="L205">    hashMap.remove(pAddress);</span>
+<span class="fc" id="L206">  }</span>
 
   /**
    * Test if the couple of addresses is already in the hashmap (only for
@@ -215,13 +215,13 @@ public class FtpSessionReference {
    * @return True if already presents
    */
   public boolean contains(InetAddress ipOnly, InetSocketAddress fullIp) {
-<span class="nc" id="L218">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
-<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (!pAddress.isValid()) {</span>
+<span class="fc" id="L218">    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (!pAddress.isValid()) {</span>
 <span class="nc" id="L220">      logger.error(&quot;Couple invalid in contains: &quot; + ipOnly + &quot; : &quot; + fullIp);</span>
 <span class="nc" id="L221">      return false;</span>
     }
     // logger.debug(&quot;Contains: {} {}&quot;, pAddress.ipOnly, pAddress.fullIp)
-<span class="nc" id="L224">    return hashMap.containsKey(pAddress);</span>
+<span class="fc" id="L224">    return hashMap.containsKey(pAddress);</span>
   }
 
   /**

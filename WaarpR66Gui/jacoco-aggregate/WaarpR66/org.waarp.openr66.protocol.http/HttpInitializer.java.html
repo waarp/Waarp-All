@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 /**
  * Pipeline Factory for HTTP support
@@ -33,20 +34,21 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 public class HttpInitializer extends ChannelInitializer&lt;SocketChannel&gt; {
   private final boolean useHttpCompression;
 
-<span class="nc" id="L36">  public HttpInitializer(boolean useHttpCompression) {</span>
-<span class="nc" id="L37">    this.useHttpCompression = useHttpCompression;</span>
-<span class="nc" id="L38">  }</span>
+<span class="fc" id="L37">  public HttpInitializer(boolean useHttpCompression) {</span>
+<span class="fc" id="L38">    this.useHttpCompression = useHttpCompression;</span>
+<span class="fc" id="L39">  }</span>
 
   @Override
   protected void initChannel(SocketChannel ch) throws Exception {
-<span class="nc" id="L42">    final ChannelPipeline pipeline = ch.pipeline();</span>
-<span class="nc" id="L43">    pipeline.addLast(&quot;decoder&quot;, new HttpServerCodec());</span>
-<span class="nc" id="L44">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(1048576));</span>
-<span class="nc" id="L45">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
-<span class="nc bnc" id="L46" title="All 2 branches missed.">    if (useHttpCompression) {</span>
-<span class="nc" id="L47">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
+<span class="fc" id="L43">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="fc" id="L44">    pipeline.addLast(&quot;decoder&quot;, new HttpServerCodec());</span>
+<span class="fc" id="L45">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
+<span class="fc" id="L46">        Configuration.configuration.getMaxGlobalMemory()));</span>
+<span class="fc" id="L47">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    if (useHttpCompression) {</span>
+<span class="fc" id="L49">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
     }
-<span class="nc" id="L49">    pipeline.addLast(&quot;handler&quot;, new HttpFormattedHandler());</span>
-<span class="nc" id="L50">  }</span>
+<span class="fc" id="L51">    pipeline.addLast(&quot;handler&quot;, new HttpFormattedHandler());</span>
+<span class="fc" id="L52">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

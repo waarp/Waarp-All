@@ -42,8 +42,8 @@ public class ExecJavaTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L45">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L46">      WaarpLoggerFactory.getLogger(ExecJavaTask.class);</span>
+<span class="fc" id="L45">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L46">      WaarpLoggerFactory.getLogger(ExecJavaTask.class);</span>
 
   /**
    * @param argRule
@@ -53,8 +53,8 @@ public class ExecJavaTask extends AbstractTask {
    */
   public ExecJavaTask(String argRule, int delay, String argTransfer,
                       R66Session session) {
-<span class="nc" id="L56">    super(TaskType.EXECJAVA, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L57">  }</span>
+<span class="fc" id="L56">    super(TaskType.EXECJAVA, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L57">  }</span>
 
   /**
    * Set the type
@@ -62,8 +62,8 @@ public class ExecJavaTask extends AbstractTask {
    * @param businessRequest
    */
   public void setBusinessRequest(boolean businessRequest) {
-<span class="nc" id="L65">    this.businessRequest = businessRequest;</span>
-<span class="nc" id="L66">  }</span>
+<span class="fc" id="L65">    this.businessRequest = businessRequest;</span>
+<span class="fc" id="L66">  }</span>
 
   @Override
   public void run() {
@@ -72,15 +72,15 @@ public class ExecJavaTask extends AbstractTask {
      * element of resulting string) with arguments as the following value from the replacements. Return 0 if OK,
      * else 1 for a warning else as an error. No change should be done in the FILENAME
      */
-<span class="nc" id="L75">    String finalname = argRule;</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (argTransfer != null) {</span>
-<span class="nc" id="L77">      finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>
+<span class="fc" id="L75">    String finalname = argRule;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">    if (argTransfer != null) {</span>
+<span class="fc" id="L77">      finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>
     }
     // First get the Class Name
-<span class="nc" id="L80">    final String[] args = BLANK.split(finalname);</span>
-<span class="nc" id="L81">    final String className = args[0];</span>
+<span class="fc" id="L80">    final String[] args = BLANK.split(finalname);</span>
+<span class="fc" id="L81">    final String className = args[0];</span>
     try {
-<span class="nc" id="L83">      ParametersChecker.checkSanityString(className);</span>
+<span class="fc" id="L83">      ParametersChecker.checkSanityString(className);</span>
 <span class="nc" id="L84">    } catch (InvalidArgumentException e) {</span>
 <span class="nc" id="L85">      logger.error(&quot;ExecJava command is not correct&quot;, e);</span>
 <span class="nc" id="L86">      final R66Result result =</span>
@@ -89,19 +89,19 @@ public class ExecJavaTask extends AbstractTask {
 <span class="nc" id="L89">      futureCompletion.setResult(result);</span>
 <span class="nc" id="L90">      futureCompletion.cancel();</span>
 <span class="nc" id="L91">      return;</span>
-<span class="nc" id="L92">    }</span>
-<span class="nc" id="L93">    final boolean isSpooled =</span>
-<span class="nc" id="L94">        className.equals(SpooledInformTask.class.getName());</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (isSpooled) {</span>
-<span class="nc" id="L96">      logger.debug(&quot;Exec with &quot; + className + ':' + argTransfer + &quot; and {}&quot;,</span>
+<span class="fc" id="L92">    }</span>
+<span class="fc" id="L93">    final boolean isSpooled =</span>
+<span class="fc" id="L94">        className.equals(SpooledInformTask.class.getName());</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">    if (isSpooled) {</span>
+<span class="fc" id="L96">      logger.debug(&quot;Exec with &quot; + className + ':' + argTransfer + &quot; and {}&quot;,</span>
                    session);
     } else {
-<span class="nc" id="L99">      logger.debug(&quot;Exec with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
+<span class="fc" id="L99">      logger.debug(&quot;Exec with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
                    session);
     }
     R66Runnable runnable;
     try {
-<span class="nc" id="L104">      runnable = (R66Runnable) Class.forName(className).newInstance();//NOSONAR</span>
+<span class="fc" id="L104">      runnable = (R66Runnable) Class.forName(className).newInstance();//NOSONAR</span>
 <span class="nc" id="L105">    } catch (final Exception e) {</span>
 <span class="nc" id="L106">      logger.error(&quot;ExecJava command is not available: &quot; + className, e);</span>
 <span class="nc" id="L107">      final R66Result result =</span>
@@ -110,30 +110,30 @@ public class ExecJavaTask extends AbstractTask {
 <span class="nc" id="L110">      futureCompletion.setResult(result);</span>
 <span class="nc" id="L111">      futureCompletion.cancel();</span>
 <span class="nc" id="L112">      return;</span>
-<span class="nc" id="L113">    }</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (businessRequest) {</span>
-<span class="nc" id="L115">      final boolean istovalidate = Boolean.parseBoolean(args[args.length - 1]);</span>
-<span class="nc" id="L116">      runnable</span>
-<span class="nc" id="L117">          .setArgs(session, waitForValidation, useLocalExec, delay, className,</span>
-<span class="nc" id="L118">                   finalname.substring(finalname.indexOf(' ') + 1,</span>
-<span class="nc" id="L119">                                       finalname.lastIndexOf(' ')),</span>
+<span class="fc" id="L113">    }</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    if (businessRequest) {</span>
+<span class="fc" id="L115">      final boolean istovalidate = Boolean.parseBoolean(args[args.length - 1]);</span>
+<span class="fc" id="L116">      runnable</span>
+<span class="fc" id="L117">          .setArgs(session, waitForValidation, useLocalExec, delay, className,</span>
+<span class="fc" id="L118">                   finalname.substring(finalname.indexOf(' ') + 1,</span>
+<span class="fc" id="L119">                                       finalname.lastIndexOf(' ')),</span>
                    businessRequest, istovalidate);
-<span class="nc" id="L121">    } else {</span>
-<span class="nc" id="L122">      runnable</span>
-<span class="nc" id="L123">          .setArgs(session, waitForValidation, useLocalExec, delay, className,</span>
-<span class="nc" id="L124">                   finalname.substring(className.length() + 1), businessRequest,</span>
+<span class="fc" id="L121">    } else {</span>
+<span class="fc" id="L122">      runnable</span>
+<span class="fc" id="L123">          .setArgs(session, waitForValidation, useLocalExec, delay, className,</span>
+<span class="fc" id="L124">                   finalname.substring(className.length() + 1), businessRequest,</span>
                    false);
     }
-<span class="nc" id="L127">    logger.debug(className + ' ' + runnable.getClass().getName());</span>
-<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (!waitForValidation) {</span>
+<span class="fc" id="L127">    logger.debug(className + ' ' + runnable.getClass().getName());</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (!waitForValidation) {</span>
       // Do not wait for validation
 <span class="nc" id="L130">      futureCompletion.setSuccess();</span>
 <span class="nc" id="L131">      logger.info(&quot;Exec will start but no WAIT with {}&quot;, runnable);</span>
     }
     int status;
-<span class="nc bnc" id="L134" title="All 4 branches missed.">    if (waitForValidation &amp;&amp; delay &lt;= 100) {</span>
-<span class="nc" id="L135">      runnable.run();</span>
-<span class="nc" id="L136">      status = runnable.getFinalStatus();</span>
+<span class="pc bpc" id="L134" title="2 of 4 branches missed.">    if (waitForValidation &amp;&amp; delay &lt;= 100) {</span>
+<span class="fc" id="L135">      runnable.run();</span>
+<span class="fc" id="L136">      status = runnable.getFinalStatus();</span>
     } else {
 <span class="nc" id="L138">      final ExecutorService executorService = Executors</span>
 <span class="nc" id="L139">          .newSingleThreadExecutor(new WaarpThreadFactory(&quot;JavaExecutor&quot;));</span>
@@ -173,18 +173,18 @@ public class ExecJavaTask extends AbstractTask {
 <span class="nc" id="L173">        return;</span>
 <span class="nc" id="L174">      }</span>
     }
-<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (status == 0) {</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">      if (waitForValidation) {</span>
-<span class="nc" id="L178">        final R66Result result =</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">    if (status == 0) {</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">      if (waitForValidation) {</span>
+<span class="fc" id="L178">        final R66Result result =</span>
             new R66Result(session, true, ErrorCode.CompleteOk, null);
-<span class="nc" id="L180">        result.setOther(runnable.toString());</span>
-<span class="nc" id="L181">        futureCompletion.setResult(result);</span>
-<span class="nc" id="L182">        futureCompletion.setSuccess();</span>
+<span class="fc" id="L180">        result.setOther(runnable.toString());</span>
+<span class="fc" id="L181">        futureCompletion.setResult(result);</span>
+<span class="fc" id="L182">        futureCompletion.setSuccess();</span>
       }
-<span class="nc bnc" id="L184" title="All 2 branches missed.">      if (isSpooled) {</span>
-<span class="nc" id="L185">        logger.info(&quot;Exec OK with {}&quot;, className);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">      if (isSpooled) {</span>
+<span class="fc" id="L185">        logger.info(&quot;Exec OK with {}&quot;, className);</span>
       } else {
-<span class="nc" id="L187">        logger.info(&quot;Exec OK with {}&quot;, runnable);</span>
+<span class="fc" id="L187">        logger.info(&quot;Exec OK with {}&quot;, runnable);</span>
       }
 <span class="nc bnc" id="L189" title="All 2 branches missed.">    } else if (status == 1) {</span>
 <span class="nc" id="L190">      logger.warn(&quot;Exec in warning with &quot; + runnable);</span>
@@ -201,7 +201,7 @@ public class ExecJavaTask extends AbstractTask {
 <span class="nc" id="L201">        futureCompletion.cancel();</span>
       }
     }
-<span class="nc" id="L204">  }</span>
+<span class="fc" id="L204">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

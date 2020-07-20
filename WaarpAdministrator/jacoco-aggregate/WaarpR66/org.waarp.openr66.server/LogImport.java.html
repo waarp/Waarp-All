@@ -49,56 +49,57 @@ import static org.waarp.common.database.DbConstant.*;
    * @param args
    */
   public static void main(String[] args) {
-<span class="nc" id="L52">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L54">      logger = WaarpLoggerFactory.getLogger(LogImport.class);</span>
+<span class="nc" id="L52">    WaarpLoggerFactory</span>
+<span class="nc" id="L53">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L55">      logger = WaarpLoggerFactory.getLogger(LogImport.class);</span>
     }
-<span class="nc bnc" id="L56" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
-<span class="nc" id="L57">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L58">          .syserr(&quot;Need configuration file and the logfile to import&quot;);</span>
-<span class="nc" id="L59">      System.exit(1);//NOSONAR</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (args.length &lt; 2) {</span>
+<span class="nc" id="L58">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L59">          .syserr(&quot;Need configuration file and the logfile to import&quot;);</span>
+<span class="nc" id="L60">      System.exit(1);//NOSONAR</span>
     }
     try {
-<span class="nc" id="L62">      if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L63" title="All 2 branches missed.">          .setConfigurationServerMinimalFromXml(Configuration.configuration,</span>
+<span class="nc" id="L63">      if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">          .setConfigurationServerMinimalFromXml(Configuration.configuration,</span>
                                                 args[0])) {
-<span class="nc" id="L65">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (admin != null) {</span>
-<span class="nc" id="L67">          admin.close();</span>
+<span class="nc" id="L66">        logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L68">          admin.close();</span>
         }
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L70">          return;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L71">          return;</span>
         }
-<span class="nc" id="L72">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L73">        System.exit(1);//NOSONAR</span>
-<span class="nc" id="L74">        return;</span>
+<span class="nc" id="L73">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L74">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L75">        return;</span>
       }
-<span class="nc" id="L76">      final long time1 = System.currentTimeMillis();</span>
-<span class="nc" id="L77">      final File logsFile = new File(args[1]);</span>
+<span class="nc" id="L77">      final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L78">      final File logsFile = new File(args[1]);</span>
       try {
-<span class="nc" id="L79">        DbTaskRunner.loadXml(logsFile);</span>
-<span class="nc" id="L80">      } catch (final OpenR66ProtocolBusinessException e) {</span>
-<span class="nc" id="L81">        logger.error(&quot;Cannot load the logs from &quot; + logsFile.getAbsolutePath() +</span>
-<span class="nc" id="L82">                     &quot; since: &quot; + e.getMessage(), e);</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (admin != null) {</span>
-<span class="nc" id="L84">          admin.close();</span>
+<span class="nc" id="L80">        DbTaskRunner.loadXml(logsFile);</span>
+<span class="nc" id="L81">      } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L82">        logger.error(&quot;Cannot load the logs from &quot; + logsFile.getAbsolutePath() +</span>
+<span class="nc" id="L83">                     &quot; since: &quot; + e.getMessage(), e);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (admin != null) {</span>
+<span class="nc" id="L85">          admin.close();</span>
         }
-<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L87">          return;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L88">          return;</span>
         }
-<span class="nc" id="L89">        ChannelUtils.stopLogger();</span>
-<span class="nc" id="L90">        System.exit(1);//NOSONAR</span>
-<span class="nc" id="L91">        return;</span>
-<span class="nc" id="L92">      }</span>
-<span class="nc" id="L93">      final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L94">      final long delay = time2 - time1;</span>
-<span class="nc" id="L95">      logger.warn(&quot;LogFile imported in &quot; + delay + &quot; ms&quot;);</span>
+<span class="nc" id="L90">        ChannelUtils.stopLogger();</span>
+<span class="nc" id="L91">        System.exit(1);//NOSONAR</span>
+<span class="nc" id="L92">        return;</span>
+<span class="nc" id="L93">      }</span>
+<span class="nc" id="L94">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L95">      final long delay = time2 - time1;</span>
+<span class="nc" id="L96">      logger.warn(&quot;LogFile imported in &quot; + delay + &quot; ms&quot;);</span>
     } finally {
-<span class="nc bnc" id="L97" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L98">        admin.close();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L99">        admin.close();</span>
       }
-<span class="nc" id="L100">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L101">      System.exit(0);//NOSONAR</span>
     }
-<span class="nc" id="L102">  }</span>
+<span class="nc" id="L103">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

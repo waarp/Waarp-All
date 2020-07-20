@@ -54,21 +54,21 @@ import java.nio.charset.UnsupportedCharsetException;
 public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
     extends RestMethodHandler {
 
-<span class="nc" id="L57">  public enum COMMAND_TYPE {</span>
-<span class="nc" id="L58">    MULTIGET, GET, UPDATE, CREATE, DELETE, OPTIONS</span>
+<span class="fc" id="L57">  public enum COMMAND_TYPE {</span>
+<span class="fc" id="L58">    MULTIGET, GET, UPDATE, CREATE, DELETE, OPTIONS</span>
   }
 
   /**
    * Internal Logger
    */
-<span class="nc" id="L64">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L65">      WaarpLoggerFactory.getLogger(DataModelRestMethodHandler.class);</span>
+<span class="fc" id="L64">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L65">      WaarpLoggerFactory.getLogger(DataModelRestMethodHandler.class);</span>
 
   protected DataModelRestMethodHandler(String name, RestConfiguration config,
                                        METHOD... method) {
-<span class="nc" id="L69">    super(name, name, true, config, METHOD.OPTIONS);</span>
-<span class="nc" id="L70">    setMethods(method);</span>
-<span class="nc" id="L71">  }</span>
+<span class="fc" id="L69">    super(name, name, true, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L70">    setMethods(method);</span>
+<span class="fc" id="L71">  }</span>
 
   protected abstract void checkAuthorization(HttpRestHandler handler,
                                              RestArgument arguments,
@@ -84,31 +84,31 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                                              RestArgument arguments,
                                              RestArgument result)
       throws HttpForbiddenRequestException {
-<span class="nc" id="L87">    final METHOD method = arguments.getMethod();</span>
-<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (!isMethodIncluded(method)) {</span>
+<span class="fc" id="L87">    final METHOD method = arguments.getMethod();</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">    if (!isMethodIncluded(method)) {</span>
 <span class="nc" id="L89">      logger.warn(&quot;NotAllowed: &quot; + method + ':' + arguments.getUri() + ':' +</span>
 <span class="nc" id="L90">                  arguments.getUriArgs());</span>
 <span class="nc" id="L91">      throw new HttpForbiddenRequestException(&quot;Unallowed Method: &quot; + method);</span>
     }
-<span class="nc" id="L93">    checkAuthorization(handler, arguments, result, method);</span>
-<span class="nc bnc" id="L94" title="All 2 branches missed.">    final boolean hasOneExtraPathAsId = arguments.getSubUriSize() == 1;</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    final boolean hasNoExtraPath = arguments.getSubUriSize() == 0;</span>
-<span class="nc bnc" id="L96" title="All 2 branches missed.">    if (hasOneExtraPathAsId) {</span>
-<span class="nc" id="L97">      arguments.addIdToUriArgs();</span>
+<span class="fc" id="L93">    checkAuthorization(handler, arguments, result, method);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">    final boolean hasOneExtraPathAsId = arguments.getSubUriSize() == 1;</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">    final boolean hasNoExtraPath = arguments.getSubUriSize() == 0;</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">    if (hasOneExtraPathAsId) {</span>
+<span class="fc" id="L97">      arguments.addIdToUriArgs();</span>
     }
-<span class="nc bnc" id="L99" title="All 4 branches missed.">    switch (method) {</span>
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">    switch (method) {</span>
       case DELETE:
       case PUT:
-<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (hasOneExtraPathAsId) {</span>
-<span class="nc" id="L103">          return;</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        if (hasOneExtraPathAsId) {</span>
+<span class="fc" id="L103">          return;</span>
         }
         break;
       case GET:
       case OPTIONS:
-<span class="nc" id="L108">        return;</span>
+<span class="fc" id="L108">        return;</span>
       case POST:
-<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (hasNoExtraPath) {</span>
-<span class="nc" id="L111">          return;</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (hasNoExtraPath) {</span>
+<span class="fc" id="L111">          return;</span>
         }
         break;
       default:
@@ -133,20 +133,20 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                         RestArgument arguments, RestArgument result)
       throws HttpIncorrectRequestException {
     // get the Json equivalent of the Body
-<span class="nc" id="L136">    ObjectNode node = null;</span>
+<span class="fc" id="L136">    ObjectNode node = null;</span>
     try {
-<span class="nc" id="L138">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
-<span class="nc" id="L139">      node = JsonHandler.getFromStringExc(json);</span>
+<span class="fc" id="L138">      final String json = body.toString(WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L139">      node = JsonHandler.getFromStringExc(json);</span>
 <span class="nc" id="L140">    } catch (final UnsupportedCharsetException e) {</span>
 <span class="nc" id="L141">      logger.warn(&quot;Error&quot;, e);</span>
 <span class="nc" id="L142">      throw new HttpIncorrectRequestException(e);</span>
 <span class="nc" id="L143">    } catch (final JsonProcessingException e) {</span>
 <span class="nc" id="L144">      result.setDetail(&quot;ERROR: JSON body cannot be parsed&quot;);</span>
-<span class="nc" id="L145">    }</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (node != null) {</span>
-<span class="nc" id="L147">      arguments.getBody().setAll(node);</span>
+<span class="fc" id="L145">    }</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">    if (node != null) {</span>
+<span class="fc" id="L147">      arguments.getBody().setAll(node);</span>
     }
-<span class="nc" id="L149">    return node;</span>
+<span class="fc" id="L149">    return node;</span>
   }
 
   @Override
@@ -154,28 +154,28 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                                 RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L157">    final METHOD method = arguments.getMethod();</span>
-<span class="nc bnc" id="L158" title="All 6 branches missed.">    switch (method) {</span>
+<span class="fc" id="L157">    final METHOD method = arguments.getMethod();</span>
+<span class="pc bpc" id="L158" title="2 of 6 branches missed.">    switch (method) {</span>
       case DELETE:
-<span class="nc" id="L160">        delete(handler, arguments, result, body);</span>
-<span class="nc" id="L161">        return;</span>
+<span class="fc" id="L160">        delete(handler, arguments, result, body);</span>
+<span class="fc" id="L161">        return;</span>
       case GET:
-<span class="nc bnc" id="L163" title="All 2 branches missed.">        final boolean hasNoExtraPath = arguments.getSubUriSize() == 0;</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (hasNoExtraPath) {</span>
-<span class="nc" id="L165">          getAll(handler, arguments, result, body);</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        final boolean hasNoExtraPath = arguments.getSubUriSize() == 0;</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        if (hasNoExtraPath) {</span>
+<span class="fc" id="L165">          getAll(handler, arguments, result, body);</span>
         } else {
-<span class="nc" id="L167">          getOne(handler, arguments, result, body);</span>
+<span class="fc" id="L167">          getOne(handler, arguments, result, body);</span>
         }
-<span class="nc" id="L169">        return;</span>
+<span class="fc" id="L169">        return;</span>
       case OPTIONS:
 <span class="nc" id="L171">        optionsCommand(handler, arguments, result);</span>
 <span class="nc" id="L172">        return;</span>
       case POST:
-<span class="nc" id="L174">        post(handler, arguments, result, body);</span>
-<span class="nc" id="L175">        return;</span>
+<span class="fc" id="L174">        post(handler, arguments, result, body);</span>
+<span class="fc" id="L175">        return;</span>
       case PUT:
-<span class="nc" id="L177">        put(handler, arguments, result, body);</span>
-<span class="nc" id="L178">        return;</span>
+<span class="fc" id="L177">        put(handler, arguments, result, body);</span>
+<span class="fc" id="L178">        return;</span>
       default:
         break;
     }
@@ -261,9 +261,9 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
   public abstract String getPrimaryPropertyName();
 
   protected void setOk(HttpRestHandler handler, RestArgument result) {
-<span class="nc" id="L264">    handler.setStatus(HttpResponseStatus.OK);</span>
-<span class="nc" id="L265">    result.setResult(HttpResponseStatus.OK);</span>
-<span class="nc" id="L266">  }</span>
+<span class="fc" id="L264">    handler.setStatus(HttpResponseStatus.OK);</span>
+<span class="fc" id="L265">    result.setResult(HttpResponseStatus.OK);</span>
+<span class="fc" id="L266">  }</span>
 
   /**
    * Get all items, according to a possible filter
@@ -281,38 +281,38 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                         RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L284">    final long limit = arguments.getLimitFromUri();</span>
-<span class="nc" id="L285">    final DbPreparedStatement statement =</span>
-<span class="nc" id="L286">        getPreparedStatement(handler, arguments, result, body);</span>
+<span class="fc" id="L284">    final long limit = arguments.getLimitFromUri();</span>
+<span class="fc" id="L285">    final DbPreparedStatement statement =</span>
+<span class="fc" id="L286">        getPreparedStatement(handler, arguments, result, body);</span>
     try {
-<span class="nc" id="L288">      result.addFilter((ObjectNode) body);</span>
-<span class="nc" id="L289">      int count = 0;</span>
+<span class="fc" id="L288">      result.addFilter((ObjectNode) body);</span>
+<span class="fc" id="L289">      int count = 0;</span>
       try {
-<span class="nc" id="L291">        statement.executeQuery();</span>
+<span class="fc" id="L291">        statement.executeQuery();</span>
 <span class="nc" id="L292">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L293">        throw new HttpIncorrectRequestException(e);</span>
 <span class="nc" id="L294">      } catch (final WaarpDatabaseSqlException e) {</span>
 <span class="nc" id="L295">        throw new HttpNotFoundRequestException(e);</span>
-<span class="nc" id="L296">      }</span>
+<span class="fc" id="L296">      }</span>
       try {
-<span class="nc bnc" id="L298" title="All 4 branches missed.">        for (; count &lt; limit &amp;&amp; statement.getNext(); count++) {</span>
-<span class="nc" id="L299">          final E item = getItemPreparedStatement(statement);</span>
-<span class="nc bnc" id="L300" title="All 2 branches missed.">          if (item != null) {</span>
-<span class="nc" id="L301">            result.addResult(item.getJson());</span>
+<span class="pc bpc" id="L298" title="1 of 4 branches missed.">        for (; count &lt; limit &amp;&amp; statement.getNext(); count++) {</span>
+<span class="fc" id="L299">          final E item = getItemPreparedStatement(statement);</span>
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">          if (item != null) {</span>
+<span class="fc" id="L301">            result.addResult(item.getJson());</span>
           }
         }
 <span class="nc" id="L304">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L305">        throw new HttpIncorrectRequestException(e);</span>
 <span class="nc" id="L306">      } catch (final WaarpDatabaseSqlException e) {</span>
 <span class="nc" id="L307">        throw new HttpNotFoundRequestException(e);</span>
-<span class="nc" id="L308">      }</span>
-<span class="nc" id="L309">      result.addCountLimit(count, limit);</span>
-<span class="nc" id="L310">      result.setCommand(COMMAND_TYPE.MULTIGET);</span>
-<span class="nc" id="L311">      setOk(handler, result);</span>
+<span class="fc" id="L308">      }</span>
+<span class="fc" id="L309">      result.addCountLimit(count, limit);</span>
+<span class="fc" id="L310">      result.setCommand(COMMAND_TYPE.MULTIGET);</span>
+<span class="fc" id="L311">      setOk(handler, result);</span>
     } finally {
-<span class="nc" id="L313">      statement.realClose();</span>
+<span class="fc" id="L313">      statement.realClose();</span>
     }
-<span class="nc" id="L315">  }</span>
+<span class="fc" id="L315">  }</span>
 
   /**
    * Get one item according to id
@@ -330,11 +330,11 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                         RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L333">    final E item = getItem(handler, arguments, result, body);</span>
-<span class="nc" id="L334">    result.addAnswer(item.getJson());</span>
-<span class="nc" id="L335">    result.setCommand(COMMAND_TYPE.GET);</span>
-<span class="nc" id="L336">    setOk(handler, result);</span>
-<span class="nc" id="L337">  }</span>
+<span class="fc" id="L333">    final E item = getItem(handler, arguments, result, body);</span>
+<span class="fc" id="L334">    result.addAnswer(item.getJson());</span>
+<span class="fc" id="L335">    result.setCommand(COMMAND_TYPE.GET);</span>
+<span class="fc" id="L336">    setOk(handler, result);</span>
+<span class="fc" id="L337">  }</span>
 
   /**
    * Update one item according to id
@@ -352,24 +352,24 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                      RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L355">    final E item = getItem(handler, arguments, result, body);</span>
+<span class="fc" id="L355">    final E item = getItem(handler, arguments, result, body);</span>
     try {
-<span class="nc" id="L357">      item.setFromJson(arguments.getBody(), true);</span>
+<span class="fc" id="L357">      item.setFromJson(arguments.getBody(), true);</span>
 <span class="nc" id="L358">    } catch (final WaarpDatabaseSqlException e) {</span>
 <span class="nc" id="L359">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while using Json formatting&quot;, e);
-<span class="nc" id="L361">    }</span>
-<span class="nc" id="L362">    item.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="fc" id="L361">    }</span>
+<span class="fc" id="L362">    item.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
     try {
-<span class="nc" id="L364">      item.update();</span>
+<span class="fc" id="L364">      item.update();</span>
 <span class="nc" id="L365">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L366">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while updating to database&quot;, e);
-<span class="nc" id="L368">    }</span>
-<span class="nc" id="L369">    result.addAnswer(item.getJson());</span>
-<span class="nc" id="L370">    result.setCommand(COMMAND_TYPE.UPDATE);</span>
-<span class="nc" id="L371">    setOk(handler, result);</span>
-<span class="nc" id="L372">  }</span>
+<span class="fc" id="L368">    }</span>
+<span class="fc" id="L369">    result.addAnswer(item.getJson());</span>
+<span class="fc" id="L370">    result.setCommand(COMMAND_TYPE.UPDATE);</span>
+<span class="fc" id="L371">    setOk(handler, result);</span>
+<span class="fc" id="L372">  }</span>
 
   /**
    * Create one item
@@ -385,24 +385,24 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
   protected void post(HttpRestHandler handler, RestArgument arguments,
                       RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="nc" id="L388">    final E item = createItem(handler, arguments, result, body);</span>
-<span class="nc" id="L389">    item.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="fc" id="L388">    final E item = createItem(handler, arguments, result, body);</span>
+<span class="fc" id="L389">    item.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
     try {
-<span class="nc" id="L391">      item.insert();</span>
-<span class="nc" id="L392">    } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L391">      item.insert();</span>
+<span class="fc" id="L392">    } catch (final WaarpDatabaseException e) {</span>
       // Revert to update
       try {
-<span class="nc" id="L395">        item.update();</span>
+<span class="fc" id="L395">        item.update();</span>
 <span class="nc" id="L396">      } catch (WaarpDatabaseException ex) {</span>
 <span class="nc" id="L397">        throw new HttpIncorrectRequestException(</span>
             &quot;Issue while inserting to database&quot;, e);
-<span class="nc" id="L399">      }</span>
-<span class="nc" id="L400">    }</span>
-<span class="nc" id="L401">    logger.debug(&quot;Save {}&quot;, item.getJson());</span>
-<span class="nc" id="L402">    result.addAnswer(item.getJson());</span>
-<span class="nc" id="L403">    result.setCommand(COMMAND_TYPE.CREATE);</span>
-<span class="nc" id="L404">    setOk(handler, result);</span>
-<span class="nc" id="L405">  }</span>
+<span class="fc" id="L399">      }</span>
+<span class="fc" id="L400">    }</span>
+<span class="fc" id="L401">    logger.debug(&quot;Save {}&quot;, item.getJson());</span>
+<span class="fc" id="L402">    result.addAnswer(item.getJson());</span>
+<span class="fc" id="L403">    result.setCommand(COMMAND_TYPE.CREATE);</span>
+<span class="fc" id="L404">    setOk(handler, result);</span>
+<span class="fc" id="L405">  }</span>
 
   /**
    * delete one item
@@ -420,40 +420,40 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                         RestArgument result, Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
-<span class="nc" id="L423">    final E item = getItem(handler, arguments, result, body);</span>
+<span class="fc" id="L423">    final E item = getItem(handler, arguments, result, body);</span>
     try {
-<span class="nc" id="L425">      item.delete();</span>
+<span class="fc" id="L425">      item.delete();</span>
 <span class="nc" id="L426">    } catch (final WaarpDatabaseException e) {</span>
 <span class="nc" id="L427">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while deleting from database&quot;, e);
-<span class="nc" id="L429">    }</span>
-<span class="nc" id="L430">    result.addAnswer(item.getJson());</span>
-<span class="nc" id="L431">    result.setCommand(COMMAND_TYPE.DELETE);</span>
-<span class="nc" id="L432">    setOk(handler, result);</span>
-<span class="nc" id="L433">  }</span>
+<span class="fc" id="L429">    }</span>
+<span class="fc" id="L430">    result.addAnswer(item.getJson());</span>
+<span class="fc" id="L431">    result.setCommand(COMMAND_TYPE.DELETE);</span>
+<span class="fc" id="L432">    setOk(handler, result);</span>
+<span class="fc" id="L433">  }</span>
 
   @Override
   public ChannelFuture sendResponse(HttpRestHandler handler,
                                     ChannelHandlerContext ctx,
                                     RestArgument arguments, RestArgument result,
                                     Object body, HttpResponseStatus status) {
-<span class="nc" id="L440">    final String answer = result.toString();</span>
-<span class="nc" id="L441">    final ByteBuf buffer =</span>
-<span class="nc" id="L442">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L443">    final HttpResponse response = handler.getResponse(buffer);</span>
-<span class="nc bnc" id="L444" title="All 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="fc" id="L440">    final String answer = result.toString();</span>
+<span class="fc" id="L441">    final ByteBuf buffer =</span>
+<span class="fc" id="L442">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L443">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="pc bpc" id="L444" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
 <span class="nc" id="L445">      return ctx.writeAndFlush(response);</span>
     }
-<span class="nc" id="L447">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
-<span class="nc" id="L448">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
-<span class="nc" id="L449">    logger.debug(&quot;Will write: {}&quot;, body);</span>
-<span class="nc" id="L450">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="nc bnc" id="L451" title="All 2 branches missed.">    if (handler.isWillClose()) {</span>
-<span class="nc" id="L452">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L453">          .syserr(&quot;Will close session in DataModelRestMethodHandler&quot;);</span>
-<span class="nc" id="L454">      return future;</span>
+<span class="fc" id="L447">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="fc" id="L448">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="fc" id="L449">    logger.debug(&quot;Will write: {}&quot;, body);</span>
+<span class="fc" id="L450">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="fc bfc" id="L451" title="All 2 branches covered.">    if (handler.isWillClose()) {</span>
+<span class="fc" id="L452">      SysErrLogger.FAKE_LOGGER</span>
+<span class="fc" id="L453">          .syserr(&quot;Will close session in DataModelRestMethodHandler&quot;);</span>
+<span class="fc" id="L454">      return future;</span>
     }
-<span class="nc" id="L456">    return null;</span>
+<span class="fc" id="L456">    return null;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

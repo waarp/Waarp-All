@@ -1,0 +1,1235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>IcapClient.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="../index.html" class="el_bundle">WaarpIcap</a> &gt; <a href="index.source.html" class="el_package">org.waarp.icap</a> &gt; <span class="el_source">IcapClient.java</span></div><h1>IcapClient.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.icap;
+
+import com.google.common.io.Files;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * The IcapClient allows to do 3 actions:&lt;/br&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;connect(): which allows to initialize the connection with the ICAP
+ *   server&lt;/li&gt;
+ *   &lt;li&gt;close(): forces the client to disconnect from the ICAP server&lt;/li&gt;
+ *   &lt;li&gt;scanFile(path): send a file for a scan by the ICAP server&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/br&gt;
+ * This code is inspired from 2 sources:&lt;/br&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;https://github.com/Baekalfen/ICAP-avscan&lt;/li&gt;
+ *   &lt;li&gt;https://github.com/claudineyns/icap-client&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/br&gt;
+ * This reflects the RFC 3507 and errata as of 2010/04/17.
+ */
+public class IcapClient implements Closeable {
+  /**
+   * Default ICAP port
+   */
+  public static final int DEFAULT_ICAP_PORT = 1344;
+<span class="fc" id="L67">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L68">      WaarpLoggerFactory.getLogger(IcapClient.class);</span>
+
+  static final int STD_RECEIVE_LENGTH = 64 * 1024;
+  static final int STD_SEND_LENGTH = 8192;
+  static final int DEFAULT_TIMEOUT = 10 * 60 * 60000;// 10 min
+  public static final String VERSION = &quot;ICAP/1.0&quot;;
+  private static final String USER_AGENT = &quot;Waarp ICAP Client/1.0&quot;;
+  public static final String TERMINATOR = &quot;\r\n&quot;;
+  public static final String ICAP_TERMINATOR = TERMINATOR + TERMINATOR;
+  public static final String HTTP_TERMINATOR = &quot;0&quot; + TERMINATOR + TERMINATOR;
+  private static final String STATUS_CODE = &quot;StatusCode&quot;;
+  private static final String PREVIEW = &quot;Preview&quot;;
+  private static final String OPTIONS = &quot;OPTIONS&quot;;
+  private static final String HOST_HEADER = &quot;Host: &quot;;
+  private static final String USER_AGENT_HEADER = &quot;User-Agent: &quot;;
+  private static final String RESPMOD = &quot;RESPMOD&quot;;
+  private static final String ENCAPSULATED_NULL_BODY =
+      &quot;Encapsulated: null-body=0&quot;;
+  static final int MINIMAL_SIZE = 100;
+  private static final String GET_REQUEST = &quot;GET /&quot;;
+  private static final String INCOMPATIBLE_ARGUMENT = &quot;Incompatible argument&quot;;
+  private static final String TIMEOUT_OCCURS_WITH_THE_SERVER =
+      &quot;Timeout occurs with the Server&quot;;
+  private static final String TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE =
+      &quot;Timeout occurs with the Server {}:{} since {}&quot;;
+  public static final String EICARTEST = &quot;EICARTEST&quot;;
+
+  // Standard configuration
+  private final String serverIP;
+  private final int port;
+  private final String icapService;
+  private final int setPreviewSize;
+
+  // Extra configuration
+<span class="fc" id="L102">  private int receiveLength = STD_RECEIVE_LENGTH;</span>
+<span class="fc" id="L103">  private int sendLength = STD_SEND_LENGTH;</span>
+<span class="fc" id="L104">  private String keyIcapPreview = null;</span>
+<span class="fc" id="L105">  private String subStringFromKeyIcapPreview = null;</span>
+<span class="fc" id="L106">  private String substringHttpStatus200 = null;</span>
+<span class="fc" id="L107">  private String keyIcap200 = null;</span>
+<span class="fc" id="L108">  private String subStringFromKeyIcap200 = null;</span>
+<span class="fc" id="L109">  private String keyIcap204 = null;</span>
+<span class="fc" id="L110">  private String subStringFromKeyIcap204 = null;</span>
+<span class="fc" id="L111">  private long maxSize = Integer.MAX_VALUE;</span>
+<span class="fc" id="L112">  private int timeout = DEFAULT_TIMEOUT;</span>
+<span class="fc" id="L113">  private int stdPreviewSize = -1;</span>
+
+  // Accessibe data
+<span class="fc" id="L116">  private Map&lt;String, String&gt; finalResult = null;</span>
+
+  // Internal data
+  private Socket client;
+  private OutputStream out;
+  InputStream in;
+  private int offset;
+
+  /**
+   * This creates the ICAP client without connecting immediately to the ICAP
+   * server. When the ICAP client will connect, it will ask for the preview
+   * size to the ICAP Server.
+   *
+   * @param serverIP The IP address to connect to.
+   * @param port The port in the host to use.
+   * @param icapService The service to use (fx &quot;avscan&quot;).
+   */
+  public IcapClient(final String serverIP, final int port,
+                    final String icapService) {
+<span class="fc" id="L135">    this(serverIP, port, icapService, -1);</span>
+<span class="fc" id="L136">  }</span>
+
+  /**
+   * This creates the ICAP client without connecting immediately to the ICAP
+   * server. When the ICAP client will connect, it will not ask for the preview
+   * size to the ICAP Server but uses the default specified value.
+   *
+   * @param serverIP The IP address to connect to.
+   * @param port The port in the host to use.
+   * @param icapService The service to use (fx &quot;avscan&quot;).
+   * @param previewSize Amount of bytes to  send as preview.
+   */
+  public IcapClient(final String serverIP, final int port,
+<span class="fc" id="L149">                    final String icapService, final int previewSize) {</span>
+<span class="fc bfc" id="L150" title="All 4 branches covered.">    if (icapService == null || icapService.trim().isEmpty()) {</span>
+<span class="fc" id="L151">      throw new IllegalArgumentException(&quot;IcapService must not be empty&quot;);</span>
+    }
+<span class="fc" id="L153">    this.icapService = icapService;</span>
+<span class="fc bfc" id="L154" title="All 4 branches covered.">    if (serverIP == null || serverIP.trim().isEmpty()) {</span>
+<span class="fc" id="L155">      throw new IllegalArgumentException(&quot;Server IP must not be empty&quot;);</span>
+    }
+<span class="fc" id="L157">    this.serverIP = serverIP;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">    if (port &lt;= 0) {</span>
+<span class="fc" id="L159">      this.port = DEFAULT_ICAP_PORT;</span>
+    } else {
+<span class="fc" id="L161">      this.port = port;</span>
+    }
+<span class="fc" id="L163">    this.setPreviewSize = previewSize;</span>
+<span class="fc" id="L164">    this.stdPreviewSize = Math.max(0, previewSize);</span>
+<span class="fc" id="L165">  }</span>
+
+  /**
+   * Try to connect to the server and if the preview size is not specified,
+   * it will also resolve the options of the ICAP server.&lt;/br&gt;
+   *
+   * If the client is still connected, it will first disconnect before
+   * reconnecting to the ICAP Server.&lt;/br&gt;
+   *
+   * Note that every attempts of connection will retry to issue an OPTIONS
+   * request if necessary (if preview size is not set to a fixed value already).
+   *
+   * @throws IcapException if an issue occurs during the connection or
+   *     response (the connection is already closed)
+   */
+  public IcapClient connect() throws IcapException {
+<span class="fc bfc" id="L181" title="All 2 branches covered.">    if (finalResult != null) {</span>
+<span class="fc" id="L182">      finalResult.clear();</span>
+<span class="fc" id="L183">      finalResult = null;</span>
+    }
+<span class="fc bfc" id="L185" title="All 2 branches covered.">    if (client != null) {</span>
+<span class="fc" id="L186">      close();</span>
+    }
+<span class="fc" id="L188">    logger</span>
+<span class="fc" id="L189">        .debug(&quot;Try connect to {}:{} service {}&quot;, serverIP, port, icapService);</span>
+    try {
+      // Initialize connection
+<span class="fc" id="L192">      client = new Socket(serverIP, port);</span>
+<span class="fc" id="L193">      client.setReuseAddress(true);</span>
+<span class="fc" id="L194">      client.setKeepAlive(true);</span>
+<span class="fc" id="L195">      client.setSoTimeout(timeout);</span>
+<span class="fc" id="L196">      client.setTcpNoDelay(false);</span>
+      // Opening out stream
+<span class="fc" id="L198">      out = client.getOutputStream();</span>
+      // Opening in stream
+<span class="fc" id="L200">      in = client.getInputStream();</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">      if (setPreviewSize &lt; 0) {</span>
+<span class="fc" id="L202">        getFromServerPreviewSize();</span>
+      }
+<span class="fc" id="L204">      logger.debug(&quot;Connected with Preview Size = {}&quot;, stdPreviewSize);</span>
+<span class="fc" id="L205">      return this;</span>
+<span class="nc" id="L206">    } catch (SocketTimeoutException e) {</span>
+<span class="nc" id="L207">      close();</span>
+<span class="nc" id="L208">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
+<span class="nc" id="L209">                   e.getMessage());</span>
+<span class="nc" id="L210">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
+                              IcapError.ICAP_TIMEOUT_ERROR);
+<span class="fc" id="L212">    } catch (ConnectException e) {</span>
+<span class="fc" id="L213">      close();</span>
+<span class="fc" id="L214">      logger.error(&quot;Could not connect to server {}:{} since {}&quot;, serverIP, port,</span>
+<span class="fc" id="L215">                   e.getMessage());</span>
+<span class="fc" id="L216">      throw new IcapException(&quot;Could not connect with the server&quot;, e,</span>
+                              IcapError.ICAP_CANT_CONNECT);
+<span class="nc" id="L218">    } catch (IOException e) {</span>
+<span class="nc" id="L219">      close();</span>
+<span class="nc" id="L220">      logger.error(&quot;Could not connect to server {}:{} since {}&quot;, serverIP, port,</span>
+<span class="nc" id="L221">                   e.getMessage());</span>
+<span class="nc" id="L222">      throw new IcapException(&quot;Could not connect with the server&quot;, e,</span>
+                              IcapError.ICAP_NETWORK_ERROR);
+<span class="fc" id="L224">    } catch (IcapException e) {</span>
+<span class="fc" id="L225">      close();</span>
+<span class="fc" id="L226">      throw e;</span>
+    }
+  }
+
+  /**
+   * Get the Preview Size from the SERVER using ICAP OPTIONS command
+   *
+   * @throws IcapException
+   */
+  private void getFromServerPreviewSize() throws IcapException {
+    // Check the preview size from the ICAP Server response to OPTIONS
+<span class="fc" id="L237">    String parseMe = getOptions();</span>
+<span class="fc" id="L238">    finalResult = parseHeader(parseMe);</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">    if (checkAgainstIcapHeader(finalResult, STATUS_CODE, &quot;200&quot;, false)) {</span>
+<span class="fc" id="L240">      String tempString = finalResult.get(PREVIEW);</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">      if (tempString != null) {</span>
+<span class="fc" id="L242">        stdPreviewSize = Integer.parseInt(tempString);</span>
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (stdPreviewSize &lt; 0) {</span>
+<span class="nc" id="L244">          stdPreviewSize = 0;</span>
+        }
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        if (!checkAgainstIcapHeader(finalResult, keyIcapPreview,</span>
+                                    subStringFromKeyIcapPreview, true)) {
+<span class="fc" id="L248">          close();</span>
+<span class="fc" id="L249">          logger.error(&quot;Could not validate preview from server&quot;);</span>
+<span class="fc" id="L250">          throw new IcapException(&quot;Could not validate preview from server&quot;,</span>
+                                  IcapError.ICAP_SERVER_MISSING_INFO);
+        }
+      } else {
+<span class="fc" id="L254">        close();</span>
+<span class="fc" id="L255">        logger.error(&quot;Could not get preview size from server&quot;);</span>
+<span class="fc" id="L256">        throw new IcapException(&quot;Could not get preview size from server&quot;,</span>
+                                IcapError.ICAP_SERVER_MISSING_INFO);
+      }
+<span class="fc" id="L259">    } else {</span>
+<span class="fc" id="L260">      close();</span>
+<span class="fc" id="L261">      logger</span>
+<span class="fc" id="L262">          .error(&quot;Could not get options from server {}:{} service {}&quot;, serverIP,</span>
+<span class="fc" id="L263">                 port, icapService);</span>
+<span class="fc" id="L264">      throw new IcapException(&quot;Could not get options from server&quot;,</span>
+                              IcapError.ICAP_SERVER_MISSING_INFO);
+    }
+<span class="fc" id="L267">  }</span>
+
+  @Override
+  public void close() {
+<span class="fc bfc" id="L271" title="All 2 branches covered.">    if (client != null) {</span>
+      try {
+<span class="fc" id="L273">        client.close();</span>
+<span class="nc" id="L274">      } catch (IOException ignored) {</span>
+        // Nothing
+<span class="fc" id="L276">      }</span>
+<span class="fc" id="L277">      client = null;</span>
+    }
+<span class="fc bfc" id="L279" title="All 2 branches covered.">    if (in != null) {</span>
+      try {
+<span class="fc" id="L281">        in.close();</span>
+<span class="nc" id="L282">      } catch (IOException ignored) {</span>
+        // Nothing
+<span class="fc" id="L284">      }</span>
+<span class="fc" id="L285">      in = null;</span>
+    }
+<span class="fc bfc" id="L287" title="All 2 branches covered.">    if (out != null) {</span>
+      try {
+<span class="fc" id="L289">        out.close();</span>
+<span class="nc" id="L290">      } catch (IOException ignored) {</span>
+        // Nothing
+<span class="fc" id="L292">      }</span>
+<span class="fc" id="L293">      out = null;</span>
+    }
+<span class="fc" id="L295">  }</span>
+
+  /**
+   * Given a file path, it will send the file to the server and return true,
+   * if the server accepts the file. Visa-versa, false if the server rejects
+   * it.&lt;/br&gt;
+   *
+   * Note that if the client is not connected, it will first call connect().
+   *
+   * @param filename Relative or absolute file path to a file. If filename is
+   *     EICARTEST, then a build on the fly EICAR test file is sent.
+   *
+   * @return Returns true when no infection is found.
+   *
+   * @throws IcapException if an error occurs (network, file reading,
+   *     bad headers)
+   */
+  public boolean scanFile(final String filename) throws IcapException {
+<span class="pc bpc" id="L313" title="1 of 4 branches missed.">    if (filename == null || filename.trim().isEmpty()) {</span>
+<span class="fc" id="L314">      throw new IllegalArgumentException(&quot;Filename must not be empty&quot;);</span>
+    }
+<span class="fc bfc" id="L316" title="All 2 branches covered.">    if (client == null) {</span>
+<span class="fc" id="L317">      connect();</span>
+    }
+<span class="fc bfc" id="L319" title="All 2 branches covered.">    if (finalResult != null) {</span>
+<span class="fc" id="L320">      finalResult.clear();</span>
+<span class="fc" id="L321">      finalResult = null;</span>
+    }
+<span class="fc" id="L323">    String originalFilename = filename;</span>
+<span class="fc" id="L324">    InputStream inputStream = null;</span>
+    long length;
+<span class="fc bfc" id="L326" title="All 2 branches covered.">    if (EICARTEST.equals(filename)) {</span>
+      // Special file to test from EICAR Test file
+<span class="fc" id="L328">      final ClassLoader classLoader = IcapClient.class.getClassLoader();</span>
+<span class="fc" id="L329">      final File fileSrc1 =</span>
+<span class="fc" id="L330">          new File(classLoader.getResource(&quot;eicar.com-part1.txt&quot;).getFile());</span>
+<span class="fc" id="L331">      final File fileSrc2 =</span>
+<span class="fc" id="L332">          new File(classLoader.getResource(&quot;eicar.com-part2.txt&quot;).getFile());</span>
+<span class="pc bpc" id="L333" title="2 of 4 branches missed.">      if (fileSrc1.exists() &amp;&amp; fileSrc2.exists()) {</span>
+        try {
+<span class="fc" id="L335">          final byte[] array1 = Files.toByteArray(fileSrc1);</span>
+<span class="fc" id="L336">          final byte[] array2 = Files.toByteArray(fileSrc2);</span>
+<span class="fc" id="L337">          final byte[] array =</span>
+<span class="fc" id="L338">              Arrays.copyOf(array1, array1.length + array2.length);</span>
+<span class="fc" id="L339">          System.arraycopy(array2, 0, array, array1.length, array2.length);</span>
+<span class="fc" id="L340">          inputStream = new ByteArrayInputStream(array);</span>
+<span class="fc" id="L341">          length = array.length;</span>
+<span class="nc" id="L342">        } catch (IOException e) {</span>
+<span class="nc" id="L343">          logger.error(&quot;File EICAR TEST does not exist&quot;, e);</span>
+<span class="nc" id="L344">          throw new IcapException(&quot;File EICAR TEST cannot be found&quot;,</span>
+                                  IcapError.ICAP_ARGUMENT_ERROR);
+<span class="fc" id="L346">        }</span>
+      } else {
+<span class="nc" id="L348">        logger.error(&quot;File EICAR TEST does not exist&quot;);</span>
+<span class="nc" id="L349">        throw new IcapException(&quot;File EICAR TEST cannot be found&quot;,</span>
+                                IcapError.ICAP_ARGUMENT_ERROR);
+      }
+<span class="fc" id="L352">    } else {</span>
+<span class="fc" id="L353">      File file = new File(filename);</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">      if (!file.canRead()) {</span>
+<span class="fc" id="L355">        logger.error(&quot;File does not exist: {}&quot;, file.getAbsolutePath());</span>
+<span class="fc" id="L356">        throw new IcapException(</span>
+<span class="fc" id="L357">            &quot;File cannot be found: &quot; + file.getAbsolutePath(),</span>
+            IcapError.ICAP_ARGUMENT_ERROR);
+      }
+<span class="fc" id="L360">      length = file.length();</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">      if (length &gt; maxSize) {</span>
+<span class="fc" id="L362">        logger.error(&quot;File size {} exceed limit of {}: {}&quot;, length, maxSize,</span>
+<span class="fc" id="L363">                     file.getAbsolutePath());</span>
+<span class="fc" id="L364">        throw new IcapException(</span>
+<span class="fc" id="L365">            &quot;File exceed limit size: &quot; + file.getAbsolutePath(),</span>
+            IcapError.ICAP_FILE_LENGTH_ERROR);
+      }
+      try {
+<span class="fc" id="L369">        inputStream = new FileInputStream(file);</span>
+<span class="nc" id="L370">      } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L371">        logger.error(&quot;Could not find file {} since {}&quot;, originalFilename,</span>
+<span class="nc" id="L372">                     e.getMessage());</span>
+<span class="nc" id="L373">        throw new IcapException(&quot;File cannot be found: &quot; + originalFilename, e,</span>
+                                IcapError.ICAP_ARGUMENT_ERROR);
+<span class="fc" id="L375">      }</span>
+    }
+    try {
+<span class="fc" id="L378">      return scanFile(originalFilename, inputStream, length);</span>
+    } finally {
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">      if (inputStream != null) {</span>
+        try {
+<span class="fc" id="L382">          inputStream.close();</span>
+<span class="nc" id="L383">        } catch (IOException ignored) {</span>
+          // Nothing
+<span class="fc" id="L385">        }</span>
+      }
+<span class="fc" id="L387">      close();</span>
+    }
+  }
+
+  /**
+   * @return the Server IP
+   */
+  public String getServerIP() {
+<span class="fc" id="L395">    return serverIP;</span>
+  }
+
+  /**
+   * @return the port
+   */
+  public int getPort() {
+<span class="fc" id="L402">    return port;</span>
+  }
+
+  /**
+   * @return the ICAP service
+   */
+  public String getIcapService() {
+<span class="fc" id="L409">    return icapService;</span>
+  }
+
+  /**
+   * @return the current Preview size
+   */
+  public int getPreviewSize() {
+<span class="fc" id="L416">    return stdPreviewSize;</span>
+  }
+
+  /**
+   * @param previewSize the receive length to set
+   *
+   * @return This
+   */
+  public IcapClient setPreviewSize(final int previewSize) {
+<span class="fc bfc" id="L425" title="All 2 branches covered.">    if (previewSize &lt; 0) {</span>
+<span class="fc" id="L426">      logger.error(INCOMPATIBLE_ARGUMENT);</span>
+<span class="fc" id="L427">      throw new IllegalArgumentException(&quot;Preview cannot be 0 or positive&quot;);</span>
+    }
+<span class="fc" id="L429">    this.stdPreviewSize = previewSize;</span>
+<span class="fc" id="L430">    return this;</span>
+  }
+
+  /**
+   * @return the current Receive length
+   */
+  public int getReceiveLength() {
+<span class="fc" id="L437">    return receiveLength;</span>
+  }
+
+  /**
+   * @param receiveLength the receive length to set
+   *
+   * @return This
+   */
+  public IcapClient setReceiveLength(final int receiveLength) {
+<span class="fc bfc" id="L446" title="All 2 branches covered.">    if (receiveLength &lt; MINIMAL_SIZE) {</span>
+<span class="fc" id="L447">      logger.error(INCOMPATIBLE_ARGUMENT);</span>
+<span class="fc" id="L448">      throw new IllegalArgumentException(</span>
+          &quot;Receive length cannot be less than &quot; + MINIMAL_SIZE);
+    }
+<span class="fc" id="L451">    this.receiveLength = receiveLength;</span>
+<span class="fc" id="L452">    return this;</span>
+  }
+
+  /**
+   * @return the current Send length
+   */
+  public int getSendLength() {
+<span class="fc" id="L459">    return sendLength;</span>
+  }
+
+  /**
+   * @param sendLength the send length to set
+   *
+   * @return This
+   */
+  public IcapClient setSendLength(final int sendLength) {
+<span class="fc bfc" id="L468" title="All 2 branches covered.">    if (sendLength &lt; MINIMAL_SIZE) {</span>
+<span class="fc" id="L469">      logger.error(INCOMPATIBLE_ARGUMENT);</span>
+<span class="fc" id="L470">      throw new IllegalArgumentException(</span>
+          &quot;Send length cannot be less than &quot; + MINIMAL_SIZE);
+    }
+<span class="fc" id="L473">    this.sendLength = sendLength;</span>
+<span class="fc" id="L474">    return this;</span>
+  }
+
+  /**
+   * @return the current max file size (default being Integer.MAX_VALUE)
+   */
+  public long getMaxSize() {
+<span class="fc" id="L481">    return maxSize;</span>
+  }
+
+  /**
+   * @param maxSize the maximum file size to set
+   *
+   * @return This
+   */
+  public IcapClient setMaxSize(final long maxSize) {
+<span class="fc bfc" id="L490" title="All 2 branches covered.">    if (maxSize &lt; MINIMAL_SIZE) {</span>
+<span class="fc" id="L491">      logger.error(INCOMPATIBLE_ARGUMENT);</span>
+<span class="fc" id="L492">      throw new IllegalArgumentException(</span>
+          &quot;Maximum file size length cannot be less than &quot; + MINIMAL_SIZE);
+    }
+<span class="fc" id="L495">    this.maxSize = maxSize;</span>
+<span class="fc" id="L496">    return this;</span>
+  }
+
+  /**
+   * @return the current time out for connection
+   */
+  public long getTimeout() {
+<span class="fc" id="L503">    return timeout;</span>
+  }
+
+  /**
+   * @param timeout the timeout to use on connection
+   *
+   * @return This
+   */
+  public IcapClient setTimeout(final int timeout) {
+<span class="fc" id="L512">    this.timeout = timeout;</span>
+<span class="fc" id="L513">    return this;</span>
+  }
+
+  /**
+   * @return the current key in ICAP headers to find with 200 status in PREVIEW
+   *     (or null if none)
+   */
+  public String getKeyIcapPreview() {
+<span class="fc" id="L521">    return keyIcapPreview;</span>
+  }
+
+  /**
+   * @param keyIcapPreview the key in ICAP headers to find with 200 status in
+   *     PREVIEW (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setKeyIcapPreview(final String keyIcapPreview) {
+<span class="fc bfc" id="L531" title="All 4 branches covered.">    if (keyIcapPreview != null &amp;&amp; keyIcapPreview.isEmpty()) {</span>
+<span class="fc" id="L532">      this.keyIcapPreview = null;</span>
+    } else {
+<span class="fc" id="L534">      this.keyIcapPreview = keyIcapPreview;</span>
+    }
+<span class="fc" id="L536">    return this;</span>
+  }
+
+  /**
+   * @return the current subString to find in key ICAP header with 200 status
+   *     in PREVIEW (or null if none)
+   */
+  public String getSubStringFromKeyIcapPreview() {
+<span class="fc" id="L544">    return subStringFromKeyIcapPreview;</span>
+  }
+
+  /**
+   * @param subStringFromKeyIcapPreview the subString to find in key ICAP header
+   *     with 200 status in PREVIEW (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setSubStringFromKeyIcapPreview(
+      final String subStringFromKeyIcapPreview) {
+<span class="fc bfc" id="L555" title="All 2 branches covered.">    if (subStringFromKeyIcapPreview != null &amp;&amp;</span>
+<span class="fc bfc" id="L556" title="All 2 branches covered.">        subStringFromKeyIcapPreview.isEmpty()) {</span>
+<span class="fc" id="L557">      this.subStringFromKeyIcapPreview = null;</span>
+    } else {
+<span class="fc" id="L559">      this.subStringFromKeyIcapPreview = subStringFromKeyIcapPreview;</span>
+    }
+<span class="fc" id="L561">    return this;</span>
+  }
+
+  /**
+   * @return the current subString to find in Http with 200 status
+   *     (or null if none)
+   */
+  public String getSubstringHttpStatus200() {
+<span class="fc" id="L569">    return substringHttpStatus200;</span>
+  }
+
+  /**
+   * @param substringHttpStatus200 the subString to find in Http with 200 status
+   *     (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setSubstringHttpStatus200(
+      final String substringHttpStatus200) {
+<span class="fc bfc" id="L580" title="All 4 branches covered.">    if (substringHttpStatus200 != null &amp;&amp; substringHttpStatus200.isEmpty()) {</span>
+<span class="fc" id="L581">      this.substringHttpStatus200 = null;</span>
+    } else {
+<span class="fc" id="L583">      this.substringHttpStatus200 = substringHttpStatus200;</span>
+    }
+<span class="fc" id="L585">    return this;</span>
+  }
+
+  /**
+   * @return the current key in ICAP headers to find with 200 status
+   *     (or null if none)
+   */
+  public String getKeyIcap200() {
+<span class="fc" id="L593">    return keyIcap200;</span>
+  }
+
+  /**
+   * @param keyIcap200 the key in ICAP headers to find with 200 status
+   *     (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setKeyIcap200(final String keyIcap200) {
+<span class="fc bfc" id="L603" title="All 4 branches covered.">    if (keyIcap200 != null &amp;&amp; keyIcap200.isEmpty()) {</span>
+<span class="fc" id="L604">      this.keyIcap200 = null;</span>
+    } else {
+<span class="fc" id="L606">      this.keyIcap200 = keyIcap200;</span>
+    }
+<span class="fc" id="L608">    return this;</span>
+  }
+
+  /**
+   * @return the current subString to find in key ICAP header with 200 status
+   *     (or null if none)
+   */
+  public String getSubStringFromKeyIcap200() {
+<span class="fc" id="L616">    return subStringFromKeyIcap200;</span>
+  }
+
+  /**
+   * @param subStringFromKeyIcap200 the subString to find in key ICAP header with 200 status
+   *     (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setSubStringFromKeyIcap200(
+      final String subStringFromKeyIcap200) {
+<span class="fc bfc" id="L627" title="All 4 branches covered.">    if (subStringFromKeyIcap200 != null &amp;&amp; subStringFromKeyIcap200.isEmpty()) {</span>
+<span class="fc" id="L628">      this.subStringFromKeyIcap200 = null;</span>
+    } else {
+<span class="fc" id="L630">      this.subStringFromKeyIcap200 = subStringFromKeyIcap200;</span>
+    }
+<span class="fc" id="L632">    return this;</span>
+  }
+
+  /**
+   * @return the current key in ICAP headers to find with 204 status
+   *     (or null if none)
+   */
+  public String getKeyIcap204() {
+<span class="fc" id="L640">    return keyIcap204;</span>
+  }
+
+  /**
+   * @param keyIcap204 the key in ICAP headers to find with 204 status
+   *     (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setKeyIcap204(final String keyIcap204) {
+<span class="fc bfc" id="L650" title="All 4 branches covered.">    if (keyIcap204 != null &amp;&amp; keyIcap204.isEmpty()) {</span>
+<span class="fc" id="L651">      this.keyIcap204 = null;</span>
+    } else {
+<span class="fc" id="L653">      this.keyIcap204 = keyIcap204;</span>
+    }
+<span class="fc" id="L655">    return this;</span>
+  }
+
+  /**
+   * @return the current subString to find in key ICAP header with 204 status
+   *     (or null if none)
+   */
+  public String getSubStringFromKeyIcap204() {
+<span class="fc" id="L663">    return subStringFromKeyIcap204;</span>
+  }
+
+  /**
+   * @param subStringFromKeyIcap204 the subString to find in key ICAP header with 204 status
+   *     (or null if none)
+   *
+   * @return This
+   */
+  public IcapClient setSubStringFromKeyIcap204(
+      final String subStringFromKeyIcap204) {
+<span class="fc bfc" id="L674" title="All 4 branches covered.">    if (subStringFromKeyIcap204 != null &amp;&amp; subStringFromKeyIcap204.isEmpty()) {</span>
+<span class="fc" id="L675">      this.subStringFromKeyIcap204 = null;</span>
+    } else {
+<span class="fc" id="L677">      this.subStringFromKeyIcap204 = subStringFromKeyIcap204;</span>
+    }
+<span class="fc" id="L679">    return this;</span>
+  }
+
+  /**
+   * @return the current map of result (null if none)
+   */
+  public Map&lt;String, String&gt; getFinalResult() {
+<span class="fc" id="L686">    return finalResult;</span>
+  }
+
+  /**
+   * Automatically asks for the servers available options and returns the raw
+   * response as a String.
+   *
+   * @return String of the servers response
+   *
+   * @throws IcapException if an error occurs (network, bad headers)
+   */
+  private String getOptions() throws IcapException {
+    // Send OPTIONS header and receive response
+    // Sending
+<span class="fc" id="L700">    StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L701">    addIcapUri(builder, OPTIONS);</span>
+<span class="fc" id="L702">    String requestHeader =</span>
+<span class="fc" id="L703">        builder.append(ENCAPSULATED_NULL_BODY).append(ICAP_TERMINATOR)</span>
+<span class="fc" id="L704">               .toString();</span>
+
+<span class="fc" id="L706">    sendString(requestHeader, true);</span>
+    // Receiving
+<span class="fc" id="L708">    return getHeaderIcap();</span>
+  }
+
+  /**
+   * Real method to send file for scanning through RESPMOD request
+   *
+   * @param originalFilename the original filename
+   * @param fileInStream the file inputStream
+   * @param fileSize the file size
+   *
+   * @return True if the scan is OK, else False if the scan is KO
+   *
+   * @throws IcapException if an error occurs (network, file reading,
+   *     bad headers)
+   */
+  private boolean scanFile(final String originalFilename,
+                           final InputStream fileInStream, final long fileSize)
+      throws IcapException {
+<span class="fc" id="L726">    int previewSize = sendIcapHttpScanRequest(originalFilename, fileSize);</span>
+
+    // Sending preview or, if smaller than previewSize, the whole file.
+<span class="fc bfc" id="L729" title="All 2 branches covered.">    if (previewSize == 0) {</span>
+      // Send an empty preview
+<span class="fc" id="L731">      logger.debug(&quot;Empty PREVIEW&quot;);</span>
+<span class="fc" id="L732">      StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L733">      builder.append(Integer.toHexString(previewSize)).append(TERMINATOR);</span>
+<span class="fc" id="L734">      builder.append(HTTP_TERMINATOR);</span>
+<span class="fc" id="L735">      sendString(builder.toString(), true);</span>
+<span class="fc" id="L736">    } else {</span>
+<span class="fc" id="L737">      logger.debug(&quot;PREVIEW of {}&quot;, previewSize);</span>
+<span class="fc" id="L738">      byte[] chunk = new byte[previewSize];</span>
+<span class="fc" id="L739">      int read = readChunk(fileInStream, chunk, previewSize);</span>
+<span class="pc bpc" id="L740" title="1 of 2 branches missed.">      if (read != previewSize) {</span>
+<span class="nc" id="L741">        logger.warn(&quot;Read file size {} is less than preview size {}&quot;, read,</span>
+<span class="nc" id="L742">                    previewSize);</span>
+      }
+      // Send the preview
+<span class="fc" id="L745">      StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L746">      builder.append(Integer.toHexString(read)).append(TERMINATOR);</span>
+<span class="fc" id="L747">      sendString(builder.toString());</span>
+<span class="fc" id="L748">      sendBytes(chunk, read);</span>
+<span class="fc" id="L749">      sendString(TERMINATOR);</span>
+<span class="fc bfc" id="L750" title="All 2 branches covered.">      if (fileSize &lt;= previewSize) {</span>
+<span class="fc" id="L751">        logger.debug(&quot;PREVIEW and COMPLETE&quot;);</span>
+<span class="fc" id="L752">        sendString(&quot;0; ieof&quot; + ICAP_TERMINATOR, true);</span>
+      } else {
+<span class="fc" id="L754">        logger.debug(&quot;PREVIEW but could send more&quot;);</span>
+<span class="fc" id="L755">        sendString(HTTP_TERMINATOR, true);</span>
+      }
+    }
+    // Parse the response: It might be &quot;100 continue&quot; as
+    // a &quot;go&quot; for the rest of the file or a stop there already.
+<span class="fc bfc" id="L760" title="All 2 branches covered.">    if (fileSize &gt; previewSize) {</span>
+<span class="fc" id="L761">      final int preview = checkPreview();</span>
+<span class="fc bfc" id="L762" title="All 2 branches covered.">      if (preview != 0) {</span>
+<span class="fc bfc" id="L763" title="All 2 branches covered.">        logger.debug(&quot;PREVIEW is enough and status {}&quot;, preview == 1);</span>
+<span class="fc bfc" id="L764" title="All 2 branches covered.">        return preview == 1;</span>
+      }
+<span class="fc" id="L766">      logger.debug(&quot;PREVIEW is not enough&quot;);</span>
+<span class="fc" id="L767">      sendNextFileChunks(fileInStream);</span>
+    }
+<span class="fc" id="L769">    return checkFinalResponse();</span>
+  }
+
+  /**
+   * Send the Icap Http Scan Reaquest
+   *
+   * @param originalFilename
+   * @param fileSize
+   *
+   * @return the preview size
+   *
+   * @throws IcapException
+   */
+  private int sendIcapHttpScanRequest(final String originalFilename,
+                                      final long fileSize)
+      throws IcapException {
+    // HTTP part of header
+    String resHeader;
+<span class="fc" id="L787">    StringBuilder builder = new StringBuilder(GET_REQUEST);</span>
+    try {
+<span class="fc" id="L789">      builder</span>
+<span class="fc" id="L790">          .append(URLEncoder.encode(originalFilename, WaarpStringUtils.UTF_8))</span>
+<span class="fc" id="L791">          .append(&quot; HTTP/1.1&quot;).append(TERMINATOR);</span>
+<span class="fc" id="L792">      builder.append(HOST_HEADER).append(serverIP).append(&quot;:&quot;).append(port)</span>
+<span class="fc" id="L793">             .append(ICAP_TERMINATOR);</span>
+<span class="fc" id="L794">      resHeader = builder.toString();</span>
+<span class="nc" id="L795">    } catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L796">      logger.error(&quot;Unsupported Encoding: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L797">      throw new IcapException(e.getMessage(), e, IcapError.ICAP_INTERNAL_ERROR);</span>
+<span class="fc" id="L798">    }</span>
+<span class="fc" id="L799">    builder.append(&quot;HTTP/1.1 200 OK&quot;).append(TERMINATOR);</span>
+<span class="fc" id="L800">    builder.append(&quot;Transfer-Encoding: chunked&quot;).append(TERMINATOR);</span>
+<span class="fc" id="L801">    builder.append(&quot;Content-Length: &quot;).append(fileSize).append(ICAP_TERMINATOR);</span>
+<span class="fc" id="L802">    String resBody = builder.toString();</span>
+
+<span class="fc" id="L804">    int previewSize = stdPreviewSize;</span>
+<span class="fc bfc" id="L805" title="All 2 branches covered.">    if (fileSize &lt; stdPreviewSize) {</span>
+<span class="fc" id="L806">      previewSize = (int) fileSize;</span>
+    }
+
+    // ICAP part of header
+<span class="fc" id="L810">    builder.setLength(0);</span>
+<span class="fc" id="L811">    addIcapUri(builder, RESPMOD);</span>
+<span class="fc" id="L812">    builder.append(PREVIEW).append(&quot;: &quot;).append(previewSize).append(TERMINATOR);</span>
+<span class="fc" id="L813">    builder.append(&quot;Encapsulated: req-hdr=0, res-hdr=&quot;)</span>
+<span class="fc" id="L814">           .append(resHeader.length()).append(&quot;, res-body=&quot;)</span>
+<span class="fc" id="L815">           .append(resBody.length()).append(ICAP_TERMINATOR);</span>
+<span class="fc" id="L816">    builder.append(resBody);</span>
+<span class="fc" id="L817">    String requestBuffer = builder.toString();</span>
+
+<span class="fc" id="L819">    sendString(requestBuffer);</span>
+<span class="fc" id="L820">    return previewSize;</span>
+  }
+
+  /**
+   * Common part of ICAP URI between OPTIONS and RESPMOD
+   *
+   * @param builder the empty StringBuilder
+   * @param method the method to associate with this ICAP URI
+   */
+  private void addIcapUri(final StringBuilder builder, final String method) {
+<span class="fc" id="L830">    builder.append(method).append(&quot; icap://&quot;).append(serverIP).append(&quot;/&quot;)</span>
+<span class="fc" id="L831">           .append(icapService).append(&quot; &quot;).append(VERSION).append(TERMINATOR);</span>
+<span class="fc" id="L832">    builder.append(HOST_HEADER).append(serverIP).append(TERMINATOR);</span>
+<span class="fc" id="L833">    builder.append(USER_AGENT_HEADER).append(USER_AGENT).append(TERMINATOR);</span>
+<span class="fc" id="L834">    builder.append(&quot;Allow: 204&quot;).append(TERMINATOR);</span>
+<span class="fc" id="L835">  }</span>
+
+  /**
+   * Check the preview for the file scanning request
+   *
+   * @return 1 or -1 if the antivirus already validated/invalidated
+   *     the file, or 0 if the next chunks are needed
+   *
+   * @throws IcapException if any error occurs (network, file reading,
+   *     bad headers)
+   */
+  private int checkPreview() throws IcapException {
+    final int status;
+<span class="fc" id="L848">    String parseMe = getHeaderIcap();</span>
+<span class="fc" id="L849">    finalResult = parseHeader(parseMe);</span>
+
+<span class="fc" id="L851">    String tempString = finalResult.get(STATUS_CODE);</span>
+<span class="pc bpc" id="L852" title="1 of 2 branches missed.">    if (tempString != null) {</span>
+<span class="fc" id="L853">      status = Integer.parseInt(tempString);</span>
+<span class="fc bfc" id="L854" title="All 5 branches covered.">      switch (status) {</span>
+        case 100:
+<span class="fc" id="L856">          logger.debug(&quot;Recv ICAP Preview Status Continue&quot;);</span>
+<span class="fc" id="L857">          return 0; //Continue transfer</span>
+        case 200:
+<span class="fc" id="L859">          logger.debug(&quot;Recv ICAP Preview Status Abort&quot;);</span>
+<span class="fc" id="L860">          return -1;</span>
+        case 204:
+<span class="fc" id="L862">          logger.debug(&quot;Recv ICAP Preview Status Accepted&quot;);</span>
+<span class="fc" id="L863">          return 1;</span>
+        case 404:
+<span class="fc" id="L865">          logger.error(&quot;404: ICAP Service not found&quot;);</span>
+<span class="fc" id="L866">          throw new IcapException(&quot;404: ICAP Service not found&quot;,</span>
+                                  IcapError.ICAP_SERVER_SERVICE_UNKNOWN);
+        default:
+<span class="fc" id="L869">          logger.error(&quot;Server returned unknown status code: {}&quot;, status);</span>
+<span class="fc" id="L870">          throw new IcapException(</span>
+              &quot;Server returned unknown status code: &quot; + status,
+              IcapError.ICAP_SERVER_UNKNOWN_CODE);
+      }
+    }
+<span class="nc" id="L875">    logger.error(&quot;Server returned unknown status code&quot;);</span>
+<span class="nc" id="L876">    throw new IcapException(&quot;Server returned unknown status code&quot;,</span>
+                            IcapError.ICAP_SERVER_UNKNOWN_CODE);
+  }
+
+  /**
+   * Check the final response for the file scanning request
+   *
+   * @return True if validated file, False if not
+   *
+   * @throws IcapException if any error occurs (network, file reading,
+   *     bad headers)
+   */
+  private boolean checkFinalResponse() throws IcapException {
+    final int status;
+<span class="fc" id="L890">    String parseMe = getHeaderIcap();</span>
+<span class="fc" id="L891">    finalResult = parseHeader(parseMe);</span>
+
+<span class="fc" id="L893">    String tempString = finalResult.get(STATUS_CODE);</span>
+<span class="pc bpc" id="L894" title="1 of 2 branches missed.">    if (tempString != null) {</span>
+<span class="fc" id="L895">      status = Integer.parseInt(tempString);</span>
+
+<span class="fc bfc" id="L897" title="All 2 branches covered.">      if (status == 204) {</span>
+        // Unmodified
+<span class="fc" id="L899">        logger.debug(&quot;Almost final status is {}&quot;, status);</span>
+<span class="fc" id="L900">        return checkAgainstIcapHeader(finalResult, keyIcap204,</span>
+                                      subStringFromKeyIcap204, true);
+      }
+
+<span class="fc bfc" id="L904" title="All 2 branches covered.">      if (status == 200) {</span>
+        // OK - The ICAP status is ok, but the encapsulated HTTP status might
+        // likely be different or another key in ICAP status
+<span class="fc" id="L907">        logger.debug(&quot;Almost final status is {}&quot;, status);</span>
+<span class="fc" id="L908">        boolean finalStatus = checkAgainstIcapHeader(finalResult, keyIcap200,</span>
+                                                     subStringFromKeyIcap200,
+                                                     false);
+<span class="fc bfc" id="L911" title="All 2 branches covered.">        if (substringHttpStatus200 != null &amp;&amp;</span>
+<span class="pc bpc" id="L912" title="1 of 2 branches missed.">            !substringHttpStatus200.isEmpty()) {</span>
+<span class="fc" id="L913">          parseMe = getHeaderHttp();</span>
+<span class="fc" id="L914">          logger.warn(&quot;{} contains {} = {}&quot;, parseMe, substringHttpStatus200,</span>
+<span class="fc" id="L915">                      parseMe.contains(substringHttpStatus200));</span>
+<span class="fc" id="L916">          finalStatus |= parseMe.contains(substringHttpStatus200);</span>
+        } else {
+<span class="pc bpc" id="L918" title="1 of 2 branches missed.">          if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L919">            getHeaderHttp();</span>
+          }
+        }
+<span class="fc" id="L922">        logger.debug(&quot;Final status with check {}&quot;, finalStatus);</span>
+<span class="fc" id="L923">        return finalStatus;</span>
+      }
+    }
+<span class="fc" id="L926">    logger.error(&quot;Unrecognized or no status code in response header&quot;);</span>
+<span class="fc" id="L927">    throw new IcapException(&quot;Unrecognized or no status code in response header&quot;,</span>
+                            IcapError.ICAP_SERVER_UNKNOWN_CODE);
+  }
+
+  /**
+   * @param responseMap the header map
+   * @param key the key to find out
+   * @param subValue the sub value to find in the value associated with the key
+   * @param defaultValue the default Value to return if key or subvalue are null
+   *
+   * @return True if the key exists and its value contains the subValue or
+   *     default value if key or subValue are null
+   */
+  private boolean checkAgainstIcapHeader(final Map&lt;String, String&gt; responseMap,
+                                         final String key,
+                                         final String subValue,
+                                         final boolean defaultValue) {
+<span class="pc bpc" id="L944" title="1 of 4 branches missed.">    if (key != null &amp;&amp; subValue != null) {</span>
+<span class="fc" id="L945">      String value = responseMap.get(key);</span>
+<span class="pc bpc" id="L946" title="1 of 4 branches missed.">      return value != null &amp;&amp; value.contains(subValue);</span>
+    }
+<span class="fc" id="L948">    return defaultValue;</span>
+  }
+
+  /**
+   * Send the next chunks for the file
+   *
+   * @param fileInStream the file inputStream to read from
+   *
+   * @throws IcapException if any error occurs (network, file reading,
+   *     bad headers)
+   */
+  private void sendNextFileChunks(final InputStream fileInStream)
+      throws IcapException {
+    // Sending remaining part of file
+<span class="fc" id="L962">    byte[] buffer = new byte[sendLength];</span>
+<span class="fc" id="L963">    int len = readChunk(fileInStream, buffer, sendLength);</span>
+<span class="fc bfc" id="L964" title="All 2 branches covered.">    while (len != -1) {</span>
+<span class="fc" id="L965">      sendString(Integer.toHexString(len) + TERMINATOR);</span>
+<span class="fc" id="L966">      sendBytes(buffer, len);</span>
+<span class="fc" id="L967">      sendString(TERMINATOR);</span>
+<span class="fc" id="L968">      len = readChunk(fileInStream, buffer, sendLength);</span>
+    }
+    // Ending file transfer
+<span class="fc" id="L971">    sendString(HTTP_TERMINATOR, true);</span>
+<span class="fc" id="L972">    logger.debug(&quot;End of chunks&quot;);</span>
+<span class="fc" id="L973">  }</span>
+
+  /**
+   * Read from inputChannel into the buffer the asked length at most
+   *
+   * @param fileInputStream the file inputStream to read from
+   * @param buffer the buffer to write bytes read
+   * @param length the maximum length to read
+   *
+   * @return -1 if no byte are available, else the size in bytes effectively
+   *     read
+   *
+   * @throws IcapException if an error while reading the file occurs
+   */
+  int readChunk(final InputStream fileInputStream, final byte[] buffer,
+                final int length) throws IcapException {
+<span class="fc bfc" id="L989" title="All 2 branches covered.">    if (buffer.length &lt; length) {</span>
+<span class="fc" id="L990">      logger.error(&quot;Buffer is too small {} for reading file per {}&quot;,</span>
+<span class="fc" id="L991">                   buffer.length, length);</span>
+<span class="fc" id="L992">      throw new IcapException(&quot;Buffer is too small for reading file&quot;,</span>
+                              IcapError.ICAP_INTERNAL_ERROR);
+    }
+<span class="fc" id="L995">    int sizeOut = 0;</span>
+<span class="fc" id="L996">    int toRead = length;</span>
+<span class="fc bfc" id="L997" title="All 2 branches covered.">    while (sizeOut &lt; length) {</span>
+      try {
+<span class="fc" id="L999">        final int read = fileInputStream.read(buffer, sizeOut, toRead);</span>
+<span class="fc bfc" id="L1000" title="All 2 branches covered.">        if (read &lt;= 0) {</span>
+<span class="fc" id="L1001">          break;</span>
+        }
+<span class="fc" id="L1003">        sizeOut += read;</span>
+<span class="fc" id="L1004">        toRead -= read;</span>
+<span class="nc" id="L1005">      } catch (final IOException e) {</span>
+<span class="nc" id="L1006">        logger.error(&quot;File cannot be read: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1007">        throw new IcapException(&quot;File cannot be read&quot;, e,</span>
+                                IcapError.ICAP_INTERNAL_ERROR);
+<span class="fc" id="L1009">      }</span>
+    }
+<span class="fc bfc" id="L1011" title="All 2 branches covered.">    if (sizeOut &lt;= 0) {</span>
+<span class="fc" id="L1012">      return -1;</span>
+    }
+<span class="fc" id="L1014">    return sizeOut;</span>
+  }
+
+  /**
+   * @return the header for Http part of Icap
+   *
+   * @throws IcapException for network errors
+   */
+  String getHeaderHttp() throws IcapException {
+<span class="fc" id="L1023">    final byte[] buffer = new byte[receiveLength];</span>
+    try {
+<span class="fc" id="L1025">      return getHeader(HTTP_TERMINATOR, buffer);</span>
+<span class="fc" id="L1026">    } catch (IcapException e) {</span>
+<span class="fc" id="L1027">      final String finalHeaders =</span>
+          new String(buffer, 0, offset, WaarpStringUtils.UTF8);
+<span class="pc bpc" id="L1029" title="1 of 3 branches missed.">      switch (e.getError()) {</span>
+        case ICAP_SERVER_HEADER_WITHOUT_TERMINATOR:
+          // Returns the buffer as is
+<span class="fc" id="L1032">          logger.debug(&quot;RECV HTTP Headers not ended\n{}&quot;, finalHeaders);</span>
+<span class="fc" id="L1033">          return finalHeaders;</span>
+        case ICAP_SERVER_HEADER_EXCEED_CAPACITY:
+          // Returns the buffer as is
+<span class="fc" id="L1036">          logger.debug(&quot;RECV HTTP Headers exceed capacity\n{}&quot;, finalHeaders);</span>
+<span class="fc" id="L1037">          return finalHeaders;</span>
+        default:
+          break;
+      }
+<span class="nc" id="L1041">      throw e;</span>
+    }
+  }
+
+  /**
+   * @return the header for Icap
+   *
+   * @throws IcapException if the terminator is not found or the buffer is
+   *     too small
+   */
+  String getHeaderIcap() throws IcapException {
+<span class="fc" id="L1052">    final byte[] buffer = new byte[receiveLength];</span>
+<span class="fc" id="L1053">    return getHeader(ICAP_TERMINATOR, buffer);</span>
+  }
+
+  /**
+   * Receive an expected ICAP or HTTP header as response of a request. The
+   * returned String should be parsed with parseHeader()
+   *
+   * @param terminator the terminator to use
+   *
+   * @return String of the raw response
+   *
+   * @throws IcapException if a network error is raised or if the header
+   *     is wrong
+   */
+  private String getHeader(final String terminator, final byte[] buffer)
+      throws IcapException {
+<span class="fc" id="L1069">    byte[] endOfHeader = terminator.getBytes(WaarpStringUtils.UTF8);</span>
+<span class="fc" id="L1070">    int[] endOfHeaderInt = new int[endOfHeader.length];</span>
+<span class="fc" id="L1071">    int[] marks = new int[endOfHeader.length];</span>
+<span class="fc bfc" id="L1072" title="All 2 branches covered.">    for (int i = 0; i &lt; endOfHeader.length; i++) {</span>
+<span class="fc" id="L1073">      endOfHeaderInt[i] = endOfHeader[i];</span>
+<span class="fc" id="L1074">      marks[i] = -1;</span>
+    }
+
+<span class="fc" id="L1077">    int reader = -1;</span>
+<span class="fc" id="L1078">    offset = 0;</span>
+    // &quot;in&quot; is read 1 by 1 to ensure we read only ICAP headers or HTTP headers
+    try {
+      // first part is to secure against DOS
+<span class="fc bfc" id="L1082" title="All 4 branches covered.">      while ((offset &lt; receiveLength) &amp;&amp; ((reader = in.read()) != -1)) {</span>
+<span class="fc" id="L1083">        marks[0] = marks[1];</span>
+<span class="fc" id="L1084">        marks[1] = marks[2];</span>
+<span class="fc" id="L1085">        marks[2] = marks[3];</span>
+<span class="fc bfc" id="L1086" title="All 2 branches covered.">        if (endOfHeader.length == 4) {</span>
+<span class="fc" id="L1087">          marks[3] = reader;</span>
+        } else {
+<span class="fc" id="L1089">          marks[3] = marks[4];</span>
+<span class="fc" id="L1090">          marks[4] = reader;</span>
+        }
+<span class="fc" id="L1092">        buffer[offset] = (byte) reader;</span>
+<span class="fc" id="L1093">        offset++;</span>
+        // 13 is the smallest possible message &quot;ICAP/1.0 xxx &quot;
+<span class="fc bfc" id="L1095" title="All 2 branches covered.">        if (offset &gt; endOfHeader.length + 13 &amp;&amp;</span>
+<span class="fc bfc" id="L1096" title="All 2 branches covered.">            Arrays.equals(endOfHeaderInt, marks)) {</span>
+<span class="fc" id="L1097">          final String finalHeaders =</span>
+              new String(buffer, 0, offset, WaarpStringUtils.UTF8);
+<span class="fc" id="L1099">          logger.debug(&quot;RECV {} Headers:{}\n{}&quot;,</span>
+<span class="fc bfc" id="L1100" title="All 2 branches covered.">                       terminator.length() == 4? &quot;ICAP&quot; : &quot;HTTP&quot;, offset,</span>
+                       finalHeaders);
+<span class="fc" id="L1102">          return finalHeaders;</span>
+        }
+      }
+<span class="nc" id="L1105">    } catch (SocketTimeoutException e) {</span>
+<span class="nc" id="L1106">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
+<span class="nc" id="L1107">                   e.getMessage());</span>
+<span class="nc" id="L1108">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
+                              IcapError.ICAP_TIMEOUT_ERROR);
+<span class="nc" id="L1110">    } catch (IOException e) {</span>
+<span class="nc" id="L1111">      logger.error(&quot;Response cannot be read: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L1112">      throw new IcapException(&quot;Response cannot be read&quot;, e,</span>
+                              IcapError.ICAP_NETWORK_ERROR);
+<span class="fc" id="L1114">    }</span>
+<span class="fc bfc" id="L1115" title="All 2 branches covered.">    if (reader == -1) {</span>
+<span class="fc" id="L1116">      logger.warn(&quot;Response is not complete while reading {}&quot;, offset);</span>
+<span class="fc" id="L1117">      throw new IcapException(</span>
+          &quot;Error in getHeader() method: response is not complete: &quot; + offset,
+          IcapError.ICAP_SERVER_HEADER_WITHOUT_TERMINATOR);
+    }
+<span class="fc" id="L1121">    logger.warn(&quot;Response cannot be read since size exceed maximum {}&quot;,</span>
+<span class="fc" id="L1122">                receiveLength);</span>
+<span class="fc" id="L1123">    throw new IcapException(</span>
+        &quot;Error in getHeader() method: received message too long&quot;,
+        IcapError.ICAP_SERVER_HEADER_EXCEED_CAPACITY);
+  }
+
+  /**
+   * Given a raw response header as a String, it will parse through it and return a HashMap of the result
+   */
+  private Map&lt;String, String&gt; parseHeader(final String response) {
+<span class="fc" id="L1132">    Map&lt;String, String&gt; headers = new HashMap&lt;String, String&gt;();</span>
+
+    /*
+     * SAMPLE:
+     * ICAP/1.0 204 Unmodified
+     * Server: C-ICAP/0.1.6
+     * Connection: keep-alive
+     * ISTag: CI0001-000-0978-6918203
+     */
+    // The status code is located between the first 2 whitespaces.
+    // Read status code
+<span class="fc" id="L1143">    int x = response.indexOf(' ');</span>
+<span class="fc" id="L1144">    int y = response.indexOf(' ', x + 2);</span>
+<span class="fc" id="L1145">    String statusCode = response.substring(x + 1, y);</span>
+<span class="fc" id="L1146">    headers.put(STATUS_CODE, statusCode);</span>
+
+    // Each line in the sample is ended with &quot;\r\n&quot;.
+    // When (i+2==response.length()) The end of the header have been reached.
+    // The +=2 is added to skip the &quot;\r\n&quot;.
+    // Read headers
+<span class="fc" id="L1152">    int i = response.indexOf(TERMINATOR, y);</span>
+<span class="fc" id="L1153">    i += 2;</span>
+<span class="pc bpc" id="L1154" title="1 of 4 branches missed.">    while (i + 2 &lt; response.length() &amp;&amp; response.substring(i).contains(&quot;:&quot;)) {</span>
+<span class="fc" id="L1155">      int n = response.indexOf(':', i);</span>
+<span class="fc" id="L1156">      String key = response.substring(i, n).trim();</span>
+
+<span class="fc" id="L1158">      n += 2;</span>
+<span class="fc" id="L1159">      i = response.indexOf(TERMINATOR, n);</span>
+<span class="fc" id="L1160">      String value = response.substring(n, i).trim();</span>
+
+<span class="fc" id="L1162">      headers.put(key, value);</span>
+<span class="fc" id="L1163">      i += 2;</span>
+<span class="fc" id="L1164">    }</span>
+<span class="fc" id="L1165">    logger.debug(&quot;RECV ICAP Headers:\n{}&quot;, headers);</span>
+<span class="fc" id="L1166">    return headers;</span>
+  }
+
+  /**
+   * Sends a String through the socket connection. Used for sending ICAP/HTTP headers.
+   *
+   * @param requestHeader to send
+   *
+   * @throws IcapException if a network error is raised
+   */
+  private void sendString(final String requestHeader) throws IcapException {
+<span class="fc" id="L1177">    sendString(requestHeader, false);</span>
+<span class="fc" id="L1178">  }</span>
+
+  /**
+   * Sends a String through the socket connection. Used for sending ICAP/HTTP headers.
+   *
+   * @param requestHeader to send
+   * @param withFlush if flush is necessary
+   *
+   * @throws IcapException if a network error is raised
+   */
+  private void sendString(final String requestHeader, final boolean withFlush)
+      throws IcapException {
+    try {
+<span class="fc" id="L1191">      out.write(requestHeader.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc bfc" id="L1192" title="All 2 branches covered.">      if (withFlush) {</span>
+<span class="fc" id="L1193">        out.flush();</span>
+      }
+<span class="fc" id="L1195">      logger.trace(&quot;SEND Request:\n{}&quot;, requestHeader);</span>
+<span class="nc" id="L1196">    } catch (SocketTimeoutException e) {</span>
+<span class="nc" id="L1197">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
+<span class="nc" id="L1198">                   e.getMessage());</span>
+<span class="nc" id="L1199">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
+                              IcapError.ICAP_TIMEOUT_ERROR);
+<span class="nc" id="L1201">    } catch (IOException e) {</span>
+<span class="nc" id="L1202">      logger.error(&quot;Client cannot communicate with ICAP Server: {}&quot;,</span>
+<span class="nc" id="L1203">                   e.getMessage());</span>
+<span class="nc" id="L1204">      throw new IcapException(&quot;Client cannot communicate with ICAP Server&quot;, e,</span>
+                              IcapError.ICAP_NETWORK_ERROR);
+<span class="fc" id="L1206">    }</span>
+<span class="fc" id="L1207">  }</span>
+
+  /**
+   * Sends bytes of data from a byte-array through the socket connection.
+   *
+   * @param chunk The byte-array to send
+   *
+   * @throws IcapException if a network error is raised
+   */
+  private void sendBytes(final byte[] chunk, final int length)
+      throws IcapException {
+    try {
+<span class="fc" id="L1219">      out.write(chunk, 0, length);</span>
+<span class="fc" id="L1220">      logger.trace(&quot;SEND {} bytes&quot;, length);</span>
+<span class="nc" id="L1221">    } catch (SocketTimeoutException e) {</span>
+<span class="nc" id="L1222">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
+<span class="nc" id="L1223">                   e.getMessage());</span>
+<span class="nc" id="L1224">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
+                              IcapError.ICAP_TIMEOUT_ERROR);
+<span class="nc" id="L1226">    } catch (IOException e) {</span>
+<span class="nc" id="L1227">      logger.error(&quot;Client cannot communicate with ICAP Server: {}&quot;,</span>
+<span class="nc" id="L1228">                   e.getMessage());</span>
+<span class="nc" id="L1229">      throw new IcapException(&quot;Writing to ICAP Server cannot be done&quot;, e,</span>
+                              IcapError.ICAP_NETWORK_ERROR);
+<span class="fc" id="L1231">    }</span>
+<span class="fc" id="L1232">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

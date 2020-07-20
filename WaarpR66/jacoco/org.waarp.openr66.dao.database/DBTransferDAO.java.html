@@ -231,32 +231,32 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
   @Override
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, int limit)
       throws DAOConnectionException {
-<span class="nc" id="L234">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
+<span class="fc" id="L234">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
     // Create the SQL query
-<span class="nc" id="L236">    final Object[] params = new Object[filters.size()];</span>
-<span class="nc" id="L237">    final StringBuilder query =</span>
-<span class="nc" id="L238">        new StringBuilder(prepareFindQuery(filters, params));</span>
+<span class="fc" id="L236">    final Object[] params = new Object[filters.size()];</span>
+<span class="fc" id="L237">    final StringBuilder query =</span>
+<span class="fc" id="L238">        new StringBuilder(prepareFindQuery(filters, params));</span>
     // Set LIMIT
-<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="nc" id="L241">      query.append(LIMIT2 + limit);</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="fc" id="L241">      query.append(LIMIT2 + limit);</span>
     }
     // Execute query
-<span class="nc" id="L244">    PreparedStatement stm = null;</span>
-<span class="nc" id="L245">    ResultSet res = null;</span>
+<span class="fc" id="L244">    PreparedStatement stm = null;</span>
+<span class="fc" id="L245">    ResultSet res = null;</span>
     try {
-<span class="nc" id="L247">      stm = connection.prepareStatement(query.toString());</span>
-<span class="nc" id="L248">      setParameters(stm, params);</span>
-<span class="nc" id="L249">      res = executeQuery(stm);</span>
-<span class="nc bnc" id="L250" title="All 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L251">        transfers.add(getFromResultSet(res));</span>
+<span class="fc" id="L247">      stm = connection.prepareStatement(query.toString());</span>
+<span class="fc" id="L248">      setParameters(stm, params);</span>
+<span class="fc" id="L249">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">      while (res.next()) {</span>
+<span class="fc" id="L251">        transfers.add(getFromResultSet(res));</span>
       }
 <span class="nc" id="L253">    } catch (final SQLException e) {</span>
 <span class="nc" id="L254">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="nc" id="L256">      closeResultSet(res);</span>
-<span class="nc" id="L257">      closeStatement(stm);</span>
+<span class="fc" id="L256">      closeResultSet(res);</span>
+<span class="fc" id="L257">      closeStatement(stm);</span>
     }
-<span class="nc" id="L259">    return transfers;</span>
+<span class="fc" id="L259">    return transfers;</span>
   }
 
   @Override
@@ -397,8 +397,8 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
 <span class="fc" id="L397">      stm = connection.prepareStatement(query.toString());</span>
 <span class="fc" id="L398">      setParameters(stm, params);</span>
 <span class="fc" id="L399">      res = executeQuery(stm);</span>
-<span class="pc bpc" id="L400" title="1 of 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L401">        transfers.add(getFromResultSet(res));</span>
+<span class="fc bfc" id="L400" title="All 2 branches covered.">      while (res.next()) {</span>
+<span class="fc" id="L401">        transfers.add(getFromResultSet(res));</span>
       }
 <span class="nc" id="L403">    } catch (final SQLException e) {</span>
 <span class="nc" id="L404">      throw new DAOConnectionException(e);</span>

@@ -23,17 +23,12 @@ import org.apache.commons.exec.CommandLine;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
-import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.R66Future;
-
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Transfer task:&lt;br&gt;
@@ -48,14 +43,36 @@ import java.util.Date;
  * -delay (delay or +delay)]
  * [-copyinfo] [-info information]&quot; &lt;br&gt;
  * &lt;br&gt;
- * INFO is the only one field that can contains blank character.&lt;br&gt;
+ * INFO is the only one field that can contains blank character and must be
+ * the last field.&lt;br&gt;
+ * &lt;br&gt;
+ * Transfer arguments:&lt;br&gt;
+ * &lt;br&gt;
+ * -to &lt;arg&gt;        Specify the requested Host&lt;br&gt;
+ * (-id &lt;arg&gt;|      Specify the id of transfer&lt;br&gt;
+ * (-file &lt;arg&gt;     Specify the file path to operate on&lt;br&gt;
+ * -rule &lt;arg&gt;))    Specify the Rule&lt;br&gt;
+ * [-block &lt;arg&gt;]   Specify the block size&lt;br&gt;
+ * [-nofollow]      Specify the transfer should not integrate a FOLLOW id&lt;br&gt;
+ * [-md5]           Specify the option to have a hash computed for the
+ * transfer&lt;br&gt;
+ * [-delay &lt;arg&gt;]   Specify the delay time as an epoch time or '+' a delay in ms&lt;br&gt;
+ * [-start &lt;arg&gt;]   Specify the start time as yyyyMMddHHmmss&lt;br&gt;
+ * [-copyinfo]      Specify to copy the original transfer information in
+ * front position back to the new transfer information (eventually in
+ * addition an added transfer information from -info option)&lt;br&gt;
+ * [-info &lt;arg&gt;)    Specify the transfer information (generally in last position)&lt;br&gt;
+ * [-nolog]         Specify to not log anything included database once the
+ * transfer is done&lt;br&gt;
+ * [-notlogWarn |   Specify to log final result as Info if OK&lt;br&gt;
+ * -logWarn]        Specify to log final result as Warn if OK&lt;br&gt;
  */
 public class TransferTask extends AbstractExecTask {
   /**
    * Internal Logger
    */
-<span class="fc" id="L57">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L58">      WaarpLoggerFactory.getLogger(TransferTask.class);</span>
+<span class="fc" id="L74">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L75">      WaarpLoggerFactory.getLogger(TransferTask.class);</span>
 
   /**
    * @param argRule
@@ -65,142 +82,88 @@ public class TransferTask extends AbstractExecTask {
    */
   public TransferTask(String argRule, int delay, String argTransfer,
                       R66Session session) {
-<span class="fc" id="L68">    super(TaskType.TRANSFER, delay, argRule, argTransfer, session);</span>
-<span class="fc" id="L69">  }</span>
+<span class="fc" id="L85">    super(TaskType.TRANSFER, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L86">  }</span>
 
   @Override
   public void run() {
-<span class="fc" id="L73">    logger.info(&quot;Transfer with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
+<span class="fc" id="L90">    logger.info(&quot;Transfer with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;,</span>
                 session);
-<span class="fc" id="L75">    String finalname = applyTransferSubstitutions(argRule);</span>
+<span class="fc" id="L92">    String finalname = applyTransferSubstitutions(argRule);</span>
 
-<span class="fc" id="L77">    finalname = finalname.replaceAll(&quot;#([A-Z]+)#&quot;, &quot;\\${$1}&quot;);</span>
-<span class="fc" id="L78">    final CommandLine commandLine = new CommandLine(&quot;dummy&quot;);</span>
-<span class="fc" id="L79">    commandLine.setSubstitutionMap(getSubstitutionMap());</span>
-<span class="fc" id="L80">    commandLine.addArguments(finalname, false);</span>
-<span class="fc" id="L81">    final String[] args = commandLine.getArguments();</span>
+<span class="fc" id="L94">    finalname = finalname.replaceAll(&quot;#([A-Z]+)#&quot;, &quot;\\${$1}&quot;);</span>
+<span class="fc" id="L95">    final CommandLine commandLine = new CommandLine(&quot;dummy&quot;);</span>
+<span class="fc" id="L96">    commandLine.setSubstitutionMap(getSubstitutionMap());</span>
+<span class="fc" id="L97">    commandLine.addArguments(finalname, false);</span>
+<span class="fc" id="L98">    final String[] args = commandLine.getArguments();</span>
 
-<span class="pc bpc" id="L83" title="1 of 2 branches missed.">    if (args.length &lt; 6) {</span>
-<span class="nc" id="L84">      futureCompletion.setFailure(</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    if (args.length &lt; 6) {</span>
+<span class="nc" id="L101">      futureCompletion.setFailure(</span>
           new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;));
-<span class="nc" id="L86">      return;</span>
+<span class="nc" id="L103">      return;</span>
     }
-<span class="fc" id="L88">    String filepath = null;</span>
-<span class="fc" id="L89">    String requested = null;</span>
-<span class="fc" id="L90">    String rule = null;</span>
-<span class="fc" id="L91">    StringBuilder information = null;</span>
-<span class="fc" id="L92">    String finalInformation = null;</span>
-<span class="fc" id="L93">    boolean isMD5 = false;</span>
-<span class="fc" id="L94">    int blocksize = Configuration.configuration.getBlockSize();</span>
-<span class="fc" id="L95">    Timestamp timestart = null;</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">    for (int i = 0; i &lt; args.length; i++) {</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">      if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L98">        i++;</span>
-<span class="fc" id="L99">        requested = args[i];</span>
-<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (Configuration.configuration.getAliases().containsKey(requested)) {</span>
-<span class="nc" id="L101">          requested = Configuration.configuration.getAliases().get(requested);</span>
+<span class="fc" id="L105">    TransferArgs transferArgs = TransferArgs.getParamsInternal(0, args, false);</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    if (transferArgs != null) {</span>
+<span class="fc" id="L107">      String copied = null;</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">      for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">        if (&quot;-copyinfo&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L110">          copied = argTransfer;</span>
+<span class="nc" id="L111">          break;</span>
         }
-<span class="fc bfc" id="L103" title="All 2 branches covered.">      } else if (&quot;-file&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L104">        i++;</span>
-<span class="fc" id="L105">        filepath = args[i];</span>
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">      } else if (&quot;-rule&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="fc" id="L107">        i++;</span>
-<span class="fc" id="L108">        rule = args[i];</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">      } else if (&quot;-copyinfo&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L110">        finalInformation = argTransfer;</span>
-<span class="nc bnc" id="L111" title="All 2 branches missed.">      } else if (&quot;-info&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L112">        i++;</span>
-<span class="nc" id="L113">        information = new StringBuilder(args[i]);</span>
-<span class="nc" id="L114">        i++;</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">        while (i &lt; args.length) {</span>
-<span class="nc" id="L116">          information.append(' ').append(args[i]);</span>
-<span class="nc" id="L117">          i++;</span>
-        }
-<span class="nc bnc" id="L119" title="All 2 branches missed.">      } else if (&quot;-md5&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L120">        isMD5 = true;</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">      } else if (&quot;-block&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L122">        i++;</span>
-<span class="nc" id="L123">        blocksize = Integer.parseInt(args[i]);</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (blocksize &lt; 100) {</span>
-<span class="nc" id="L125">          logger.warn(&quot;Block size is too small: &quot; + blocksize);</span>
-<span class="nc" id="L126">          blocksize = Configuration.configuration.getBlockSize();</span>
-        }
-<span class="nc bnc" id="L128" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L129">        i++;</span>
-<span class="nc" id="L130">        final SimpleDateFormat dateFormat =</span>
-            new SimpleDateFormat(&quot;yyyyMMddHHmmss&quot;);
-        Date date;
-        try {
-<span class="nc" id="L134">          date = dateFormat.parse(args[i]);</span>
-<span class="nc" id="L135">          timestart = new Timestamp(date.getTime());</span>
-<span class="nc" id="L136">        } catch (final ParseException ignored) {</span>
-          // nothing
-<span class="nc" id="L138">        }</span>
-<span class="nc bnc" id="L139" title="All 2 branches missed.">      } else if (&quot;-delay&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L140">        i++;</span>
-        try {
-<span class="nc bnc" id="L142" title="All 2 branches missed.">          if (args[i].charAt(0) == '+') {</span>
-<span class="nc" id="L143">            timestart = new Timestamp(System.currentTimeMillis() +</span>
-<span class="nc" id="L144">                                      Long.parseLong(args[i].substring(1)));</span>
-          } else {
-<span class="nc" id="L146">            timestart = new Timestamp(Long.parseLong(args[i]));</span>
-          }
-<span class="nc" id="L148">        } catch (final NumberFormatException ignored) {</span>
-          // nothing
-<span class="nc" id="L150">        }</span>
       }
+<span class="fc" id="L114">      TransferArgs.getAllInfo(transferArgs, 0, args, copied);</span>
+<span class="fc" id="L115">    } else {</span>
+<span class="nc" id="L116">      futureCompletion.setFailure(</span>
+          new OpenR66RunnerErrorException(&quot;Not enough argument in Transfer&quot;));
+<span class="nc" id="L118">      return;</span>
     }
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (information != null) {</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (finalInformation == null) {</span>
-<span class="nc" id="L155">        finalInformation = information.toString();</span>
-      } else {
-<span class="nc" id="L157">        finalInformation += &quot; &quot; + information;</span>
-      }
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">    } else if (finalInformation == null) {</span>
-<span class="fc" id="L160">      finalInformation = &quot;noinfo&quot;;</span>
-    }
-<span class="fc" id="L162">    final R66Future future = new R66Future(true);</span>
-<span class="fc" id="L163">    final SubmitTransfer transaction =</span>
-        new SubmitTransfer(future, requested, filepath, rule, finalInformation,
-                           isMD5, blocksize, DbConstantR66.ILLEGALVALUE,
-                           timestart);
-<span class="fc" id="L167">    transaction.run();</span>
-<span class="fc" id="L168">    future.awaitOrInterruptible();</span>
+<span class="fc" id="L120">    final R66Future future = new R66Future(true);</span>
+<span class="fc" id="L121">    final SubmitTransfer transaction =</span>
+<span class="fc" id="L122">        new SubmitTransfer(future, transferArgs.getRemoteHost(),</span>
+<span class="fc" id="L123">                           transferArgs.getFilename(),</span>
+<span class="fc" id="L124">                           transferArgs.getRulename(),</span>
+<span class="fc" id="L125">                           transferArgs.getTransferInfo(), transferArgs.isMD5(),</span>
+<span class="fc" id="L126">                           transferArgs.getBlockSize(),</span>
+                           DbConstantR66.ILLEGALVALUE,
+<span class="fc" id="L128">                           transferArgs.getStartTime());</span>
+<span class="fc" id="L129">    transaction.run();</span>
+<span class="fc" id="L130">    future.awaitOrInterruptible();</span>
     final DbTaskRunner runner;
-<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="fc" id="L171">      futureCompletion.setResult(future.getResult());</span>
-<span class="fc" id="L172">      runner = future.getResult().getRunner();</span>
-<span class="fc" id="L173">      logger.info(</span>
-<span class="fc" id="L174">          &quot;Prepare transfer in     SUCCESS     &quot; + runner.toShortString() +</span>
-          &quot;     &lt;REMOTE&gt;&quot; + requested + &quot;&lt;/REMOTE&gt;&quot;);
-<span class="fc" id="L176">      futureCompletion.setSuccess();</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="fc" id="L133">      futureCompletion.setResult(future.getResult());</span>
+<span class="fc" id="L134">      runner = future.getResult().getRunner();</span>
+<span class="fc" id="L135">      logger.info(</span>
+<span class="fc" id="L136">          &quot;Prepare transfer in     SUCCESS     &quot; + runner.toShortString() +</span>
+<span class="fc" id="L137">          &quot;     &lt;REMOTE&gt;&quot; + transferArgs.getRemoteHost() + &quot;&lt;/REMOTE&gt;&quot;);</span>
+<span class="fc" id="L138">      futureCompletion.setSuccess();</span>
     } else {
-<span class="nc bnc" id="L178" title="All 2 branches missed.">      if (future.getResult() != null) {</span>
-<span class="nc" id="L179">        futureCompletion.setResult(future.getResult());</span>
-<span class="nc" id="L180">        runner = future.getResult().getRunner();</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">      if (future.getResult() != null) {</span>
+<span class="nc" id="L141">        futureCompletion.setResult(future.getResult());</span>
+<span class="nc" id="L142">        runner = future.getResult().getRunner();</span>
       } else {
-<span class="nc" id="L182">        runner = null;</span>
+<span class="nc" id="L144">        runner = null;</span>
       }
-<span class="nc bnc" id="L184" title="All 2 branches missed.">      if (runner != null) {</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (future.getCause() == null) {</span>
-<span class="nc" id="L186">          futureCompletion.cancel();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">      if (runner != null) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (future.getCause() == null) {</span>
+<span class="nc" id="L148">          futureCompletion.cancel();</span>
         } else {
-<span class="nc" id="L188">          futureCompletion.setFailure(future.getCause());</span>
+<span class="nc" id="L150">          futureCompletion.setFailure(future.getCause());</span>
         }
-<span class="nc" id="L190">        logger.error(</span>
-<span class="nc" id="L191">            &quot;Prepare transfer in     FAILURE      &quot; + runner.toShortString() +</span>
-<span class="nc" id="L192">            &quot;     &lt;REMOTE&gt;&quot; + requested + &quot;&lt;/REMOTE&gt;&quot;, future.getCause());</span>
+<span class="nc" id="L152">        logger.error(</span>
+<span class="nc" id="L153">            &quot;Prepare transfer in     FAILURE      &quot; + runner.toShortString() +</span>
+<span class="nc" id="L154">            &quot;     &lt;REMOTE&gt;&quot; + transferArgs.getRemoteHost() + &quot;&lt;/REMOTE&gt;&quot;,</span>
+<span class="nc" id="L155">            future.getCause());</span>
       } else {
-<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (future.getCause() == null) {</span>
-<span class="nc" id="L195">          futureCompletion.cancel();</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (future.getCause() == null) {</span>
+<span class="nc" id="L158">          futureCompletion.cancel();</span>
         } else {
-<span class="nc" id="L197">          futureCompletion.setFailure(future.getCause());</span>
+<span class="nc" id="L160">          futureCompletion.setFailure(future.getCause());</span>
         }
-<span class="nc" id="L199">        logger.error(&quot;Prepare transfer in     FAILURE without any runner back&quot;,</span>
-<span class="nc" id="L200">                     future.getCause());</span>
+<span class="nc" id="L162">        logger.error(&quot;Prepare transfer in     FAILURE without any runner back&quot;,</span>
+<span class="nc" id="L163">                     future.getCause());</span>
       }
     }
-<span class="fc" id="L203">  }</span>
+<span class="fc" id="L166">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

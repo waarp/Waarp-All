@@ -75,229 +75,242 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="nc" id="L75">  }</span>
 
   public void initialize(String[] args) {
-<span class="nc" id="L78">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc" id="L79">    initLog();</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L81">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L82">          .syserr(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON</span>
+<span class="nc" id="L78">    WaarpLoggerFactory</span>
+<span class="nc" id="L79">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L80">    initLog();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L82">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L83">          .syserr(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON</span>
       // -NLS-1$
-<span class="nc" id="L84">      System.exit(2);//NOSONAR</span>
+<span class="nc" id="L85">      System.exit(2);//NOSONAR</span>
     }
-<span class="nc" id="L86">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L87" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
-<span class="nc" id="L88">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L90">        admin.close();</span>
+<span class="nc" id="L87">    if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc" id="L89">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L91">        admin.close();</span>
       }
-<span class="nc bnc" id="L92" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L93">        return;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L94">        return;</span>
       }
-<span class="nc" id="L95">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L96">      System.exit(2);//NOSONAR</span>
+<span class="nc" id="L96">      ChannelUtils.stopLogger();</span>
+<span class="nc" id="L97">      System.exit(2);//NOSONAR</span>
     }
-<span class="nc" id="L98">    Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L99">    networkTransaction = new NetworkTransaction();</span>
-<span class="nc" id="L100">  }</span>
+<span class="nc" id="L99">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L100">    networkTransaction = new NetworkTransaction();</span>
+<span class="nc" id="L101">  }</span>
 
   public void exit() {
-<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (networkTransaction != null) {</span>
-<span class="nc" id="L104">      networkTransaction.closeAll();</span>
-<span class="nc" id="L105">      networkTransaction = null;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (networkTransaction != null) {</span>
+<span class="nc" id="L105">      networkTransaction.closeAll();</span>
+<span class="nc" id="L106">      networkTransaction = null;</span>
     }
     // System.exit(0)
-<span class="nc" id="L108">  }</span>
+<span class="nc" id="L109">  }</span>
 
   public void debug(boolean isDebug) {
-<span class="nc" id="L111">    final Logger logger =</span>
-<span class="nc" id="L112">        (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);</span>
-<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (isDebug) {</span>
-<span class="nc" id="L114">      logger.setLevel(Level.DEBUG); //NOSONAR</span>
+<span class="nc" id="L112">    final Logger logger =</span>
+<span class="nc" id="L113">        (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (isDebug) {</span>
+<span class="nc" id="L115">      logger.setLevel(Level.DEBUG); //NOSONAR</span>
     } else {
-<span class="nc" id="L116">      logger.setLevel(Level.WARN); //NOSONAR</span>
+<span class="nc" id="L117">      logger.setLevel(Level.WARN); //NOSONAR</span>
     }
-<span class="nc" id="L118">  }</span>
+<span class="nc" id="L119">  }</span>
 
   public boolean checkConnection() {
-<span class="nc" id="L121">    final R66Future result = new R66Future(true);</span>
-<span class="nc" id="L122">    final TestPacket packet = new TestPacket(&quot;MSG&quot;, &quot;TestConnection&quot;, 100);</span>
-<span class="nc" id="L123">    final Message transaction =</span>
+<span class="nc" id="L122">    final R66Future result = new R66Future(true);</span>
+<span class="nc" id="L123">    final TestPacket packet = new TestPacket(&quot;MSG&quot;, &quot;TestConnection&quot;, 100);</span>
+<span class="nc" id="L124">    final Message transaction =</span>
         new Message(networkTransaction, result, hostId, packet);
-<span class="nc" id="L125">    transaction.run();</span>
-<span class="nc" id="L126">    result.awaitOrInterruptible(30000);</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (result.isSuccess()) {</span>
-<span class="nc" id="L128">      final R66Result r66result = result.getResult();</span>
-<span class="nc" id="L129">      final ValidPacket info = (ValidPacket) r66result.getOther();</span>
-<span class="nc" id="L130">      guiResultat = Messages.getString(&quot;R66Environment.2&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L131">                    info.getSheader();</span>
-<span class="nc" id="L132">    } else {</span>
-<span class="nc" id="L133">      guiResultat = Messages.getString(&quot;R66Environment.3&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L134">                    result.getResult();</span>
+<span class="nc" id="L126">    transaction.run();</span>
+<span class="nc" id="L127">    result.awaitOrInterruptible(30000);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (result.isSuccess()) {</span>
+<span class="nc" id="L129">      final R66Result r66result = result.getResult();</span>
+<span class="nc" id="L130">      final ValidPacket info = (ValidPacket) r66result.getOther();</span>
+<span class="nc" id="L131">      guiResultat = Messages.getString(&quot;R66Environment.2&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L132">                    info.getSheader();</span>
+<span class="nc" id="L133">    } else {</span>
+<span class="nc" id="L134">      guiResultat = Messages.getString(&quot;R66Environment.3&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L135">                    result.getResult();</span>
     }
-<span class="nc" id="L136">    return result.isSuccess();</span>
+<span class="nc" id="L137">    return result.isSuccess();</span>
   }
 
   public boolean startsTransfer(JProgressBar progressBar,
                                 JEditorPane textFieldStatus) {
-<span class="nc" id="L141">    logger.debug(&quot;start startTransfer2&quot;);</span>
-<span class="nc" id="L142">    final long time1 = System.currentTimeMillis();</span>
-<span class="nc" id="L143">    final R66Future future = new R66Future(true);</span>
-<span class="nc" id="L144">    final ProgressDirectTransfer transaction =</span>
+<span class="nc" id="L142">    logger.debug(&quot;start startTransfer2&quot;);</span>
+<span class="nc" id="L143">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L144">    final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L145">    final ProgressDirectTransfer transaction =</span>
         new ProgressDirectTransfer(future, hostId, filePath, ruleId,
                                    information, isMD5,
-<span class="nc" id="L147">                                   Configuration.configuration.getBlockSize(),</span>
+<span class="nc" id="L148">                                   Configuration.configuration.getBlockSize(),</span>
                                    ILLEGALVALUE, networkTransaction, 500,
                                    progressBar, textFieldStatus);
-<span class="nc" id="L150">    logger.info(&quot;Launch transfer: &quot; + hostId + ':' + ruleId + ':' + filePath);</span>
-<span class="nc" id="L151">    transaction.run();</span>
-<span class="nc" id="L152">    future.awaitOrInterruptible();</span>
-<span class="nc" id="L153">    progressBar.setIndeterminate(true);</span>
-<span class="nc" id="L154">    progressBar.setValue(0);</span>
-<span class="nc" id="L155">    progressBar.setVisible(false);</span>
-<span class="nc" id="L156">    final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L157">    final long delay = time2 - time1;</span>
-<span class="nc" id="L158">    final R66Result result = future.getResult();</span>
-<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {</span>
-<span class="nc" id="L161">        guiResultat = Messages.getString(&quot;R66Environment.8&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L162">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
-<span class="nc" id="L163">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">                      hostId + (result.getFile() != null?</span>
-<span class="nc" id="L165">            String.valueOf(result.getFile()) :</span>
-<span class="nc" id="L166">            Messages.getString(&quot;R66ClientGui.30&quot;))</span>
+<span class="nc" id="L151">    logger.info(&quot;Launch transfer: &quot; + hostId + ':' + ruleId + ':' + filePath);</span>
+<span class="nc" id="L152">    transaction.run();</span>
+<span class="nc" id="L153">    future.awaitOrInterruptible();</span>
+<span class="nc" id="L154">    progressBar.setIndeterminate(true);</span>
+<span class="nc" id="L155">    progressBar.setValue(0);</span>
+<span class="nc" id="L156">    progressBar.setVisible(false);</span>
+<span class="nc" id="L157">    final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L158">    final long delay = time2 - time1;</span>
+<span class="nc" id="L159">    final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {</span>
+<span class="nc" id="L162">        guiResultat = Messages.getString(&quot;R66Environment.8&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L163">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
+<span class="nc" id="L164">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">                      hostId + (result.getFile() != null?</span>
+<span class="nc" id="L166">            String.valueOf(result.getFile()) :</span>
+<span class="nc" id="L167">            Messages.getString(&quot;R66ClientGui.30&quot;))</span>
                       //$NON-NLS-2$
-<span class="nc" id="L168">                      + Messages.getString(&quot;R66Environment.13&quot;) +</span>
+<span class="nc" id="L169">                      + Messages.getString(&quot;R66Environment.13&quot;) +</span>
                       //$NON-NLS-1$
                       delay;
       } else {
-<span class="nc" id="L172">        guiResultat = Messages.getString(&quot;R66Environment.14&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L173">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
-<span class="nc" id="L174">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">                      hostId + (result.getFile() != null?</span>
-<span class="nc" id="L176">            String.valueOf(result.getFile()) :</span>
-<span class="nc" id="L177">            Messages.getString(&quot;R66ClientGui.30&quot;))</span>
+<span class="nc" id="L173">        guiResultat = Messages.getString(&quot;R66Environment.14&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L174">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
+<span class="nc" id="L175">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                      hostId + (result.getFile() != null?</span>
+<span class="nc" id="L177">            String.valueOf(result.getFile()) :</span>
+<span class="nc" id="L178">            Messages.getString(&quot;R66ClientGui.30&quot;))</span>
                       //$NON-NLS-2$
-<span class="nc" id="L179">                      + Messages.getString(&quot;R66Environment.13&quot;) +</span>
+<span class="nc" id="L180">                      + Messages.getString(&quot;R66Environment.13&quot;) +</span>
                       //$NON-NLS-1$
                       delay;
       }
     } else {
-<span class="nc bnc" id="L184" title="All 4 branches missed.">      if (result == null || result.getRunner() == null) {</span>
-<span class="nc" id="L185">        guiResultat = Messages.getString(&quot;R66Environment.20&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L186">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L187">                      hostId + &quot;     &quot; + future.getCause().getMessage();</span>
-<span class="nc bnc" id="L188" title="All 2 branches missed.">      } else if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {</span>
-<span class="nc" id="L189">        guiResultat = Messages.getString(&quot;R66Environment.23&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L190">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
-<span class="nc" id="L191">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
-<span class="nc" id="L192">                      hostId + &quot;    &quot; + future.getCause().getMessage();</span>
+<span class="nc bnc" id="L185" title="All 4 branches missed.">      if (result == null || result.getRunner() == null) {</span>
+<span class="nc" id="L186">        guiResultat = Messages.getString(&quot;R66Environment.20&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L187">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L188">                      hostId + &quot;     &quot; + future.getCause().getMessage();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">      } else if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {</span>
+<span class="nc" id="L190">        guiResultat = Messages.getString(&quot;R66Environment.23&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L191">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
+<span class="nc" id="L192">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
+<span class="nc" id="L193">                      hostId + &quot;    &quot; + future.getCause().getMessage();</span>
       } else {
-<span class="nc" id="L194">        guiResultat = Messages.getString(&quot;R66Environment.27&quot;) + //$NON-NLS-1$</span>
-<span class="nc" id="L195">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
-<span class="nc" id="L196">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
-<span class="nc" id="L197">                      hostId + &quot;    &quot; + future.getCause().getMessage();</span>
+<span class="nc" id="L195">        guiResultat = Messages.getString(&quot;R66Environment.27&quot;) + //$NON-NLS-1$</span>
+<span class="nc" id="L196">                      result.getRunner().toShortNoHtmlString(&quot;&lt;br&gt;&quot;) +</span>
+<span class="nc" id="L197">                      Messages.getString(&quot;R66Environment.10&quot;) + //$NON-NLS-2$</span>
+<span class="nc" id="L198">                      hostId + &quot;    &quot; + future.getCause().getMessage();</span>
       }
     }
-<span class="nc" id="L200">    return future.isSuccess();</span>
+<span class="nc" id="L201">    return future.isSuccess();</span>
   }
 
   public static String[] getHostIds() {
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L206">      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);</span>
+    }
     String[] results;
     DbHostAuth[] dbHostAuths;
     try {
-<span class="nc" id="L207">      dbHostAuths = DbHostAuth.getAllHosts();</span>
-<span class="nc" id="L208">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L209">      results = new String[1];</span>
-<span class="nc" id="L210">      results[0] = Messages.getString(&quot;R66Environment.31&quot;); //$NON-NLS-1$</span>
-<span class="nc" id="L211">      return results;</span>
-<span class="nc" id="L212">    }</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (dbHostAuths.length == 0) {</span>
-<span class="nc" id="L214">      results = new String[1];</span>
-<span class="nc" id="L215">      results[0] = Messages.getString(&quot;R66Environment.31&quot;); //$NON-NLS-1$</span>
-<span class="nc" id="L216">      return results;</span>
+<span class="nc" id="L211">      dbHostAuths = DbHostAuth.getAllHosts();</span>
+<span class="nc" id="L212">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L213">      results = new String[1];</span>
+<span class="nc" id="L214">      results[0] = Messages.getString(&quot;R66Environment.31&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L215">      return results;</span>
+<span class="nc" id="L216">    }</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (dbHostAuths.length == 0) {</span>
+<span class="nc" id="L218">      results = new String[1];</span>
+<span class="nc" id="L219">      results[0] = Messages.getString(&quot;R66Environment.31&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L220">      return results;</span>
     }
-<span class="nc" id="L218">    results = new String[dbHostAuths.length];</span>
-<span class="nc bnc" id="L219" title="All 2 branches missed.">    for (int i = 0; i &lt; dbHostAuths.length; i++) {</span>
-<span class="nc" id="L220">      results[i] = dbHostAuths[i].getHostid();</span>
+<span class="nc" id="L222">    results = new String[dbHostAuths.length];</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">    for (int i = 0; i &lt; dbHostAuths.length; i++) {</span>
+<span class="nc" id="L224">      results[i] = dbHostAuths[i].getHostid();</span>
     }
-<span class="nc" id="L222">    return results;</span>
+<span class="nc" id="L226">    return results;</span>
   }
 
   public static String[] getRules() {
+<span class="nc bnc" id="L230" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L231">      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);</span>
+    }
     String[] results;
     DbRule[] dbRules;
     try {
-<span class="nc" id="L229">      dbRules = DbRule.getAllRules();</span>
-<span class="nc" id="L230">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L231">      results = new String[1];</span>
-<span class="nc" id="L232">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
-<span class="nc" id="L233">      return results;</span>
-<span class="nc" id="L234">    }</span>
-<span class="nc bnc" id="L235" title="All 2 branches missed.">    if (dbRules.length == 0) {</span>
-<span class="nc" id="L236">      results = new String[1];</span>
-<span class="nc" id="L237">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
-<span class="nc" id="L238">      return results;</span>
+<span class="nc" id="L236">      dbRules = DbRule.getAllRules();</span>
+<span class="nc" id="L237">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L238">      results = new String[1];</span>
+<span class="nc" id="L239">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L240">      return results;</span>
+<span class="nc" id="L241">    }</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">    if (dbRules.length == 0) {</span>
+<span class="nc" id="L243">      results = new String[1];</span>
+<span class="nc" id="L244">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L245">      return results;</span>
     }
-<span class="nc" id="L240">    results = new String[dbRules.length];</span>
-<span class="nc bnc" id="L241" title="All 2 branches missed.">    for (int i = 0; i &lt; dbRules.length; i++) {</span>
-<span class="nc" id="L242">      results[i] = dbRules[i].getIdRule();</span>
+<span class="nc" id="L247">    results = new String[dbRules.length];</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    for (int i = 0; i &lt; dbRules.length; i++) {</span>
+<span class="nc" id="L249">      results[i] = dbRules[i].getIdRule();</span>
     }
-<span class="nc" id="L244">    return results;</span>
+<span class="nc" id="L251">    return results;</span>
   }
 
   public static String[] getRules(boolean sendMode) {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L256">      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);</span>
+    }
     String[] results;
     DbRule[] dbRules;
     try {
-<span class="nc" id="L251">      dbRules = DbRule.getAllRules();</span>
-<span class="nc" id="L252">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L253">      results = new String[1];</span>
-<span class="nc" id="L254">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
-<span class="nc" id="L255">      return results;</span>
-<span class="nc" id="L256">    }</span>
-<span class="nc" id="L257">    int len = 0;</span>
-<span class="nc bnc" id="L258" title="All 2 branches missed.">    for (final DbRule rule : dbRules) {</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">      if (sendMode) {</span>
-<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (rule.isSendMode()) {</span>
-<span class="nc" id="L261">          len++;</span>
+<span class="nc" id="L261">      dbRules = DbRule.getAllRules();</span>
+<span class="nc" id="L262">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L263">      results = new String[1];</span>
+<span class="nc" id="L264">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L265">      return results;</span>
+<span class="nc" id="L266">    }</span>
+<span class="nc" id="L267">    int len = 0;</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">    for (final DbRule rule : dbRules) {</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">      if (sendMode) {</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        if (rule.isSendMode()) {</span>
+<span class="nc" id="L271">          len++;</span>
         }
       } else {
-<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (rule.isRecvMode()) {</span>
-<span class="nc" id="L265">          len++;</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (rule.isRecvMode()) {</span>
+<span class="nc" id="L275">          len++;</span>
         }
       }
     }
-<span class="nc bnc" id="L269" title="All 2 branches missed.">    if (len == 0) {</span>
-<span class="nc" id="L270">      results = new String[1];</span>
-<span class="nc" id="L271">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
-<span class="nc" id="L272">      return results;</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">    if (len == 0) {</span>
+<span class="nc" id="L280">      results = new String[1];</span>
+<span class="nc" id="L281">      results[0] = Messages.getString(&quot;R66Environment.34&quot;); //$NON-NLS-1$</span>
+<span class="nc" id="L282">      return results;</span>
     }
-<span class="nc" id="L274">    results = new String[len];</span>
-<span class="nc" id="L275">    int i = 0;</span>
-<span class="nc bnc" id="L276" title="All 2 branches missed.">    for (final DbRule rule : dbRules) {</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">      if (sendMode) {</span>
-<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (rule.isSendMode()) {</span>
-<span class="nc" id="L279">          results[i] = rule.getIdRule();</span>
-<span class="nc" id="L280">          i++;</span>
+<span class="nc" id="L284">    results = new String[len];</span>
+<span class="nc" id="L285">    int i = 0;</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">    for (final DbRule rule : dbRules) {</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">      if (sendMode) {</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (rule.isSendMode()) {</span>
+<span class="nc" id="L289">          results[i] = rule.getIdRule();</span>
+<span class="nc" id="L290">          i++;</span>
         }
       } else {
-<span class="nc bnc" id="L283" title="All 2 branches missed.">        if (rule.isRecvMode()) {</span>
-<span class="nc" id="L284">          results[i] = rule.getIdRule();</span>
-<span class="nc" id="L285">          i++;</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        if (rule.isRecvMode()) {</span>
+<span class="nc" id="L294">          results[i] = rule.getIdRule();</span>
+<span class="nc" id="L295">          i++;</span>
         }
       }
     }
-<span class="nc" id="L289">    return results;</span>
+<span class="nc" id="L299">    return results;</span>
   }
 
   public static String getHost(String id) {
-<span class="nc" id="L293">    DbHostAuth host = null;</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L304">      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);</span>
+    }
+<span class="nc" id="L306">    DbHostAuth host = null;</span>
     try {
-<span class="nc" id="L295">      host = new DbHostAuth(id);</span>
-<span class="nc" id="L296">    } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L308">      host = new DbHostAuth(id);</span>
+<span class="nc" id="L309">    } catch (final WaarpDatabaseException ignored) {</span>
       // nothing
-<span class="nc" id="L298">    }</span>
-<span class="nc bnc" id="L299" title="All 2 branches missed.">    if (host != null) {</span>
-<span class="nc" id="L300">      final String hosthtml =</span>
+<span class="nc" id="L311">    }</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">    if (host != null) {</span>
+<span class="nc" id="L313">      final String hosthtml =</span>
           &quot;&lt;table border=1 cellpadding=0 cellspacing=0 style=border-collapse: collapse bordercolor=#111111 width=100% id=AutoNumber1&gt;&quot; +
           &quot;&lt;tr&gt;&lt;td width=13% align=center&gt;&lt;b&gt;Host ID&lt;/b&gt;&lt;/td&gt;&lt;td width=13% align=center&gt;&lt;b&gt;Address&lt;/b&gt;&lt;/td&gt;&quot; +
           &quot;&lt;td width=13% align=center&gt;&lt;b&gt;Port&lt;/b&gt;&lt;/td&gt;&lt;td width=5% align=center&gt;&lt;b&gt;SSL&lt;/b&gt;&lt;/td&gt;&quot; +
@@ -310,20 +323,23 @@ import static org.waarp.common.database.DbConstant.*;
           &quot;&lt;td width=13% align=center&gt;XXXKEYXXX&lt;/td&gt;&quot; +
           &quot;&lt;td width=5% align=center&gt;&lt;input type=checkbox name=admin value=on XXXADMXXX disabled readonly&gt;&lt;/td&gt;&quot; +
           &quot;&lt;td width=5% align=center&gt;&lt;input type=checkbox name=isclient value=on XXXISCXXX disabled readonly&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&quot;;
-<span class="nc" id="L313">      return host.toSpecializedHtml(null, hosthtml, true);</span>
+<span class="nc" id="L326">      return host.toSpecializedHtml(null, hosthtml, true);</span>
     }
-<span class="nc" id="L315">    return &quot;HostId: &quot; + id;</span>
+<span class="nc" id="L328">    return &quot;HostId: &quot; + id;</span>
   }
 
   public static String getRule(String id) {
-<span class="nc" id="L319">    DbRule rule = null;</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L333">      logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);</span>
+    }
+<span class="nc" id="L335">    DbRule rule = null;</span>
     try {
-<span class="nc" id="L321">      rule = new DbRule(id);</span>
-<span class="nc" id="L322">    } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L337">      rule = new DbRule(id);</span>
+<span class="nc" id="L338">    } catch (final WaarpDatabaseException ignored) {</span>
       // nothing
-<span class="nc" id="L324">    }</span>
-<span class="nc bnc" id="L325" title="All 2 branches missed.">    if (rule != null) {</span>
-<span class="nc" id="L326">      final String rulehtml =</span>
+<span class="nc" id="L340">    }</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">    if (rule != null) {</span>
+<span class="nc" id="L342">      final String rulehtml =</span>
           &quot;&lt;table border=1 cellpadding=0 cellspacing=0 style=border-collapse: collapse bordercolor=#111111 width=100% id=AutoNumber1&gt;&quot; +
           &quot;&lt;tr&gt;&lt;td width=6% align=center&gt;&lt;b&gt;Rule Id&lt;/b&gt;&lt;/td&gt;&lt;td width=6% align=center&gt;&lt;b&gt;Mode&lt;/b&gt;&lt;/td&gt;&quot; +
           &quot;&lt;td width=6% align=center&gt;&lt;b&gt;Host Ids&lt;/b&gt;&lt;/td&gt;&lt;td width=6% align=center&gt;&lt;b&gt;RecvPath&lt;/b&gt;&lt;/td&gt;&quot; +
@@ -353,25 +369,25 @@ import static org.waarp.common.database.DbConstant.*;
           &quot;&lt;td width=7%&gt;&lt;PRE&gt;XXXSPTXXX&lt;/PRE&gt;&lt;/td&gt;&quot; +
           &quot;&lt;td width=8%&gt;&lt;PRE&gt;XXXSSTXXX&lt;/PRE&gt;&lt;/td&gt;&quot; +
           &quot;&lt;td width=8%&gt;&lt;PRE&gt;XXXSETXXX&lt;/PRE&gt;&lt;/td&gt;&quot; + &quot;&lt;/tr&gt;&lt;/table&gt;&quot;;
-<span class="nc" id="L356">      return rule.toSpecializedHtml(null, rulehtml);</span>
+<span class="nc" id="L372">      return rule.toSpecializedHtml(null, rulehtml);</span>
     }
-<span class="nc" id="L358">    return &quot;RuleId: &quot; + id;</span>
+<span class="nc" id="L374">    return &quot;RuleId: &quot; + id;</span>
   }
 
   public void about() {
-<span class="nc" id="L362">    guiResultat =</span>
+<span class="nc" id="L378">    guiResultat =</span>
         &quot;&lt;HTML&gt;&lt;P ALIGN=CENTER&gt;&lt;FONT SIZE=5 STYLE=\&quot;font-size: 22pt\&quot;&gt;&lt;SPAN&gt;R66 Client GUI Version: &quot; +
-<span class="nc" id="L364">        Version.fullIdentifier() + &quot;&lt;/SPAN&gt;&lt;/FONT&gt;&lt;/P&gt;&quot; +</span>
+<span class="nc" id="L380">        Version.fullIdentifier() + &quot;&lt;/SPAN&gt;&lt;/FONT&gt;&lt;/P&gt;&quot; +</span>
         &quot;&lt;P ALIGN=CENTER&gt;&lt;FONT SIZE=4 STYLE=\&quot;font-size: 16pt\&quot;&gt;&lt;SPAN&gt;This graphical user interface is intend to provide an easy way to use R66 for:&lt;/SPAN&gt;&lt;/FONT&gt;&lt;/P&gt;&quot; +
         &quot;&lt;UL&gt;&lt;LI&gt;&lt;P ALIGN=LEFT&gt;&lt;FONT SIZE=4 STYLE=\&quot;font-size: 16pt\&quot;&gt;&lt;SPAN&gt;Testing new Rules, Hosts or connectivity&lt;/SPAN&gt;&lt;/FONT&gt;&lt;/P&gt;&quot; +
         &quot;&lt;LI&gt;&lt;P ALIGN=LEFT&lt;FONT SIZE=4 STYLE=\&quot;font-size: 16pt\&quot;&gt;&lt;SPAN&gt;Exchanging files between a PC and a R66 Server&lt;/SPAN&gt;&lt;/FONT&gt;&lt;/P&gt;&quot; +
         &quot;&lt;LI&gt;&lt;P ALIGN=LEFT&lt;FONT SIZE=4 STYLE=\&quot;font-size: 16pt\&quot;&gt;&lt;SPAN&gt;Provide an example on how to use the R66 API in an application&lt;/SPAN&gt;&lt;/FONT&gt;&lt;/P&gt;&quot; +
         &quot;&lt;/UL&gt;&quot;;
-<span class="nc" id="L370">  }</span>
+<span class="nc" id="L386">  }</span>
 
   @Override
   public String toString() {
-<span class="nc" id="L374">    return &quot;Env: &quot; + ruleId + ':' + hostId + ':' + filePath + ':' + isMD5 +</span>
+<span class="nc" id="L390">    return &quot;Env: &quot; + ruleId + ':' + hostId + ':' + filePath + ':' + isMD5 +</span>
            ':' + isInRequest + ':' + isClientSending + ':' + information + ':' +
            guiResultat;
   }

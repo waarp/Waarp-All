@@ -48,11 +48,11 @@ public class WaarpFtpClient {
   /**
    * Internal Logger
    */
-<span class="nc" id="L51">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L52">      WaarpLoggerFactory.getLogger(WaarpFtpClient.class);</span>
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(WaarpFtpClient.class);</span>
 
   final String server;
-<span class="nc" id="L55">  int port = 21;</span>
+<span class="fc" id="L55">  int port = 21;</span>
   final String user;
   final String pwd;
   final String acct;
@@ -61,7 +61,7 @@ public class WaarpFtpClient {
   final int ssl; // -1 native, 1 auth
   protected final FTPClient ftpClient;
   protected String result;
-<span class="nc" id="L64">  private boolean binaryTransfer = true;</span>
+<span class="fc" id="L64">  private boolean binaryTransfer = true;</span>
 
   /**
    * WARNING: SSL mode (FTPS and FTPSE) are not working due to a bug in Apache
@@ -78,32 +78,32 @@ public class WaarpFtpClient {
    */
   public WaarpFtpClient(String server, int port, String user, String pwd,
                         String acct, boolean isPassive, int ssl,
-<span class="nc" id="L81">                        int controlTimeout, int timeout) {</span>
-<span class="nc" id="L82">    this.server = server;</span>
-<span class="nc" id="L83">    this.port = port;</span>
-<span class="nc" id="L84">    this.user = user;</span>
-<span class="nc" id="L85">    this.pwd = pwd;</span>
-<span class="nc" id="L86">    this.acct = acct;</span>
-<span class="nc" id="L87">    this.isPassive = isPassive;</span>
-<span class="nc" id="L88">    this.ssl = ssl;</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (this.ssl != 0) {</span>
+<span class="fc" id="L81">                        int controlTimeout, int timeout) {</span>
+<span class="fc" id="L82">    this.server = server;</span>
+<span class="fc" id="L83">    this.port = port;</span>
+<span class="fc" id="L84">    this.user = user;</span>
+<span class="fc" id="L85">    this.pwd = pwd;</span>
+<span class="fc" id="L86">    this.acct = acct;</span>
+<span class="fc" id="L87">    this.isPassive = isPassive;</span>
+<span class="fc" id="L88">    this.ssl = ssl;</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">    if (this.ssl != 0) {</span>
       // implicit or explicit
 <span class="nc bnc" id="L91" title="All 2 branches missed.">      ftpClient = new FTPSClient(this.ssl == -1);</span>
 <span class="nc" id="L92">      ((FTPSClient) ftpClient)</span>
 <span class="nc" id="L93">          .setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());</span>
     } else {
-<span class="nc" id="L95">      ftpClient = new FTPClient();</span>
+<span class="fc" id="L95">      ftpClient = new FTPClient();</span>
     }
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (controlTimeout &gt; 0) {</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">    if (controlTimeout &gt; 0) {</span>
 <span class="nc" id="L98">      ftpClient.setControlKeepAliveTimeout(controlTimeout / 1000);</span>
 <span class="nc" id="L99">      ftpClient.setControlKeepAliveReplyTimeout(controlTimeout);</span>
     }
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (timeout &gt; 0) {</span>
-<span class="nc" id="L102">      ftpClient.setDataTimeout(timeout);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">    if (timeout &gt; 0) {</span>
+<span class="fc" id="L102">      ftpClient.setDataTimeout(timeout);</span>
     }
-<span class="nc" id="L104">    ftpClient.addProtocolCommandListener(</span>
+<span class="fc" id="L104">    ftpClient.addProtocolCommandListener(</span>
         new PrintCommandListener(new PrintWriter(System.out), true));
-<span class="nc" id="L106">  }</span>
+<span class="fc" id="L106">  }</span>
 
   /**
    * Try to connect to the server and goes with the authentication
@@ -111,11 +111,11 @@ public class WaarpFtpClient {
    * @return True if connected and authenticated, else False
    */
   public boolean connect() {
-<span class="nc" id="L114">    result = null;</span>
-<span class="nc" id="L115">    boolean isActive = false;</span>
+<span class="fc" id="L114">    result = null;</span>
+<span class="fc" id="L115">    boolean isActive = false;</span>
     try {
       try {
-<span class="nc" id="L118">        ftpClient.connect(server, port);</span>
+<span class="fc" id="L118">        ftpClient.connect(server, port);</span>
 <span class="nc" id="L119">      } catch (final SocketException e) {</span>
 <span class="nc" id="L120">        result = &quot;Connection in error&quot;;</span>
 <span class="nc" id="L121">        logger.error(result, e);</span>
@@ -124,16 +124,16 @@ public class WaarpFtpClient {
 <span class="nc" id="L124">        result = &quot;Connection in error&quot;;</span>
 <span class="nc" id="L125">        logger.error(result, e);</span>
 <span class="nc" id="L126">        return false;</span>
-<span class="nc" id="L127">      }</span>
-<span class="nc" id="L128">      final int reply = ftpClient.getReplyCode();</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">      if (!FTPReply.isPositiveCompletion(reply)) {</span>
+<span class="fc" id="L127">      }</span>
+<span class="fc" id="L128">      final int reply = ftpClient.getReplyCode();</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">      if (!FTPReply.isPositiveCompletion(reply)) {</span>
 <span class="nc" id="L130">        disconnect();</span>
 <span class="nc" id="L131">        result = &quot;Connection in error: &quot; + reply;</span>
 <span class="nc" id="L132">        logger.error(result);</span>
 <span class="nc" id="L133">        return false;</span>
       }
       try {
-<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (acct == null) {</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        if (acct == null) {</span>
           // no account
 <span class="nc bnc" id="L138" title="All 2 branches missed.">          if (!ftpClient.login(user, pwd)) {</span>
 <span class="nc" id="L139">            logout();</span>
@@ -141,7 +141,7 @@ public class WaarpFtpClient {
 <span class="nc" id="L141">            logger.error(result);</span>
 <span class="nc" id="L142">            return false;</span>
           }
-<span class="nc bnc" id="L144" title="All 2 branches missed.">        } else if (!ftpClient.login(user, pwd, acct)) {</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        } else if (!ftpClient.login(user, pwd, acct)) {</span>
 <span class="nc" id="L145">          logout();</span>
 <span class="nc" id="L146">          result = LOGIN_IN_ERROR;</span>
 <span class="nc" id="L147">          logger.error(result);</span>
@@ -151,17 +151,17 @@ public class WaarpFtpClient {
 <span class="nc" id="L151">        result = LOGIN_IN_ERROR;</span>
 <span class="nc" id="L152">        logger.error(result, e);</span>
 <span class="nc" id="L153">        return false;</span>
-<span class="nc" id="L154">      }</span>
+<span class="fc" id="L154">      }</span>
       try {
-<span class="nc" id="L156">        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);</span>
+<span class="fc" id="L156">        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);</span>
 <span class="nc" id="L157">      } catch (final IOException e1) {</span>
 <span class="nc" id="L158">        result = &quot;Set BINARY in error&quot;;</span>
 <span class="nc" id="L159">        logger.error(result, e1);</span>
 <span class="nc" id="L160">        return false;</span>
-<span class="nc" id="L161">      }</span>
-<span class="nc" id="L162">      changeMode(isPassive);</span>
-<span class="nc" id="L163">      ftpClient.setUseEPSVwithIPv4(false);</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">      if (ssl == 1) {</span>
+<span class="fc" id="L161">      }</span>
+<span class="fc" id="L162">      changeMode(isPassive);</span>
+<span class="fc" id="L163">      ftpClient.setUseEPSVwithIPv4(false);</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">      if (ssl == 1) {</span>
         // now send request for PROT (AUTH already sent)
         try {
 <span class="nc" id="L167">          ((FTPSClient) ftpClient).execPBSZ(0);</span>
@@ -176,10 +176,10 @@ public class WaarpFtpClient {
 <span class="nc" id="L176">          return false;</span>
 <span class="nc" id="L177">        }</span>
       }
-<span class="nc" id="L179">      isActive = true;</span>
-<span class="nc" id="L180">      return true;</span>
+<span class="fc" id="L179">      isActive = true;</span>
+<span class="fc" id="L180">      return true;</span>
     } finally {
-<span class="nc bnc" id="L182" title="All 4 branches missed.">      if (!isActive &amp;&amp; ftpClient.getDataConnectionMode() ==</span>
+<span class="pc bpc" id="L182" title="3 of 4 branches missed.">      if (!isActive &amp;&amp; ftpClient.getDataConnectionMode() ==</span>
                        FTPClient.ACTIVE_LOCAL_DATA_CONNECTION_MODE) {
 <span class="nc" id="L184">        disconnect();</span>
       }
@@ -191,7 +191,7 @@ public class WaarpFtpClient {
    */
   public void logout() {
     try {
-<span class="nc" id="L194">      ftpClient.logout();</span>
+<span class="fc" id="L194">      ftpClient.logout();</span>
 <span class="nc" id="L195">    } catch (final IOException e) {</span>
 <span class="nc bnc" id="L196" title="All 2 branches missed.">      if (ftpClient.getDataConnectionMode() ==</span>
           FTPClient.ACTIVE_LOCAL_DATA_CONNECTION_MODE) {
@@ -201,19 +201,19 @@ public class WaarpFtpClient {
           // do nothing
 <span class="nc" id="L202">        }</span>
       }
-<span class="nc" id="L204">    }</span>
-<span class="nc" id="L205">  }</span>
+<span class="fc" id="L204">    }</span>
+<span class="fc" id="L205">  }</span>
 
   /**
    * Disconnect the Ftp Client
    */
   public void disconnect() {
     try {
-<span class="nc" id="L212">      ftpClient.disconnect();</span>
+<span class="fc" id="L212">      ftpClient.disconnect();</span>
 <span class="nc" id="L213">    } catch (final IOException e) {</span>
 <span class="nc" id="L214">      logger.debug(&quot;Disconnection in error&quot;, e);</span>
-<span class="nc" id="L215">    }</span>
-<span class="nc" id="L216">  }</span>
+<span class="fc" id="L215">    }</span>
+<span class="fc" id="L216">  }</span>
 
   /**
    * Create a new directory
@@ -223,9 +223,9 @@ public class WaarpFtpClient {
    * @return True if created
    */
   public boolean makeDir(String newDir) {
-<span class="nc" id="L226">    result = null;</span>
+<span class="fc" id="L226">    result = null;</span>
     try {
-<span class="nc" id="L228">      return ftpClient.makeDirectory(newDir);</span>
+<span class="fc" id="L228">      return ftpClient.makeDirectory(newDir);</span>
 <span class="nc" id="L229">    } catch (final IOException e) {</span>
 <span class="nc" id="L230">      result = &quot;MKDIR in error&quot;;</span>
 <span class="nc" id="L231">      logger.info(result, e);</span>
@@ -241,9 +241,9 @@ public class WaarpFtpClient {
    * @return True if the change is OK
    */
   public boolean changeDir(String newDir) {
-<span class="nc" id="L244">    result = null;</span>
+<span class="fc" id="L244">    result = null;</span>
     try {
-<span class="nc" id="L246">      return ftpClient.changeWorkingDirectory(newDir);</span>
+<span class="fc" id="L246">      return ftpClient.changeWorkingDirectory(newDir);</span>
 <span class="nc" id="L247">    } catch (final IOException e) {</span>
 <span class="nc" id="L248">      result = &quot;CHDIR in error&quot;;</span>
 <span class="nc" id="L249">      logger.info(result, e);</span>
@@ -259,11 +259,11 @@ public class WaarpFtpClient {
    * @return True if the change is OK
    */
   public boolean changeFileType(boolean binaryTransfer1) {
-<span class="nc" id="L262">    result = null;</span>
-<span class="nc" id="L263">    binaryTransfer = binaryTransfer1;</span>
+<span class="fc" id="L262">    result = null;</span>
+<span class="fc" id="L263">    binaryTransfer = binaryTransfer1;</span>
     try {
-<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (binaryTransfer) {</span>
-<span class="nc" id="L266">        return ftpClient.setFileType(FTP.BINARY_FILE_TYPE);</span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">      if (binaryTransfer) {</span>
+<span class="fc" id="L266">        return ftpClient.setFileType(FTP.BINARY_FILE_TYPE);</span>
       } else {
 <span class="nc" id="L268">        return ftpClient.setFileType(FTP.ASCII_FILE_TYPE);</span>
       }
@@ -280,13 +280,13 @@ public class WaarpFtpClient {
    * @param passive
    */
   public void changeMode(boolean passive) {
-<span class="nc" id="L283">    isPassive = passive;</span>
-<span class="nc bnc" id="L284" title="All 2 branches missed.">    if (isPassive) {</span>
-<span class="nc" id="L285">      ftpClient.enterLocalPassiveMode();</span>
+<span class="fc" id="L283">    isPassive = passive;</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">    if (isPassive) {</span>
+<span class="fc" id="L285">      ftpClient.enterLocalPassiveMode();</span>
     } else {
-<span class="nc" id="L287">      ftpClient.enterLocalActiveMode();</span>
+<span class="fc" id="L287">      ftpClient.enterLocalActiveMode();</span>
     }
-<span class="nc" id="L289">  }</span>
+<span class="fc" id="L289">  }</span>
 
   /**
    * Ask to transfer a file
@@ -300,20 +300,20 @@ public class WaarpFtpClient {
    */
   public boolean transferFile(String local, String remote,
                               int getStoreOrAppend) {
-<span class="nc" id="L303">    result = null;</span>
+<span class="fc" id="L303">    result = null;</span>
     boolean status;
-<span class="nc" id="L305">    FileOutputStream output = null;</span>
-<span class="nc" id="L306">    FileInputStream fileInputStream = null;</span>
+<span class="fc" id="L305">    FileOutputStream output = null;</span>
+<span class="fc" id="L306">    FileInputStream fileInputStream = null;</span>
     try {
-<span class="nc bnc" id="L308" title="All 2 branches missed.">      if (getStoreOrAppend &gt; 0) {</span>
-<span class="nc" id="L309">        fileInputStream = new FileInputStream(local);</span>
-<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (getStoreOrAppend == 1) {</span>
-<span class="nc" id="L311">          status = ftpClient.storeFile(remote, fileInputStream);</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">      if (getStoreOrAppend &gt; 0) {</span>
+<span class="fc" id="L309">        fileInputStream = new FileInputStream(local);</span>
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">        if (getStoreOrAppend == 1) {</span>
+<span class="fc" id="L311">          status = ftpClient.storeFile(remote, fileInputStream);</span>
         } else {
           // append
 <span class="nc" id="L314">          status = ftpClient.appendFile(remote, fileInputStream);</span>
         }
-<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (!status) {</span>
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">        if (!status) {</span>
 <span class="nc" id="L317">          result = &quot;Cannot finalize store like operation&quot;;</span>
 <span class="nc" id="L318">          logger.error(result);</span>
 <span class="nc" id="L319">          return false;</span>
@@ -327,14 +327,14 @@ public class WaarpFtpClient {
 <span class="nc" id="L327">          return false;</span>
         }
       }
-<span class="nc" id="L330">      return true;</span>
+<span class="fc" id="L330">      return true;</span>
 <span class="nc" id="L331">    } catch (final IOException e) {</span>
 <span class="nc" id="L332">      result = &quot;Cannot finalize operation&quot;;</span>
 <span class="nc" id="L333">      logger.error(result, e);</span>
 <span class="nc" id="L334">      return false;</span>
     } finally {
-<span class="nc" id="L336">      FileUtils.close(output);</span>
-<span class="nc" id="L337">      FileUtils.close(fileInputStream);</span>
+<span class="fc" id="L336">      FileUtils.close(output);</span>
+<span class="fc" id="L337">      FileUtils.close(fileInputStream);</span>
     }
   }
 
@@ -343,14 +343,14 @@ public class WaarpFtpClient {
    */
   public String[] listFiles() {
     try {
-<span class="nc" id="L346">      final FTPFile[] list = ftpClient.listFiles();</span>
-<span class="nc" id="L347">      final String[] results = new String[list.length];</span>
-<span class="nc" id="L348">      int i = 0;</span>
-<span class="nc bnc" id="L349" title="All 2 branches missed.">      for (final FTPFile file : list) {</span>
-<span class="nc" id="L350">        results[i] = file.toFormattedString();</span>
-<span class="nc" id="L351">        i++;</span>
+<span class="fc" id="L346">      final FTPFile[] list = ftpClient.listFiles();</span>
+<span class="fc" id="L347">      final String[] results = new String[list.length];</span>
+<span class="fc" id="L348">      int i = 0;</span>
+<span class="fc bfc" id="L349" title="All 2 branches covered.">      for (final FTPFile file : list) {</span>
+<span class="fc" id="L350">        results[i] = file.toFormattedString();</span>
+<span class="fc" id="L351">        i++;</span>
       }
-<span class="nc" id="L353">      return results;</span>
+<span class="fc" id="L353">      return results;</span>
 <span class="nc" id="L354">    } catch (final IOException e) {</span>
 <span class="nc" id="L355">      result = &quot;Cannot finalize transfer operation&quot;;</span>
 <span class="nc" id="L356">      logger.error(result, e);</span>
@@ -365,10 +365,10 @@ public class WaarpFtpClient {
    */
   public boolean featureEnabled(String feature) {
     try {
-<span class="nc" id="L368">      SysErrLogger.FAKE_LOGGER.syserr(ftpClient.features());</span>
-<span class="nc bnc" id="L369" title="All 2 branches missed.">      if (ftpClient.featureValue(feature) == null) {</span>
-<span class="nc" id="L370">        final String resultNew = ftpClient.getReplyString();</span>
-<span class="nc" id="L371">        return resultNew.contains(feature.toUpperCase());</span>
+<span class="fc" id="L368">      SysErrLogger.FAKE_LOGGER.syserr(ftpClient.features());</span>
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">      if (ftpClient.featureValue(feature) == null) {</span>
+<span class="fc" id="L370">        final String resultNew = ftpClient.getReplyString();</span>
+<span class="fc" id="L371">        return resultNew.contains(feature.toUpperCase());</span>
       }
 <span class="nc" id="L373">      return true;</span>
 <span class="nc" id="L374">    } catch (final IOException e) {</span>
@@ -413,15 +413,15 @@ public class WaarpFtpClient {
    * @return the string lines returned by the SITE command params
    */
   public String[] executeSiteCommand(String params) {
-<span class="nc" id="L416">    result = null;</span>
+<span class="fc" id="L416">    result = null;</span>
     try {
-<span class="nc" id="L418">      SysErrLogger.FAKE_LOGGER.syserr(&quot;SITE &quot; + params);</span>
-<span class="nc" id="L419">      String[] results = ftpClient.doCommandAsStrings(&quot;SITE&quot;, params);</span>
-<span class="nc bnc" id="L420" title="All 2 branches missed.">      if (results == null) {</span>
+<span class="fc" id="L418">      SysErrLogger.FAKE_LOGGER.syserr(&quot;SITE &quot; + params);</span>
+<span class="fc" id="L419">      String[] results = ftpClient.doCommandAsStrings(&quot;SITE&quot;, params);</span>
+<span class="pc bpc" id="L420" title="1 of 2 branches missed.">      if (results == null) {</span>
 <span class="nc" id="L421">        results = new String[1];</span>
 <span class="nc" id="L422">        results[0] = ftpClient.getReplyString();</span>
       }
-<span class="nc" id="L424">      return results;</span>
+<span class="fc" id="L424">      return results;</span>
 <span class="nc" id="L425">    } catch (final IOException e) {</span>
 <span class="nc" id="L426">      result = &quot;Cannot execute operation Site&quot;;</span>
 <span class="nc" id="L427">      logger.error(result, e);</span>

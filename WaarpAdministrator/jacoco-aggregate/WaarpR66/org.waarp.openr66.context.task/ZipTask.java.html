@@ -37,8 +37,8 @@ public class ZipTask extends AbstractTask {
   /**
    * Internal Logger
    */
-<span class="nc" id="L40">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L41">      WaarpLoggerFactory.getLogger(ZipTask.class);</span>
+<span class="fc" id="L40">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L41">      WaarpLoggerFactory.getLogger(ZipTask.class);</span>
 
   /**
    * @param argRule
@@ -48,23 +48,23 @@ public class ZipTask extends AbstractTask {
    */
   public ZipTask(String argRule, int delay, String argTransfer,
                  R66Session session) {
-<span class="nc" id="L51">    super(TaskType.ZIP, delay, argRule, argTransfer, session);</span>
-<span class="nc" id="L52">  }</span>
+<span class="fc" id="L51">    super(TaskType.ZIP, delay, argRule, argTransfer, session);</span>
+<span class="fc" id="L52">  }</span>
 
   @Override
   public void run() {
-<span class="nc" id="L56">    logger.info(</span>
+<span class="fc" id="L56">    logger.info(</span>
         &quot;ZIP with &quot; + argRule + ':' + argTransfer + ':' + delay + &quot; and {}&quot;,
         session);
-<span class="nc" id="L59">    String finalname = argRule;</span>
-<span class="nc" id="L60">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>
+<span class="fc" id="L59">    String finalname = argRule;</span>
+<span class="fc" id="L60">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>
     boolean zip;
-<span class="nc bnc" id="L62" title="All 3 branches missed.">    switch (delay) {</span>
+<span class="pc bpc" id="L62" title="1 of 3 branches missed.">    switch (delay) {</span>
       case 2: {
         // directory: zip finalname where finalname=&quot;target directory&quot;
-<span class="nc" id="L65">        final String[] args = BLANK.split(finalname);</span>
-<span class="nc" id="L66">        zip = ZipUtility.createZipFromDirectory(args[1], args[0], true);</span>
-<span class="nc" id="L67">        break;</span>
+<span class="fc" id="L65">        final String[] args = BLANK.split(finalname);</span>
+<span class="fc" id="L66">        zip = ZipUtility.createZipFromDirectory(args[1], args[0], true);</span>
+<span class="fc" id="L67">        break;</span>
       }
       case 3: {
         // list of files: zip finalname where finalname=&quot;target file1 file2...&quot;
@@ -79,20 +79,20 @@ public class ZipTask extends AbstractTask {
       default: {
         // unzip
         // directory: unzip finalname where finalname=&quot;source directory&quot;
-<span class="nc" id="L82">        final String[] args = BLANK.split(finalname);</span>
-<span class="nc" id="L83">        final File zipFile = new File(args[0]);</span>
-<span class="nc" id="L84">        final File directory = new File(args[1]);</span>
+<span class="fc" id="L82">        final String[] args = BLANK.split(finalname);</span>
+<span class="fc" id="L83">        final File zipFile = new File(args[0]);</span>
+<span class="fc" id="L84">        final File directory = new File(args[1]);</span>
         try {
-<span class="nc" id="L86">          ZipUtility.unZip(zipFile, directory);</span>
-<span class="nc" id="L87">          zip = true;</span>
+<span class="fc" id="L86">          ZipUtility.unZip(zipFile, directory);</span>
+<span class="fc" id="L87">          zip = true;</span>
 <span class="nc" id="L88">        } catch (final IOException e) {</span>
 <span class="nc" id="L89">          logger.warn(&quot;Error while unzip&quot;, e);</span>
 <span class="nc" id="L90">          zip = false;</span>
-<span class="nc" id="L91">        }</span>
+<span class="fc" id="L91">        }</span>
 <span class="nc" id="L92">        break;</span>
       }
     }
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (!zip) {</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">    if (!zip) {</span>
 <span class="nc" id="L96">      logger.error(</span>
           &quot;Zip error with &quot; + argRule + ':' + argTransfer + ':' + delay +
           &quot; and &quot; + session);
@@ -100,8 +100,8 @@ public class ZipTask extends AbstractTask {
 <span class="nc" id="L100">          .setFailure(new OpenR66ProtocolSystemException(&quot;Zip error&quot;));</span>
 <span class="nc" id="L101">      return;</span>
     }
-<span class="nc" id="L103">    futureCompletion.setSuccess();</span>
-<span class="nc" id="L104">  }</span>
+<span class="fc" id="L103">    futureCompletion.setSuccess();</span>
+<span class="fc" id="L104">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

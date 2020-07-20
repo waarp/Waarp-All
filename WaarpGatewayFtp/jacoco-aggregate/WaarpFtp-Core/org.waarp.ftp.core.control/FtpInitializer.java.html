@@ -38,16 +38,16 @@ public class FtpInitializer extends ChannelInitializer&lt;SocketChannel&gt; {
   /**
    * CRLF, CRNUL, LF delimiters
    */
-<span class="nc" id="L41">  protected static final ByteBuf[] delimiter = {</span>
-<span class="nc" id="L42">      Unpooled.wrappedBuffer(ReplyCode.CRLF.getBytes(WaarpStringUtils.UTF8)),</span>
-<span class="nc" id="L43">      Unpooled.wrappedBuffer(ReplyCode.CRNUL.getBytes(WaarpStringUtils.UTF8)),</span>
-<span class="nc" id="L44">      Unpooled.wrappedBuffer(ReplyCode.LF.getBytes(WaarpStringUtils.UTF8))</span>
+<span class="fc" id="L41">  protected static final ByteBuf[] delimiter = {</span>
+<span class="fc" id="L42">      Unpooled.wrappedBuffer(ReplyCode.CRLF.getBytes(WaarpStringUtils.UTF8)),</span>
+<span class="fc" id="L43">      Unpooled.wrappedBuffer(ReplyCode.CRNUL.getBytes(WaarpStringUtils.UTF8)),</span>
+<span class="fc" id="L44">      Unpooled.wrappedBuffer(ReplyCode.LF.getBytes(WaarpStringUtils.UTF8))</span>
   };
 
-<span class="nc" id="L47">  protected static final FtpControlStringDecoder ftpControlStringDecoder =</span>
+<span class="fc" id="L47">  protected static final FtpControlStringDecoder ftpControlStringDecoder =</span>
       new FtpControlStringDecoder(WaarpStringUtils.UTF8);
 
-<span class="nc" id="L50">  protected static final FtpControlStringEncoder ftpControlStringEncoder =</span>
+<span class="fc" id="L50">  protected static final FtpControlStringEncoder ftpControlStringEncoder =</span>
       new FtpControlStringEncoder(WaarpStringUtils.UTF8);
 
   /**
@@ -67,30 +67,30 @@ public class FtpInitializer extends ChannelInitializer&lt;SocketChannel&gt; {
    * @param configuration
    */
   public FtpInitializer(Class&lt;? extends BusinessHandler&gt; businessHandler,
-<span class="nc" id="L70">                        FtpConfiguration configuration) {</span>
-<span class="nc" id="L71">    this.businessHandler = businessHandler;</span>
-<span class="nc" id="L72">    this.configuration = configuration;</span>
-<span class="nc" id="L73">  }</span>
+<span class="fc" id="L70">                        FtpConfiguration configuration) {</span>
+<span class="fc" id="L71">    this.businessHandler = businessHandler;</span>
+<span class="fc" id="L72">    this.configuration = configuration;</span>
+<span class="fc" id="L73">  }</span>
 
   /**
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
   public void initChannel(SocketChannel ch) throws Exception {
-<span class="nc" id="L80">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="fc" id="L80">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Add the text line codec combination first,
-<span class="nc" id="L82">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, delimiter));</span>
-<span class="nc" id="L83">    pipeline.addLast(&quot;decoder&quot;, ftpControlStringDecoder);</span>
-<span class="nc" id="L84">    pipeline.addLast(&quot;encoder&quot;, ftpControlStringEncoder);</span>
+<span class="fc" id="L82">    pipeline.addLast(&quot;framer&quot;, new DelimiterBasedFrameDecoder(8192, delimiter));</span>
+<span class="fc" id="L83">    pipeline.addLast(&quot;decoder&quot;, ftpControlStringDecoder);</span>
+<span class="fc" id="L84">    pipeline.addLast(&quot;encoder&quot;, ftpControlStringEncoder);</span>
     // Threaded execution for business logic
-<span class="nc" id="L86">    final EventExecutorGroup executorGroup =</span>
-<span class="nc" id="L87">        configuration.getFtpInternalConfiguration().getExecutor();</span>
+<span class="fc" id="L86">    final EventExecutorGroup executorGroup =</span>
+<span class="fc" id="L87">        configuration.getFtpInternalConfiguration().getExecutor();</span>
     // and then business logic. New one on every connection
-<span class="nc" id="L89">    final BusinessHandler newbusiness =</span>
-<span class="nc" id="L90">        businessHandler.getDeclaredConstructor().newInstance();</span>
-<span class="nc" id="L91">    final NetworkHandler newNetworkHandler =</span>
+<span class="fc" id="L89">    final BusinessHandler newbusiness =</span>
+<span class="fc" id="L90">        businessHandler.getDeclaredConstructor().newInstance();</span>
+<span class="fc" id="L91">    final NetworkHandler newNetworkHandler =</span>
         new NetworkHandler(new FtpSession(configuration, newbusiness));
-<span class="nc" id="L93">    pipeline.addLast(executorGroup, &quot;handler&quot;, newNetworkHandler);</span>
-<span class="nc" id="L94">  }</span>
+<span class="fc" id="L93">    pipeline.addLast(executorGroup, &quot;handler&quot;, newNetworkHandler);</span>
+<span class="fc" id="L94">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

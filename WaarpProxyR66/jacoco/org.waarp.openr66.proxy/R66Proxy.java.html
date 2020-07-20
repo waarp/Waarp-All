@@ -42,43 +42,44 @@ public class R66Proxy {
    * @param args
    */
   public static void main(String[] args) {
-<span class="nc" id="L45">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc" id="L46">    logger = WaarpLoggerFactory.getLogger(R66Proxy.class);</span>
-<span class="nc bnc" id="L47" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
-<span class="nc" id="L48">      logger.error(&quot;Needs the configuration file as first argument&quot;);</span>
-<span class="nc" id="L49">      return;</span>
+<span class="nc" id="L45">    WaarpLoggerFactory</span>
+<span class="nc" id="L46">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L47">    logger = WaarpLoggerFactory.getLogger(R66Proxy.class);</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (args.length &lt; 1) {</span>
+<span class="nc" id="L49">      logger.error(&quot;Needs the configuration file as first argument&quot;);</span>
+<span class="nc" id="L50">      return;</span>
     }
-<span class="nc" id="L51">    configuration = new ConfigurationProxyR66();</span>
-<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (initialize(args[0])) {</span>
-<span class="nc" id="L53">      logger.warn(&quot;Proxy OpenR66 starts for &quot; + configuration.getHostId());</span>
-<span class="nc" id="L54">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L55">          .syserr(&quot;Proxy OpenR66 starts for &quot; + configuration.getHostId());</span>
+<span class="nc" id="L52">    configuration = new ConfigurationProxyR66();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (initialize(args[0])) {</span>
+<span class="nc" id="L54">      logger.warn(&quot;Proxy OpenR66 starts for &quot; + configuration.getHostId());</span>
+<span class="nc" id="L55">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L56">          .syserr(&quot;Proxy OpenR66 starts for &quot; + configuration.getHostId());</span>
     } else {
-<span class="nc" id="L57">      logger</span>
-<span class="nc" id="L58">          .error(&quot;Cannot start Proxy OpenR66 for &quot; + configuration.getHostId());</span>
-<span class="nc" id="L59">      SysErrLogger.FAKE_LOGGER.syserr(</span>
-<span class="nc" id="L60">          &quot;Cannot start Proxy OpenR66 for &quot; + configuration.getHostId());</span>
-<span class="nc" id="L61">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L58">      logger</span>
+<span class="nc" id="L59">          .error(&quot;Cannot start Proxy OpenR66 for &quot; + configuration.getHostId());</span>
+<span class="nc" id="L60">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L61">          &quot;Cannot start Proxy OpenR66 for &quot; + configuration.getHostId());</span>
+<span class="nc" id="L62">      System.exit(1);//NOSONAR</span>
     }
-<span class="nc" id="L63">  }</span>
+<span class="nc" id="L64">  }</span>
 
   public static boolean initialize(String config) {
-<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L67">      logger = WaarpLoggerFactory.getLogger(R66Proxy.class);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L68">      logger = WaarpLoggerFactory.getLogger(R66Proxy.class);</span>
     }
-<span class="nc" id="L69">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">        .setConfigurationProxyFromXml(configuration, config)) {</span>
-<span class="nc" id="L71">      logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
-<span class="nc" id="L72">      return false;</span>
+<span class="nc" id="L70">    if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        .setConfigurationProxyFromXml(configuration, config)) {</span>
+<span class="nc" id="L72">      logger.error(&quot;Needs a correct configuration file as first argument&quot;);</span>
+<span class="nc" id="L73">      return false;</span>
     }
     try {
-<span class="nc" id="L75">      configuration.serverStartup();</span>
-<span class="nc" id="L76">    } catch (final Throwable e) {</span>
-<span class="nc" id="L77">      logger.error(&quot;Startup of Proxy is in error&quot;, e);</span>
-<span class="nc" id="L78">      WaarpShutdownHook.terminate(false);</span>
-<span class="nc" id="L79">      return false;</span>
-<span class="nc" id="L80">    }</span>
-<span class="nc" id="L81">    return true;</span>
+<span class="nc" id="L76">      configuration.serverStartup();</span>
+<span class="nc" id="L77">    } catch (final Throwable e) {</span>
+<span class="nc" id="L78">      logger.error(&quot;Startup of Proxy is in error&quot;, e);</span>
+<span class="nc" id="L79">      WaarpShutdownHook.terminate(false);</span>
+<span class="nc" id="L80">      return false;</span>
+<span class="nc" id="L81">    }</span>
+<span class="nc" id="L82">    return true;</span>
   }
 
 }

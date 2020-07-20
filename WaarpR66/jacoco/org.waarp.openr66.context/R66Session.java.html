@@ -44,6 +44,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The global object session in OpenR66, a session by local channel
@@ -52,13 +53,13 @@ public class R66Session implements SessionInterface {
   /**
    * Internal Logger
    */
-<span class="fc" id="L55">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L56">      WaarpLoggerFactory.getLogger(R66Session.class);</span>
+<span class="fc" id="L56">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L57">      WaarpLoggerFactory.getLogger(R66Session.class);</span>
 
   /**
    * Block size used during file transfer
    */
-<span class="fc" id="L61">  private int blockSize = Configuration.configuration.getBlockSize();</span>
+<span class="fc" id="L62">  private int blockSize = Configuration.configuration.getBlockSize();</span>
   /**
    * The local channel reference
    */
@@ -91,7 +92,7 @@ public class R66Session implements SessionInterface {
   /**
    * Used to prevent deny of service
    */
-  private volatile int numOfError;
+  private AtomicInteger numOfError;
 
   /**
    * Current Restart information
@@ -103,7 +104,7 @@ public class R66Session implements SessionInterface {
    */
   private DbTaskRunner runner;
 
-<span class="fc" id="L106">  private String status = &quot;NoStatus&quot;;</span>
+<span class="fc" id="L107">  private String status = &quot;NoStatus&quot;;</span>
 
   /**
    * The Finite Machine State
@@ -116,43 +117,43 @@ public class R66Session implements SessionInterface {
   /**
    * Extended protocol or not
    */
-<span class="fc" id="L119">  private final boolean extendedProtocol =</span>
-<span class="fc" id="L120">      Configuration.configuration.isExtendedProtocol();</span>
+<span class="fc" id="L120">  private final boolean extendedProtocol =</span>
+<span class="fc" id="L121">      Configuration.configuration.isExtendedProtocol();</span>
 
-<span class="fc" id="L122">  private final HashMap&lt;String, R66Dir&gt; dirsFromSession =</span>
+<span class="fc" id="L123">  private final HashMap&lt;String, R66Dir&gt; dirsFromSession =</span>
       new HashMap&lt;String, R66Dir&gt;();
 
   /**
    * Create the session
    */
-<span class="fc" id="L128">  public R66Session() {</span>
-<span class="fc" id="L129">    isReady = false;</span>
-<span class="fc" id="L130">    auth = new R66Auth(this);</span>
-<span class="fc" id="L131">    dir = new R66Dir(this);</span>
-<span class="fc" id="L132">    restart = new R66Restart(this);</span>
-<span class="fc" id="L133">    state = R66FiniteDualStates.newSessionMachineState();</span>
-<span class="fc" id="L134">  }</span>
+<span class="fc" id="L129">  public R66Session() {</span>
+<span class="fc" id="L130">    isReady = false;</span>
+<span class="fc" id="L131">    auth = new R66Auth(this);</span>
+<span class="fc" id="L132">    dir = new R66Dir(this);</span>
+<span class="fc" id="L133">    restart = new R66Restart(this);</span>
+<span class="fc" id="L134">    state = R66FiniteDualStates.newSessionMachineState();</span>
+<span class="fc" id="L135">  }</span>
 
   /**
    * @return extendedProtocol
    */
   public boolean getExtendedProtocol() {
-<span class="fc" id="L140">    return extendedProtocol;</span>
+<span class="fc" id="L141">    return extendedProtocol;</span>
   }
 
   /**
    * @return the businessObject
    */
   public R66BusinessInterface getBusinessObject() {
-<span class="fc" id="L147">    return businessObject;</span>
+<span class="fc" id="L148">    return businessObject;</span>
   }
 
   /**
    * @param businessObject the businessObject to set
    */
   public void setBusinessObject(R66BusinessInterface businessObject) {
-<span class="fc" id="L154">    this.businessObject = businessObject;</span>
-<span class="fc" id="L155">  }</span>
+<span class="fc" id="L155">    this.businessObject = businessObject;</span>
+<span class="fc" id="L156">  }</span>
 
   /**
    * Propose a new State
@@ -163,177 +164,174 @@ public class R66Session implements SessionInterface {
    */
   public void newState(R66FiniteDualStates desiredstate) {
     try {
-<span class="fc" id="L166">      state.setCurrent(desiredstate);</span>
-<span class="nc" id="L167">    } catch (final IllegalFiniteStateException e) {</span>
-<span class="nc" id="L168">      logger</span>
-<span class="nc" id="L169">          .warn(&quot;Should not changed of State: {} {}&quot;, this, e.getMessage(), e);</span>
-<span class="nc" id="L170">      state.setDryCurrent(desiredstate);</span>
-<span class="fc" id="L171">    }</span>
-<span class="fc" id="L172">  }</span>
+<span class="fc" id="L167">      state.setCurrent(desiredstate);</span>
+<span class="nc" id="L168">    } catch (final IllegalFiniteStateException e) {</span>
+<span class="nc" id="L169">      logger</span>
+<span class="nc" id="L170">          .warn(&quot;Should not changed of State: {} {}&quot;, this, e.getMessage(), e);</span>
+<span class="nc" id="L171">      state.setDryCurrent(desiredstate);</span>
+<span class="fc" id="L172">    }</span>
+<span class="fc" id="L173">  }</span>
 
   public void setErrorState() {
     try {
-<span class="nc" id="L176">      state.setCurrent(R66FiniteDualStates.ERROR);</span>
-<span class="nc" id="L177">    } catch (final IllegalFiniteStateException e) {</span>
-<span class="nc" id="L178">      logger.error(&quot;Couldn't pass to error state. This should not happen&quot;);</span>
-<span class="nc" id="L179">    }</span>
-<span class="nc" id="L180">  }</span>
+<span class="nc" id="L177">      state.setCurrent(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L178">    } catch (final IllegalFiniteStateException e) {</span>
+<span class="nc" id="L179">      logger.error(&quot;Couldn't pass to error state. This should not happen&quot;);</span>
+<span class="nc" id="L180">    }</span>
+<span class="nc" id="L181">  }</span>
 
   /**
    * @return the current state in the finite state machine
    */
   public R66FiniteDualStates getState() {
-<span class="fc" id="L186">    return state.getCurrent();</span>
+<span class="fc" id="L187">    return state.getCurrent();</span>
   }
 
   /**
-   * Debugging purpose
+   * Debugging purpose (trace)
    *
    * @param stat
-   *
-   * @deprecated used only for trace
    */
-  @Deprecated
   public void setStatus(int stat) {
-<span class="fc" id="L198">    final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];</span>
-<span class="fc" id="L199">    status = '(' + elt.getFileName() + ':' + elt.getLineNumber() + &quot;):&quot; + stat;</span>
-<span class="fc" id="L200">  }</span>
+<span class="fc" id="L196">    final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];</span>
+<span class="fc" id="L197">    status = '(' + elt.getFileName() + ':' + elt.getLineNumber() + &quot;):&quot; + stat;</span>
+<span class="fc" id="L198">  }</span>
 
   @Override
   public void clear() {
     // First check if a transfer was on going
-<span class="pc bpc" id="L205" title="5 of 6 branches missed.">    if (runner != null &amp;&amp; !runner.isFinished() &amp;&amp; !runner.continueTransfer()) {</span>
-<span class="nc bnc" id="L206" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
-<span class="nc" id="L208">          final R66Result result = new R66Result(</span>
+<span class="pc bpc" id="L203" title="5 of 6 branches missed.">    if (runner != null &amp;&amp; !runner.isFinished() &amp;&amp; !runner.continueTransfer()) {</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="nc" id="L206">          final R66Result result = new R66Result(</span>
               new OpenR66RunnerErrorException(&quot;Close before ending&quot;), this,
               true, ErrorCode.Disconnection,
               runner);// True since called from closed
-<span class="nc" id="L212">          result.setRunner(runner);</span>
+<span class="nc" id="L210">          result.setRunner(runner);</span>
           try {
-<span class="nc" id="L214">            setFinalizeTransfer(false, result);</span>
-<span class="nc" id="L215">          } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="nc" id="L212">            setFinalizeTransfer(false, result);</span>
+<span class="nc" id="L213">          } catch (final OpenR66RunnerErrorException ignored) {</span>
             // nothing
-<span class="nc" id="L217">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
+<span class="nc" id="L215">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
             // nothing
-<span class="nc" id="L219">          }</span>
+<span class="nc" id="L217">          }</span>
         }
       }
     }
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">    if (dir != null) {</span>
-<span class="fc" id="L224">      dir.clear();</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    if (dir != null) {</span>
+<span class="fc" id="L222">      dir.clear();</span>
     }
-<span class="pc bpc" id="L226" title="1 of 2 branches missed.">    if (auth != null) {</span>
-<span class="fc" id="L227">      auth.clear();</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">    if (auth != null) {</span>
+<span class="fc" id="L225">      auth.clear();</span>
     }
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="nc" id="L230">      runner.clear();</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="nc" id="L228">      runner.clear();</span>
     }
-<span class="pc bpc" id="L232" title="1 of 2 branches missed.">    if (state != null) {</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">    if (state != null) {</span>
       try {
-<span class="fc" id="L234">        state.setCurrent(R66FiniteDualStates.CLOSEDCHANNEL);</span>
-<span class="nc" id="L235">      } catch (final IllegalFiniteStateException ignored) {</span>
+<span class="fc" id="L232">        state.setCurrent(R66FiniteDualStates.CLOSEDCHANNEL);</span>
+<span class="nc" id="L233">      } catch (final IllegalFiniteStateException ignored) {</span>
         // nothing
-<span class="fc" id="L237">      }</span>
-<span class="fc" id="L238">      R66FiniteDualStates.endSessionMachineSate(state);</span>
+<span class="fc" id="L235">      }</span>
+<span class="fc" id="L236">      R66FiniteDualStates.endSessionMachineSate(state);</span>
     }
     // No clean of file since it can be used after channel is closed
-<span class="fc" id="L241">    isReady = false;</span>
-<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
-<span class="nc" id="L243">      businessObject.releaseResources(this);</span>
-<span class="nc" id="L244">      businessObject = null;</span>
+<span class="fc" id="L239">    isReady = false;</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
+<span class="nc" id="L241">      businessObject.releaseResources(this);</span>
+<span class="nc" id="L242">      businessObject = null;</span>
     }
-<span class="fc" id="L246">  }</span>
+<span class="fc" id="L244">  }</span>
 
   public void partialClear() {
     // First check if a transfer was on going
-<span class="pc bpc" id="L250" title="1 of 6 branches missed.">    if (runner != null &amp;&amp; !runner.isFinished() &amp;&amp; !runner.continueTransfer()) {</span>
-<span class="nc bnc" id="L251" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
-<span class="nc" id="L253">          final R66Result result = new R66Result(</span>
+<span class="pc bpc" id="L248" title="1 of 6 branches missed.">    if (runner != null &amp;&amp; !runner.isFinished() &amp;&amp; !runner.continueTransfer()) {</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="nc" id="L251">          final R66Result result = new R66Result(</span>
               new OpenR66RunnerErrorException(&quot;Close before ending&quot;), this,
               true, ErrorCode.Disconnection,
               runner);// True since called from closed
-<span class="nc" id="L257">          result.setRunner(runner);</span>
+<span class="nc" id="L255">          result.setRunner(runner);</span>
           try {
-<span class="nc" id="L259">            setFinalizeTransfer(false, result);</span>
-<span class="nc" id="L260">          } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="nc" id="L257">            setFinalizeTransfer(false, result);</span>
+<span class="nc" id="L258">          } catch (final OpenR66RunnerErrorException ignored) {</span>
             // nothing
-<span class="nc" id="L262">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
+<span class="nc" id="L260">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
             // nothing
-<span class="nc" id="L264">          }</span>
+<span class="nc" id="L262">          }</span>
         }
       }
     }
     // No clean of file since it can be used after channel is closed
-<span class="fc" id="L269">    isReady = false;</span>
-<span class="pc bpc" id="L270" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
-<span class="nc" id="L271">      businessObject.releaseResources(this);</span>
-<span class="nc" id="L272">      businessObject = null;</span>
+<span class="fc" id="L267">    isReady = false;</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
+<span class="nc" id="L269">      businessObject.releaseResources(this);</span>
+<span class="nc" id="L270">      businessObject = null;</span>
     }
-<span class="fc" id="L274">  }</span>
+<span class="fc" id="L272">  }</span>
 
   @Override
   public R66Auth getAuth() {
-<span class="fc" id="L278">    return auth;</span>
+<span class="fc" id="L276">    return auth;</span>
   }
 
   @Override
   public int getBlockSize() {
-<span class="fc" id="L283">    return blockSize;</span>
+<span class="fc" id="L281">    return blockSize;</span>
   }
 
   /**
    * @param blocksize the blocksize to set
    */
   public void setBlockSize(int blocksize) {
-<span class="fc" id="L290">    blockSize = blocksize;</span>
-<span class="fc" id="L291">  }</span>
+<span class="fc" id="L288">    blockSize = blocksize;</span>
+<span class="fc" id="L289">  }</span>
 
   @Override
   public R66Dir getDir() {
-<span class="fc" id="L295">    return dir;</span>
+<span class="fc" id="L293">    return dir;</span>
   }
 
   @Override
   public FilesystemBasedFileParameterImpl getFileParameter() {
-<span class="nc" id="L300">    return Configuration.getFileParameter();</span>
+<span class="nc" id="L298">    return Configuration.getFileParameter();</span>
   }
 
   @Override
   public R66Restart getRestart() {
-<span class="nc" id="L305">    return restart;</span>
+<span class="nc" id="L303">    return restart;</span>
   }
 
   /**
    * @return True if the connection is currently authenticated
    */
   public boolean isAuthenticated() {
-<span class="pc bpc" id="L312" title="1 of 2 branches missed.">    if (auth == null) {</span>
-<span class="nc" id="L313">      return false;</span>
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">    if (auth == null) {</span>
+<span class="nc" id="L311">      return false;</span>
     }
-<span class="fc" id="L315">    return auth.isIdentified();</span>
+<span class="fc" id="L313">    return auth.isIdentified();</span>
   }
 
   /**
    * @return True if the Channel is ready to accept transfer
    */
   public boolean isReady() {
-<span class="fc" id="L322">    return isReady;</span>
+<span class="fc" id="L320">    return isReady;</span>
   }
 
   /**
    * @param isReady the isReady for transfer to set
    */
   public void setReady(boolean isReady) {
-<span class="fc" id="L329">    this.isReady = isReady;</span>
-<span class="fc" id="L330">  }</span>
+<span class="fc" id="L327">    this.isReady = isReady;</span>
+<span class="fc" id="L328">  }</span>
 
   /**
    * @return the runner
    */
   public DbTaskRunner getRunner() {
-<span class="fc" id="L336">    return runner;</span>
+<span class="fc" id="L334">    return runner;</span>
   }
 
   /**
@@ -341,35 +339,35 @@ public class R66Session implements SessionInterface {
    */
   public void setLocalChannelReference(
       LocalChannelReference localChannelReference) {
-<span class="fc" id="L344">    this.localChannelReference = localChannelReference;</span>
-<span class="fc" id="L345">    this.localChannelReference.setSession(this);</span>
-<span class="pc bpc" id="L346" title="1 of 2 branches missed.">    if (this.localChannelReference.getNetworkChannel() != null) {</span>
-<span class="fc" id="L347">      raddress = this.localChannelReference.getNetworkChannel().remoteAddress();</span>
-<span class="fc" id="L348">      laddress = this.localChannelReference.getNetworkChannel().localAddress();</span>
+<span class="fc" id="L342">    this.localChannelReference = localChannelReference;</span>
+<span class="fc" id="L343">    this.localChannelReference.setSession(this);</span>
+<span class="pc bpc" id="L344" title="1 of 2 branches missed.">    if (this.localChannelReference.getNetworkChannel() != null) {</span>
+<span class="fc" id="L345">      raddress = this.localChannelReference.getNetworkChannel().remoteAddress();</span>
+<span class="fc" id="L346">      laddress = this.localChannelReference.getNetworkChannel().localAddress();</span>
     } else {
-<span class="nc" id="L350">      raddress = laddress = new InetSocketAddress(0);</span>
+<span class="nc" id="L348">      raddress = laddress = new InetSocketAddress(0);</span>
     }
-<span class="fc" id="L352">  }</span>
+<span class="fc" id="L350">  }</span>
 
   /**
    * @return the remote SocketAddress
    */
   public SocketAddress getRemoteAddress() {
-<span class="fc" id="L358">    return raddress;</span>
+<span class="fc" id="L356">    return raddress;</span>
   }
 
   /**
    * @return the local SocketAddress
    */
   public SocketAddress getLocalAddress() {
-<span class="fc" id="L365">    return laddress;</span>
+<span class="fc" id="L363">    return laddress;</span>
   }
 
   /**
    * @return the localChannelReference
    */
   public LocalChannelReference getLocalChannelReference() {
-<span class="fc" id="L372">    return localChannelReference;</span>
+<span class="fc" id="L370">    return localChannelReference;</span>
   }
 
   /**
@@ -380,28 +378,28 @@ public class R66Session implements SessionInterface {
    */
   public void setNoSessionRunner(DbTaskRunner runner,
                                  LocalChannelReference localChannelReference) {
-<span class="fc" id="L383">    this.runner = runner;</span>
+<span class="fc" id="L381">    this.runner = runner;</span>
     // Warning: the file is not correctly setup
     try {
-<span class="fc" id="L386">      file = (R66File) dir.setFile(this.runner.getFilename(), false);</span>
-<span class="nc" id="L387">    } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L384">      file = (R66File) dir.setFile(this.runner.getFilename(), false);</span>
+<span class="fc" id="L385">    } catch (final CommandAbstractException ignored) {</span>
       // nothing
-<span class="fc" id="L389">    }</span>
-<span class="fc" id="L390">    auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());</span>
-<span class="fc" id="L391">    this.localChannelReference = localChannelReference;</span>
-<span class="fc bfc" id="L392" title="All 2 branches covered.">    if (this.localChannelReference == null) {</span>
-<span class="pc bpc" id="L393" title="1 of 2 branches missed.">      if (this.runner.getLocalChannelReference() != null) {</span>
-<span class="nc" id="L394">        this.localChannelReference = this.runner.getLocalChannelReference();</span>
+<span class="nc" id="L387">    }</span>
+<span class="fc" id="L388">    auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());</span>
+<span class="fc" id="L389">    this.localChannelReference = localChannelReference;</span>
+<span class="fc bfc" id="L390" title="All 2 branches covered.">    if (this.localChannelReference == null) {</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">      if (this.runner.getLocalChannelReference() != null) {</span>
+<span class="nc" id="L392">        this.localChannelReference = this.runner.getLocalChannelReference();</span>
       } else {
-<span class="fc" id="L396">        this.localChannelReference = new LocalChannelReference();</span>
+<span class="fc" id="L394">        this.localChannelReference = new LocalChannelReference();</span>
       }
-<span class="fc" id="L398">      this.localChannelReference</span>
-<span class="fc" id="L399">          .setErrorMessage(this.runner.getErrorInfo().getMesg(),</span>
-<span class="fc" id="L400">                           this.runner.getErrorInfo());</span>
+<span class="fc" id="L396">      this.localChannelReference</span>
+<span class="fc" id="L397">          .setErrorMessage(this.runner.getErrorInfo().getMesg(),</span>
+<span class="fc" id="L398">                           this.runner.getErrorInfo());</span>
     }
-<span class="fc" id="L402">    runner.setLocalChannelReference(this.localChannelReference);</span>
-<span class="fc" id="L403">    this.localChannelReference.setSession(this);</span>
-<span class="fc" id="L404">  }</span>
+<span class="fc" id="L400">    runner.setLocalChannelReference(this.localChannelReference);</span>
+<span class="fc" id="L401">    this.localChannelReference.setSession(this);</span>
+<span class="fc" id="L402">  }</span>
 
   /**
    * Set the File from the runner before PRE operation are done
@@ -411,31 +409,31 @@ public class R66Session implements SessionInterface {
   public void setFileBeforePreRunner() throws OpenR66RunnerErrorException {
     // check first if the next step is the PRE task from beginning
     try {
-<span class="fc" id="L414">      file = FileUtils.getFile(logger, this, runner.getOriginalFilename(),</span>
-<span class="fc" id="L415">                               runner.isPreTaskStarting(), runner.isSender(),</span>
-<span class="fc" id="L416">                               runner.isSendThrough(), file);</span>
-<span class="nc" id="L417">    } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L418">      runner.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
-<span class="nc" id="L419">      throw e;</span>
-<span class="fc" id="L420">    }</span>
-<span class="pc bpc" id="L421" title="1 of 4 branches missed.">    if (runner.isSender() &amp;&amp; !runner.isSendThrough()) {</span>
+<span class="fc" id="L412">      file = FileUtils.getFile(logger, this, runner.getOriginalFilename(),</span>
+<span class="fc" id="L413">                               runner.isPreTaskStarting(), runner.isSender(),</span>
+<span class="fc" id="L414">                               runner.isSendThrough(), file);</span>
+<span class="nc" id="L415">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L416">      runner.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
+<span class="nc" id="L417">      throw e;</span>
+<span class="fc" id="L418">    }</span>
+<span class="pc bpc" id="L419" title="1 of 4 branches missed.">    if (runner.isSender() &amp;&amp; !runner.isSendThrough()) {</span>
       // possibly resolved filename
       try {
-<span class="fc" id="L424">        runner.setOriginalFilename(file.getFile());</span>
-<span class="fc" id="L425">        runner.setFilename(file.getFile());</span>
-<span class="fc" id="L426">        logger.debug(</span>
-<span class="fc" id="L427">            &quot;Old size: &quot; + runner.getOriginalSize() + &quot; =&gt; &quot; + file.length());</span>
-<span class="pc bpc" id="L428" title="1 of 2 branches missed.">        if (runner.getOriginalSize() &lt;= 0) {</span>
-<span class="fc" id="L429">          final long originalSize = file.length();</span>
-<span class="pc bpc" id="L430" title="1 of 2 branches missed.">          if (originalSize &gt; 0) {</span>
-<span class="fc" id="L431">            runner.setOriginalSize(originalSize);</span>
+<span class="fc" id="L422">        runner.setOriginalFilename(file.getFile());</span>
+<span class="fc" id="L423">        runner.setFilename(file.getFile());</span>
+<span class="fc" id="L424">        logger.debug(</span>
+<span class="fc" id="L425">            &quot;Old size: &quot; + runner.getOriginalSize() + &quot; =&gt; &quot; + file.length());</span>
+<span class="pc bpc" id="L426" title="1 of 2 branches missed.">        if (runner.getOriginalSize() &lt;= 0) {</span>
+<span class="fc" id="L427">          final long originalSize = file.length();</span>
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">          if (originalSize &gt; 0) {</span>
+<span class="fc" id="L429">            runner.setOriginalSize(originalSize);</span>
           }
         }
-<span class="nc" id="L434">      } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L435">        throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L436">      }</span>
+<span class="nc" id="L432">      } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L433">        throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L434">      }</span>
     }
-<span class="fc" id="L438">  }</span>
+<span class="fc" id="L436">  }</span>
 
   /**
    * Set the File from the runner once PRE operation are done
@@ -452,110 +450,110 @@ public class R66Session implements SessionInterface {
    */
   public void setFileAfterPreRunner(boolean createFile)
       throws OpenR66RunnerErrorException, CommandAbstractException {
-<span class="pc bpc" id="L455" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
-<span class="nc" id="L456">      businessObject.checkAtChangeFilename(this);</span>
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
+<span class="nc" id="L454">      businessObject.checkAtChangeFilename(this);</span>
     }
     // Now create the associated file
-<span class="fc bfc" id="L459" title="All 2 branches covered.">    if (runner.isSender()) {</span>
+<span class="fc bfc" id="L457" title="All 2 branches covered.">    if (runner.isSender()) {</span>
       try {
-<span class="fc bfc" id="L461" title="All 2 branches covered.">        if (file == null) {</span>
+<span class="fc bfc" id="L459" title="All 2 branches covered.">        if (file == null) {</span>
           try {
-<span class="fc" id="L463">            file = (R66File) dir.setFile(runner.getFilename(), false);</span>
-<span class="nc" id="L464">          } catch (final CommandAbstractException e) {</span>
+<span class="fc" id="L461">            file = (R66File) dir.setFile(runner.getFilename(), false);</span>
+<span class="nc" id="L462">          } catch (final CommandAbstractException e) {</span>
             // file is not under normal base directory, so is external
             // File must already exist but can be using special code ('*?')
-<span class="nc" id="L467">            file = dir.setFileNoCheck(runner.getFilename());</span>
-<span class="fc" id="L468">          }</span>
+<span class="nc" id="L465">            file = dir.setFileNoCheck(runner.getFilename());</span>
+<span class="fc" id="L466">          }</span>
         }
-<span class="fc bfc" id="L470" title="All 2 branches covered.">        if (runner.isSendThrough()) {</span>
+<span class="fc bfc" id="L468" title="All 2 branches covered.">        if (runner.isSendThrough()) {</span>
           // no test on file since it does not really exist
-<span class="fc" id="L472">          logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
-<span class="pc bpc" id="L473" title="1 of 2 branches missed.">        } else if (!file.canRead()) {</span>
+<span class="fc" id="L470">          logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
+<span class="pc bpc" id="L471" title="1 of 2 branches missed.">        } else if (!file.canRead()) {</span>
           // file is not under normal base directory, so is external
           // File must already exist but cannot used special code ('*?')
-<span class="nc" id="L476">          file = new R66File(this, dir, runner.getFilename());</span>
-<span class="nc bnc" id="L477" title="All 2 branches missed.">          if (!file.canRead()) {</span>
-<span class="nc" id="L478">            runner.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
-<span class="nc" id="L479">            throw new OpenR66RunnerErrorException(</span>
-<span class="nc" id="L480">                &quot;File cannot be read: &quot; + file.getTrueFile().getAbsolutePath());</span>
+<span class="nc" id="L474">          file = new R66File(this, dir, runner.getFilename());</span>
+<span class="nc bnc" id="L475" title="All 2 branches missed.">          if (!file.canRead()) {</span>
+<span class="nc" id="L476">            runner.setErrorExecutionStatus(ErrorCode.FileNotFound);</span>
+<span class="nc" id="L477">            throw new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L478">                &quot;File cannot be read: &quot; + file.getTrueFile().getAbsolutePath());</span>
           }
         }
-<span class="nc" id="L483">      } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L484">        throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L485">      }</span>
+<span class="nc" id="L481">      } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L482">        throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L483">      }</span>
     } else {
       // File should not exist except if restart
-<span class="fc bfc" id="L488" title="All 2 branches covered.">      if (runner.getRank() &gt; 0) {</span>
+<span class="fc bfc" id="L486" title="All 2 branches covered.">      if (runner.getRank() &gt; 0) {</span>
         // Filename should be get back from runner load from database
         try {
-<span class="fc" id="L491">          file = (R66File) dir.setFile(runner.getFilename(), true);</span>
-<span class="pc bpc" id="L492" title="1 of 2 branches missed.">          if (runner.isRecvThrough()) {</span>
+<span class="fc" id="L489">          file = (R66File) dir.setFile(runner.getFilename(), true);</span>
+<span class="pc bpc" id="L490" title="1 of 2 branches missed.">          if (runner.isRecvThrough()) {</span>
             // no test on file since it does not really exist
-<span class="nc" id="L494">            logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
-<span class="pc bpc" id="L495" title="1 of 2 branches missed.">          } else if (!file.canWrite()) {</span>
-<span class="nc" id="L496">            throw new OpenR66RunnerErrorException(&quot;File cannot be write&quot;);</span>
+<span class="nc" id="L492">            logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">          } else if (!file.canWrite()) {</span>
+<span class="nc" id="L494">            throw new OpenR66RunnerErrorException(&quot;File cannot be write&quot;);</span>
           }
-<span class="nc" id="L498">        } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L499">          throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L500">        }</span>
+<span class="nc" id="L496">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L497">          throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L498">        }</span>
       } else {
         // New FILENAME if necessary and store it
-<span class="pc bpc" id="L503" title="1 of 2 branches missed.">        if (createFile) {</span>
-<span class="fc" id="L504">          file = null;</span>
-<span class="fc" id="L505">          String newfilename = runner.getOriginalFilename();</span>
-<span class="pc bpc" id="L506" title="1 of 2 branches missed.">          if (newfilename.charAt(1) == ':') {</span>
+<span class="pc bpc" id="L501" title="1 of 2 branches missed.">        if (createFile) {</span>
+<span class="fc" id="L502">          file = null;</span>
+<span class="fc" id="L503">          String newfilename = runner.getOriginalFilename();</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">          if (newfilename.charAt(1) == ':') {</span>
             // Windows path
-<span class="nc" id="L508">            newfilename = newfilename.substring(2);</span>
+<span class="nc" id="L506">            newfilename = newfilename.substring(2);</span>
           }
-<span class="fc" id="L510">          newfilename = R66File.getBasename(newfilename);</span>
+<span class="fc" id="L508">          newfilename = R66File.getBasename(newfilename);</span>
           try {
-<span class="fc" id="L512">            file = dir.setUniqueFile(runner.getSpecialId(), newfilename);</span>
-<span class="fc" id="L513">            runner.setFilename(file.getBasename());</span>
-<span class="nc" id="L514">          } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L515">            runner.deleteTempFile();</span>
-<span class="nc" id="L516">            throw e;</span>
-<span class="fc" id="L517">          }</span>
+<span class="fc" id="L510">            file = dir.setUniqueFile(runner.getSpecialId(), newfilename);</span>
+<span class="fc" id="L511">            runner.setFilename(file.getBasename());</span>
+<span class="nc" id="L512">          } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L513">            runner.deleteTempFile();</span>
+<span class="nc" id="L514">            throw e;</span>
+<span class="fc" id="L515">          }</span>
           try {
-<span class="fc bfc" id="L519" title="All 2 branches covered.">            if (runner.isRecvThrough()) {</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">            if (runner.isRecvThrough()) {</span>
               // no test on file since it does not really exist
-<span class="fc" id="L521">              logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
-<span class="fc" id="L522">              runner.deleteTempFile();</span>
-<span class="pc bpc" id="L523" title="1 of 2 branches missed.">            } else if (!file.canWrite()) {</span>
-<span class="nc" id="L524">              runner.deleteTempFile();</span>
-<span class="nc" id="L525">              throw new OpenR66RunnerErrorException(&quot;File cannot be write&quot;);</span>
+<span class="fc" id="L519">              logger.debug(&quot;File is in through mode: {}&quot;, file);</span>
+<span class="fc" id="L520">              runner.deleteTempFile();</span>
+<span class="pc bpc" id="L521" title="1 of 2 branches missed.">            } else if (!file.canWrite()) {</span>
+<span class="nc" id="L522">              runner.deleteTempFile();</span>
+<span class="nc" id="L523">              throw new OpenR66RunnerErrorException(&quot;File cannot be write&quot;);</span>
             }
-<span class="nc" id="L527">          } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L528">            runner.deleteTempFile();</span>
-<span class="nc" id="L529">            throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L530">          }</span>
-<span class="fc" id="L531">        } else {</span>
-<span class="nc" id="L532">          throw new OpenR66RunnerErrorException(&quot;No file created&quot;);</span>
+<span class="nc" id="L525">          } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L526">            runner.deleteTempFile();</span>
+<span class="nc" id="L527">            throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L528">          }</span>
+<span class="fc" id="L529">        } else {</span>
+<span class="nc" id="L530">          throw new OpenR66RunnerErrorException(&quot;No file created&quot;);</span>
         }
       }
     }
     // Store TRUEFILENAME
     try {
-<span class="fc bfc" id="L538" title="All 2 branches covered.">      if (runner.isFileMoved()) {</span>
-<span class="fc" id="L539">        runner.setFileMoved(file.getFile(), true);</span>
+<span class="fc bfc" id="L536" title="All 2 branches covered.">      if (runner.isFileMoved()) {</span>
+<span class="fc" id="L537">        runner.setFileMoved(file.getFile(), true);</span>
       } else {
-<span class="fc" id="L541">        runner.setFilename(file.getFile());</span>
+<span class="fc" id="L539">        runner.setFilename(file.getFile());</span>
       }
-<span class="nc" id="L543">    } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L544">      runner.deleteTempFile();</span>
-<span class="nc" id="L545">      throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L546">    }</span>
+<span class="nc" id="L541">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L542">      runner.deleteTempFile();</span>
+<span class="nc" id="L543">      throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L544">    }</span>
     // check fileSize
-<span class="pc bpc" id="L548" title="1 of 4 branches missed.">    if (runner.isSender() &amp;&amp; file != null) {</span>
-<span class="fc" id="L549">      logger.debug(&quot;could change size: &quot; + runner.getOriginalSize() + &quot; =&gt; &quot; +</span>
-<span class="fc" id="L550">                   file.length());</span>
-<span class="fc bfc" id="L551" title="All 2 branches covered.">      if (runner.getOriginalSize() &lt; 0) {</span>
-<span class="fc" id="L552">        final long originalSize = file.length();</span>
-<span class="pc bpc" id="L553" title="1 of 2 branches missed.">        if (originalSize &gt; 0) {</span>
-<span class="fc" id="L554">          runner.setOriginalSize(originalSize);</span>
+<span class="pc bpc" id="L546" title="1 of 4 branches missed.">    if (runner.isSender() &amp;&amp; file != null) {</span>
+<span class="fc" id="L547">      logger.debug(&quot;could change size: &quot; + runner.getOriginalSize() + &quot; =&gt; &quot; +</span>
+<span class="fc" id="L548">                   file.length());</span>
+<span class="fc bfc" id="L549" title="All 2 branches covered.">      if (runner.getOriginalSize() &lt; 0) {</span>
+<span class="fc" id="L550">        final long originalSize = file.length();</span>
+<span class="pc bpc" id="L551" title="1 of 2 branches missed.">        if (originalSize &gt; 0) {</span>
+<span class="fc" id="L552">          runner.setOriginalSize(originalSize);</span>
         }
       }
     }
-<span class="fc" id="L558">  }</span>
+<span class="fc" id="L556">  }</span>
 
   /**
    * To be used when a request comes with a bad code so it cannot be set
@@ -565,36 +563,36 @@ public class R66Session implements SessionInterface {
    * @param code
    */
   public void setBadRunner(DbTaskRunner runner, ErrorCode code) {
-<span class="fc" id="L568">    this.runner = runner;</span>
-<span class="pc bpc" id="L569" title="1 of 2 branches missed.">    if (code == ErrorCode.QueryAlreadyFinished) {</span>
-<span class="pc bpc" id="L570" title="1 of 2 branches missed.">      if (this.runner.isSender()) {</span>
+<span class="fc" id="L566">    this.runner = runner;</span>
+<span class="pc bpc" id="L567" title="1 of 2 branches missed.">    if (code == ErrorCode.QueryAlreadyFinished) {</span>
+<span class="pc bpc" id="L568" title="1 of 2 branches missed.">      if (this.runner.isSender()) {</span>
         // Change dir
         try {
-<span class="nc" id="L573">          dir.changeDirectory(this.runner.getRule().getSendPath());</span>
-<span class="nc" id="L574">        } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L571">          dir.changeDirectory(this.runner.getRule().getSendPath());</span>
+<span class="nc" id="L572">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="nc" id="L576">        }</span>
+<span class="nc" id="L574">        }</span>
       } else {
         // Change dir
         try {
-<span class="fc" id="L580">          dir.changeDirectory(this.runner.getRule().getWorkPath());</span>
-<span class="nc" id="L581">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L578">          dir.changeDirectory(this.runner.getRule().getWorkPath());</span>
+<span class="nc" id="L579">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L583">        }</span>
+<span class="fc" id="L581">        }</span>
       }
-<span class="pc bpc" id="L585" title="1 of 2 branches missed.">      if (businessObject != null) {</span>
-<span class="nc" id="L586">        businessObject.checkAtError(this);</span>
+<span class="pc bpc" id="L583" title="1 of 2 branches missed.">      if (businessObject != null) {</span>
+<span class="nc" id="L584">        businessObject.checkAtError(this);</span>
       }
-<span class="fc" id="L588">      this.runner.setPostTask();</span>
+<span class="fc" id="L586">      this.runner.setPostTask();</span>
       try {
-<span class="fc" id="L590">        setFileAfterPreRunner(false);</span>
-<span class="nc" id="L591">      } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="fc" id="L588">        setFileAfterPreRunner(false);</span>
+<span class="nc" id="L589">      } catch (final OpenR66RunnerErrorException ignored) {</span>
         // nothing
-<span class="nc" id="L593">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L591">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="pc" id="L595">      }</span>
+<span class="pc" id="L593">      }</span>
     }
-<span class="fc" id="L597">  }</span>
+<span class="fc" id="L595">  }</span>
 
   /**
    * Set the runner, and setup the directory first.
@@ -607,49 +605,49 @@ public class R66Session implements SessionInterface {
    */
   public void setRunner(DbTaskRunner runner)
       throws OpenR66RunnerErrorException {
-<span class="fc" id="L610">    this.runner = runner;</span>
-<span class="fc" id="L611">    logger.debug(&quot;Runner to set: {} {}&quot;, runner.shallIgnoreSave(), runner);</span>
-<span class="fc" id="L612">    this.runner.checkThroughMode();</span>
-<span class="pc bpc" id="L613" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
-<span class="nc" id="L614">      businessObject.checkAtStartup(this);</span>
+<span class="fc" id="L608">    this.runner = runner;</span>
+<span class="fc" id="L609">    logger.debug(&quot;Runner to set: {} {}&quot;, runner.shallIgnoreSave(), runner);</span>
+<span class="fc" id="L610">    this.runner.checkThroughMode();</span>
+<span class="pc bpc" id="L611" title="1 of 2 branches missed.">    if (businessObject != null) {</span>
+<span class="nc" id="L612">      businessObject.checkAtStartup(this);</span>
     }
-<span class="fc bfc" id="L616" title="All 2 branches covered.">    if (this.runner.isSender()) {</span>
-<span class="fc bfc" id="L617" title="All 2 branches covered.">      if (runner.isSendThrough()) {</span>
+<span class="fc bfc" id="L614" title="All 2 branches covered.">    if (this.runner.isSender()) {</span>
+<span class="fc bfc" id="L615" title="All 2 branches covered.">      if (runner.isSendThrough()) {</span>
         // May not change dir as needed
         // Change dir
         try {
-<span class="fc" id="L621">          dir.changeDirectory(this.runner.getRule().getSendPath());</span>
-<span class="nc" id="L622">        } catch (final CommandAbstractException e) {</span>
+<span class="fc" id="L619">          dir.changeDirectory(this.runner.getRule().getSendPath());</span>
+<span class="nc" id="L620">        } catch (final CommandAbstractException e) {</span>
           // ignore
-<span class="pc" id="L624">        }</span>
+<span class="pc" id="L622">        }</span>
       } else {
         // Change dir
         try {
-<span class="fc" id="L628">          dir.changeDirectory(this.runner.getRule().getSendPath());</span>
-<span class="nc" id="L629">        } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L630">          throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L631">        }</span>
+<span class="fc" id="L626">          dir.changeDirectory(this.runner.getRule().getSendPath());</span>
+<span class="nc" id="L627">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L628">          throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L629">        }</span>
       }
     } else {
-<span class="fc bfc" id="L634" title="All 2 branches covered.">      if (runner.isRecvThrough()) {</span>
+<span class="fc bfc" id="L632" title="All 2 branches covered.">      if (runner.isRecvThrough()) {</span>
         // May not change dir as needed
         // Change dir
         try {
-<span class="fc" id="L638">          dir.changeDirectory(this.runner.getRule().getWorkPath());</span>
-<span class="nc" id="L639">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L636">          dir.changeDirectory(this.runner.getRule().getWorkPath());</span>
+<span class="nc" id="L637">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="pc" id="L641">        }</span>
+<span class="pc" id="L639">        }</span>
       } else {
         // Change dir
         try {
-<span class="fc" id="L645">          dir.changeDirectory(this.runner.getRule().getWorkPath());</span>
-<span class="nc" id="L646">        } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L647">          throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L648">        }</span>
+<span class="fc" id="L643">          dir.changeDirectory(this.runner.getRule().getWorkPath());</span>
+<span class="nc" id="L644">        } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L645">          throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L646">        }</span>
       }
     }
-<span class="fc" id="L651">    logger.debug(&quot;Dir is: &quot; + dir.getFullPath());</span>
-<span class="fc" id="L652">  }</span>
+<span class="fc" id="L649">    logger.debug(&quot;Dir is: &quot; + dir.getFullPath());</span>
+<span class="fc" id="L650">  }</span>
 
   /**
    * START from the PreTask if necessary, and prepare the file
@@ -661,155 +659,157 @@ public class R66Session implements SessionInterface {
    */
   public void startup(boolean checkNotExternal)
       throws OpenR66RunnerErrorException {
-<span class="pc bpc" id="L664" title="1 of 2 branches missed.">    if (runner.getRank() &gt; 0) {</span>
-<span class="nc" id="L665">      logger.debug(&quot;restart at &quot; + runner.getRank() + &quot; {}&quot;, runner);</span>
-<span class="nc" id="L666">      logger.debug(&quot;restart at &quot; + runner.getRank() + &quot; {}&quot;, dir);</span>
-<span class="nc" id="L667">      runner.setTransferTask(runner.getRank());</span>
-<span class="nc" id="L668">      restart.restartMarker(runner.getBlocksize() * runner.getRank());</span>
+<span class="pc bpc" id="L662" title="1 of 2 branches missed.">    if (runner.getRank() &gt; 0) {</span>
+<span class="nc" id="L663">      logger.debug(&quot;restart at &quot; + runner.getRank() + &quot; {}&quot;, runner);</span>
+<span class="nc" id="L664">      logger.debug(&quot;restart at &quot; + runner.getRank() + &quot; {}&quot;, dir);</span>
+<span class="nc" id="L665">      runner.setTransferTask(runner.getRank());</span>
+<span class="nc" id="L666">      restart.restartMarker(runner.getBlocksize() * runner.getRank());</span>
     } else {
-<span class="fc" id="L670">      restart.restartMarker(0);</span>
+<span class="fc" id="L668">      restart.restartMarker(0);</span>
     }
-<span class="fc" id="L672">    logger.debug(&quot;GlobalLastStep: &quot; + runner.getGloballaststep() + &quot; vs &quot; +</span>
-<span class="fc" id="L673">                 TASKSTEP.NOTASK.ordinal() + ':' + TASKSTEP.PRETASK.ordinal());</span>
-<span class="fc bfc" id="L674" title="All 2 branches covered.">    if (runner.getGloballaststep() == TASKSTEP.NOTASK.ordinal() ||</span>
-<span class="pc bpc" id="L675" title="1 of 2 branches missed.">        runner.getGloballaststep() == TASKSTEP.PRETASK.ordinal()) {</span>
-<span class="fc" id="L676">      setFileBeforePreRunner();</span>
-<span class="pc bpc" id="L677" title="3 of 8 branches missed.">      if (runner.isSender() &amp;&amp; !runner.isSendThrough() &amp;&amp; file != null &amp;&amp;</span>
+<span class="fc" id="L670">    logger.debug(&quot;GlobalLastStep: &quot; + runner.getGloballaststep() + &quot; vs &quot; +</span>
+<span class="fc" id="L671">                 TASKSTEP.NOTASK.ordinal() + ':' + TASKSTEP.PRETASK.ordinal());</span>
+<span class="fc bfc" id="L672" title="All 2 branches covered.">    if (runner.getGloballaststep() == TASKSTEP.NOTASK.ordinal() ||</span>
+<span class="pc bpc" id="L673" title="1 of 2 branches missed.">        runner.getGloballaststep() == TASKSTEP.PRETASK.ordinal()) {</span>
+<span class="fc" id="L674">      setFileBeforePreRunner();</span>
+<span class="pc bpc" id="L675" title="3 of 8 branches missed.">      if (runner.isSender() &amp;&amp; !runner.isSendThrough() &amp;&amp; file != null &amp;&amp;</span>
           checkNotExternal) {
-<span class="fc" id="L679">        String path = null;</span>
+<span class="fc" id="L677">        String path = null;</span>
         try {
-<span class="fc" id="L681">          path = file.getFile();</span>
-<span class="nc" id="L682">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L679">          path = file.getFile();</span>
+<span class="nc" id="L680">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L684">        }</span>
-<span class="pc bpc" id="L685" title="2 of 4 branches missed.">        if (file.isExternal() ||</span>
-<span class="pc bpc" id="L686" title="1 of 2 branches missed.">            path != null &amp;&amp; !dir.isPathInCurrentDir(path)) {</span>
+<span class="fc" id="L682">        }</span>
+<span class="pc bpc" id="L683" title="2 of 4 branches missed.">        if (file.isExternal() ||</span>
+<span class="pc bpc" id="L684" title="1 of 2 branches missed.">            path != null &amp;&amp; !dir.isPathInCurrentDir(path)) {</span>
           // should not be
-<span class="nc" id="L688">          logger.error(</span>
+<span class="nc" id="L686">          logger.error(</span>
               &quot;File cannot be found in the current output directory: {} not in {}&quot;,
               file, dir);
-<span class="nc" id="L691">          runner.setErrorExecutionStatus(ErrorCode.FileNotAllowed);</span>
-<span class="nc" id="L692">          throw new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L689">          runner.setErrorExecutionStatus(ErrorCode.FileNotAllowed);</span>
+<span class="nc" id="L690">          throw new OpenR66RunnerErrorException(</span>
               &quot;File cannot be found in the current output directory&quot;);
         }
       }
-<span class="fc" id="L696">      runner.setPreTask();</span>
-<span class="fc" id="L697">      runner.saveStatus();</span>
-<span class="fc" id="L698">      runner.run();</span>
-<span class="pc bpc" id="L699" title="1 of 4 branches missed.">      if (runner.isSender() &amp;&amp; !runner.isSendThrough()) {</span>
-<span class="pc bpc" id="L700" title="1 of 2 branches missed.">        if (file != null) {</span>
+<span class="fc" id="L694">      runner.setPreTask();</span>
+<span class="fc" id="L695">      runner.saveStatus();</span>
+<span class="fc" id="L696">      runner.run();</span>
+<span class="pc bpc" id="L697" title="1 of 4 branches missed.">      if (runner.isSender() &amp;&amp; !runner.isSendThrough()) {</span>
+<span class="pc bpc" id="L698" title="1 of 2 branches missed.">        if (file != null) {</span>
           try {
-<span class="fc" id="L702">            final long originalSize = file.length();</span>
-<span class="pc bpc" id="L703" title="1 of 2 branches missed.">            if (originalSize &gt; 0) {</span>
-<span class="fc" id="L704">              runner.setOriginalSize(originalSize);</span>
+<span class="fc" id="L700">            final long originalSize = file.length();</span>
+<span class="pc bpc" id="L701" title="1 of 2 branches missed.">            if (originalSize &gt; 0) {</span>
+<span class="fc" id="L702">              runner.setOriginalSize(originalSize);</span>
             }
-<span class="nc" id="L706">          } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L704">          } catch (final CommandAbstractException e) {</span>
             // ignore
-<span class="fc" id="L708">          }</span>
+<span class="fc" id="L706">          }</span>
         }
       }
-<span class="fc" id="L711">      runner.saveStatus();</span>
-<span class="fc" id="L712">      runner.setTransferTask(runner.getRank());</span>
+<span class="fc" id="L709">      runner.saveStatus();</span>
+<span class="fc" id="L710">      runner.setTransferTask(runner.getRank());</span>
     } else {
-<span class="fc" id="L714">      runner.reset();</span>
-<span class="fc" id="L715">      runner.changeUpdatedInfo(UpdatedInfo.RUNNING);</span>
-<span class="fc" id="L716">      runner.saveStatus();</span>
+<span class="fc" id="L712">      runner.reset();</span>
+<span class="fc" id="L713">      runner.changeUpdatedInfo(UpdatedInfo.RUNNING);</span>
+<span class="fc" id="L714">      runner.saveStatus();</span>
     }
     // Now create the associated file
     try {
-<span class="fc" id="L720">      setFileAfterPreRunner(true);</span>
-<span class="nc" id="L721">    } catch (final CommandAbstractException e2) {</span>
+<span class="fc" id="L718">      setFileAfterPreRunner(true);</span>
+<span class="nc" id="L719">    } catch (final CommandAbstractException e2) {</span>
       // generated due to a possible wildcard not ready
-<span class="nc" id="L723">      file = null;</span>
-<span class="fc" id="L724">    }</span>
-<span class="fc" id="L725">    logger.debug(&quot;GlobalLastStep: &quot; + runner.getGloballaststep());</span>
-<span class="pc bpc" id="L726" title="1 of 2 branches missed.">    if (runner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {</span>
-<span class="pc bpc" id="L727" title="1 of 2 branches missed.">      if (businessObject != null) {</span>
-<span class="nc" id="L728">        businessObject.checkAfterPreCommand(this);</span>
+<span class="nc" id="L721">      file = null;</span>
+<span class="fc" id="L722">    }</span>
+<span class="fc" id="L723">    logger.debug(&quot;GlobalLastStep: &quot; + runner.getGloballaststep());</span>
+<span class="pc bpc" id="L724" title="1 of 2 branches missed.">    if (runner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {</span>
+<span class="pc bpc" id="L725" title="1 of 2 branches missed.">      if (businessObject != null) {</span>
+<span class="nc" id="L726">        businessObject.checkAfterPreCommand(this);</span>
       }
-<span class="fc bfc" id="L730" title="All 2 branches covered.">      if (!runner.isSender()) {</span>
+<span class="fc bfc" id="L728" title="All 2 branches covered.">      if (!runner.isSender()) {</span>
         // Check file length according to rank
-<span class="fc bfc" id="L732" title="All 2 branches covered.">        if (runner.isRecvThrough()) {</span>
+<span class="fc bfc" id="L730" title="All 2 branches covered.">        if (runner.isRecvThrough()) {</span>
           // no size can be checked
         } else {
-<span class="fc" id="L735">          long length = 0;</span>
-<span class="pc bpc" id="L736" title="1 of 2 branches missed.">          if (file != null) {</span>
+<span class="fc" id="L733">          long length = 0;</span>
+<span class="pc bpc" id="L734" title="1 of 2 branches missed.">          if (file != null) {</span>
             try {
-<span class="fc" id="L738">              length = file.length();</span>
-<span class="nc" id="L739">            } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L736">              length = file.length();</span>
+<span class="nc" id="L737">            } catch (final CommandAbstractException ignored) {</span>
               // nothing
-<span class="fc" id="L741">            }</span>
+<span class="fc" id="L739">            }</span>
           }
-<span class="fc" id="L743">          final long needed = runner.getOriginalSize() - length;</span>
-<span class="fc" id="L744">          long available = 0;</span>
-<span class="fc" id="L745">          String targetDir = null;</span>
+<span class="fc" id="L741">          final long needed = runner.getOriginalSize() - length;</span>
+<span class="fc" id="L742">          long available = 0;</span>
+<span class="fc" id="L743">          String targetDir = null;</span>
           try {
-<span class="fc" id="L747">            available = dir.getFreeSpace();</span>
-<span class="fc" id="L748">            targetDir = dir.getPwd();</span>
-<span class="nc" id="L749">          } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L745">            available = dir.getFreeSpace();</span>
+<span class="fc" id="L746">            targetDir = dir.getPwd();</span>
+<span class="nc" id="L747">          } catch (final CommandAbstractException ignored) {</span>
             // nothing
-<span class="fc" id="L751">          }</span>
-<span class="pc bpc" id="L752" title="1 of 2 branches missed.">          if (file != null) {</span>
-<span class="fc" id="L753">            final File truefile = file.getTrueFile().getParentFile();</span>
-<span class="fc" id="L754">            available = truefile.getFreeSpace();</span>
-<span class="fc" id="L755">            targetDir = truefile.getPath();</span>
+<span class="fc" id="L749">          }</span>
+<span class="pc bpc" id="L750" title="1 of 2 branches missed.">          if (file != null) {</span>
+<span class="fc" id="L751">            final File truefile = file.getTrueFile().getParentFile();</span>
+<span class="fc" id="L752">            available = truefile.getFreeSpace();</span>
+<span class="fc" id="L753">            targetDir = truefile.getPath();</span>
           }
-<span class="fc" id="L757">          logger.debug(</span>
+<span class="fc" id="L755">          logger.debug(</span>
               &quot;Check available space: &quot; + available + &quot; &gt;? &quot; + needed + &quot;(+&quot; +
               length + ')');
           // Available &gt; 0 since some system returns 0 (wrong size)
-<span class="pc bpc" id="L761" title="2 of 4 branches missed.">          if (available &gt; 0 &amp;&amp; needed &gt; available) {</span>
+<span class="pc bpc" id="L759" title="2 of 4 branches missed.">          if (available &gt; 0 &amp;&amp; needed &gt; available) {</span>
             // not enough space
-<span class="nc" id="L763">            runner.setErrorExecutionStatus(ErrorCode.Internal);</span>
-<span class="nc" id="L764">            throw new OpenR66RunnerErrorException(</span>
+<span class="nc" id="L761">            runner.setErrorExecutionStatus(ErrorCode.Internal);</span>
+<span class="nc" id="L762">            throw new OpenR66RunnerErrorException(</span>
                 &quot;File cannot be written due to unsufficient space available: &quot; +
                 targetDir + &quot; need &quot; + needed + &quot; more while available is &quot; +
                 available);
           }
-<span class="pc bpc" id="L769" title="1 of 2 branches missed.">          if (file == null) {</span>
-<span class="nc" id="L770">            runner.saveStatus();</span>
-<span class="nc" id="L771">            logger.info(&quot;Final PARTIAL init: {}&quot;, runner);</span>
-<span class="nc" id="L772">            return;</span>
+<span class="pc bpc" id="L767" title="1 of 2 branches missed.">          if (file == null) {</span>
+<span class="nc" id="L768">            runner.saveStatus();</span>
+<span class="nc" id="L769">            logger.info(&quot;Final PARTIAL init: {}&quot;, runner);</span>
+<span class="nc" id="L770">            return;</span>
           }
           // First check available space
           try {
-<span class="fc" id="L776">            final long oldPosition = restart.getPosition();</span>
-<span class="fc" id="L777">            restart.setSet(true);</span>
-<span class="pc bpc" id="L778" title="1 of 2 branches missed.">            if (oldPosition &gt; length) {</span>
-<span class="nc" id="L779">              int newRank = (int) (length / runner.getBlocksize()) -</span>
-<span class="nc" id="L780">                            Configuration.getRankRestart();</span>
-<span class="nc bnc" id="L781" title="All 2 branches missed.">              if (newRank &lt;= 0) {</span>
-<span class="nc" id="L782">                newRank = 1;</span>
+<span class="fc" id="L774">            final long oldPosition = restart.getPosition();</span>
+<span class="fc" id="L775">            restart.setSet(true);</span>
+<span class="pc bpc" id="L776" title="1 of 2 branches missed.">            if (oldPosition &gt; length) {</span>
+<span class="nc" id="L777">              int newRank = (int) (length / runner.getBlocksize()) -</span>
+<span class="nc" id="L778">                            Configuration.getRankRestart();</span>
+<span class="nc bnc" id="L779" title="All 2 branches missed.">              if (newRank &lt;= 0) {</span>
+<span class="nc" id="L780">                newRank = 1;</span>
               }
-<span class="nc" id="L784">              logger.info(&quot;OldPos: &quot; + oldPosition + ':' + runner.getRank() +</span>
+<span class="nc" id="L782">              logger.info(&quot;OldPos: &quot; + oldPosition + ':' + runner.getRank() +</span>
                           &quot; curLength: &quot; + length + ':' + newRank);
-<span class="nc" id="L786">              logger</span>
-<span class="nc" id="L787">                  .warn(&quot;Decreased Rank Restart for {} at &quot; + newRank, runner);</span>
-<span class="nc" id="L788">              runner.setTransferTask(newRank);</span>
-<span class="nc" id="L789">              restart.restartMarker(runner.getBlocksize() * runner.getRank());</span>
+<span class="nc" id="L784">              logger</span>
+<span class="nc" id="L785">                  .warn(&quot;Decreased Rank Restart for {} at &quot; + newRank, runner);</span>
+<span class="nc" id="L786">              runner.setTransferTask(newRank);</span>
+<span class="nc" id="L787">              restart.restartMarker(runner.getBlocksize() * runner.getRank());</span>
             }
             try {
-<span class="fc" id="L792">              file.restartMarker(restart);</span>
-<span class="nc" id="L793">            } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L794">              runner.deleteTempFile();</span>
-<span class="nc" id="L795">              throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L796">            }</span>
-<span class="nc" id="L797">          } catch (final NoRestartException e) {</span>
+<span class="fc" id="L790">              file.restartMarker(restart);</span>
+<span class="nc" id="L791">            } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L792">              runner.deleteTempFile();</span>
+<span class="nc" id="L793">              throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L794">            }</span>
+<span class="nc" id="L795">          } catch (final NoRestartException e) {</span>
             // length is not to be changed
-<span class="fc" id="L799">          }</span>
-<span class="fc" id="L800">        }</span>
+<span class="fc" id="L797">          }</span>
+<span class="fc" id="L798">        }</span>
       } else {
-        try {
-<span class="fc" id="L803">          localChannelReference.getFutureRequest().setFilesize(file.length());</span>
-<span class="nc" id="L804">        } catch (final CommandAbstractException ignored) {</span>
-          // nothing
-<span class="fc" id="L806">        }</span>
-        try {
-<span class="fc" id="L808">          file.restartMarker(restart);</span>
-<span class="nc" id="L809">        } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L810">          runner.deleteTempFile();</span>
-<span class="nc" id="L811">          throw new OpenR66RunnerErrorException(e);</span>
-<span class="fc" id="L812">        }</span>
+<span class="pc bpc" id="L800" title="1 of 2 branches missed.">        if (file != null) {</span>
+          try {
+<span class="fc" id="L802">            localChannelReference.getFutureRequest().setFilesize(file.length());</span>
+<span class="nc" id="L803">          } catch (final CommandAbstractException ignored) {</span>
+            // nothing
+<span class="fc" id="L805">          }</span>
+          try {
+<span class="fc" id="L807">            file.restartMarker(restart);</span>
+<span class="nc" id="L808">          } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L809">            runner.deleteTempFile();</span>
+<span class="nc" id="L810">            throw new OpenR66RunnerErrorException(e);</span>
+<span class="fc" id="L811">          }</span>
+        }
       }
     }
 <span class="fc" id="L815">    runner.saveStatus();</span>
@@ -1022,8 +1022,8 @@ public class R66Session implements SessionInterface {
    * @return True if the number of Error is still acceptable
    */
   public boolean addError() {
-<span class="nc" id="L1025">    numOfError++;</span>
-<span class="nc bnc" id="L1026" title="All 2 branches missed.">    return numOfError &lt; Configuration.RETRYNB;</span>
+<span class="nc" id="L1025">    int value = numOfError.incrementAndGet();</span>
+<span class="nc bnc" id="L1026" title="All 2 branches missed.">    return value &lt; Configuration.RETRYNB;</span>
   }
 
   @Override

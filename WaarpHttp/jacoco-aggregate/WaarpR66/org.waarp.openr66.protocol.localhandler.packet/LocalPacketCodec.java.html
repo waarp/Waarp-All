@@ -35,8 +35,8 @@ import java.util.List;
   /**
    * Internal Logger
    */
-<span class="nc" id="L38">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L39">      WaarpLoggerFactory.getLogger(LocalPacketCodec.class);</span>
+<span class="fc" id="L38">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L39">      WaarpLoggerFactory.getLogger(LocalPacketCodec.class);</span>
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
@@ -57,28 +57,28 @@ import java.util.List;
   public static AbstractLocalPacket decodeNetworkPacket(ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     // Mark the current buffer position
-<span class="nc" id="L60">    buf.markReaderIndex();</span>
+<span class="fc" id="L60">    buf.markReaderIndex();</span>
     // Read the length field
-<span class="nc" id="L62">    final int length = buf.readInt();</span>
-<span class="nc bnc" id="L63" title="All 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
+<span class="fc" id="L62">    final int length = buf.readInt();</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
 <span class="nc" id="L64">      buf.resetReaderIndex();</span>
 <span class="nc" id="L65">      return null;</span>
     }
     // Now we can read the header
     // Header: Header length field (4 bytes) = Middle length field (4
     // bytes), End length field (4 bytes), type field (1 byte), ...
-<span class="nc" id="L70">    final int middleLength = buf.readInt();</span>
-<span class="nc" id="L71">    final int endLength = buf.readInt();</span>
+<span class="fc" id="L70">    final int middleLength = buf.readInt();</span>
+<span class="fc" id="L71">    final int endLength = buf.readInt();</span>
     // check if the packet is complete
-<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
 <span class="nc" id="L74">      buf.resetReaderIndex();</span>
 <span class="nc" id="L75">      return null;</span>
     }
     // createPacketFromByteBuf read the buffer
-<span class="nc" id="L78">    final AbstractLocalPacket rv = LocalPacketFactory</span>
-<span class="nc" id="L79">        .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);</span>
-<span class="nc" id="L80">    logger.trace(&quot;received local packet {}&quot;, rv.getType());</span>
-<span class="nc" id="L81">    return rv;</span>
+<span class="fc" id="L78">    final AbstractLocalPacket rv = LocalPacketFactory</span>
+<span class="fc" id="L79">        .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);</span>
+<span class="fc" id="L80">    logger.trace(&quot;received local packet {}&quot;, rv.getType());</span>
+<span class="fc" id="L81">    return rv;</span>
   }
 
   @Override

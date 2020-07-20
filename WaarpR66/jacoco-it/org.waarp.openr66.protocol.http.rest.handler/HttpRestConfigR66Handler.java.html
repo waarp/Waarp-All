@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpRestConfigR66Handler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http.rest.handler</a> &gt; <span class="el_source">HttpRestConfigR66Handler.java</span></div><h1>HttpRestConfigR66Handler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http.rest.handler;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
+import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
+import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
+import org.waarp.gateway.kernel.rest.HttpRestHandler;
+import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
+import org.waarp.gateway.kernel.rest.RestArgument;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
+import org.waarp.openr66.protocol.localhandler.ServerActions;
+import org.waarp.openr66.protocol.localhandler.packet.json.ConfigExportJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.ConfigExportResponseJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.ConfigImportJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.ConfigImportResponseJsonPacket;
+import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
+
+/**
+ * Configuration Http REST interface: http://host/config?... +
+ * ConfigExportJsonPacket or
+ * ConfigImportJsonPacket as GET or PUT
+ */
+public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
+
+  public static final String BASEURI = &quot;config&quot;;
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(HttpRestConfigR66Handler.class);</span>
+
+  public HttpRestConfigR66Handler(RestConfiguration config, METHOD... methods) {
+<span class="fc" id="L63">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L64">    setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);</span>
+<span class="fc" id="L65">  }</span>
+
+  @Override
+  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
+                                RestArgument result, Object body)
+      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+<span class="nc" id="L71">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L73">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+    }
+<span class="nc" id="L75">    handler.setWillClose(false);</span>
+<span class="nc" id="L76">    final ServerActions serverHandler =</span>
+<span class="nc" id="L77">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+    // now action according to body
+<span class="nc" id="L79">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (json == null) {</span>
+<span class="nc" id="L81">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="nc" id="L82">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L83">      return;</span>
+    }
+<span class="nc" id="L85">    result.getAnswer()</span>
+<span class="nc" id="L86">          .put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Config.name());</span>
+    try {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">      if (json instanceof ConfigExportJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">          arguments.getMethod() == METHOD.GET) {//</span>
+<span class="nc" id="L90">        result.setCommand(ACTIONS_TYPE.ExportConfig.name());</span>
+        // host, rule, business, alias, roles
+<span class="nc" id="L92">        final ConfigExportJsonPacket node = (ConfigExportJsonPacket) json;</span>
+<span class="nc" id="L93">        final boolean bhost = node.isHost();</span>
+<span class="nc" id="L94">        final boolean brule = node.isRule();</span>
+<span class="nc" id="L95">        final boolean bbusiness = node.isBusiness();</span>
+<span class="nc" id="L96">        final boolean balias = node.isAlias();</span>
+<span class="nc" id="L97">        final boolean broles = node.isRoles();</span>
+<span class="nc" id="L98">        final String[] sresult =</span>
+<span class="nc" id="L99">            serverHandler.configExport(bhost, brule, bbusiness, balias, broles);</span>
+        // Now answer
+<span class="nc" id="L101">        final ConfigExportResponseJsonPacket resp =</span>
+            new ConfigExportResponseJsonPacket();
+<span class="nc" id="L103">        resp.fromJson(node);</span>
+<span class="nc" id="L104">        resp.setFilehost(sresult[0]);</span>
+<span class="nc" id="L105">        resp.setFilerule(sresult[1]);</span>
+<span class="nc" id="L106">        resp.setFilebusiness(sresult[2]);</span>
+<span class="nc" id="L107">        resp.setFilealias(sresult[3]);</span>
+<span class="nc" id="L108">        resp.setFileroles(sresult[4]);</span>
+<span class="nc bnc" id="L109" title="All 4 branches missed.">        if (resp.getFilerule() != null || resp.getFilehost() != null ||</span>
+<span class="nc bnc" id="L110" title="All 4 branches missed.">            resp.getFilebusiness() != null || resp.getFilealias() != null ||</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            resp.getFileroles() != null) {</span>
+<span class="nc" id="L112">          setOk(handler, result, resp, HttpResponseStatus.OK);</span>
+        } else {
+<span class="nc" id="L114">          result.setDetail(&quot;Export configuration in error&quot;);</span>
+<span class="nc" id="L115">          setError(handler, result, resp, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+        }
+<span class="nc bnc" id="L117" title="All 2 branches missed.">      } else if (json instanceof ConfigImportJsonPacket &amp;&amp;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                 arguments.getMethod() == METHOD.PUT) {//</span>
+<span class="nc" id="L119">        result.setCommand(ACTIONS_TYPE.ImportConfig.name());</span>
+<span class="nc" id="L120">        final ConfigImportResponseJsonPacket resp =</span>
+<span class="nc" id="L121">            serverHandler.configImport((ConfigImportJsonPacket) json);</span>
+<span class="nc bnc" id="L122" title="All 4 branches missed.">        if (resp.isImportedhost() || resp.isImportedrule() ||</span>
+<span class="nc bnc" id="L123" title="All 4 branches missed.">            resp.isImportedbusiness() || resp.isImportedalias() ||</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            resp.isImportedroles()) {</span>
+<span class="nc" id="L125">          setOk(handler, result, resp, HttpResponseStatus.OK);</span>
+        } else {
+<span class="nc" id="L127">          result.setDetail(&quot;Import configuration in error&quot;);</span>
+<span class="nc" id="L128">          setError(handler, result, resp, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+        }
+<span class="nc" id="L130">      } else {</span>
+<span class="nc" id="L131">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
+<span class="nc" id="L132">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L133">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+      }
+<span class="nc" id="L135">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L136">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L137">    } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L138">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L139">    }</span>
+<span class="nc" id="L140">  }</span>
+
+  @Override
+  protected ArrayNode getDetailedAllow() {
+<span class="nc" id="L144">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="nc" id="L147">      final ConfigExportJsonPacket node3 = new ConfigExportJsonPacket();</span>
+<span class="nc" id="L148">      node3.setRequestUserPacket();</span>
+<span class="nc" id="L149">      node3.setComment(&quot;ConfigExport request (GET)&quot;);</span>
+      ObjectNode node2;
+<span class="nc" id="L151">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="nc" id="L152">      final ConfigExportResponseJsonPacket resp =</span>
+          new ConfigExportResponseJsonPacket();
+<span class="nc" id="L154">      resp.setComment(&quot;ConfigExport response&quot;);</span>
+<span class="nc" id="L155">      resp.setFilealias(&quot;filepath&quot;);</span>
+<span class="nc" id="L156">      resp.setFilebusiness(&quot;filepath&quot;);</span>
+<span class="nc" id="L157">      resp.setFilehost(&quot;filepath&quot;);</span>
+<span class="nc" id="L158">      resp.setFileroles(&quot;filepath&quot;);</span>
+<span class="nc" id="L159">      resp.setFilerule(&quot;filepath&quot;);</span>
+<span class="nc" id="L160">      resp.setRequestUserPacket();</span>
+      try {
+<span class="nc" id="L162">        node1.add(resp.createObjectNode());</span>
+<span class="nc" id="L163">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="nc" id="L164">                                               ACTIONS_TYPE.ExportConfig.name(),</span>
+<span class="nc" id="L165">                                               node3.createObjectNode(), node1);</span>
+<span class="nc" id="L166">        node.add(node2);</span>
+<span class="nc" id="L167">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L169">      }</span>
+    }
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="nc" id="L172">      final ConfigImportJsonPacket node4 = new ConfigImportJsonPacket();</span>
+<span class="nc" id="L173">      node4.setRequestUserPacket();</span>
+<span class="nc" id="L174">      node4.setComment(</span>
+          &quot;ConfigImport request (PUT) where items are either set through transfer Id, either set directly with a filename&quot;);
+<span class="nc" id="L176">      node4.setAlias(&quot;AliasFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L177">      node4.setBusiness(&quot;BusinessFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L178">      node4.setHost(&quot;HostFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L179">      node4.setRoles(&quot;RolesFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L180">      node4.setRule(&quot;RuleFilename if not through TransferId&quot;);</span>
+<span class="nc" id="L181">      final ConfigImportResponseJsonPacket resp2 =</span>
+          new ConfigImportResponseJsonPacket();
+<span class="nc" id="L183">      resp2.setComment(&quot;ConfigImport response&quot;);</span>
+<span class="nc" id="L184">      resp2.setAlias(&quot;filepath&quot;);</span>
+<span class="nc" id="L185">      resp2.setBusiness(&quot;filepath&quot;);</span>
+<span class="nc" id="L186">      resp2.setHost(&quot;filepath&quot;);</span>
+<span class="nc" id="L187">      resp2.setRoles(&quot;filepath&quot;);</span>
+<span class="nc" id="L188">      resp2.setRule(&quot;filepath&quot;);</span>
+<span class="nc" id="L189">      resp2.setRequestUserPacket();</span>
+<span class="nc" id="L190">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+      try {
+<span class="nc" id="L192">        node1.add(resp2.createObjectNode());</span>
+<span class="nc" id="L193">        final ObjectNode node2 = RestArgument</span>
+<span class="nc" id="L194">            .fillDetailedAllow(METHOD.PUT, path,</span>
+<span class="nc" id="L195">                               ACTIONS_TYPE.ImportConfig.name(),</span>
+<span class="nc" id="L196">                               node4.createObjectNode(), node1);</span>
+<span class="nc" id="L197">        node.add(node2);</span>
+<span class="nc" id="L198">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+        // ignore
+<span class="nc" id="L200">      }</span>
+    }
+
+<span class="nc" id="L203">    final ObjectNode node2 = RestArgument</span>
+<span class="nc" id="L204">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+                           null, null);
+<span class="nc" id="L206">    node.add(node2);</span>
+
+<span class="nc" id="L208">    return node;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

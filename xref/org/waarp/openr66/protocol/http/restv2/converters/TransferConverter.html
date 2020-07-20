@@ -182,7 +182,7 @@
 <a class="jxr_linenumber" name="L174" href="#L174">174</a>     defaultTransfer.setRequester(serverName());
 <a class="jxr_linenumber" name="L175" href="#L175">175</a>     defaultTransfer.setOwnerRequest(serverName());
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>     defaultTransfer.setBlockSize(Configuration.configuration.getBlockSize());
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>     defaultTransfer.setTransferInfo(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>     defaultTransfer.setTransferInfo(<span class="jxr_string">"{}"</span>);
 <a class="jxr_linenumber" name="L178" href="#L178">178</a>     defaultTransfer.setStart(<strong class="jxr_keyword">new</strong> Timestamp(DateTime.now().getMillis()));
 <a class="jxr_linenumber" name="L179" href="#L179">179</a>     <strong class="jxr_keyword">final</strong> <a name="Transfer" href="../../../../../../../org/waarp/openr66/pojo/Transfer.html#Transfer">Transfer</a> transfer = parseNode(object, defaultTransfer);
 <a class="jxr_linenumber" name="L180" href="#L180">180</a> 
@@ -368,44 +368,50 @@
 <a class="jxr_linenumber" name="L360" href="#L360">360</a>         } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L361" href="#L361">361</a>           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
 <a class="jxr_linenumber" name="L362" href="#L362">362</a>         }
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (name.equalsIgnoreCase(START)) {
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (name.equalsIgnoreCase(TRANSFER_INFO)) {
 <a class="jxr_linenumber" name="L364" href="#L364">364</a>         <strong class="jxr_keyword">if</strong> (value.isTextual()) {
-<a class="jxr_linenumber" name="L365" href="#L365">365</a>           <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L366" href="#L366">366</a>             <strong class="jxr_keyword">final</strong> DateTime start = DateTime.parse(value.asText());
-<a class="jxr_linenumber" name="L367" href="#L367">367</a>             <strong class="jxr_keyword">if</strong> (start.isBeforeNow()) {
-<a class="jxr_linenumber" name="L368" href="#L368">368</a>               errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>             } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L370" href="#L370">370</a>               transfer.setStart(<strong class="jxr_keyword">new</strong> Timestamp(start.getMillis()));
-<a class="jxr_linenumber" name="L371" href="#L371">371</a>             }
-<a class="jxr_linenumber" name="L372" href="#L372">372</a>           } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IllegalArgumentException e) {
-<a class="jxr_linenumber" name="L373" href="#L373">373</a>             errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));
-<a class="jxr_linenumber" name="L374" href="#L374">374</a>           }
-<a class="jxr_linenumber" name="L375" href="#L375">375</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L376" href="#L376">376</a>           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
-<a class="jxr_linenumber" name="L377" href="#L377">377</a>         }
-<a class="jxr_linenumber" name="L378" href="#L378">378</a>       }
-<a class="jxr_linenumber" name="L379" href="#L379">379</a>     }
-<a class="jxr_linenumber" name="L380" href="#L380">380</a> 
-<a class="jxr_linenumber" name="L381" href="#L381">381</a>     <em class="jxr_comment">// check that both hosts are allowed to use the transfer rule</em>
-<a class="jxr_linenumber" name="L382" href="#L382">382</a>     <strong class="jxr_keyword">final</strong> String rule = transfer.getRule();
-<a class="jxr_linenumber" name="L383" href="#L383">383</a>     <strong class="jxr_keyword">final</strong> String requested = transfer.getRequested();
-<a class="jxr_linenumber" name="L384" href="#L384">384</a>     <strong class="jxr_keyword">final</strong> String requester = transfer.getRequester();
-<a class="jxr_linenumber" name="L385" href="#L385">385</a>     <strong class="jxr_keyword">if</strong> (rule != <strong class="jxr_keyword">null</strong> &amp;&amp; !requested.isEmpty() &amp;&amp; canUseRule(requested, rule)) {
-<a class="jxr_linenumber" name="L386" href="#L386">386</a>       errors.add(RULE_NOT_ALLOWED(requested, rule));
-<a class="jxr_linenumber" name="L387" href="#L387">387</a>     }
-<a class="jxr_linenumber" name="L388" href="#L388">388</a>     <strong class="jxr_keyword">if</strong> (rule != <strong class="jxr_keyword">null</strong> &amp;&amp; !requester.isEmpty() &amp;&amp; canUseRule(requester, rule)) {
-<a class="jxr_linenumber" name="L389" href="#L389">389</a>       errors.add(RULE_NOT_ALLOWED(requester, rule));
-<a class="jxr_linenumber" name="L390" href="#L390">390</a>     }
-<a class="jxr_linenumber" name="L391" href="#L391">391</a> 
-<a class="jxr_linenumber" name="L392" href="#L392">392</a>     errors.addAll(checkRequiredFields(transfer));
-<a class="jxr_linenumber" name="L393" href="#L393">393</a> 
-<a class="jxr_linenumber" name="L394" href="#L394">394</a>     <strong class="jxr_keyword">if</strong> (errors.isEmpty()) {
-<a class="jxr_linenumber" name="L395" href="#L395">395</a>       <strong class="jxr_keyword">return</strong> transfer;
-<a class="jxr_linenumber" name="L396" href="#L396">396</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L397" href="#L397">397</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="RestErrorException" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestErrorException.html#RestErrorException">RestErrorException</a>(errors);
-<a class="jxr_linenumber" name="L398" href="#L398">398</a>     }
-<a class="jxr_linenumber" name="L399" href="#L399">399</a>   }
-<a class="jxr_linenumber" name="L400" href="#L400">400</a> }
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>           transfer.setTransferInfo(value.asText());
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>         }
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (name.equalsIgnoreCase(START)) {
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>         <strong class="jxr_keyword">if</strong> (value.isTextual()) {
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>           <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L372" href="#L372">372</a>             <strong class="jxr_keyword">final</strong> DateTime start = DateTime.parse(value.asText());
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>             <strong class="jxr_keyword">if</strong> (start.isBeforeNow()) {
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>               errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));
+<a class="jxr_linenumber" name="L375" href="#L375">375</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L376" href="#L376">376</a>               transfer.setStart(<strong class="jxr_keyword">new</strong> Timestamp(start.getMillis()));
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>             }
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>           } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IllegalArgumentException e) {
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>             errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>           }
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>         }
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>       }
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>     }
+<a class="jxr_linenumber" name="L386" href="#L386">386</a> 
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>     <em class="jxr_comment">// check that both hosts are allowed to use the transfer rule</em>
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>     <strong class="jxr_keyword">final</strong> String rule = transfer.getRule();
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>     <strong class="jxr_keyword">final</strong> String requested = transfer.getRequested();
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>     <strong class="jxr_keyword">final</strong> String requester = transfer.getRequester();
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>     <strong class="jxr_keyword">if</strong> (rule != <strong class="jxr_keyword">null</strong> &amp;&amp; !requested.isEmpty() &amp;&amp; canUseRule(requested, rule)) {
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>       errors.add(RULE_NOT_ALLOWED(requested, rule));
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>     }
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>     <strong class="jxr_keyword">if</strong> (rule != <strong class="jxr_keyword">null</strong> &amp;&amp; !requester.isEmpty() &amp;&amp; canUseRule(requester, rule)) {
+<a class="jxr_linenumber" name="L395" href="#L395">395</a>       errors.add(RULE_NOT_ALLOWED(requester, rule));
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>     }
+<a class="jxr_linenumber" name="L397" href="#L397">397</a> 
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>     errors.addAll(checkRequiredFields(transfer));
+<a class="jxr_linenumber" name="L399" href="#L399">399</a> 
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>     <strong class="jxr_keyword">if</strong> (errors.isEmpty()) {
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>       <strong class="jxr_keyword">return</strong> transfer;
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="RestErrorException" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/errors/RestErrorException.html#RestErrorException">RestErrorException</a>(errors);
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>     }
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>   }
+<a class="jxr_linenumber" name="L406" href="#L406">406</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

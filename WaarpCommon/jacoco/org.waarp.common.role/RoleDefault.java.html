@@ -92,159 +92,218 @@ public class RoleDefault {
 <span class="fc bfc" id="L92" title="All 2 branches covered.">      return (value &amp; brole) == brole;</span>
     }
 
+    public boolean isContained(ROLE role) {
+<span class="fc" id="L96">      return isContained(role.brole);</span>
+    }
+
+    public boolean contains(ROLE role) {
+<span class="fc" id="L100">      return role.isContained(this);</span>
+    }
+
     public byte getAsByte() {
-<span class="nc" id="L96">      return brole;</span>
+<span class="fc" id="L104">      return brole;</span>
+    }
+
+<span class="fc" id="L107">    private static final ROLE[] READONLY_A = new ROLE[] { READONLY };</span>
+<span class="fc" id="L108">    private static final ROLE[] TRANSFER_A = new ROLE[] { TRANSFER };</span>
+<span class="fc" id="L109">    private static final ROLE[] RULE_A = new ROLE[] { RULE };</span>
+<span class="fc" id="L110">    private static final ROLE[] HOST_A = new ROLE[] { HOST };</span>
+<span class="fc" id="L111">    private static final ROLE[] LIMIT_A = new ROLE[] { LIMIT };</span>
+<span class="fc" id="L112">    private static final ROLE[] SYSTEM_A = new ROLE[] { SYSTEM };</span>
+<span class="fc" id="L113">    private static final ROLE[] LOGCONTROL_A = new ROLE[] { LOGCONTROL };</span>
+<span class="fc" id="L114">    private static final ROLE[] UNUSED_A = new ROLE[] { UNUSED };</span>
+<span class="fc" id="L115">    private static final ROLE[] NOACCESS_A = new ROLE[] { NOACCESS };</span>
+<span class="fc" id="L116">    private static final ROLE[] PARTNER_A = new ROLE[] { READONLY, TRANSFER };</span>
+<span class="fc" id="L117">    private static final ROLE[] CONFIGADMIN_A =</span>
+        new ROLE[] { READONLY, TRANSFER, RULE, HOST };
+<span class="fc" id="L119">    private static final ROLE[] FULLADMIN_A =</span>
+        new ROLE[] { READONLY, TRANSFER, RULE, LIMIT, SYSTEM, LOGCONTROL };
+
+    public ROLE[] getComposingRoles() {
+<span class="nc bnc" id="L123" title="All 12 branches missed.">      switch (brole) {</span>
+        case 1:
+<span class="nc" id="L125">          return READONLY_A;</span>
+        case 2:
+<span class="nc" id="L127">          return TRANSFER_A;</span>
+        case 3:
+<span class="nc" id="L129">          return PARTNER_A;</span>
+        case 4:
+<span class="nc" id="L131">          return RULE_A;</span>
+        case 8:
+<span class="nc" id="L133">          return HOST_A;</span>
+        case 15:
+<span class="nc" id="L135">          return CONFIGADMIN_A;</span>
+        case 16:
+<span class="nc" id="L137">          return LIMIT_A;</span>
+        case 32:
+<span class="nc" id="L139">          return SYSTEM_A;</span>
+        case 64:
+<span class="nc" id="L141">          return LOGCONTROL_A;</span>
+        case 127:
+<span class="nc" id="L143">          return FULLADMIN_A;</span>
+        case -128:
+<span class="nc" id="L145">          return UNUSED_A;</span>
+        case 0:
+        default:
+<span class="nc" id="L148">          return NOACCESS_A;</span>
+      }
     }
 
     public static final String toString(byte fromRole) {
-<span class="nc" id="L100">      final StringBuilder result = new StringBuilder(&quot;[ &quot;);</span>
-<span class="nc" id="L101">      final ROLE[] values = ROLE.values();</span>
-<span class="nc bnc" id="L102" title="All 2 branches missed.">      for (final ROLE role : values) {</span>
-<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (role.isContained(fromRole)) {</span>
-<span class="nc" id="L104">          result.append(role.name()).append(' ');</span>
+<span class="nc" id="L153">      final StringBuilder result = new StringBuilder(&quot;[ &quot;);</span>
+<span class="nc" id="L154">      final ROLE[] values = ROLE.values();</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">      for (final ROLE role : values) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (role.isContained(fromRole)) {</span>
+<span class="nc" id="L157">          result.append(role.name()).append(' ');</span>
         }
       }
-<span class="nc" id="L107">      result.append(']');</span>
-<span class="nc" id="L108">      return result.toString();</span>
+<span class="nc" id="L160">      result.append(']');</span>
+<span class="nc" id="L161">      return result.toString();</span>
     }
 
     public static final ROLE fromByte(byte role) {
-<span class="nc bnc" id="L112" title="All 9 branches missed.">      switch (role) {</span>
+<span class="pc bpc" id="L165" title="1 of 12 branches missed.">      switch (role) {</span>
         case 1:
-<span class="nc" id="L114">          return READONLY;</span>
+<span class="fc" id="L167">          return READONLY;</span>
         case 2:
-<span class="nc" id="L116">          return TRANSFER;</span>
+<span class="fc" id="L169">          return TRANSFER;</span>
+        case 3:
+<span class="fc" id="L171">          return PARTNER;</span>
         case 4:
-<span class="nc" id="L118">          return RULE;</span>
+<span class="fc" id="L173">          return RULE;</span>
         case 8:
-<span class="nc" id="L120">          return HOST;</span>
+<span class="fc" id="L175">          return HOST;</span>
+        case 15:
+<span class="fc" id="L177">          return CONFIGADMIN;</span>
         case 16:
-<span class="nc" id="L122">          return LIMIT;</span>
+<span class="fc" id="L179">          return LIMIT;</span>
         case 32:
-<span class="nc" id="L124">          return SYSTEM;</span>
+<span class="fc" id="L181">          return SYSTEM;</span>
         case 64:
-<span class="nc" id="L126">          return LOGCONTROL;</span>
+<span class="fc" id="L183">          return LOGCONTROL;</span>
+        case 127:
+<span class="fc" id="L185">          return FULLADMIN;</span>
         case -128:
-<span class="nc" id="L128">          return UNUSED;</span>
+<span class="nc" id="L187">          return UNUSED;</span>
         case 0:
         default:
-<span class="nc" id="L131">          return NOACCESS;</span>
+<span class="fc" id="L190">          return NOACCESS;</span>
       }
     }
   }
 
   private byte role;
 
-<span class="fc" id="L138">  public RoleDefault() {</span>
-<span class="fc" id="L139">    role = ROLE.NOACCESS.brole;</span>
-<span class="fc" id="L140">  }</span>
+<span class="fc" id="L197">  public RoleDefault() {</span>
+<span class="fc" id="L198">    role = ROLE.NOACCESS.brole;</span>
+<span class="fc" id="L199">  }</span>
 
-<span class="fc" id="L142">  public RoleDefault(ROLE role) {</span>
-<span class="fc" id="L143">    this.role = role.brole;</span>
-<span class="fc" id="L144">  }</span>
+<span class="fc" id="L201">  public RoleDefault(ROLE role) {</span>
+<span class="fc" id="L202">    this.role = role.brole;</span>
+<span class="fc" id="L203">  }</span>
 
   public byte getRoleAsByte() {
-<span class="nc" id="L147">    return role;</span>
+<span class="nc" id="L206">    return role;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L152">    return ROLE.toString(role);</span>
+<span class="nc" id="L211">    return ROLE.toString(role);</span>
   }
 
   public RoleDefault addRole(ROLE newrole) {
-<span class="fc" id="L156">    role |= newrole.brole;</span>
-<span class="fc" id="L157">    return this;</span>
+<span class="fc" id="L215">    role |= newrole.brole;</span>
+<span class="fc" id="L216">    return this;</span>
   }
 
   public RoleDefault setRole(ROLE newrole) {
-<span class="fc" id="L161">    role = newrole.brole;</span>
-<span class="fc" id="L162">    return this;</span>
+<span class="fc" id="L220">    role = newrole.brole;</span>
+<span class="fc" id="L221">    return this;</span>
   }
 
   public RoleDefault setRoleDefault(RoleDefault newrole) {
-<span class="fc" id="L166">    role = newrole.role;</span>
-<span class="fc" id="L167">    return this;</span>
+<span class="fc" id="L225">    role = newrole.role;</span>
+<span class="fc" id="L226">    return this;</span>
   }
 
   public void clear() {
-<span class="fc" id="L171">    role = ROLE.NOACCESS.brole;</span>
-<span class="fc" id="L172">  }</span>
+<span class="fc" id="L230">    role = ROLE.NOACCESS.brole;</span>
+<span class="fc" id="L231">  }</span>
 
   public boolean isContaining(ROLE otherrole) {
-<span class="fc" id="L175">    return otherrole.isContained(role);</span>
+<span class="fc" id="L234">    return otherrole.isContained(role);</span>
   }
 
   public boolean hasNoAccess() {
-<span class="fc bfc" id="L179" title="All 2 branches covered.">    return role == ROLE.NOACCESS.brole;</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">    return role == ROLE.NOACCESS.brole;</span>
   }
 
   public boolean hasReadOnly() {
-<span class="fc" id="L183">    return ROLE.READONLY.isContained(role);</span>
+<span class="fc" id="L242">    return ROLE.READONLY.isContained(role);</span>
   }
 
   public boolean hasTransfer() {
-<span class="fc" id="L187">    return ROLE.TRANSFER.isContained(role);</span>
+<span class="fc" id="L246">    return ROLE.TRANSFER.isContained(role);</span>
   }
 
   public boolean hasRule() {
-<span class="fc" id="L191">    return ROLE.RULE.isContained(role);</span>
+<span class="fc" id="L250">    return ROLE.RULE.isContained(role);</span>
   }
 
   public boolean hasHost() {
-<span class="fc" id="L195">    return ROLE.HOST.isContained(role);</span>
+<span class="fc" id="L254">    return ROLE.HOST.isContained(role);</span>
   }
 
   public boolean hasLimit() {
-<span class="fc" id="L199">    return ROLE.LIMIT.isContained(role);</span>
+<span class="fc" id="L258">    return ROLE.LIMIT.isContained(role);</span>
   }
 
   public boolean hasSystem() {
-<span class="fc" id="L203">    return ROLE.SYSTEM.isContained(role);</span>
+<span class="fc" id="L262">    return ROLE.SYSTEM.isContained(role);</span>
   }
 
   public boolean hasUnused() {
-<span class="fc" id="L207">    return ROLE.UNUSED.isContained(role);</span>
+<span class="fc" id="L266">    return ROLE.UNUSED.isContained(role);</span>
   }
 
   public boolean hasLogControl() {
-<span class="fc" id="L211">    return ROLE.LOGCONTROL.isContained(role);</span>
+<span class="fc" id="L270">    return ROLE.LOGCONTROL.isContained(role);</span>
   }
 
   public static final boolean hasNoAccess(byte role) {
-<span class="nc bnc" id="L215" title="All 2 branches missed.">    return role == ROLE.NOACCESS.brole;</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    return role == ROLE.NOACCESS.brole;</span>
   }
 
   public static final boolean hasReadOnly(byte role) {
-<span class="nc" id="L219">    return ROLE.READONLY.isContained(role);</span>
+<span class="nc" id="L278">    return ROLE.READONLY.isContained(role);</span>
   }
 
   public static final boolean hasTransfer(byte role) {
-<span class="nc" id="L223">    return ROLE.TRANSFER.isContained(role);</span>
+<span class="nc" id="L282">    return ROLE.TRANSFER.isContained(role);</span>
   }
 
   public static final boolean hasRule(byte role) {
-<span class="nc" id="L227">    return ROLE.RULE.isContained(role);</span>
+<span class="nc" id="L286">    return ROLE.RULE.isContained(role);</span>
   }
 
   public static final boolean hasHost(byte role) {
-<span class="nc" id="L231">    return ROLE.HOST.isContained(role);</span>
+<span class="nc" id="L290">    return ROLE.HOST.isContained(role);</span>
   }
 
   public static final boolean hasLimit(byte role) {
-<span class="nc" id="L235">    return ROLE.LIMIT.isContained(role);</span>
+<span class="nc" id="L294">    return ROLE.LIMIT.isContained(role);</span>
   }
 
   public static final boolean hasSystem(byte role) {
-<span class="nc" id="L239">    return ROLE.SYSTEM.isContained(role);</span>
+<span class="nc" id="L298">    return ROLE.SYSTEM.isContained(role);</span>
   }
 
   public static final boolean hasUnused(byte role) {
-<span class="nc" id="L243">    return ROLE.UNUSED.isContained(role);</span>
+<span class="nc" id="L302">    return ROLE.UNUSED.isContained(role);</span>
   }
 
   public static final boolean hasLogControl(byte role) {
-<span class="nc" id="L247">    return ROLE.LOGCONTROL.isContained(role);</span>
+<span class="nc" id="L306">    return ROLE.LOGCONTROL.isContained(role);</span>
   }
 
 }

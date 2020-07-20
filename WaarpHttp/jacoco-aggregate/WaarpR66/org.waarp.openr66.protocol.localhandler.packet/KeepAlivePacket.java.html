@@ -50,68 +50,68 @@ public class KeepAlivePacket extends AbstractLocalPacket {
                                                  int middleLength,
                                                  int endLength, ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
 <span class="nc" id="L54">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="nc" id="L56">    final byte valid = buf.readByte();</span>
-<span class="nc" id="L57">    return new KeepAlivePacket(valid);</span>
+<span class="fc" id="L56">    final byte valid = buf.readByte();</span>
+<span class="fc" id="L57">    return new KeepAlivePacket(valid);</span>
   }
 
   /**
    * @param valid
    */
-<span class="nc" id="L63">  private KeepAlivePacket(byte valid) {</span>
-<span class="nc" id="L64">    way = valid;</span>
-<span class="nc" id="L65">  }</span>
+<span class="fc" id="L63">  private KeepAlivePacket(byte valid) {</span>
+<span class="fc" id="L64">    way = valid;</span>
+<span class="fc" id="L65">  }</span>
 
   /**
    *
    */
-<span class="nc" id="L70">  public KeepAlivePacket() {</span>
-<span class="nc" id="L71">    way = ASKVALIDATE;</span>
-<span class="nc" id="L72">  }</span>
+<span class="fc" id="L70">  public KeepAlivePacket() {</span>
+<span class="fc" id="L71">    way = ASKVALIDATE;</span>
+<span class="fc" id="L72">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr) {
-<span class="nc" id="L76">    end = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L77">  }</span>
+<span class="fc" id="L76">    end = Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L77">  }</span>
 
   @Override
   public void createHeader(LocalChannelReference lcr) {
-<span class="nc" id="L81">    header = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L82">  }</span>
+<span class="fc" id="L81">    header = Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L82">  }</span>
 
   @Override
   public void createMiddle(LocalChannelReference lcr) {
-<span class="nc" id="L86">    final byte[] newbytes = { way };</span>
-<span class="nc" id="L87">    middle = Unpooled.wrappedBuffer(newbytes);</span>
-<span class="nc" id="L88">  }</span>
+<span class="fc" id="L86">    final byte[] newbytes = { way };</span>
+<span class="fc" id="L87">    middle = Unpooled.wrappedBuffer(newbytes);</span>
+<span class="fc" id="L88">  }</span>
 
   @Override
   public byte getType() {
-<span class="nc" id="L92">    return LocalPacketFactory.KEEPALIVEPACKET;</span>
+<span class="fc" id="L92">    return LocalPacketFactory.KEEPALIVEPACKET;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L97">    return &quot;KeepAlivePacket: &quot; + way;</span>
+<span class="fc" id="L97">    return &quot;KeepAlivePacket: &quot; + way;</span>
   }
 
   /**
    * @return True if this packet is to be validated
    */
   public boolean isToValidate() {
-<span class="nc bnc" id="L104" title="All 2 branches missed.">    return way == ASKVALIDATE;</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
   public void validate() {
-<span class="nc" id="L111">    way = ANSWERVALIDATE;</span>
-<span class="nc" id="L112">    header = null;</span>
-<span class="nc" id="L113">    middle = null;</span>
-<span class="nc" id="L114">    end = null;</span>
-<span class="nc" id="L115">  }</span>
+<span class="fc" id="L111">    way = ANSWERVALIDATE;</span>
+<span class="fc" id="L112">    header = null;</span>
+<span class="fc" id="L113">    middle = null;</span>
+<span class="fc" id="L114">    end = null;</span>
+<span class="fc" id="L115">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

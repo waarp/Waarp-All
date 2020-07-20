@@ -29,17 +29,13 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
-import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 
 import java.io.File;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import static org.waarp.common.database.DbConstant.*;
 
@@ -55,10 +51,10 @@ import static org.waarp.common.database.DbConstant.*;
  * Format is like r66send command in any order except &quot;-info&quot; which should be
  * the last item:&lt;br&gt;
  * &quot;-to Host -file FILE -rule RULE [-md5] [-nolog] [-start yyyyMMddHHmmss or
- * -delay (delay or +delay)] [-info
- * INFO]&quot; &lt;br&gt;
+ * -delay (delay or +delay)] [-info INFO]&quot; &lt;br&gt;
  * &lt;br&gt;
- * INFO is the only one field that can contains blank character.&lt;br&gt;
+ * INFO is the only one field that can contains blank character and MUST be
+ * the last argument.&lt;br&gt;
  * &lt;br&gt;
  * The following replacement are done dynamically before the command is
  * executed:&lt;br&gt;
@@ -86,169 +82,137 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
   /**
    * Internal Logger
    */
-<span class="nc" id="L89">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L90">      WaarpLoggerFactory.getLogger(R66PreparedTransferExecutor.class);</span>
+<span class="nc" id="L85">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L86">      WaarpLoggerFactory.getLogger(R66PreparedTransferExecutor.class);</span>
 
   protected final WaarpFuture future;
-
-  protected String filename;
-
-  protected String rulename;
-
-  protected String fileinfo;
-
-  protected boolean isMD5;
+  protected final TransferArgs transferArgs;
 
   protected boolean nolog;
-
-  protected Timestamp timestart;
-
-  protected String remoteHost;
-
-<span class="nc" id="L108">  protected int blocksize = Configuration.configuration.getBlockSize();</span>
 
   protected DbSession dbsession;
 
   /**
-   * @param command
-   * @param delay
-   * @param futureCompletion
+   * Transfer arguments:&lt;br&gt;
+   * &lt;br&gt;
+   * -to &lt;arg&gt;        Specify the requested Host&lt;br&gt;
+   * (-id &lt;arg&gt;|      Specify the id of transfer&lt;br&gt;
+   * (-file &lt;arg&gt;     Specify the file path to operate on&lt;br&gt;
+   * -rule &lt;arg&gt;))    Specify the Rule&lt;br&gt;
+   * [-block &lt;arg&gt;]   Specify the block size&lt;br&gt;
+   * [-nofollow]      Specify the transfer should not integrate a FOLLOW id&lt;br&gt;
+   * [-md5]           Specify the option to have a hash computed for the
+   * transfer&lt;br&gt;
+   * [-delay &lt;arg&gt;]   Specify the delay time as an epoch time or '+' a delay in ms&lt;br&gt;
+   * [-start &lt;arg&gt;]   Specify the start time as yyyyMMddHHmmss&lt;br&gt;
+   * [-info &lt;arg&gt;)    Specify the transfer information (generally in last position)&lt;br&gt;
+   * [-nolog]         Specify to not log anything included database once the
+   * transfer is done&lt;br&gt;
+   * [-notlogWarn |   Specify to log final result as Info if OK&lt;br&gt;
+   * -logWarn]        Specify to log final result as Warn if OK&lt;br&gt;
+   *
+   * @param command transfer arguments
+   * @param delay delay
+   * @param futureCompletion future for completion
    */
   public R66PreparedTransferExecutor(String command, long delay,
-<span class="nc" id="L118">                                     WaarpFuture futureCompletion) {</span>
-<span class="nc" id="L119">    final String[] args = BLANK.split(command);</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L122">        i++;</span>
-<span class="nc" id="L123">        remoteHost = args[i];</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (Configuration.configuration.getAliases().containsKey(remoteHost)) {</span>
-<span class="nc" id="L125">          remoteHost = Configuration.configuration.getAliases().get(remoteHost);</span>
-        }
-<span class="nc bnc" id="L127" title="All 2 branches missed.">      } else if (&quot;-file&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L128">        i++;</span>
-<span class="nc" id="L129">        filename = args[i];</span>
-<span class="nc bnc" id="L130" title="All 2 branches missed.">      } else if (&quot;-rule&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L131">        i++;</span>
-<span class="nc" id="L132">        rulename = args[i];</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">      } else if (&quot;-info&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L134">        i++;</span>
-<span class="nc" id="L135">        fileinfo = args[i];</span>
-<span class="nc" id="L136">        i++;</span>
-<span class="nc bnc" id="L137" title="All 2 branches missed.">        while (i &lt; args.length) {</span>
-<span class="nc" id="L138">          fileinfo += ' ' + args[i];</span>
-<span class="nc" id="L139">          i++;</span>
-        }
-<span class="nc bnc" id="L141" title="All 2 branches missed.">      } else if (&quot;-md5&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L142">        isMD5 = true;</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">      } else if (&quot;-block&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L144">        i++;</span>
-<span class="nc" id="L145">        blocksize = Integer.parseInt(args[i]);</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (blocksize &lt; 100) {</span>
-<span class="nc" id="L147">          logger.warn(&quot;Block size is too small: &quot; + blocksize);</span>
-<span class="nc" id="L148">          blocksize = Configuration.configuration.getBlockSize();</span>
-        }
-<span class="nc bnc" id="L150" title="All 2 branches missed.">      } else if (&quot;-nolog&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L151">        nolog = true;</span>
-<span class="nc" id="L152">        i++;</span>
-<span class="nc bnc" id="L153" title="All 2 branches missed.">      } else if (&quot;-start&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L154">        i++;</span>
-<span class="nc" id="L155">        final SimpleDateFormat dateFormat =</span>
-            new SimpleDateFormat(&quot;yyyyMMddHHmmss&quot;);
-        Date date;
-        try {
-<span class="nc" id="L159">          date = dateFormat.parse(args[i]);</span>
-<span class="nc" id="L160">          timestart = new Timestamp(date.getTime());</span>
-<span class="nc" id="L161">        } catch (final ParseException ignored) {</span>
-          // nothing
-<span class="nc" id="L163">        }</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">      } else if (&quot;-delay&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L165">        i++;</span>
-<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (args[i].charAt(0) == '+') {</span>
-<span class="nc" id="L167">          timestart = new Timestamp(System.currentTimeMillis() +</span>
-<span class="nc" id="L168">                                    Long.parseLong(args[i].substring(1)));</span>
-        } else {
-<span class="nc" id="L170">          timestart = new Timestamp(Long.parseLong(args[i]));</span>
-        }
-      }
+<span class="nc" id="L119">                                     WaarpFuture futureCompletion) {</span>
+<span class="nc" id="L120">    final String[] args = BLANK.split(command);</span>
+<span class="nc" id="L121">    transferArgs = TransferArgs.getParamsInternal(0, args, false);</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (transferArgs != null) {</span>
+<span class="nc" id="L123">      TransferArgs.getAllInfo(transferArgs, 0, args, null);</span>
+<span class="nc" id="L124">      nolog = transferArgs.isNolog();</span>
     }
-<span class="nc bnc" id="L174" title="All 2 branches missed.">    if (fileinfo == null) {</span>
-<span class="nc" id="L175">      fileinfo = &quot;noinfo&quot;;</span>
-    }
-<span class="nc" id="L177">    future = futureCompletion;</span>
-<span class="nc" id="L178">  }</span>
+<span class="nc" id="L126">    future = futureCompletion;</span>
+<span class="nc" id="L127">  }</span>
 
   /**
    * @param dbsession the dbsession to set
    */
   public void setDbsession(DbSession dbsession) {
-<span class="nc" id="L184">    this.dbsession = dbsession;</span>
-<span class="nc" id="L185">  }</span>
+<span class="nc" id="L133">    this.dbsession = dbsession;</span>
+<span class="nc" id="L134">  }</span>
 
   @Override
   public void run() throws CommandAbstractException {
-<span class="nc" id="L189">    final String message =</span>
-        &quot;R66Prepared with -to &quot; + remoteHost + &quot; -rule &quot; + rulename +
-        &quot; -file &quot; + filename + &quot; -nolog: &quot; + nolog + &quot; -isMD5: &quot; + isMD5 +
-        &quot; -info &quot; + fileinfo;
-<span class="nc bnc" id="L193" title="All 6 branches missed.">    if (remoteHost == null || rulename == null || filename == null) {</span>
-<span class="nc" id="L194">      logger.error(</span>
-          &quot;Mandatory argument is missing: -to &quot; + remoteHost + &quot; -rule &quot; +
-          rulename + &quot; -file &quot; + filename);
-<span class="nc" id="L197">      throw new Reply421Exception(</span>
-          &quot;Mandatory argument is missing\n    &quot; + message);
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    if (transferArgs == null) {</span>
+<span class="nc" id="L139">      logger</span>
+<span class="nc" id="L140">          .error(&quot;Mandatory argument is missing: -to  -rule  -file or -to -id&quot;);</span>
+<span class="nc" id="L141">      throw new Reply421Exception(</span>
+          &quot;Mandatory argument is missing: -to  -rule  -file or -to -id&quot;);
     }
-<span class="nc" id="L200">    logger.debug(message);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">    if (transferArgs.getRemoteHost() == null ||</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        transferArgs.getRulename() == null ||</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        transferArgs.getFilename() == null) {</span>
+<span class="nc" id="L147">      logger.error(</span>
+<span class="nc" id="L148">          &quot;Mandatory argument is missing: -to &quot; + transferArgs.getRemoteHost() +</span>
+<span class="nc" id="L149">          &quot; -rule &quot; + transferArgs.getRulename() + &quot; -file &quot; +</span>
+<span class="nc" id="L150">          transferArgs.getFilename());</span>
+<span class="nc" id="L151">      throw new Reply421Exception(&quot;Mandatory argument is missing&quot;);</span>
+    }
+<span class="nc" id="L153">    final String message =</span>
+<span class="nc" id="L154">        &quot;R66Prepared with -to &quot; + transferArgs.getRemoteHost() + &quot; -rule &quot; +</span>
+<span class="nc" id="L155">        transferArgs.getRulename() + &quot; -file &quot; + transferArgs.getFilename() +</span>
+<span class="nc" id="L156">        &quot; -nolog: &quot; + nolog + &quot; -isMD5: &quot; + transferArgs.isMD5() + &quot; -info &quot; +</span>
+<span class="nc" id="L157">        transferArgs.getTransferInfo();</span>
+<span class="nc" id="L158">    logger.debug(message);</span>
     DbRule rule;
     try {
-<span class="nc" id="L203">      rule = new DbRule(rulename);</span>
-<span class="nc" id="L204">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L205">      logger.error(&quot;Cannot get Rule: &quot; + rulename + &quot; since {}\n    &quot; + message,</span>
-<span class="nc" id="L206">                   e.getMessage());</span>
-<span class="nc" id="L207">      throw new Reply421Exception(</span>
-          &quot;Cannot get Rule: &quot; + rulename + &quot;\n    &quot; + message);
-<span class="nc" id="L209">    }</span>
-<span class="nc" id="L210">    int mode = rule.getMode();</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">    if (isMD5) {</span>
-<span class="nc" id="L212">      mode = RequestPacket.getModeMD5(mode);</span>
+<span class="nc" id="L161">      rule = new DbRule(transferArgs.getRulename());</span>
+<span class="nc" id="L162">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L163">      logger.error(</span>
+<span class="nc" id="L164">          &quot;Cannot get Rule: &quot; + transferArgs.getRulename() + &quot; since {}\n    &quot; +</span>
+<span class="nc" id="L165">          message, e.getMessage());</span>
+<span class="nc" id="L166">      throw new Reply421Exception(</span>
+<span class="nc" id="L167">          &quot;Cannot get Rule: &quot; + transferArgs.getRulename() + &quot;\n    &quot; +</span>
+          message);
+<span class="nc" id="L169">    }</span>
+<span class="nc" id="L170">    int mode = rule.getMode();</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    if (transferArgs.isMD5()) {</span>
+<span class="nc" id="L172">      mode = RequestPacket.getModeMD5(mode);</span>
     }
-<span class="nc" id="L214">    final String sep = PartnerConfiguration.getSeparator(remoteHost);</span>
-<span class="nc" id="L215">    long originalSize = -1;</span>
-<span class="nc bnc" id="L216" title="All 4 branches missed.">    if (RequestPacket.isSendMode(mode) &amp;&amp; !RequestPacket.isThroughMode(mode)) {</span>
-<span class="nc" id="L217">      final File file = new File(filename);</span>
-<span class="nc bnc" id="L218" title="All 2 branches missed.">      if (file.canRead()) {</span>
-<span class="nc" id="L219">        originalSize = file.length();</span>
+<span class="nc" id="L174">    final String sep =</span>
+<span class="nc" id="L175">        PartnerConfiguration.getSeparator(transferArgs.getRemoteHost());</span>
+<span class="nc" id="L176">    long originalSize = -1;</span>
+<span class="nc bnc" id="L177" title="All 4 branches missed.">    if (RequestPacket.isSendMode(mode) &amp;&amp; !RequestPacket.isThroughMode(mode)) {</span>
+<span class="nc" id="L178">      final File file = new File(transferArgs.getFilename());</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      if (file.canRead()) {</span>
+<span class="nc" id="L180">        originalSize = file.length();</span>
       }
     }
-<span class="nc" id="L222">    final RequestPacket request =</span>
-        new RequestPacket(rulename, mode, filename, blocksize, 0, ILLEGALVALUE,
-                          fileinfo, originalSize, sep);
+<span class="nc" id="L183">    final RequestPacket request =</span>
+<span class="nc" id="L184">        new RequestPacket(transferArgs.getRulename(), mode,</span>
+<span class="nc" id="L185">                          transferArgs.getFilename(),</span>
+<span class="nc" id="L186">                          transferArgs.getBlockSize(), 0, ILLEGALVALUE,</span>
+<span class="nc" id="L187">                          transferArgs.getTransferInfo(), originalSize, sep);</span>
     // Not isRecv since it is the requester, so send =&gt; isRetrieve is true
-<span class="nc bnc" id="L226" title="All 2 branches missed.">    final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());</span>
-<span class="nc" id="L227">    logger.debug(&quot;Will prepare: {}&quot;, request);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());</span>
+<span class="nc" id="L190">    logger.debug(&quot;Will prepare: {}&quot;, request);</span>
     DbTaskRunner taskRunner;
     try {
-<span class="nc" id="L230">      taskRunner =</span>
-          new DbTaskRunner(rule, isRetrieve, request, remoteHost, timestart);
-<span class="nc" id="L232">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L233">      logger.error(&quot;Cannot get new task since {}\n    &quot; + message,</span>
-<span class="nc" id="L234">                   e.getMessage());</span>
-<span class="nc" id="L235">      throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
-<span class="nc" id="L236">    }</span>
-<span class="nc" id="L237">    taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">    if (!taskRunner.forceSaveStatus()) {</span>
+<span class="nc" id="L193">      taskRunner = new DbTaskRunner(rule, isRetrieve, request,</span>
+<span class="nc" id="L194">                                    transferArgs.getRemoteHost(),</span>
+<span class="nc" id="L195">                                    transferArgs.getStartTime());</span>
+<span class="nc" id="L196">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L197">      logger.error(&quot;Cannot get new task since {}\n    &quot; + message,</span>
+<span class="nc" id="L198">                   e.getMessage());</span>
+<span class="nc" id="L199">      throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
+<span class="nc" id="L200">    }</span>
+<span class="nc" id="L201">    taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">    if (!taskRunner.forceSaveStatus()) {</span>
       try {
-<span class="nc bnc" id="L240" title="All 2 branches missed.">        if (!taskRunner.specialSubmit()) {</span>
-<span class="nc" id="L241">          logger.error(&quot;Cannot prepare task: &quot; + message);</span>
-<span class="nc" id="L242">          throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (!taskRunner.specialSubmit()) {</span>
+<span class="nc" id="L205">          logger.error(&quot;Cannot prepare task: &quot; + message);</span>
+<span class="nc" id="L206">          throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
         }
-<span class="nc" id="L244">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L245">        logger.error(&quot;Cannot prepare task since {}\n    &quot; + message,</span>
-<span class="nc" id="L246">                     e.getMessage());</span>
-<span class="nc" id="L247">        throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
-<span class="nc" id="L248">      }</span>
+<span class="nc" id="L208">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L209">        logger.error(&quot;Cannot prepare task since {}\n    &quot; + message,</span>
+<span class="nc" id="L210">                     e.getMessage());</span>
+<span class="nc" id="L211">        throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);</span>
+<span class="nc" id="L212">      }</span>
     }
-<span class="nc" id="L250">    logger.debug(&quot;R66PreparedTransfer prepared: {}&quot;, request);</span>
-<span class="nc" id="L251">    future.setSuccess();</span>
-<span class="nc" id="L252">  }</span>
+<span class="nc" id="L214">    logger.debug(&quot;R66PreparedTransfer prepared: {}&quot;, request);</span>
+<span class="nc" id="L215">    future.setSuccess();</span>
+<span class="nc" id="L216">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

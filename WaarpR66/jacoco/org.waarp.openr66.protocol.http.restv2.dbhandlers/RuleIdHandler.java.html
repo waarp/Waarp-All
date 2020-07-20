@@ -27,10 +27,14 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.pojo.Rule;
+import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 
@@ -65,14 +69,14 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   private static final HttpHeaders OPTIONS_HEADERS;
 
   static {
-<span class="fc" id="L68">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
-<span class="fc" id="L69">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
-<span class="fc" id="L70">    allow.add(HttpMethod.GET);</span>
-<span class="fc" id="L71">    allow.add(HttpMethod.PUT);</span>
-<span class="fc" id="L72">    allow.add(HttpMethod.DELETE);</span>
-<span class="fc" id="L73">    allow.add(HttpMethod.OPTIONS);</span>
-<span class="fc" id="L74">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
-<span class="fc" id="L75">  }</span>
+<span class="fc" id="L72">    OPTIONS_HEADERS = new DefaultHttpHeaders();</span>
+<span class="fc" id="L73">    final List&lt;HttpMethod&gt; allow = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="fc" id="L74">    allow.add(HttpMethod.GET);</span>
+<span class="fc" id="L75">    allow.add(HttpMethod.PUT);</span>
+<span class="fc" id="L76">    allow.add(HttpMethod.DELETE);</span>
+<span class="fc" id="L77">    allow.add(HttpMethod.OPTIONS);</span>
+<span class="fc" id="L78">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
+<span class="fc" id="L79">  }</span>
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -80,8 +84,8 @@ public class RuleIdHandler extends AbstractRestDbHandler {
    * @param crud the CRUD mask for this handler
    */
   public RuleIdHandler(byte crud) {
-<span class="fc" id="L83">    super(crud);</span>
-<span class="fc" id="L84">  }</span>
+<span class="fc" id="L87">    super(crud);</span>
+<span class="fc" id="L88">  }</span>
 
   /**
    * Method called to retrieve a transfer rule with the id given in the
@@ -98,26 +102,26 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   public void getRule(HttpRequest request, HttpResponder responder,
                       @PathParam(URI_ID) String id) {
 
-<span class="nc" id="L101">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L105">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="nc" id="L103">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="nc" id="L104">      final Rule rule = ruleDAO.select(id);</span>
+<span class="nc" id="L107">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L108">      final Rule rule = ruleDAO.select(id);</span>
 
-<span class="nc bnc" id="L106" title="All 2 branches missed.">      if (rule == null) {</span>
-<span class="nc" id="L107">        responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L108">        return;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (rule == null) {</span>
+<span class="nc" id="L111">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L112">        return;</span>
       }
-<span class="nc" id="L110">      final ObjectNode responseObject = RuleConverter.ruleToNode(rule);</span>
-<span class="nc" id="L111">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L112">      responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L113">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L114">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L115">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L116">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L114">      final ObjectNode responseObject = RuleConverter.ruleToNode(rule);</span>
+<span class="nc" id="L115">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L116">      responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L117">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L118">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L119">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L120">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L118">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L122">      DAOFactory.closeDAO(ruleDAO);</span>
     }
-<span class="nc" id="L120">  }</span>
+<span class="nc" id="L124">  }</span>
 
   /**
    * Method called to update a transfer rule.
@@ -133,36 +137,38 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   public void updateRule(HttpRequest request, HttpResponder responder,
                          @PathParam(URI_ID) String id) {
 
-<span class="nc" id="L136">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L140">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="nc" id="L138">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="nc" id="L139">      final Rule oldRule = ruleDAO.select(id);</span>
+<span class="nc" id="L142">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L143">      final Rule oldRule = ruleDAO.select(id);</span>
 
-<span class="nc bnc" id="L141" title="All 2 branches missed.">      if (oldRule == null) {</span>
-<span class="nc" id="L142">        responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L143">        return;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">      if (oldRule == null) {</span>
+<span class="nc" id="L146">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L147">        return;</span>
       }
 
-<span class="nc" id="L146">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
-<span class="nc" id="L147">      final Rule newRule =</span>
-<span class="nc" id="L148">          RuleConverter.nodeToUpdatedRule(requestObject, oldRule);</span>
+<span class="nc" id="L150">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L151">      final Rule newRule =</span>
+<span class="nc" id="L152">          RuleConverter.nodeToUpdatedRule(requestObject, oldRule);</span>
 
-<span class="nc" id="L150">      ruleDAO.update(newRule);</span>
+<span class="nc" id="L154">      ruleDAO.update(newRule);</span>
 
-<span class="nc" id="L152">      final ObjectNode responseObject = RuleConverter.ruleToNode(newRule);</span>
-<span class="nc" id="L153">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L154">      responder.sendJson(CREATED, responseText);</span>
-<span class="nc" id="L155">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L156">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L157">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L158">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L156">      final ObjectNode responseObject = RuleConverter.ruleToNode(newRule);</span>
+<span class="nc" id="L157">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L158">      responder.sendJson(CREATED, responseText);</span>
+<span class="nc" id="L159">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L160">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L161">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L162">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L160">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L164">      DAOFactory.closeDAO(ruleDAO);</span>
     }
-<span class="nc" id="L162">  }</span>
+<span class="nc" id="L166">  }</span>
 
   /**
    * Method called to delete a transfer rule from the database.
+   * Note that if a Transfer exists that used this rule, the delete
+   * cannot be achieved.
    *
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -174,25 +180,40 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @RequiredRole(RULE)
   public void deleteRule(HttpRequest request, HttpResponder responder,
                          @PathParam(URI_ID) String id) {
-
-<span class="nc" id="L178">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L183">    TransferDAO transferDAO = null;</span>
     try {
-<span class="nc" id="L180">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="nc" id="L181">      final Rule rule = ruleDAO.select(id);</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (rule == null) {</span>
-<span class="nc" id="L183">        responder.sendStatus(NOT_FOUND);</span>
-      } else {
-<span class="nc" id="L185">        ruleDAO.delete(rule);</span>
-<span class="nc" id="L186">        responder.sendStatus(NO_CONTENT);</span>
+<span class="nc" id="L185">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L186">      List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc" id="L187">      Filter filter = new Filter(DbTaskRunner.Columns.IDRULE.name(), &quot;=&quot;, id);</span>
+<span class="nc" id="L188">      filters.add(filter);</span>
+<span class="nc" id="L189">      List&lt;Transfer&gt; transferList = transferDAO.find(filters);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (!transferList.isEmpty()) {</span>
+<span class="nc" id="L191">        transferList.clear();</span>
+<span class="nc" id="L192">        responder.sendStatus(NOT_FOUND);</span>
       }
-<span class="nc" id="L188">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L189">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L190">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L191">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L194">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L195">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L193">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L197">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc" id="L195">  }</span>
+<span class="nc" id="L199">    RuleDAO ruleDAO = null;</span>
+    try {
+<span class="nc" id="L201">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L202">      final Rule rule = ruleDAO.select(id);</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">      if (rule == null) {</span>
+<span class="nc" id="L204">        responder.sendStatus(NOT_FOUND);</span>
+      } else {
+<span class="nc" id="L206">        ruleDAO.delete(rule);</span>
+<span class="nc" id="L207">        responder.sendStatus(NO_CONTENT);</span>
+      }
+<span class="nc" id="L209">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L210">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L211">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L212">      responder.sendStatus(NOT_FOUND);</span>
+    } finally {
+<span class="nc" id="L214">      DAOFactory.closeDAO(ruleDAO);</span>
+    }
+<span class="nc" id="L216">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -209,7 +230,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @RequiredRole(NOACCESS)
   public void options(HttpRequest request, HttpResponder responder,
                       @PathParam(URI_ID) String id) {
-<span class="nc" id="L212">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L213">  }</span>
+<span class="nc" id="L233">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L234">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -106,9 +106,9 @@ public class HttpRestR66Handler extends HttpRestHandler {
 <span class="fc" id="L106">    }</span>
 
     public static RESTHANDLERS getRESTHANDLER(String baseUri) {
-<span class="nc bnc" id="L109" title="All 2 branches missed.">      for (final RESTHANDLERS resthandler : RESTHANDLERS.values()) {</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (resthandler.uri.equals(baseUri)) {</span>
-<span class="nc" id="L111">          return resthandler;</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">      for (final RESTHANDLERS resthandler : RESTHANDLERS.values()) {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (resthandler.uri.equals(baseUri)) {</span>
+<span class="fc" id="L111">          return resthandler;</span>
         }
       }
 <span class="nc" id="L114">      return null;</span>
@@ -371,27 +371,31 @@ public class HttpRestR66Handler extends HttpRestHandler {
 <span class="nc" id="L371">        temp.useConnection();</span>
 <span class="nc" id="L372">        dbSession = temp;</span>
       }
+<span class="nc bnc" id="L374" title="All 2 branches missed.">      if (key == null) {</span>
+<span class="nc" id="L375">        status = HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc" id="L376">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;);</span>
+      }
       try {
-<span class="nc" id="L375">        session.getAuth().connectionHttps(user, FilesystemBasedDigest</span>
-<span class="nc" id="L376">            .passwdCrypt(key.getBytes(WaarpStringUtils.UTF8)));</span>
-<span class="nc" id="L377">      } catch (final Reply530Exception e) {</span>
-<span class="nc" id="L378">        status = HttpResponseStatus.UNAUTHORIZED;</span>
-<span class="nc" id="L379">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;, e);</span>
-<span class="nc" id="L380">      } catch (final Reply421Exception e) {</span>
-<span class="nc" id="L381">        status = HttpResponseStatus.SERVICE_UNAVAILABLE;</span>
-<span class="nc" id="L382">        throw new HttpInvalidAuthenticationException(&quot;Service unavailable&quot;, e);</span>
-<span class="nc" id="L383">      }</span>
+<span class="nc" id="L379">        session.getAuth().connectionHttps(user, FilesystemBasedDigest</span>
+<span class="nc" id="L380">            .passwdCrypt(key.getBytes(WaarpStringUtils.UTF8)));</span>
+<span class="nc" id="L381">      } catch (final Reply530Exception e) {</span>
+<span class="nc" id="L382">        status = HttpResponseStatus.UNAUTHORIZED;</span>
+<span class="nc" id="L383">        throw new HttpInvalidAuthenticationException(&quot;Wrong Authentication&quot;, e);</span>
+<span class="nc" id="L384">      } catch (final Reply421Exception e) {</span>
+<span class="nc" id="L385">        status = HttpResponseStatus.SERVICE_UNAVAILABLE;</span>
+<span class="nc" id="L386">        throw new HttpInvalidAuthenticationException(&quot;Service unavailable&quot;, e);</span>
+<span class="nc" id="L387">      }</span>
     }
-<span class="fc" id="L385">    arguments.setXAuthRole(session.getAuth().getRole());</span>
-<span class="fc" id="L386">    arguments.methodFromUri();</span>
-<span class="fc" id="L387">    arguments.methodFromHeader();</span>
-<span class="fc" id="L388">  }</span>
+<span class="fc" id="L389">    arguments.setXAuthRole(session.getAuth().getRole());</span>
+<span class="fc" id="L390">    arguments.methodFromUri();</span>
+<span class="fc" id="L391">    arguments.methodFromHeader();</span>
+<span class="fc" id="L392">  }</span>
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L392">    super.channelInactive(ctx);</span>
-<span class="fc" id="L393">    getServerHandler().channelClosed();</span>
-<span class="fc" id="L394">  }</span>
+<span class="fc" id="L396">    super.channelInactive(ctx);</span>
+<span class="fc" id="L397">    getServerHandler().channelClosed();</span>
+<span class="fc" id="L398">  }</span>
 
   /**
    * Called at the beginning of every new request
@@ -400,8 +404,8 @@ public class HttpRestR66Handler extends HttpRestHandler {
    */
   @Override
   protected void initialize() {
-<span class="fc" id="L403">    super.initialize();</span>
-<span class="fc" id="L404">  }</span>
+<span class="fc" id="L407">    super.initialize();</span>
+<span class="fc" id="L408">  }</span>
 
   /**
    * Initialize the REST service (server side) for one restConfiguration
@@ -409,57 +413,57 @@ public class HttpRestR66Handler extends HttpRestHandler {
    * @param restConfiguration
    */
   public static void initializeService(RestConfiguration restConfiguration) {
-<span class="nc" id="L412">    instantiateHandlers(restConfiguration);</span>
-<span class="nc bnc" id="L413" title="All 2 branches missed.">    if (group == null) {</span>
-<span class="nc" id="L414">      group = Configuration.configuration.getHttpChannelGroup();</span>
+<span class="fc" id="L416">    instantiateHandlers(restConfiguration);</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">    if (group == null) {</span>
+<span class="fc" id="L418">      group = Configuration.configuration.getHttpChannelGroup();</span>
     }
     // Configure the server.
-<span class="nc" id="L417">    final ServerBootstrap httpBootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L418">    WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration</span>
-<span class="nc" id="L419">        .getHttpWorkerGroup(), (int) Configuration.configuration</span>
-<span class="nc" id="L420">        .getTimeoutCon());</span>
+<span class="fc" id="L421">    final ServerBootstrap httpBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L422">    WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration</span>
+<span class="fc" id="L423">        .getHttpWorkerGroup(), (int) Configuration.configuration</span>
+<span class="fc" id="L424">        .getTimeoutCon());</span>
     // Set up the event pipeline factory.
-<span class="nc bnc" id="L422" title="All 2 branches missed.">    if (restConfiguration.isRestSsl()) {</span>
-<span class="nc" id="L423">      httpBootstrap.childHandler(new HttpRestR66Initializer(false, Configuration</span>
-<span class="nc" id="L424">          .getWaarpSslContextFactory(), restConfiguration));</span>
+<span class="pc bpc" id="L426" title="1 of 2 branches missed.">    if (restConfiguration.isRestSsl()) {</span>
+<span class="nc" id="L427">      httpBootstrap.childHandler(new HttpRestR66Initializer(false, Configuration</span>
+<span class="nc" id="L428">          .getWaarpSslContextFactory(), restConfiguration));</span>
     } else {
-<span class="nc" id="L426">      httpBootstrap.childHandler(</span>
+<span class="fc" id="L430">      httpBootstrap.childHandler(</span>
           new HttpRestR66Initializer(false, null, restConfiguration));
     }
     // Bind and start to accept incoming connections.
     ChannelFuture future;
-<span class="nc bnc" id="L431" title="All 2 branches missed.">    if (restConfiguration != null &amp;&amp;</span>
-<span class="nc bnc" id="L432" title="All 2 branches missed.">        restConfiguration.getRestAddress() != null &amp;&amp;</span>
-<span class="nc bnc" id="L433" title="All 2 branches missed.">        !restConfiguration.getRestAddress().isEmpty()) {</span>
-<span class="nc" id="L434">      future = httpBootstrap.bind(</span>
-<span class="nc" id="L435">          new InetSocketAddress(restConfiguration.getRestAddress(),</span>
-<span class="nc" id="L436">                                restConfiguration.getRestPort()));</span>
+<span class="pc bpc" id="L435" title="1 of 2 branches missed.">    if (restConfiguration != null &amp;&amp;</span>
+<span class="pc bpc" id="L436" title="1 of 2 branches missed.">        restConfiguration.getRestAddress() != null &amp;&amp;</span>
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">        !restConfiguration.getRestAddress().isEmpty()) {</span>
+<span class="fc" id="L438">      future = httpBootstrap.bind(</span>
+<span class="fc" id="L439">          new InetSocketAddress(restConfiguration.getRestAddress(),</span>
+<span class="fc" id="L440">                                restConfiguration.getRestPort()));</span>
     } else {
-<span class="nc" id="L438">      future = httpBootstrap</span>
-<span class="nc" id="L439">          .bind(new InetSocketAddress(restConfiguration.getRestPort()));</span>
+<span class="nc" id="L442">      future = httpBootstrap</span>
+<span class="nc" id="L443">          .bind(new InetSocketAddress(restConfiguration.getRestPort()));</span>
     }
     try {
-<span class="nc" id="L442">      future.await();</span>
-<span class="nc" id="L443">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L444">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L445">    }</span>
-<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="nc" id="L447">      group.add(future.channel());</span>
+<span class="fc" id="L446">      future.await();</span>
+<span class="nc" id="L447">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L448">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L449">    }</span>
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="nc" id="L451">      group.add(future.channel());</span>
     }
-<span class="nc" id="L449">  }</span>
+<span class="fc" id="L453">  }</span>
 
   /**
    * @return the dbSessionFromUser
    */
   public static HashMap&lt;String, DbSession&gt; getDbSessionFromUser() {
-<span class="nc" id="L455">    return dbSessionFromUser;</span>
+<span class="nc" id="L459">    return dbSessionFromUser;</span>
   }
 
   /**
    * @return the serverHandler
    */
   public ServerActions getServerHandler() {
-<span class="fc" id="L462">    return serverHandler;</span>
+<span class="fc" id="L466">    return serverHandler;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

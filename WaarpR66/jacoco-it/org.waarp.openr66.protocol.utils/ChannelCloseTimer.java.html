@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChannelCloseTimer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.utils</a> &gt; <span class="el_source">ChannelCloseTimer.java</span></div><h1>ChannelCloseTimer.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.utils;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.localhandler.ConnectionActions;
+
+import java.util.concurrent.TimeUnit;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * TimerTask to Close a Channel in the future
+ */
+public class ChannelCloseTimer implements TimerTask {
+
+  private Channel channel;
+  private ChannelFuture future;
+  private ConnectionActions connectionActions;
+  private DbSession noconcurrencyDbSession;
+
+<span class="nc" id="L46">  public ChannelCloseTimer(Channel channel) {</span>
+<span class="nc" id="L47">    this.channel = channel;</span>
+<span class="nc" id="L48">  }</span>
+
+<span class="nc" id="L50">  public ChannelCloseTimer(Channel channel, ChannelFuture future) {</span>
+<span class="nc" id="L51">    this.channel = channel;</span>
+<span class="nc" id="L52">    this.future = future;</span>
+<span class="nc" id="L53">  }</span>
+
+<span class="fc" id="L55">  public ChannelCloseTimer(ConnectionActions connectionActions) {</span>
+<span class="fc" id="L56">    this.connectionActions = connectionActions;</span>
+<span class="fc" id="L57">  }</span>
+
+  @Override
+  public void run(Timeout timeout) throws Exception {
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (future != null) {</span>
+<span class="nc" id="L62">      WaarpNettyUtil.awaitOrInterrupted(future);</span>
+    }
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">    if (channel != null) {</span>
+<span class="nc" id="L65">      WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">    } else if (connectionActions != null) {</span>
+<span class="pc bpc" id="L67" title="3 of 4 branches missed.">      if (noconcurrencyDbSession != null &amp;&amp; admin != null &amp;&amp;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">          admin.getSession() != null &amp;&amp;</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">          !noconcurrencyDbSession.equals(admin.getSession())) {</span>
+<span class="nc" id="L70">        noconcurrencyDbSession.forceDisconnect();</span>
+<span class="nc" id="L71">        noconcurrencyDbSession = null;</span>
+      }
+<span class="fc" id="L73">      connectionActions.getLocalChannelReference().close();</span>
+    }
+<span class="fc" id="L75">  }</span>
+
+  /**
+   * Close in the future this transaction (may need more than 1 WAITFORNETOP)
+   *
+   * @param connectionActions
+   */
+  public static void closeFutureTransaction(
+      ConnectionActions connectionActions) {
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="fc" id="L85">      Configuration.configuration.getTimerClose().newTimeout(</span>
+          new ChannelCloseTimer(connectionActions),
+          Configuration.WAITFORNETOP * 2, TimeUnit.MILLISECONDS);
+    }
+<span class="fc" id="L89">  }</span>
+
+  /**
+   * Close in the future this transaction
+   *
+   * @param connectionActions
+   * @param noconcurrencyDbSession
+   */
+  public static void closeFutureTransaction(ConnectionActions connectionActions,
+                                            DbSession noconcurrencyDbSession) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="nc" id="L100">      ChannelCloseTimer cct = new ChannelCloseTimer(connectionActions);</span>
+<span class="nc" id="L101">      cct.setDbSession(noconcurrencyDbSession);</span>
+<span class="nc" id="L102">      Configuration.configuration.getTimerClose()</span>
+<span class="nc" id="L103">                                 .newTimeout(cct, Configuration.WAITFORNETOP,</span>
+                                             TimeUnit.MILLISECONDS);
+    }
+<span class="nc" id="L106">  }</span>
+
+  public void setDbSession(DbSession dbSession) {
+<span class="nc" id="L109">    noconcurrencyDbSession = dbSession;</span>
+<span class="nc" id="L110">  }</span>
+
+  /**
+   * Close in the future this channel
+   *
+   * @param channel
+   */
+  public static void closeFutureChannel(Channel channel) {
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="nc" id="L119">      Configuration.configuration.getTimerClose()</span>
+<span class="nc" id="L120">                                 .newTimeout(new ChannelCloseTimer(channel),</span>
+                                             Configuration.WAITFORNETOP,
+                                             TimeUnit.MILLISECONDS);
+    }
+<span class="fc" id="L124">  }</span>
+
+  /**
+   * Close in the future this channel
+   *
+   * @param channel
+   * @param future future to wait in addition to other constraints
+   */
+  public static void closeFutureChannel(Channel channel, ChannelFuture future) {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="nc" id="L134">      Configuration.configuration.getTimerClose().newTimeout(</span>
+          new ChannelCloseTimer(channel, future), Configuration.WAITFORNETOP,
+          TimeUnit.MILLISECONDS);
+    }
+<span class="nc" id="L138">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

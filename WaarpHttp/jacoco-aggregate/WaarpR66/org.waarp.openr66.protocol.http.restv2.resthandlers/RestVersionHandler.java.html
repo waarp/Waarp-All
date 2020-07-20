@@ -43,8 +43,8 @@ public class RestVersionHandler
   /**
    * Logger for all unexpected execution events.
    */
-<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(RestVersionHandler.class);</span>
+<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(RestVersionHandler.class);</span>
 
   /**
    * Name of this handler in the Netty pipeline.
@@ -68,10 +68,10 @@ public class RestVersionHandler
    * @param restConfiguration the RestConfiguration object
    */
   public RestVersionHandler(RestConfiguration restConfiguration) {
-<span class="nc" id="L71">    super(false);</span>
-<span class="nc" id="L72">    HttpRestR66Handler.instantiateHandlers(restConfiguration);</span>
-<span class="nc" id="L73">    restV1Handler = new HttpRestR66Handler(restConfiguration);</span>
-<span class="nc" id="L74">  }</span>
+<span class="fc" id="L71">    super(false);</span>
+<span class="fc" id="L72">    HttpRestR66Handler.instantiateHandlers(restConfiguration);</span>
+<span class="fc" id="L73">    restV1Handler = new HttpRestR66Handler(restConfiguration);</span>
+<span class="fc" id="L74">  }</span>
 
   /**
    * Dispatches the incoming request to the corresponding v1 or v2 REST
@@ -83,20 +83,20 @@ public class RestVersionHandler
   @Override
   protected void channelRead0(ChannelHandlerContext ctx,
                               FullHttpRequest request) {
-<span class="nc" id="L86">    logger.debug(request.method() + &quot; received on &quot; + request.uri());</span>
+<span class="fc" id="L86">    logger.debug(request.method() + &quot; received on &quot; + request.uri());</span>
 
-<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (request.uri().startsWith(VERSION_PREFIX)) {</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (ctx.pipeline().get(V1_HANDLER) != null) {</span>
-<span class="nc" id="L90">        ctx.pipeline().remove(V1_HANDLER);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">    if (request.uri().startsWith(VERSION_PREFIX)) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">      if (ctx.pipeline().get(V1_HANDLER) != null) {</span>
+<span class="fc" id="L90">        ctx.pipeline().remove(V1_HANDLER);</span>
       }
 
-<span class="nc" id="L93">      ctx.fireChannelRead(request);</span>
+<span class="fc" id="L93">      ctx.fireChannelRead(request);</span>
     } else {
-<span class="nc bnc" id="L95" title="All 2 branches missed.">      if (ctx.pipeline().get(V1_HANDLER) == null) {</span>
-<span class="nc" id="L96">        ctx.pipeline().addAfter(HANDLER_NAME, V1_HANDLER, restV1Handler);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">      if (ctx.pipeline().get(V1_HANDLER) == null) {</span>
+<span class="fc" id="L96">        ctx.pipeline().addAfter(HANDLER_NAME, V1_HANDLER, restV1Handler);</span>
       }
-<span class="nc" id="L98">      ctx.fireChannelRead(request);</span>
+<span class="fc" id="L98">      ctx.fireChannelRead(request);</span>
     }
-<span class="nc" id="L100">  }</span>
+<span class="fc" id="L100">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

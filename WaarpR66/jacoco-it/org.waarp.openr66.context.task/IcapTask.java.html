@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IcapTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">IcapTask.java</span></div><h1>IcapTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.apache.commons.exec.CommandLine;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.icap.IcapScanFile;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+
+/**
+ * ICAP task:&lt;br&gt;
+ * &lt;p&gt;
+ * List of arguments will be as follow.&lt;br&gt;
+ * -file filename &lt;br&gt;
+ * -to hostname &lt;br&gt;
+ * [-port port, default 1344] &lt;br&gt;
+ * -service name | -model name &lt;br&gt;
+ * [-previewSize size, default none] &lt;br&gt;
+ * [-blockSize size, default 8192] &lt;br&gt;
+ * [-receiveSize size, default 65536] &lt;br&gt;
+ * [-maxSize size, default MAX_INTEGER] &lt;br&gt;
+ * [-timeout in_ms, default equiv to 10 min] &lt;br&gt;
+ * [-keyPreview key -stringPreview string, default none] &lt;br&gt;
+ * [-key204 key -string204 string, default none] &lt;br&gt;
+ * [-key200 key -string200 string, default none] &lt;br&gt;
+ * [-stringHttp string, default none] &lt;br&gt;
+ * [-logger DEBUG|INFO|WARN|ERROR, default none] &lt;br&gt;
+ * [-errorMove path | -errorDelete | -sendOnError] &lt;br&gt;
+ * [-ignoreNetworkError] &lt;br&gt;
+ * [-ignoreTooBigFileError] &lt;br&gt;
+ * &lt;br&gt;
+ * Then if r66send command in case of -sendOnError option is specified, the
+ * very last option of ICAP must be &quot;--&quot; then followed by usual r66send
+ * options.&lt;br&gt;
+ * Format is like r66send command in any order except &quot;-info&quot; which should be
+ * the last item, and &quot;-copyinfo&quot;
+ * will copy at first place the original transfer information as the new one,
+ * while still having the
+ * possibility to add new informations through &quot;-info&quot;:&lt;br&gt;
+ * &quot;-file filepath -to requestedHost -rule rule [-md5] [-start yyyyMMddHHmmss or
+ * -delay (delay or +delay)] [-nofollow)
+ * [-copyinfo] [-info information]&quot; &lt;br&gt;
+ * &lt;br&gt;
+ * INFO is the only one field that can contains blank character.&lt;br&gt;
+ * &lt;br&gt;
+ * Example:&lt;br&gt;
+ * -file #TRUEFULLPATH# -to hostname -service name -previewSize size
+ * -blockSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
+ * key -stringPreview string -key204 key -string204 string -key200 key
+ * -string200 string -stringHttp string -logger WARN -errorDelete
+ * -ignoreNetworkError&lt;br&gt;
+ * &lt;br&gt;
+ * -file #TRUEFULLPATH# -to hostname -model name -previewSize size
+ * -blockSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
+ * key -stringPreview string -key204 key -string204 string -key200 key
+ * -string200 string -stringHttp string -logger WARN -errorMove path
+ * -ignoreNetworkError&lt;br&gt;
+ * &lt;br&gt;
+ * -file #TRUEFULLPATH# -to hostname -model name -previewSize size
+ * -blockSize size -receiveSize size -maxSize size -timeout in_ms -keyPreview
+ * key -stringPreview string -key204 key -string204 string -key200 key
+ * -string200 string -stringHttp string -logger WARN -sendOnError
+ * -ignoreNetworkError -- -file #TRUEFULLPATH# -to
+ * requestedHost -rule rule [-copyinfo] [-info information]&lt;br&gt;
+ */
+public class IcapTask extends AbstractExecTask {
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L89">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L90">      WaarpLoggerFactory.getLogger(IcapTask.class);</span>
+
+  /**
+   * @param argRule
+   * @param delay
+   * @param argTransfer
+   * @param session
+   */
+  public IcapTask(String argRule, int delay, String argTransfer,
+                  R66Session session) {
+<span class="nc" id="L100">    super(TaskType.ICAP, delay, argRule, argTransfer, session);</span>
+<span class="nc" id="L101">  }</span>
+
+  @Override
+  public void run() {
+<span class="nc" id="L105">    logger</span>
+<span class="nc" id="L106">        .info(&quot;ICAP with &quot; + argRule + ':' + argTransfer + &quot; and {}&quot;, session);</span>
+<span class="nc" id="L107">    String finalname = applyTransferSubstitutions(argRule);</span>
+<span class="nc" id="L108">    finalname = finalname.replaceAll(&quot;#([A-Z]+)#&quot;, &quot;\\${$1}&quot;);</span>
+<span class="nc" id="L109">    final CommandLine commandLine = new CommandLine(&quot;dummy&quot;);</span>
+<span class="nc" id="L110">    commandLine.setSubstitutionMap(getSubstitutionMap());</span>
+<span class="nc" id="L111">    commandLine.addArguments(finalname, false);</span>
+<span class="nc" id="L112">    final String[] args = commandLine.getArguments();</span>
+
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (args.length &lt; 6) {</span>
+<span class="nc" id="L115">      futureCompletion.setFailure(</span>
+          new OpenR66RunnerErrorException(&quot;Not enough argument in ICAP&quot;));
+<span class="nc" id="L117">      return;</span>
+    }
+<span class="nc" id="L119">    int status = IcapScanFile.scanFile(args);</span>
+<span class="nc bnc" id="L120" title="All 7 branches missed.">    switch (status) {</span>
+      case IcapScanFile.STATUS_OK:
+<span class="nc" id="L122">        futureCompletion.setSuccess();</span>
+<span class="nc" id="L123">        return;</span>
+      case IcapScanFile.STATUS_BAD_ARGUMENT:
+<span class="nc" id="L125">        logger.error(</span>
+            &quot;ICAP Bad argument error with &quot; + argRule + ':' + argTransfer +
+            ':' + delay + &quot; and &quot; + session);
+<span class="nc" id="L128">        futureCompletion.setFailure(</span>
+            new OpenR66RunnerErrorException(&quot;ICAP Bad argument error&quot;));
+<span class="nc" id="L130">        return;</span>
+      case IcapScanFile.STATUS_ICAP_ISSUE:
+<span class="nc" id="L132">        logger.error(</span>
+            &quot;ICAP Bad protocol error with &quot; + argRule + ':' + argTransfer +
+            ':' + delay + &quot; and &quot; + session);
+<span class="nc" id="L135">        futureCompletion.setFailure(</span>
+            new OpenR66RunnerErrorException(&quot;ICAP Bad protocol error&quot;));
+<span class="nc" id="L137">        return;</span>
+      case IcapScanFile.STATUS_NETWORK_ISSUE:
+<span class="nc" id="L139">        logger.error(</span>
+            &quot;ICAP Network error with &quot; + argRule + ':' + argTransfer + ':' +
+            delay + &quot; and &quot; + session);
+<span class="nc" id="L142">        futureCompletion</span>
+<span class="nc" id="L143">            .setFailure(new OpenR66RunnerErrorException(&quot;ICAP Network error&quot;));</span>
+<span class="nc" id="L144">        return;</span>
+      case IcapScanFile.STATUS_KO_SCAN:
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (finalizeIcapOnError(args)) {</span>
+<span class="nc" id="L147">          return;</span>
+        }
+        // No send required so real error
+<span class="nc" id="L150">        logger.error(</span>
+            &quot;ICAP KO error with &quot; + argRule + ':' + argTransfer + ':' + delay +
+            &quot; and &quot; + session);
+<span class="nc" id="L153">        futureCompletion</span>
+<span class="nc" id="L154">            .setFailure(new OpenR66RunnerErrorException(&quot;ICAP KO error&quot;));</span>
+<span class="nc" id="L155">        return;</span>
+      case IcapScanFile.STATUS_KO_SCAN_POST_ACTION_ERROR:
+<span class="nc" id="L157">        logger.error(</span>
+            &quot;ICAP KO post error with &quot; + argRule + ':' + argTransfer + ':' +
+            delay + &quot; and &quot; + session);
+<span class="nc" id="L160">        futureCompletion</span>
+<span class="nc" id="L161">            .setFailure(new OpenR66RunnerErrorException(&quot;ICAP KO post error&quot;));</span>
+<span class="nc" id="L162">        return;</span>
+      default:
+<span class="nc" id="L164">        logger.error(</span>
+            &quot;ICAP Unknown error with &quot; + argRule + ':' + argTransfer + ':' +
+            delay + &quot; and &quot; + session);
+<span class="nc" id="L167">        futureCompletion</span>
+<span class="nc" id="L168">            .setFailure(new OpenR66RunnerErrorException(&quot;ICAP Unknown error&quot;));</span>
+    }
+<span class="nc" id="L170">  }</span>
+
+  /**
+   * finalize Icap on Error
+   *
+   * @param args
+   *
+   * @return True if OK
+   */
+  private boolean finalizeIcapOnError(final String[] args) {
+<span class="nc bnc" id="L180" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">      if (IcapScanFile.ERROR_SEND_ARG.equalsIgnoreCase(args[i])) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        for (i++; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">          if (IcapScanFile.SEPARATOR_SEND.equals(args[i])) {</span>
+<span class="nc" id="L184">            StringBuilder newArgs = new StringBuilder();</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">            for (i++; i &lt; args.length; i++) {</span>
+<span class="nc" id="L186">              newArgs.append(args[i]).append(' ');</span>
+            }
+            // Now launch send
+<span class="nc" id="L189">            TransferTask transferTask =</span>
+<span class="nc" id="L190">                new TransferTask(newArgs.toString(), 0, argTransfer, session);</span>
+<span class="nc" id="L191">            transferTask.run();</span>
+<span class="nc" id="L192">            transferTask.futureCompletion.awaitOrInterruptible();</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            if (transferTask.futureCompletion.isSuccess()) {</span>
+<span class="nc" id="L194">              futureCompletion</span>
+<span class="nc" id="L195">                  .setResult(transferTask.futureCompletion.getResult());</span>
+<span class="nc" id="L196">              logger.info(&quot;ICAP ended in KO on file but resend is OK for {}&quot;,</span>
+<span class="nc" id="L197">                          session.getFile().getTrueFile().getAbsolutePath());</span>
+<span class="nc" id="L198">              futureCompletion.setFailure(new OpenR66RunnerErrorException(</span>
+                  &quot;ICAP ended in KO on file but resend is OK&quot;));
+            } else {
+<span class="nc" id="L201">              logger.error(</span>
+                  &quot;ICAP KO with Resend in error with &quot; + argRule + ':' +
+                  argTransfer + ':' + delay + &quot; and &quot; + session,
+<span class="nc" id="L204">                  transferTask.futureCompletion.getCause());</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">              if (transferTask.futureCompletion.getCause() == null) {</span>
+<span class="nc" id="L206">                futureCompletion.setFailure(new OpenR66RunnerErrorException(</span>
+                    &quot;ICAP ended in KO on file and Resend is KO too&quot;));
+              } else {
+<span class="nc" id="L209">                futureCompletion.setFailure(new OpenR66RunnerErrorException(</span>
+                    &quot;ICAP ended in KO on file and Resend is KO too&quot;,
+<span class="nc" id="L211">                    transferTask.futureCompletion.getCause()));</span>
+              }
+            }
+<span class="nc" id="L214">            return true;</span>
+          }
+        }
+      }
+    }
+<span class="nc" id="L219">    return false;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

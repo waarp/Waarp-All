@@ -64,75 +64,76 @@ import java.net.InetSocketAddress;
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-<span class="nc" id="L67">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc" id="L68">    int port = 9999;</span>
+<span class="nc" id="L67">    WaarpLoggerFactory</span>
+<span class="nc" id="L68">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L69">    int port = 9999;</span>
     InetAddress addr;
-<span class="nc" id="L70">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+<span class="nc" id="L71">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
     String keyStoreFilename;
     String keyStorePasswd;
     String keyPassword;
-<span class="nc" id="L74">    String trustStoreFilename = null;</span>
-<span class="nc" id="L75">    String trustStorePasswd = null;</span>
-<span class="nc" id="L76">    final byte[] loop = { 127, 0, 0, 1 };</span>
-<span class="nc" id="L77">    addr = InetAddress.getByAddress(loop);</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">    if (args.length &gt;= 3) {</span>
-<span class="nc" id="L79">      keyStoreFilename = args[0];</span>
-<span class="nc" id="L80">      keyStorePasswd = args[1];</span>
-<span class="nc" id="L81">      keyPassword = args[2];</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">      if (args.length &gt;= 4) {</span>
-<span class="nc" id="L83">        port = Integer.parseInt(args[3]);</span>
-<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (args.length &gt;= 6) {</span>
-<span class="nc" id="L85">          trustStoreFilename = args[4];</span>
-<span class="nc" id="L86">          trustStorePasswd = args[5];</span>
-<span class="nc bnc" id="L87" title="All 2 branches missed.">          if (args.length &gt;= 7) {</span>
-<span class="nc" id="L88">            addr = InetAddress.getByName(args[6]);</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (args.length &gt; 7) {</span>
-<span class="nc" id="L90">              delay = Long.parseLong(args[7]);</span>
+<span class="nc" id="L75">    String trustStoreFilename = null;</span>
+<span class="nc" id="L76">    String trustStorePasswd = null;</span>
+<span class="nc" id="L77">    final byte[] loop = { 127, 0, 0, 1 };</span>
+<span class="nc" id="L78">    addr = InetAddress.getByAddress(loop);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">    if (args.length &gt;= 3) {</span>
+<span class="nc" id="L80">      keyStoreFilename = args[0];</span>
+<span class="nc" id="L81">      keyStorePasswd = args[1];</span>
+<span class="nc" id="L82">      keyPassword = args[2];</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">      if (args.length &gt;= 4) {</span>
+<span class="nc" id="L84">        port = Integer.parseInt(args[3]);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (args.length &gt;= 6) {</span>
+<span class="nc" id="L86">          trustStoreFilename = args[4];</span>
+<span class="nc" id="L87">          trustStorePasswd = args[5];</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">          if (args.length &gt;= 7) {</span>
+<span class="nc" id="L89">            addr = InetAddress.getByName(args[6]);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (args.length &gt; 7) {</span>
+<span class="nc" id="L91">              delay = Long.parseLong(args[7]);</span>
             }
           }
         }
       }
     } else {
-<span class="nc" id="L96">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L97">      SysErrLogger.FAKE_LOGGER.syserr(</span>
           &quot;Need at least 3 arguments: Filename &quot; + &quot;KeyStorePswd KeyPswd&quot;);
-<span class="nc" id="L98">      return;</span>
+<span class="nc" id="L99">      return;</span>
     }
     // Configure the server.
     try {
-<span class="nc" id="L102">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L103">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);</span>
+<span class="nc" id="L103">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L104">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);</span>
 
       // Load the KeyStore (No certificates)
-<span class="nc" id="L106">      final WaarpSecureKeyStore WaarpSecureKeyStoreNew =</span>
+<span class="nc" id="L107">      final WaarpSecureKeyStore WaarpSecureKeyStoreNew =</span>
           new WaarpSecureKeyStore(keyStoreFilename, keyStorePasswd,
                                   keyPassword);
-<span class="nc bnc" id="L109" title="All 2 branches missed.">      if (trustStoreFilename != null) {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (trustStoreFilename != null) {</span>
         // Include certificates
-<span class="nc" id="L111">        WaarpSecureKeyStoreNew</span>
-<span class="nc" id="L112">            .initTrustStore(trustStoreFilename, trustStorePasswd, true);</span>
+<span class="nc" id="L112">        WaarpSecureKeyStoreNew</span>
+<span class="nc" id="L113">            .initTrustStore(trustStoreFilename, trustStorePasswd, true);</span>
       } else {
-<span class="nc" id="L114">        WaarpSecureKeyStoreNew.initEmptyTrustStore();</span>
+<span class="nc" id="L115">        WaarpSecureKeyStoreNew.initEmptyTrustStore();</span>
       }
-<span class="nc" id="L116">      final WaarpSslContextFactory waarpSslContextFactory =</span>
+<span class="nc" id="L117">      final WaarpSslContextFactory waarpSslContextFactory =</span>
           new WaarpSslContextFactory(WaarpSecureKeyStoreNew, true);
       // Configure the pipeline factory.
-<span class="nc" id="L119">      bootstrap.childHandler(</span>
+<span class="nc" id="L120">      bootstrap.childHandler(</span>
           new LocalExecSslServerInitializer(waarpSslContextFactory, delay,
                                             executor));
 
       // Bind and start to accept incoming connections only on local address.
-<span class="nc" id="L124">      final ChannelFuture future =</span>
-<span class="nc" id="L125">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
+<span class="nc" id="L125">      final ChannelFuture future =</span>
+<span class="nc" id="L126">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
 
       // Wait until the server socket is closed.
-<span class="nc" id="L128">      future.channel().closeFuture().sync();</span>
+<span class="nc" id="L129">      future.channel().closeFuture().sync();</span>
     } finally {
       // Shut down all event loops to terminate all threads.
-<span class="nc" id="L131">      workerGroup.shutdownGracefully();</span>
+<span class="nc" id="L132">      workerGroup.shutdownGracefully();</span>
 
       // Wait until all threads are terminated.
-<span class="nc" id="L134">      workerGroup.terminationFuture().sync();</span>
+<span class="nc" id="L135">      workerGroup.terminationFuture().sync();</span>
     }
-<span class="nc" id="L136">  }</span>
+<span class="nc" id="L137">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

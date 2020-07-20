@@ -23,100 +23,100 @@ package org.waarp.common.role;
  * Role to be used in Waarp projects
  */
 public class RoleDefault {
-<span class="nc" id="L26">  public enum ROLE {</span>
+<span class="fc" id="L26">  public enum ROLE {</span>
     /**
      * No access to any function
      */
-<span class="nc" id="L30">    NOACCESS(0),</span>
+<span class="fc" id="L30">    NOACCESS(0),</span>
     /**
      * Read only access, no action
      */
-<span class="nc" id="L34">    READONLY(1),</span>
+<span class="fc" id="L34">    READONLY(1),</span>
     /**
      * Ability to starts transfer
      */
-<span class="nc" id="L38">    TRANSFER(2),</span>
+<span class="fc" id="L38">    TRANSFER(2),</span>
     /**
      * Ability to control rules
      */
-<span class="nc" id="L42">    RULE(4),</span>
+<span class="fc" id="L42">    RULE(4),</span>
     /**
      * Ability to control hosts
      */
-<span class="nc" id="L46">    HOST(8),</span>
+<span class="fc" id="L46">    HOST(8),</span>
     /**
      * Ability to control bandwidth limitation
      */
-<span class="nc" id="L50">    LIMIT(16),</span>
+<span class="fc" id="L50">    LIMIT(16),</span>
     /**
      * Ability to control the system configuration and to control transfers
      */
-<span class="nc" id="L54">    SYSTEM(32),</span>
+<span class="fc" id="L54">    SYSTEM(32),</span>
     /**
      * Ability to control the logging
      */
-<span class="nc" id="L58">    LOGCONTROL(64),</span>
+<span class="fc" id="L58">    LOGCONTROL(64),</span>
     /**
      * Unused Role value
      */
-<span class="nc" id="L62">    UNUSED(-128),</span>
+<span class="fc" id="L62">    UNUSED(-128),</span>
     /**
      * Default partner : ability to read and starts transfers
      */
-<span class="nc" id="L66">    PARTNER(READONLY, TRANSFER),</span>
+<span class="fc" id="L66">    PARTNER(READONLY, TRANSFER),</span>
     /**
      * Administrator on configuration (partner, rule, host)
      */
-<span class="nc" id="L70">    CONFIGADMIN(PARTNER, RULE, HOST),</span>
+<span class="fc" id="L70">    CONFIGADMIN(PARTNER, RULE, HOST),</span>
     /**
      * Administrator on all
      */
-<span class="nc" id="L74">    FULLADMIN(CONFIGADMIN, LIMIT, SYSTEM, LOGCONTROL);</span>
+<span class="fc" id="L74">    FULLADMIN(CONFIGADMIN, LIMIT, SYSTEM, LOGCONTROL);</span>
 
     private byte brole;
 
-<span class="nc" id="L78">    ROLE(int val) {</span>
-<span class="nc" id="L79">      brole = (byte) val;</span>
-<span class="nc" id="L80">    }</span>
+<span class="fc" id="L78">    ROLE(int val) {</span>
+<span class="fc" id="L79">      brole = (byte) val;</span>
+<span class="fc" id="L80">    }</span>
 
-<span class="nc" id="L82">    ROLE(ROLE... name) {</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">      for (final ROLE role : name) {</span>
-<span class="nc" id="L84">        this.brole |= role.brole;</span>
+<span class="fc" id="L82">    ROLE(ROLE... name) {</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">      for (final ROLE role : name) {</span>
+<span class="fc" id="L84">        this.brole |= role.brole;</span>
       }
-<span class="nc" id="L86">    }</span>
+<span class="fc" id="L86">    }</span>
 
     public boolean isContained(byte value) {
-<span class="nc bnc" id="L89" title="All 2 branches missed.">      if (this == NOACCESS) {</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">        return value == NOACCESS.brole;</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">      if (this == NOACCESS) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        return value == NOACCESS.brole;</span>
       }
-<span class="nc bnc" id="L92" title="All 2 branches missed.">      return (value &amp; brole) == brole;</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">      return (value &amp; brole) == brole;</span>
     }
 
     public boolean isContained(ROLE role) {
-<span class="nc" id="L96">      return isContained(role.brole);</span>
+<span class="fc" id="L96">      return isContained(role.brole);</span>
     }
 
     public boolean contains(ROLE role) {
-<span class="nc" id="L100">      return role.isContained(this);</span>
+<span class="fc" id="L100">      return role.isContained(this);</span>
     }
 
     public byte getAsByte() {
-<span class="nc" id="L104">      return brole;</span>
+<span class="fc" id="L104">      return brole;</span>
     }
 
-<span class="nc" id="L107">    private static final ROLE[] READONLY_A = new ROLE[] { READONLY };</span>
-<span class="nc" id="L108">    private static final ROLE[] TRANSFER_A = new ROLE[] { TRANSFER };</span>
-<span class="nc" id="L109">    private static final ROLE[] RULE_A = new ROLE[] { RULE };</span>
-<span class="nc" id="L110">    private static final ROLE[] HOST_A = new ROLE[] { HOST };</span>
-<span class="nc" id="L111">    private static final ROLE[] LIMIT_A = new ROLE[] { LIMIT };</span>
-<span class="nc" id="L112">    private static final ROLE[] SYSTEM_A = new ROLE[] { SYSTEM };</span>
-<span class="nc" id="L113">    private static final ROLE[] LOGCONTROL_A = new ROLE[] { LOGCONTROL };</span>
-<span class="nc" id="L114">    private static final ROLE[] UNUSED_A = new ROLE[] { UNUSED };</span>
-<span class="nc" id="L115">    private static final ROLE[] NOACCESS_A = new ROLE[] { NOACCESS };</span>
-<span class="nc" id="L116">    private static final ROLE[] PARTNER_A = new ROLE[] { READONLY, TRANSFER };</span>
-<span class="nc" id="L117">    private static final ROLE[] CONFIGADMIN_A =</span>
+<span class="fc" id="L107">    private static final ROLE[] READONLY_A = new ROLE[] { READONLY };</span>
+<span class="fc" id="L108">    private static final ROLE[] TRANSFER_A = new ROLE[] { TRANSFER };</span>
+<span class="fc" id="L109">    private static final ROLE[] RULE_A = new ROLE[] { RULE };</span>
+<span class="fc" id="L110">    private static final ROLE[] HOST_A = new ROLE[] { HOST };</span>
+<span class="fc" id="L111">    private static final ROLE[] LIMIT_A = new ROLE[] { LIMIT };</span>
+<span class="fc" id="L112">    private static final ROLE[] SYSTEM_A = new ROLE[] { SYSTEM };</span>
+<span class="fc" id="L113">    private static final ROLE[] LOGCONTROL_A = new ROLE[] { LOGCONTROL };</span>
+<span class="fc" id="L114">    private static final ROLE[] UNUSED_A = new ROLE[] { UNUSED };</span>
+<span class="fc" id="L115">    private static final ROLE[] NOACCESS_A = new ROLE[] { NOACCESS };</span>
+<span class="fc" id="L116">    private static final ROLE[] PARTNER_A = new ROLE[] { READONLY, TRANSFER };</span>
+<span class="fc" id="L117">    private static final ROLE[] CONFIGADMIN_A =</span>
         new ROLE[] { READONLY, TRANSFER, RULE, HOST };
-<span class="nc" id="L119">    private static final ROLE[] FULLADMIN_A =</span>
+<span class="fc" id="L119">    private static final ROLE[] FULLADMIN_A =</span>
         new ROLE[] { READONLY, TRANSFER, RULE, LIMIT, SYSTEM, LOGCONTROL };
 
     public ROLE[] getComposingRoles() {
@@ -162,45 +162,45 @@ public class RoleDefault {
     }
 
     public static final ROLE fromByte(byte role) {
-<span class="nc bnc" id="L165" title="All 12 branches missed.">      switch (role) {</span>
+<span class="pc bpc" id="L165" title="1 of 12 branches missed.">      switch (role) {</span>
         case 1:
-<span class="nc" id="L167">          return READONLY;</span>
+<span class="fc" id="L167">          return READONLY;</span>
         case 2:
-<span class="nc" id="L169">          return TRANSFER;</span>
+<span class="fc" id="L169">          return TRANSFER;</span>
         case 3:
-<span class="nc" id="L171">          return PARTNER;</span>
+<span class="fc" id="L171">          return PARTNER;</span>
         case 4:
-<span class="nc" id="L173">          return RULE;</span>
+<span class="fc" id="L173">          return RULE;</span>
         case 8:
-<span class="nc" id="L175">          return HOST;</span>
+<span class="fc" id="L175">          return HOST;</span>
         case 15:
-<span class="nc" id="L177">          return CONFIGADMIN;</span>
+<span class="fc" id="L177">          return CONFIGADMIN;</span>
         case 16:
-<span class="nc" id="L179">          return LIMIT;</span>
+<span class="fc" id="L179">          return LIMIT;</span>
         case 32:
-<span class="nc" id="L181">          return SYSTEM;</span>
+<span class="fc" id="L181">          return SYSTEM;</span>
         case 64:
-<span class="nc" id="L183">          return LOGCONTROL;</span>
+<span class="fc" id="L183">          return LOGCONTROL;</span>
         case 127:
-<span class="nc" id="L185">          return FULLADMIN;</span>
+<span class="fc" id="L185">          return FULLADMIN;</span>
         case -128:
 <span class="nc" id="L187">          return UNUSED;</span>
         case 0:
         default:
-<span class="nc" id="L190">          return NOACCESS;</span>
+<span class="fc" id="L190">          return NOACCESS;</span>
       }
     }
   }
 
   private byte role;
 
-<span class="nc" id="L197">  public RoleDefault() {</span>
-<span class="nc" id="L198">    role = ROLE.NOACCESS.brole;</span>
-<span class="nc" id="L199">  }</span>
+<span class="fc" id="L197">  public RoleDefault() {</span>
+<span class="fc" id="L198">    role = ROLE.NOACCESS.brole;</span>
+<span class="fc" id="L199">  }</span>
 
-<span class="nc" id="L201">  public RoleDefault(ROLE role) {</span>
-<span class="nc" id="L202">    this.role = role.brole;</span>
-<span class="nc" id="L203">  }</span>
+<span class="fc" id="L201">  public RoleDefault(ROLE role) {</span>
+<span class="fc" id="L202">    this.role = role.brole;</span>
+<span class="fc" id="L203">  }</span>
 
   public byte getRoleAsByte() {
 <span class="nc" id="L206">    return role;</span>
@@ -212,62 +212,62 @@ public class RoleDefault {
   }
 
   public RoleDefault addRole(ROLE newrole) {
-<span class="nc" id="L215">    role |= newrole.brole;</span>
-<span class="nc" id="L216">    return this;</span>
+<span class="fc" id="L215">    role |= newrole.brole;</span>
+<span class="fc" id="L216">    return this;</span>
   }
 
   public RoleDefault setRole(ROLE newrole) {
-<span class="nc" id="L220">    role = newrole.brole;</span>
-<span class="nc" id="L221">    return this;</span>
+<span class="fc" id="L220">    role = newrole.brole;</span>
+<span class="fc" id="L221">    return this;</span>
   }
 
   public RoleDefault setRoleDefault(RoleDefault newrole) {
-<span class="nc" id="L225">    role = newrole.role;</span>
-<span class="nc" id="L226">    return this;</span>
+<span class="fc" id="L225">    role = newrole.role;</span>
+<span class="fc" id="L226">    return this;</span>
   }
 
   public void clear() {
-<span class="nc" id="L230">    role = ROLE.NOACCESS.brole;</span>
-<span class="nc" id="L231">  }</span>
+<span class="fc" id="L230">    role = ROLE.NOACCESS.brole;</span>
+<span class="fc" id="L231">  }</span>
 
   public boolean isContaining(ROLE otherrole) {
-<span class="nc" id="L234">    return otherrole.isContained(role);</span>
+<span class="fc" id="L234">    return otherrole.isContained(role);</span>
   }
 
   public boolean hasNoAccess() {
-<span class="nc bnc" id="L238" title="All 2 branches missed.">    return role == ROLE.NOACCESS.brole;</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">    return role == ROLE.NOACCESS.brole;</span>
   }
 
   public boolean hasReadOnly() {
-<span class="nc" id="L242">    return ROLE.READONLY.isContained(role);</span>
+<span class="fc" id="L242">    return ROLE.READONLY.isContained(role);</span>
   }
 
   public boolean hasTransfer() {
-<span class="nc" id="L246">    return ROLE.TRANSFER.isContained(role);</span>
+<span class="fc" id="L246">    return ROLE.TRANSFER.isContained(role);</span>
   }
 
   public boolean hasRule() {
-<span class="nc" id="L250">    return ROLE.RULE.isContained(role);</span>
+<span class="fc" id="L250">    return ROLE.RULE.isContained(role);</span>
   }
 
   public boolean hasHost() {
-<span class="nc" id="L254">    return ROLE.HOST.isContained(role);</span>
+<span class="fc" id="L254">    return ROLE.HOST.isContained(role);</span>
   }
 
   public boolean hasLimit() {
-<span class="nc" id="L258">    return ROLE.LIMIT.isContained(role);</span>
+<span class="fc" id="L258">    return ROLE.LIMIT.isContained(role);</span>
   }
 
   public boolean hasSystem() {
-<span class="nc" id="L262">    return ROLE.SYSTEM.isContained(role);</span>
+<span class="fc" id="L262">    return ROLE.SYSTEM.isContained(role);</span>
   }
 
   public boolean hasUnused() {
-<span class="nc" id="L266">    return ROLE.UNUSED.isContained(role);</span>
+<span class="fc" id="L266">    return ROLE.UNUSED.isContained(role);</span>
   }
 
   public boolean hasLogControl() {
-<span class="nc" id="L270">    return ROLE.LOGCONTROL.isContained(role);</span>
+<span class="fc" id="L270">    return ROLE.LOGCONTROL.isContained(role);</span>
   }
 
   public static final boolean hasNoAccess(byte role) {

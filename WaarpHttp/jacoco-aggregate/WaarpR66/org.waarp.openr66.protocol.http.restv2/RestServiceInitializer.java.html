@@ -23,6 +23,7 @@ package org.waarp.openr66.protocol.http.restv2;
 import io.cdap.http.ChannelPipelineModifier;
 import io.cdap.http.NettyHttpService;
 import io.cdap.http.SSLConfig;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.cors.CorsConfig;
@@ -32,6 +33,7 @@ import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.AbstractRestDbHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostConfigHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostIdHandler;
@@ -68,8 +70,8 @@ public final class RestServiceInitializer {
   /**
    * The logger for all unexpected errors during the service initialization.
    */
-<span class="nc" id="L71">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L72">      WaarpLoggerFactory.getLogger(RestServiceInitializer.class);</span>
+<span class="fc" id="L73">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L74">      WaarpLoggerFactory.getLogger(RestServiceInitializer.class);</span>
 
   /**
    * This is the {@link NettyHttpService} in charge of handling the RESTv2
@@ -81,15 +83,15 @@ public final class RestServiceInitializer {
    * This is a static class that should never be instantiated with a
    * constructor.
    */
-<span class="nc" id="L84">  private RestServiceInitializer() {</span>
-<span class="nc" id="L85">    throw new UnsupportedOperationException(</span>
-<span class="nc" id="L86">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+<span class="nc" id="L86">  private RestServiceInitializer() {</span>
+<span class="nc" id="L87">    throw new UnsupportedOperationException(</span>
+<span class="nc" id="L88">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
   }
 
   /**
    * The list of all {@link AbstractRestDbHandler} used by the API.
    */
-<span class="nc" id="L92">  public static final Collection&lt;AbstractRestDbHandler&gt; handlers =</span>
+<span class="fc" id="L94">  public static final Collection&lt;AbstractRestDbHandler&gt; handlers =</span>
       new ArrayList&lt;AbstractRestDbHandler&gt;();
 
   /**
@@ -99,42 +101,42 @@ public final class RestServiceInitializer {
    * @param config The REST API configuration object.
    */
   private static void initHandlers(RestConfiguration config) {
-<span class="nc" id="L102">    final byte hostsCRUD = config.getResthandlersCrud()[DbHostAuth.ordinal()];</span>
-<span class="nc" id="L103">    final byte rulesCRUD = config.getResthandlersCrud()[DbRule.ordinal()];</span>
-<span class="nc" id="L104">    final byte transferCRUD =</span>
-<span class="nc" id="L105">        config.getResthandlersCrud()[DbTaskRunner.ordinal()];</span>
-<span class="nc" id="L106">    final byte configCRUD =</span>
-<span class="nc" id="L107">        config.getResthandlersCrud()[DbHostConfiguration.ordinal()];</span>
-<span class="nc" id="L108">    final byte limitCRUD = config.getResthandlersCrud()[Bandwidth.ordinal()];</span>
-<span class="nc" id="L109">    final int serverCRUD = config.getResthandlersCrud()[Business.ordinal()] +</span>
-<span class="nc" id="L110">                           config.getResthandlersCrud()[Config.ordinal()] +</span>
-<span class="nc" id="L111">                           config.getResthandlersCrud()[Information.ordinal()] +</span>
-<span class="nc" id="L112">                           config.getResthandlersCrud()[Log.ordinal()] +</span>
-<span class="nc" id="L113">                           config.getResthandlersCrud()[Server.ordinal()] +</span>
-<span class="nc" id="L114">                           config.getResthandlersCrud()[Control.ordinal()];</span>
+<span class="fc" id="L104">    final byte hostsCRUD = config.getResthandlersCrud()[DbHostAuth.ordinal()];</span>
+<span class="fc" id="L105">    final byte rulesCRUD = config.getResthandlersCrud()[DbRule.ordinal()];</span>
+<span class="fc" id="L106">    final byte transferCRUD =</span>
+<span class="fc" id="L107">        config.getResthandlersCrud()[DbTaskRunner.ordinal()];</span>
+<span class="fc" id="L108">    final byte configCRUD =</span>
+<span class="fc" id="L109">        config.getResthandlersCrud()[DbHostConfiguration.ordinal()];</span>
+<span class="fc" id="L110">    final byte limitCRUD = config.getResthandlersCrud()[Bandwidth.ordinal()];</span>
+<span class="fc" id="L111">    final int serverCRUD = config.getResthandlersCrud()[Business.ordinal()] +</span>
+<span class="fc" id="L112">                           config.getResthandlersCrud()[Config.ordinal()] +</span>
+<span class="fc" id="L113">                           config.getResthandlersCrud()[Information.ordinal()] +</span>
+<span class="fc" id="L114">                           config.getResthandlersCrud()[Log.ordinal()] +</span>
+<span class="fc" id="L115">                           config.getResthandlersCrud()[Server.ordinal()] +</span>
+<span class="fc" id="L116">                           config.getResthandlersCrud()[Control.ordinal()];</span>
 
-<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (hostsCRUD != 0) {</span>
-<span class="nc" id="L117">      handlers.add(new HostsHandler(hostsCRUD));</span>
-<span class="nc" id="L118">      handlers.add(new HostIdHandler(hostsCRUD));</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (hostsCRUD != 0) {</span>
+<span class="fc" id="L119">      handlers.add(new HostsHandler(hostsCRUD));</span>
+<span class="fc" id="L120">      handlers.add(new HostIdHandler(hostsCRUD));</span>
     }
-<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (rulesCRUD != 0) {</span>
-<span class="nc" id="L121">      handlers.add(new RulesHandler(rulesCRUD));</span>
-<span class="nc" id="L122">      handlers.add(new RuleIdHandler(rulesCRUD));</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">    if (rulesCRUD != 0) {</span>
+<span class="fc" id="L123">      handlers.add(new RulesHandler(rulesCRUD));</span>
+<span class="fc" id="L124">      handlers.add(new RuleIdHandler(rulesCRUD));</span>
     }
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (transferCRUD != 0) {</span>
-<span class="nc" id="L125">      handlers.add(new TransfersHandler(transferCRUD));</span>
-<span class="nc" id="L126">      handlers.add(new TransferIdHandler(transferCRUD));</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (transferCRUD != 0) {</span>
+<span class="fc" id="L127">      handlers.add(new TransfersHandler(transferCRUD));</span>
+<span class="fc" id="L128">      handlers.add(new TransferIdHandler(transferCRUD));</span>
     }
-<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (configCRUD != 0) {</span>
-<span class="nc" id="L129">      handlers.add(new HostConfigHandler(configCRUD));</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">    if (configCRUD != 0) {</span>
+<span class="fc" id="L131">      handlers.add(new HostConfigHandler(configCRUD));</span>
     }
-<span class="nc bnc" id="L131" title="All 2 branches missed.">    if (limitCRUD != 0) {</span>
-<span class="nc" id="L132">      handlers.add(new LimitsHandler(limitCRUD));</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (limitCRUD != 0) {</span>
+<span class="fc" id="L134">      handlers.add(new LimitsHandler(limitCRUD));</span>
     }
-<span class="nc bnc" id="L134" title="All 2 branches missed.">    if (serverCRUD != 0) {</span>
-<span class="nc" id="L135">      handlers.add(new ServerHandler(config.getResthandlersCrud()));</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (serverCRUD != 0) {</span>
+<span class="fc" id="L137">      handlers.add(new ServerHandler(config.getResthandlersCrud()));</span>
     }
-<span class="nc" id="L137">  }</span>
+<span class="fc" id="L139">  }</span>
 
   /**
    * Builds and returns a {@link CorsConfig} to be used by the {@link
@@ -144,14 +146,14 @@ public final class RestServiceInitializer {
    * @return The configuration used for dealing with CORS requests.
    */
   private static CorsConfig corsConfig() {
-<span class="nc" id="L147">    final CorsConfigBuilder builder = CorsConfigBuilder.forAnyOrigin();</span>
+<span class="fc" id="L149">    final CorsConfigBuilder builder = CorsConfigBuilder.forAnyOrigin();</span>
 
-<span class="nc" id="L149">    builder.exposeHeaders(ALLOW, &quot;transferURI&quot;, &quot;hostURI&quot;, &quot;ruleURI&quot;);</span>
-<span class="nc" id="L150">    builder.allowedRequestHeaders(AUTHORIZATION, AUTH_USER, AUTH_TIMESTAMP,</span>
+<span class="fc" id="L151">    builder.exposeHeaders(ALLOW, &quot;transferURI&quot;, &quot;hostURI&quot;, &quot;ruleURI&quot;);</span>
+<span class="fc" id="L152">    builder.allowedRequestHeaders(AUTHORIZATION, AUTH_USER, AUTH_TIMESTAMP,</span>
                                   AUTH_SIGNATURE, CONTENT_TYPE);
-<span class="nc" id="L152">    builder.allowedRequestMethods(GET, POST, PUT, DELETE, OPTIONS);</span>
-<span class="nc" id="L153">    builder.maxAge(600);</span>
-<span class="nc" id="L154">    return builder.build();</span>
+<span class="fc" id="L154">    builder.allowedRequestMethods(GET, POST, PUT, DELETE, OPTIONS);</span>
+<span class="fc" id="L155">    builder.maxAge(600);</span>
+<span class="fc" id="L156">    return builder.build();</span>
   }
 
   /**
@@ -160,96 +162,102 @@ public final class RestServiceInitializer {
    * @param config The REST API configuration object.
    */
   public static void initRestService(final RestConfiguration config) {
-<span class="nc" id="L163">    initHandlers(config);</span>
+<span class="fc" id="L165">    initHandlers(config);</span>
 
-<span class="nc" id="L165">    final NettyHttpService.Builder restServiceBuilder =</span>
-<span class="nc" id="L166">        NettyHttpService.builder(&quot;R66_RESTv2&quot;).setPort(config.getRestPort())</span>
-<span class="nc" id="L167">                        .setHost(config.getRestAddress())</span>
-<span class="nc" id="L168">                        .setHttpHandlers(handlers).setHandlerHooks(Collections</span>
-<span class="nc" id="L169">                                                                       .singleton(</span>
+<span class="fc" id="L167">    final NettyHttpService.Builder restServiceBuilder =</span>
+<span class="fc" id="L168">        NettyHttpService.builder(&quot;R66_RESTv2&quot;).setPort(config.getRestPort())</span>
+<span class="fc" id="L169">                        .setHost(config.getRestAddress())</span>
+<span class="fc" id="L170">                        .setExecThreadPoolSize(20).setHttpChunkLimit(</span>
+<span class="fc" id="L171">            Configuration.configuration.getMaxGlobalMemory())</span>
+<span class="fc" id="L172">                        .setChannelConfig(ChannelOption.SO_REUSEADDR, true)</span>
+<span class="fc" id="L173">                        .setChildChannelConfig(ChannelOption.TCP_NODELAY, false)</span>
+<span class="fc" id="L174">                        .setChildChannelConfig(ChannelOption.SO_REUSEADDR, true)</span>
+<span class="fc" id="L175">                        .setHttpHandlers(handlers).setHandlerHooks(Collections</span>
+<span class="fc" id="L176">                                                                       .singleton(</span>
                                                                            new RestHandlerHook(
                                                                                config
-<span class="nc" id="L172">                                                                                   .isRestAuthenticated(),</span>
+<span class="fc" id="L179">                                                                                   .isRestAuthenticated(),</span>
                                                                                config
-<span class="nc" id="L174">                                                                                   .getHmacSha256(),</span>
+<span class="fc" id="L181">                                                                                   .getHmacSha256(),</span>
                                                                                config
-<span class="nc" id="L176">                                                                                   .getRestTimeLimit())))</span>
-<span class="nc" id="L177">                        .setExceptionHandler(new RestExceptionHandler())</span>
-<span class="nc" id="L178">                        .setExecThreadKeepAliveSeconds(-1L)</span>
-<span class="nc" id="L179">                        .setChannelPipelineModifier(</span>
-<span class="nc" id="L180">                            new ChannelPipelineModifier() {</span>
+<span class="fc" id="L183">                                                                                   .getRestTimeLimit())))</span>
+<span class="fc" id="L184">                        .setExceptionHandler(new RestExceptionHandler())</span>
+<span class="fc" id="L185">                        .setExecThreadKeepAliveSeconds(-1L)</span>
+<span class="fc" id="L186">                        .setChannelPipelineModifier(</span>
+<span class="fc" id="L187">                            new ChannelPipelineModifier() {</span>
                               @Override
                               public void modify(
                                   ChannelPipeline channelPipeline) {
-<span class="nc" id="L184">                                channelPipeline.addBefore(ROUTER, &quot;aggregator&quot;,</span>
+<span class="fc" id="L191">                                channelPipeline.addBefore(ROUTER, &quot;aggregator&quot;,</span>
                                                           new HttpObjectAggregator(
-                                                              Integer.MAX_VALUE));
-<span class="nc" id="L187">                                channelPipeline.addBefore(ROUTER,</span>
+                                                              Configuration.configuration
+<span class="fc" id="L194">                                                                  .getMaxGlobalMemory()));</span>
+<span class="fc" id="L195">                                channelPipeline.addBefore(ROUTER,</span>
                                                           RestVersionHandler.HANDLER_NAME,
                                                           new RestVersionHandler(
                                                               config));
-<span class="nc" id="L191">                                channelPipeline</span>
-<span class="nc" id="L192">                                    .addBefore(RestVersionHandler.HANDLER_NAME,</span>
+<span class="fc" id="L199">                                channelPipeline</span>
+<span class="fc" id="L200">                                    .addBefore(RestVersionHandler.HANDLER_NAME,</span>
                                                &quot;cors&quot;,
-<span class="nc" id="L194">                                               new CorsHandler(corsConfig()));</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">                                if (config.isRestAuthenticated() &amp;&amp;</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">                                    config.isRestSignature()) {</span>
-<span class="nc" id="L197">                                  channelPipeline.addAfter(ROUTER, &quot;signature&quot;,</span>
+<span class="fc" id="L202">                                               new CorsHandler(corsConfig()));</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">                                if (config.isRestAuthenticated() &amp;&amp;</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">                                    config.isRestSignature()) {</span>
+<span class="nc" id="L205">                                  channelPipeline.addAfter(ROUTER, &quot;signature&quot;,</span>
                                                            new RestSignatureHandler(
                                                                config
-<span class="nc" id="L200">                                                                   .getHmacSha256()));</span>
+<span class="nc" id="L208">                                                                   .getHmacSha256()));</span>
                                 }
 
                                 // Removes the HTTP compressor which causes problems
                                 // on systems running java6 or earlier
-<span class="nc" id="L205">                                final double JRE_version = Double.parseDouble(</span>
-<span class="nc" id="L206">                                    System.getProperty(</span>
+<span class="fc" id="L213">                                final double JRE_version = Double.parseDouble(</span>
+<span class="fc" id="L214">                                    System.getProperty(</span>
                                         &quot;java.specification.version&quot;));
-<span class="nc bnc" id="L208" title="All 2 branches missed.">                                if (JRE_version &lt;= 1.6) {</span>
-<span class="nc" id="L209">                                  logger.info(</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">                                if (JRE_version &lt;= 1.6) {</span>
+<span class="nc" id="L217">                                  logger.info(</span>
                                       &quot;Removed REST HTTP compressor due to incompatibility &quot; +
                                       &quot;with the Java Runtime version&quot;);
-<span class="nc" id="L212">                                  channelPipeline.remove(&quot;compressor&quot;);</span>
+<span class="nc" id="L220">                                  channelPipeline.remove(&quot;compressor&quot;);</span>
                                 }
-<span class="nc" id="L214">                              }</span>
+<span class="fc" id="L222">                              }</span>
                             });
 
-<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (config.isRestSsl()) {</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">    if (config.isRestSsl()) {</span>
       final WaarpSecureKeyStore keyStore =
-<span class="nc" id="L219">          NetworkSslServerInitializer.getWaarpSecureKeyStore();</span>
-<span class="nc" id="L220">      final String keyStoreFilename = keyStore.getKeyStoreFilename();</span>
-<span class="nc" id="L221">      final String keyStorePass = new String(keyStore.getKeyStorePassword());</span>
-<span class="nc" id="L222">      final String certificatePassword =</span>
-<span class="nc" id="L223">          new String(keyStore.getCertificatePassword());</span>
+<span class="fc" id="L227">          NetworkSslServerInitializer.getWaarpSecureKeyStore();</span>
+<span class="fc" id="L228">      final String keyStoreFilename = keyStore.getKeyStoreFilename();</span>
+<span class="fc" id="L229">      final String keyStorePass = new String(keyStore.getKeyStorePassword());</span>
+<span class="fc" id="L230">      final String certificatePassword =</span>
+<span class="fc" id="L231">          new String(keyStore.getCertificatePassword());</span>
 
-<span class="nc" id="L225">      restServiceBuilder.enableSSL(</span>
-<span class="nc" id="L226">          SSLConfig.builder(new File(keyStoreFilename), keyStorePass)</span>
-<span class="nc" id="L227">                   .setCertificatePassword(certificatePassword).build());</span>
+<span class="fc" id="L233">      restServiceBuilder.enableSSL(</span>
+<span class="fc" id="L234">          SSLConfig.builder(new File(keyStoreFilename), keyStorePass)</span>
+<span class="fc" id="L235">                   .setCertificatePassword(certificatePassword).build());</span>
     }
 
-<span class="nc" id="L230">    restService = restServiceBuilder.build();</span>
+<span class="fc" id="L238">    restService = restServiceBuilder.build();</span>
     try {
-<span class="nc" id="L232">      restService.start();</span>
-<span class="nc" id="L233">    } catch (final Throwable t) {</span>
-<span class="nc" id="L234">      logger.error(t);</span>
-<span class="nc" id="L235">      throw new ExceptionInInitializerError(</span>
+<span class="fc" id="L240">      restService.start();</span>
+<span class="nc" id="L241">    } catch (final Throwable t) {</span>
+<span class="nc" id="L242">      logger.error(t);</span>
+<span class="nc" id="L243">      throw new ExceptionInInitializerError(</span>
           &quot;FATAL ERROR_TASK : Failed to initialize RESTv2 service&quot;);
-<span class="nc" id="L237">    }</span>
-<span class="nc" id="L238">  }</span>
+<span class="fc" id="L245">    }</span>
+<span class="fc" id="L246">  }</span>
 
   /**
    * Stops the REST service.
    */
   public static void stopRestService() {
-<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (restService != null) {</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">    if (restService != null) {</span>
       try {
-<span class="nc" id="L246">        restService.stop();</span>
-<span class="nc" id="L247">      } catch (final Throwable e) {</span>
-<span class="nc" id="L248">        logger.error(&quot;Exception caught during RESTv2 service shutdown&quot;, e);</span>
-<span class="nc" id="L249">      }</span>
+<span class="nc" id="L254">        restService.stop();</span>
+<span class="nc" id="L255">      } catch (final Throwable e) {</span>
+<span class="nc" id="L256">        logger.error(&quot;Exception caught during RESTv2 service shutdown&quot;, e);</span>
+<span class="nc" id="L257">      }</span>
     } else {
-<span class="nc" id="L251">      logger.warn(&quot;Error RESTv2 service is not running, cannot stop&quot;);</span>
+<span class="nc" id="L259">      logger.warn(&quot;Error RESTv2 service is not running, cannot stop&quot;);</span>
     }
-<span class="nc" id="L253">  }</span>
+<span class="nc" id="L261">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

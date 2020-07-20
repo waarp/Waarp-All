@@ -85,7 +85,7 @@ public class RequestPacket extends AbstractLocalPacket {
 
   protected long limit;
 
-  protected final String fileInformation;
+  protected final String transferInformation;
 
 <span class="fc" id="L90">  protected String separator = PartnerConfiguration.getSEPARATOR_FIELD();</span>
 
@@ -95,7 +95,7 @@ public class RequestPacket extends AbstractLocalPacket {
    * @return the same mode (RECV or SEND) in MD5 version
    */
   public static final int getModeMD5(int mode) {
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    switch (mode) {</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">    switch (mode) {</span>
       case 1:
       case 2:
       case 5:
@@ -104,7 +104,7 @@ public class RequestPacket extends AbstractLocalPacket {
       default:
         // nothing
     }
-<span class="nc" id="L107">    return mode;</span>
+<span class="fc" id="L107">    return mode;</span>
   }
 
   /**
@@ -294,26 +294,26 @@ public class RequestPacket extends AbstractLocalPacket {
    * @param rank
    * @param specialId
    * @param valid
-   * @param fileInformation
+   * @param transferInformation
    * @param code
    * @param originalSize
    */
   private RequestPacket(String rulename, int mode, String filename,
                         int blocksize, int rank, long specialId, byte valid,
-                        String fileInformation, char code, long originalSize,
-<span class="fc" id="L304">                        String separator) {</span>
+                        String transferInformation, char code,
+<span class="fc" id="L304">                        long originalSize, String separator) {</span>
 <span class="fc" id="L305">    this.rulename = rulename;</span>
 <span class="fc" id="L306">    this.mode = mode;</span>
 <span class="fc" id="L307">    this.filename = filename;</span>
-<span class="fc bfc" id="L308" title="All 2 branches covered.">    if (blocksize &lt; 100) {</span>
-<span class="fc" id="L309">      this.blocksize = Configuration.configuration.getBlockSize();</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">    if (blocksize &lt; 100) {</span>
+<span class="nc" id="L309">      this.blocksize = Configuration.configuration.getBlockSize();</span>
     } else {
 <span class="fc" id="L311">      this.blocksize = blocksize;</span>
     }
 <span class="fc" id="L313">    this.rank = rank;</span>
 <span class="fc" id="L314">    this.specialId = specialId;</span>
 <span class="fc" id="L315">    way = valid;</span>
-<span class="fc" id="L316">    this.fileInformation = fileInformation;</span>
+<span class="fc" id="L316">    this.transferInformation = transferInformation;</span>
 <span class="fc" id="L317">    this.code = code;</span>
 <span class="fc" id="L318">    this.originalSize = originalSize;</span>
 <span class="fc" id="L319">    this.separator = separator;</span>
@@ -326,14 +326,14 @@ public class RequestPacket extends AbstractLocalPacket {
    * @param blocksize
    * @param rank
    * @param specialId
-   * @param fileInformation
+   * @param transferInformation
    */
   public RequestPacket(String rulename, int mode, String filename,
                        int blocksize, int rank, long specialId,
-                       String fileInformation, long originalSize,
+                       String transferInformation, long originalSize,
                        String separator) {
 <span class="fc" id="L335">    this(rulename, mode, filename, blocksize, rank, specialId, REQVALIDATE,</span>
-         fileInformation, ErrorCode.InitOk.code, originalSize, separator);
+         transferInformation, ErrorCode.InitOk.code, originalSize, separator);
 <span class="fc" id="L337">  }</span>
 
   /**
@@ -341,18 +341,18 @@ public class RequestPacket extends AbstractLocalPacket {
    */
   private RequestPacket(String rulename, int mode, String filename,
                         int blocksize, int rank, long specialId, byte valid,
-                        String fileInformation, char code, long originalSize,
-                        long limit, String separator) {
+                        String transferInformation, char code,
+                        long originalSize, long limit, String separator) {
 <span class="fc" id="L346">    this(rulename, mode, filename, blocksize, rank, specialId, valid,</span>
-         fileInformation, code, originalSize, separator);
+         transferInformation, code, originalSize, separator);
 <span class="fc" id="L348">    this.limit = limit;</span>
 <span class="fc" id="L349">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (fileInformation != null) {</span>
-<span class="fc" id="L355">      end = Unpooled.wrappedBuffer(fileInformation.getBytes());</span>
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (transferInformation != null) {</span>
+<span class="fc" id="L355">      end = Unpooled.wrappedBuffer(transferInformation.getBytes());</span>
     }
 <span class="fc" id="L357">  }</span>
 
@@ -421,7 +421,7 @@ public class RequestPacket extends AbstractLocalPacket {
   @Override
   public String toString() {
 <span class="nc" id="L423">    return &quot;RequestPacket: &quot; + specialId + &quot; : &quot; + rulename + &quot; : &quot; + mode +</span>
-           &quot; :  &quot; + filename + &quot; : &quot; + fileInformation + &quot; : &quot; + blocksize +
+           &quot; :  &quot; + filename + &quot; : &quot; + transferInformation + &quot; : &quot; + blocksize +
            &quot; : &quot; + rank + &quot; : &quot; + way + &quot; : &quot; + code + &quot; : &quot; + originalSize +
            &quot; : &quot; + limit;
   }
@@ -457,8 +457,8 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @return the fileInformation
    */
-  public String getFileInformation() {
-<span class="fc" id="L461">    return fileInformation;</span>
+  public String getTransferInformation() {
+<span class="fc" id="L461">    return transferInformation;</span>
   }
 
   /**

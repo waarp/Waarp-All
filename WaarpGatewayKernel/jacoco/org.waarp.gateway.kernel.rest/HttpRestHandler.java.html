@@ -416,13 +416,13 @@ public abstract class HttpRestHandler
 <span class="fc" id="L416">        logger.debug(&quot;DEBUG: {}&quot;, arguments);</span>
 <span class="fc" id="L417">        checkConnection(ctx);</span>
 <span class="fc" id="L418">        handler = getHandler();</span>
-<span class="pc bpc" id="L419" title="1 of 2 branches missed.">        if (arguments.getMethod() == METHOD.OPTIONS) {</span>
+<span class="fc bfc" id="L419" title="All 2 branches covered.">        if (arguments.getMethod() == METHOD.OPTIONS) {</span>
 <span class="fc" id="L420">          response.setFromArgument(arguments);</span>
 <span class="fc" id="L421">          handler.optionsCommand(this, arguments, response);</span>
 <span class="fc" id="L422">          finalizeSend(ctx);</span>
 <span class="fc" id="L423">          return;</span>
         }
-<span class="nc bnc" id="L425" title="All 2 branches missed.">        if (request instanceof FullHttpRequest) {</span>
+<span class="pc bpc" id="L425" title="1 of 2 branches missed.">        if (request instanceof FullHttpRequest) {</span>
 <span class="nc bnc" id="L426" title="All 2 branches missed.">          if (handler.isBodyJsonDecoded()) {</span>
 <span class="nc" id="L427">            final ByteBuf buffer = ((FullHttpRequest) request).content();</span>
 <span class="nc" id="L428">            jsonObject = getBodyJsonArgs(buffer);</span>
@@ -438,12 +438,12 @@ public abstract class HttpRestHandler
 <span class="nc" id="L438">          return;</span>
         }
         // no body yet
-<span class="nc bnc" id="L441" title="All 2 branches missed.">        if (!handler.isBodyJsonDecoded()) {</span>
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">        if (!handler.isBodyJsonDecoded()) {</span>
 <span class="nc" id="L442">          createDecoder();</span>
         }
-<span class="nc" id="L444">      } else {</span>
+<span class="fc" id="L444">      } else {</span>
         // New chunk is received
-<span class="pc bpc" id="L446" title="1 of 2 branches missed.">        if (handler != null) {</span>
+<span class="fc bfc" id="L446" title="All 2 branches covered.">        if (handler != null) {</span>
 <span class="nc" id="L447">          bodyChunk(ctx, (HttpContent) msg);</span>
         }
       }
@@ -702,16 +702,16 @@ public abstract class HttpRestHandler
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     // New chunk is received: only for Post!
-<span class="nc bnc" id="L705" title="All 2 branches missed.">    if (handler.isBodyJsonDecoded()) {</span>
-<span class="nc" id="L706">      final ByteBuf buffer = chunk.content();</span>
-<span class="nc bnc" id="L707" title="All 2 branches missed.">      if (cumulativeBody != null) {</span>
+<span class="pc bpc" id="L705" title="1 of 2 branches missed.">    if (handler.isBodyJsonDecoded()) {</span>
+<span class="fc" id="L706">      final ByteBuf buffer = chunk.content();</span>
+<span class="pc bpc" id="L707" title="1 of 2 branches missed.">      if (cumulativeBody != null) {</span>
 <span class="nc bnc" id="L708" title="All 2 branches missed.">        if (buffer.isReadable()) {</span>
 <span class="nc" id="L709">          cumulativeBody.writeBytes(buffer);</span>
         }
       } else {
-<span class="nc" id="L712">        cumulativeBody = Unpooled.buffer().writeBytes(buffer);</span>
+<span class="fc" id="L712">        cumulativeBody = Unpooled.buffer().writeBytes(buffer);</span>
       }
-<span class="nc" id="L714">    } else {</span>
+<span class="fc" id="L714">    } else {</span>
       try {
 <span class="nc" id="L716">        decoder.offer(chunk);</span>
 <span class="nc" id="L717">      } catch (final ErrorDataDecoderException e1) {</span>
@@ -723,13 +723,13 @@ public abstract class HttpRestHandler
 <span class="nc" id="L723">      readHttpDataChunkByChunk();</span>
     }
     // example of reading only if at the end
-<span class="nc bnc" id="L726" title="All 2 branches missed.">    if (chunk instanceof LastHttpContent) {</span>
-<span class="nc bnc" id="L727" title="All 2 branches missed.">      if (handler.isBodyJsonDecoded()) {</span>
-<span class="nc" id="L728">        jsonObject = getBodyJsonArgs(cumulativeBody);</span>
-<span class="nc" id="L729">        cumulativeBody.release();</span>
-<span class="nc" id="L730">        cumulativeBody = null;</span>
+<span class="pc bpc" id="L726" title="1 of 2 branches missed.">    if (chunk instanceof LastHttpContent) {</span>
+<span class="pc bpc" id="L727" title="1 of 2 branches missed.">      if (handler.isBodyJsonDecoded()) {</span>
+<span class="fc" id="L728">        jsonObject = getBodyJsonArgs(cumulativeBody);</span>
+<span class="fc" id="L729">        cumulativeBody.release();</span>
+<span class="fc" id="L730">        cumulativeBody = null;</span>
       }
-<span class="nc" id="L732">      response.setFromArgument(arguments);</span>
+<span class="fc" id="L732">      response.setFromArgument(arguments);</span>
 <span class="nc" id="L733">      handler.endParsingRequest(this, arguments, response, jsonObject);</span>
 <span class="nc" id="L734">      finalizeSend(ctx);</span>
     }
@@ -759,10 +759,10 @@ public abstract class HttpRestHandler
    */
   protected Object getBodyJsonArgs(ByteBuf data)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L762" title="All 4 branches missed.">    if (data == null || data.readableBytes() == 0) {</span>
+<span class="pc bpc" id="L762" title="2 of 4 branches missed.">    if (data == null || data.readableBytes() == 0) {</span>
 <span class="nc" id="L763">      return null;</span>
     }
-<span class="nc" id="L765">    return handler.getBody(this, data, arguments, response);</span>
+<span class="fc" id="L765">    return handler.getBody(this, data, arguments, response);</span>
   }
 
   /**
@@ -788,7 +788,7 @@ public abstract class HttpRestHandler
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
       throws Exception {
-<span class="nc bnc" id="L791" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
+<span class="pc bpc" id="L791" title="1 of 2 branches missed.">    if (ctx.channel().isActive()) {</span>
 <span class="nc bnc" id="L792" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
 <span class="nc" id="L793">        logger.warn(&quot;Exception {}&quot;, cause.getMessage(), cause);</span>
       } else {
@@ -811,7 +811,7 @@ public abstract class HttpRestHandler
 <span class="nc" id="L811">        forceClosing(ctx);</span>
       }
     }
-<span class="nc" id="L814">  }</span>
+<span class="fc" id="L814">  }</span>
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {

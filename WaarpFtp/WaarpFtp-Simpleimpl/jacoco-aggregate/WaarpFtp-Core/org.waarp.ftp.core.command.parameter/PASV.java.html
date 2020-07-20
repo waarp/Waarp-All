@@ -35,43 +35,43 @@ import java.net.InetSocketAddress;
 /**
  * PASV command
  */
-<span class="nc" id="L38">public class PASV extends AbstractCommand {</span>
+<span class="fc" id="L38">public class PASV extends AbstractCommand {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L42">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L43">      WaarpLoggerFactory.getLogger(PASV.class);</span>
+<span class="fc" id="L42">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L43">      WaarpLoggerFactory.getLogger(PASV.class);</span>
 
   @Override
   public void exec() throws Reply425Exception, Reply501Exception {
     // First Check if any argument
-<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (hasArg()) {</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    if (hasArg()) {</span>
 <span class="nc" id="L49">      throw new Reply501Exception(&quot;No argument allowed&quot;);</span>
     }
     // Take a new port: 3 attempts
-<span class="nc" id="L52">    boolean isInit = false;</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">    for (int i = 1; i &lt;= FtpInternalConfiguration.RETRYNB; i++) {</span>
-<span class="nc" id="L54">      final int newport =</span>
-<span class="nc" id="L55">          FtpDataAsyncConn.getNewPassivePort(getConfiguration());</span>
-<span class="nc bnc" id="L56" title="All 2 branches missed.">      if (newport == -1) {</span>
+<span class="fc" id="L52">    boolean isInit = false;</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">    for (int i = 1; i &lt;= FtpInternalConfiguration.RETRYNB; i++) {</span>
+<span class="fc" id="L54">      final int newport =</span>
+<span class="fc" id="L55">          FtpDataAsyncConn.getNewPassivePort(getConfiguration());</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">      if (newport == -1) {</span>
 <span class="nc" id="L57">        throw new Reply425Exception(&quot;No port available&quot;);</span>
       }
-<span class="nc bnc" id="L59" title="All 2 branches missed.">      if (getSession().getDataConn().isPassiveMode()) {</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">      if (getSession().getDataConn().isPassiveMode()) {</span>
         // Previous mode was Passive so remove the current configuration
-<span class="nc" id="L61">        final InetSocketAddress local =</span>
-<span class="nc" id="L62">            getSession().getDataConn().getLocalAddress();</span>
-<span class="nc" id="L63">        final InetAddress remote =</span>
-<span class="nc" id="L64">            getSession().getDataConn().getRemoteAddress().getAddress();</span>
-<span class="nc" id="L65">        getConfiguration().delFtpSession(remote, local);</span>
+<span class="fc" id="L61">        final InetSocketAddress local =</span>
+<span class="fc" id="L62">            getSession().getDataConn().getLocalAddress();</span>
+<span class="fc" id="L63">        final InetAddress remote =</span>
+<span class="fc" id="L64">            getSession().getDataConn().getRemoteAddress().getAddress();</span>
+<span class="fc" id="L65">        getConfiguration().delFtpSession(remote, local);</span>
       }
-<span class="nc" id="L67">      logger.info(&quot;PASV: set Passive Port {}&quot;, newport);</span>
-<span class="nc" id="L68">      getSession().getDataConn().setLocalPort(newport);</span>
-<span class="nc" id="L69">      getSession().getDataConn().setPassive();</span>
+<span class="fc" id="L67">      logger.info(&quot;PASV: set Passive Port {}&quot;, newport);</span>
+<span class="fc" id="L68">      getSession().getDataConn().setLocalPort(newport);</span>
+<span class="fc" id="L69">      getSession().getDataConn().setPassive();</span>
       // Init the connection
       try {
-<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (getSession().getDataConn().initPassiveConnection()) {</span>
-<span class="nc" id="L73">          isInit = true;</span>
-<span class="nc" id="L74">          break;</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (getSession().getDataConn().initPassiveConnection()) {</span>
+<span class="fc" id="L73">          isInit = true;</span>
+<span class="fc" id="L74">          break;</span>
         }
 <span class="nc" id="L76">      } catch (final Reply425Exception e) {</span>
 <span class="nc" id="L77">        logger.warn(</span>
@@ -79,31 +79,31 @@ import java.net.InetSocketAddress;
 <span class="nc" id="L79">            e.getMessage());</span>
 <span class="nc" id="L80">      }</span>
     }
-<span class="nc bnc" id="L82" title="All 2 branches missed.">    if (!isInit) {</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">    if (!isInit) {</span>
 <span class="nc" id="L83">      throw new Reply425Exception(&quot;Passive mode not started&quot;);</span>
     }
     // Return the address in Ftp format
-<span class="nc" id="L86">    final InetSocketAddress local =</span>
-<span class="nc" id="L87">        getSession().getDataConn().getLocalAddress();</span>
-<span class="nc" id="L88">    final int servPort = local.getPort();</span>
-<span class="nc" id="L89">    String address = getSession().getConfiguration().getServerAddress();</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (address == null) {</span>
-<span class="nc" id="L91">      address = local.getAddress().getHostAddress();</span>
+<span class="fc" id="L86">    final InetSocketAddress local =</span>
+<span class="fc" id="L87">        getSession().getDataConn().getLocalAddress();</span>
+<span class="fc" id="L88">    final int servPort = local.getPort();</span>
+<span class="fc" id="L89">    String address = getSession().getConfiguration().getServerAddress();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">    if (address == null) {</span>
+<span class="fc" id="L91">      address = local.getAddress().getHostAddress();</span>
     }
-<span class="nc" id="L93">    final String slocal = &quot;Entering Passive Mode (&quot; +</span>
-<span class="nc" id="L94">                          FtpChannelUtils.getAddress(address, servPort) + ')';</span>
-<span class="nc" id="L95">    final InetAddress remote =</span>
-<span class="nc" id="L96">        getSession().getDataConn().getRemoteAddress().getAddress();</span>
+<span class="fc" id="L93">    final String slocal = &quot;Entering Passive Mode (&quot; +</span>
+<span class="fc" id="L94">                          FtpChannelUtils.getAddress(address, servPort) + ')';</span>
+<span class="fc" id="L95">    final InetAddress remote =</span>
+<span class="fc" id="L96">        getSession().getDataConn().getRemoteAddress().getAddress();</span>
     // Add the current FtpSession into the reference of session since the
     // client will open the connection
-<span class="nc" id="L99">    getConfiguration().setNewFtpSession(remote, local, getSession());</span>
+<span class="fc" id="L99">    getConfiguration().setNewFtpSession(remote, local, getSession());</span>
     // prepare the validation of the next connection
-<span class="nc" id="L101">    getSession().getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L102">                .resetWaitForOpenedDataChannel();</span>
-<span class="nc" id="L103">    getSession()</span>
-<span class="nc" id="L104">        .setReplyCode(ReplyCode.REPLY_227_ENTERING_PASSIVE_MODE, slocal);</span>
-<span class="nc" id="L105">    logger.info(&quot;PASV: answer ready on {}&quot;, slocal);</span>
-<span class="nc" id="L106">  }</span>
+<span class="fc" id="L101">    getSession().getDataConn().getFtpTransferControl()</span>
+<span class="fc" id="L102">                .resetWaitForOpenedDataChannel();</span>
+<span class="fc" id="L103">    getSession()</span>
+<span class="fc" id="L104">        .setReplyCode(ReplyCode.REPLY_227_ENTERING_PASSIVE_MODE, slocal);</span>
+<span class="fc" id="L105">    logger.info(&quot;PASV: answer ready on {}&quot;, slocal);</span>
+<span class="fc" id="L106">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

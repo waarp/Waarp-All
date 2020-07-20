@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>FilesystemBasedDigest.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Administrator</a> &gt; <a href="../index.html" class="el_bundle">WaarpDigest</a> &gt; <a href="index.source.html" class="el_package">org.waarp.common.digest</a> &gt; <span class="el_source">FilesystemBasedDigest.java</span></div><h1>FilesystemBasedDigest.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.common.digest;
+
+import io.netty.buffer.ByteBuf;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.zip.Adler32;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
+
+import static org.waarp.common.digest.WaarpBC.*;
+
+/**
+ * Class implementing digest like MD5, SHA1. MD5 is based on the Fast MD5
+ * implementation, without C library
+ * support, but can be revert to JVM native digest.&lt;br&gt;
+ * &lt;br&gt;
+ * &lt;p&gt;
+ * Some performance reports: (done using java -server option)
+ * &lt;ul&gt;
+ * &lt;li&gt;File based only:&lt;/li&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;FastMD5 in C is almost the fastest (+20%), while FastMD5 in Java is the
+ * slowest (-20%) and JVM version
+ * is in the middle.&lt;/li&gt;
+ * &lt;li&gt;If ADLER32 is the referenced time ADLER32=1, CRC32=2.5, MD5=4, SHA1=7,
+ * SHA256=11, SHA512=25&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;li&gt;Buffer based only:&lt;/li&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;JVM version is the fastest (+20%), while FastMD5 in C or in Java are the
+ * same (-20% than JVM).&lt;/li&gt;
+ * &lt;li&gt;If ADLER32 is the referenced time ADLER32=1, CRC32=2.5, MD5=4, SHA1=8,
+ * SHA256=13, SHA384=29,
+ * SHA512=31&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/ul&gt;
+ */
+public class FilesystemBasedDigest {
+
+  private static final String ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM =
+      &quot; Algorithm not supported by this JVM&quot;;
+
+  /**
+   * Format used for Files
+   */
+<span class="fc" id="L75">  public static final Charset UTF8 = Charset.forName(&quot;UTF-8&quot;);</span>
+<span class="fc" id="L76">  private static final byte[] EMPTY = {};</span>
+
+  static {
+<span class="fc" id="L79">    initializedTlsContext();</span>
+  }
+
+  MD5 md5;
+  Checksum checksum;
+  MessageDigest digest;
+  DigestAlgo algo;
+
+  /**
+   * Constructor of an independent Digest
+   *
+   * @param algo
+   *
+   * @throws NoSuchAlgorithmException
+   */
+  public FilesystemBasedDigest(final DigestAlgo algo)
+<span class="fc" id="L95">      throws NoSuchAlgorithmException {</span>
+<span class="fc" id="L96">    initialize(algo);</span>
+<span class="fc" id="L97">  }</span>
+
+  /**
+   * (Re)Initialize the digest
+   *
+   * @throws NoSuchAlgorithmException
+   */
+  public void initialize() throws NoSuchAlgorithmException {
+<span class="fc bfc" id="L105" title="All 4 branches covered.">    if (algo == DigestAlgo.MD5 &amp;&amp; isUseFastMd5()) {</span>
+<span class="fc" id="L106">      md5 = new MD5();</span>
+<span class="fc" id="L107">      return;</span>
+    }
+<span class="pc bpc" id="L109" title="1 of 4 branches missed.">    switch (algo) {</span>
+      case ADLER32:
+<span class="fc" id="L111">        checksum = new Adler32();</span>
+<span class="fc" id="L112">        return;</span>
+      case CRC32:
+<span class="fc" id="L114">        checksum = new CRC32();</span>
+<span class="fc" id="L115">        return;</span>
+      case MD5:
+      case MD2:
+      case SHA1:
+      case SHA256:
+      case SHA384:
+      case SHA512:
+<span class="fc" id="L122">        final String algoname = algo.algoName;</span>
+        try {
+<span class="fc" id="L124">          digest = MessageDigest.getInstance(algoname);</span>
+<span class="nc" id="L125">        } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L126">          throw new NoSuchAlgorithmException(</span>
+              algo + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);
+<span class="fc" id="L128">        }</span>
+<span class="fc" id="L129">        return;</span>
+      default:
+<span class="nc" id="L131">        throw new NoSuchAlgorithmException(</span>
+            algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
+    }
+  }
+
+  /**
+   * (Re)Initialize the digest
+   *
+   * @param algo
+   *
+   * @throws NoSuchAlgorithmException
+   */
+  public void initialize(final DigestAlgo algo)
+      throws NoSuchAlgorithmException {
+<span class="fc" id="L145">    this.algo = algo;</span>
+<span class="fc" id="L146">    initialize();</span>
+<span class="fc" id="L147">  }</span>
+
+  public DigestAlgo getAlgo() {
+<span class="nc" id="L150">    return algo;</span>
+  }
+
+  /**
+   * Update the digest with new bytes
+   *
+   * @param bytes
+   * @param offset
+   * @param length
+   */
+  public void Update(final byte[] bytes, final int offset, final int length) {
+<span class="fc bfc" id="L161" title="All 2 branches covered.">    if (md5 != null) {</span>
+<span class="fc" id="L162">      md5.Update(bytes, offset, length);</span>
+<span class="fc" id="L163">      return;</span>
+    }
+<span class="pc bpc" id="L165" title="1 of 3 branches missed.">    switch (algo) {</span>
+      case ADLER32:
+      case CRC32:
+<span class="fc" id="L168">        checksum.update(bytes, offset, length);</span>
+<span class="fc" id="L169">        return;</span>
+      case MD5:
+      case MD2:
+      case SHA1:
+      case SHA256:
+      case SHA384:
+      case SHA512:
+<span class="fc" id="L176">        digest.update(bytes, offset, length);</span>
+    }
+<span class="fc" id="L178">  }</span>
+
+  private byte[] reusableBytes;
+
+  public final byte[] getBytes(final ByteBuf buffer) {
+    byte[] bytes;
+<span class="fc" id="L184">    final int length = buffer.readableBytes();</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">    if (buffer.hasArray()) {</span>
+<span class="fc" id="L186">      bytes = buffer.array();</span>
+    } else {
+<span class="pc bpc" id="L188" title="1 of 4 branches missed.">      if (reusableBytes == null || reusableBytes.length &lt; length) {</span>
+<span class="fc" id="L189">        reusableBytes = new byte[length];</span>
+      }
+<span class="fc" id="L191">      bytes = reusableBytes;</span>
+<span class="fc" id="L192">      buffer.getBytes(buffer.readerIndex(), bytes, 0, length);</span>
+    }
+<span class="fc" id="L194">    return bytes;</span>
+  }
+
+  public final int getOffset(final ByteBuf buffer) {
+<span class="fc bfc" id="L198" title="All 2 branches covered.">    if (buffer.hasArray()) {</span>
+<span class="fc" id="L199">      return buffer.arrayOffset();</span>
+    }
+<span class="fc" id="L201">    return 0;</span>
+  }
+
+  /**
+   * Update the digest with new buffer
+   */
+  public void Update(final ByteBuf buffer) {
+<span class="fc" id="L208">    byte[] bytes = getBytes(buffer);</span>
+<span class="fc" id="L209">    int start = getOffset(buffer);</span>
+<span class="fc" id="L210">    final int length = buffer.readableBytes();</span>
+<span class="fc" id="L211">    Update(bytes, start, length);</span>
+<span class="fc" id="L212">  }</span>
+
+  /**
+   * @return the digest in array of bytes
+   */
+  public byte[] Final() {
+<span class="fc bfc" id="L218" title="All 2 branches covered.">    if (md5 != null) {</span>
+<span class="fc" id="L219">      return md5.Final();</span>
+    }
+<span class="pc bpc" id="L221" title="1 of 3 branches missed.">    switch (algo) {</span>
+      case ADLER32:
+      case CRC32:
+<span class="fc" id="L224">        return Long.toOctalString(checksum.getValue()).getBytes(UTF8);</span>
+      case MD5:
+      case MD2:
+      case SHA1:
+      case SHA256:
+      case SHA384:
+      case SHA512:
+<span class="fc" id="L231">        return digest.digest();</span>
+    }
+<span class="nc" id="L233">    return EMPTY;</span>
+  }
+
+  /**
+   * Initialize the MD5 support
+   *
+   * @param mustUseFastMd5 True will use FastMD5 support, False will
+   *     use JVM
+   *     native MD5
+   *
+   * @return True if the native library is loaded
+   */
+  public static boolean initializeMd5(final boolean mustUseFastMd5) {
+<span class="fc" id="L246">    setUseFastMd5(mustUseFastMd5);</span>
+<span class="fc" id="L247">    return true;</span>
+  }
+
+  /**
+   * @return the useFastMd5
+   */
+  public static boolean isUseFastMd5() {
+<span class="fc" id="L254">    return useFastMd5;</span>
+  }
+
+  /**
+   * @param useFastMd5 the useFastMd5 to set
+   */
+  public static void setUseFastMd5(final boolean useFastMd5) {
+<span class="fc" id="L261">    FilesystemBasedDigest.useFastMd5 = useFastMd5;</span>
+<span class="fc" id="L262">  }</span>
+
+  /**
+   * All Algo that Digest Class could handle
+   */
+<span class="fc" id="L267">  public enum DigestAlgo {</span>
+<span class="fc" id="L268">    CRC32(&quot;CRC32&quot;, 11), ADLER32(&quot;ADLER32&quot;, 9), MD5(&quot;MD5&quot;, 16), MD2(&quot;MD2&quot;, 16),</span>
+<span class="fc" id="L269">    SHA1(&quot;SHA-1&quot;, 20), SHA256(&quot;SHA-256&quot;, 32), SHA384(&quot;SHA-384&quot;, 48),</span>
+<span class="fc" id="L270">    SHA512(&quot;SHA-512&quot;, 64);</span>
+
+    public final String algoName;
+    public final int byteSize;
+
+    /**
+     * @return the length in bytes of one Digest
+     */
+    public int getByteSize() {
+<span class="fc" id="L279">      return byteSize;</span>
+    }
+
+    /**
+     * @return the length in Hex form of one Digest
+     */
+    public int getHexSize() {
+<span class="fc" id="L286">      return byteSize * 2;</span>
+    }
+
+<span class="fc" id="L289">    DigestAlgo(final String algoName, final int byteSize) {</span>
+<span class="fc" id="L290">      this.algoName = algoName;</span>
+<span class="fc" id="L291">      this.byteSize = byteSize;</span>
+<span class="fc" id="L292">    }</span>
+
+    public static DigestAlgo getFromName(final String name) {
+      try {
+<span class="nc" id="L296">        return valueOf(name);</span>
+<span class="nc" id="L297">      } catch (IllegalArgumentException ignore) {//NOSONAR</span>
+        // ignore
+      }
+<span class="nc bnc" id="L300" title="All 2 branches missed.">      if (&quot;CRC32&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L301">        return CRC32;</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">      } else if (&quot;ADLER32&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L303">        return ADLER32;</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">      } else if (&quot;MD5&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L305">        return MD5;</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">      } else if (&quot;MD2&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L307">        return MD2;</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">      } else if (&quot;SHA-1&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L309">        return SHA1;</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">      } else if (&quot;SHA-256&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L311">        return SHA256;</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">      } else if (&quot;SHA-384&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L313">        return SHA384;</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">      } else if (&quot;SHA-512&quot;.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L315">        return SHA512;</span>
+      } else {
+<span class="nc" id="L317">        throw new IllegalArgumentException(&quot;Digest Algo not found&quot;);</span>
+      }
+    }
+  }
+
+  /**
+   * Should a file MD5 be computed using FastMD5
+   */
+  private static boolean useFastMd5;
+
+  /**
+   * @param dig1
+   * @param dig2
+   *
+   * @return True if the two digest are equals
+   */
+  public static final boolean digestEquals(final byte[] dig1,
+                                           final byte[] dig2) {
+<span class="fc" id="L335">    return MessageDigest.isEqual(dig1, dig2);</span>
+  }
+
+  /**
+   * @param dig1
+   * @param dig2
+   *
+   * @return True if the two digest are equals
+   */
+  public static final boolean digestEquals(final String dig1,
+                                           final byte[] dig2) {
+<span class="fc" id="L346">    final byte[] bdig1 = getFromHex(dig1);</span>
+<span class="fc" id="L347">    return MessageDigest.isEqual(bdig1, dig2);</span>
+  }
+
+  /**
+   * get the byte array of the MD5 for the given FileInterface using Nio
+   * access
+   *
+   * @param f
+   *
+   * @return the byte array representing the MD5
+   *
+   * @throws IOException
+   */
+  public static byte[] getHashMd5Nio(final File f) throws IOException {
+<span class="fc bfc" id="L361" title="All 2 branches covered.">    if (isUseFastMd5()) {</span>
+<span class="fc" id="L362">      return MD5.getHashNio(f);</span>
+    }
+<span class="fc" id="L364">    return getHash(f, true, DigestAlgo.MD5);</span>
+  }
+
+  /**
+   * get the byte array of the MD5 for the given FileInterface using standard
+   * access
+   *
+   * @param f
+   *
+   * @return the byte array representing the MD5
+   *
+   * @throws IOException
+   */
+  public static byte[] getHashMd5(final File f) throws IOException {
+<span class="fc bfc" id="L378" title="All 2 branches covered.">    if (isUseFastMd5()) {</span>
+<span class="fc" id="L379">      return MD5.getHash(f);</span>
+    }
+<span class="fc" id="L381">    return getHash(f, false, DigestAlgo.MD5);</span>
+  }
+
+  /**
+   * get the byte array of the SHA-1 for the given FileInterface using Nio
+   * access
+   *
+   * @param f
+   *
+   * @return the byte array representing the SHA-1
+   *
+   * @throws IOException
+   */
+  public static byte[] getHashSha1Nio(final File f) throws IOException {
+<span class="nc" id="L395">    return getHash(f, true, DigestAlgo.SHA1);</span>
+  }
+
+  /**
+   * get the byte array of the SHA-1 for the given FileInterface using
+   * standard
+   * access
+   *
+   * @param f
+   *
+   * @return the byte array representing the SHA-1
+   *
+   * @throws IOException
+   */
+  public static byte[] getHashSha1(final File f) throws IOException {
+<span class="nc" id="L410">    return getHash(f, false, DigestAlgo.SHA1);</span>
+  }
+
+  /**
+   * Internal function for No NIO InputStream support
+   *
+   * @param in will be closed at the end of this call
+   * @param algo
+   * @param buf
+   *
+   * @return the digest
+   *
+   * @throws IOException
+   */
+  private static byte[] getHashNoNio(final InputStream in,
+                                     final DigestAlgo algo, final byte[] buf)
+      throws IOException {
+    // Not NIO
+<span class="fc" id="L428">    Checksum checksum = null;</span>
+    int size;
+    try {
+<span class="pc bpc" id="L431" title="1 of 4 branches missed.">      switch (algo) {</span>
+        case ADLER32:
+<span class="fc" id="L433">          checksum = new Adler32();</span>
+<span class="fc" id="L434">          return getBytesCrc(in, buf, checksum);</span>
+        case CRC32:
+<span class="fc" id="L436">          return getBytesCrc(in, buf, checksum);</span>
+        case MD5:
+        case MD2:
+        case SHA1:
+        case SHA256:
+        case SHA384:
+        case SHA512:
+<span class="fc" id="L443">          final String algoname = algo.algoName;</span>
+          MessageDigest digest;
+          try {
+<span class="fc" id="L446">            digest = MessageDigest.getInstance(algoname);</span>
+<span class="nc" id="L447">          } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L448">            throw new IOException(algo + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM,</span>
+                                  e);
+<span class="fc" id="L450">          }</span>
+<span class="fc bfc" id="L451" title="All 2 branches covered.">          while ((size = in.read(buf)) &gt;= 0) {</span>
+<span class="fc" id="L452">            digest.update(buf, 0, size);</span>
+          }
+<span class="fc" id="L454">          return digest.digest();</span>
+        default:
+<span class="nc" id="L456">          throw new IOException(</span>
+              algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
+      }
+    } finally {
+<span class="fc" id="L460">      in.close();</span>
+    }
+  }
+
+  private static byte[] getBytesCrc(final InputStream in, final byte[] buf,
+                                    Checksum checksum) throws IOException {
+    int size;
+<span class="fc bfc" id="L467" title="All 2 branches covered.">    if (checksum == null) { // not ADLER32</span>
+<span class="fc" id="L468">      checksum = new CRC32();</span>
+    }
+<span class="fc bfc" id="L470" title="All 2 branches covered.">    while ((size = in.read(buf)) &gt;= 0) {</span>
+<span class="fc" id="L471">      checksum.update(buf, 0, size);</span>
+    }
+<span class="fc" id="L473">    return Long.toOctalString(checksum.getValue()).getBytes(UTF8);</span>
+  }
+
+  /**
+   * Get the Digest for the file using the specified algorithm using access
+   * through NIO or not
+   *
+   * @param f
+   * @param nio
+   * @param algo
+   *
+   * @return the digest
+   *
+   * @throws IOException
+   */
+  @SuppressWarnings(&quot;resource&quot;)
+  public static byte[] getHash(final File f, final boolean nio,
+                               final DigestAlgo algo) throws IOException {
+<span class="pc bpc" id="L491" title="1 of 2 branches missed.">    if (!f.exists()) {</span>
+<span class="nc" id="L492">      throw new FileNotFoundException(f.toString());</span>
+    }
+<span class="fc bfc" id="L494" title="All 4 branches covered.">    if (algo == DigestAlgo.MD5 &amp;&amp; isUseFastMd5()) {</span>
+<span class="fc bfc" id="L495" title="All 2 branches covered.">      if (nio) {</span>
+<span class="fc" id="L496">        return MD5.getHashNio(f);</span>
+      } else {
+<span class="fc" id="L498">        return MD5.getHash(f);</span>
+      }
+    }
+<span class="fc" id="L501">    FileInputStream in = null;</span>
+    try {
+<span class="fc" id="L503">      long bufSize = f.length();</span>
+<span class="fc bfc" id="L504" title="All 2 branches covered.">      if (bufSize &lt; 512) {</span>
+<span class="fc" id="L505">        bufSize = 512;</span>
+      }
+<span class="fc bfc" id="L507" title="All 2 branches covered.">      if (bufSize &gt; 65536) {</span>
+<span class="fc" id="L508">        bufSize = 65536;</span>
+      }
+<span class="fc" id="L510">      byte[] buf = new byte[(int) bufSize];</span>
+<span class="fc" id="L511">      in = new FileInputStream(f);</span>
+<span class="fc bfc" id="L512" title="All 2 branches covered.">      if (nio) { // NIO</span>
+<span class="fc" id="L513">        final FileChannel fileChannel = in.getChannel();</span>
+        try {
+<span class="fc" id="L515">          ByteBuffer bb = ByteBuffer.wrap(buf);</span>
+<span class="fc" id="L516">          Checksum checksum = null;</span>
+          int size;
+<span class="pc bpc" id="L518" title="1 of 4 branches missed.">          switch (algo) {</span>
+            case ADLER32:
+<span class="fc" id="L520">              checksum = new Adler32();</span>
+<span class="fc" id="L521">              buf = getBytesCrcFileChannel(buf, fileChannel, bb, checksum);</span>
+<span class="fc" id="L522">              break;</span>
+            case CRC32:
+<span class="fc" id="L524">              buf = getBytesCrcFileChannel(buf, fileChannel, bb, checksum);</span>
+<span class="fc" id="L525">              break;</span>
+            case MD5:
+            case MD2:
+            case SHA1:
+            case SHA256:
+            case SHA384:
+            case SHA512:
+<span class="fc" id="L532">              final String algoname = algo.algoName;</span>
+              MessageDigest digest;
+              try {
+<span class="fc" id="L535">                digest = MessageDigest.getInstance(algoname);</span>
+<span class="nc" id="L536">              } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L537">                throw new IOException(</span>
+                    algo + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);
+<span class="fc" id="L539">              }</span>
+<span class="fc bfc" id="L540" title="All 2 branches covered.">              while ((size = fileChannel.read(bb)) &gt;= 0) {</span>
+<span class="fc" id="L541">                digest.update(buf, 0, size);</span>
+<span class="fc" id="L542">                bb.clear();</span>
+              }
+<span class="fc" id="L544">              buf = digest.digest();</span>
+<span class="fc" id="L545">              break;</span>
+            default:
+<span class="nc" id="L547">              throw new IOException(</span>
+                  algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
+          }
+        } finally {
+<span class="fc" id="L551">          fileChannel.close();</span>
+        }
+<span class="fc" id="L553">      } else { // Not NIO</span>
+<span class="fc" id="L554">        return getHashNoNio(in, algo, buf);</span>
+      }
+<span class="fc" id="L556">      return buf;</span>
+    } finally {
+<span class="pc bpc" id="L558" title="1 of 2 branches missed.">      if (in != null) {</span>
+        try {
+<span class="fc" id="L560">          in.close();</span>
+<span class="nc" id="L561">        } catch (final Exception ignored) {</span>
+          // nothing
+<span class="fc" id="L563">        }</span>
+      }
+    }
+  }
+
+  private static byte[] getBytesCrcFileChannel(final byte[] buf,
+                                               final FileChannel fileChannel,
+                                               final ByteBuffer bb,
+                                               Checksum checksum)
+      throws IOException {
+    int size;
+<span class="fc bfc" id="L574" title="All 2 branches covered.">    if (checksum == null) { // Not ADLER32</span>
+<span class="fc" id="L575">      checksum = new CRC32();</span>
+    }
+<span class="fc bfc" id="L577" title="All 2 branches covered.">    while ((size = fileChannel.read(bb)) &gt;= 0) {</span>
+<span class="fc" id="L578">      checksum.update(buf, 0, size);</span>
+<span class="fc" id="L579">      bb.clear();</span>
+    }
+<span class="fc" id="L581">    return Long.toOctalString(checksum.getValue()).getBytes(UTF8);</span>
+  }
+
+  /**
+   * Get the Digest for the file using the specified algorithm using access
+   * through NIO or not
+   *
+   * @param stream will be closed at the end of this call
+   * @param algo
+   *
+   * @return the digest
+   *
+   * @throws IOException
+   */
+  public static byte[] getHash(final InputStream stream, final DigestAlgo algo)
+      throws IOException {
+<span class="pc bpc" id="L597" title="1 of 2 branches missed.">    if (stream == null) {</span>
+<span class="nc" id="L598">      throw new FileNotFoundException();</span>
+    }
+<span class="fc bfc" id="L600" title="All 4 branches covered.">    if (algo == DigestAlgo.MD5 &amp;&amp; isUseFastMd5()) {</span>
+<span class="fc" id="L601">      return MD5.getHash(stream);</span>
+    }
+    try {
+<span class="fc" id="L604">      final int buf_size = 65536;</span>
+<span class="fc" id="L605">      byte[] buf = new byte[buf_size];</span>
+      // Not NIO
+<span class="fc" id="L607">      return getHashNoNio(stream, algo, buf);</span>
+<span class="nc" id="L608">    } catch (final IOException e) {</span>
+      try {
+<span class="nc" id="L610">        stream.close();</span>
+<span class="nc" id="L611">      } catch (final Exception ignored) {</span>
+        // nothing
+<span class="nc" id="L613">      }</span>
+<span class="nc" id="L614">      throw e;</span>
+    }
+  }
+
+  /**
+   * Get hash with given {@link ByteBuf} (from Netty)
+   *
+   * @param buffer this buffer will not be changed
+   * @param algo
+   *
+   * @return the hash
+   *
+   * @throws IOException
+   */
+  public static byte[] getHash(final ByteBuf buffer, final DigestAlgo algo)
+      throws IOException {
+<span class="fc" id="L630">    Checksum checksum = null;</span>
+    byte[] bytes;
+<span class="fc" id="L632">    int start = 0;</span>
+<span class="fc" id="L633">    final int length = buffer.readableBytes();</span>
+<span class="fc bfc" id="L634" title="All 2 branches covered.">    if (buffer.hasArray()) {</span>
+<span class="fc" id="L635">      start = buffer.arrayOffset();</span>
+<span class="fc" id="L636">      bytes = buffer.array();</span>
+    } else {
+<span class="fc" id="L638">      bytes = new byte[length];</span>
+<span class="fc" id="L639">      buffer.getBytes(buffer.readerIndex(), bytes);</span>
+    }
+<span class="pc bpc" id="L641" title="1 of 5 branches missed.">    switch (algo) {</span>
+      case ADLER32:
+<span class="fc" id="L643">        checksum = new Adler32();</span>
+<span class="fc" id="L644">        return getBytesCrcByteBuf(checksum, bytes, start, length);</span>
+      case CRC32:
+<span class="fc" id="L646">        return getBytesCrcByteBuf(checksum, bytes, start, length);</span>
+      case MD5:
+<span class="pc bpc" id="L648" title="1 of 2 branches missed.">        if (isUseFastMd5()) {</span>
+<span class="nc" id="L649">          MD5 md5 = new MD5();</span>
+<span class="nc" id="L650">          md5.Update(bytes, start, length);</span>
+<span class="nc" id="L651">          bytes = md5.Final();</span>
+<span class="nc" id="L652">          return bytes;</span>
+        }
+<span class="fc" id="L654">        return getBytesVarious(algo, bytes, start, length);</span>
+      case MD2:
+      case SHA1:
+      case SHA256:
+      case SHA384:
+      case SHA512:
+<span class="fc" id="L660">        return getBytesVarious(algo, bytes, start, length);</span>
+      default:
+<span class="nc" id="L662">        throw new IOException(</span>
+            algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
+    }
+  }
+
+  private static byte[] getBytesVarious(final DigestAlgo algo,
+                                        final byte[] bytes, final int start,
+                                        final int length) throws IOException {
+<span class="fc" id="L670">    final String algoname = algo.algoName;</span>
+    MessageDigest digest;
+    try {
+<span class="fc" id="L673">      digest = MessageDigest.getInstance(algoname);</span>
+<span class="nc" id="L674">    } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L675">      throw new IOException(algoname + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM, e);</span>
+<span class="fc" id="L676">    }</span>
+<span class="fc" id="L677">    digest.update(bytes, start, length);</span>
+<span class="fc" id="L678">    return digest.digest();</span>
+  }
+
+  private static byte[] getBytesCrcByteBuf(Checksum checksum,
+                                           final byte[] bytes, final int start,
+                                           final int length) {
+<span class="fc bfc" id="L684" title="All 2 branches covered.">    if (checksum == null) { // not ADLER32</span>
+<span class="fc" id="L685">      checksum = new CRC32();</span>
+    }
+<span class="fc" id="L687">    checksum.update(bytes, start, length);</span>
+<span class="fc" id="L688">    return Long.toOctalString(checksum.getValue()).getBytes(UTF8);</span>
+  }
+
+  /**
+   * Get hash with given {@link ByteBuf} (from Netty)
+   *
+   * @param buffer ByteBuf to use to get the hash and this buffer will
+   *     not
+   *     be changed
+   *
+   * @return the hash
+   */
+  public static byte[] getHashMd5(final ByteBuf buffer) {
+    try {
+<span class="fc" id="L702">      return getHash(buffer, DigestAlgo.MD5);</span>
+<span class="nc" id="L703">    } catch (final IOException e) {</span>
+<span class="nc" id="L704">      MD5 md5 = new MD5();</span>
+<span class="nc" id="L705">      md5.Update(buffer);</span>
+<span class="nc" id="L706">      return md5.Final();</span>
+    }
+  }
+
+  /**
+   * Internal representation of Hexadecimal Code
+   */
+<span class="fc" id="L713">  private static final char[] HEX_CHARS = {</span>
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+      'f',
+  };
+
+  /**
+   * Get the hexadecimal representation as a String of the array of bytes
+   *
+   * @param hash
+   *
+   * @return the hexadecimal representation as a String of the array of bytes
+   */
+  public static final String getHex(final byte[] hash) {
+<span class="fc" id="L726">    final char[] buf = new char[hash.length * 2];</span>
+<span class="fc bfc" id="L727" title="All 2 branches covered.">    for (int i = 0, x = 0; i &lt; hash.length; i++) {</span>
+<span class="fc" id="L728">      buf[x++] = HEX_CHARS[hash[i] &gt;&gt;&gt; 4 &amp; 0xf];</span>
+<span class="fc" id="L729">      buf[x++] = HEX_CHARS[hash[i] &amp; 0xf];</span>
+    }
+<span class="fc" id="L731">    return new String(buf);</span>
+  }
+
+  /**
+   * Get the array of bytes representation of the hexadecimal String
+   *
+   * @param hex
+   *
+   * @return the array of bytes representation of the hexadecimal String
+   */
+  public static final byte[] getFromHex(final String hex) {
+<span class="fc" id="L742">    final byte[] from = hex.getBytes(UTF8);</span>
+<span class="fc" id="L743">    final byte[] hash = new byte[from.length / 2];</span>
+<span class="fc bfc" id="L744" title="All 2 branches covered.">    for (int i = 0, x = 0; i &lt; hash.length; i++) {</span>
+<span class="fc" id="L745">      byte code1 = from[x++];</span>
+<span class="fc" id="L746">      byte code2 = from[x++];</span>
+<span class="fc bfc" id="L747" title="All 2 branches covered.">      if (code1 &gt;= HEX_CHARS[10]) {</span>
+<span class="fc" id="L748">        code1 -= HEX_CHARS[10] - 10;</span>
+      } else {
+<span class="fc" id="L750">        code1 -= HEX_CHARS[0];</span>
+      }
+<span class="fc bfc" id="L752" title="All 2 branches covered.">      if (code2 &gt;= HEX_CHARS[10]) {</span>
+<span class="fc" id="L753">        code2 -= HEX_CHARS[10] - 10;</span>
+      } else {
+<span class="fc" id="L755">        code2 -= HEX_CHARS[0];</span>
+      }
+<span class="fc" id="L757">      hash[i] = (byte) ((code1 &lt;&lt; 4) + (code2 &amp; 0xFF));</span>
+    }
+<span class="fc" id="L759">    return hash;</span>
+  }
+
+<span class="fc" id="L762">  private static final byte[] salt =</span>
+      { 'G', 'o', 'l', 'd', 'e', 'n', 'G', 'a', 't', 'e' };
+
+  /**
+   * Crypt a password
+   *
+   * @param pwd to crypt
+   *
+   * @return the crypted password
+   *
+   * @throws IOException
+   */
+  public static final String passwdCrypt(final String pwd) {
+<span class="pc bpc" id="L775" title="1 of 2 branches missed.">    if (isUseFastMd5()) {</span>
+<span class="nc" id="L776">      return MD5.passwdCrypt(pwd);</span>
+    }
+    MessageDigest digest;
+    try {
+<span class="fc" id="L780">      digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);</span>
+<span class="nc" id="L781">    } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L782">      return MD5.passwdCrypt(pwd);</span>
+<span class="fc" id="L783">    }</span>
+<span class="fc" id="L784">    final byte[] bpwd = pwd.getBytes(UTF8);</span>
+<span class="fc bfc" id="L785" title="All 2 branches covered.">    for (int i = 0; i &lt; 16; i++) {</span>
+<span class="fc" id="L786">      digest.update(bpwd, 0, bpwd.length);</span>
+<span class="fc" id="L787">      digest.update(salt, 0, salt.length);</span>
+    }
+<span class="fc" id="L789">    return getHex(digest.digest());</span>
+  }
+
+  /**
+   * Crypt a password
+   *
+   * @param pwd to crypt
+   *
+   * @return the crypted password
+   *
+   * @throws IOException
+   */
+  public static final byte[] passwdCrypt(final byte[] pwd) {
+<span class="pc bpc" id="L802" title="1 of 2 branches missed.">    if (isUseFastMd5()) {</span>
+<span class="nc" id="L803">      return MD5.passwdCrypt(pwd);</span>
+    }
+    MessageDigest digest;
+    try {
+<span class="fc" id="L807">      digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);</span>
+<span class="nc" id="L808">    } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L809">      return MD5.passwdCrypt(pwd);</span>
+<span class="fc" id="L810">    }</span>
+<span class="fc bfc" id="L811" title="All 2 branches covered.">    for (int i = 0; i &lt; 16; i++) {</span>
+<span class="fc" id="L812">      digest.update(pwd, 0, pwd.length);</span>
+<span class="fc" id="L813">      digest.update(salt, 0, salt.length);</span>
+    }
+<span class="fc" id="L815">    return digest.digest();</span>
+  }
+
+  /**
+   * @param pwd
+   * @param cryptPwd
+   *
+   * @return True if the pwd is comparable with the cryptPwd
+   *
+   * @throws IOException
+   */
+  public static final boolean equalPasswd(final String pwd,
+                                          final String cryptPwd) {
+    String asHex;
+<span class="fc" id="L829">    asHex = passwdCrypt(pwd);</span>
+<span class="fc" id="L830">    return cryptPwd.equals(asHex);</span>
+  }
+
+  /**
+   * @param pwd
+   * @param cryptPwd
+   *
+   * @return True if the pwd is comparable with the cryptPwd
+   */
+  public static final boolean equalPasswd(final byte[] pwd,
+                                          final byte[] cryptPwd) {
+    byte[] bytes;
+<span class="fc" id="L842">    bytes = passwdCrypt(pwd);</span>
+<span class="fc" id="L843">    return Arrays.equals(cryptPwd, bytes);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

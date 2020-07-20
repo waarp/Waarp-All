@@ -203,25 +203,31 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @return True if the current role contains the specified role to check
    */
   public boolean isValidRole(ROLE roleCheck) {
-<span class="fc" id="L206">    return role.isContaining(roleCheck);</span>
+<span class="fc" id="L206">    ROLE[] roles = roleCheck.getComposingRoles();</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">    for (ROLE role1 : roles) {</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">      if (!role.isContaining(role1)) {</span>
+<span class="fc" id="L209">        return false;</span>
+      }
+    }
+<span class="fc" id="L212">    return true;</span>
   }
 
   /**
    * @return True if the associated host is using SSL
    */
   public boolean isSsl() {
-<span class="fc" id="L213">    return currentAuth.isSsl();</span>
+<span class="fc" id="L219">    return currentAuth.isSsl();</span>
   }
 
   @Override
   public boolean isBusinessPathValid(String newPath) {
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">    return newPath != null;</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">    return newPath != null;</span>
   }
 
   @Override
   public String toString() {
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">    return &quot;Auth:&quot; + isIdentified + ' ' +</span>
-<span class="pc" id="L224">           (currentAuth != null? currentAuth.toString() : &quot;no Internal Auth&quot;) +</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    return &quot;Auth:&quot; + isIdentified + ' ' +</span>
+<span class="pc" id="L230">           (currentAuth != null? currentAuth.toString() : &quot;no Internal Auth&quot;) +</span>
            ' ' + role;
   }
 
@@ -233,12 +239,12 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   public static DbHostAuth getServerAuth(String server) {
     DbHostAuth auth;
     try {
-<span class="fc" id="L236">      auth = new DbHostAuth(server);</span>
-<span class="nc" id="L237">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L238">      logger.warn(&quot;Cannot find the authentication &quot; + server, e);</span>
-<span class="nc" id="L239">      return null;</span>
-<span class="fc" id="L240">    }</span>
-<span class="fc" id="L241">    return auth;</span>
+<span class="fc" id="L242">      auth = new DbHostAuth(server);</span>
+<span class="fc" id="L243">    } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L244">      logger.warn(&quot;Cannot find the authentication &quot; + server, e);</span>
+<span class="fc" id="L245">      return null;</span>
+<span class="fc" id="L246">    }</span>
+<span class="fc" id="L247">    return auth;</span>
   }
 
   /**
@@ -248,33 +254,33 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @param hostid
    */
   public void specialNoSessionAuth(boolean isSSL, String hostid) {
-<span class="fc" id="L251">    isIdentified = true;</span>
-<span class="fc" id="L252">    DbHostAuth auth = null;</span>
+<span class="fc" id="L257">    isIdentified = true;</span>
+<span class="fc" id="L258">    DbHostAuth auth = null;</span>
     try {
-<span class="fc" id="L254">      auth = new DbHostAuth(hostid);</span>
-<span class="fc" id="L255">    } catch (final WaarpDatabaseException ignored) {</span>
+<span class="fc" id="L260">      auth = new DbHostAuth(hostid);</span>
+<span class="fc" id="L261">    } catch (final WaarpDatabaseException ignored) {</span>
       // nothing
-<span class="fc" id="L257">    }</span>
-<span class="fc bfc" id="L258" title="All 2 branches covered.">    if (auth == null) {</span>
-<span class="fc" id="L259">      auth =</span>
+<span class="fc" id="L263">    }</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">    if (auth == null) {</span>
+<span class="fc" id="L265">      auth =</span>
           new DbHostAuth(hostid, &quot;127.0.0.1&quot;, 6666, isSSL, null, true, false);
     }
-<span class="fc" id="L262">    role.clear();</span>
-<span class="fc" id="L263">    currentAuth = auth;</span>
-<span class="fc" id="L264">    setIsIdentified(true);</span>
-<span class="fc" id="L265">    user = auth.getHostid();</span>
+<span class="fc" id="L268">    role.clear();</span>
+<span class="fc" id="L269">    currentAuth = auth;</span>
+<span class="fc" id="L270">    setIsIdentified(true);</span>
+<span class="fc" id="L271">    user = auth.getHostid();</span>
     try {
-<span class="fc" id="L267">      setRootFromAuth();</span>
-<span class="nc" id="L268">    } catch (final Reply421Exception ignored) {</span>
+<span class="fc" id="L273">      setRootFromAuth();</span>
+<span class="nc" id="L274">    } catch (final Reply421Exception ignored) {</span>
       // nothing
-<span class="fc" id="L270">    }</span>
-<span class="fc" id="L271">    getSession().getDir().initAfterIdentification();</span>
-<span class="fc" id="L272">    isAdmin = isSSL;</span>
-<span class="fc bfc" id="L273" title="All 2 branches covered.">    if (isSSL) {</span>
-<span class="fc" id="L274">      role.setRole(ROLE.FULLADMIN);</span>
-<span class="fc" id="L275">      user = Configuration.configuration.getAdminName();</span>
+<span class="fc" id="L276">    }</span>
+<span class="fc" id="L277">    getSession().getDir().initAfterIdentification();</span>
+<span class="fc" id="L278">    isAdmin = isSSL;</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">    if (isSSL) {</span>
+<span class="fc" id="L280">      role.setRole(ROLE.FULLADMIN);</span>
+<span class="fc" id="L281">      user = Configuration.configuration.getAdminName();</span>
     }
-<span class="fc" id="L277">  }</span>
+<span class="fc" id="L283">  }</span>
 
   /**
    * connection from HTTPS (no default rights, must be set either as admin or
@@ -291,51 +297,51 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    */
   public boolean connectionHttps(String hostId, byte[] arg0)
       throws Reply530Exception, Reply421Exception {
-<span class="nc" id="L294">    final DbHostAuth auth = getServerAuth(hostId);</span>
-<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (auth == null) {</span>
-<span class="nc" id="L296">      logger.error(&quot;Cannot find authentication for &quot; + hostId);</span>
-<span class="nc" id="L297">      setIsIdentified(false);</span>
-<span class="nc" id="L298">      currentAuth = null;</span>
-<span class="nc" id="L299">      throw new Reply530Exception(&quot;HostId not allowed&quot;);</span>
-    }
-<span class="nc bnc" id="L301" title="All 2 branches missed.">    if (auth.getPort() &gt;= 0) {</span>
-<span class="nc" id="L302">      logger.error(&quot;Authentication is unacceptable for &quot; + hostId);</span>
+<span class="fc" id="L300">    final DbHostAuth auth = getServerAuth(hostId);</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">    if (auth == null) {</span>
+<span class="nc" id="L302">      logger.error(&quot;Cannot find authentication for &quot; + hostId);</span>
 <span class="nc" id="L303">      setIsIdentified(false);</span>
 <span class="nc" id="L304">      currentAuth = null;</span>
 <span class="nc" id="L305">      throw new Reply530Exception(&quot;HostId not allowed&quot;);</span>
     }
-<span class="nc" id="L307">    role.clear();</span>
-<span class="nc" id="L308">    currentAuth = auth;</span>
-<span class="nc bnc" id="L309" title="All 2 branches missed.">    if (currentAuth.isKeyValid(arg0)) {</span>
-<span class="nc" id="L310">      setIsIdentified(true);</span>
-<span class="nc" id="L311">      user = hostId;</span>
-<span class="nc" id="L312">      setRootFromAuth();</span>
-<span class="nc" id="L313">      getSession().getDir().initAfterIdentification();</span>
-<span class="nc" id="L314">      isAdmin = currentAuth.isAdminrole();</span>
-<span class="nc bnc" id="L315" title="All 2 branches missed.">      if (!Configuration.configuration.getRoles().isEmpty()) {</span>
-<span class="nc" id="L316">        final RoleDefault configRole =</span>
-<span class="nc" id="L317">            Configuration.configuration.getRoles().get(hostId);</span>
-<span class="nc bnc" id="L318" title="All 2 branches missed.">        if (configRole != null) {</span>
-<span class="nc" id="L319">          role.setRoleDefault(configRole);</span>
-<span class="nc bnc" id="L320" title="All 2 branches missed.">          if (role.isContaining(ROLE.FULLADMIN)) {</span>
-<span class="nc" id="L321">            isAdmin = true;</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">    if (auth.getPort() &gt;= 0) {</span>
+<span class="nc" id="L308">      logger.error(&quot;Authentication is unacceptable for &quot; + hostId);</span>
+<span class="nc" id="L309">      setIsIdentified(false);</span>
+<span class="nc" id="L310">      currentAuth = null;</span>
+<span class="nc" id="L311">      throw new Reply530Exception(&quot;HostId not allowed&quot;);</span>
+    }
+<span class="fc" id="L313">    role.clear();</span>
+<span class="fc" id="L314">    currentAuth = auth;</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">    if (currentAuth.isKeyValid(arg0)) {</span>
+<span class="fc" id="L316">      setIsIdentified(true);</span>
+<span class="fc" id="L317">      user = hostId;</span>
+<span class="fc" id="L318">      setRootFromAuth();</span>
+<span class="fc" id="L319">      getSession().getDir().initAfterIdentification();</span>
+<span class="fc" id="L320">      isAdmin = currentAuth.isAdminrole();</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">      if (!Configuration.configuration.getRoles().isEmpty()) {</span>
+<span class="fc" id="L322">        final RoleDefault configRole =</span>
+<span class="fc" id="L323">            Configuration.configuration.getRoles().get(hostId);</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">        if (configRole != null) {</span>
+<span class="fc" id="L325">          role.setRoleDefault(configRole);</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">          if (role.isContaining(ROLE.FULLADMIN)) {</span>
+<span class="nc" id="L327">            isAdmin = true;</span>
           }
         }
       }
-<span class="nc bnc" id="L325" title="All 2 branches missed.">      if (isAdmin) {</span>
-<span class="nc" id="L326">        role.setRole(ROLE.FULLADMIN);</span>
+<span class="fc bfc" id="L331" title="All 2 branches covered.">      if (isAdmin) {</span>
+<span class="fc" id="L332">        role.setRole(ROLE.FULLADMIN);</span>
       }
-<span class="nc" id="L328">      logger.info(role + &quot;:&quot; + currentAuth);</span>
-<span class="nc" id="L329">      return true;</span>
+<span class="fc" id="L334">      logger.info(role + &quot;:&quot; + currentAuth);</span>
+<span class="fc" id="L335">      return true;</span>
     }
-<span class="nc" id="L331">    throw new Reply530Exception(&quot;Key is not valid for this HostId&quot;);</span>
+<span class="nc" id="L337">    throw new Reply530Exception(&quot;Key is not valid for this HostId&quot;);</span>
   }
 
   /**
    * @return a copy of the Role of the current authenticated partner
    */
   public RoleDefault getRole() {
-<span class="fc" id="L338">    return new RoleDefault().setRoleDefault(role);</span>
+<span class="fc" id="L344">    return new RoleDefault().setRoleDefault(role);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -389,6 +389,20 @@ public abstract class KeyObject {
   }
 
   /**
+   * Decrypt a String as HEX format representing a crypted String and
+   * returns the uncrypted String
+   *
+   * @param ciphertext
+   *
+   * @return the uncrypted String
+   *
+   * @throws Exception
+   */
+  public String decryptHexInString(byte[] ciphertext) throws Exception {
+<span class="nc" id="L402">    return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);</span>
+  }
+
+  /**
    * Decode from a file containing a HEX crypted string
    *
    * @param file
@@ -398,25 +412,25 @@ public abstract class KeyObject {
    * @throws Exception
    */
   public byte[] decryptHexFile(File file) throws Exception {
-<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
-<span class="nc" id="L402">      throw new IOException(</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">    if (file.length() &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L416">      throw new IOException(</span>
           &quot;File too big to be decoded into an array of bytes&quot;);
     }
-<span class="nc" id="L405">    byte[] byteKeys = new byte[(int) file.length()];</span>
-<span class="nc" id="L406">    FileInputStream inputStream = null;</span>
-<span class="nc" id="L407">    DataInputStream dis = null;</span>
+<span class="nc" id="L419">    byte[] byteKeys = new byte[(int) file.length()];</span>
+<span class="nc" id="L420">    FileInputStream inputStream = null;</span>
+<span class="nc" id="L421">    DataInputStream dis = null;</span>
     try {
-<span class="nc" id="L409">      inputStream = new FileInputStream(file);</span>
-<span class="nc" id="L410">      dis = new DataInputStream(inputStream);</span>
-<span class="nc" id="L411">      dis.readFully(byteKeys);</span>
-<span class="nc" id="L412">      FileUtils.close(dis);</span>
-<span class="nc" id="L413">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L423">      inputStream = new FileInputStream(file);</span>
+<span class="nc" id="L424">      dis = new DataInputStream(inputStream);</span>
+<span class="nc" id="L425">      dis.readFully(byteKeys);</span>
+<span class="nc" id="L426">      FileUtils.close(dis);</span>
+<span class="nc" id="L427">      final String skey = new String(byteKeys, WaarpStringUtils.UTF8);</span>
       // decrypt it
-<span class="nc" id="L415">      byteKeys = decryptHexInBytes(skey);</span>
-<span class="nc" id="L416">      return byteKeys;</span>
+<span class="nc" id="L429">      byteKeys = decryptHexInBytes(skey);</span>
+<span class="nc" id="L430">      return byteKeys;</span>
     } finally {
-<span class="nc" id="L418">      FileUtils.close(dis);</span>
-<span class="nc" id="L419">      FileUtils.close(inputStream);</span>
+<span class="nc" id="L432">      FileUtils.close(dis);</span>
+<span class="nc" id="L433">      FileUtils.close(inputStream);</span>
     }
   }
 
@@ -426,7 +440,7 @@ public abstract class KeyObject {
    * @return the array of bytes from encoded String (HEX)
    */
   public byte[] decodeHex(String encoded) {
-<span class="fc" id="L429">    return FilesystemBasedDigest.getFromHex(encoded);</span>
+<span class="fc" id="L443">    return FilesystemBasedDigest.getFromHex(encoded);</span>
   }
 
   /**
@@ -435,7 +449,7 @@ public abstract class KeyObject {
    * @return The encoded array of bytes in HEX
    */
   public String encodeHex(byte[] bytes) {
-<span class="fc" id="L438">    return FilesystemBasedDigest.getHex(bytes);</span>
+<span class="fc" id="L452">    return FilesystemBasedDigest.getHex(bytes);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

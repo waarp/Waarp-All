@@ -49,35 +49,35 @@ public class DbModelH2R66 extends DbModelH2 {
    */
   public DbModelH2R66(String dbserver, String dbuser, String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L52">    super(dbserver, dbuser, dbpasswd);</span>
-<span class="nc" id="L53">  }</span>
+<span class="fc" id="L52">    super(dbserver, dbuser, dbpasswd);</span>
+<span class="fc" id="L53">  }</span>
 
   @Override
   public void createTables(DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
-<span class="nc" id="L59">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
-<span class="nc" id="L60">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
-<span class="nc" id="L61">    final String notNull = &quot; NOT NULL &quot;;</span>
-<span class="nc" id="L62">    DbRequest request = DbModelFactoryR66</span>
-<span class="nc" id="L63">        .subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,</span>
+<span class="fc" id="L59">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+<span class="fc" id="L60">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="fc" id="L61">    final String notNull = &quot; NOT NULL &quot;;</span>
+<span class="fc" id="L62">    DbRequest request = DbModelFactoryR66</span>
+<span class="fc" id="L63">        .subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,</span>
                                               createTableH2, primaryKey,
                                               notNull);
-<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (request == null) {</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">    if (request == null) {</span>
 <span class="nc" id="L67">      return;</span>
     }
     StringBuilder action;
     // Index Runner
-<span class="nc" id="L71">    action = new StringBuilder(</span>
+<span class="fc" id="L71">    action = new StringBuilder(</span>
         &quot;CREATE INDEX IF NOT EXISTS IDX_RUNNER ON &quot; + DbTaskRunner.table + '(');
-<span class="nc" id="L73">    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;</span>
-<span class="nc bnc" id="L74" title="All 2 branches missed.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
-<span class="nc" id="L75">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
+<span class="fc" id="L73">    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
+<span class="fc" id="L75">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
     }
-<span class="nc" id="L77">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
-<span class="nc" id="L78">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="fc" id="L77">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
+<span class="fc" id="L78">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L80">      request.query(action.toString());</span>
+<span class="fc" id="L80">      request.query(action.toString());</span>
 <span class="nc" id="L81">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L82">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
 <span class="nc" id="L83">      return;</span>
@@ -85,17 +85,17 @@ public class DbModelH2R66 extends DbModelH2 {
 <span class="nc" id="L85">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
       // XXX FIX no return
     } finally {
-<span class="nc" id="L88">      request.close();</span>
+<span class="fc" id="L88">      request.close();</span>
     }
 
     // cptrunner
-<span class="nc" id="L92">    action = new StringBuilder(</span>
+<span class="fc" id="L92">    action = new StringBuilder(</span>
         &quot;CREATE SEQUENCE IF NOT EXISTS &quot; + DbTaskRunner.fieldseq +
         &quot; START WITH &quot; + (ILLEGALVALUE + 1) + &quot; MINVALUE &quot; +
         (ILLEGALVALUE + 1));
-<span class="nc" id="L96">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="fc" id="L96">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L98">      request.query(action.toString());</span>
+<span class="fc" id="L98">      request.query(action.toString());</span>
 <span class="nc" id="L99">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
 <span class="nc" id="L100">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
 <span class="nc" id="L101">      return;</span>
@@ -118,12 +118,12 @@ public class DbModelH2R66 extends DbModelH2 {
       }
       // XXX FIX no return
     } finally {
-<span class="nc" id="L121">      request.close();</span>
+<span class="fc" id="L121">      request.close();</span>
     }
 
-<span class="nc" id="L124">    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),</span>
-<span class="nc" id="L125">                                        R66Versions.V2_4_25.getVersion());</span>
-<span class="nc" id="L126">  }</span>
+<span class="fc" id="L124">    DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),</span>
+<span class="fc" id="L125">                                        R66Versions.V2_4_25.getVersion());</span>
+<span class="fc" id="L126">  }</span>
 
   @Override
   public boolean upgradeDb(DbSession session, String version)
@@ -261,8 +261,8 @@ public class DbModelH2R66 extends DbModelH2 {
   public boolean needUpgradeDb(DbSession session, String version,
                                boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L264">    return DbModelFactoryR66</span>
-<span class="nc" id="L265">        .needUpgradeDbAllDb(dbTypeResolver, session, version);</span>
+<span class="fc" id="L264">    return DbModelFactoryR66</span>
+<span class="fc" id="L265">        .needUpgradeDbAllDb(dbTypeResolver, session, version);</span>
   }
 
 }

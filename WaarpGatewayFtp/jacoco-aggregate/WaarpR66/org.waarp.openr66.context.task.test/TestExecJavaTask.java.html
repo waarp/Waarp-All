@@ -34,49 +34,49 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
  * &lt;p&gt;
  * 2nd argument is a numerical rank. When rank &gt; 100 stops, else increment rank.
  */
-<span class="nc" id="L37">public class TestExecJavaTask extends AbstractExecJavaTask {</span>
+<span class="fc" id="L37">public class TestExecJavaTask extends AbstractExecJavaTask {</span>
 
   /**
    * Internal Logger
    */
-<span class="nc" id="L42">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L43">      WaarpLoggerFactory.getLogger(TestExecJavaTask.class);</span>
+<span class="fc" id="L42">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L43">      WaarpLoggerFactory.getLogger(TestExecJavaTask.class);</span>
 
   @Override
   public void run() {
-<span class="nc bnc" id="L47" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">    if (callFromBusiness) {</span>
       // Business Request to validate?
-<span class="nc bnc" id="L49" title="All 2 branches missed.">      if (isToValidate) {</span>
-<span class="nc" id="L50">        final String[] args = BLANK.split(fullarg);</span>
-<span class="nc" id="L51">        int rank = Integer.parseInt(args[1]);</span>
-<span class="nc" id="L52">        rank++;</span>
-<span class="nc" id="L53">        final BusinessRequestPacket packet = new BusinessRequestPacket(</span>
-<span class="nc" id="L54">            getClass().getName() + &quot; business &quot; + rank + &quot; final return&quot;, 0);</span>
-<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (rank &gt; 100) {</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">      if (isToValidate) {</span>
+<span class="fc" id="L50">        final String[] args = BLANK.split(fullarg);</span>
+<span class="fc" id="L51">        int rank = Integer.parseInt(args[1]);</span>
+<span class="fc" id="L52">        rank++;</span>
+<span class="fc" id="L53">        final BusinessRequestPacket packet = new BusinessRequestPacket(</span>
+<span class="fc" id="L54">            getClass().getName() + &quot; business &quot; + rank + &quot; final return&quot;, 0);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        if (rank &gt; 100) {</span>
 <span class="nc" id="L56">          validate(packet);</span>
 <span class="nc" id="L57">          logger.info(&quot;Will NOT close the channel: &quot; + rank);</span>
         } else {
-<span class="nc" id="L59">          logger.info(&quot;Continue: &quot; + rank);</span>
-<span class="nc bnc" id="L60" title="All 2 branches missed.">          if (session.getLocalChannelReference() != null) {</span>
+<span class="fc" id="L59">          logger.info(&quot;Continue: &quot; + rank);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">          if (session.getLocalChannelReference() != null) {</span>
             try {
-<span class="nc" id="L62">              ChannelUtils</span>
-<span class="nc" id="L63">                  .writeAbstractLocalPacket(session.getLocalChannelReference(),</span>
+<span class="fc" id="L62">              ChannelUtils</span>
+<span class="fc" id="L63">                  .writeAbstractLocalPacket(session.getLocalChannelReference(),</span>
                                             packet, true);
 <span class="nc" id="L65">            } catch (final OpenR66ProtocolPacketException ignored) {</span>
               // nothing
-<span class="nc" id="L67">            }</span>
+<span class="fc" id="L67">            }</span>
           }
         }
-<span class="nc" id="L70">        status = 0;</span>
-<span class="nc" id="L71">        return;</span>
+<span class="fc" id="L70">        status = 0;</span>
+<span class="fc" id="L71">        return;</span>
       }
 <span class="nc" id="L73">      finalValidate(&quot;Validated&quot;);</span>
     } else {
       // Rule EXECJAVA based
-<span class="nc" id="L76">      final R66File file = session.getFile();</span>
-<span class="nc" id="L77">      final DbTaskRunner runner = session.getRunner();</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">      if (file == null) {</span>
-<span class="nc" id="L79">        logger.info(&quot;TestExecJavaTask No File&quot;);</span>
+<span class="fc" id="L76">      final R66File file = session.getFile();</span>
+<span class="fc" id="L77">      final DbTaskRunner runner = session.getRunner();</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">      if (file == null) {</span>
+<span class="fc" id="L79">        logger.info(&quot;TestExecJavaTask No File&quot;);</span>
       } else {
         try {
 <span class="nc" id="L82">          logger.info(&quot;TestExecJavaTask File: &quot; + file.getFile());</span>
@@ -84,13 +84,13 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
           // nothing
 <span class="nc" id="L85">        }</span>
       }
-<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (runner == null) {</span>
-<span class="nc" id="L88">        logger.warn(&quot;TestExecJavaTask No Runner: &quot; + fullarg);</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">      if (runner == null) {</span>
+<span class="fc" id="L88">        logger.warn(&quot;TestExecJavaTask No Runner: &quot; + fullarg);</span>
       } else {
 <span class="nc" id="L90">        logger.warn(&quot;TestExecJavaTask Runner: &quot; + runner.toShortString());</span>
       }
-<span class="nc" id="L92">      status = 0;</span>
+<span class="fc" id="L92">      status = 0;</span>
     }
-<span class="nc" id="L94">  }</span>
+<span class="fc" id="L94">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

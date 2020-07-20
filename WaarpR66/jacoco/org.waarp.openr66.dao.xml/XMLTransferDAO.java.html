@@ -73,6 +73,7 @@ public class XMLTransferDAO implements TransferDAO {
   public static final String BLOCK_SIZE_FIELD = &quot;blocksz&quot;;
   public static final String ORIGINAL_NAME_FIELD = &quot;originalname&quot;;
   public static final String FILE_INFO_FIELD = &quot;fileinfo&quot;;
+  public static final String TRANSFER_INFO_FIELD = &quot;transferInfo&quot;;
   public static final String TRANSFER_MODE_FIELD = &quot;modetrans&quot;;
   public static final String START_FIELD = &quot;starttrans&quot;;
   public static final String STOP_FIELD = &quot;stoptrans&quot;;
@@ -100,11 +101,11 @@ public class XMLTransferDAO implements TransferDAO {
    * @param ttl time to leave used
    */
   public static void createLruCache(int limit, long ttl) {
-<span class="fc" id="L103">    dbR66TaskHashMap = new SynchronizedLruCache&lt;Long, Transfer&gt;(limit, ttl);</span>
-<span class="fc" id="L104">  }</span>
+<span class="fc" id="L104">    dbR66TaskHashMap = new SynchronizedLruCache&lt;Long, Transfer&gt;(limit, ttl);</span>
+<span class="fc" id="L105">  }</span>
 
   public static String hashStatus() {
-<span class="nc" id="L107">    return &quot;DbTaskRunner: [dbR66TaskHashMap: &quot; + dbR66TaskHashMap.size() + &quot;] &quot;;</span>
+<span class="nc" id="L108">    return &quot;DbTaskRunner: [dbR66TaskHashMap: &quot; + dbR66TaskHashMap.size() + &quot;] &quot;;</span>
   }
 
   /**
@@ -113,7 +114,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @return the number of elements removed
    */
   public static int clearCache() {
-<span class="fc" id="L116">    return dbR66TaskHashMap.forceClearOldest();</span>
+<span class="fc" id="L117">    return dbR66TaskHashMap.forceClearOldest();</span>
   }
 
   /**
@@ -122,8 +123,8 @@ public class XMLTransferDAO implements TransferDAO {
    * @param ttl
    */
   public static void updateLruCacheTimeout(long ttl) {
-<span class="nc" id="L125">    dbR66TaskHashMap.setNewTtl(ttl);</span>
-<span class="nc" id="L126">  }</span>
+<span class="nc" id="L126">    dbR66TaskHashMap.setNewTtl(ttl);</span>
+<span class="nc" id="L127">  }</span>
 
   /**
    * To allow to remove specifically one SpecialId from MemoryHashmap
@@ -131,8 +132,8 @@ public class XMLTransferDAO implements TransferDAO {
    * @param specialId
    */
   public static final void removeNoDbSpecialId(long specialId) {
-<span class="fc" id="L134">    dbR66TaskHashMap.remove(specialId);</span>
-<span class="fc" id="L135">  }</span>
+<span class="fc" id="L135">    dbR66TaskHashMap.remove(specialId);</span>
+<span class="fc" id="L136">  }</span>
 
   /**
    * To update the usage TTL of the associated object
@@ -140,84 +141,84 @@ public class XMLTransferDAO implements TransferDAO {
    * @param specialId
    */
   public static final void updateUsed(long specialId) {
-<span class="nc" id="L143">    dbR66TaskHashMap.updateTtl(specialId);</span>
-<span class="nc" id="L144">  }</span>
+<span class="nc" id="L144">    dbR66TaskHashMap.updateTtl(specialId);</span>
+<span class="nc" id="L145">  }</span>
 
   private File file;
 
-<span class="nc" id="L148">  public XMLTransferDAO(String filePath) {</span>
-<span class="nc" id="L149">    file = new File(filePath);</span>
-<span class="nc" id="L150">  }</span>
+<span class="nc" id="L149">  public XMLTransferDAO(String filePath) {</span>
+<span class="nc" id="L150">    file = new File(filePath);</span>
+<span class="nc" id="L151">  }</span>
 
   @Override
   public void close() {
     // ignore
-<span class="nc" id="L155">  }</span>
+<span class="nc" id="L156">  }</span>
 
   public static final String XMLEXTENSION = &quot;_singlerunner.xml&quot;;
 
   private File getFile(String requester, String requested, long id) {
-<span class="nc" id="L160">    return new File(Configuration.configuration.getBaseDirectory() +</span>
-<span class="nc" id="L161">                    Configuration.configuration.getArchivePath() + '/' +</span>
+<span class="nc" id="L161">    return new File(Configuration.configuration.getBaseDirectory() +</span>
+<span class="nc" id="L162">                    Configuration.configuration.getArchivePath() + '/' +</span>
                     requester + '_' + requested + '_' + id + XMLEXTENSION);
   }
 
   @Override
   public void delete(Transfer transfer) throws DAOConnectionException {
-<span class="nc" id="L167">    removeNoDbSpecialId(transfer.getId());</span>
-<span class="nc" id="L168">  }</span>
+<span class="nc" id="L168">    removeNoDbSpecialId(transfer.getId());</span>
+<span class="nc" id="L169">  }</span>
 
   /**
    * {@link DAOConnectionException}
    */
   @Override
   public void deleteAll() throws DAOConnectionException {
-<span class="nc" id="L175">    dbR66TaskHashMap.clear();</span>
-<span class="nc" id="L176">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L176">    dbR66TaskHashMap.clear();</span>
+<span class="nc" id="L177">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
   public List&lt;Transfer&gt; getAll() throws DAOConnectionException {
-<span class="nc" id="L181">    final File arch = new File(Configuration.configuration.getArchivePath());</span>
-<span class="nc" id="L182">    final File[] runnerFiles = arch.listFiles();</span>
-<span class="nc" id="L183">    final List&lt;Transfer&gt; res = new ArrayList&lt;Transfer&gt;();</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">    for (final File fileNew : runnerFiles) {</span>
+<span class="nc" id="L182">    final File arch = new File(Configuration.configuration.getArchivePath());</span>
+<span class="nc" id="L183">    final File[] runnerFiles = arch.listFiles();</span>
+<span class="nc" id="L184">    final List&lt;Transfer&gt; res = new ArrayList&lt;Transfer&gt;();</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    for (final File fileNew : runnerFiles) {</span>
       try {
-<span class="nc" id="L186">        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L187">        final Document document = dbf.newDocumentBuilder().parse(fileNew);</span>
+<span class="nc" id="L187">        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L188">        final Document document = dbf.newDocumentBuilder().parse(fileNew);</span>
         // Setup XPath query
-<span class="nc" id="L189">        final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L190">        final XPathExpression xpe = xPath.compile(XML_GET_ALL);</span>
-<span class="nc" id="L191">        final NodeList listNode =</span>
-<span class="nc" id="L192">            (NodeList) xpe.evaluate(document, XPathConstants.NODESET);</span>
+<span class="nc" id="L190">        final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L191">        final XPathExpression xpe = xPath.compile(XML_GET_ALL);</span>
+<span class="nc" id="L192">        final NodeList listNode =</span>
+<span class="nc" id="L193">            (NodeList) xpe.evaluate(document, XPathConstants.NODESET);</span>
         // Iterate through all found nodes
-<span class="nc bnc" id="L194" title="All 2 branches missed.">        for (int i = 0; i &lt; listNode.getLength(); i++) {</span>
-<span class="nc" id="L195">          final Node node = listNode.item(i);</span>
-<span class="nc" id="L196">          final Transfer transfer = getFromNode(node);</span>
-<span class="nc" id="L197">          res.add(transfer);</span>
-<span class="nc" id="L198">          dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        for (int i = 0; i &lt; listNode.getLength(); i++) {</span>
+<span class="nc" id="L196">          final Node node = listNode.item(i);</span>
+<span class="nc" id="L197">          final Transfer transfer = getFromNode(node);</span>
+<span class="nc" id="L198">          res.add(transfer);</span>
+<span class="nc" id="L199">          dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
         }
-<span class="nc" id="L200">      } catch (final SAXException e) {</span>
-<span class="nc" id="L201">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L202">      } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L203">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L204">      } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L205">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L206">      } catch (final IOException e) {</span>
-<span class="nc" id="L207">        throw new DAOConnectionException(e);</span>
-<span class="nc" id="L208">      }</span>
+<span class="nc" id="L201">      } catch (final SAXException e) {</span>
+<span class="nc" id="L202">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L203">      } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L204">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L205">      } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L206">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L207">      } catch (final IOException e) {</span>
+<span class="nc" id="L208">        throw new DAOConnectionException(e);</span>
+<span class="nc" id="L209">      }</span>
     }
-<span class="nc" id="L210">    return res;</span>
+<span class="nc" id="L211">    return res;</span>
   }
 
   @Override
   public boolean exist(long id, String requester, String requested,
                        String owner) throws DAOConnectionException {
-<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (dbR66TaskHashMap.contains(id)) {</span>
-<span class="nc" id="L217">      return true;</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (dbR66TaskHashMap.contains(id)) {</span>
+<span class="nc" id="L218">      return true;</span>
     }
-<span class="nc" id="L219">    file = getFile(requester, requested, id);</span>
-<span class="nc" id="L220">    return file.exists();</span>
+<span class="nc" id="L220">    file = getFile(requester, requested, id);</span>
+<span class="nc" id="L221">    return file.exists();</span>
   }
 
   /**
@@ -228,7 +229,7 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; fitlers)
       throws DAOConnectionException {
-<span class="nc" id="L231">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L232">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   /**
@@ -239,7 +240,7 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public Transfer select(final String id)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc" id="L242">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L243">    throw new UnsupportedOperationException();</span>
   }
 
   /**
@@ -249,7 +250,7 @@ public class XMLTransferDAO implements TransferDAO {
    */
   @Override
   public boolean exist(final String id) throws DAOConnectionException {
-<span class="nc" id="L252">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L253">    throw new UnsupportedOperationException();</span>
   }
 
   /**
@@ -260,7 +261,7 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, int limit)
       throws DAOConnectionException {
-<span class="nc" id="L263">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L264">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   /**
@@ -271,7 +272,7 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, int limit, int offset)
       throws DAOConnectionException {
-<span class="nc" id="L274">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L275">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   /**
@@ -282,7 +283,7 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, String column,
                              boolean ascend) throws DAOConnectionException {
-<span class="nc" id="L285">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L286">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   /**
@@ -294,7 +295,7 @@ public class XMLTransferDAO implements TransferDAO {
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, String column,
                              boolean ascend, int limit)
       throws DAOConnectionException {
-<span class="nc" id="L297">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L298">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   /**
@@ -306,216 +307,220 @@ public class XMLTransferDAO implements TransferDAO {
   public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, String column,
                              boolean ascend, int limit, int offset)
       throws DAOConnectionException {
-<span class="nc" id="L309">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="nc" id="L310">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
   public void insert(Transfer transfer) throws DAOConnectionException {
     // Set unique Id
-<span class="nc" id="L315">    transfer.setId(new LongUuid().getLong());</span>
-<span class="nc" id="L316">    dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
-<span class="nc" id="L317">    file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
-<span class="nc" id="L318">                   transfer.getId());</span>
-<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (file.exists()) {</span>
-<span class="nc" id="L320">      throw new DAOConnectionException(&quot;File already exist&quot;);</span>
+<span class="nc" id="L316">    transfer.setId(new LongUuid().getLong());</span>
+<span class="nc" id="L317">    dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
+<span class="nc" id="L318">    file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
+<span class="nc" id="L319">                   transfer.getId());</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">    if (file.exists()) {</span>
+<span class="nc" id="L321">      throw new DAOConnectionException(&quot;File already exist&quot;);</span>
     }
     try {
-<span class="nc" id="L323">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L324">      final Document document = dbf.newDocumentBuilder().newDocument();</span>
-<span class="nc" id="L325">      final Element root = document.createElement(ROOT_LIST);</span>
-<span class="nc" id="L326">      document.appendChild(root);</span>
-<span class="nc" id="L327">      root.appendChild(getNode(document, transfer));</span>
+<span class="nc" id="L324">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L325">      final Document document = dbf.newDocumentBuilder().newDocument();</span>
+<span class="nc" id="L326">      final Element root = document.createElement(ROOT_LIST);</span>
+<span class="nc" id="L327">      document.appendChild(root);</span>
+<span class="nc" id="L328">      root.appendChild(getNode(document, transfer));</span>
       // Write document in file
-<span class="nc" id="L329">      XMLUtils.writeToFile(file, document);</span>
-<span class="nc" id="L330">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L331">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L332">    }</span>
-<span class="nc" id="L333">  }</span>
+<span class="nc" id="L330">      XMLUtils.writeToFile(file, document);</span>
+<span class="nc" id="L331">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L332">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L333">    }</span>
+<span class="nc" id="L334">  }</span>
 
   @Override
   public Transfer select(long id, String requester, String requested,
                          String owner)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc bnc" id="L339" title="All 2 branches missed.">    if (dbR66TaskHashMap.contains(id)) {</span>
-<span class="nc" id="L340">      return dbR66TaskHashMap.get(id);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">    if (dbR66TaskHashMap.contains(id)) {</span>
+<span class="nc" id="L341">      return dbR66TaskHashMap.get(id);</span>
     }
-<span class="nc" id="L342">    file = getFile(requester, requested, id);</span>
-<span class="nc bnc" id="L343" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L344">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
+<span class="nc" id="L343">    file = getFile(requester, requested, id);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="nc" id="L345">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
     }
     try {
-<span class="nc" id="L347">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L348">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+<span class="nc" id="L348">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L349">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
-<span class="nc" id="L350">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
-<span class="nc" id="L351">      resolver.addVariable(new QName(null, ID_FIELD), id);</span>
-<span class="nc" id="L352">      resolver.addVariable(new QName(null, REQUESTER_FIELD), requester);</span>
-<span class="nc" id="L353">      resolver.addVariable(new QName(null, REQUESTED_FIELD), requested);</span>
-<span class="nc" id="L354">      resolver.addVariable(new QName(null, &quot;owner&quot;), owner);</span>
+<span class="nc" id="L351">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
+<span class="nc" id="L352">      resolver.addVariable(new QName(null, ID_FIELD), id);</span>
+<span class="nc" id="L353">      resolver.addVariable(new QName(null, REQUESTER_FIELD), requester);</span>
+<span class="nc" id="L354">      resolver.addVariable(new QName(null, REQUESTED_FIELD), requested);</span>
+<span class="nc" id="L355">      resolver.addVariable(new QName(null, &quot;owner&quot;), owner);</span>
       // Setup XPath query
-<span class="nc" id="L356">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L357">      xPath.setXPathVariableResolver(resolver);</span>
-<span class="nc" id="L358">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
+<span class="nc" id="L357">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L358">      xPath.setXPathVariableResolver(resolver);</span>
+<span class="nc" id="L359">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
       // Retrieve node and instantiate object
-<span class="nc" id="L360">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">      if (node != null) {</span>
-<span class="nc" id="L362">        return getFromNode(node);</span>
+<span class="nc" id="L361">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">      if (node != null) {</span>
+<span class="nc" id="L363">        return getFromNode(node);</span>
       }
-<span class="nc" id="L364">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
-<span class="nc" id="L365">    } catch (final SAXException e) {</span>
-<span class="nc" id="L366">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L367">    } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L368">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L369">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L370">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L371">    } catch (final IOException e) {</span>
-<span class="nc" id="L372">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L365">      throw new DAONoDataException(&quot;Transfer cannot be found&quot;);</span>
+<span class="nc" id="L366">    } catch (final SAXException e) {</span>
+<span class="nc" id="L367">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L368">    } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L369">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L370">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L371">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L372">    } catch (final IOException e) {</span>
+<span class="nc" id="L373">      throw new DAOConnectionException(e);</span>
     }
   }
 
   @Override
   public void update(Transfer transfer) throws DAOConnectionException {
-<span class="nc" id="L378">    file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
-<span class="nc" id="L379">                   transfer.getId());</span>
-<span class="nc bnc" id="L380" title="All 2 branches missed.">    if (!file.exists()) {</span>
-<span class="nc" id="L381">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
+<span class="nc" id="L379">    file = getFile(transfer.getRequester(), transfer.getRequested(),</span>
+<span class="nc" id="L380">                   transfer.getId());</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="nc" id="L382">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L384">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
-<span class="nc" id="L385">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
+<span class="nc" id="L385">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="nc" id="L386">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
-<span class="nc" id="L387">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
-<span class="nc" id="L388">      resolver.addVariable(new QName(null, ID_FIELD), transfer.getId());</span>
-<span class="nc" id="L389">      resolver.addVariable(new QName(null, REQUESTER_FIELD),</span>
-<span class="nc" id="L390">                           transfer.getRequester());</span>
-<span class="nc" id="L391">      resolver.addVariable(new QName(null, REQUESTED_FIELD),</span>
-<span class="nc" id="L392">                           transfer.getRequested());</span>
-<span class="nc" id="L393">      resolver.addVariable(new QName(null, OWNER_FIELD),</span>
-<span class="nc" id="L394">                           transfer.getOwnerRequest());</span>
+<span class="nc" id="L388">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
+<span class="nc" id="L389">      resolver.addVariable(new QName(null, ID_FIELD), transfer.getId());</span>
+<span class="nc" id="L390">      resolver.addVariable(new QName(null, REQUESTER_FIELD),</span>
+<span class="nc" id="L391">                           transfer.getRequester());</span>
+<span class="nc" id="L392">      resolver.addVariable(new QName(null, REQUESTED_FIELD),</span>
+<span class="nc" id="L393">                           transfer.getRequested());</span>
+<span class="nc" id="L394">      resolver.addVariable(new QName(null, OWNER_FIELD),</span>
+<span class="nc" id="L395">                           transfer.getOwnerRequest());</span>
       // Setup XPath query
-<span class="nc" id="L396">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
-<span class="nc" id="L397">      xPath.setXPathVariableResolver(resolver);</span>
-<span class="nc" id="L398">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
+<span class="nc" id="L397">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
+<span class="nc" id="L398">      xPath.setXPathVariableResolver(resolver);</span>
+<span class="nc" id="L399">      final XPathExpression xpe = xPath.compile(XML_SELECT);</span>
       // Retrieve node and remove it
-<span class="nc" id="L400">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
-<span class="nc bnc" id="L401" title="All 2 branches missed.">      if (node == null) {</span>
-<span class="nc" id="L402">        logger.warn(&quot;Entry not found cannot update&quot;);</span>
-<span class="nc" id="L403">        return;</span>
+<span class="nc" id="L401">      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L403">        logger.warn(&quot;Entry not found cannot update&quot;);</span>
+<span class="nc" id="L404">        return;</span>
       }
-<span class="nc" id="L405">      node.getParentNode().removeChild(node);</span>
+<span class="nc" id="L406">      node.getParentNode().removeChild(node);</span>
       // Insert updated node
-<span class="nc" id="L407">      final Element root = document.getDocumentElement();</span>
-<span class="nc" id="L408">      root.appendChild(getNode(document, transfer));</span>
+<span class="nc" id="L408">      final Element root = document.getDocumentElement();</span>
+<span class="nc" id="L409">      root.appendChild(getNode(document, transfer));</span>
       // Write document in file
-<span class="nc" id="L410">      XMLUtils.writeToFile(file, document);</span>
-<span class="nc" id="L411">      dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
-<span class="nc" id="L412">    } catch (final SAXException e) {</span>
-<span class="nc" id="L413">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L414">    } catch (final XPathExpressionException e) {</span>
-<span class="nc" id="L415">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L416">    } catch (final ParserConfigurationException e) {</span>
-<span class="nc" id="L417">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L418">    } catch (final IOException e) {</span>
-<span class="nc" id="L419">      throw new DAOConnectionException(e);</span>
-<span class="nc" id="L420">    }</span>
-<span class="nc" id="L421">  }</span>
+<span class="nc" id="L411">      XMLUtils.writeToFile(file, document);</span>
+<span class="nc" id="L412">      dbR66TaskHashMap.put(transfer.getId(), transfer);</span>
+<span class="nc" id="L413">    } catch (final SAXException e) {</span>
+<span class="nc" id="L414">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L415">    } catch (final XPathExpressionException e) {</span>
+<span class="nc" id="L416">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L417">    } catch (final ParserConfigurationException e) {</span>
+<span class="nc" id="L418">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L419">    } catch (final IOException e) {</span>
+<span class="nc" id="L420">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L421">    }</span>
+<span class="nc" id="L422">  }</span>
 
   private Transfer getFromNode(Node parent) {
-<span class="nc" id="L424">    final Transfer res = new Transfer();</span>
-<span class="nc" id="L425">    final NodeList children = parent.getChildNodes();</span>
-<span class="nc bnc" id="L426" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
-<span class="nc" id="L427">      final Node node = children.item(j);</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">      if (node.getNodeName().equals(ID_FIELD)) {</span>
-<span class="nc" id="L429">        res.setId(Long.parseLong(node.getTextContent()));</span>
-<span class="nc bnc" id="L430" title="All 2 branches missed.">      } else if (node.getNodeName().equals(OWNER_FIELD)) {</span>
-<span class="nc" id="L431">        res.setOwnerRequest(node.getTextContent());</span>
-<span class="nc bnc" id="L432" title="All 2 branches missed.">      } else if (node.getNodeName().equals(REQUESTER_FIELD)) {</span>
-<span class="nc" id="L433">        res.setRequester(node.getTextContent());</span>
-<span class="nc bnc" id="L434" title="All 2 branches missed.">      } else if (node.getNodeName().equals(REQUESTED_FIELD)) {</span>
-<span class="nc" id="L435">        res.setRequested(node.getTextContent());</span>
-<span class="nc bnc" id="L436" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RULE_FIELD)) {</span>
-<span class="nc" id="L437">        res.setRule(node.getTextContent());</span>
-<span class="nc bnc" id="L438" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RETRIEVE_MODE_FIELD)) {</span>
-<span class="nc" id="L439">        res.setRetrieveMode(Boolean.parseBoolean(node.getTextContent()));</span>
-<span class="nc bnc" id="L440" title="All 2 branches missed.">      } else if (node.getNodeName().equals(TRANSFER_MODE_FIELD)) {</span>
-<span class="nc" id="L441">        res.setTransferMode(Integer.parseInt(node.getTextContent()));</span>
-<span class="nc bnc" id="L442" title="All 2 branches missed.">      } else if (node.getNodeName().equals(FILENAME_FIELD)) {</span>
-<span class="nc" id="L443">        res.setFilename(node.getTextContent());</span>
-<span class="nc bnc" id="L444" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ORIGINAL_NAME_FIELD)) {</span>
-<span class="nc" id="L445">        res.setOriginalName(node.getTextContent());</span>
-<span class="nc bnc" id="L446" title="All 2 branches missed.">      } else if (node.getNodeName().equals(FILE_INFO_FIELD)) {</span>
-<span class="nc" id="L447">        res.setFileInfo(node.getTextContent());</span>
-<span class="nc bnc" id="L448" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_MOVED_FIELD)) {</span>
-<span class="nc" id="L449">        res.setIsMoved(Boolean.parseBoolean(node.getTextContent()));</span>
-<span class="nc bnc" id="L450" title="All 2 branches missed.">      } else if (node.getNodeName().equals(BLOCK_SIZE_FIELD)) {</span>
-<span class="nc" id="L451">        res.setBlockSize(Integer.parseInt(node.getTextContent()));</span>
-<span class="nc bnc" id="L452" title="All 2 branches missed.">      } else if (node.getNodeName().equals(GLOBAL_STEP_FIELD)) {</span>
-<span class="nc" id="L453">        res.setGlobalStep(</span>
-<span class="nc" id="L454">            Transfer.TASKSTEP.valueOf(Integer.parseInt(node.getTextContent())));</span>
-<span class="nc bnc" id="L455" title="All 2 branches missed.">      } else if (node.getNodeName().equals(LAST_GLOBAL_STEP_FIELD)) {</span>
-<span class="nc" id="L456">        res.setLastGlobalStep(</span>
+<span class="nc" id="L425">    final Transfer res = new Transfer();</span>
+<span class="nc" id="L426">    final NodeList children = parent.getChildNodes();</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">    for (int j = 0; j &lt; children.getLength(); j++) {</span>
+<span class="nc" id="L428">      final Node node = children.item(j);</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">      if (node.getNodeName().equals(ID_FIELD)) {</span>
+<span class="nc" id="L430">        res.setId(Long.parseLong(node.getTextContent()));</span>
+<span class="nc bnc" id="L431" title="All 2 branches missed.">      } else if (node.getNodeName().equals(OWNER_FIELD)) {</span>
+<span class="nc" id="L432">        res.setOwnerRequest(node.getTextContent());</span>
+<span class="nc bnc" id="L433" title="All 2 branches missed.">      } else if (node.getNodeName().equals(REQUESTER_FIELD)) {</span>
+<span class="nc" id="L434">        res.setRequester(node.getTextContent());</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">      } else if (node.getNodeName().equals(REQUESTED_FIELD)) {</span>
+<span class="nc" id="L436">        res.setRequested(node.getTextContent());</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RULE_FIELD)) {</span>
+<span class="nc" id="L438">        res.setRule(node.getTextContent());</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RETRIEVE_MODE_FIELD)) {</span>
+<span class="nc" id="L440">        res.setRetrieveMode(Boolean.parseBoolean(node.getTextContent()));</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">      } else if (node.getNodeName().equals(TRANSFER_MODE_FIELD)) {</span>
+<span class="nc" id="L442">        res.setTransferMode(Integer.parseInt(node.getTextContent()));</span>
+<span class="nc bnc" id="L443" title="All 2 branches missed.">      } else if (node.getNodeName().equals(FILENAME_FIELD)) {</span>
+<span class="nc" id="L444">        res.setFilename(node.getTextContent());</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">      } else if (node.getNodeName().equals(ORIGINAL_NAME_FIELD)) {</span>
+<span class="nc" id="L446">        res.setOriginalName(node.getTextContent());</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">      } else if (node.getNodeName().equals(FILE_INFO_FIELD)) {</span>
+<span class="nc" id="L448">        res.setFileInfo(node.getTextContent());</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">      } else if (node.getNodeName().equals(TRANSFER_INFO_FIELD)) {</span>
+<span class="nc" id="L450">        res.setTransferInfo(node.getTextContent());</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">      } else if (node.getNodeName().equals(IS_MOVED_FIELD)) {</span>
+<span class="nc" id="L452">        res.setIsMoved(Boolean.parseBoolean(node.getTextContent()));</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">      } else if (node.getNodeName().equals(BLOCK_SIZE_FIELD)) {</span>
+<span class="nc" id="L454">        res.setBlockSize(Integer.parseInt(node.getTextContent()));</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">      } else if (node.getNodeName().equals(GLOBAL_STEP_FIELD)) {</span>
+<span class="nc" id="L456">        res.setGlobalStep(</span>
 <span class="nc" id="L457">            Transfer.TASKSTEP.valueOf(Integer.parseInt(node.getTextContent())));</span>
-<span class="nc bnc" id="L458" title="All 2 branches missed.">      } else if (node.getNodeName().equals(STEP_FIELD)) {</span>
-<span class="nc" id="L459">        res.setStep(Integer.parseInt(node.getTextContent()));</span>
-<span class="nc bnc" id="L460" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RANK_FIELD)) {</span>
-<span class="nc" id="L461">        res.setRank(Integer.parseInt(node.getTextContent()));</span>
-<span class="nc bnc" id="L462" title="All 2 branches missed.">      } else if (node.getNodeName().equals(STEP_STATUS_FIELD)) {</span>
-<span class="nc" id="L463">        res.setStepStatus(ErrorCode.getFromCode(node.getTextContent()));</span>
-<span class="nc bnc" id="L464" title="All 2 branches missed.">      } else if (node.getNodeName().equals(INFO_STATUS_FIELD)) {</span>
-<span class="nc" id="L465">        res.setInfoStatus(ErrorCode.getFromCode(node.getTextContent()));</span>
-<span class="nc bnc" id="L466" title="All 2 branches missed.">      } else if (node.getNodeName().equals(START_FIELD)) {</span>
-<span class="nc" id="L467">        res.setStart(Timestamp.valueOf(node.getTextContent()));</span>
-<span class="nc bnc" id="L468" title="All 2 branches missed.">      } else if (node.getNodeName().equals(STOP_FIELD)) {</span>
-<span class="nc" id="L469">        res.setStop(Timestamp.valueOf(node.getTextContent()));</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">      } else if (node.getNodeName().equals(LAST_GLOBAL_STEP_FIELD)) {</span>
+<span class="nc" id="L459">        res.setLastGlobalStep(</span>
+<span class="nc" id="L460">            Transfer.TASKSTEP.valueOf(Integer.parseInt(node.getTextContent())));</span>
+<span class="nc bnc" id="L461" title="All 2 branches missed.">      } else if (node.getNodeName().equals(STEP_FIELD)) {</span>
+<span class="nc" id="L462">        res.setStep(Integer.parseInt(node.getTextContent()));</span>
+<span class="nc bnc" id="L463" title="All 2 branches missed.">      } else if (node.getNodeName().equals(RANK_FIELD)) {</span>
+<span class="nc" id="L464">        res.setRank(Integer.parseInt(node.getTextContent()));</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">      } else if (node.getNodeName().equals(STEP_STATUS_FIELD)) {</span>
+<span class="nc" id="L466">        res.setStepStatus(ErrorCode.getFromCode(node.getTextContent()));</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">      } else if (node.getNodeName().equals(INFO_STATUS_FIELD)) {</span>
+<span class="nc" id="L468">        res.setInfoStatus(ErrorCode.getFromCode(node.getTextContent()));</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">      } else if (node.getNodeName().equals(START_FIELD)) {</span>
+<span class="nc" id="L470">        res.setStart(Timestamp.valueOf(node.getTextContent()));</span>
+<span class="nc bnc" id="L471" title="All 2 branches missed.">      } else if (node.getNodeName().equals(STOP_FIELD)) {</span>
+<span class="nc" id="L472">        res.setStop(Timestamp.valueOf(node.getTextContent()));</span>
       }
     }
-<span class="nc" id="L472">    return res;</span>
+<span class="nc" id="L475">    return res;</span>
   }
 
   private Node getNode(Document doc, Transfer transfer) {
-<span class="nc" id="L476">    final Node res = doc.createElement(ROOT_ELEMENT);</span>
-<span class="nc" id="L477">    res.appendChild(</span>
-<span class="nc" id="L478">        XMLUtils.createNode(doc, ID_FIELD, Long.toString(transfer.getId())));</span>
-<span class="nc" id="L479">    res.appendChild(</span>
-<span class="nc" id="L480">        XMLUtils.createNode(doc, OWNER_FIELD, transfer.getOwnerRequest()));</span>
-<span class="nc" id="L481">    res.appendChild(</span>
-<span class="nc" id="L482">        XMLUtils.createNode(doc, REQUESTER_FIELD, transfer.getRequester()));</span>
-<span class="nc" id="L483">    res.appendChild(</span>
-<span class="nc" id="L484">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getRequested()));</span>
-<span class="nc" id="L485">    res.appendChild(XMLUtils.createNode(doc, RULE_FIELD, transfer.getRule()));</span>
-<span class="nc" id="L486">    res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD, Boolean</span>
-<span class="nc" id="L487">        .toString(transfer.getRetrieveMode())));</span>
-<span class="nc" id="L488">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD, Integer</span>
-<span class="nc" id="L489">        .toString(transfer.getTransferMode())));</span>
-<span class="nc" id="L490">    res.appendChild(</span>
-<span class="nc" id="L491">        XMLUtils.createNode(doc, FILENAME_FIELD, transfer.getRequested()));</span>
-<span class="nc" id="L492">    res.appendChild(</span>
-<span class="nc" id="L493">        XMLUtils.createNode(doc, ORIGINAL_NAME_FIELD, transfer.getFilename()));</span>
-<span class="nc" id="L494">    res.appendChild(</span>
-<span class="nc" id="L495">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getOriginalName()));</span>
-<span class="nc" id="L496">    res.appendChild(</span>
-<span class="nc" id="L497">        XMLUtils.createNode(doc, FILE_INFO_FIELD, transfer.getFileInfo()));</span>
-<span class="nc" id="L498">    res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean</span>
-<span class="nc" id="L499">        .toString(transfer.getIsMoved())));</span>
-<span class="nc" id="L500">    res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer</span>
-<span class="nc" id="L501">        .toString(transfer.getBlockSize())));</span>
-<span class="nc" id="L502">    res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD, Integer</span>
-<span class="nc" id="L503">        .toString(transfer.getGlobalStep().ordinal())));</span>
-<span class="nc" id="L504">    res.appendChild(XMLUtils.createNode(doc, LAST_GLOBAL_STEP_FIELD, Integer</span>
-<span class="nc" id="L505">        .toString(transfer.getLastGlobalStep().ordinal())));</span>
-<span class="nc" id="L506">    res.appendChild(XMLUtils.createNode(doc, STEP_FIELD,</span>
-<span class="nc" id="L507">                                        Integer.toString(transfer.getStep())));</span>
-<span class="nc" id="L508">    res.appendChild(XMLUtils.createNode(doc, RANK_FIELD,</span>
-<span class="nc" id="L509">                                        Integer.toString(transfer.getRank())));</span>
-<span class="nc" id="L510">    res.appendChild(XMLUtils.createNode(doc, STEP_STATUS_FIELD,</span>
-<span class="nc" id="L511">                                        transfer.getStepStatus().getCode()));</span>
-<span class="nc" id="L512">    res.appendChild(XMLUtils.createNode(doc, INFO_STATUS_FIELD,</span>
-<span class="nc" id="L513">                                        transfer.getInfoStatus().getCode()));</span>
-<span class="nc" id="L514">    res.appendChild(</span>
-<span class="nc" id="L515">        XMLUtils.createNode(doc, START_FIELD, transfer.getStart().toString()));</span>
-<span class="nc" id="L516">    res.appendChild(</span>
-<span class="nc" id="L517">        XMLUtils.createNode(doc, STOP_FIELD, transfer.getStop().toString()));</span>
-<span class="nc" id="L518">    return res;</span>
+<span class="nc" id="L479">    final Node res = doc.createElement(ROOT_ELEMENT);</span>
+<span class="nc" id="L480">    res.appendChild(</span>
+<span class="nc" id="L481">        XMLUtils.createNode(doc, ID_FIELD, Long.toString(transfer.getId())));</span>
+<span class="nc" id="L482">    res.appendChild(</span>
+<span class="nc" id="L483">        XMLUtils.createNode(doc, OWNER_FIELD, transfer.getOwnerRequest()));</span>
+<span class="nc" id="L484">    res.appendChild(</span>
+<span class="nc" id="L485">        XMLUtils.createNode(doc, REQUESTER_FIELD, transfer.getRequester()));</span>
+<span class="nc" id="L486">    res.appendChild(</span>
+<span class="nc" id="L487">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getRequested()));</span>
+<span class="nc" id="L488">    res.appendChild(XMLUtils.createNode(doc, RULE_FIELD, transfer.getRule()));</span>
+<span class="nc" id="L489">    res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD, Boolean</span>
+<span class="nc" id="L490">        .toString(transfer.getRetrieveMode())));</span>
+<span class="nc" id="L491">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD, Integer</span>
+<span class="nc" id="L492">        .toString(transfer.getTransferMode())));</span>
+<span class="nc" id="L493">    res.appendChild(</span>
+<span class="nc" id="L494">        XMLUtils.createNode(doc, FILENAME_FIELD, transfer.getRequested()));</span>
+<span class="nc" id="L495">    res.appendChild(</span>
+<span class="nc" id="L496">        XMLUtils.createNode(doc, ORIGINAL_NAME_FIELD, transfer.getFilename()));</span>
+<span class="nc" id="L497">    res.appendChild(</span>
+<span class="nc" id="L498">        XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getOriginalName()));</span>
+<span class="nc" id="L499">    res.appendChild(</span>
+<span class="nc" id="L500">        XMLUtils.createNode(doc, FILE_INFO_FIELD, transfer.getFileInfo()));</span>
+<span class="nc" id="L501">    res.appendChild(XMLUtils.createNode(doc, TRANSFER_INFO_FIELD,</span>
+<span class="nc" id="L502">                                        transfer.getTransferInfo()));</span>
+<span class="nc" id="L503">    res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean</span>
+<span class="nc" id="L504">        .toString(transfer.getIsMoved())));</span>
+<span class="nc" id="L505">    res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer</span>
+<span class="nc" id="L506">        .toString(transfer.getBlockSize())));</span>
+<span class="nc" id="L507">    res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD, Integer</span>
+<span class="nc" id="L508">        .toString(transfer.getGlobalStep().ordinal())));</span>
+<span class="nc" id="L509">    res.appendChild(XMLUtils.createNode(doc, LAST_GLOBAL_STEP_FIELD, Integer</span>
+<span class="nc" id="L510">        .toString(transfer.getLastGlobalStep().ordinal())));</span>
+<span class="nc" id="L511">    res.appendChild(XMLUtils.createNode(doc, STEP_FIELD,</span>
+<span class="nc" id="L512">                                        Integer.toString(transfer.getStep())));</span>
+<span class="nc" id="L513">    res.appendChild(XMLUtils.createNode(doc, RANK_FIELD,</span>
+<span class="nc" id="L514">                                        Integer.toString(transfer.getRank())));</span>
+<span class="nc" id="L515">    res.appendChild(XMLUtils.createNode(doc, STEP_STATUS_FIELD,</span>
+<span class="nc" id="L516">                                        transfer.getStepStatus().getCode()));</span>
+<span class="nc" id="L517">    res.appendChild(XMLUtils.createNode(doc, INFO_STATUS_FIELD,</span>
+<span class="nc" id="L518">                                        transfer.getInfoStatus().getCode()));</span>
+<span class="nc" id="L519">    res.appendChild(</span>
+<span class="nc" id="L520">        XMLUtils.createNode(doc, START_FIELD, transfer.getStart().toString()));</span>
+<span class="nc" id="L521">    res.appendChild(</span>
+<span class="nc" id="L522">        XMLUtils.createNode(doc, STOP_FIELD, transfer.getStop().toString()));</span>
+<span class="nc" id="L523">    return res;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

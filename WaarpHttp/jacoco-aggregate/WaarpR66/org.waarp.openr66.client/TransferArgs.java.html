@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TransferArgs.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Waarp Http</a> &gt; <a href="../index.html" class="el_bundle">WaarpR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.client</a> &gt; <span class="el_source">TransferArgs.java</span></div><h1>TransferArgs.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+
+package org.waarp.openr66.client;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+import org.waarp.common.guid.LongUuid;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Transfer arguments:&lt;br&gt;
+ * &lt;br&gt;
+ * -to &lt;arg&gt;        Specify the requested Host&lt;br&gt;
+ * (-id &lt;arg&gt;|      Specify the id of transfer&lt;br&gt;
+ * (-file &lt;arg&gt;     Specify the file path to operate on&lt;br&gt;
+ * -rule &lt;arg&gt;))    Specify the Rule&lt;br&gt;
+ * [-block &lt;arg&gt;]   Specify the block size&lt;br&gt;
+ * [-nofollow]      Specify the transfer should not integrate a FOLLOW id&lt;br&gt;
+ * [-md5]           Specify the option to have a hash computed for the
+ * transfer&lt;br&gt;
+ * [-delay &lt;arg&gt;]   Specify the delay time as an epoch time or '+' a delay in ms&lt;br&gt;
+ * [-start &lt;arg&gt;]   Specify the start time as yyyyMMddHHmmss&lt;br&gt;
+ * [-info &lt;arg&gt;)    Specify the transfer information (generally in last position)&lt;br&gt;
+ * [-nolog]         Specify to not log anything included database once the
+ * transfer is done&lt;br&gt;
+ * [-notlogWarn |   Specify to log final result as Info if OK&lt;br&gt;
+ * -logWarn]        Specify to log final result as Warn if OK&lt;br&gt;
+ */
+public class TransferArgs {
+<span class="fc" id="L70">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L71">      WaarpLoggerFactory.getLogger(TransferArgs.class);</span>
+
+  private static final String FILE = &quot;file&quot;;
+  public static final String FILE_ARG = &quot;-&quot; + FILE;
+<span class="fc" id="L75">  private static final Option FILE_OPTION =</span>
+<span class="fc" id="L76">      Option.builder(FILE).required(false).hasArg(true)</span>
+<span class="fc" id="L77">            .desc(&quot;Specify the file path to operate on&quot;).build();</span>
+  private static final String TO = &quot;to&quot;;
+  public static final String TO_ARG = &quot;-&quot; + TO;
+<span class="fc" id="L80">  private static final Option TO_OPTION =</span>
+<span class="fc" id="L81">      Option.builder(TO).required(true).hasArg(true)</span>
+<span class="fc" id="L82">            .desc(&quot;Specify the requested Host&quot;).build();</span>
+  private static final String RULE = &quot;rule&quot;;
+  public static final String RULE_ARG = &quot;-&quot; + RULE;
+<span class="fc" id="L85">  private static final Option RULE_OPTION =</span>
+<span class="fc" id="L86">      Option.builder(RULE).required(false).hasArg(true).desc(&quot;Specify the Rule&quot;)</span>
+<span class="fc" id="L87">            .build();</span>
+  private static final String ID_FIELD = &quot;id&quot;;
+  public static final String ID_ARG = &quot;-&quot; + ID_FIELD;
+<span class="fc" id="L90">  private static final Option ID_OPTION =</span>
+<span class="fc" id="L91">      Option.builder(ID_FIELD).required(false).hasArg(true)</span>
+<span class="fc" id="L92">            .desc(&quot;Specify the id of transfer&quot;).build();</span>
+  private static final String NO_FOLLOW = &quot;nofollow&quot;;
+  public static final String NO_FOLLOW_ARG = &quot;-&quot; + NO_FOLLOW;
+<span class="fc" id="L95">  private static final Option NO_FOLLOW_OPTION =</span>
+<span class="fc" id="L96">      Option.builder(NO_FOLLOW).required(false).hasArg(false)</span>
+<span class="fc" id="L97">            .desc(&quot;Specify if the transfer should not integrate a FOLLOW id&quot;)</span>
+<span class="fc" id="L98">            .build();</span>
+  public static final String FOLLOW_JSON_KEY = &quot;follow&quot;;
+  private static final String INFO = &quot;info&quot;;
+  public static final String INFO_ARG = &quot;-&quot; + INFO;
+<span class="fc" id="L102">  private static final Option INFO_OPTION =</span>
+<span class="fc" id="L103">      Option.builder(INFO).required(false).hasArg(true)</span>
+<span class="fc" id="L104">            .desc(&quot;Specify the transfer information&quot;).build();</span>
+  private static final String HASH = &quot;md5&quot;;
+  public static final String HASH_ARG = &quot;-&quot; + HASH;
+<span class="fc" id="L107">  private static final Option HASH_OPTION =</span>
+<span class="fc" id="L108">      Option.builder(HASH).required(false).hasArg(false)</span>
+<span class="fc" id="L109">            .desc(&quot;Specify the option to have a hash computed for the transfer&quot;)</span>
+<span class="fc" id="L110">            .build();</span>
+  private static final String BLOCK = &quot;block&quot;;
+  public static final String BLOCK_ARG = &quot;-&quot; + BLOCK;
+<span class="fc" id="L113">  private static final Option BLOCK_OPTION =</span>
+<span class="fc" id="L114">      Option.builder(BLOCK).required(false).hasArg(true)</span>
+<span class="fc" id="L115">            .desc(&quot;Specify the block size&quot;).build();</span>
+  private static final String START = &quot;start&quot;;
+  public static final String START_ARG = &quot;-&quot; + START;
+<span class="fc" id="L118">  private static final Option START_OPTION =</span>
+<span class="fc" id="L119">      Option.builder(START).required(false).hasArg(true)</span>
+<span class="fc" id="L120">            .desc(&quot;Specify the start time as yyyyMMddHHmmss&quot;).build();</span>
+  private static final String DELAY = &quot;delay&quot;;
+  public static final String DELAY_ARG = &quot;-&quot; + DELAY;
+<span class="fc" id="L123">  private static final Option DELAY_OPTION =</span>
+<span class="fc" id="L124">      Option.builder(DELAY).required(false).hasArg(true).desc(</span>
+          &quot;Specify the delay time as an epoch time or '+' a delay in ms&quot;)
+<span class="fc" id="L126">            .build();</span>
+
+  private static final String LOGWARN = &quot;logWarn&quot;;
+  public static final String LOGWARN_ARG = &quot;-&quot; + LOGWARN;
+<span class="fc" id="L130">  private static final Option LOGWARN_OPTION =</span>
+<span class="fc" id="L131">      Option.builder(LOGWARN).required(false).hasArg(false)</span>
+<span class="fc" id="L132">            .desc(&quot;Specify to log final result as Warn if OK&quot;).build();</span>
+  private static final String NOTLOGWARN = &quot;notlogWarn&quot;;
+  public static final String NOTLOGWARN_ARG = &quot;-&quot; + NOTLOGWARN;
+<span class="fc" id="L135">  private static final Option NOTLOGWARN_OPTION =</span>
+<span class="fc" id="L136">      Option.builder(NOTLOGWARN).required(false).hasArg(false)</span>
+<span class="fc" id="L137">            .desc(&quot;Specify to log final result as Info if OK&quot;).build();</span>
+
+  private static final String NOTLOG = &quot;nolog&quot;;
+  public static final String NOTLOG_ARG = &quot;-&quot; + NOTLOG;
+<span class="fc" id="L141">  private static final Option NOTLOG_OPTION =</span>
+<span class="fc" id="L142">      Option.builder(NOTLOG).required(false).hasArg(false).desc(</span>
+          &quot;Specify to not log anything included database once the &quot; +
+<span class="fc" id="L144">          &quot;transfer is done&quot;).build();</span>
+
+<span class="fc" id="L146">  private static final OptionGroup LOGWARN_OPTIONS =</span>
+<span class="fc" id="L147">      new OptionGroup().addOption(LOGWARN_OPTION).addOption(NOTLOGWARN_OPTION);</span>
+<span class="fc" id="L148">  private static final OptionGroup DELAY_OPTIONS =</span>
+<span class="fc" id="L149">      new OptionGroup().addOption(DELAY_OPTION).addOption(START_OPTION);</span>
+<span class="fc" id="L150">  private static final Options TRANSFER_OPTIONS =</span>
+<span class="fc" id="L151">      new Options().addOption(FILE_OPTION).addOption(TO_OPTION)</span>
+<span class="fc" id="L152">                   .addOption(NO_FOLLOW_OPTION).addOption(RULE_OPTION)</span>
+<span class="fc" id="L153">                   .addOption(ID_OPTION).addOption(INFO_OPTION)</span>
+<span class="fc" id="L154">                   .addOption(HASH_OPTION).addOption(BLOCK_OPTION)</span>
+<span class="fc" id="L155">                   .addOptionGroup(DELAY_OPTIONS).addOption(NOTLOG_OPTION)</span>
+<span class="fc" id="L156">                   .addOptionGroup(LOGWARN_OPTIONS);</span>
+
+  public static final String SEPARATOR_SEND = &quot;--&quot;;
+
+
+  /**
+   * Print to standard output the help of this command
+   */
+  public static void printHelp() {
+<span class="fc" id="L165">    HelpFormatter formatter = new HelpFormatter();</span>
+<span class="fc" id="L166">    formatter.printHelp(&quot;Transfer&quot;, TRANSFER_OPTIONS);</span>
+<span class="fc" id="L167">  }</span>
+
+  /**
+   * Analyze the parameters according to TransferArgs options
+   * &lt;br&gt;&lt;br&gt;
+   * Transfer arguments:&lt;br&gt;
+   * &lt;br&gt;
+   * -to &lt;arg&gt;        Specify the requested Host&lt;br&gt;
+   * (-id &lt;arg&gt;|      Specify the id of transfer&lt;br&gt;
+   * (-file &lt;arg&gt;     Specify the file path to operate on&lt;br&gt;
+   * -rule &lt;arg&gt;))    Specify the Rule&lt;br&gt;
+   * [-block &lt;arg&gt;]   Specify the block size&lt;br&gt;
+   * [-nofollow]      Specify the transfer should not integrate a FOLLOW id&lt;br&gt;
+   * [-md5]           Specify the option to have a hash computed for the
+   * transfer&lt;br&gt;
+   * [-delay &lt;arg&gt;]   Specify the delay time as an epoch time or '+' a delay in ms&lt;br&gt;
+   * [-start &lt;arg&gt;]   Specify the start time as yyyyMMddHHmmss&lt;br&gt;
+   * [-info &lt;arg&gt;)    Specify the transfer information (generally in last position)&lt;br&gt;
+   * [-nolog]         Specify to not log anything included database once the
+   * transfer is done&lt;br&gt;
+   * [-notlogWarn |   Specify to log final result as Info if OK&lt;br&gt;
+   * -logWarn]        Specify to log final result as Warn if OK&lt;br&gt;
+   *
+   * @param rank the rank to analyze from
+   * @param args the argument to analyze
+   * @param analyseFollow if True, will check follow possible argument in info
+   *
+   * @return the TransferArgs or null if an error occurs
+   */
+  public static TransferArgs getParamsInternal(final int rank,
+                                               final String[] args,
+                                               boolean analyseFollow) {
+<span class="fc bfc" id="L199" title="All 4 branches covered.">    if (args == null || args.length == 0) {</span>
+<span class="fc" id="L200">      logger.error(&quot;Arguments cannot be empty or null&quot;);</span>
+<span class="fc" id="L201">      return null;</span>
+    }
+<span class="fc" id="L203">    String[] realArgs = getRealArgs(rank, args);</span>
+
+    // Now set default values from configuration
+<span class="fc" id="L206">    TransferArgs transferArgs1 = new TransferArgs();</span>
+<span class="fc" id="L207">    transferArgs1.setBlockSize(Configuration.configuration.getBlockSize());</span>
+
+<span class="fc" id="L209">    CommandLineParser parser = new DefaultParser();</span>
+    try {
+<span class="fc" id="L211">      CommandLine cmd = parser.parse(TRANSFER_OPTIONS, realArgs, true);</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">      if (getTransferMinimalArgs(transferArgs1, cmd)) {</span>
+<span class="fc" id="L213">        return null;</span>
+      }
+<span class="fc bfc" id="L215" title="All 2 branches covered.">      if (checkDelayStart(transferArgs1, cmd)) {</span>
+<span class="fc" id="L216">        return null;</span>
+      }
+<span class="fc bfc" id="L218" title="All 2 branches covered.">      if (checkExtraTransferArgs(transferArgs1, cmd)) {</span>
+<span class="fc" id="L219">        return null;</span>
+      }
+<span class="fc" id="L221">      checkLog(transferArgs1, cmd);</span>
+<span class="fc" id="L222">    } catch (ParseException e) {</span>
+<span class="fc" id="L223">      printHelp();</span>
+<span class="fc" id="L224">      logger.error(&quot;Arguments are incorrect&quot;, e);</span>
+<span class="fc" id="L225">      return null;</span>
+<span class="fc" id="L226">    }</span>
+<span class="fc" id="L227">    return finalizeTransferArgs(analyseFollow, transferArgs1);</span>
+  }
+
+  /**
+   * Check extra arguments for Transfer
+   *
+   * @param transferArgs1
+   * @param cmd
+   *
+   * @return the TransferArgs or null
+   */
+  private static boolean checkExtraTransferArgs(
+      final TransferArgs transferArgs1, final CommandLine cmd) {
+<span class="fc bfc" id="L240" title="All 2 branches covered.">    if (!cmd.hasOption(NO_FOLLOW)) {</span>
+<span class="fc" id="L241">      transferArgs1.setFollowId(&quot;&quot;);</span>
+    }
+<span class="fc bfc" id="L243" title="All 2 branches covered.">    if (cmd.hasOption(INFO)) {</span>
+<span class="fc" id="L244">      transferArgs1.setTransferInfo(cmd.getOptionValue(INFO));</span>
+    }
+<span class="fc bfc" id="L246" title="All 2 branches covered.">    if (cmd.hasOption(HASH)) {</span>
+<span class="fc" id="L247">      transferArgs1.setMD5(true);</span>
+    }
+<span class="fc bfc" id="L249" title="All 2 branches covered.">    if (cmd.hasOption(BLOCK)) {</span>
+      try {
+<span class="fc" id="L251">        transferArgs1.setBlockSize(Integer.parseInt(cmd.getOptionValue(BLOCK)));</span>
+<span class="fc" id="L252">      } catch (NumberFormatException ignored) {</span>
+<span class="fc" id="L253">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L254">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; block&quot;);</span>
+        //$NON-NLS-1$
+<span class="fc" id="L256">        return true;</span>
+<span class="fc" id="L257">      }</span>
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">      if (transferArgs1.getBlockSize() &lt; 100) {</span>
+<span class="nc" id="L259">        logger.error(Messages.getString(&quot;AbstractTransfer.1&quot;) +</span>
+<span class="nc" id="L260">                     transferArgs1.getBlockSize());</span>
+        //$NON-NLS-1$
+<span class="nc" id="L262">        return true;</span>
+      }
+    }
+<span class="fc" id="L265">    return false;</span>
+  }
+
+  /**
+   * Check minimal argyments for Transfer
+   *
+   * @param transferArgs1
+   * @param cmd
+   *
+   * @return True if an error occurs
+   */
+  private static boolean getTransferMinimalArgs(
+      final TransferArgs transferArgs1, final CommandLine cmd) {
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">    if (cmd.hasOption(TO)) {</span>
+<span class="fc" id="L279">      transferArgs1.setRemoteHost(cmd.getOptionValue(TO));</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">      if (Configuration.configuration.getAliases().containsKey(</span>
+<span class="fc" id="L281">          transferArgs1.getRemoteHost())) {</span>
+<span class="fc" id="L282">        transferArgs1.setRemoteHost(Configuration.configuration.getAliases()</span>
+<span class="fc" id="L283">                                                               .get(</span>
+                                                                   transferArgs1
+<span class="fc" id="L285">                                                                       .getRemoteHost()));</span>
+      }
+    }
+<span class="fc bfc" id="L288" title="All 2 branches covered.">    if (cmd.hasOption(FILE)) {</span>
+<span class="fc" id="L289">      transferArgs1.setFilename(cmd.getOptionValue(FILE));</span>
+<span class="fc" id="L290">      transferArgs1.setFilename(transferArgs1.getFilename().replace('§', '*'));</span>
+    }
+<span class="fc bfc" id="L292" title="All 2 branches covered.">    if (cmd.hasOption(RULE)) {</span>
+<span class="fc" id="L293">      transferArgs1.setRulename(cmd.getOptionValue(RULE));</span>
+    }
+<span class="fc bfc" id="L295" title="All 2 branches covered.">    if (cmd.hasOption(ID_FIELD)) {</span>
+      try {
+<span class="fc" id="L297">        transferArgs1.setId(Long.parseLong(cmd.getOptionValue(ID_FIELD)));</span>
+<span class="fc" id="L298">      } catch (NumberFormatException ignored) {</span>
+<span class="fc" id="L299">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L300">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; id&quot;);</span>
+        //$NON-NLS-1$
+<span class="fc" id="L302">        return true;</span>
+<span class="fc" id="L303">      }</span>
+    }
+<span class="fc" id="L305">    return false;</span>
+  }
+
+  /**
+   * Finalize the real arguments to parse (stopping at &quot;--&quot; and starting at
+   * rank)
+   *
+   * @param rank
+   * @param args
+   *
+   * @return the real arguments
+   */
+  private static String[] getRealArgs(final int rank, final String[] args) {
+<span class="fc bfc" id="L318" title="All 2 branches covered.">    String[] realArgs =</span>
+<span class="fc" id="L319">        rank == 0? args : Arrays.copyOfRange(args, rank, args.length);</span>
+<span class="fc bfc" id="L320" title="All 2 branches covered.">    for (int i = rank; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">      if (SEPARATOR_SEND.equals(args[i])) {</span>
+<span class="fc" id="L322">        realArgs = Arrays.copyOfRange(args, rank, i);</span>
+<span class="fc" id="L323">        break;</span>
+      }
+    }
+<span class="fc" id="L326">    return realArgs;</span>
+  }
+
+  /**
+   * Finalize the TransferArgs
+   *
+   * @param analyseFollow
+   * @param transferArgs1
+   *
+   * @return the TransferArgs or null
+   */
+  private static TransferArgs finalizeTransferArgs(final boolean analyseFollow,
+                                                   final TransferArgs transferArgs1) {
+<span class="fc bfc" id="L339" title="All 2 branches covered.">    if (transferArgs1.getTransferInfo() == null) {</span>
+<span class="fc" id="L340">      transferArgs1.setTransferInfo(AbstractTransfer.NO_INFO_ARGS);</span>
+    }
+<span class="fc bfc" id="L342" title="All 2 branches covered.">    if (analyseFollow) {</span>
+<span class="fc" id="L343">      analyzeFollow(transferArgs1);</span>
+    }
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">    if (transferArgs1.getRemoteHost() != null &amp;&amp;</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">        transferArgs1.getRulename() != null &amp;&amp;</span>
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">        transferArgs1.getFilename() != null) {</span>
+<span class="fc" id="L348">      return transferArgs1;</span>
+<span class="fc bfc" id="L349" title="All 2 branches covered.">    } else if (transferArgs1.getId() != ILLEGALVALUE &amp;&amp;</span>
+<span class="pc bpc" id="L350" title="1 of 2 branches missed.">               transferArgs1.getRemoteHost() != null) {</span>
+      try {
+<span class="fc" id="L352">        final DbTaskRunner runner = new DbTaskRunner(transferArgs1.getId(),</span>
+                                                     transferArgs1
+<span class="fc" id="L354">                                                         .getRemoteHost());</span>
+<span class="fc" id="L355">        transferArgs1.setRulename(runner.getRuleId());</span>
+<span class="fc" id="L356">        transferArgs1.setFilename(runner.getOriginalFilename());</span>
+<span class="fc" id="L357">        return transferArgs1;</span>
+<span class="fc" id="L358">      } catch (final WaarpDatabaseNoDataException e) {</span>
+<span class="fc" id="L359">        logger.error(&quot;No transfer found with this id and partner&quot;);</span>
+<span class="fc" id="L360">        logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+                                        &quot;(-to -rule -file | -to -id with &quot; +
+                                        &quot;existing id transfer)&quot;)
+                     //$NON-NLS-1$
+            , e);
+<span class="fc" id="L365">        return null;</span>
+<span class="nc" id="L366">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L367">        logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+                                        &quot;(-to -rule -file | -to -id) with a &quot; +
+                                        &quot;correct database connexion&quot;)
+                     //$NON-NLS-1$
+            , e);
+<span class="nc" id="L372">        return null;</span>
+      }
+    }
+<span class="fc" id="L375">    logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+                                    &quot;(-to -rule -file | -to -id)&quot;) +
+                 //$NON-NLS-1$
+                 AbstractTransfer._INFO_ARGS);
+<span class="fc" id="L379">    return null;</span>
+  }
+
+  /**
+   * Check LOG and NOT LOG options
+   *
+   * @param transferArgs1
+   * @param cmd
+   */
+  private static void checkLog(final TransferArgs transferArgs1,
+                               final CommandLine cmd) {
+<span class="fc bfc" id="L390" title="All 2 branches covered.">    if (cmd.hasOption(LOGWARN)) {</span>
+<span class="fc" id="L391">      transferArgs1.setNormalInfoAsWarn(true);</span>
+    }
+<span class="fc bfc" id="L393" title="All 2 branches covered.">    if (cmd.hasOption(NOTLOGWARN)) {</span>
+<span class="fc" id="L394">      transferArgs1.setNormalInfoAsWarn(false);</span>
+    }
+<span class="fc bfc" id="L396" title="All 2 branches covered.">    if (cmd.hasOption(NOTLOG)) {</span>
+<span class="fc" id="L397">      transferArgs1.setNolog(true);</span>
+    }
+<span class="fc" id="L399">  }</span>
+
+  /**
+   * Check DELAY or START
+   *
+   * @param transferArgs1
+   * @param cmd
+   *
+   * @return True if an error occurs
+   */
+  private static boolean checkDelayStart(final TransferArgs transferArgs1,
+                                         final CommandLine cmd) {
+<span class="fc bfc" id="L411" title="All 2 branches covered.">    if (cmd.hasOption(START)) {</span>
+      Date date;
+<span class="fc" id="L413">      final SimpleDateFormat dateFormat =</span>
+          new SimpleDateFormat(&quot;yyyyMMddHHmmss&quot;);
+      try {
+<span class="fc" id="L416">        date = dateFormat.parse(cmd.getOptionValue(START));</span>
+<span class="fc" id="L417">        transferArgs1.setStartTime(new Timestamp(date.getTime()));</span>
+<span class="fc" id="L418">      } catch (java.text.ParseException ignored) {</span>
+<span class="fc" id="L419">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L420">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; StartTime&quot;);</span>
+        //$NON-NLS-1$
+<span class="fc" id="L422">        return true;</span>
+<span class="fc" id="L423">      }</span>
+    }
+<span class="fc bfc" id="L425" title="All 2 branches covered.">    if (cmd.hasOption(DELAY)) {</span>
+<span class="fc" id="L426">      String delay = cmd.getOptionValue(DELAY);</span>
+      try {
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">        if (delay.charAt(0) == '+') {</span>
+<span class="fc" id="L429">          transferArgs1.setStartTime(new Timestamp(</span>
+<span class="fc" id="L430">              System.currentTimeMillis() + Long.parseLong(delay.substring(1))));</span>
+        } else {
+<span class="nc" id="L432">          transferArgs1.setStartTime(new Timestamp(Long.parseLong(delay)));</span>
+        }
+<span class="fc" id="L434">      } catch (NumberFormatException ignored) {</span>
+<span class="fc" id="L435">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="fc" id="L436">        logger.error(Messages.getString(&quot;AbstractTransfer.20&quot;) + &quot; Delay&quot;);</span>
+        //$NON-NLS-1$
+<span class="fc" id="L438">        return true;</span>
+<span class="fc" id="L439">      }</span>
+    }
+<span class="fc" id="L441">    return false;</span>
+  }
+
+  /**
+   * Get all Info in case of last argument
+   *
+   * @param transferArgs the original TransferArgs
+   * @param rank the rank to start from in args array
+   * @param args the original arguments
+   * @param copiedInfo might be null, original information to copy
+   */
+  public static void getAllInfo(final TransferArgs transferArgs, final int rank,
+                                final String[] args, final String copiedInfo) {
+<span class="pc bpc" id="L454" title="1 of 2 branches missed.">    if (transferArgs != null) {</span>
+<span class="fc" id="L455">      StringBuilder builder = new StringBuilder();</span>
+<span class="fc bfc" id="L456" title="All 2 branches covered.">      if (copiedInfo != null) {</span>
+<span class="fc" id="L457">        builder.append(copiedInfo);</span>
+      }
+<span class="fc bfc" id="L459" title="All 2 branches covered.">      for (int i = rank; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L460" title="All 2 branches covered.">        if (INFO_ARG.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L461">          i++;</span>
+<span class="fc bfc" id="L462" title="All 2 branches covered.">          if (builder.length() == 0) {</span>
+<span class="fc" id="L463">            builder.append(args[i].trim());</span>
+          } else {
+<span class="fc" id="L465">            builder.append(' ').append(args[i].trim());</span>
+          }
+<span class="fc" id="L467">          i++;</span>
+<span class="fc bfc" id="L468" title="All 2 branches covered.">          while (i &lt; args.length) {</span>
+<span class="fc" id="L469">            builder.append(' ').append(args[i].trim());</span>
+<span class="fc" id="L470">            i++;</span>
+          }
+        }
+      }
+<span class="fc" id="L474">      transferArgs.setTransferInfo(builder.toString());</span>
+<span class="fc" id="L475">      TransferArgs.analyzeFollow(transferArgs);</span>
+    }
+<span class="fc" id="L477">  }</span>
+
+  /**
+   * Analyze Follow option
+   *
+   * @param transferArgs1 the current TransferArgs
+   */
+  public static void analyzeFollow(final TransferArgs transferArgs1) {
+<span class="fc bfc" id="L485" title="All 2 branches covered.">    if (transferArgs1.getFollowId() != null &amp;&amp;</span>
+<span class="pc bpc" id="L486" title="1 of 2 branches missed.">        transferArgs1.getTransferInfo() != null) {</span>
+<span class="fc" id="L487">      Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L488">          DbTaskRunner.getMapFromString(transferArgs1.getTransferInfo());</span>
+<span class="fc bfc" id="L489" title="All 2 branches covered.">      if (map.containsKey(FOLLOW_JSON_KEY)) {</span>
+<span class="fc" id="L490">        transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());</span>
+      }
+<span class="fc bfc" id="L492" title="All 2 branches covered.">      if (transferArgs1.getFollowId().isEmpty()) {</span>
+<span class="fc" id="L493">        LongUuid longUuid = new LongUuid();</span>
+<span class="fc" id="L494">        map.put(FOLLOW_JSON_KEY, longUuid.getLong());</span>
+<span class="fc" id="L495">        String originalWithoutMap =</span>
+<span class="fc" id="L496">            DbTaskRunner.getOutOfMapFromString(transferArgs1.getTransferInfo());</span>
+<span class="fc" id="L497">        transferArgs1.setTransferInfo(</span>
+<span class="fc" id="L498">            originalWithoutMap.trim() + &quot; &quot; + JsonHandler.writeAsString(map));</span>
+<span class="fc" id="L499">        transferArgs1.setFollowId(&quot;&quot; + longUuid.getLong());</span>
+<span class="fc" id="L500">      } else {</span>
+<span class="fc" id="L501">        String originalWithoutMap =</span>
+<span class="fc" id="L502">            DbTaskRunner.getOutOfMapFromString(transferArgs1.getTransferInfo());</span>
+<span class="fc" id="L503">        transferArgs1.setTransferInfo(</span>
+<span class="fc" id="L504">            originalWithoutMap.trim() + &quot; &quot; + JsonHandler.writeAsString(map));</span>
+      }
+    }
+<span class="fc" id="L507">  }</span>
+
+  private String filename;
+  private String rulename;
+  private String transferInfo;
+  private boolean isMD5;
+  private String remoteHost;
+<span class="fc" id="L514">  private int blocksize = 0x10000; // 64K</span>
+<span class="fc" id="L515">  private long id = ILLEGALVALUE;</span>
+  private Timestamp startTime;
+  private String followId;
+<span class="fc" id="L518">  private boolean normalInfoAsWarn = true;</span>
+<span class="fc" id="L519">  private boolean nolog = false;</span>
+
+  /**
+   * Empty constructor
+   */
+<span class="fc" id="L524">  public TransferArgs() {</span>
+    // Empty
+<span class="fc" id="L526">  }</span>
+
+  public String getFilename() {
+<span class="fc" id="L529">    return filename;</span>
+  }
+
+  public TransferArgs setFilename(String filename) {
+<span class="fc" id="L533">    this.filename = filename;</span>
+<span class="fc" id="L534">    return this;</span>
+  }
+
+  public String getRulename() {
+<span class="fc" id="L538">    return rulename;</span>
+  }
+
+  public TransferArgs setRulename(String rulename) {
+<span class="fc" id="L542">    this.rulename = rulename;</span>
+<span class="fc" id="L543">    return this;</span>
+  }
+
+  public String getTransferInfo() {
+<span class="fc" id="L547">    return transferInfo;</span>
+  }
+
+  public TransferArgs setTransferInfo(String transferInfo) {
+<span class="fc" id="L551">    this.transferInfo = transferInfo;</span>
+<span class="fc" id="L552">    return this;</span>
+  }
+
+  public boolean isMD5() {
+<span class="fc" id="L556">    return isMD5;</span>
+  }
+
+  public TransferArgs setMD5(boolean md5) {
+<span class="fc" id="L560">    isMD5 = md5;</span>
+<span class="fc" id="L561">    return this;</span>
+  }
+
+  public String getRemoteHost() {
+<span class="fc" id="L565">    return remoteHost;</span>
+  }
+
+  public TransferArgs setRemoteHost(String remoteHost) {
+<span class="fc" id="L569">    this.remoteHost = remoteHost;</span>
+<span class="fc" id="L570">    return this;</span>
+  }
+
+  public int getBlockSize() {
+<span class="fc" id="L574">    return blocksize;</span>
+  }
+
+  public TransferArgs setBlockSize(int blocksize) {
+<span class="fc" id="L578">    this.blocksize = blocksize;</span>
+<span class="fc" id="L579">    return this;</span>
+  }
+
+  public long getId() {
+<span class="fc" id="L583">    return id;</span>
+  }
+
+  public TransferArgs setId(long id) {
+<span class="fc" id="L587">    this.id = id;</span>
+<span class="fc" id="L588">    return this;</span>
+  }
+
+  public Timestamp getStartTime() {
+<span class="fc" id="L592">    return startTime;</span>
+  }
+
+  public TransferArgs setStartTime(Timestamp startTime) {
+<span class="fc" id="L596">    this.startTime = startTime;</span>
+<span class="fc" id="L597">    return this;</span>
+  }
+
+  public String getFollowId() {
+<span class="fc" id="L601">    return followId;</span>
+  }
+
+  public TransferArgs setFollowId(String followId) {
+<span class="fc" id="L605">    this.followId = followId;</span>
+<span class="fc" id="L606">    return this;</span>
+  }
+
+  public boolean isNormalInfoAsWarn() {
+<span class="fc" id="L610">    return normalInfoAsWarn;</span>
+  }
+
+  public TransferArgs setNormalInfoAsWarn(boolean normalInfoAsWarn) {
+<span class="fc" id="L614">    this.normalInfoAsWarn = normalInfoAsWarn;</span>
+<span class="fc" id="L615">    return this;</span>
+  }
+
+  public boolean isNolog() {
+<span class="fc" id="L619">    return nolog;</span>
+  }
+
+  public TransferArgs setNolog(boolean nolog) {
+<span class="fc" id="L623">    this.nolog = nolog;</span>
+<span class="fc" id="L624">    return this;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

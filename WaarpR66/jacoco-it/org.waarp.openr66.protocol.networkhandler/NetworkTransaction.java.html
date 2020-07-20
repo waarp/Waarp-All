@@ -1,0 +1,1406 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NetworkTransaction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.networkhandler</a> &gt; <span class="el_source">NetworkTransaction.java</span></div><h1>NetworkTransaction.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.networkhandler;
+
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelId;
+import io.netty.channel.ChannelPipelineException;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.future.WaarpLock;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.lru.ConcurrentUtility;
+import org.waarp.common.lru.SynchronizedLruCache;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
+import org.waarp.openr66.protocol.localhandler.packet.AuthentPacket;
+import org.waarp.openr66.protocol.localhandler.packet.ConnectionErrorPacket;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerHandler;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Enumeration;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static org.waarp.common.utility.WaarpShutdownHook.*;
+import static org.waarp.openr66.context.R66FiniteDualStates.*;
+
+/**
+ * This class handles Network Transaction connections
+ */
+public class NetworkTransaction {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L86">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L87">      WaarpLoggerFactory.getLogger(NetworkTransaction.class);</span>
+
+  /**
+   * To protect access to socketLocks when no address associated
+   */
+<span class="fc" id="L92">  private static final WaarpLock emptyLock = new WaarpLock();</span>
+  /**
+   * Lock for Lock management operations
+   */
+<span class="fc" id="L96">  private static final ReentrantLock lockOfLock = new ReentrantLock();</span>
+  /**
+   * Hashmap for lock based on remote address
+   */
+  private static final SynchronizedLruCache&lt;Integer, WaarpLock&gt;
+<span class="fc" id="L101">      reentrantLockOnSocketAddressConcurrentHashMap =</span>
+      new SynchronizedLruCache&lt;Integer, WaarpLock&gt;(20000, 180000);
+  /**
+   * Hashmap for Currently Shutdown remote host based on
+   * socketAddress.hashCode()
+   */
+  private static final ConcurrentHashMap&lt;Integer, NetworkChannelReference&gt;
+<span class="fc" id="L108">      networkChannelShutdownOnSocketAddressConcurrentHashMap =</span>
+      new ConcurrentHashMap&lt;Integer, NetworkChannelReference&gt;();
+  /**
+   * Hashmap for Currently blacklisted remote host based on IP
+   * address(String).hashCode()
+   */
+  private static final ConcurrentHashMap&lt;Integer, NetworkChannelReference&gt;
+<span class="fc" id="L115">      networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap =</span>
+      new ConcurrentHashMap&lt;Integer, NetworkChannelReference&gt;();
+
+  /**
+   * Hashmap for currently active remote host based on
+   * socketAddress.hashCode()
+   */
+  private static final ConcurrentHashMap&lt;Integer, NetworkChannelReference&gt;
+<span class="fc" id="L123">      networkChannelOnSocketAddressConcurrentHashMap =</span>
+      new ConcurrentHashMap&lt;Integer, NetworkChannelReference&gt;();
+  /**
+   * Remote Client NetworkChannels: used to centralize remote requester hosts
+   * (possible different address used)
+   */
+  private static final ConcurrentHashMap&lt;String, ClientNetworkChannels&gt;
+<span class="fc" id="L130">      clientNetworkChannelsPerHostId =</span>
+      new ConcurrentHashMap&lt;String, ClientNetworkChannels&gt;();
+  /**
+   * Hashmap for currently active Retrieve Runner (sender)
+   */
+  private static final ConcurrentHashMap&lt;Integer, RetrieveRunner&gt;
+<span class="fc" id="L136">      retrieveRunnerConcurrentHashMap =</span>
+      new ConcurrentHashMap&lt;Integer, RetrieveRunner&gt;();
+
+  private final Bootstrap clientBootstrap;
+  private final Bootstrap clientSslBootstrap;
+  private ChannelGroup networkChannelGroup;
+
+<span class="fc" id="L143">  public NetworkTransaction() {</span>
+<span class="fc" id="L144">    networkChannelGroup = new DefaultChannelGroup(&quot;NetworkChannels&quot;,</span>
+                                                  Configuration.configuration
+<span class="fc" id="L146">                                                      .getHandlerGroup()</span>
+<span class="fc" id="L147">                                                      .next());</span>
+<span class="fc" id="L148">    final NetworkServerInitializer networkServerInitializer =</span>
+        new NetworkServerInitializer(false);
+<span class="fc" id="L150">    clientBootstrap = new Bootstrap();</span>
+<span class="fc" id="L151">    WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration</span>
+<span class="fc" id="L152">        .getNetworkWorkerGroup(), (int) Configuration.configuration</span>
+<span class="fc" id="L153">        .getTimeoutCon());</span>
+<span class="fc" id="L154">    clientBootstrap.handler(networkServerInitializer);</span>
+<span class="fc" id="L155">    Configuration.configuration.setupLimitHandler();</span>
+<span class="fc" id="L156">    clientSslBootstrap = new Bootstrap();</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">    if (Configuration.configuration.isUseSSL() &amp;&amp;</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        Configuration.configuration.getHostSslId() != null) {</span>
+<span class="fc" id="L159">      final NetworkSslServerInitializer networkSslServerInitializer =</span>
+          new NetworkSslServerInitializer(true);
+<span class="fc" id="L161">      WaarpNettyUtil.setBootstrap(clientSslBootstrap,</span>
+                                  Configuration.configuration
+<span class="fc" id="L163">                                      .getNetworkWorkerGroup(),</span>
+                                  (int) Configuration.configuration
+<span class="fc" id="L165">                                      .getTimeoutCon());</span>
+<span class="fc" id="L166">      clientSslBootstrap.handler(networkSslServerInitializer);</span>
+<span class="fc" id="L167">    } else {</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      if (Configuration.configuration.isWarnOnStartup()) {</span>
+<span class="nc" id="L169">        logger.warn(&quot;No SSL support configured&quot;);</span>
+      } else {
+<span class="nc" id="L171">        logger.info(&quot;No SSL support configured&quot;);</span>
+      }
+    }
+<span class="fc" id="L174">  }</span>
+
+  public static String hashStatus() {
+<span class="fc" id="L177">    StringBuilder partial =</span>
+<span class="fc" id="L178">        new StringBuilder(&quot;NetworkTransaction: [InShutdown: &quot;).append(</span>
+<span class="fc" id="L179">            networkChannelShutdownOnSocketAddressConcurrentHashMap.size())</span>
+<span class="fc" id="L180">                                                              .append(</span>
+                                                                  &quot; Blacklisted: &quot;)
+<span class="fc" id="L182">                                                              .append(</span>
+                                                                  networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
+<span class="fc" id="L184">                                                                      .size())</span>
+<span class="fc" id="L185">                                                              .append(</span>
+                                                                  &quot;\n RetrieveRunner: &quot;)
+<span class="fc" id="L187">                                                              .append(</span>
+                                                                  retrieveRunnerConcurrentHashMap
+<span class="fc" id="L189">                                                                      .size())</span>
+<span class="fc" id="L190">                                                              .append(</span>
+                                                                  &quot; ClientNetworkChannels: &quot;)
+<span class="fc" id="L192">                                                              .append(</span>
+                                                                  clientNetworkChannelsPerHostId
+<span class="fc" id="L194">                                                                      .size());</span>
+<span class="fc" id="L195">    int nb = 0;</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">    for (final ClientNetworkChannels clientNetworkChannels : clientNetworkChannelsPerHostId</span>
+<span class="fc" id="L197">        .values()) {</span>
+<span class="fc" id="L198">      nb += clientNetworkChannels.size();</span>
+<span class="fc" id="L199">    }</span>
+<span class="fc" id="L200">    partial.append(&quot; Sum of ClientNetworkChannels NetworkClients: &quot;).append(nb);</span>
+<span class="fc" id="L201">    nb = 0;</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">    for (final NetworkChannelReference ncr : networkChannelOnSocketAddressConcurrentHashMap</span>
+<span class="fc" id="L203">        .values()) {</span>
+<span class="fc" id="L204">      nb += ncr.nbLocalChannels();</span>
+<span class="fc" id="L205">      partial.append(&quot;\n NetworkChannels: &quot;).append(ncr.toString());</span>
+<span class="fc" id="L206">    }</span>
+<span class="fc" id="L207">    partial.append(&quot;\n NetworkChannels: &quot;)</span>
+<span class="fc" id="L208">           .append(networkChannelOnSocketAddressConcurrentHashMap.size())</span>
+<span class="fc" id="L209">           .append(&quot; LockOnSocketAddress: &quot;)</span>
+<span class="fc" id="L210">           .append(reentrantLockOnSocketAddressConcurrentHashMap.size())</span>
+<span class="fc" id="L211">           .append(&quot; Sum of NetworkChannels LocalClients: &quot;).append(nb)</span>
+<span class="fc" id="L212">           .append(&quot;] &quot;);</span>
+<span class="fc" id="L213">    return partial.toString();</span>
+  }
+
+  private static WaarpLock getLockNCR(SocketAddress sa) {
+<span class="fc" id="L217">    return reentrantLockOnSocketAddressConcurrentHashMap.get(sa.hashCode());</span>
+  }
+
+  private static void addLockNCR(SocketAddress sa, WaarpLock lock) {
+<span class="fc" id="L221">    reentrantLockOnSocketAddressConcurrentHashMap.put(sa.hashCode(), lock);</span>
+<span class="fc" id="L222">  }</span>
+
+  private static void addNCR(NetworkChannelReference ncr) {
+<span class="fc" id="L225">    networkChannelOnSocketAddressConcurrentHashMap</span>
+<span class="fc" id="L226">        .put(ncr.getSocketHashCode(), ncr);</span>
+<span class="fc" id="L227">  }</span>
+
+  private static NetworkChannelReference removeNCR(
+      NetworkChannelReference ncr) {
+<span class="fc" id="L231">    return networkChannelOnSocketAddressConcurrentHashMap</span>
+<span class="fc" id="L232">        .remove(ncr.getSocketHashCode());</span>
+  }
+
+  private static NetworkChannelReference getNCR(SocketAddress sa) {
+<span class="fc" id="L236">    return networkChannelOnSocketAddressConcurrentHashMap.get(sa.hashCode());</span>
+  }
+
+  private static boolean containsNCR(SocketAddress address) {
+<span class="nc" id="L240">    return networkChannelOnSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L241">        .containsKey(address.hashCode());</span>
+  }
+
+  private static void addShutdownNCR(NetworkChannelReference ncr) {
+<span class="nc" id="L245">    networkChannelShutdownOnSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L246">        .put(ncr.getSocketHashCode(), ncr);</span>
+<span class="nc" id="L247">  }</span>
+
+  private static NetworkChannelReference removeShutdownNCR(
+      NetworkChannelReference ncr) {
+<span class="nc" id="L251">    return networkChannelShutdownOnSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L252">        .remove(ncr.getSocketHashCode());</span>
+  }
+
+  private static boolean containsShutdownNCR(NetworkChannelReference ncr) {
+<span class="nc" id="L256">    return networkChannelShutdownOnSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L257">        .containsKey(ncr.getSocketHashCode());</span>
+  }
+
+  private static boolean containsShutdownNCR(SocketAddress sa) {
+<span class="nc" id="L261">    return networkChannelShutdownOnSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L262">        .containsKey(sa.hashCode());</span>
+  }
+
+  private static NetworkChannelReference getShutdownNCR(SocketAddress sa) {
+<span class="fc" id="L266">    return networkChannelShutdownOnSocketAddressConcurrentHashMap</span>
+<span class="fc" id="L267">        .get(sa.hashCode());</span>
+  }
+
+  private static void addBlacklistNCR(NetworkChannelReference ncr) {
+<span class="nc" id="L271">    networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L272">        .put(ncr.getAddressHashCode(), ncr);</span>
+<span class="nc" id="L273">  }</span>
+
+  private static NetworkChannelReference removeBlacklistNCR(
+      NetworkChannelReference ncr) {
+<span class="nc" id="L277">    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L278">        .remove(ncr.getAddressHashCode());</span>
+  }
+
+  private static boolean containsBlacklistNCR(NetworkChannelReference ncr) {
+<span class="nc" id="L282">    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L283">        .containsKey(ncr.getAddressHashCode());</span>
+  }
+
+  private static boolean containsBlacklistNCR(SocketAddress address) {
+<span class="nc" id="L287">    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap</span>
+<span class="nc" id="L288">        .containsKey(address.hashCode());</span>
+  }
+
+  private static NetworkChannelReference getBlacklistNCR(SocketAddress sa) {
+<span class="fc" id="L292">    final InetAddress address = ((InetSocketAddress) sa).getAddress();</span>
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">    if (address == null) {</span>
+<span class="nc" id="L294">      return null;</span>
+    }
+
+<span class="fc" id="L297">    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap</span>
+<span class="fc" id="L298">        .get(address.getHostAddress().hashCode());</span>
+  }
+
+  private static WaarpLock getChannelLock(SocketAddress socketAddress) {
+<span class="fc" id="L302">    lockOfLock.lock();</span>
+    try {
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">      if (socketAddress == null) {</span>
+        // should not
+<span class="nc" id="L306">        logger.info(&quot;SocketAddress empty here !&quot;);</span>
+<span class="nc" id="L307">        return emptyLock;</span>
+      }
+<span class="fc" id="L309">      WaarpLock socketLock = getLockNCR(socketAddress);</span>
+<span class="fc bfc" id="L310" title="All 2 branches covered.">      if (socketLock == null) {</span>
+<span class="fc" id="L311">        socketLock = new WaarpLock(true);</span>
+      }
+      // update TTL
+<span class="fc" id="L314">      addLockNCR(socketAddress, socketLock);</span>
+<span class="fc" id="L315">      return socketLock;</span>
+    } finally {
+<span class="fc" id="L317">      lockOfLock.unlock();</span>
+    }
+  }
+
+  private static void removeChannelLock() {
+<span class="fc" id="L322">    lockOfLock.lock();</span>
+    try {
+<span class="fc" id="L324">      reentrantLockOnSocketAddressConcurrentHashMap.forceClearOldest();</span>
+    } finally {
+<span class="fc" id="L326">      lockOfLock.unlock();</span>
+    }
+<span class="fc" id="L328">  }</span>
+
+  /**
+   * Create a connection to the specified socketAddress with multiple retries
+   *
+   * @param socketAddress
+   * @param isSSL
+   * @param futureRequest
+   *
+   * @return the LocalChannelReference
+   */
+  public LocalChannelReference createConnectionWithRetry(
+      SocketAddress socketAddress, boolean isSSL, R66Future futureRequest) {
+    try {
+<span class="nc" id="L342">      return createConnectionWithRetryWithAuthenticationException(socketAddress,</span>
+                                                                  isSSL,
+                                                                  futureRequest);
+<span class="nc" id="L345">    } catch (OpenR66ProtocolNotAuthenticatedException e) {</span>
+      // Correct return!
+<span class="nc" id="L347">      return null;</span>
+    }
+  }
+
+  /**
+   * Create a connection to the specified socketAddress with multiple retries
+   *
+   * @param socketAddress
+   * @param isSSL
+   * @param futureRequest
+   *
+   * @return the LocalChannelReference
+   *
+   * @throws OpenR66ProtocolNotAuthenticatedException
+   */
+  public LocalChannelReference createConnectionWithRetryWithAuthenticationException(
+      SocketAddress socketAddress, boolean isSSL, R66Future futureRequest)
+      throws OpenR66ProtocolNotAuthenticatedException {
+<span class="fc" id="L365">    LocalChannelReference localChannelReference = null;</span>
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">      if (WaarpShutdownHook.isShutdownStarting()) {</span>
+<span class="nc" id="L368">        logger.error(&quot;Cannot connect : Local system in shutdown&quot;);</span>
+<span class="nc" id="L369">        break;</span>
+      }
+      try {
+<span class="fc" id="L372">        localChannelReference =</span>
+<span class="fc" id="L373">            createConnection(socketAddress, isSSL, futureRequest);</span>
+<span class="fc" id="L374">        break;</span>
+<span class="nc" id="L375">      } catch (final OpenR66ProtocolRemoteShutdownException e) {</span>
+<span class="nc" id="L376">        logger.error(&quot;Cannot connect : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L377">        logger.debug(e);</span>
+<span class="nc" id="L378">        break;</span>
+<span class="nc" id="L379">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="nc" id="L380">        logger.error(&quot;Cannot connect : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L381">        logger.debug(e);</span>
+<span class="nc" id="L382">        break;</span>
+<span class="nc" id="L383">      } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L384">        logger.error(&quot;Cannot be authenticated : {}&quot;, e.getMessage());</span>
+<span class="nc" id="L385">        logger.debug(e);</span>
+<span class="nc" id="L386">        throw e;</span>
+<span class="nc" id="L387">      } catch (final OpenR66ProtocolNetworkException e) {</span>
+        // Can retry
+<span class="nc" id="L389">        logger.error(&quot;Cannot connect : {}. Will retry&quot;, e.getMessage());</span>
+<span class="nc" id="L390">        logger.debug(e);</span>
+        try {
+<span class="nc" id="L392">          Thread.sleep(Configuration.configuration.getDelayRetry());</span>
+<span class="nc" id="L393">        } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L394">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L395">        }</span>
+      }
+    }
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (localChannelReference != null) {</span>
+<span class="fc" id="L399">      logger.info(&quot;Connected&quot;);</span>
+    }
+<span class="fc" id="L401">    return localChannelReference;</span>
+  }
+
+  /**
+   * Create a connection to the specified socketAddress
+   *
+   * @param socketAddress
+   * @param isSSL
+   * @param futureRequest
+   *
+   * @return the LocalChannelReference
+   *
+   * @throws OpenR66ProtocolNetworkException
+   * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolNoConnectionException
+   * @throws OpenR66ProtocolNotAuthenticatedException
+   */
+  private LocalChannelReference createConnection(SocketAddress socketAddress,
+                                                 boolean isSSL,
+                                                 R66Future futureRequest)
+      throws OpenR66ProtocolNetworkException,
+             OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolNoConnectionException,
+             OpenR66ProtocolNotAuthenticatedException {
+<span class="fc" id="L425">    NetworkChannelReference networkChannelReference = null;</span>
+    LocalChannelReference localChannelReference;
+<span class="fc" id="L427">    boolean ok = false;</span>
+    // check valid limit on server side only (could be the initiator but not a client)
+<span class="fc bfc" id="L429" title="All 2 branches covered.">    final DbHostAuth auth =</span>
+<span class="fc" id="L430">        isSSL? Configuration.configuration.getHostSslAuth() :</span>
+<span class="fc" id="L431">            Configuration.configuration.getHostAuth();</span>
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">    if (!auth.isClient()) {</span>
+<span class="fc" id="L433">      boolean valid = false;</span>
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">      for (int i = 0; i &lt; Configuration.RETRYNB * 2; i++) {</span>
+<span class="fc" id="L435">        if (Configuration.configuration.getConstraintLimitHandler()</span>
+<span class="pc bpc" id="L436" title="1 of 2 branches missed.">                                       .checkConstraintsSleep(i)) {</span>
+<span class="nc" id="L437">          logger.debug(&quot;Constraints exceeded: &quot; + i);</span>
+        } else {
+<span class="fc" id="L439">          logger.debug(&quot;Constraints NOT exceeded&quot;);</span>
+<span class="fc" id="L440">          valid = true;</span>
+<span class="fc" id="L441">          break;</span>
+        }
+      }
+<span class="pc bpc" id="L444" title="1 of 2 branches missed.">      if (!valid) {</span>
+        // Limit is locally exceeded
+<span class="nc" id="L446">        throw new OpenR66ProtocolNetworkException(</span>
+            &quot;Cannot connect to remote server due to local overload&quot;);
+      }
+    }
+    try {
+      // Ensure networkChannelReference and localChannelReference are linked
+<span class="fc" id="L452">      synchronized (emptyLock) {</span>
+<span class="fc" id="L453">        networkChannelReference = createNewConnection(socketAddress, isSSL);</span>
+        try {
+<span class="fc" id="L455">          localChannelReference =</span>
+<span class="fc" id="L456">              Configuration.configuration.getLocalTransaction().createNewClient(</span>
+                  networkChannelReference, ChannelUtils.NOCHANNEL,
+                  futureRequest, isSSL);
+<span class="nc" id="L459">        } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L460">          throw new OpenR66ProtocolNetworkException(e);</span>
+<span class="nc" id="L461">        } catch (final NullPointerException e) {</span>
+<span class="nc" id="L462">          throw new OpenR66ProtocolNetworkException(e);</span>
+<span class="fc" id="L463">        }</span>
+<span class="fc" id="L464">      }</span>
+<span class="fc" id="L465">      ok = true;</span>
+    } finally {
+<span class="pc bpc" id="L467" title="3 of 4 branches missed.">      if (!ok &amp;&amp; networkChannelReference != null) {</span>
+<span class="nc" id="L468">        checkClosingNetworkChannel(networkChannelReference, null);</span>
+      }
+    }
+<span class="pc bpc" id="L471" title="1 of 2 branches missed.">    if (localChannelReference.getFutureValidateStartup().isSuccess()) {</span>
+<span class="fc" id="L472">      sendValidationConnection(localChannelReference);</span>
+    } else {
+<span class="nc" id="L474">      final OpenR66ProtocolNetworkException exc =</span>
+          new OpenR66ProtocolNetworkException(&quot;Startup is invalid&quot;);
+<span class="nc" id="L476">      logger.debug(&quot;Startup is Invalid&quot;, exc);</span>
+<span class="nc" id="L477">      final R66Result finalValue =</span>
+          new R66Result(exc, null, true, ErrorCode.ConnectionImpossible, null);
+<span class="nc" id="L479">      localChannelReference.invalidateRequest(finalValue);</span>
+<span class="nc" id="L480">      localChannelReference.close();</span>
+<span class="nc" id="L481">      throw exc;</span>
+    }
+<span class="fc" id="L483">    return localChannelReference;</span>
+  }
+
+  /**
+   * @param socketServerAddress
+   * @param isSSL
+   *
+   * @return the NetworkChannelReference
+   *
+   * @throws OpenR66ProtocolNetworkException
+   * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolNoConnectionException
+   */
+  private NetworkChannelReference createNewConnection(
+      SocketAddress socketServerAddress, boolean isSSL)
+      throws OpenR66ProtocolNetworkException,
+             OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolNoConnectionException {
+<span class="fc" id="L501">    final WaarpLock socketLock = getChannelLock(socketServerAddress);</span>
+    NetworkChannelReference networkChannelReference;
+<span class="fc" id="L503">    socketLock.lock();</span>
+    try {
+      try {
+<span class="fc" id="L506">        networkChannelReference = getRemoteChannel(socketServerAddress);</span>
+<span class="fc" id="L507">      } catch (final OpenR66ProtocolNoDataException e1) {</span>
+<span class="fc" id="L508">        networkChannelReference = null;</span>
+<span class="fc" id="L509">      }</span>
+<span class="fc bfc" id="L510" title="All 2 branches covered.">      if (networkChannelReference != null) {</span>
+<span class="fc" id="L511">        networkChannelReference.use();</span>
+<span class="fc" id="L512">        logger.info(&quot;Already Connected: {}&quot;, networkChannelReference);</span>
+<span class="fc" id="L513">        return networkChannelReference;</span>
+      }
+<span class="fc" id="L515">      logger.debug(&quot;NEW PHYSICAL CONNECTION REQUIRED&quot;);</span>
+<span class="fc" id="L516">      ChannelFuture channelFuture = null;</span>
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">      for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="pc bpc" id="L518" title="1 of 2 branches missed.">        if (WaarpShutdownHook.isShutdownStarting()) {</span>
+<span class="nc" id="L519">          throw new OpenR66ProtocolNoConnectionException(</span>
+              &quot;Local system in shutdown&quot;);
+        }
+        try {
+<span class="fc bfc" id="L523" title="All 2 branches covered.">          if (isSSL) {</span>
+<span class="pc bpc" id="L524" title="1 of 2 branches missed.">            if (Configuration.configuration.getHostSslId() != null) {</span>
+<span class="fc" id="L525">              channelFuture = clientSslBootstrap.connect(socketServerAddress);</span>
+            } else {
+<span class="nc" id="L527">              throw new OpenR66ProtocolNoConnectionException(&quot;No SSL support&quot;);</span>
+            }
+          } else {
+<span class="fc" id="L530">            channelFuture = clientBootstrap.connect(socketServerAddress);</span>
+          }
+<span class="nc" id="L532">        } catch (final ChannelPipelineException e) {</span>
+<span class="nc" id="L533">          throw new OpenR66ProtocolNoConnectionException(</span>
+              &quot;Cannot connect to remote server due to a channel exception&quot;);
+<span class="fc" id="L535">        }</span>
+<span class="fc" id="L536">        WaarpNettyUtil.awaitOrInterrupted(channelFuture,</span>
+                                          Configuration.configuration
+<span class="fc" id="L538">                                              .getTimeoutCon());</span>
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">        if (channelFuture.isSuccess()) {</span>
+<span class="fc" id="L540">          final Channel channel = channelFuture.channel();</span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">          if (isSSL &amp;&amp;</span>
+<span class="pc bpc" id="L542" title="1 of 2 branches missed.">              !NetworkSslServerHandler.isSslConnectedChannel(channel)) {</span>
+<span class="nc" id="L543">            logger.debug(&quot;KO CONNECT since SSL handshake is over&quot;);</span>
+<span class="nc" id="L544">            channel.close();</span>
+<span class="nc" id="L545">            throw new OpenR66ProtocolNoConnectionException(</span>
+                &quot;Cannot finish connect to remote server&quot;);
+          }
+<span class="pc bpc" id="L548" title="1 of 2 branches missed.">          if (networkChannelGroup != null) {</span>
+<span class="fc" id="L549">            networkChannelGroup.add(channel);</span>
+          }
+<span class="fc" id="L551">          networkChannelReference =</span>
+              new NetworkChannelReference(channel, socketLock, isSSL);
+<span class="fc" id="L553">          addNCR(networkChannelReference);</span>
+<span class="fc" id="L554">          logger.info(&quot;New Real Connection: {}&quot;, networkChannelReference);</span>
+<span class="fc" id="L555">          return networkChannelReference;</span>
+        } else {
+          try {
+<span class="nc" id="L558">            Thread.sleep(Configuration.RETRYINMS);</span>
+<span class="nc" id="L559">          } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L560">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L561">          }</span>
+<span class="nc bnc" id="L562" title="All 2 branches missed.">          if (!channelFuture.isDone()) {</span>
+<span class="nc" id="L563">            throw new OpenR66ProtocolNoConnectionException(</span>
+                &quot;Cannot connect to remote server since received an &quot; +
+                &quot;interruption&quot;);
+          }
+<span class="nc bnc" id="L567" title="All 2 branches missed.">          if (channelFuture.cause() instanceof ConnectException) {</span>
+<span class="nc" id="L568">            logger.debug(&quot;KO CONNECT:&quot; + channelFuture.cause().getMessage());</span>
+<span class="nc" id="L569">            throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L570">                channelFuture.cause().getMessage(), channelFuture.cause());</span>
+          } else {
+<span class="nc" id="L572">            logger.debug(&quot;KO CONNECT but retry&quot;, channelFuture.cause());</span>
+          }
+        }
+      }
+<span class="nc bnc" id="L576" title="All 2 branches missed.">      if (channelFuture != null) {</span>
+<span class="nc" id="L577">        throw new OpenR66ProtocolNetworkException(</span>
+<span class="nc" id="L578">            &quot;Cannot connect to remote server&quot;, channelFuture.cause());</span>
+      } else {
+<span class="nc" id="L580">        throw new OpenR66ProtocolNetworkException(</span>
+            &quot;Cannot connect to remote server&quot;);
+      }
+    } finally {
+<span class="fc" id="L584">      socketLock.unlock();</span>
+    }
+  }
+
+  /**
+   * Create the LocalChannelReference when a remote local channel starts its
+   * connection
+   *
+   * @param networkChannelReference
+   * @param startupPacket
+   *
+   * @return TransferReference
+   */
+  public static LocalChannelReference createConnectionFromNetworkChannelStartup(
+      NetworkChannelReference networkChannelReference,
+      NetworkPacket startupPacket, boolean fromSsl) {
+<span class="fc" id="L600">    logger.debug(&quot;Startup {}&quot;, startupPacket);</span>
+<span class="fc" id="L601">    Channel channel = networkChannelReference.channel();</span>
+    try {
+<span class="fc" id="L603">      return Configuration.configuration.getLocalTransaction().createNewClient(</span>
+<span class="fc" id="L604">          networkChannelReference, startupPacket.getRemoteId(), null, fromSsl);</span>
+<span class="nc" id="L605">    } catch (OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L606">      logger.error(</span>
+          &quot;Cannot create LocalChannel for: &quot; + startupPacket + &quot; due to &quot; +
+<span class="nc" id="L608">          e1.getMessage());</span>
+<span class="nc" id="L609">      final ConnectionErrorPacket error = new ConnectionErrorPacket(</span>
+          &quot;Cannot connect to localChannel since cannot create it&quot;, null);
+<span class="nc" id="L611">      NetworkServerHandler.writeError(channel, startupPacket.getRemoteId(),</span>
+<span class="nc" id="L612">                                      startupPacket.getLocalId(), error);</span>
+<span class="nc" id="L613">      checkClosingNetworkChannel(networkChannelReference, null);</span>
+<span class="nc" id="L614">      startupPacket.clear();</span>
+<span class="nc" id="L615">    } catch (OpenR66ProtocolRemoteShutdownException e1) {</span>
+<span class="nc" id="L616">      logger.info(&quot;Will Close Local from Network Channel&quot;);</span>
+<span class="nc" id="L617">      WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="nc" id="L618">      startupPacket.clear();</span>
+<span class="nc" id="L619">    } catch (OpenR66ProtocolNoConnectionException e1) {</span>
+<span class="nc" id="L620">      logger.error(</span>
+          &quot;Cannot create LocalChannel for: &quot; + startupPacket + &quot; due to &quot; +
+<span class="nc" id="L622">          e1.getMessage());</span>
+<span class="nc" id="L623">      final ConnectionErrorPacket error = new ConnectionErrorPacket(</span>
+          &quot;Cannot connect to localChannel since cannot create it&quot;, null);
+<span class="nc" id="L625">      NetworkServerHandler.writeError(channel, startupPacket.getRemoteId(),</span>
+<span class="nc" id="L626">                                      startupPacket.getLocalId(), error);</span>
+<span class="nc" id="L627">      checkClosingNetworkChannel(networkChannelReference, null);</span>
+<span class="nc" id="L628">      startupPacket.clear();</span>
+<span class="nc" id="L629">    }</span>
+<span class="nc" id="L630">    return null;</span>
+  }
+
+  /**
+   * Send a validation of connection with Authentication
+   *
+   * @param localChannelReference
+   *
+   * @throws OpenR66ProtocolNetworkException
+   * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolNotAuthenticatedException
+   */
+  private void sendValidationConnection(
+      LocalChannelReference localChannelReference)
+      throws OpenR66ProtocolNetworkException,
+             OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolNotAuthenticatedException {
+    AuthentPacket authent;
+
+    try {
+<span class="fc" id="L650">      final DbHostAuth auth =</span>
+<span class="fc bfc" id="L651" title="All 2 branches covered.">          localChannelReference.getNetworkServerHandler().isSsl()?</span>
+<span class="fc" id="L652">              Configuration.configuration.getHostSslAuth() :</span>
+<span class="fc" id="L653">              Configuration.configuration.getHostAuth();</span>
+<span class="fc" id="L654">      authent = new AuthentPacket(Configuration.configuration.getHostId(</span>
+<span class="fc" id="L655">          localChannelReference.getNetworkServerHandler().isSsl()),</span>
+                                  FilesystemBasedDigest
+<span class="fc" id="L657">                                      .passwdCrypt(auth.getHostkey()),</span>
+<span class="fc" id="L658">                                  localChannelReference.getLocalId());</span>
+<span class="nc" id="L659">    } catch (final OpenR66ProtocolNoSslException e1) {</span>
+<span class="nc" id="L660">      final R66Result finalValue = new R66Result(</span>
+          new OpenR66ProtocolSystemException(&quot;No SSL support&quot;, e1),
+<span class="nc" id="L662">          localChannelReference.getSession(), true,</span>
+          ErrorCode.ConnectionImpossible, null);
+<span class="nc" id="L664">      logger.error(&quot;Authent is Invalid due to no SSL: {}&quot;, e1.getMessage());</span>
+<span class="nc" id="L665">      if (localChannelReference.getRemoteId()</span>
+<span class="nc bnc" id="L666" title="All 2 branches missed.">                               .compareTo(ChannelUtils.NOCHANNEL) == 0) {</span>
+<span class="nc" id="L667">        final ConnectionErrorPacket error = new ConnectionErrorPacket(</span>
+            &quot;Cannot connect to localChannel since SSL is not supported&quot;, null);
+        try {
+<span class="nc" id="L670">          ChannelUtils</span>
+<span class="nc" id="L671">              .writeAbstractLocalPacket(localChannelReference, error, true);</span>
+<span class="nc" id="L672">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L674">        }</span>
+      }
+<span class="nc" id="L676">      localChannelReference.invalidateRequest(finalValue);</span>
+<span class="nc" id="L677">      localChannelReference.close();</span>
+<span class="nc" id="L678">      throw new OpenR66ProtocolNetworkException(e1);</span>
+<span class="fc" id="L679">    }</span>
+<span class="fc" id="L680">    logger.debug(&quot;Will send request of connection validation&quot;);</span>
+<span class="fc" id="L681">    localChannelReference.sessionNewState(AUTHENTR);</span>
+    try {
+<span class="fc" id="L683">      ChannelUtils</span>
+<span class="fc" id="L684">          .writeAbstractLocalPacket(localChannelReference, authent, true);</span>
+<span class="nc" id="L685">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L686">      final R66Result finalValue = new R66Result(</span>
+          new OpenR66ProtocolSystemException(&quot;Wrong Authent Protocol&quot;, e),
+<span class="nc" id="L688">          localChannelReference.getSession(), true,</span>
+          ErrorCode.ConnectionImpossible, null);
+<span class="nc" id="L690">      logger.error(&quot;Authent is Invalid due to protocol: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L691">      localChannelReference.invalidateRequest(finalValue);</span>
+<span class="nc bnc" id="L692" title="All 2 branches missed.">      if (!localChannelReference.getRemoteId().equals(ChannelUtils.NOCHANNEL)) {</span>
+<span class="nc" id="L693">        final ConnectionErrorPacket error = new ConnectionErrorPacket(</span>
+            &quot;Cannot connect to localChannel since Authent Protocol is invalid&quot;,
+            null);
+        try {
+<span class="nc" id="L697">          ChannelUtils</span>
+<span class="nc" id="L698">              .writeAbstractLocalPacket(localChannelReference, error, true);</span>
+<span class="nc" id="L699">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L701">        }</span>
+      }
+<span class="nc" id="L703">      localChannelReference.close();</span>
+<span class="nc" id="L704">      throw new OpenR66ProtocolNetworkException(&quot;Bad packet&quot;, e);</span>
+<span class="fc" id="L705">    }</span>
+<span class="fc" id="L706">    final R66Future future =</span>
+<span class="fc" id="L707">        localChannelReference.getFutureValidateConnection();</span>
+<span class="pc bpc" id="L708" title="1 of 2 branches missed.">    if (future.isFailed()) {</span>
+<span class="nc" id="L709">      logger.debug(&quot;Will close NETWORK channel since Future cancelled: {}&quot;,</span>
+                   future);
+<span class="nc" id="L711">      final R66Result finalValue = new R66Result(</span>
+          new OpenR66ProtocolSystemException(
+              &quot;Connection invalid during Authentication&quot;),
+<span class="nc" id="L714">          localChannelReference.getSession(), true,</span>
+          ErrorCode.ConnectionImpossible, null);
+<span class="nc" id="L716">      logger.info(&quot;Authent is Invalid due to: {} {}&quot;,</span>
+<span class="nc" id="L717">                  finalValue.getException().getMessage(), future.toString());</span>
+<span class="nc" id="L718">      localChannelReference.invalidateRequest(finalValue);</span>
+<span class="nc bnc" id="L719" title="All 2 branches missed.">      if (!localChannelReference.getRemoteId().equals(ChannelUtils.NOCHANNEL)) {</span>
+<span class="nc" id="L720">        final ConnectionErrorPacket error = new ConnectionErrorPacket(</span>
+            &quot;Cannot connect to localChannel with Out of Time&quot;, null);
+        try {
+<span class="nc" id="L723">          ChannelUtils</span>
+<span class="nc" id="L724">              .writeAbstractLocalPacket(localChannelReference, error, true);</span>
+<span class="nc" id="L725">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L727">        }</span>
+      }
+<span class="nc" id="L729">      localChannelReference.close();</span>
+      try {
+<span class="nc" id="L731">        Thread.sleep(Configuration.WAITFORNETOP * 2);</span>
+<span class="nc" id="L732">      } catch (InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L733">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+        // ignore
+<span class="nc" id="L735">      }</span>
+<span class="nc" id="L736">      throw new OpenR66ProtocolNotAuthenticatedException(</span>
+<span class="nc" id="L737">          &quot;Cannot validate connection: &quot; + future.getResult(),</span>
+<span class="nc" id="L738">          future.getCause());</span>
+    }
+<span class="fc" id="L740">  }</span>
+
+  /**
+   * Add a new NetworkChannel from connection
+   *
+   * @param channel
+   * @param isSsl
+   *
+   * @throws OpenR66ProtocolRemoteShutdownException
+   */
+  public static NetworkChannelReference addNetworkChannel(Channel channel,
+                                                          boolean isSsl)
+      throws OpenR66ProtocolRemoteShutdownException {
+<span class="fc" id="L753">    final SocketAddress socketAddress = channel.remoteAddress();</span>
+<span class="fc" id="L754">    final WaarpLock socketLock = getChannelLock(socketAddress);</span>
+<span class="fc" id="L755">    socketLock.lock();</span>
+    try {
+<span class="fc" id="L757">      NetworkChannelReference nc = null;</span>
+      try {
+<span class="fc" id="L759">        nc = getRemoteChannel(socketAddress);</span>
+<span class="fc" id="L760">      } catch (final OpenR66ProtocolNoDataException ignored) {</span>
+        // nothing
+<span class="fc" id="L762">      }</span>
+<span class="fc bfc" id="L763" title="All 2 branches covered.">      if (nc == null) {</span>
+        // not an issue: needs to be created
+<span class="fc" id="L765">        nc = new NetworkChannelReference(channel, socketLock, isSsl);</span>
+<span class="fc" id="L766">        addNCR(nc);</span>
+      }
+<span class="fc" id="L768">      return nc;</span>
+    } finally {
+<span class="fc" id="L770">      socketLock.unlock();</span>
+    }
+  }
+
+  /**
+   * To be called when a remote server seems to be down for a while, so to not
+   * retry immediately
+   *
+   * @param socketAddress
+   */
+  public static void proposeShutdownNetworkChannel(SocketAddress socketAddress,
+                                                   boolean isSSL) {
+<span class="nc" id="L782">    final WaarpLock lock = getChannelLock(socketAddress);</span>
+<span class="nc" id="L783">    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
+    try {
+<span class="nc" id="L785">      logger.info(&quot;Seem Shutdown: {}&quot;, socketAddress);</span>
+<span class="nc bnc" id="L786" title="All 2 branches missed.">      if (containsShutdownNCR(socketAddress)) {</span>
+        // already done
+<span class="nc" id="L788">        logger.debug(&quot;Already set as shutdown&quot;);</span>
+<span class="nc" id="L789">        return;</span>
+      }
+<span class="nc bnc" id="L791" title="All 2 branches missed.">      if (containsBlacklistNCR(socketAddress)) {</span>
+        // already done
+<span class="nc" id="L793">        logger.debug(&quot;Already set as blocked&quot;);</span>
+<span class="nc" id="L794">        return;</span>
+      }
+<span class="nc bnc" id="L796" title="All 2 branches missed.">      if (containsNCR(socketAddress)) {</span>
+        // already done
+<span class="nc" id="L798">        logger.debug(&quot;Still existing so shutdown is refused&quot;);</span>
+<span class="nc" id="L799">        return;</span>
+      }
+<span class="nc" id="L801">      logger.warn(</span>
+          &quot;This host address will be set as unavailable for 3xTIMEOUT since not reacheable multiple times: {}&quot;,
+          socketAddress);
+<span class="nc" id="L804">      final NetworkChannelReference networkChannelReference =</span>
+          new NetworkChannelReference(socketAddress, lock, isSSL);
+<span class="nc" id="L806">      addShutdownNCR(networkChannelReference);</span>
+<span class="nc bnc" id="L807" title="All 2 branches missed.">      if (Configuration.configuration.isTimerCloseReady()) {</span>
+        R66ShutdownNetworkChannelTimerTask timerTask;
+        try {
+<span class="nc" id="L810">          timerTask =</span>
+              new R66ShutdownNetworkChannelTimerTask(networkChannelReference,
+                                                     false);
+<span class="nc" id="L813">          Configuration.configuration.getTimerClose().newTimeout(timerTask,</span>
+                                                                 Configuration.configuration
+<span class="nc" id="L815">                                                                     .getTimeoutCon() *</span>
+                                                                 3,
+                                                                 TimeUnit.MILLISECONDS);
+<span class="nc" id="L818">        } catch (final OpenR66RunnerErrorException e) {</span>
+          // ignore
+<span class="nc" id="L820">        }</span>
+      }
+    } finally {
+<span class="nc" id="L823">      lock.unlock();</span>
+    }
+<span class="nc" id="L825">  }</span>
+
+  /**
+   * Shutdown one Network Channel
+   *
+   * @param networkChannelReference
+   */
+  private static void shuttingDownNetworkChannelInternal(
+      NetworkChannelReference networkChannelReference) {
+<span class="nc" id="L834">    logger.info(&quot;Shutdown: {}&quot;, networkChannelReference);</span>
+<span class="nc bnc" id="L835" title="All 2 branches missed.">    if (containsShutdownNCR(networkChannelReference)) {</span>
+      // already done
+<span class="nc" id="L837">      logger.debug(&quot;Already set as shutdown&quot;);</span>
+<span class="nc" id="L838">      return;</span>
+    }
+<span class="nc" id="L840">    logger.debug(&quot;Set as shutdown&quot;);</span>
+<span class="nc bnc" id="L841" title="All 2 branches missed.">    if (networkChannelReference != null) {</span>
+<span class="nc" id="L842">      addShutdownNCR(networkChannelReference);</span>
+<span class="nc bnc" id="L843" title="All 2 branches missed.">      if (!networkChannelReference.isShuttingDown) {</span>
+<span class="nc" id="L844">        networkChannelReference.shutdownAllLocalChannels();</span>
+      }
+<span class="nc bnc" id="L846" title="All 2 branches missed.">      if (Configuration.configuration.isTimerCloseReady()) {</span>
+        R66ShutdownNetworkChannelTimerTask timerTask;
+        try {
+<span class="nc" id="L849">          timerTask =</span>
+              new R66ShutdownNetworkChannelTimerTask(networkChannelReference,
+                                                     false);
+<span class="nc" id="L852">          Configuration.configuration.getTimerClose().newTimeout(timerTask,</span>
+                                                                 Configuration.configuration
+<span class="nc" id="L854">                                                                     .getTimeoutCon() *</span>
+                                                                 3,
+                                                                 TimeUnit.MILLISECONDS);
+<span class="nc" id="L857">        } catch (final OpenR66RunnerErrorException e) {</span>
+          // ignore
+<span class="nc" id="L859">        }</span>
+      }
+    }
+<span class="nc" id="L862">  }</span>
+
+  /**
+   * Shutdown one Network Channel
+   *
+   * @param networkChannelReference
+   */
+  public static void shuttingDownNetworkChannel(
+      NetworkChannelReference networkChannelReference) {
+<span class="nc" id="L871">    shuttingDownNetworkChannelInternal(networkChannelReference);</span>
+<span class="nc" id="L872">  }</span>
+
+  /**
+   * Shutdown a NetworkChannel and add it to BlaclList
+   *
+   * @param networkChannelReference
+   *
+   * @return True if this channel is now blacklisted for a while
+   */
+  public static boolean shuttingDownNetworkChannelBlackList(
+      NetworkChannelReference networkChannelReference) {
+<span class="nc" id="L883">    shuttingDownNetworkChannelInternal(networkChannelReference);</span>
+<span class="nc bnc" id="L884" title="All 2 branches missed.">    if (!Configuration.configuration.isBlacklistBadAuthent()) {</span>
+<span class="nc" id="L885">      return false;</span>
+    }
+<span class="nc bnc" id="L887" title="All 2 branches missed.">    if (containsBlacklistNCR(networkChannelReference)) {</span>
+<span class="nc" id="L888">      return false;</span>
+    }
+<span class="nc" id="L890">    addBlacklistNCR(networkChannelReference);</span>
+<span class="nc bnc" id="L891" title="All 2 branches missed.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
+      R66ShutdownNetworkChannelTimerTask timerTask;
+      try {
+<span class="nc" id="L894">        timerTask =</span>
+            new R66ShutdownNetworkChannelTimerTask(networkChannelReference,
+                                                   true);
+<span class="nc" id="L897">        Configuration.configuration.getTimerClose().newTimeout(timerTask,</span>
+                                                               Configuration.configuration
+<span class="nc" id="L899">                                                                   .getTimeoutCon() *</span>
+                                                               10,
+                                                               TimeUnit.MILLISECONDS);
+<span class="nc" id="L902">      } catch (final OpenR66RunnerErrorException e) {</span>
+        // ignore
+<span class="nc" id="L904">      }</span>
+    }
+<span class="nc" id="L906">    return true;</span>
+  }
+
+  /**
+   * @param channel
+   *
+   * @return True if this channel is blacklisted
+   */
+  public static boolean isBlacklisted(Channel channel) {
+<span class="pc bpc" id="L915" title="1 of 2 branches missed.">    if (!Configuration.configuration.isBlacklistBadAuthent()) {</span>
+<span class="nc" id="L916">      return false;</span>
+    }
+<span class="fc" id="L918">    final SocketAddress address = channel.remoteAddress();</span>
+<span class="pc bpc" id="L919" title="1 of 2 branches missed.">    if (address == null) {</span>
+<span class="nc" id="L920">      return false;</span>
+    }
+
+<span class="fc" id="L923">    final NetworkChannelReference networkChannelReference =</span>
+<span class="fc" id="L924">        getBlacklistNCR(address);</span>
+<span class="pc bpc" id="L925" title="1 of 2 branches missed.">    return networkChannelReference != null;</span>
+  }
+
+  /**
+   * @param address
+   *
+   * @return True if this address (associated channel) is currently in
+   *     shutdown
+   *     (or if this channel is not
+   *     valid)
+   */
+  public static boolean isShuttingdownNetworkChannel(SocketAddress address) {
+<span class="pc bpc" id="L937" title="1 of 2 branches missed.">    return !isAddressValid(address);</span>
+  }
+
+  /**
+   * Shutdown NetworkChannelReference as client
+   *
+   * @param requester
+   *
+   * @return True if shutdown occurs
+   */
+  public static boolean shuttingdownNetworkChannelsPerHostID(String requester) {
+<span class="nc bnc" id="L948" title="All 2 branches missed.">    if (requester == null) {</span>
+<span class="nc" id="L949">      return false;</span>
+    }
+<span class="nc" id="L951">    final ClientNetworkChannels clientNetworkChannels =</span>
+<span class="nc" id="L952">        clientNetworkChannelsPerHostId.get(requester);</span>
+<span class="nc bnc" id="L953" title="All 2 branches missed.">    logger.debug(&quot;AddClient: shutdown previous exist? &quot; +</span>
+                 (clientNetworkChannels != null) + &quot; for :&quot; + requester);
+<span class="nc bnc" id="L955" title="All 2 branches missed.">    if (clientNetworkChannels != null) {</span>
+<span class="nc" id="L956">      return clientNetworkChannels.shutdownAllNetworkChannels();</span>
+    }
+<span class="nc" id="L958">    return false;</span>
+  }
+
+  /**
+   * Add a requester channel
+   *
+   * @param networkChannelReference
+   * @param requester
+   */
+  public static void addClient(NetworkChannelReference networkChannelReference,
+                               String requester) {
+<span class="pc bpc" id="L969" title="2 of 4 branches missed.">    if (networkChannelReference != null &amp;&amp; requester != null) {</span>
+<span class="fc" id="L970">      ClientNetworkChannels clientNetworkChannels =</span>
+<span class="fc" id="L971">          clientNetworkChannelsPerHostId.get(requester);</span>
+<span class="fc bfc" id="L972" title="All 2 branches covered.">      if (clientNetworkChannels == null) {</span>
+<span class="fc" id="L973">        clientNetworkChannels = new ClientNetworkChannels(requester);</span>
+<span class="fc" id="L974">        clientNetworkChannelsPerHostId.put(requester, clientNetworkChannels);</span>
+      }
+<span class="fc" id="L976">      clientNetworkChannels.add(networkChannelReference);</span>
+<span class="fc" id="L977">      logger.debug(</span>
+<span class="fc" id="L978">          &quot;AddClient: add count? &quot; + clientNetworkChannels.size() + &quot; for &quot; +</span>
+          requester);
+    }
+<span class="fc" id="L981">  }</span>
+
+  private static void removeClient(
+      NetworkChannelReference networkChannelReference, String requester,
+      ClientNetworkChannels clientNetworkChannels) {
+<span class="pc bpc" id="L986" title="3 of 6 branches missed.">    if (networkChannelReference != null &amp;&amp; clientNetworkChannels != null &amp;&amp;</span>
+        requester != null) {
+<span class="fc" id="L988">      clientNetworkChannels.remove(networkChannelReference);</span>
+<span class="fc" id="L989">      logger.debug(&quot;removeClient: remove for :&quot; + requester + &quot; still &quot; +</span>
+<span class="fc" id="L990">                   clientNetworkChannels.size());</span>
+<span class="fc bfc" id="L991" title="All 2 branches covered.">      if (clientNetworkChannels.isEmpty()) {</span>
+<span class="fc" id="L992">        clientNetworkChannelsPerHostId.remove(requester);</span>
+      }
+    }
+<span class="fc" id="L995">  }</span>
+
+  /**
+   * @param requester
+   *
+   * @return The number of NetworkChannels associated with this requester
+   */
+  public static int getNumberClients(String requester) {
+<span class="nc" id="L1003">    final ClientNetworkChannels clientNetworkChannels =</span>
+<span class="nc" id="L1004">        clientNetworkChannelsPerHostId.get(requester);</span>
+<span class="nc bnc" id="L1005" title="All 2 branches missed.">    if (clientNetworkChannels != null) {</span>
+<span class="nc" id="L1006">      return clientNetworkChannels.size();</span>
+    }
+<span class="nc" id="L1008">    return 0;</span>
+  }
+
+  /**
+   * Force remove of NetworkChannelReference when it is closed
+   *
+   * @param networkChannelReference
+   */
+  public static void closedNetworkChannel(
+      NetworkChannelReference networkChannelReference) {
+<span class="pc bpc" id="L1018" title="1 of 2 branches missed.">    if (networkChannelReference == null) {</span>
+<span class="nc" id="L1019">      return;</span>
+    }
+    try {
+<span class="fc bfc" id="L1022" title="All 2 branches covered.">      if (!networkChannelReference.isShuttingDown) {</span>
+<span class="fc" id="L1023">        networkChannelReference.shutdownAllLocalChannels();</span>
+      }
+<span class="fc" id="L1025">      logger.debug(&quot;NC left: {}&quot;, networkChannelReference);</span>
+<span class="fc" id="L1026">      removeNCR(networkChannelReference);</span>
+<span class="pc bpc" id="L1027" title="1 of 2 branches missed.">      if (networkChannelReference.clientNetworkChannels != null) {</span>
+<span class="fc" id="L1028">        final String requester =</span>
+<span class="fc" id="L1029">            networkChannelReference.clientNetworkChannels.getHostId();</span>
+<span class="fc" id="L1030">        removeClient(networkChannelReference, requester,</span>
+                     networkChannelReference.clientNetworkChannels);
+<span class="pc bnc" id="L1032" title="All 2 branches missed.">      } else if (networkChannelReference.getHostId() != null) {</span>
+<span class="nc" id="L1033">        final String requester = networkChannelReference.getHostId();</span>
+<span class="nc" id="L1034">        final ClientNetworkChannels clientNetworkChannels =</span>
+<span class="nc" id="L1035">            clientNetworkChannelsPerHostId.get(requester);</span>
+<span class="nc bnc" id="L1036" title="All 2 branches missed.">        if (clientNetworkChannels != null) {</span>
+<span class="nc" id="L1037">          removeClient(networkChannelReference, requester,</span>
+                       clientNetworkChannels);
+        }
+      }
+    } finally {
+<span class="fc" id="L1042">      removeChannelLock();</span>
+    }
+<span class="fc" id="L1044">  }</span>
+
+  /**
+   * Force remove of NetworkChannelReference when it is closed
+   *
+   * @param address
+   */
+  public static void closedNetworkChannel(SocketAddress address) {
+<span class="nc bnc" id="L1052" title="All 2 branches missed.">    if (address == null) {</span>
+<span class="nc" id="L1053">      return;</span>
+    }
+<span class="nc" id="L1055">    final NetworkChannelReference networkChannelReference =</span>
+<span class="nc" id="L1056">        networkChannelOnSocketAddressConcurrentHashMap.get(address.hashCode());</span>
+<span class="nc" id="L1057">    closedNetworkChannel(networkChannelReference);</span>
+<span class="nc" id="L1058">  }</span>
+
+  /**
+   * Class to close the Network Channel if after some delays it has really no
+   * Local Channel attached
+   */
+  private static class CloseFutureChannel implements TimerTask {
+
+<span class="fc" id="L1066">    private static final Set&lt;ChannelId&gt; inCloseRunning =</span>
+<span class="fc" id="L1067">        ConcurrentUtility.newConcurrentSet();</span>
+    private final NetworkChannelReference networkChannelReference;
+
+    /**
+     * @param networkChannelReference
+     *
+     * @throws OpenR66RunnerErrorException
+     */
+    private CloseFutureChannel(NetworkChannelReference networkChannelReference)
+<span class="fc" id="L1076">        throws OpenR66RunnerErrorException {</span>
+<span class="fc bfc" id="L1077" title="All 2 branches covered.">      if (!inCloseRunning.add(networkChannelReference.channel.id())) {</span>
+<span class="fc" id="L1078">        throw new OpenR66RunnerErrorException(&quot;Already scheduled&quot;);</span>
+      }
+<span class="fc" id="L1080">      this.networkChannelReference = networkChannelReference;</span>
+<span class="fc" id="L1081">    }</span>
+
+    @Override
+    public void run(Timeout timeout) throws Exception {
+<span class="fc" id="L1085">      networkChannelReference.lock</span>
+<span class="fc" id="L1086">          .lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
+      try {
+<span class="fc" id="L1088">        logger.debug(&quot;NC count: {}&quot;, networkChannelReference);</span>
+<span class="fc bfc" id="L1089" title="All 2 branches covered.">        if (networkChannelReference.nbLocalChannels() &lt;= 0) {</span>
+<span class="fc" id="L1090">          long time = networkChannelReference</span>
+<span class="fc" id="L1091">              .checkLastTime(Configuration.configuration.getTimeoutCon() * 2);</span>
+<span class="fc bfc" id="L1092" title="All 2 branches covered.">          if (time &gt; Configuration.RETRYINMS &amp;&amp;</span>
+<span class="pc bpc" id="L1093" title="1 of 2 branches missed.">              Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="fc" id="L1094">            logger.debug(&quot;NC reschedule at &quot; + time + &quot; : {}&quot;,</span>
+                         networkChannelReference);
+            // will re execute this request later on
+<span class="fc" id="L1097">            time = (time / 10) * 10 + 100; // round to 10</span>
+<span class="fc" id="L1098">            Configuration.configuration.getTimerClose().newTimeout(this, time,</span>
+                                                                   TimeUnit.MILLISECONDS);
+<span class="fc" id="L1100">            return;</span>
+          }
+<span class="fc" id="L1102">          logger.info(&quot;Closing NETWORK channel {}&quot;, networkChannelReference);</span>
+<span class="fc" id="L1103">          networkChannelReference.isShuttingDown = true;</span>
+<span class="fc" id="L1104">          WaarpSslUtility.closingSslChannel(networkChannelReference.channel);</span>
+        }
+<span class="fc" id="L1106">        inCloseRunning.remove(networkChannelReference.channel.id());</span>
+      } finally {
+<span class="fc" id="L1108">        networkChannelReference.lock.unlock();</span>
+      }
+<span class="fc" id="L1110">    }</span>
+
+  }
+
+  /**
+   * Check if closing of the localChannel will bring future closing of
+   * NetworkChannel
+   *
+   * @param networkChannelReference
+   * @param localChannelReference
+   *
+   * @return the number of local channel still connected to this channel
+   */
+  public static int checkClosingNetworkChannel(
+      NetworkChannelReference networkChannelReference,
+      LocalChannelReference localChannelReference) {
+<span class="fc" id="L1126">    networkChannelReference.lock</span>
+<span class="fc" id="L1127">        .lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);</span>
+    try {
+<span class="fc" id="L1129">      logger.debug(&quot;Close con: &quot; + networkChannelReference);</span>
+<span class="pc bpc" id="L1130" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="fc" id="L1131">        networkChannelReference.closeAndRemove(localChannelReference);</span>
+      }
+<span class="fc" id="L1133">      final int count = networkChannelReference.nbLocalChannels();</span>
+<span class="fc bfc" id="L1134" title="All 2 branches covered.">      if (count &lt;= 0) {</span>
+        CloseFutureChannel cfc;
+        try {
+<span class="fc" id="L1137">          cfc = new CloseFutureChannel(networkChannelReference);</span>
+<span class="fc" id="L1138">          Configuration.configuration.getTimerClose().newTimeout(cfc,</span>
+                                                                 Configuration.configuration
+<span class="fc" id="L1140">                                                                     .getTimeoutCon() *</span>
+                                                                 2,
+                                                                 TimeUnit.MILLISECONDS);
+<span class="fc" id="L1143">        } catch (final OpenR66RunnerErrorException ignored) {</span>
+          // nothing
+<span class="nc" id="L1145">        } catch (final IllegalStateException ignored) {</span>
+          // nothing
+<span class="fc" id="L1147">        }</span>
+      }
+<span class="fc" id="L1149">      logger.debug(&quot;NC left: {}&quot;, networkChannelReference);</span>
+<span class="fc" id="L1150">      return count;</span>
+    } finally {
+<span class="fc" id="L1152">      networkChannelReference.lock.unlock();</span>
+    }
+  }
+
+  /**
+   * @param address
+   * @param host
+   *
+   * @return a number &gt; 0 if a connection is still active on this socket or
+   *     for
+   *     this host
+   */
+  public static int nbAttachedConnection(SocketAddress address, String host) {
+<span class="nc" id="L1165">    logger.debug(&quot;nbAttachedConnection: &quot; +</span>
+                 networkChannelOnSocketAddressConcurrentHashMap
+<span class="nc" id="L1167">                     .containsKey(address.hashCode()) + ':' +</span>
+<span class="nc" id="L1168">                 getNumberClients(host));</span>
+<span class="nc" id="L1169">    return (networkChannelOnSocketAddressConcurrentHashMap</span>
+<span class="nc bnc" id="L1170" title="All 2 branches missed.">        .containsKey(address.hashCode())? 1 : 0) + getNumberClients(host);</span>
+  }
+
+  /**
+   * @param address
+   *
+   * @return True if this socket Address is currently valid for connection
+   */
+  private static boolean isAddressValid(SocketAddress address) {
+<span class="pc bpc" id="L1179" title="1 of 2 branches missed.">    if (WaarpShutdownHook.isShutdownStarting()) {</span>
+<span class="nc" id="L1180">      logger.debug(&quot;IS IN SHUTDOWN&quot;);</span>
+<span class="nc" id="L1181">      return false;</span>
+    }
+<span class="pc bpc" id="L1183" title="1 of 2 branches missed.">    if (address == null) {</span>
+<span class="nc" id="L1184">      logger.debug(&quot;ADDRESS IS NULL&quot;);</span>
+<span class="nc" id="L1185">      return false;</span>
+    }
+    try {
+<span class="fc" id="L1188">      final NetworkChannelReference networkChannelReference =</span>
+<span class="fc" id="L1189">          getRemoteChannel(address);</span>
+<span class="fc" id="L1190">      logger.debug(&quot;IS IN SHUTDOWN: &quot; + networkChannelReference.isShuttingDown);</span>
+<span class="pc bpc" id="L1191" title="1 of 2 branches missed.">      return !networkChannelReference.isShuttingDown;</span>
+<span class="nc" id="L1192">    } catch (final OpenR66ProtocolRemoteShutdownException e) {</span>
+<span class="nc" id="L1193">      logger.debug(&quot;ALREADY IN SHUTDOWN&quot;);</span>
+<span class="nc" id="L1194">      return false;</span>
+<span class="nc" id="L1195">    } catch (final OpenR66ProtocolNoDataException e) {</span>
+<span class="nc" id="L1196">      logger.debug(&quot;NOT FOUND SO NO SHUTDOWN&quot;);</span>
+<span class="nc" id="L1197">      return true;</span>
+    }
+  }
+
+  /**
+   * Returns the NetworkChannelReference if it exists associated with this
+   * address
+   *
+   * @param address
+   *
+   * @return NetworkChannelReference
+   *
+   * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolNoDataException
+   */
+  private static NetworkChannelReference getRemoteChannel(SocketAddress address)
+      throws OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolNoDataException {
+<span class="pc bpc" id="L1215" title="1 of 2 branches missed.">    if (WaarpShutdownHook.isShutdownStarting()) {</span>
+<span class="nc" id="L1216">      logger.debug(&quot;IS IN SHUTDOWN&quot;);</span>
+<span class="nc" id="L1217">      throw new OpenR66ProtocolRemoteShutdownException(</span>
+          &quot;Local Host already in shutdown&quot;);
+    }
+<span class="pc bpc" id="L1220" title="1 of 2 branches missed.">    if (address == null) {</span>
+<span class="nc" id="L1221">      logger.debug(&quot;ADDRESS IS NULL&quot;);</span>
+<span class="nc" id="L1222">      throw new OpenR66ProtocolRemoteShutdownException(</span>
+          &quot;Cannot connect to remote server since address is not specified&quot;);
+    }
+<span class="fc" id="L1225">    NetworkChannelReference nc = getShutdownNCR(address);</span>
+<span class="pc bpc" id="L1226" title="1 of 2 branches missed.">    if (nc != null) {</span>
+<span class="nc" id="L1227">      logger.debug(&quot;HOST STILL IN SHUTDOWN STATUS: {}&quot;, address);</span>
+<span class="nc" id="L1228">      throw new OpenR66ProtocolRemoteShutdownException(</span>
+          &quot;Remote Host already in shutdown&quot;);
+    }
+<span class="fc" id="L1231">    nc = getBlacklistNCR(address);</span>
+<span class="pc bpc" id="L1232" title="1 of 2 branches missed.">    if (nc != null) {</span>
+<span class="nc" id="L1233">      logger.debug(&quot;HOST IN BLACKLISTED STATUS: {}&quot;, address);</span>
+<span class="nc" id="L1234">      throw new OpenR66ProtocolRemoteShutdownException(</span>
+          &quot;Remote Host is blacklisted&quot;);
+    }
+<span class="fc" id="L1237">    nc = getNCR(address);</span>
+<span class="pc bpc" id="L1238" title="2 of 6 branches missed.">    if (nc != null &amp;&amp; (nc.isShuttingDown || !nc.channel().isActive())) {</span>
+<span class="nc" id="L1239">      logger.debug(&quot;HOST IS DisActive: {}&quot;, address);</span>
+<span class="nc" id="L1240">      throw new OpenR66ProtocolRemoteShutdownException(</span>
+          &quot;Remote Host is disActive&quot;);
+    }
+<span class="fc bfc" id="L1243" title="All 2 branches covered.">    if (nc == null) {</span>
+<span class="fc" id="L1244">      throw new OpenR66ProtocolNoDataException(&quot;Channel not found&quot;);</span>
+    }
+<span class="fc" id="L1246">    return nc;</span>
+  }
+
+  /**
+   * @param channel
+   *
+   * @return the associated NetworkChannelReference immediately (if known)
+   */
+  public static final NetworkChannelReference getImmediateNetworkChannel(
+      Channel channel) {
+<span class="pc bpc" id="L1256" title="1 of 2 branches missed.">    if (channel.remoteAddress() != null) {</span>
+<span class="fc" id="L1257">      return getNCR(channel.remoteAddress());</span>
+    }
+<span class="nc" id="L1259">    return null;</span>
+  }
+
+  /**
+   * Remover of Shutdown Remote Host
+   */
+  private static class R66ShutdownNetworkChannelTimerTask implements TimerTask {
+    private static final Set&lt;ChannelId&gt; inShutdownRunning =
+<span class="nc" id="L1267">        ConcurrentUtility.newConcurrentSet();</span>
+<span class="nc" id="L1268">    private static final Set&lt;ChannelId&gt; inBlacklistedRunning =</span>
+<span class="nc" id="L1269">        ConcurrentUtility.newConcurrentSet();</span>
+    /**
+     * NCR to remove
+     */
+    private final NetworkChannelReference ncr;
+    private final boolean isBlacklisted;
+
+    /**
+     * Constructor from type
+     *
+     * @throws OpenR66RunnerErrorException
+     */
+    private R66ShutdownNetworkChannelTimerTask(NetworkChannelReference ncr,
+                                               boolean blackListed)
+<span class="nc" id="L1283">        throws OpenR66RunnerErrorException {</span>
+<span class="nc bnc" id="L1284" title="All 2 branches missed.">      if (blackListed) {</span>
+<span class="nc bnc" id="L1285" title="All 2 branches missed.">        if (!inBlacklistedRunning.add(ncr.channel.id())) {</span>
+<span class="nc" id="L1286">          throw new OpenR66RunnerErrorException(&quot;Already scheduled&quot;);</span>
+        }
+      } else {
+<span class="nc bnc" id="L1289" title="All 4 branches missed.">        if (ncr.channel != null &amp;&amp; !inShutdownRunning.add(ncr.channel.id())) {</span>
+<span class="nc" id="L1290">          throw new OpenR66RunnerErrorException(&quot;Already scheduled&quot;);</span>
+        }
+      }
+<span class="nc" id="L1293">      this.ncr = ncr;</span>
+<span class="nc" id="L1294">      isBlacklisted = blackListed;</span>
+<span class="nc" id="L1295">    }</span>
+
+    @Override
+    public void run(Timeout timeout) throws Exception {
+<span class="nc bnc" id="L1299" title="All 2 branches missed.">      if (isBlacklisted) {</span>
+<span class="nc" id="L1300">        logger.debug(&quot;Will remove Blacklisted for : {}&quot;, ncr);</span>
+<span class="nc" id="L1301">        removeBlacklistNCR(ncr);</span>
+<span class="nc" id="L1302">        inBlacklistedRunning.remove(ncr.channel.id());</span>
+<span class="nc" id="L1303">        return;</span>
+      }
+<span class="nc" id="L1305">      logger.debug(&quot;Will remove Shutdown for : {}&quot;, ncr);</span>
+<span class="nc bnc" id="L1306" title="All 4 branches missed.">      if (ncr.channel != null &amp;&amp; ncr.channel.isActive()) {</span>
+<span class="nc" id="L1307">        WaarpSslUtility.closingSslChannel(ncr.channel);</span>
+      }
+<span class="nc" id="L1309">      removeShutdownNCR(ncr);</span>
+<span class="nc bnc" id="L1310" title="All 2 branches missed.">      if (ncr.channel != null) {</span>
+<span class="nc" id="L1311">        inShutdownRunning.remove(ncr.channel.id());</span>
+      }
+<span class="nc" id="L1313">    }</span>
+  }
+
+  /**
+   * @return the current number of active RetrieveRunner
+   */
+  public static int getRetrieveRunnerActive() {
+<span class="nc" id="L1320">    return Configuration.configuration.getRetrieveRunnerGroup()</span>
+<span class="nc" id="L1321">                                      .getActiveCount();</span>
+  }
+
+  /**
+   * Start retrieve operation
+   *
+   * @param session
+   */
+  public static void runRetrieve(R66Session session) {
+<span class="fc" id="L1330">    RetrieveRunner retrieveRunner = new RetrieveRunner(session);</span>
+<span class="fc" id="L1331">    retrieveRunnerConcurrentHashMap</span>
+<span class="fc" id="L1332">        .put(session.getLocalChannelReference().getLocalId(), retrieveRunner);</span>
+<span class="fc" id="L1333">    Configuration.configuration.getRetrieveRunnerGroup()</span>
+<span class="fc" id="L1334">                               .execute(retrieveRunner);</span>
+<span class="fc" id="L1335">  }</span>
+
+  /**
+   * Stop a retrieve operation
+   *
+   * @param localChannelReference
+   */
+  public static void stopRetrieve(LocalChannelReference localChannelReference) {
+<span class="nc" id="L1343">    final RetrieveRunner retrieveRunner = retrieveRunnerConcurrentHashMap</span>
+<span class="nc" id="L1344">        .remove(localChannelReference.getLocalId());</span>
+<span class="nc bnc" id="L1345" title="All 2 branches missed.">    if (retrieveRunner != null) {</span>
+<span class="nc" id="L1346">      retrieveRunner.stopRunner();</span>
+    }
+<span class="nc" id="L1348">  }</span>
+
+  /**
+   * Normal end of a Retrieve Operation
+   *
+   * @param localChannelReference
+   */
+  public static void normalEndRetrieve(
+      LocalChannelReference localChannelReference) {
+<span class="fc" id="L1357">    retrieveRunnerConcurrentHashMap.remove(localChannelReference.getLocalId());</span>
+<span class="fc" id="L1358">  }</span>
+
+  /**
+   * Close all Network Ttransaction
+   */
+  public void closeAll() {
+<span class="fc" id="L1364">    closeAll(true);</span>
+<span class="fc" id="L1365">  }</span>
+
+  /**
+   * Close all Network Ttransaction
+   */
+  public void closeAll(boolean quickShutdown) {
+<span class="fc" id="L1371">    logger.debug(&quot;close All Network Channels&quot;);</span>
+<span class="fc bfc" id="L1372" title="All 2 branches covered.">    if (!Configuration.configuration.isServer()) {</span>
+<span class="pc bpc" id="L1373" title="1 of 2 branches missed.">      if (shutdownHook != null) {</span>
+<span class="fc" id="L1374">        shutdownHook.launchFinalExit();</span>
+      }
+    }
+<span class="fc bfc" id="L1377" title="All 2 branches covered.">    if (networkChannelGroup != null) {</span>
+<span class="fc" id="L1378">      WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());</span>
+<span class="fc" id="L1379">      networkChannelGroup = null;</span>
+    }
+    try {
+<span class="fc" id="L1382">      Thread.sleep(Configuration.WAITFORNETOP);</span>
+<span class="nc" id="L1383">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L1384">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L1385">    }</span>
+<span class="fc" id="L1386">    stopAllEndRetrieve();</span>
+<span class="fc" id="L1387">    DbAdmin.closeAllConnection();</span>
+<span class="fc" id="L1388">    Configuration.configuration.clientStop(quickShutdown);</span>
+<span class="fc bfc" id="L1389" title="All 2 branches covered.">    if (!Configuration.configuration.isServer()) {</span>
+<span class="fc" id="L1390">      logger.debug(&quot;Last action before exit&quot;);</span>
+<span class="fc" id="L1391">      ChannelUtils.stopLogger();</span>
+    }
+<span class="fc" id="L1393">  }</span>
+
+
+  public static void stopAllEndRetrieve() {
+<span class="fc" id="L1397">    Enumeration&lt;RetrieveRunner&gt; enumeration =</span>
+<span class="fc" id="L1398">        retrieveRunnerConcurrentHashMap.elements();</span>
+<span class="pc bpc" id="L1399" title="1 of 2 branches missed.">    while (enumeration.hasMoreElements()) {</span>
+<span class="nc" id="L1400">      final RetrieveRunner runner = enumeration.nextElement();</span>
+<span class="nc" id="L1401">      runner.stopRunner();</span>
+<span class="nc" id="L1402">    }</span>
+<span class="fc" id="L1403">    retrieveRunnerConcurrentHashMap.clear();</span>
+<span class="fc" id="L1404">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

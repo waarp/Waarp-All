@@ -30,32 +30,38 @@
 <a class="jxr_linenumber" name="L22" href="#L22">22</a>  
 <a class="jxr_linenumber" name="L23" href="#L23">23</a>  
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.node.ObjectNode;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.junit.Test;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.json.JsonHandler;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.Limit;
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.UpdatedInfo;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.junit.Assert.*;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="DbConfigurationTest" href="../../../../../org/waarp/openr66/database/data/DbConfigurationTest.html#DbConfigurationTest">DbConfigurationTest</a> {
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>    @Test
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testJsonSerialisation() {
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>      Limit limit = <strong class="jxr_keyword">new</strong> Limit(<span class="jxr_string">"hostid"</span>, 10, 20, 30, 40, 50, UpdatedInfo.TOSUBMIT);
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>      DbConfiguration dbConf = <strong class="jxr_keyword">new</strong> DbConfiguration(limit);
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>      String expected =
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>          <span class="jxr_string">"{"</span> + <span class="jxr_string">"\&quot;@model\&quot;:\&quot;DbConfiguration\&quot;,"</span> + <span class="jxr_string">"\&quot;HOSTID\&quot;:\&quot;hostid\&quot;,"</span> +
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>          <span class="jxr_string">"\&quot;READGLOBALLIMIT\&quot;:20,"</span> + <span class="jxr_string">"\&quot;WRITEGLOBALLIMIT\&quot;:30,"</span> +
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>          <span class="jxr_string">"\&quot;READSESSIONLIMIT\&quot;:40,"</span> + <span class="jxr_string">"\&quot;WRITESESSIONLIMIT\&quot;:50,"</span> +
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>          <span class="jxr_string">"\&quot;DELAYLIMIT\&quot;:10,"</span> + <span class="jxr_string">"\&quot;UPDATEDINFO\&quot;:3"</span> + <span class="jxr_string">"}"</span>;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.junit.Rule;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.junit.Test;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.junit.rules.TestWatcher;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.json.JsonHandler;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.utility.TestWatcherJunit4;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.Limit;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.pojo.UpdatedInfo;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.junit.Assert.*;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="DbConfigurationTest" href="../../../../../org/waarp/openr66/database/data/DbConfigurationTest.html#DbConfigurationTest">DbConfigurationTest</a> {
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>    @Rule(order = Integer.MIN_VALUE)
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>    <strong class="jxr_keyword">public</strong> TestWatcher watchman = <strong class="jxr_keyword">new</strong> TestWatcherJunit4();
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>    @Test
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testJsonSerialisation() {
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>      Limit limit = <strong class="jxr_keyword">new</strong> Limit(<span class="jxr_string">"hostid"</span>, 10, 20, 30, 40, 50, UpdatedInfo.TOSUBMIT);
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>      DbConfiguration dbConf = <strong class="jxr_keyword">new</strong> DbConfiguration(limit);
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>  
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>      ObjectNode asJson = dbConf.getJson();
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>      String got = JsonHandler.writeAsString(asJson);
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>  
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>      assertEquals(expected, got);
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>    }
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>  }
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>      String expected =
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>          <span class="jxr_string">"{"</span> + <span class="jxr_string">"\&quot;@model\&quot;:\&quot;DbConfiguration\&quot;,"</span> + <span class="jxr_string">"\&quot;HOSTID\&quot;:\&quot;hostid\&quot;,"</span> +
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>          <span class="jxr_string">"\&quot;READGLOBALLIMIT\&quot;:20,"</span> + <span class="jxr_string">"\&quot;WRITEGLOBALLIMIT\&quot;:30,"</span> +
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>          <span class="jxr_string">"\&quot;READSESSIONLIMIT\&quot;:40,"</span> + <span class="jxr_string">"\&quot;WRITESESSIONLIMIT\&quot;:50,"</span> +
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>          <span class="jxr_string">"\&quot;DELAYLIMIT\&quot;:10,"</span> + <span class="jxr_string">"\&quot;UPDATEDINFO\&quot;:3"</span> + <span class="jxr_string">"}"</span>;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>      ObjectNode asJson = dbConf.getJson();
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>      String got = JsonHandler.writeAsString(asJson);
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>      assertEquals(expected, got);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>    }
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

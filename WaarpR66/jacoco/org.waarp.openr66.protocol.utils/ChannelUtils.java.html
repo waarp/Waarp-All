@@ -28,6 +28,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.database.DbAdmin;
+import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -61,14 +62,14 @@ import static org.waarp.openr66.database.DbConstantR66.*;
 /**
  * Channel Utils
  */
-<span class="fc" id="L64">public class ChannelUtils extends Thread {</span>
+<span class="fc" id="L65">public class ChannelUtils extends Thread {</span>
   /**
    * Internal Logger
    */
-<span class="fc" id="L68">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L69">      WaarpLoggerFactory.getLogger(ChannelUtils.class);</span>
+<span class="fc" id="L69">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L70">      WaarpLoggerFactory.getLogger(ChannelUtils.class);</span>
 
-<span class="fc" id="L71">  public static final Integer NOCHANNEL = Integer.MIN_VALUE;</span>
+<span class="fc" id="L72">  public static final Integer NOCHANNEL = Integer.MIN_VALUE;</span>
 
   /**
    * Get the Remote InetAddress
@@ -78,12 +79,12 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    * @return the remote InetAddress
    */
   public static final InetAddress getRemoteInetAddress(Channel channel) {
-<span class="nc" id="L81">    InetSocketAddress socketAddress =</span>
-<span class="nc" id="L82">        (InetSocketAddress) channel.remoteAddress();</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (socketAddress == null) {</span>
-<span class="nc" id="L84">      socketAddress = new InetSocketAddress(20);</span>
+<span class="nc" id="L82">    InetSocketAddress socketAddress =</span>
+<span class="nc" id="L83">        (InetSocketAddress) channel.remoteAddress();</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (socketAddress == null) {</span>
+<span class="nc" id="L85">      socketAddress = new InetSocketAddress(20);</span>
     }
-<span class="nc" id="L86">    return socketAddress.getAddress();</span>
+<span class="nc" id="L87">    return socketAddress.getAddress();</span>
   }
 
   /**
@@ -94,9 +95,9 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    * @return the local InetAddress
    */
   public static final InetAddress getLocalInetAddress(Channel channel) {
-<span class="nc" id="L97">    final InetSocketAddress socketAddress =</span>
-<span class="nc" id="L98">        (InetSocketAddress) channel.localAddress();</span>
-<span class="nc" id="L99">    return socketAddress.getAddress();</span>
+<span class="nc" id="L98">    final InetSocketAddress socketAddress =</span>
+<span class="nc" id="L99">        (InetSocketAddress) channel.localAddress();</span>
+<span class="nc" id="L100">    return socketAddress.getAddress();</span>
   }
 
   /**
@@ -108,7 +109,7 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    */
   public static final InetSocketAddress getRemoteInetSocketAddress(
       Channel channel) {
-<span class="nc" id="L111">    return (InetSocketAddress) channel.remoteAddress();</span>
+<span class="nc" id="L112">    return (InetSocketAddress) channel.remoteAddress();</span>
   }
 
   /**
@@ -120,7 +121,7 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    */
   public static final InetSocketAddress getLocalInetSocketAddress(
       Channel channel) {
-<span class="nc" id="L123">    return (InetSocketAddress) channel.localAddress();</span>
+<span class="nc" id="L124">    return (InetSocketAddress) channel.localAddress();</span>
   }
 
   /**
@@ -129,14 +130,14 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    * @return the number of previously registered network channels
    */
   private static int terminateCommandChannels() {
-<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    if (Configuration.configuration.getServerChannelGroup() == null) {</span>
-<span class="nc" id="L133">      return 0;</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (Configuration.configuration.getServerChannelGroup() == null) {</span>
+<span class="nc" id="L134">      return 0;</span>
     }
-<span class="fc" id="L135">    final int result =</span>
-<span class="fc" id="L136">        Configuration.configuration.getServerChannelGroup().size();</span>
-<span class="fc" id="L137">    logger.info(&quot;ServerChannelGroup: &quot; + result);</span>
-<span class="fc" id="L138">    Configuration.configuration.getServerChannelGroup().close();</span>
-<span class="fc" id="L139">    return result;</span>
+<span class="fc" id="L136">    final int result =</span>
+<span class="fc" id="L137">        Configuration.configuration.getServerChannelGroup().size();</span>
+<span class="fc" id="L138">    logger.info(&quot;ServerChannelGroup: &quot; + result);</span>
+<span class="fc" id="L139">    Configuration.configuration.getServerChannelGroup().close();</span>
+<span class="fc" id="L140">    return result;</span>
   }
 
   /**
@@ -145,13 +146,13 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    * @return the number of previously registered http network channels
    */
   private static int terminateHttpChannels() {
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (Configuration.configuration.getHttpChannelGroup() == null) {</span>
-<span class="nc" id="L149">      return 0;</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">    if (Configuration.configuration.getHttpChannelGroup() == null) {</span>
+<span class="nc" id="L150">      return 0;</span>
     }
-<span class="fc" id="L151">    final int result = Configuration.configuration.getHttpChannelGroup().size();</span>
-<span class="fc" id="L152">    logger.debug(&quot;HttpChannelGroup: &quot; + result);</span>
-<span class="fc" id="L153">    Configuration.configuration.getHttpChannelGroup().close();</span>
-<span class="fc" id="L154">    return result;</span>
+<span class="fc" id="L152">    final int result = Configuration.configuration.getHttpChannelGroup().size();</span>
+<span class="fc" id="L153">    logger.debug(&quot;HttpChannelGroup: &quot; + result);</span>
+<span class="fc" id="L154">    Configuration.configuration.getHttpChannelGroup().close();</span>
+<span class="fc" id="L155">    return result;</span>
   }
 
   /**
@@ -162,11 +163,12 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    * @return the current number of network connections
    */
   public static final int nbCommandChannels(Configuration configuration) {
-<span class="nc" id="L165">    return configuration.getServerChannelGroup().size();</span>
+<span class="nc" id="L166">    return configuration.getServerChannelGroup().size();</span>
   }
 
   /**
    * @param localChannelReference
+   * @param digestGlobal
    * @param block
    *
    * @return the ChannelFuture of this write operation
@@ -174,25 +176,29 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    * @throws OpenR66ProtocolPacketException
    */
   public static ChannelFuture writeBackDataBlock(
-      LocalChannelReference localChannelReference, DataBlock block)
+      LocalChannelReference localChannelReference,
+      FilesystemBasedDigest digestGlobal, DataBlock block)
       throws OpenR66ProtocolPacketException {
-<span class="fc" id="L179">    ByteBuf md5 = Unpooled.EMPTY_BUFFER;</span>
-<span class="fc" id="L180">    final DbTaskRunner runner = localChannelReference.getSession().getRunner();</span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">    if (RequestPacket.isMD5Mode(runner.getMode())) {</span>
-<span class="fc" id="L182">      md5 = FileUtils</span>
-<span class="fc" id="L183">          .getHash(block.getBlock(), Configuration.configuration.getDigest());</span>
+<span class="fc" id="L182">    ByteBuf md5 = Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L183">    final DbTaskRunner runner = localChannelReference.getSession().getRunner();</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">    if (RequestPacket.isMD5Mode(runner.getMode())) {</span>
+<span class="fc" id="L185">      md5 = FileUtils</span>
+<span class="fc" id="L186">          .getHash(block.getBlock(), Configuration.configuration.getDigest(),</span>
+                   digestGlobal);
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">    } else if (digestGlobal != null) {</span>
+<span class="fc" id="L189">      digestGlobal.Update(block.getBlock());</span>
     }
-<span class="fc bfc" id="L185" title="All 2 branches covered.">    if (runner.getRank() % 100 == 1 ||</span>
-<span class="fc bfc" id="L186" title="All 2 branches covered.">        localChannelReference.getSessionState() != R66FiniteDualStates.DATAS) {</span>
-<span class="fc" id="L187">      localChannelReference.sessionNewState(R66FiniteDualStates.DATAS);</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">    if (runner.getRank() % 100 == 1 ||</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        localChannelReference.getSessionState() != R66FiniteDualStates.DATAS) {</span>
+<span class="fc" id="L193">      localChannelReference.sessionNewState(R66FiniteDualStates.DATAS);</span>
     }
-<span class="fc" id="L189">    logger.trace(&quot;sending data block {}&quot;, runner.getRank());</span>
-<span class="fc" id="L190">    final DataPacket data = new DataPacket(runner.getRank(), block.getBlock(),</span>
+<span class="fc" id="L195">    logger.trace(&quot;sending data block {}&quot;, runner.getRank());</span>
+<span class="fc" id="L196">    final DataPacket data = new DataPacket(runner.getRank(), block.getBlock(),</span>
                                            md5);// was block.getBlock().copy()
-<span class="fc" id="L192">    final ChannelFuture future =</span>
-<span class="fc" id="L193">        writeAbstractLocalPacket(localChannelReference, data, false);</span>
-<span class="fc" id="L194">    runner.incrementRank();</span>
-<span class="fc" id="L195">    return future;</span>
+<span class="fc" id="L198">    final ChannelFuture future =</span>
+<span class="fc" id="L199">        writeAbstractLocalPacket(localChannelReference, data, false);</span>
+<span class="fc" id="L200">    runner.incrementRank();</span>
+<span class="fc" id="L201">    return future;</span>
   }
 
   /**
@@ -205,11 +211,11 @@ import static org.waarp.openr66.database.DbConstantR66.*;
   public static final void writeEndTransfer(
       LocalChannelReference localChannelReference)
       throws OpenR66ProtocolPacketException {
-<span class="fc" id="L208">    final EndTransferPacket packet =</span>
+<span class="fc" id="L214">    final EndTransferPacket packet =</span>
         new EndTransferPacket(LocalPacketFactory.REQUESTPACKET);
-<span class="fc" id="L210">    localChannelReference.sessionNewState(R66FiniteDualStates.ENDTRANSFERS);</span>
-<span class="fc" id="L211">    writeAbstractLocalPacket(localChannelReference, packet, true);</span>
-<span class="fc" id="L212">  }</span>
+<span class="fc" id="L216">    localChannelReference.sessionNewState(R66FiniteDualStates.ENDTRANSFERS);</span>
+<span class="fc" id="L217">    writeAbstractLocalPacket(localChannelReference, packet, true);</span>
+<span class="fc" id="L218">  }</span>
 
   /**
    * Write the EndTransfer plus Global Hash
@@ -222,11 +228,11 @@ import static org.waarp.openr66.database.DbConstantR66.*;
   public static final void writeEndTransfer(
       LocalChannelReference localChannelReference, String hash)
       throws OpenR66ProtocolPacketException {
-<span class="fc" id="L225">    final EndTransferPacket packet =</span>
+<span class="fc" id="L231">    final EndTransferPacket packet =</span>
         new EndTransferPacket(LocalPacketFactory.REQUESTPACKET, hash);
-<span class="fc" id="L227">    localChannelReference.sessionNewState(R66FiniteDualStates.ENDTRANSFERS);</span>
-<span class="fc" id="L228">    writeAbstractLocalPacket(localChannelReference, packet, true);</span>
-<span class="fc" id="L229">  }</span>
+<span class="fc" id="L233">    localChannelReference.sessionNewState(R66FiniteDualStates.ENDTRANSFERS);</span>
+<span class="fc" id="L234">    writeAbstractLocalPacket(localChannelReference, packet, true);</span>
+<span class="fc" id="L235">  }</span>
 
   /**
    * Write an AbstractLocalPacket to the network Channel
@@ -245,115 +251,115 @@ import static org.waarp.openr66.database.DbConstantR66.*;
       throws OpenR66ProtocolPacketException {
     final NetworkPacket networkPacket;
     try {
-<span class="fc" id="L248">      logger.trace(&quot;TRACE ID {} {} {}&quot;, localChannelReference.getLocalId(),</span>
-<span class="fc" id="L249">                   localChannelReference.getRemoteId(), packet);</span>
-<span class="fc" id="L250">      networkPacket = new NetworkPacket(localChannelReference.getLocalId(),</span>
-<span class="fc" id="L251">                                        localChannelReference.getRemoteId(),</span>
+<span class="fc" id="L254">      logger.trace(&quot;TRACE ID {} {} {}&quot;, localChannelReference.getLocalId(),</span>
+<span class="fc" id="L255">                   localChannelReference.getRemoteId(), packet);</span>
+<span class="fc" id="L256">      networkPacket = new NetworkPacket(localChannelReference.getLocalId(),</span>
+<span class="fc" id="L257">                                        localChannelReference.getRemoteId(),</span>
                                         packet, localChannelReference);
-<span class="nc" id="L253">    } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L254">      logger.error(Messages.getString(&quot;ChannelUtils.6&quot;) + packet,</span>
+<span class="nc" id="L259">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L260">      logger.error(Messages.getString(&quot;ChannelUtils.6&quot;) + packet,</span>
                    //$NON-NLS-1$
                    e);
-<span class="nc" id="L257">      throw e;</span>
-<span class="fc" id="L258">    }</span>
-<span class="fc bfc" id="L259" title="All 2 branches covered.">    boolean addListener = packet instanceof ErrorPacket &amp;&amp;</span>
-<span class="pc bpc" id="L260" title="1 of 2 branches missed.">                          ((ErrorPacket) packet).getCode() ==</span>
+<span class="nc" id="L263">      throw e;</span>
+<span class="fc" id="L264">    }</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">    boolean addListener = packet instanceof ErrorPacket &amp;&amp;</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">                          ((ErrorPacket) packet).getCode() ==</span>
                           ErrorPacket.FORWARDCLOSECODE;
-<span class="fc" id="L262">    ChannelFuture future =</span>
-<span class="fc" id="L263">        localChannelReference.getNetworkChannel().writeAndFlush(networkPacket);</span>
-<span class="fc bfc" id="L264" title="All 2 branches covered.">    if (addListener) {</span>
-<span class="fc" id="L265">      future.addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
+<span class="fc" id="L268">    ChannelFuture future =</span>
+<span class="fc" id="L269">        localChannelReference.getNetworkChannel().writeAndFlush(networkPacket);</span>
+<span class="fc bfc" id="L270" title="All 2 branches covered.">    if (addListener) {</span>
+<span class="fc" id="L271">      future.addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
 
         @Override
         public void operationComplete(Future&lt;? super Void&gt; future)
             throws Exception {
-<span class="fc" id="L270">          localChannelReference.close();</span>
-<span class="fc" id="L271">        }</span>
+<span class="fc" id="L276">          localChannelReference.close();</span>
+<span class="fc" id="L277">        }</span>
       });
     }
-<span class="fc bfc" id="L274" title="All 2 branches covered.">    if (wait) {</span>
-<span class="fc" id="L275">      localChannelReference.getNetworkChannelObject().use();</span>
-<span class="fc" id="L276">      WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">    if (wait) {</span>
+<span class="fc" id="L281">      localChannelReference.getNetworkChannelObject().use();</span>
+<span class="fc" id="L282">      WaarpNettyUtil.awaitOrInterrupted(future);</span>
     }
-<span class="fc" id="L278">    return future;</span>
+<span class="fc" id="L284">    return future;</span>
   }
 
   /**
    * Exit global ChannelFactory
    */
   public static void exit() {
-<span class="fc" id="L285">    logger.info(&quot;Current launched threads before exit: &quot; +</span>
-<span class="fc" id="L286">                ManagementFactory.getThreadMXBean().getThreadCount());</span>
-<span class="pc bpc" id="L287" title="1 of 2 branches missed.">    if (Configuration.configuration.getConstraintLimitHandler() != null) {</span>
-<span class="fc" id="L288">      Configuration.configuration.getConstraintLimitHandler().release();</span>
+<span class="fc" id="L291">    logger.info(&quot;Current launched threads before exit: &quot; +</span>
+<span class="fc" id="L292">                ManagementFactory.getThreadMXBean().getThreadCount());</span>
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">    if (Configuration.configuration.getConstraintLimitHandler() != null) {</span>
+<span class="fc" id="L294">      Configuration.configuration.getConstraintLimitHandler().release();</span>
     }
     // First try to StopAll
-<span class="fc" id="L291">    TransferUtils</span>
-<span class="fc" id="L292">        .stopSelectedTransfers(admin.getSession(), 0, null, null, null, null,</span>
+<span class="fc" id="L297">    TransferUtils</span>
+<span class="fc" id="L298">        .stopSelectedTransfers(admin.getSession(), 0, null, null, null, null,</span>
                                null, null, null, null, null, true, true, true);
-<span class="fc" id="L294">    Configuration.configuration.setShutdown(true);</span>
-<span class="fc" id="L295">    Configuration.configuration.prepareServerStop();</span>
-<span class="fc" id="L296">    long delay = Configuration.configuration.getTimeoutCon();</span>
+<span class="fc" id="L300">    Configuration.configuration.setShutdown(true);</span>
+<span class="fc" id="L301">    Configuration.configuration.prepareServerStop();</span>
+<span class="fc" id="L302">    long delay = Configuration.configuration.getTimeoutCon();</span>
     // Inform others that shutdown
-<span class="fc bfc" id="L298" title="All 2 branches covered.">    if (Configuration.configuration.getLocalTransaction() != null) {</span>
-<span class="fc" id="L299">      int nb = Configuration.configuration.getLocalTransaction()</span>
-<span class="fc" id="L300">                                          .getNumberLocalChannel();</span>
-<span class="fc" id="L301">      Configuration.configuration.getLocalTransaction().shutdownLocalChannels();</span>
-<span class="pc bpc" id="L302" title="1 of 2 branches missed.">      if (nb == 1) {</span>
-<span class="nc" id="L303">        delay /= 3;</span>
+<span class="fc bfc" id="L304" title="All 2 branches covered.">    if (Configuration.configuration.getLocalTransaction() != null) {</span>
+<span class="fc" id="L305">      int nb = Configuration.configuration.getLocalTransaction()</span>
+<span class="fc" id="L306">                                          .getNumberLocalChannel();</span>
+<span class="fc" id="L307">      Configuration.configuration.getLocalTransaction().shutdownLocalChannels();</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">      if (nb == 1) {</span>
+<span class="nc" id="L309">        delay /= 3;</span>
       }
     }
-<span class="fc" id="L306">    logger.info(&quot;Unbind server network services&quot;);</span>
-<span class="fc" id="L307">    Configuration.configuration.unbindServer();</span>
-<span class="fc" id="L308">    logger.warn(</span>
-<span class="fc" id="L309">        Messages.getString(&quot;ChannelUtils.7&quot;) + delay + &quot; ms&quot;); //$NON-NLS-1$</span>
+<span class="fc" id="L312">    logger.info(&quot;Unbind server network services&quot;);</span>
+<span class="fc" id="L313">    Configuration.configuration.unbindServer();</span>
+<span class="fc" id="L314">    logger.warn(</span>
+<span class="fc" id="L315">        Messages.getString(&quot;ChannelUtils.7&quot;) + delay + &quot; ms&quot;); //$NON-NLS-1$</span>
     try {
-<span class="fc" id="L311">      Thread.sleep(delay);</span>
-<span class="nc" id="L312">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L313">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="fc" id="L314">    }</span>
-<span class="fc" id="L315">    NetworkTransaction.stopAllEndRetrieve();</span>
-<span class="fc bfc" id="L316" title="All 2 branches covered.">    if (Configuration.configuration.getLocalTransaction() != null) {</span>
-<span class="fc" id="L317">      Configuration.configuration.getLocalTransaction()</span>
-<span class="fc" id="L318">                                 .debugPrintActiveLocalChannels();</span>
+<span class="fc" id="L317">      Thread.sleep(delay);</span>
+<span class="nc" id="L318">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L319">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L320">    }</span>
+<span class="fc" id="L321">    NetworkTransaction.stopAllEndRetrieve();</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">    if (Configuration.configuration.getLocalTransaction() != null) {</span>
+<span class="fc" id="L323">      Configuration.configuration.getLocalTransaction()</span>
+<span class="fc" id="L324">                                 .debugPrintActiveLocalChannels();</span>
     }
-<span class="pc bpc" id="L320" title="1 of 2 branches missed.">    if (Configuration.configuration.getGlobalTrafficShapingHandler() != null) {</span>
-<span class="fc" id="L321">      Configuration.configuration.getGlobalTrafficShapingHandler().release();</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">    if (Configuration.configuration.getGlobalTrafficShapingHandler() != null) {</span>
+<span class="fc" id="L327">      Configuration.configuration.getGlobalTrafficShapingHandler().release();</span>
     }
-<span class="fc" id="L323">    logger.info(&quot;Exit Shutdown Http&quot;);</span>
-<span class="fc" id="L324">    terminateHttpChannels();</span>
-<span class="fc" id="L325">    logger.info(&quot;Exit Shutdown Local&quot;);</span>
-<span class="fc bfc" id="L326" title="All 2 branches covered.">    if (Configuration.configuration.getLocalTransaction() != null) {</span>
-<span class="fc" id="L327">      Configuration.configuration.getLocalTransaction().closeAll();</span>
+<span class="fc" id="L329">    logger.info(&quot;Exit Shutdown Http&quot;);</span>
+<span class="fc" id="L330">    terminateHttpChannels();</span>
+<span class="fc" id="L331">    logger.info(&quot;Exit Shutdown Local&quot;);</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">    if (Configuration.configuration.getLocalTransaction() != null) {</span>
+<span class="fc" id="L333">      Configuration.configuration.getLocalTransaction().closeAll();</span>
     }
-<span class="fc" id="L329">    logger.info(&quot;Exit Shutdown LocalExec&quot;);</span>
-<span class="pc bpc" id="L330" title="1 of 2 branches missed.">    if (Configuration.configuration.isUseLocalExec()) {</span>
-<span class="nc" id="L331">      LocalExecClient.releaseResources();</span>
+<span class="fc" id="L335">    logger.info(&quot;Exit Shutdown LocalExec&quot;);</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">    if (Configuration.configuration.isUseLocalExec()) {</span>
+<span class="nc" id="L337">      LocalExecClient.releaseResources();</span>
     }
-<span class="fc" id="L333">    logger.info(&quot;Exit Shutdown Command&quot;);</span>
-<span class="fc" id="L334">    terminateCommandChannels();</span>
-<span class="fc" id="L335">    logger.info(&quot;Exit Shutdown Db Connection&quot;);</span>
-<span class="fc" id="L336">    DbAdmin.closeAllConnection();</span>
-<span class="fc" id="L337">    logger.info(&quot;Exit Shutdown ServerStop&quot;);</span>
-<span class="fc" id="L338">    Configuration.configuration.serverStop();</span>
-<span class="fc" id="L339">    logger.warn(Messages.getString(&quot;ChannelUtils.15&quot;)); //$NON-NLS-1$</span>
-<span class="fc" id="L340">    SysErrLogger.FAKE_LOGGER</span>
-<span class="fc" id="L341">        .syserr(Messages.getString(&quot;ChannelUtils.15&quot;)); //$NON-NLS-1$</span>
-<span class="fc" id="L342">    stopLogger();</span>
-<span class="fc" id="L343">  }</span>
+<span class="fc" id="L339">    logger.info(&quot;Exit Shutdown Command&quot;);</span>
+<span class="fc" id="L340">    terminateCommandChannels();</span>
+<span class="fc" id="L341">    logger.info(&quot;Exit Shutdown Db Connection&quot;);</span>
+<span class="fc" id="L342">    DbAdmin.closeAllConnection();</span>
+<span class="fc" id="L343">    logger.info(&quot;Exit Shutdown ServerStop&quot;);</span>
+<span class="fc" id="L344">    Configuration.configuration.serverStop();</span>
+<span class="fc" id="L345">    logger.warn(Messages.getString(&quot;ChannelUtils.15&quot;)); //$NON-NLS-1$</span>
+<span class="fc" id="L346">    SysErrLogger.FAKE_LOGGER</span>
+<span class="fc" id="L347">        .syserr(Messages.getString(&quot;ChannelUtils.15&quot;)); //$NON-NLS-1$</span>
+<span class="fc" id="L348">    stopLogger();</span>
+<span class="fc" id="L349">  }</span>
 
   public static final void stopLogger() {
-<span class="pc bpc" id="L346" title="1 of 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
-<span class="fc" id="L347">      return;</span>
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
+<span class="fc" id="L353">      return;</span>
     }
     if (WaarpLoggerFactory
-<span class="nc bnc" id="L350" title="All 2 branches missed.">            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &amp;&amp;</span>
-<span class="nc bnc" id="L351" title="All 2 branches missed.">        !DetectionUtils.isJunit()) {</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &amp;&amp;</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        !DetectionUtils.isJunit()) {</span>
       final LoggerContext lc =
-<span class="nc" id="L353">          (LoggerContext) LoggerFactory.getILoggerFactory();</span>
-<span class="nc" id="L354">      lc.stop();</span>
+<span class="nc" id="L359">          (LoggerContext) LoggerFactory.getILoggerFactory();</span>
+<span class="nc" id="L360">      lc.stop();</span>
     }
-<span class="nc" id="L356">  }</span>
+<span class="nc" id="L362">  }</span>
 
   /**
    * This function is the top function to be called when the server is to be
@@ -361,20 +367,20 @@ import static org.waarp.openr66.database.DbConstantR66.*;
    */
   @Override
   public void run() {
-<span class="fc" id="L364">    logger.info(&quot;Should restart? &quot; + WaarpShutdownHook.isRestart());</span>
-<span class="fc" id="L365">    WaarpShutdownHook.terminate(false);</span>
-<span class="fc" id="L366">  }</span>
+<span class="fc" id="L370">    logger.info(&quot;Should restart? &quot; + WaarpShutdownHook.isRestart());</span>
+<span class="fc" id="L371">    WaarpShutdownHook.terminate(false);</span>
+<span class="fc" id="L372">  }</span>
 
   /**
    * Start Shutdown
    */
   public static final void startShutdown() {
-<span class="pc bpc" id="L372" title="1 of 2 branches missed.">    if (WaarpShutdownHook.isInShutdown()) {</span>
-<span class="nc" id="L373">      return;</span>
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">    if (WaarpShutdownHook.isInShutdown()) {</span>
+<span class="nc" id="L379">      return;</span>
     }
-<span class="fc" id="L375">    final Thread thread = new Thread(new ChannelUtils(), &quot;R66 Shutdown Thread&quot;);</span>
-<span class="fc" id="L376">    thread.setDaemon(false);</span>
-<span class="fc" id="L377">    thread.start();</span>
-<span class="fc" id="L378">  }</span>
+<span class="fc" id="L381">    final Thread thread = new Thread(new ChannelUtils(), &quot;R66 Shutdown Thread&quot;);</span>
+<span class="fc" id="L382">    thread.setDaemon(false);</span>
+<span class="fc" id="L383">    thread.start();</span>
+<span class="fc" id="L384">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

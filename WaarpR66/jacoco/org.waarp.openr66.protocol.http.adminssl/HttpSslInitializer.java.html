@@ -48,13 +48,14 @@ public class HttpSslInitializer extends ChannelInitializer&lt;SocketChannel&gt; 
 <span class="fc" id="L48">    pipeline.addLast(&quot;ssl&quot;, sslhandler);</span>
 
 <span class="fc" id="L50">    pipeline.addLast(&quot;decoder&quot;, new HttpServerCodec());</span>
-<span class="fc" id="L51">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(1048576));</span>
-<span class="fc" id="L52">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
-<span class="pc bpc" id="L53" title="1 of 2 branches missed.">    if (useHttpCompression) {</span>
-<span class="nc" id="L54">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
+<span class="fc" id="L51">    pipeline.addLast(&quot;aggregator&quot;, new HttpObjectAggregator(</span>
+<span class="fc" id="L52">        Configuration.configuration.getMaxGlobalMemory()));</span>
+<span class="fc" id="L53">    pipeline.addLast(&quot;streamer&quot;, new ChunkedWriteHandler());</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">    if (useHttpCompression) {</span>
+<span class="fc" id="L55">      pipeline.addLast(&quot;deflater&quot;, new HttpContentCompressor());</span>
     }
-<span class="fc" id="L56">    pipeline.addLast(&quot;handler&quot;, new HttpSslHandler());</span>
-<span class="fc" id="L57">  }</span>
+<span class="fc" id="L57">    pipeline.addLast(&quot;handler&quot;, new HttpSslHandler());</span>
+<span class="fc" id="L58">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

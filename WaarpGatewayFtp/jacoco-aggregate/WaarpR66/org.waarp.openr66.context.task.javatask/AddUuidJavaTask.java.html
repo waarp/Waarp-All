@@ -45,57 +45,61 @@ import java.util.regex.Pattern;
  * To be called as: &lt;task&gt;&lt;type&gt;EXECJAVA&lt;/type&gt;&lt;path&gt;org.waarp.openr66.context.task.javatask.AddUuidJavaTask
  * [-format (-/+)##UUID##]&lt;/path&gt;&lt;/task&gt;
  */
-<span class="nc" id="L48">public class AddUuidJavaTask extends AbstractExecJavaTask {</span>
+<span class="fc" id="L48">public class AddUuidJavaTask extends AbstractExecJavaTask {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L52">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L53">      WaarpLoggerFactory.getLogger(AddUuidJavaTask.class);</span>
+<span class="fc" id="L52">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L53">      WaarpLoggerFactory.getLogger(AddUuidJavaTask.class);</span>
   private static final String sUUID = &quot;#UUID#&quot;;
-<span class="nc" id="L55">  private static final Pattern UUID_COMPILE =</span>
-<span class="nc" id="L56">      Pattern.compile(sUUID, Pattern.LITERAL);</span>
+<span class="fc" id="L55">  private static final Pattern UUID_COMPILE =</span>
+<span class="fc" id="L56">      Pattern.compile(sUUID, Pattern.LITERAL);</span>
 
   @Override
   public void run() {
-<span class="nc" id="L60">    logger.debug(toString());</span>
-<span class="nc" id="L61">    final GUID uuid = new GUID();</span>
-<span class="nc" id="L62">    final String[] args = BLANK.split(fullarg);</span>
+<span class="fc" id="L60">    logger.debug(toString());</span>
+<span class="fc" id="L61">    final GUID uuid = new GUID();</span>
+<span class="fc" id="L62">    final String[] args = BLANK.split(fullarg);</span>
     String fileInfo;
-<span class="nc" id="L64">    String format = &quot;-##UUID##&quot;;</span>
-<span class="nc" id="L65">    int way = -1;</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (&quot;-format&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L68">        format = args[i + 1];</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (format.charAt(0) == '-') {</span>
-<span class="nc" id="L70">          way = -1;</span>
-<span class="nc" id="L71">          format = format.substring(1);</span>
+<span class="fc" id="L64">    String format = &quot;-##UUID##&quot;;</span>
+<span class="fc" id="L65">    int way = -1;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">      if (&quot;-format&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="fc" id="L68">        format = args[i + 1];</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">        if (format.charAt(0) == '-') {</span>
+<span class="fc" id="L70">          way = -1;</span>
+<span class="fc" id="L71">          format = format.substring(1);</span>
 <span class="nc bnc" id="L72" title="All 2 branches missed.">        } else if (format.charAt(0) == '+') {</span>
 <span class="nc" id="L73">          way = 1;</span>
 <span class="nc" id="L74">          format = format.substring(1);</span>
         }
-<span class="nc" id="L76">        i++;</span>
+<span class="fc" id="L76">        i++;</span>
       }
     }
-<span class="nc" id="L79">    logger.debug(&quot;Replace UUID in {} way: {}&quot;, format, way);</span>
-<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (way &lt; 0) {</span>
-<span class="nc" id="L81">      fileInfo = UUID_COMPILE.matcher(format).replaceAll(</span>
-<span class="nc" id="L82">          Matcher.quoteReplacement(uuid.toString())) + ' ' +</span>
-<span class="nc" id="L83">                 session.getRunner().getFileInformation();</span>
+<span class="fc" id="L79">    logger.debug(&quot;Replace UUID in {} way: {}&quot;, format, way);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (way &lt; 0) {</span>
+<span class="fc" id="L81">      fileInfo = UUID_COMPILE.matcher(format).replaceAll(</span>
+<span class="fc" id="L82">          Matcher.quoteReplacement(uuid.toString())) + ' ' +</span>
+<span class="fc" id="L83">                 session.getRunner().getFileInformation();</span>
     } else {
 <span class="nc" id="L85">      fileInfo = session.getRunner().getFileInformation() + ' ' +</span>
 <span class="nc" id="L86">                 UUID_COMPILE.matcher(format).replaceAll(</span>
 <span class="nc" id="L87">                     Matcher.quoteReplacement(uuid.toString()));</span>
     }
-<span class="nc" id="L89">    session.getRunner().setFileInformation(fileInfo);</span>
+<span class="fc" id="L89">    session.getRunner().setFileInformation(fileInfo);</span>
+<span class="fc" id="L90">    session.getRunner().setTransferInfo(session.getRunner().getTransferInfo()</span>
+<span class="fc" id="L91">                                               .replaceAll(sUUID,</span>
+<span class="fc" id="L92">                                                           uuid.toString()));</span>
+<span class="fc" id="L93">    session.getRunner().addToTransferMap(&quot;uuid&quot;, uuid.toString());</span>
     try {
-<span class="nc" id="L91">      session.getRunner().update();</span>
-<span class="nc" id="L92">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L93">      logger.error(&quot;UUID cannot be saved to fileInformation:&quot; + fileInfo);</span>
-<span class="nc" id="L94">      status = 2;</span>
-<span class="nc" id="L95">      return;</span>
-<span class="nc" id="L96">    }</span>
-<span class="nc" id="L97">    logger.debug(&quot;UUID saved to fileInformation:&quot; + fileInfo);</span>
-<span class="nc" id="L98">    status = 0;</span>
-<span class="nc" id="L99">  }</span>
+<span class="fc" id="L95">      session.getRunner().update();</span>
+<span class="nc" id="L96">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L97">      logger.error(&quot;UUID cannot be saved to fileInformation:&quot; + fileInfo);</span>
+<span class="nc" id="L98">      status = 2;</span>
+<span class="nc" id="L99">      return;</span>
+<span class="fc" id="L100">    }</span>
+<span class="fc" id="L101">    logger.debug(&quot;UUID saved to fileInformation:&quot; + fileInfo);</span>
+<span class="fc" id="L102">    status = 0;</span>
+<span class="fc" id="L103">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -57,77 +57,78 @@ public class BusinessRequest extends AbstractBusinessRequest {
 <span class="fc" id="L57">  }</span>
 
   public static void main(String[] args) {
-<span class="nc" id="L60">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L61" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L62">      logger = WaarpLoggerFactory.getLogger(BusinessRequest.class);</span>
+<span class="nc" id="L60">    WaarpLoggerFactory</span>
+<span class="nc" id="L61">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L63">      logger = WaarpLoggerFactory.getLogger(BusinessRequest.class);</span>
     }
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (args.length &lt; 5) {</span>
-<span class="nc" id="L65">      logger.error(Messages.getString(&quot;BusinessRequest.1&quot;) + //$NON-NLS-1$</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (args.length &lt; 5) {</span>
+<span class="nc" id="L66">      logger.error(Messages.getString(&quot;BusinessRequest.1&quot;) + //$NON-NLS-1$</span>
                    _INFO_ARGS);
-<span class="nc" id="L67">      return;</span>
+<span class="nc" id="L68">      return;</span>
     }
-<span class="nc" id="L69">    classname = DEFAULT_CLASS;</span>
-<span class="nc bnc" id="L70" title="All 4 branches missed.">    if (!getParams(args) || classarg == null) {</span>
-<span class="nc" id="L71">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L73">        admin.close();</span>
+<span class="nc" id="L70">    classname = DEFAULT_CLASS;</span>
+<span class="nc bnc" id="L71" title="All 4 branches missed.">    if (!getParams(args) || classarg == null) {</span>
+<span class="nc" id="L72">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L74">        admin.close();</span>
       }
-<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L76">        return;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L77">        return;</span>
       }
-<span class="nc" id="L78">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L79">      System.exit(2);//NOSONAR</span>
+<span class="nc" id="L79">      ChannelUtils.stopLogger();</span>
+<span class="nc" id="L80">      System.exit(2);//NOSONAR</span>
     }
-<span class="nc" id="L81">    Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L82">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
-<span class="nc" id="L83">    final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L82">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L83">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+<span class="nc" id="L84">    final R66Future future = new R66Future(true);</span>
 
-<span class="nc" id="L85">    logger.info(&quot;Start Test of Transaction&quot;);</span>
-<span class="nc" id="L86">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L86">    logger.info(&quot;Start Test of Transaction&quot;);</span>
+<span class="nc" id="L87">    final long time1 = System.currentTimeMillis();</span>
 
-<span class="nc" id="L88">    final BusinessRequestPacket packet =</span>
+<span class="nc" id="L89">    final BusinessRequestPacket packet =</span>
         new BusinessRequestPacket(classname + ' ' + classarg, 0);
-<span class="nc" id="L90">    final BusinessRequest transaction =</span>
+<span class="nc" id="L91">    final BusinessRequest transaction =</span>
         new BusinessRequest(networkTransaction, future, rhost, packet);
-<span class="nc" id="L92">    transaction.run();</span>
-<span class="nc" id="L93">    future.awaitOrInterruptible();</span>
+<span class="nc" id="L93">    transaction.run();</span>
+<span class="nc" id="L94">    future.awaitOrInterruptible();</span>
 
-<span class="nc" id="L95">    final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L96">    logger.debug(&quot;Finish Business Request: &quot; + future.isSuccess());</span>
-<span class="nc" id="L97">    final long delay = time2 - time1;</span>
-<span class="nc" id="L98">    final OutputFormat outputFormat =</span>
-<span class="nc" id="L99">        new OutputFormat(BusinessRequest.class.getSimpleName(), args);</span>
-<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
-<span class="nc" id="L101">      outputFormat.setValue(FIELDS.status.name(), 0);</span>
-<span class="nc" id="L102">      outputFormat.setValue(FIELDS.statusTxt.name(),</span>
-<span class="nc" id="L103">                            Messages.getString(&quot;BusinessRequest.6&quot;) + Messages</span>
-<span class="nc" id="L104">                                .getString(</span>
+<span class="nc" id="L96">    final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L97">    logger.debug(&quot;Finish Business Request: &quot; + future.isSuccess());</span>
+<span class="nc" id="L98">    final long delay = time2 - time1;</span>
+<span class="nc" id="L99">    final OutputFormat outputFormat =</span>
+<span class="nc" id="L100">        new OutputFormat(BusinessRequest.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
+<span class="nc" id="L102">      outputFormat.setValue(FIELDS.status.name(), 0);</span>
+<span class="nc" id="L103">      outputFormat.setValue(FIELDS.statusTxt.name(),</span>
+<span class="nc" id="L104">                            Messages.getString(&quot;BusinessRequest.6&quot;) + Messages</span>
+<span class="nc" id="L105">                                .getString(</span>
                                     &quot;RequestInformation.Success&quot;)); //$NON-NLS-1$
-<span class="nc" id="L106">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L107">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
-<span class="nc" id="L108">      logger.info(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L110">        outputFormat.sysout();</span>
+<span class="nc" id="L107">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L108">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
+<span class="nc" id="L109">      logger.info(outputFormat.loggerOut());</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L111">        outputFormat.sysout();</span>
       }
     } else {
-<span class="nc" id="L113">      outputFormat.setValue(FIELDS.status.name(), 2);</span>
-<span class="nc" id="L114">      outputFormat.setValue(FIELDS.statusTxt.name(),</span>
-<span class="nc" id="L115">                            Messages.getString(&quot;BusinessRequest.6&quot;) + Messages</span>
-<span class="nc" id="L116">                                .getString(</span>
+<span class="nc" id="L114">      outputFormat.setValue(FIELDS.status.name(), 2);</span>
+<span class="nc" id="L115">      outputFormat.setValue(FIELDS.statusTxt.name(),</span>
+<span class="nc" id="L116">                            Messages.getString(&quot;BusinessRequest.6&quot;) + Messages</span>
+<span class="nc" id="L117">                                .getString(</span>
                                     &quot;RequestInformation.Failure&quot;)); //$NON-NLS-1$
-<span class="nc" id="L118">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L119">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
-<span class="nc" id="L120">      logger.error(outputFormat.loggerOut(), future.getCause());</span>
-<span class="nc" id="L121">      outputFormat.setValue(FIELDS.error.name(), future.getCause().toString());</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L123">        outputFormat.sysout();</span>
+<span class="nc" id="L119">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L120">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
+<span class="nc" id="L121">      logger.error(outputFormat.loggerOut(), future.getCause());</span>
+<span class="nc" id="L122">      outputFormat.setValue(FIELDS.error.name(), future.getCause().toString());</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L124">        outputFormat.sysout();</span>
       }
-<span class="nc" id="L125">      networkTransaction.closeAll();</span>
-<span class="nc" id="L126">      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
+<span class="nc" id="L126">      networkTransaction.closeAll();</span>
+<span class="nc" id="L127">      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
     }
-<span class="nc" id="L128">    networkTransaction.closeAll();</span>
-<span class="nc" id="L129">    System.exit(0);//NOSONAR</span>
-<span class="nc" id="L130">  }</span>
+<span class="nc" id="L129">    networkTransaction.closeAll();</span>
+<span class="nc" id="L130">    System.exit(0);//NOSONAR</span>
+<span class="nc" id="L131">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

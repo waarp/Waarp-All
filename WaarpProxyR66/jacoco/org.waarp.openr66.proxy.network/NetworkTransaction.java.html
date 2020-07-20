@@ -124,11 +124,15 @@ public class NetworkTransaction {
       }
     }
 <span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (channel == null) {</span>
-<span class="nc" id="L127">      logger.debug(&quot;Cannot connect : {}&quot;, lastException.getMessage());</span>
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    } else if (lastException != null) {</span>
-<span class="nc" id="L129">      logger.debug(&quot;Connection retried since {}&quot;, lastException.getMessage());</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">      if (lastException != null) {</span>
+<span class="nc" id="L128">        logger.debug(&quot;Cannot connect : {}&quot;, lastException.getMessage());</span>
+      } else {
+<span class="nc" id="L130">        logger.debug(&quot;Cannot connect!&quot;);</span>
+      }
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    } else if (lastException != null) {</span>
+<span class="nc" id="L133">      logger.debug(&quot;Connection retried since {}&quot;, lastException.getMessage());</span>
     }
-<span class="fc" id="L131">    return channel;</span>
+<span class="fc" id="L135">    return channel;</span>
   }
 
   /**
@@ -147,39 +151,39 @@ public class NetworkTransaction {
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
-<span class="fc" id="L150">    Channel channel = null;</span>
-<span class="fc" id="L151">    boolean ok = false;</span>
+<span class="fc" id="L154">    Channel channel = null;</span>
+<span class="fc" id="L155">    boolean ok = false;</span>
     // check valid limit on server side only (could be the initiator but not a client)
-<span class="fc" id="L153">    boolean valid = false;</span>
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    for (int i = 0; i &lt; RETRYNB * 2; i++) {</span>
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">      if (configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {</span>
-<span class="nc" id="L156">        logger.debug(&quot;Constraints exceeded: &quot; + i);</span>
+<span class="fc" id="L157">    boolean valid = false;</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">    for (int i = 0; i &lt; RETRYNB * 2; i++) {</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">      if (configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {</span>
+<span class="nc" id="L160">        logger.debug(&quot;Constraints exceeded: &quot; + i);</span>
       } else {
-<span class="fc" id="L158">        logger.debug(&quot;Constraints NOT exceeded&quot;);</span>
-<span class="fc" id="L159">        valid = true;</span>
-<span class="fc" id="L160">        break;</span>
+<span class="fc" id="L162">        logger.debug(&quot;Constraints NOT exceeded&quot;);</span>
+<span class="fc" id="L163">        valid = true;</span>
+<span class="fc" id="L164">        break;</span>
       }
     }
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (!valid) {</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">    if (!valid) {</span>
       // Limit is locally exceeded
-<span class="nc" id="L165">      logger.debug(&quot;Overloaded local system&quot;);</span>
-<span class="nc" id="L166">      throw new OpenR66ProtocolNetworkException(</span>
+<span class="nc" id="L169">      logger.debug(&quot;Overloaded local system&quot;);</span>
+<span class="nc" id="L170">      throw new OpenR66ProtocolNetworkException(</span>
           &quot;Cannot connect to remote server due to local overload&quot;);
     }
     try {
-<span class="fc" id="L170">      channel = createNewConnection(socketAddress, isSSL);</span>
-<span class="fc" id="L171">      ok = true;</span>
+<span class="fc" id="L174">      channel = createNewConnection(socketAddress, isSSL);</span>
+<span class="fc" id="L175">      ok = true;</span>
     } finally {
-<span class="pc bpc" id="L173" title="1 of 2 branches missed.">      if (!ok) {</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (channel != null) {</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">          if (channel.isOpen()) {</span>
-<span class="nc" id="L176">            WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">      if (!ok) {</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (channel != null) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">          if (channel.isOpen()) {</span>
+<span class="nc" id="L180">            WaarpSslUtility.closingSslChannel(channel);</span>
           }
-<span class="nc" id="L178">          channel = null;</span>
+<span class="nc" id="L182">          channel = null;</span>
         }
       }
     }
-<span class="fc" id="L182">    return channel;</span>
+<span class="fc" id="L186">    return channel;</span>
   }
 
   /**
@@ -197,58 +201,58 @@ public class NetworkTransaction {
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
-<span class="fc" id="L200">    ChannelFuture channelFuture = null;</span>
-<span class="pc bpc" id="L201" title="1 of 2 branches missed.">    for (int i = 0; i &lt; RETRYNB; i++) {</span>
+<span class="fc" id="L204">    ChannelFuture channelFuture = null;</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">    for (int i = 0; i &lt; RETRYNB; i++) {</span>
       try {
-<span class="fc bfc" id="L203" title="All 2 branches covered.">        if (isSSL) {</span>
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">          if (configuration.getHostSslId() != null) {</span>
-<span class="fc" id="L205">            channelFuture = clientSslBootstrap.connect(socketServerAddress);</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (isSSL) {</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">          if (configuration.getHostSslId() != null) {</span>
+<span class="fc" id="L209">            channelFuture = clientSslBootstrap.connect(socketServerAddress);</span>
           } else {
-<span class="nc" id="L207">            throw new OpenR66ProtocolNoConnectionException(&quot;No SSL support&quot;);</span>
+<span class="nc" id="L211">            throw new OpenR66ProtocolNoConnectionException(&quot;No SSL support&quot;);</span>
           }
         } else {
-<span class="fc" id="L210">          channelFuture = clientBootstrap.connect(socketServerAddress);</span>
+<span class="fc" id="L214">          channelFuture = clientBootstrap.connect(socketServerAddress);</span>
         }
-<span class="nc" id="L212">      } catch (final ChannelPipelineException e) {</span>
-<span class="nc" id="L213">        throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L216">      } catch (final ChannelPipelineException e) {</span>
+<span class="nc" id="L217">        throw new OpenR66ProtocolNoConnectionException(</span>
             &quot;Cannot connect to remote server due to a channel exception&quot;);
-<span class="fc" id="L215">      }</span>
+<span class="fc" id="L219">      }</span>
       try {
-<span class="fc" id="L217">        channelFuture.await(configuration.getTimeoutCon() / 3);</span>
-<span class="nc" id="L218">      } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L219">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="fc" id="L220">      }</span>
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">      if (channelFuture.isSuccess()) {</span>
-<span class="fc" id="L222">        final Channel channel = channelFuture.channel();</span>
-<span class="pc bpc" id="L223" title="1 of 4 branches missed.">        if (isSSL &amp;&amp; !NetworkSslServerHandler.isSslConnectedChannel(channel)) {</span>
-<span class="nc" id="L224">          logger.debug(&quot;KO CONNECT since SSL handshake is over&quot;);</span>
-<span class="nc" id="L225">          channel.close();</span>
-<span class="nc" id="L226">          throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="fc" id="L221">        channelFuture.await(configuration.getTimeoutCon() / 3);</span>
+<span class="nc" id="L222">      } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L223">        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="fc" id="L224">      }</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">      if (channelFuture.isSuccess()) {</span>
+<span class="fc" id="L226">        final Channel channel = channelFuture.channel();</span>
+<span class="pc bpc" id="L227" title="1 of 4 branches missed.">        if (isSSL &amp;&amp; !NetworkSslServerHandler.isSslConnectedChannel(channel)) {</span>
+<span class="nc" id="L228">          logger.debug(&quot;KO CONNECT since SSL handshake is over&quot;);</span>
+<span class="nc" id="L229">          channel.close();</span>
+<span class="nc" id="L230">          throw new OpenR66ProtocolNoConnectionException(</span>
               &quot;Cannot finish connect to remote server&quot;);
         }
-<span class="fc" id="L229">        networkChannelGroup.add(channel);</span>
-<span class="fc" id="L230">        return channel;</span>
+<span class="fc" id="L233">        networkChannelGroup.add(channel);</span>
+<span class="fc" id="L234">        return channel;</span>
       } else {
         try {
-<span class="nc" id="L233">          Thread.sleep(WAITFORNETOP * 2);</span>
-<span class="nc" id="L234">        } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L235">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L236">        }</span>
-<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (!channelFuture.isDone()) {</span>
-<span class="nc" id="L238">          throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L237">          Thread.sleep(WAITFORNETOP * 2);</span>
+<span class="nc" id="L238">        } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L239">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L240">        }</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (!channelFuture.isDone()) {</span>
+<span class="nc" id="L242">          throw new OpenR66ProtocolNoConnectionException(</span>
               &quot;Cannot connect to remote server due to interruption&quot;);
         }
-<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (channelFuture.cause() instanceof ConnectException) {</span>
-<span class="nc" id="L242">          logger.debug(&quot;KO CONNECT:&quot; + channelFuture.cause().getMessage());</span>
-<span class="nc" id="L243">          throw new OpenR66ProtocolNoConnectionException(</span>
-<span class="nc" id="L244">              &quot;Cannot connect to remote server&quot;, channelFuture.cause());</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (channelFuture.cause() instanceof ConnectException) {</span>
+<span class="nc" id="L246">          logger.debug(&quot;KO CONNECT:&quot; + channelFuture.cause().getMessage());</span>
+<span class="nc" id="L247">          throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="nc" id="L248">              &quot;Cannot connect to remote server&quot;, channelFuture.cause());</span>
         } else {
-<span class="nc" id="L246">          logger.debug(&quot;KO CONNECT but retry&quot;, channelFuture.cause());</span>
+<span class="nc" id="L250">          logger.debug(&quot;KO CONNECT but retry&quot;, channelFuture.cause());</span>
         }
       }
     }
-<span class="nc bnc" id="L250" title="All 2 branches missed.">    Throwable cause = channelFuture == null? null : channelFuture.cause();</span>
-<span class="nc" id="L251">    throw new OpenR66ProtocolNetworkException(&quot;Cannot connect to remote server&quot;,</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">    Throwable cause = channelFuture == null? null : channelFuture.cause();</span>
+<span class="nc" id="L255">    throw new OpenR66ProtocolNetworkException(&quot;Cannot connect to remote server&quot;,</span>
                                               cause);
   }
 
@@ -256,34 +260,34 @@ public class NetworkTransaction {
    * Close all Network Ttransaction
    */
   public void closeAll() {
-<span class="fc" id="L259">    logger.debug(&quot;close All Network Channels&quot;);</span>
+<span class="fc" id="L263">    logger.debug(&quot;close All Network Channels&quot;);</span>
     try {
-<span class="fc" id="L261">      Thread.sleep(RETRYINMS * 2);</span>
-<span class="nc" id="L262">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L263">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="fc" id="L264">    }</span>
-<span class="pc bpc" id="L265" title="1 of 2 branches missed.">    if (!configuration.isServer()) {</span>
-<span class="nc" id="L266">      WaarpShutdownHook.shutdownHook.launchFinalExit();</span>
+<span class="fc" id="L265">      Thread.sleep(RETRYINMS * 2);</span>
+<span class="nc" id="L266">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L267">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L268">    }</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">    if (!configuration.isServer()) {</span>
+<span class="nc" id="L270">      WaarpShutdownHook.shutdownHook.launchFinalExit();</span>
     }
-<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    for (final Channel channel : networkChannelGroup) {</span>
-<span class="nc" id="L269">      WaarpSslUtility.closingSslChannel(channel);</span>
-<span class="nc" id="L270">    }</span>
-<span class="fc" id="L271">    WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">    for (final Channel channel : networkChannelGroup) {</span>
+<span class="nc" id="L273">      WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="nc" id="L274">    }</span>
+<span class="fc" id="L275">    WaarpNettyUtil.awaitOrInterrupted(networkChannelGroup.close());</span>
     try {
-<span class="fc" id="L273">      Thread.sleep(WAITFORNETOP);</span>
-<span class="nc" id="L274">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L275">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="fc" id="L276">    }</span>
-<span class="fc" id="L277">    configuration.clientStop();</span>
-<span class="fc" id="L278">    logger.debug(&quot;Last action before exit&quot;);</span>
-<span class="fc" id="L279">    ChannelUtils.stopLogger();</span>
-<span class="fc" id="L280">  }</span>
+<span class="fc" id="L277">      Thread.sleep(WAITFORNETOP);</span>
+<span class="nc" id="L278">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L279">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="fc" id="L280">    }</span>
+<span class="fc" id="L281">    configuration.clientStop();</span>
+<span class="fc" id="L282">    logger.debug(&quot;Last action before exit&quot;);</span>
+<span class="fc" id="L283">    ChannelUtils.stopLogger();</span>
+<span class="fc" id="L284">  }</span>
 
   /**
    * @return The number of Network Channels
    */
   public int getNumberClients() {
-<span class="nc" id="L286">    return networkChannelGroup.size();</span>
+<span class="nc" id="L290">    return networkChannelGroup.size();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

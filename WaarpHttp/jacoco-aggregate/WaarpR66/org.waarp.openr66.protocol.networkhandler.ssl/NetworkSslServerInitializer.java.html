@@ -48,61 +48,61 @@ public class NetworkSslServerInitializer
   /**
    * @param isClient True if this Factory is to be used in Client mode
    */
-<span class="nc" id="L51">  public NetworkSslServerInitializer(boolean isClient) {</span>
-<span class="nc" id="L52">    this.isClient = isClient;</span>
-<span class="nc" id="L53">  }</span>
+<span class="fc" id="L51">  public NetworkSslServerInitializer(boolean isClient) {</span>
+<span class="fc" id="L52">    this.isClient = isClient;</span>
+<span class="fc" id="L53">  }</span>
 
   @Override
   protected void initChannel(SocketChannel ch) throws Exception {
-<span class="nc" id="L57">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="fc" id="L57">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Add SSL handler first to encrypt and decrypt everything.
     SslHandler sslHandler;
-<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (isClient) {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">    if (isClient) {</span>
       // Not server: no clientAuthent, no renegotiation
-<span class="nc" id="L62">      sslHandler = getWaarpSslContextFactory().initInitializer(false, false);</span>
+<span class="fc" id="L62">      sslHandler = getWaarpSslContextFactory().initInitializer(false, false);</span>
     } else {
       // Server: no renegotiation still, but possible clientAuthent
-<span class="nc" id="L65">      sslHandler = getWaarpSslContextFactory().initInitializer(true,</span>
-<span class="nc" id="L66">                                                               getWaarpSslContextFactory()</span>
-<span class="nc" id="L67">                                                                   .needClientAuthentication());</span>
+<span class="fc" id="L65">      sslHandler = getWaarpSslContextFactory().initInitializer(true,</span>
+<span class="fc" id="L66">                                                               getWaarpSslContextFactory()</span>
+<span class="fc" id="L67">                                                                   .needClientAuthentication());</span>
     }
-<span class="nc" id="L69">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
+<span class="fc" id="L69">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
 
-<span class="nc" id="L71">    pipeline.addLast(NetworkServerInitializer.TIMEOUT,</span>
+<span class="fc" id="L71">    pipeline.addLast(NetworkServerInitializer.TIMEOUT,</span>
                      new IdleStateHandler(0, 0, Configuration.configuration
-<span class="nc" id="L73">                         .getTimeoutCon(), TimeUnit.MILLISECONDS));</span>
+<span class="fc" id="L73">                         .getTimeoutCon(), TimeUnit.MILLISECONDS));</span>
 
     // Global limitation
-<span class="nc" id="L76">    final GlobalTrafficShapingHandler handler =</span>
-<span class="nc" id="L77">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">    if (handler == null) {</span>
+<span class="fc" id="L76">    final GlobalTrafficShapingHandler handler =</span>
+<span class="fc" id="L77">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">    if (handler == null) {</span>
 <span class="nc" id="L79">      throw new OpenR66ProtocolNetworkException(</span>
           &quot;Error at pipeline initialization,&quot; +
           &quot; GlobalTrafficShapingHandler configured.&quot;);
     }
-<span class="nc" id="L83">    pipeline.addLast(NetworkServerInitializer.LIMITGLOBAL, handler);</span>
+<span class="fc" id="L83">    pipeline.addLast(NetworkServerInitializer.LIMITGLOBAL, handler);</span>
     // Per channel limitation
-<span class="nc" id="L85">    pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,</span>
+<span class="fc" id="L85">    pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,</span>
                      new ChannelTrafficShapingHandler(
                          Configuration.configuration
-<span class="nc" id="L88">                             .getServerChannelWriteLimit(),</span>
+<span class="fc" id="L88">                             .getServerChannelWriteLimit(),</span>
                          Configuration.configuration
-<span class="nc" id="L90">                             .getServerChannelReadLimit(),</span>
-<span class="nc" id="L91">                         Configuration.configuration.getDelayLimit(),</span>
-<span class="nc" id="L92">                         Configuration.configuration.getTimeoutCon()));</span>
+<span class="fc" id="L90">                             .getServerChannelReadLimit(),</span>
+<span class="fc" id="L91">                         Configuration.configuration.getDelayLimit(),</span>
+<span class="fc" id="L92">                         Configuration.configuration.getTimeoutCon()));</span>
 
-<span class="nc" id="L94">    pipeline.addLast(NetworkServerInitializer.NETWORK_CODEC,</span>
+<span class="fc" id="L94">    pipeline.addLast(NetworkServerInitializer.NETWORK_CODEC,</span>
                      new NetworkPacketCodec());
-<span class="nc bnc" id="L96" title="All 2 branches missed.">    pipeline.addLast(Configuration.configuration.getHandlerGroup(),</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">    pipeline.addLast(Configuration.configuration.getHandlerGroup(),</span>
                      NetworkServerInitializer.NETWORK_HANDLER,
                      new NetworkSslServerHandler(!isClient));
-<span class="nc" id="L99">  }</span>
+<span class="fc" id="L99">  }</span>
 
   /**
    * @return the waarpSslContextFactory
    */
   public static WaarpSslContextFactory getWaarpSslContextFactory() {
-<span class="nc" id="L105">    return waarpSslContextFactory;</span>
+<span class="fc" id="L105">    return waarpSslContextFactory;</span>
   }
 
   /**
@@ -110,14 +110,14 @@ public class NetworkSslServerInitializer
    */
   public static void setWaarpSslContextFactory(
       WaarpSslContextFactory waarpSslContextFactory) {
-<span class="nc" id="L113">    NetworkSslServerInitializer.waarpSslContextFactory = waarpSslContextFactory;</span>
-<span class="nc" id="L114">  }</span>
+<span class="fc" id="L113">    NetworkSslServerInitializer.waarpSslContextFactory = waarpSslContextFactory;</span>
+<span class="fc" id="L114">  }</span>
 
   /**
    * @return the waarpSecureKeyStore
    */
   public static WaarpSecureKeyStore getWaarpSecureKeyStore() {
-<span class="nc" id="L120">    return waarpSecureKeyStore;</span>
+<span class="fc" id="L120">    return waarpSecureKeyStore;</span>
   }
 
   /**
@@ -125,7 +125,7 @@ public class NetworkSslServerInitializer
    */
   public static void setWaarpSecureKeyStore(
       WaarpSecureKeyStore waarpSecureKeyStore) {
-<span class="nc" id="L128">    NetworkSslServerInitializer.waarpSecureKeyStore = waarpSecureKeyStore;</span>
-<span class="nc" id="L129">  }</span>
+<span class="fc" id="L128">    NetworkSslServerInitializer.waarpSecureKeyStore = waarpSecureKeyStore;</span>
+<span class="fc" id="L129">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

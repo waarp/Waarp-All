@@ -102,27 +102,33 @@ public class ConfigImport implements Runnable {
 <span class="nc" id="L102">    rolePurge = false;</span>
 <span class="nc" id="L103">    this.networkTransaction = networkTransaction;</span>
 <span class="nc" id="L104">    dbhost = Configuration.configuration.getHostSslAuth();</span>
-<span class="nc" id="L105">  }</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L106">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
+    }
+<span class="nc" id="L108">  }</span>
 
   public ConfigImport(R66Future future, boolean hostPurge, boolean rulePurge,
                       boolean businessPurge, boolean aliasPurge,
                       boolean rolePurge, String host, String rule,
                       String business, String alias, String role,
-<span class="nc" id="L111">                      NetworkTransaction networkTransaction) {</span>
-<span class="nc" id="L112">    this.future = future;</span>
-<span class="nc" id="L113">    this.host = host;</span>
-<span class="nc" id="L114">    this.rule = rule;</span>
-<span class="nc" id="L115">    this.hostPurge = hostPurge;</span>
-<span class="nc" id="L116">    this.rulePurge = rulePurge;</span>
-<span class="nc" id="L117">    this.business = business;</span>
-<span class="nc" id="L118">    this.businessPurge = businessPurge;</span>
-<span class="nc" id="L119">    this.alias = alias;</span>
-<span class="nc" id="L120">    this.aliasPurge = aliasPurge;</span>
-<span class="nc" id="L121">    this.role = role;</span>
-<span class="nc" id="L122">    this.rolePurge = rolePurge;</span>
-<span class="nc" id="L123">    this.networkTransaction = networkTransaction;</span>
-<span class="nc" id="L124">    dbhost = Configuration.configuration.getHostSslAuth();</span>
-<span class="nc" id="L125">  }</span>
+<span class="nc" id="L114">                      NetworkTransaction networkTransaction) {</span>
+<span class="nc" id="L115">    this.future = future;</span>
+<span class="nc" id="L116">    this.host = host;</span>
+<span class="nc" id="L117">    this.rule = rule;</span>
+<span class="nc" id="L118">    this.hostPurge = hostPurge;</span>
+<span class="nc" id="L119">    this.rulePurge = rulePurge;</span>
+<span class="nc" id="L120">    this.business = business;</span>
+<span class="nc" id="L121">    this.businessPurge = businessPurge;</span>
+<span class="nc" id="L122">    this.alias = alias;</span>
+<span class="nc" id="L123">    this.aliasPurge = aliasPurge;</span>
+<span class="nc" id="L124">    this.role = role;</span>
+<span class="nc" id="L125">    this.rolePurge = rolePurge;</span>
+<span class="nc" id="L126">    this.networkTransaction = networkTransaction;</span>
+<span class="nc" id="L127">    dbhost = Configuration.configuration.getHostSslAuth();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L129">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
+    }
+<span class="nc" id="L131">  }</span>
 
   /**
    * Used when the filenames are not compliant with remote filenames.
@@ -135,16 +141,16 @@ public class ConfigImport implements Runnable {
    */
   public void setSpecialIds(long hostid, long ruleid, long businessid,
                             long aliasid, long roleid) {
-<span class="nc" id="L138">    this.hostid = hostid;</span>
-<span class="nc" id="L139">    this.ruleid = ruleid;</span>
-<span class="nc" id="L140">    this.businessid = businessid;</span>
-<span class="nc" id="L141">    this.aliasid = aliasid;</span>
-<span class="nc" id="L142">    this.roleid = roleid;</span>
-<span class="nc" id="L143">  }</span>
+<span class="nc" id="L144">    this.hostid = hostid;</span>
+<span class="nc" id="L145">    this.ruleid = ruleid;</span>
+<span class="nc" id="L146">    this.businessid = businessid;</span>
+<span class="nc" id="L147">    this.aliasid = aliasid;</span>
+<span class="nc" id="L148">    this.roleid = roleid;</span>
+<span class="nc" id="L149">  }</span>
 
   public void setHost(DbHostAuth host) {
-<span class="nc" id="L146">    dbhost = host;</span>
-<span class="nc" id="L147">  }</span>
+<span class="nc" id="L152">    dbhost = host;</span>
+<span class="nc" id="L153">  }</span>
 
   /**
    * Prior to call this method, the pipeline and NetworkTransaction must have
@@ -153,46 +159,46 @@ public class ConfigImport implements Runnable {
    */
   @Override
   public void run() {
-<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L157">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L163">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
     }
-<span class="nc" id="L159">    LocalChannelReference localChannelReference =</span>
-<span class="nc" id="L160">        AbstractTransfer.tryConnect(dbhost, future, networkTransaction);</span>
-<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L162">      return;</span>
+<span class="nc" id="L165">    LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L166">        AbstractTransfer.tryConnect(dbhost, future, networkTransaction);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
+<span class="nc" id="L168">      return;</span>
     }
-<span class="nc" id="L164">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
-<span class="nc" id="L165">    final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());</span>
-<span class="nc" id="L166">    logger.debug(&quot;UseJson: &quot; + useJson);</span>
+<span class="nc" id="L170">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
+<span class="nc" id="L171">    final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());</span>
+<span class="nc" id="L172">    logger.debug(&quot;UseJson: &quot; + useJson);</span>
     AbstractLocalPacket valid;
-<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (useJson) {</span>
-<span class="nc" id="L169">      final ConfigImportJsonPacket node = new ConfigImportJsonPacket();</span>
-<span class="nc" id="L170">      node.setHost(host);</span>
-<span class="nc" id="L171">      node.setRule(rule);</span>
-<span class="nc" id="L172">      node.setBusiness(business);</span>
-<span class="nc" id="L173">      node.setAlias(alias);</span>
-<span class="nc" id="L174">      node.setRoles(role);</span>
-<span class="nc" id="L175">      node.setPurgehost(hostPurge);</span>
-<span class="nc" id="L176">      node.setPurgerule(rulePurge);</span>
-<span class="nc" id="L177">      node.setPurgebusiness(businessPurge);</span>
-<span class="nc" id="L178">      node.setPurgealias(aliasPurge);</span>
-<span class="nc" id="L179">      node.setPurgeroles(rolePurge);</span>
-<span class="nc" id="L180">      node.setHostid(hostid);</span>
-<span class="nc" id="L181">      node.setRuleid(ruleid);</span>
-<span class="nc" id="L182">      node.setBusinessid(businessid);</span>
-<span class="nc" id="L183">      node.setAliasid(aliasid);</span>
-<span class="nc" id="L184">      node.setRolesid(roleid);</span>
-<span class="nc" id="L185">      valid = new JsonCommandPacket(node, LocalPacketFactory.CONFIMPORTPACKET);</span>
-<span class="nc" id="L186">    } else {</span>
-<span class="nc bnc" id="L187" title="All 4 branches missed.">      valid = new ValidPacket((hostPurge? &quot;1 &quot; : &quot;0 &quot;) + host,</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">    if (useJson) {</span>
+<span class="nc" id="L175">      final ConfigImportJsonPacket node = new ConfigImportJsonPacket();</span>
+<span class="nc" id="L176">      node.setHost(host);</span>
+<span class="nc" id="L177">      node.setRule(rule);</span>
+<span class="nc" id="L178">      node.setBusiness(business);</span>
+<span class="nc" id="L179">      node.setAlias(alias);</span>
+<span class="nc" id="L180">      node.setRoles(role);</span>
+<span class="nc" id="L181">      node.setPurgehost(hostPurge);</span>
+<span class="nc" id="L182">      node.setPurgerule(rulePurge);</span>
+<span class="nc" id="L183">      node.setPurgebusiness(businessPurge);</span>
+<span class="nc" id="L184">      node.setPurgealias(aliasPurge);</span>
+<span class="nc" id="L185">      node.setPurgeroles(rolePurge);</span>
+<span class="nc" id="L186">      node.setHostid(hostid);</span>
+<span class="nc" id="L187">      node.setRuleid(ruleid);</span>
+<span class="nc" id="L188">      node.setBusinessid(businessid);</span>
+<span class="nc" id="L189">      node.setAliasid(aliasid);</span>
+<span class="nc" id="L190">      node.setRolesid(roleid);</span>
+<span class="nc" id="L191">      valid = new JsonCommandPacket(node, LocalPacketFactory.CONFIMPORTPACKET);</span>
+<span class="nc" id="L192">    } else {</span>
+<span class="nc bnc" id="L193" title="All 4 branches missed.">      valid = new ValidPacket((hostPurge? &quot;1 &quot; : &quot;0 &quot;) + host,</span>
                               (rulePurge? &quot;1 &quot; : &quot;0 &quot;) + rule,
                               LocalPacketFactory.CONFIMPORTPACKET);
     }
-<span class="nc" id="L191">    AbstractTransfer</span>
-<span class="nc" id="L192">        .sendValidPacket(dbhost, localChannelReference, valid, future);</span>
-<span class="nc" id="L193">    logger.debug(</span>
-<span class="nc bnc" id="L194" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
-<span class="nc" id="L195">  }</span>
+<span class="nc" id="L197">    AbstractTransfer</span>
+<span class="nc" id="L198">        .sendValidPacket(dbhost, localChannelReference, valid, future);</span>
+<span class="nc" id="L199">    logger.debug(</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        &quot;Request done with &quot; + (future.isSuccess()? &quot;success&quot; : &quot;error&quot;));</span>
+<span class="nc" id="L201">  }</span>
 
   protected static String shost;
   protected static String srule;
@@ -205,194 +211,198 @@ public class ConfigImport implements Runnable {
   protected static boolean saliaspurge;
   protected static boolean srolepurge;
   protected static String stohost;
-<span class="nc" id="L208">  protected static long lhost = ILLEGALVALUE;</span>
-<span class="nc" id="L209">  protected static long lrule = ILLEGALVALUE;</span>
-<span class="nc" id="L210">  protected static long lbusiness = ILLEGALVALUE;</span>
-<span class="nc" id="L211">  protected static long lalias = ILLEGALVALUE;</span>
-<span class="nc" id="L212">  protected static long lrole = ILLEGALVALUE;</span>
+<span class="nc" id="L214">  protected static long lhost = ILLEGALVALUE;</span>
+<span class="nc" id="L215">  protected static long lrule = ILLEGALVALUE;</span>
+<span class="nc" id="L216">  protected static long lbusiness = ILLEGALVALUE;</span>
+<span class="nc" id="L217">  protected static long lalias = ILLEGALVALUE;</span>
+<span class="nc" id="L218">  protected static long lrole = ILLEGALVALUE;</span>
 
   protected static boolean getParams(String[] args) {
-<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
-<span class="nc" id="L216">      logger.error(_INFO_ARGS);</span>
-<span class="nc" id="L217">      return false;</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L222">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
     }
-<span class="nc" id="L219">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L220" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
-<span class="nc" id="L221">      logger.error(_INFO_ARGS);</span>
-<span class="nc" id="L222">      return false;</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L225">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L226">      return false;</span>
     }
-<span class="nc bnc" id="L224" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">      if (&quot;-hosts&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L226">        i++;</span>
-<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L228">          return false;</span>
+<span class="nc" id="L228">    if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc" id="L230">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L231">      return false;</span>
+    }
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">      if (&quot;-hosts&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L235">        i++;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L237">          return false;</span>
         }
-<span class="nc" id="L230">        shost = args[i];</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">      } else if (&quot;-rules&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L232">        i++;</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L234">          return false;</span>
+<span class="nc" id="L239">        shost = args[i];</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">      } else if (&quot;-rules&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L241">        i++;</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L243">          return false;</span>
         }
-<span class="nc" id="L236">        srule = args[i];</span>
-<span class="nc bnc" id="L237" title="All 2 branches missed.">      } else if (&quot;-business&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L238">        i++;</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L240">          return false;</span>
+<span class="nc" id="L245">        srule = args[i];</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">      } else if (&quot;-business&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L247">        i++;</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L249">          return false;</span>
         }
-<span class="nc" id="L242">        sbusiness = args[i];</span>
-<span class="nc bnc" id="L243" title="All 2 branches missed.">      } else if (&quot;-alias&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L244">        i++;</span>
-<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L246">          return false;</span>
+<span class="nc" id="L251">        sbusiness = args[i];</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">      } else if (&quot;-alias&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L253">        i++;</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L255">          return false;</span>
         }
-<span class="nc" id="L248">        salias = args[i];</span>
-<span class="nc bnc" id="L249" title="All 2 branches missed.">      } else if (&quot;-roles&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L250">        i++;</span>
-<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L252">          return false;</span>
+<span class="nc" id="L257">        salias = args[i];</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">      } else if (&quot;-roles&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L259">        i++;</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L261">          return false;</span>
         }
-<span class="nc" id="L254">        srole = args[i];</span>
-<span class="nc bnc" id="L255" title="All 2 branches missed.">      } else if (&quot;-purgehosts&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L256">        shostpurge = true;</span>
-<span class="nc bnc" id="L257" title="All 2 branches missed.">      } else if (&quot;-purgerules&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L258">        srulepurge = true;</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">      } else if (&quot;-purgebusiness&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L260">        sbusinesspurge = true;</span>
-<span class="nc bnc" id="L261" title="All 2 branches missed.">      } else if (&quot;-purgealias&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L262">        saliaspurge = true;</span>
-<span class="nc bnc" id="L263" title="All 2 branches missed.">      } else if (&quot;-purgeroles&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L264">        srolepurge = true;</span>
-<span class="nc bnc" id="L265" title="All 2 branches missed.">      } else if (&quot;-host&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L266">        i++;</span>
-<span class="nc" id="L267">        stohost = args[i];</span>
-<span class="nc bnc" id="L268" title="All 2 branches missed.">      } else if (&quot;-hostid&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L269">        i++;</span>
-<span class="nc bnc" id="L270" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L271">          return false;</span>
-        }
-        try {
-<span class="nc" id="L274">          lhost = Long.parseLong(args[i]);</span>
-<span class="nc" id="L275">        } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L276">          return false;</span>
-<span class="nc" id="L277">        }</span>
-<span class="nc bnc" id="L278" title="All 2 branches missed.">      } else if (&quot;-ruleid&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L279">        i++;</span>
-<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L281">          return false;</span>
+<span class="nc" id="L263">        srole = args[i];</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">      } else if (&quot;-purgehosts&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L265">        shostpurge = true;</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">      } else if (&quot;-purgerules&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L267">        srulepurge = true;</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">      } else if (&quot;-purgebusiness&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L269">        sbusinesspurge = true;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">      } else if (&quot;-purgealias&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L271">        saliaspurge = true;</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">      } else if (&quot;-purgeroles&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L273">        srolepurge = true;</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">      } else if (&quot;-host&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L275">        i++;</span>
+<span class="nc" id="L276">        stohost = args[i];</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">      } else if (&quot;-hostid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L278">        i++;</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L280">          return false;</span>
         }
         try {
-<span class="nc" id="L284">          lrule = Long.parseLong(args[i]);</span>
-<span class="nc" id="L285">        } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L286">          return false;</span>
-<span class="nc" id="L287">        }</span>
-<span class="nc bnc" id="L288" title="All 2 branches missed.">      } else if (&quot;-businessid&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L289">        i++;</span>
-<span class="nc bnc" id="L290" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L291">          return false;</span>
+<span class="nc" id="L283">          lhost = Long.parseLong(args[i]);</span>
+<span class="nc" id="L284">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L285">          return false;</span>
+<span class="nc" id="L286">        }</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">      } else if (&quot;-ruleid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L288">        i++;</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L290">          return false;</span>
         }
         try {
-<span class="nc" id="L294">          lbusiness = Long.parseLong(args[i]);</span>
-<span class="nc" id="L295">        } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L296">          return false;</span>
-<span class="nc" id="L297">        }</span>
-<span class="nc bnc" id="L298" title="All 2 branches missed.">      } else if (&quot;-aliasid&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L299">        i++;</span>
-<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L301">          return false;</span>
+<span class="nc" id="L293">          lrule = Long.parseLong(args[i]);</span>
+<span class="nc" id="L294">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L295">          return false;</span>
+<span class="nc" id="L296">        }</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">      } else if (&quot;-businessid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L298">        i++;</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L300">          return false;</span>
         }
         try {
-<span class="nc" id="L304">          lalias = Long.parseLong(args[i]);</span>
-<span class="nc" id="L305">        } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L306">          return false;</span>
-<span class="nc" id="L307">        }</span>
-<span class="nc bnc" id="L308" title="All 2 branches missed.">      } else if (&quot;-roleid&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L309">        i++;</span>
-<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
-<span class="nc" id="L311">          return false;</span>
+<span class="nc" id="L303">          lbusiness = Long.parseLong(args[i]);</span>
+<span class="nc" id="L304">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L305">          return false;</span>
+<span class="nc" id="L306">        }</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">      } else if (&quot;-aliasid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L308">        i++;</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L310">          return false;</span>
         }
         try {
-<span class="nc" id="L314">          lrole = Long.parseLong(args[i]);</span>
-<span class="nc" id="L315">        } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L316">          return false;</span>
-<span class="nc" id="L317">        }</span>
+<span class="nc" id="L313">          lalias = Long.parseLong(args[i]);</span>
+<span class="nc" id="L314">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L315">          return false;</span>
+<span class="nc" id="L316">        }</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">      } else if (&quot;-roleid&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L318">        i++;</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">        if (args.length &lt;= i) {</span>
+<span class="nc" id="L320">          return false;</span>
+        }
+        try {
+<span class="nc" id="L323">          lrole = Long.parseLong(args[i]);</span>
+<span class="nc" id="L324">        } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L325">          return false;</span>
+<span class="nc" id="L326">        }</span>
       }
     }
-<span class="nc" id="L320">    return true;</span>
+<span class="nc" id="L329">    return true;</span>
   }
 
   public static void main(String[] args) {
-<span class="nc" id="L324">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L325" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L326">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
+<span class="nc" id="L333">    WaarpLoggerFactory</span>
+<span class="nc" id="L334">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L336">      logger = WaarpLoggerFactory.getLogger(ConfigImport.class);</span>
     }
-<span class="nc bnc" id="L328" title="All 2 branches missed.">    if (!getParams(args)) {</span>
-<span class="nc" id="L329">      logger.error(&quot;Wrong initialization&quot;);</span>
-<span class="nc bnc" id="L330" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L331">        admin.close();</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">    if (!getParams(args)) {</span>
+<span class="nc" id="L339">      logger.error(&quot;Wrong initialization&quot;);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L341">        admin.close();</span>
       }
-<span class="nc" id="L333">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L343">      System.exit(1);//NOSONAR</span>
     }
-<span class="nc" id="L335">    final long time1 = System.currentTimeMillis();</span>
-<span class="nc" id="L336">    final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L345">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L346">    final R66Future future = new R66Future(true);</span>
 
-<span class="nc" id="L338">    Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L339">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+<span class="nc" id="L348">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L349">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
     try {
-<span class="nc" id="L341">      final ConfigImport transaction =</span>
+<span class="nc" id="L351">      final ConfigImport transaction =</span>
           new ConfigImport(future, shostpurge, srulepurge, sbusinesspurge,
                            saliaspurge, srolepurge, shost, srule, sbusiness,
                            salias, srole, networkTransaction);
-<span class="nc" id="L345">      transaction.setSpecialIds(lhost, lrule, lbusiness, lalias, lrole);</span>
-<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (stohost != null) {</span>
+<span class="nc" id="L355">      transaction.setSpecialIds(lhost, lrule, lbusiness, lalias, lrole);</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">      if (stohost != null) {</span>
         try {
-<span class="nc" id="L348">          transaction.setHost(new DbHostAuth(stohost));</span>
-<span class="nc" id="L349">        } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L350">          logger.error(</span>
+<span class="nc" id="L358">          transaction.setHost(new DbHostAuth(stohost));</span>
+<span class="nc" id="L359">        } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L360">          logger.error(</span>
               &quot;ConfigImport in     FAILURE since Host is not found: &quot; + stohost,
               e);
-<span class="nc" id="L353">          networkTransaction.closeAll();</span>
-<span class="nc" id="L354">          System.exit(10);//NOSONAR</span>
-<span class="nc" id="L355">        }</span>
+<span class="nc" id="L363">          networkTransaction.closeAll();</span>
+<span class="nc" id="L364">          System.exit(10);//NOSONAR</span>
+<span class="nc" id="L365">        }</span>
       } else {
-<span class="nc" id="L357">        stohost = Configuration.configuration.getHostSslId();</span>
+<span class="nc" id="L367">        stohost = Configuration.configuration.getHostSslId();</span>
       }
-<span class="nc" id="L359">      transaction.run();</span>
-<span class="nc" id="L360">      future.awaitOrInterruptible();</span>
-<span class="nc" id="L361">      final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L362">      final long delay = time2 - time1;</span>
-<span class="nc" id="L363">      final R66Result result = future.getResult();</span>
-<span class="nc bnc" id="L364" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
-<span class="nc" id="L365">        final boolean useJson = PartnerConfiguration.useJson(stohost);</span>
-<span class="nc" id="L366">        logger.debug(&quot;UseJson: &quot; + useJson);</span>
+<span class="nc" id="L369">      transaction.run();</span>
+<span class="nc" id="L370">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L371">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L372">      final long delay = time2 - time1;</span>
+<span class="nc" id="L373">      final R66Result result = future.getResult();</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc" id="L375">        final boolean useJson = PartnerConfiguration.useJson(stohost);</span>
+<span class="nc" id="L376">        logger.debug(&quot;UseJson: &quot; + useJson);</span>
         String message;
-<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (useJson) {</span>
-<span class="nc bnc" id="L369" title="All 2 branches missed.">          message = result.getOther() != null?</span>
-<span class="nc" id="L370">              ((JsonCommandPacket) result.getOther()).getRequest() : &quot;no file&quot;;</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">        if (useJson) {</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">          message = result.getOther() != null?</span>
+<span class="nc" id="L380">              ((JsonCommandPacket) result.getOther()).getRequest() : &quot;no file&quot;;</span>
         } else {
-<span class="nc bnc" id="L372" title="All 2 branches missed.">          message = result.getOther() != null?</span>
-<span class="nc" id="L373">              ((ValidPacket) result.getOther()).getSheader() : &quot;no file&quot;;</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">          message = result.getOther() != null?</span>
+<span class="nc" id="L383">              ((ValidPacket) result.getOther()).getSheader() : &quot;no file&quot;;</span>
         }
-<span class="nc bnc" id="L375" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
-<span class="nc" id="L376">          logger.warn(</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L386">          logger.warn(</span>
               &quot;WARNED on import:     &quot; + message + &quot;     delay: &quot; + delay);
         } else {
-<span class="nc" id="L379">          logger.warn(</span>
+<span class="nc" id="L389">          logger.warn(</span>
               &quot;SUCCESS on import:     &quot; + message + &quot;     delay: &quot; + delay);
         }
-<span class="nc" id="L382">      } else {</span>
-<span class="nc bnc" id="L383" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
-<span class="nc" id="L384">          logger.warn(&quot;ConfigImport is     WARNED&quot;, future.getCause());</span>
+<span class="nc" id="L392">      } else {</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">        if (result.getCode() == ErrorCode.Warning) {</span>
+<span class="nc" id="L394">          logger.warn(&quot;ConfigImport is     WARNED&quot;, future.getCause());</span>
         } else {
-<span class="nc" id="L386">          logger.error(&quot;ConfigImport in     FAILURE&quot;, future.getCause());</span>
+<span class="nc" id="L396">          logger.error(&quot;ConfigImport in     FAILURE&quot;, future.getCause());</span>
         }
-<span class="nc" id="L388">        networkTransaction.closeAll();</span>
-<span class="nc" id="L389">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+<span class="nc" id="L398">        networkTransaction.closeAll();</span>
+<span class="nc" id="L399">        System.exit(result.getCode().ordinal());//NOSONAR</span>
       }
     } finally {
-<span class="nc" id="L392">      networkTransaction.closeAll();</span>
-<span class="nc" id="L393">      System.exit(0);//NOSONAR</span>
+<span class="nc" id="L402">      networkTransaction.closeAll();</span>
+<span class="nc" id="L403">      System.exit(0);//NOSONAR</span>
     }
-<span class="nc" id="L395">  }</span>
+<span class="nc" id="L405">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

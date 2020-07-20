@@ -1,0 +1,2219 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileBasedConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.configuration</a> &gt; <span class="el_source">FileBasedConfiguration.java</span></div><h1>FileBasedConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.configuration;
+
+import io.netty.handler.traffic.AbstractTrafficShapingHandler;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.waarp.common.cpu.WaarpConstraintLimitHandler;
+import org.waarp.common.crypto.Des;
+import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
+import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.database.ConnectionFactory;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbRequest;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbType;
+import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.exception.CryptoException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.file.AbstractDir;
+import org.waarp.common.file.DirInterface;
+import org.waarp.common.file.FileUtils;
+import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.role.RoleDefault;
+import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.xml.XmlHash;
+import org.waarp.common.xml.XmlRootHash;
+import org.waarp.common.xml.XmlUtil;
+import org.waarp.common.xml.XmlValue;
+import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.context.R66BusinessFactoryInterface;
+import org.waarp.openr66.context.authentication.R66Auth;
+import org.waarp.openr66.context.task.localexec.LocalExecClient;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.database.data.DbConfiguration;
+import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbHostConfiguration;
+import org.waarp.openr66.database.model.DbModelFactoryR66;
+import org.waarp.openr66.pojo.Business;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.configuration.R66SystemProperties;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+import org.waarp.openr66.protocol.http.adminssl.HttpResponsiveSslHandler;
+import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
+import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
+import org.waarp.openr66.server.ServerInitDatabase;
+import org.waarp.snmp.SnmpConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.configuration.FileBasedElements.*;
+
+/**
+ * File Based Configuration
+ */
+public class FileBasedConfiguration {
+  private static final String CANNOT_FIND_SSL_AUTHENTICATION_FOR_CURRENT_HOST =
+      &quot;Cannot find SSL Authentication for current host&quot;;
+
+  private static final String CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST =
+      &quot;Cannot find Authentication for current host&quot;;
+
+  private static final String IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD =
+      &quot;{} is deprecated in system properties use {} instead&quot;;
+
+  private static final String CANNOT_LOAD_AUTHENTICATION_CONFIGURATION =
+      &quot;Cannot load Authentication configuration&quot;;
+
+  private static final String CANNOT_LOAD_LIMIT_CONFIGURATION =
+      &quot;Cannot load Limit configuration&quot;;
+
+  private static final String CANNOT_LOAD_DIRECTORY_CONFIGURATION =
+      &quot;Cannot load Directory configuration&quot;;
+
+  private static final String CANNOT_LOAD_DATABASE_CONFIGURATION =
+      &quot;Cannot load Database configuration&quot;;
+
+  private static final String CANNOT_LOAD_IDENTITY = &quot;Cannot load Identity&quot;;
+
+  private static final String FILE_BASED_CONFIGURATION_CANNOT_READ_XML =
+      &quot;FileBasedConfiguration.CannotReadXml&quot;;
+
+  private static final String FILE_BASED_CONFIGURATION_NO_SET_CONFIG =
+      &quot;FileBasedConfiguration.NoSetConfig&quot;;
+
+  private static final String FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG =
+      &quot;FileBasedConfiguration.NotFoundConfig&quot;;
+
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L130">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L131">      WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);</span>
+
+  private static XmlValue[] configuration;
+
+  private static XmlRootHash hashRootConfig;
+
+<span class="nc" id="L137">  protected FileBasedConfiguration() {</span>
+<span class="nc" id="L138">  }</span>
+
+  public static void setXmlRootHash(XmlRootHash xmlRootHash) {
+<span class="nc" id="L141">    hashRootConfig = xmlRootHash;</span>
+<span class="nc" id="L142">  }</span>
+
+  /**
+   * Load the locale from configuration file
+   *
+   * @param hashConfig
+   */
+  private static void loadLocale(XmlHash hashConfig) {
+<span class="fc" id="L150">    final XmlValue value = hashConfig.get(XML_LOCALE);</span>
+<span class="pc bpc" id="L151" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L152">      final String locale = value.getString();</span>
+<span class="nc bnc" id="L153" title="All 4 branches missed.">      if (locale == null || locale.isEmpty()) {</span>
+<span class="nc" id="L154">        return;</span>
+      }
+<span class="nc" id="L156">      Messages.init(new Locale(locale));</span>
+    }
+<span class="fc" id="L158">  }</span>
+
+  /**
+   * @param config
+   * @param hashRootConfig
+   *
+   * @return True if the identity of the server is correctly loaded
+   */
+  public static boolean loadIdentity(Configuration config,
+                                     XmlRootHash hashRootConfig) {
+<span class="fc" id="L168">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_IDENTITY));</span>
+    try {
+<span class="fc" id="L170">      loadLocale(hashConfig);</span>
+<span class="fc" id="L171">      XmlValue value = hashConfig.get(XML_SERVER_HOSTID);</span>
+<span class="pc bpc" id="L172" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L173">        config.setHostId(value.getString());</span>
+      } else {
+<span class="nc" id="L175">        logger.error(</span>
+<span class="nc" id="L176">            Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+            &quot;Host ID&quot;); //$NON-NLS-1$
+<span class="nc" id="L178">        return false;</span>
+      }
+<span class="fc" id="L180">      value = hashConfig.get(XML_SERVER_SSLHOSTID);</span>
+<span class="pc bpc" id="L181" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L182">        config.setHostSslId(value.getString());</span>
+      } else {
+<span class="nc" id="L184">        logger.warn(Messages.getString(</span>
+            &quot;FileBasedConfiguration.SSLIDNotFound&quot;)); //$NON-NLS-1$
+<span class="nc" id="L186">        config.setUseSSL(false);</span>
+<span class="nc" id="L187">        config.setHostSslId(null);</span>
+      }
+<span class="fc" id="L189">      value = hashConfig.get(XML_AUTHENTIFICATION_FILE);</span>
+<span class="pc bpc" id="L190" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L191">        config.setAuthFile(value.getString());</span>
+      }
+<span class="fc" id="L193">      return setCryptoKey(config, hashConfig);</span>
+    } finally {
+<span class="fc" id="L195">      hashConfig.clear();</span>
+<span class="fc" id="L196">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * @param config
+   *
+   * @return True if the authentication of partners is correctly loaded
+   */
+  private static boolean loadAuthentication(Configuration config) {
+<span class="nc" id="L206">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_IDENTITY));</span>
+    try {
+<span class="nc bnc" id="L208" title="All 2 branches missed.">      if (config.isSaveTaskRunnerWithNoDb()) {</span>
+        // if no database, must load authentication from file
+<span class="nc" id="L210">        final XmlValue value = hashConfig.get(XML_AUTHENTIFICATION_FILE);</span>
+<span class="nc bnc" id="L211" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L212">          final String fileauthent = value.getString();</span>
+<span class="nc" id="L213">          return AuthenticationFileBasedConfiguration</span>
+<span class="nc" id="L214">              .loadAuthentication(config, fileauthent);</span>
+        } else {
+<span class="nc" id="L216">          logger.warn(</span>
+<span class="nc" id="L217">              Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+              &quot;Authentication file&quot;); //$NON-NLS-1$
+<span class="nc" id="L219">          return false;</span>
+        }
+      }
+<span class="nc" id="L222">      return true;</span>
+    } finally {
+<span class="nc" id="L224">      hashConfig.clear();</span>
+<span class="nc" id="L225">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * @param config
+   *
+   * @return True if the server parameters are correctly loaded
+   */
+  private static boolean loadServerParam(Configuration config) {
+<span class="fc" id="L235">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_SERVER));</span>
+    try {
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">      if (!loadServerConfig(config, hashConfig)) {</span>
+<span class="nc" id="L238">        return false;</span>
+      }
+      XmlValue value;
+<span class="fc" id="L241">      value = hashConfig.get(XML_USELOCALEXEC);</span>
+<span class="pc bpc" id="L242" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L243">        config.setUseLocalExec(value.getBoolean());</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">        if (config.isUseLocalExec()) {</span>
+<span class="nc" id="L245">          value = hashConfig.get(XML_LEXECADDR);</span>
+          String saddr;
+          InetAddress addr;
+<span class="nc bnc" id="L248" title="All 4 branches missed.">          if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L249">            saddr = value.getString();</span>
+            try {
+<span class="nc" id="L251">              addr = InetAddress.getByName(saddr);</span>
+<span class="nc" id="L252">            } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L253">              logger.error(Messages.getString(</span>
+                  FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +
+                           &quot;LocalExec Address&quot;); //$NON-NLS-1$
+<span class="nc" id="L256">              return false;</span>
+<span class="nc" id="L257">            }</span>
+          } else {
+<span class="nc" id="L259">            logger.warn(</span>
+<span class="nc" id="L260">                Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+                &quot;LocalExec Address&quot;); //$NON-NLS-1$
+            try {
+<span class="nc" id="L263">              addr = InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 });</span>
+<span class="nc" id="L264">            } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L265">              logger.error(Messages.getString(</span>
+                  FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +
+                           &quot;LocalExec Address&quot;); //$NON-NLS-1$
+<span class="nc" id="L268">              return false;</span>
+<span class="nc" id="L269">            }</span>
+          }
+<span class="nc" id="L271">          value = hashConfig.get(XML_LEXECPORT);</span>
+          int port;
+<span class="nc bnc" id="L273" title="All 4 branches missed.">          if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L274">            port = value.getInteger();</span>
+          } else {
+<span class="nc" id="L276">            port = 9999;</span>
+          }
+<span class="nc" id="L278">          LocalExecClient.address = new InetSocketAddress(addr, port);</span>
+        }
+      }
+<span class="fc" id="L281">      value = hashConfig.get(XML_CHECK_ADDRESS);</span>
+<span class="pc bpc" id="L282" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L283">        config.setCheckRemoteAddress(value.getBoolean());</span>
+      }
+<span class="fc" id="L285">      value = hashConfig.get(XML_CHECK_CLIENTADDRESS);</span>
+<span class="pc bpc" id="L286" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L287">        config.setCheckClientAddress(value.getBoolean());</span>
+      }
+<span class="fc" id="L289">      value = hashConfig.get(XML_MULTIPLE_MONITORS);</span>
+<span class="pc bpc" id="L290" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L291">        config.setMultipleMonitors(value.getInteger());</span>
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">        if (config.getMultipleMonitors() &gt; 1) {</span>
+<span class="nc" id="L293">          logger.warn(Messages.getString(&quot;FileBasedConfiguration.MMOn&quot;)</span>
+                      //$NON-NLS-1$
+<span class="nc" id="L295">                      + config.getMultipleMonitors() + Messages.getString(</span>
+              &quot;FileBasedConfiguration.MMOn2&quot;)); //$NON-NLS-1$
+        } else {
+<span class="fc" id="L298">          config.setMultipleMonitors(1);</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">          if (config.isWarnOnStartup()) {</span>
+<span class="fc" id="L300">            logger.warn(Messages.getString(</span>
+                &quot;FileBasedConfiguration.MMOff&quot;)); //$NON-NLS-1$
+          } else {
+<span class="nc" id="L303">            logger.info(Messages.getString(</span>
+                &quot;FileBasedConfiguration.MMOff&quot;)); //$NON-NLS-1$
+          }
+        }
+      } else {
+<span class="fc" id="L308">        config.setMultipleMonitors(1);</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">        if (config.isWarnOnStartup()) {</span>
+<span class="fc" id="L310">          logger.warn(</span>
+<span class="fc" id="L311">              Messages.getString(&quot;FileBasedConfiguration.MMOff&quot;)); //$NON-NLS-1$</span>
+        } else {
+<span class="nc" id="L313">          logger.info(</span>
+<span class="nc" id="L314">              Messages.getString(&quot;FileBasedConfiguration.MMOff&quot;)); //$NON-NLS-1$</span>
+        }
+      }
+<span class="fc" id="L317">      value = hashConfig.get(XML_BUSINESS_FACTORY);</span>
+<span class="pc bpc" id="L318" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+        try {
+<span class="nc" id="L320">          ParametersChecker.checkSanityString(value.getString());</span>
+<span class="nc" id="L321">        } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L322">          logger.error(&quot;Bad Business Factory class&quot;, e);</span>
+<span class="nc" id="L323">          return false;</span>
+<span class="nc" id="L324">        }</span>
+        try {
+<span class="nc" id="L326">          config.setR66BusinessFactory((R66BusinessFactoryInterface) Class</span>
+<span class="nc" id="L327">              .forName(value.getString())//NOSONAR</span>
+<span class="nc" id="L328">              .newInstance());//NOSONAR</span>
+<span class="nc" id="L329">        } catch (final Exception e) {</span>
+<span class="nc" id="L330">          logger.error(&quot;Bad Business Factory class&quot;, e);</span>
+<span class="nc" id="L331">          return false;</span>
+<span class="nc" id="L332">        }</span>
+      }
+<span class="fc" id="L334">      return true;</span>
+    } finally {
+<span class="fc" id="L336">      hashConfig.clear();</span>
+<span class="fc" id="L337">      hashConfig = null;</span>
+    }
+  }
+
+  public static boolean loadServerConfig(final Configuration config,
+                                         final XmlHash hashConfig) {
+<span class="fc" id="L343">    XmlValue value = hashConfig.get(XML_USESSL);</span>
+<span class="pc bpc" id="L344" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L345">      config.setUseSSL(value.getBoolean());</span>
+    }
+<span class="fc" id="L347">    value = hashConfig.get(XML_USENOSSL);</span>
+<span class="pc bpc" id="L348" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L349">      config.setUseNOSSL(value.getBoolean());</span>
+    }
+<span class="fc" id="L351">    value = hashConfig.get(XML_USEHTTPCOMP);</span>
+<span class="pc bpc" id="L352" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L353">      config.setUseHttpCompression(value.getBoolean());</span>
+    }
+<span class="fc" id="L355">    value = hashConfig.get(XML_SERVER_ADMIN);</span>
+<span class="pc bpc" id="L356" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L357">      config.setAdminName(value.getString());</span>
+    } else {
+<span class="nc" id="L359">      logger.error(</span>
+<span class="nc" id="L360">          Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+          &quot;Administrator name&quot;); //$NON-NLS-1$
+<span class="nc" id="L362">      return false;</span>
+    }
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">    if (config.getCryptoKey() == null) {</span>
+<span class="nc" id="L365">      XmlHash hashConfig2 = new XmlHash(hashRootConfig.get(XML_IDENTITY));</span>
+      try {
+<span class="nc bnc" id="L367" title="All 2 branches missed.">        if (!setCryptoKey(config, hashConfig2)) {</span>
+<span class="nc" id="L368">          logger.error(</span>
+<span class="nc" id="L369">              Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+              &quot;Crypto Key&quot;); //$NON-NLS-1$
+<span class="nc" id="L371">          return false;</span>
+        }
+      } finally {
+<span class="nc" id="L374">        hashConfig2.clear();</span>
+<span class="nc" id="L375">        hashConfig2 = null;</span>
+      }
+    }
+    byte[] decodedByteKeys;
+<span class="fc" id="L379">    value = hashConfig.get(XML_SERVER_PASSWD_FILE);</span>
+<span class="pc bpc" id="L380" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+      String passwd;
+<span class="fc" id="L382">      value = hashConfig.get(XML_SERVER_PASSWD);</span>
+<span class="pc bpc" id="L383" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L384">        passwd = value.getString();</span>
+      } else {
+<span class="nc" id="L386">        logger.error(</span>
+<span class="nc" id="L387">            Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+            &quot;Password&quot;); //$NON-NLS-1$
+<span class="nc" id="L389">        return false;</span>
+      }
+      try {
+<span class="fc" id="L392">        decodedByteKeys = config.getCryptoKey().decryptHexInBytes(passwd);</span>
+<span class="nc" id="L393">      } catch (final Exception e) {</span>
+<span class="nc" id="L394">        logger.error(</span>
+            &quot;Unable to Decrypt Server Password in Config file from: &quot; + passwd,
+            e);
+<span class="nc" id="L397">        return false;</span>
+<span class="fc" id="L398">      }</span>
+<span class="fc" id="L399">    } else {</span>
+<span class="nc" id="L400">      final String skey = value.getString();</span>
+      // load key from file
+<span class="nc" id="L402">      config.setServerKeyFile(skey);</span>
+<span class="nc" id="L403">      final File key = new File(skey);</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">      if (!key.canRead()) {</span>
+<span class="nc" id="L405">        logger.error(&quot;Unable to read Password in Config file from &quot; + skey);</span>
+<span class="nc" id="L406">        return false;</span>
+      }
+      try {
+<span class="nc" id="L409">        decodedByteKeys = config.getCryptoKey().decryptHexFile(key);</span>
+<span class="nc" id="L410">      } catch (final Exception e2) {</span>
+<span class="nc" id="L411">        logger.error(</span>
+            &quot;Unable to Decrypt Server Password in Config file from: &quot; + skey,
+            e2);
+<span class="nc" id="L414">        return false;</span>
+<span class="nc" id="L415">      }</span>
+    }
+<span class="fc" id="L417">    config.setSERVERKEY(decodedByteKeys);</span>
+<span class="fc" id="L418">    value = hashConfig.get(XML_HTTPADMINPATH);</span>
+<span class="pc bpc" id="L419" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L420">      logger.error(</span>
+<span class="nc" id="L421">          Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+          &quot;Http Admin Base&quot;); //$NON-NLS-1$
+<span class="nc" id="L423">      return false;</span>
+    }
+<span class="fc" id="L425">    final String path = value.getString();</span>
+<span class="pc bpc" id="L426" title="2 of 4 branches missed.">    if (path == null || path.isEmpty()) {</span>
+<span class="nc" id="L427">      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+                   &quot;Http Admin Base&quot;); //$NON-NLS-1$
+<span class="nc" id="L429">      return false;</span>
+    }
+<span class="fc" id="L431">    final File file = new File(path);</span>
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">    if (!file.isDirectory()) {</span>
+<span class="nc" id="L433">      logger.error(Messages.getString(&quot;FileBasedConfiguration.NotDirectory&quot;) +</span>
+<span class="nc" id="L434">                   &quot;Http Admin Base {}&quot;, file.getAbsolutePath()); //$NON-NLS-1$</span>
+<span class="nc" id="L435">      return false;</span>
+    }
+    try {
+<span class="fc" id="L438">      config.setHttpBasePath(</span>
+<span class="fc" id="L439">          AbstractDir.normalizePath(file.getCanonicalPath()) +</span>
+          DirInterface.SEPARATOR);
+<span class="nc" id="L441">    } catch (final IOException e1) {</span>
+<span class="nc" id="L442">      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+                   &quot;Http Admin Path&quot;); //$NON-NLS-1$
+<span class="nc" id="L444">      return false;</span>
+<span class="fc" id="L445">    }</span>
+<span class="fc" id="L446">    value = hashConfig.get(XML_HTTPADMINMODEL);</span>
+    // 0 = standard, 1 = responsive (preferred default)
+<span class="fc" id="L448">    int model =</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">        !new File(file, HttpResponsiveSslHandler.LISTING_PAGE).isFile()? 0 : 1;</span>
+<span class="pc bpc" id="L450" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L451">      model = value.getInteger();</span>
+    }
+<span class="fc" id="L453">    config.setHttpModel(model);</span>
+
+    // Key for HTTPS
+<span class="fc" id="L456">    value = hashConfig.get(XML_PATH_ADMIN_KEYPATH);</span>
+<span class="pc bpc" id="L457" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L458">      final String keypath = value.getString();</span>
+<span class="pc bpc" id="L459" title="2 of 4 branches missed.">      if (keypath == null || keypath.isEmpty()) {</span>
+<span class="nc" id="L460">        logger.error(&quot;Bad Key Path&quot;);</span>
+<span class="nc" id="L461">        return false;</span>
+      }
+<span class="fc" id="L463">      value = hashConfig.get(XML_PATH_ADMIN_KEYSTOREPASS);</span>
+<span class="pc bpc" id="L464" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L465">        logger.error(&quot;Unable to find: &quot; + &quot;KeyStore Passwd&quot;);</span>
+<span class="nc" id="L466">        return false;</span>
+      }
+<span class="fc" id="L468">      final String keystorepass = value.getString();</span>
+<span class="pc bpc" id="L469" title="2 of 4 branches missed.">      if (keystorepass == null || keystorepass.isEmpty()) {</span>
+<span class="nc" id="L470">        logger.error(&quot;Bad KeyStore Passwd&quot;);</span>
+<span class="nc" id="L471">        return false;</span>
+      }
+<span class="fc" id="L473">      value = hashConfig.get(XML_PATH_ADMIN_KEYPASS);</span>
+<span class="pc bpc" id="L474" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L475">        logger.error(&quot;Unable to find :&quot; + &quot;Key Passwd&quot;);</span>
+<span class="nc" id="L476">        return false;</span>
+      }
+<span class="fc" id="L478">      final String keypass = value.getString();</span>
+<span class="pc bpc" id="L479" title="2 of 4 branches missed.">      if (keypass == null || keypass.isEmpty()) {</span>
+<span class="nc" id="L480">        logger.error(&quot;Bad Key Passwd&quot;);</span>
+<span class="nc" id="L481">        return false;</span>
+      }
+      try {
+<span class="fc" id="L484">        Configuration.setWaarpSecureKeyStore(</span>
+            new WaarpSecureKeyStore(keypath, keystorepass, keypass));
+<span class="nc" id="L486">      } catch (final CryptoException e) {</span>
+<span class="nc" id="L487">        logger.error(&quot;Bad SecureKeyStore construction for AdminSsl&quot;);</span>
+<span class="nc" id="L488">        return false;</span>
+<span class="fc" id="L489">      }</span>
+      // No client authentication
+<span class="fc" id="L491">      Configuration.getWaarpSecureKeyStore().initEmptyTrustStore();</span>
+<span class="fc" id="L492">      Configuration.setWaarpSslContextFactory(</span>
+<span class="fc" id="L493">          new WaarpSslContextFactory(Configuration.getWaarpSecureKeyStore(),</span>
+                                     true));
+    }
+<span class="fc" id="L496">    value = hashConfig.get(XML_MONITOR_PASTLIMIT);</span>
+<span class="pc bpc" id="L497" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L498">      config.setPastLimit((value.getLong() / 10) * 10);</span>
+    }
+<span class="fc" id="L500">    value = hashConfig.get(XML_MONITOR_MINIMALDELAY);</span>
+<span class="pc bpc" id="L501" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L502">      config.setMinimalDelay((value.getLong() / 10) * 10);</span>
+    }
+<span class="fc" id="L504">    value = hashConfig.get(XML_MONITOR_SNMP_CONFIG);</span>
+<span class="pc bpc" id="L505" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L506">      config.setSnmpConfig(value.getString());</span>
+<span class="nc" id="L507">      final File snmpfile = new File(config.getSnmpConfig());</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">      if (snmpfile.canRead()) {</span>
+<span class="nc bnc" id="L509" title="All 2 branches missed.">        if (!SnmpConfiguration.setConfigurationFromXml(snmpfile)) {</span>
+<span class="nc" id="L510">          config.setSnmpConfig(null);</span>
+        }
+      } else {
+<span class="nc" id="L513">        config.setSnmpConfig(null);</span>
+      }
+    }
+<span class="fc" id="L516">    return true;</span>
+  }
+
+  /**
+   * @param config
+   *
+   * @return True if the client parameters are correctly loaded
+   */
+  private static boolean loadClientParam(Configuration config) {
+<span class="fc" id="L525">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_CLIENT));</span>
+    try {
+<span class="fc" id="L527">      XmlValue value = hashConfig.get(XML_SAVE_TASKRUNNERNODB);</span>
+<span class="pc bpc" id="L528" title="2 of 4 branches missed.">      if (admin == null || admin.getTypeDriver() == DbType.none) {</span>
+<span class="nc bnc" id="L529" title="All 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L530">          config.setSaveTaskRunnerWithNoDb(value.getBoolean());</span>
+<span class="nc" id="L531">          logger.info(</span>
+<span class="nc" id="L532">              Messages.getString(&quot;FileBasedConfiguration.NoDB&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">          if (admin == null) {</span>
+<span class="nc" id="L534">            admin = new DbAdmin(); // no database support</span>
+<span class="nc" id="L535">            noCommitAdmin = admin;</span>
+          }
+        }
+      }
+<span class="fc" id="L539">      value = hashConfig.get(XML_BUSINESS_FACTORY);</span>
+<span class="pc bpc" id="L540" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+        try {
+<span class="nc" id="L542">          ParametersChecker.checkSanityString(value.getString());</span>
+<span class="nc" id="L543">        } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L544">          logger.error(&quot;Bad Business Factory class&quot;, e);</span>
+<span class="nc" id="L545">          return false;</span>
+<span class="nc" id="L546">        }</span>
+        try {
+<span class="nc" id="L548">          config.setR66BusinessFactory((R66BusinessFactoryInterface) Class</span>
+<span class="nc" id="L549">              .forName(value.getString())//NOSONAR</span>
+<span class="nc" id="L550">              .newInstance());//NOSONAR</span>
+<span class="nc" id="L551">        } catch (final Exception e) {</span>
+<span class="nc" id="L552">          logger.error(&quot;Bad Business Factory class&quot;, e);</span>
+<span class="nc" id="L553">          return false;</span>
+<span class="nc" id="L554">        }</span>
+      }
+<span class="fc" id="L556">      return true;</span>
+    } finally {
+<span class="fc" id="L558">      hashConfig.clear();</span>
+    }
+  }
+
+  /**
+   * @param config
+   *
+   * @return True if the directory parameters are correctly loaded
+   */
+  private static boolean loadDirectory(Configuration config) {
+<span class="fc" id="L568">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DIRECTORY));</span>
+    try {
+<span class="pc bpc" id="L570" title="1 of 2 branches missed.">      if (loadMinimalDirectory(config, hashConfig)) {</span>
+<span class="nc" id="L571">        return false;</span>
+      }
+      try {
+<span class="fc" id="L574">        config.setInPath(</span>
+<span class="fc" id="L575">            AbstractDir.normalizePath(getSubPath(config, XML_INPATH)));</span>
+<span class="nc" id="L576">      } catch (final OpenR66ProtocolSystemException e2) {</span>
+<span class="nc" id="L577">        logger.error(</span>
+<span class="nc" id="L578">            Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+            &quot;In&quot;); //$NON-NLS-1$
+<span class="nc" id="L580">        return false;</span>
+<span class="fc" id="L581">      }</span>
+      try {
+<span class="fc" id="L583">        config.setOutPath(</span>
+<span class="fc" id="L584">            AbstractDir.normalizePath(getSubPath(config, XML_OUTPATH)));</span>
+<span class="nc" id="L585">      } catch (final OpenR66ProtocolSystemException e2) {</span>
+<span class="nc" id="L586">        logger.error(</span>
+<span class="nc" id="L587">            Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+            &quot;Out&quot;); //$NON-NLS-1$
+<span class="nc" id="L589">        return false;</span>
+<span class="fc" id="L590">      }</span>
+      try {
+<span class="fc" id="L592">        config.setWorkingPath(</span>
+<span class="fc" id="L593">            AbstractDir.normalizePath(getSubPath(config, XML_WORKINGPATH)));</span>
+<span class="nc" id="L594">      } catch (final OpenR66ProtocolSystemException e2) {</span>
+<span class="nc" id="L595">        logger.error(</span>
+<span class="nc" id="L596">            Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+            &quot;Working&quot;); //$NON-NLS-1$
+<span class="nc" id="L598">        return false;</span>
+<span class="fc" id="L599">      }</span>
+<span class="fc" id="L600">      return true;</span>
+    } finally {
+<span class="fc" id="L602">      hashConfig.clear();</span>
+<span class="fc" id="L603">      hashConfig = null;</span>
+    }
+  }
+
+  public static boolean loadMinimalDirectory(final Configuration config,
+                                             final XmlHash hashConfig) {
+<span class="fc" id="L609">    final XmlValue value = hashConfig.get(XML_SERVER_HOME);</span>
+<span class="pc bpc" id="L610" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L611">      logger.error(</span>
+<span class="nc" id="L612">          Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+          &quot;Home&quot;); //$NON-NLS-1$
+<span class="nc" id="L614">      return true;</span>
+    }
+<span class="fc" id="L616">    final String path = value.getString();</span>
+<span class="fc" id="L617">    final File file = new File(path);</span>
+<span class="pc bpc" id="L618" title="1 of 2 branches missed.">    if (!file.isDirectory()) {</span>
+<span class="nc" id="L619">      logger.error(Messages.getString(&quot;FileBasedConfiguration.NotDirectory&quot;) +</span>
+                   &quot;Home&quot;); //$NON-NLS-1$
+<span class="nc" id="L621">      return true;</span>
+    }
+    try {
+<span class="fc" id="L624">      config</span>
+<span class="fc" id="L625">          .setBaseDirectory(AbstractDir.normalizePath(file.getCanonicalPath()));</span>
+<span class="nc" id="L626">    } catch (final IOException e1) {</span>
+<span class="nc" id="L627">      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+                   &quot;Home&quot;); //$NON-NLS-1$
+<span class="nc" id="L629">      return true;</span>
+<span class="fc" id="L630">    }</span>
+    try {
+<span class="fc" id="L632">      config.setConfigPath(</span>
+<span class="fc" id="L633">          AbstractDir.normalizePath(getSubPath(config, XML_CONFIGPATH)));</span>
+<span class="nc" id="L634">    } catch (final OpenR66ProtocolSystemException e2) {</span>
+<span class="nc" id="L635">      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+                   &quot;Config&quot;); //$NON-NLS-1$
+<span class="nc" id="L637">      return true;</span>
+<span class="fc" id="L638">    }</span>
+    try {
+<span class="fc" id="L640">      config.setArchivePath(</span>
+<span class="fc" id="L641">          AbstractDir.normalizePath(getSubPath(config, XML_ARCHIVEPATH)));</span>
+<span class="nc" id="L642">    } catch (final OpenR66ProtocolSystemException e2) {</span>
+<span class="nc" id="L643">      logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +</span>
+                   &quot;Archive&quot;); //$NON-NLS-1$
+<span class="nc" id="L645">      return true;</span>
+<span class="fc" id="L646">    }</span>
+<span class="fc" id="L647">    return false;</span>
+  }
+
+  private static boolean alreadySetLimit;
+
+  /**
+   * @param config
+   * @param updateLimit
+   *
+   * @return True if the limit configuration is correctly loaded
+   */
+  private static boolean loadLimit(Configuration config, boolean updateLimit) {
+<span class="fc bfc" id="L659" title="All 2 branches covered.">    if (alreadySetLimit) {</span>
+<span class="fc" id="L660">      return true;</span>
+    }
+<span class="fc" id="L662">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_LIMIT));</span>
+    try {
+<span class="fc" id="L664">      loadCommonLimit(config, hashConfig, updateLimit);</span>
+      XmlValue value;
+<span class="fc" id="L666">      value = hashConfig.get(XML_LIMITRUNNING);</span>
+<span class="pc bpc" id="L667" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L668">        config.setRunnerThread(value.getInteger());</span>
+      }
+<span class="fc" id="L670">      logger.info(&quot;Limit of Runner: {}&quot;, config.getRunnerThread());</span>
+<span class="fc" id="L671">      value = hashConfig.get(XML_DELAYCOMMANDER);</span>
+<span class="pc bpc" id="L672" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L673">        config.setDelayCommander((value.getLong() / 10) * 10);</span>
+<span class="pc bpc" id="L674" title="1 of 2 branches missed.">        if (config.getDelayCommander() &lt;= 100) {</span>
+<span class="nc" id="L675">          config.setDelayCommander(100);</span>
+        }
+<span class="fc" id="L677">        logger.info(&quot;Delay Commander: {}&quot;, config.getDelayCommander());</span>
+      }
+<span class="fc" id="L679">      value = hashConfig.get(XML_DIGEST);</span>
+<span class="pc bpc" id="L680" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+        try {
+<span class="fc" id="L682">          int val = value.getInteger();</span>
+<span class="pc bpc" id="L683" title="2 of 4 branches missed.">          if (val &lt; 0 || val &gt;= DigestAlgo.values().length) {</span>
+<span class="nc" id="L684">            val = 0;</span>
+          }
+<span class="fc" id="L686">          config.setDigest(DigestAlgo.values()[val]);</span>
+<span class="nc" id="L687">        } catch (final IllegalArgumentException e) {</span>
+          // might be String
+<span class="nc" id="L689">          final String val = value.getString();</span>
+<span class="nc" id="L690">          config.setDigest(PartnerConfiguration.getDigestAlgo(val));</span>
+<span class="fc" id="L691">        }</span>
+      }
+<span class="fc" id="L693">      logger.info(&quot;DigestAlgo used: {}&quot;, config.getDigest());</span>
+<span class="fc" id="L694">      value = hashConfig.get(XML_USEFASTMD5);</span>
+<span class="pc bpc" id="L695" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L696">        FilesystemBasedDigest.setUseFastMd5(value.getBoolean());</span>
+      } else {
+<span class="fc" id="L698">        FilesystemBasedDigest.setUseFastMd5(false);</span>
+      }
+<span class="fc" id="L700">      value = hashConfig.get(XML_GAPRESTART);</span>
+<span class="pc bpc" id="L701" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L702">        Configuration.setRankRestart(value.getInteger());</span>
+<span class="nc bnc" id="L703" title="All 2 branches missed.">        if (Configuration.getRankRestart() &lt;= 0) {</span>
+<span class="nc" id="L704">          Configuration.setRankRestart(1);</span>
+        }
+      }
+<span class="fc" id="L707">      value = hashConfig.get(XML_BLOCKSIZE);</span>
+<span class="pc bpc" id="L708" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L709">        config.setBlockSize(value.getInteger());</span>
+      }
+<span class="fc" id="L711">      value = hashConfig.get(XML_USETHRIFT);</span>
+<span class="pc bpc" id="L712" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L713">        config.setThriftport(value.getInteger());</span>
+      }
+<span class="fc" id="L715">      value = hashConfig.get(XML_CHECKVERSION);</span>
+<span class="pc bpc" id="L716" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L717">        config.setExtendedProtocol(value.getBoolean());</span>
+<span class="nc" id="L718">        logger.info(&quot;ExtendedProtocol= &quot; + config.isExtendedProtocol());</span>
+      }
+<span class="fc" id="L720">      value = hashConfig.get(XML_GLOBALDIGEST);</span>
+<span class="pc bpc" id="L721" title="1 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L722">        config.setGlobalDigest(value.getBoolean());</span>
+      }
+<span class="fc" id="L724">      alreadySetLimit = true;</span>
+<span class="fc" id="L725">      return true;</span>
+    } finally {
+<span class="fc" id="L727">      hashConfig.clear();</span>
+<span class="fc" id="L728">      hashConfig = null;</span>
+    }
+  }
+
+  public static void loadCommonLimit(final Configuration config,
+                                     final XmlHash hashConfig,
+                                     boolean updateLimit) {
+<span class="fc" id="L735">    XmlValue value = hashConfig.get(XML_LIMITGLOBAL);</span>
+<span class="pc bpc" id="L736" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L737">      config.setServerGlobalReadLimit(value.getLong());</span>
+<span class="pc bpc" id="L738" title="1 of 2 branches missed.">      if (config.getServerGlobalReadLimit() &lt;= 0) {</span>
+<span class="fc" id="L739">        config.setServerGlobalReadLimit(0);</span>
+      }
+<span class="fc" id="L741">      config.setServerGlobalWriteLimit(config.getServerGlobalReadLimit());</span>
+<span class="fc" id="L742">      logger.info(&quot;Global Limit: {}&quot;, config.getServerGlobalReadLimit());</span>
+    }
+<span class="fc" id="L744">    value = hashConfig.get(XML_LIMITSESSION);</span>
+<span class="pc bpc" id="L745" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L746">      config.setServerChannelReadLimit(value.getLong());</span>
+<span class="pc bpc" id="L747" title="1 of 2 branches missed.">      if (config.getServerChannelReadLimit() &lt;= 0) {</span>
+<span class="fc" id="L748">        config.setServerChannelReadLimit(0);</span>
+      }
+<span class="fc" id="L750">      config.setServerChannelWriteLimit(config.getServerChannelReadLimit());</span>
+<span class="fc" id="L751">      logger.info(&quot;SessionInterface Limit: {}&quot;,</span>
+<span class="fc" id="L752">                  config.getServerChannelReadLimit());</span>
+    }
+<span class="fc" id="L754">    config.setDelayLimit(AbstractTrafficShapingHandler.DEFAULT_CHECK_INTERVAL);</span>
+<span class="fc" id="L755">    value = hashConfig.get(XML_LIMITDELAY);</span>
+<span class="pc bpc" id="L756" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L757">      config.setDelayLimit((value.getLong() / 10) * 10);</span>
+<span class="pc bpc" id="L758" title="1 of 2 branches missed.">      if (config.getDelayLimit() &lt;= 0) {</span>
+<span class="nc" id="L759">        config.setDelayLimit(0);</span>
+      }
+<span class="fc" id="L761">      logger.info(&quot;Delay Limit: {}&quot;, config.getDelayLimit());</span>
+    }
+<span class="fc" id="L763">    value = hashConfig.get(XML_DELAYRETRY);</span>
+<span class="pc bpc" id="L764" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L765">      config.setDelayRetry((value.getLong() / 10) * 10);</span>
+<span class="fc bfc" id="L766" title="All 2 branches covered.">      if (config.getDelayRetry() &lt;= 1000) {</span>
+<span class="fc" id="L767">        config.setDelayRetry(1000);</span>
+      }
+<span class="fc" id="L769">      logger.info(&quot;Delay Retry: {}&quot;, config.getDelayRetry());</span>
+    }
+<span class="fc bfc" id="L771" title="All 2 branches covered.">    if (updateLimit) {</span>
+<span class="fc" id="L772">      value = hashConfig.get(XML_SERVER_HOSTID);</span>
+<span class="pc bpc" id="L773" title="3 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L774">        config.setHostId(value.getString());</span>
+<span class="nc" id="L775">        final DbConfiguration configuration =</span>
+<span class="nc" id="L776">            new DbConfiguration(config.getHostId(),</span>
+<span class="nc" id="L777">                                config.getServerGlobalReadLimit(),</span>
+<span class="nc" id="L778">                                config.getServerGlobalWriteLimit(),</span>
+<span class="nc" id="L779">                                config.getServerChannelReadLimit(),</span>
+<span class="nc" id="L780">                                config.getServerChannelWriteLimit(),</span>
+<span class="nc" id="L781">                                config.getDelayLimit());</span>
+<span class="nc" id="L782">        configuration.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+        try {
+<span class="nc bnc" id="L784" title="All 2 branches missed.">          if (configuration.exist()) {</span>
+<span class="nc" id="L785">            configuration.update();</span>
+          } else {
+<span class="nc" id="L787">            configuration.insert();</span>
+          }
+<span class="nc" id="L789">        } catch (final WaarpDatabaseException ignored) {</span>
+          // nothing
+<span class="nc" id="L791">        }</span>
+      }
+    }
+<span class="fc" id="L794">    boolean useCpuLimit = false;</span>
+<span class="fc" id="L795">    boolean useCpuLimitJDK = false;</span>
+<span class="fc" id="L796">    double cpulimit = 1.0;</span>
+<span class="fc" id="L797">    value = hashConfig.get(XML_CSTRT_USECPULIMIT);</span>
+<span class="pc bpc" id="L798" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L799">      useCpuLimit = value.getBoolean();</span>
+<span class="nc" id="L800">      value = hashConfig.get(XML_CSTRT_USECPUJDKLIMIT);</span>
+<span class="nc bnc" id="L801" title="All 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L802">        useCpuLimitJDK = value.getBoolean();</span>
+      }
+<span class="nc" id="L804">      value = hashConfig.get(XML_CSTRT_CPULIMIT);</span>
+<span class="nc bnc" id="L805" title="All 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L806">        cpulimit = value.getDouble();</span>
+<span class="nc bnc" id="L807" title="All 2 branches missed.">        if (cpulimit &gt; 0.99) {</span>
+<span class="nc" id="L808">          cpulimit = 1.0;</span>
+        }
+      }
+    }
+<span class="fc" id="L812">    int connlimit = 0;</span>
+<span class="fc" id="L813">    value = hashConfig.get(XML_CSTRT_CONNLIMIT);</span>
+<span class="pc bpc" id="L814" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L815">      connlimit = value.getInteger();</span>
+<span class="nc bnc" id="L816" title="All 2 branches missed.">      if (connlimit &lt; 100) {</span>
+<span class="nc" id="L817">        connlimit = 0;</span>
+      }
+    }
+<span class="fc" id="L820">    double lowcpuLimit = 0.0;</span>
+<span class="fc" id="L821">    double highcpuLimit = 0.0;</span>
+<span class="fc" id="L822">    double percentageDecrease = 0;</span>
+<span class="fc" id="L823">    long delay = 1000000;</span>
+<span class="fc" id="L824">    long limitLowBandwidth = WaarpConstraintLimitHandler.LOWBANDWIDTH_DEFAULT;</span>
+<span class="fc" id="L825">    value = hashConfig.get(XML_CSTRT_LOWCPULIMIT);</span>
+<span class="pc bpc" id="L826" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L827">      lowcpuLimit = value.getDouble();</span>
+    }
+<span class="fc" id="L829">    value = hashConfig.get(XML_CSTRT_HIGHCPULIMIT);</span>
+<span class="pc bpc" id="L830" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L831">      highcpuLimit = value.getDouble();</span>
+<span class="nc bnc" id="L832" title="All 2 branches missed.">      if (highcpuLimit &lt; 0.1) {</span>
+<span class="nc" id="L833">        highcpuLimit = 0.0;</span>
+      }
+    }
+<span class="fc" id="L836">    value = hashConfig.get(XML_CSTRT_PERCENTDECREASE);</span>
+<span class="pc bpc" id="L837" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L838">      percentageDecrease = value.getDouble();</span>
+    }
+<span class="fc" id="L840">    value = hashConfig.get(XML_CSTRT_DELAYTHROTTLE);</span>
+<span class="pc bpc" id="L841" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L842">      delay = (value.getLong() / 10) * 10;</span>
+<span class="nc bnc" id="L843" title="All 2 branches missed.">      if (delay &lt; 100) {</span>
+<span class="nc" id="L844">        delay = 100;</span>
+      }
+    }
+<span class="fc" id="L847">    value = hashConfig.get(XML_CSTRT_LIMITLOWBANDWIDTH);</span>
+<span class="pc bpc" id="L848" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L849">      limitLowBandwidth = value.getLong();</span>
+    }
+<span class="pc bpc" id="L851" title="1 of 2 branches missed.">    if (config.getConstraintLimitHandler() != null) {</span>
+<span class="fc" id="L852">      config.getConstraintLimitHandler().release();</span>
+    }
+<span class="pc bpc" id="L854" title="2 of 4 branches missed.">    if (useCpuLimit || highcpuLimit &gt; 0) {</span>
+<span class="nc bnc" id="L855" title="All 2 branches missed.">      if (highcpuLimit &gt; 0) {</span>
+<span class="nc" id="L856">        logger.debug(&quot;full setup of ContraintLimitHandler&quot;);</span>
+<span class="nc" id="L857">        config.setConstraintLimitHandler(</span>
+            new R66ConstraintLimitHandler(useCpuLimit, useCpuLimitJDK, cpulimit,
+                                          connlimit, lowcpuLimit, highcpuLimit,
+                                          percentageDecrease, null, delay,
+                                          limitLowBandwidth));
+      } else {
+<span class="nc" id="L863">        logger.debug(&quot;partial setup of ContraintLimitHandler&quot;);</span>
+<span class="nc" id="L864">        config.setConstraintLimitHandler(</span>
+            new R66ConstraintLimitHandler(useCpuLimit, useCpuLimitJDK, cpulimit,
+                                          connlimit));
+      }
+    } else {
+<span class="fc" id="L869">      logger.debug(&quot;No setup of ContraintLimitHandler&quot;);</span>
+<span class="fc" id="L870">      config.setConstraintLimitHandler(</span>
+          new R66ConstraintLimitHandler(false, false, 1.0, connlimit));
+    }
+<span class="fc" id="L873">    value = hashConfig.get(XML_SERVER_THREAD);</span>
+<span class="pc bpc" id="L874" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L875">      config.setServerThread(value.getInteger());</span>
+    }
+<span class="fc" id="L877">    value = hashConfig.get(XML_CLIENT_THREAD);</span>
+<span class="pc bpc" id="L878" title="1 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L879">      config.setClientThread(value.getInteger());</span>
+    }
+<span class="fc" id="L881">    value = hashConfig.get(XML_MEMORY_LIMIT);</span>
+<span class="pc bpc" id="L882" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L883">      long lvalue = value.getLong();</span>
+<span class="nc bnc" id="L884" title="All 2 branches missed.">      if (lvalue &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L885">        lvalue = Integer.MAX_VALUE;</span>
+      }
+<span class="nc" id="L887">      config.setMaxGlobalMemory((int) lvalue);</span>
+    }
+<span class="fc" id="L889">    Configuration.getFileParameter().deleteOnAbort = false;</span>
+<span class="fc" id="L890">    value = hashConfig.get(XML_USENIO);</span>
+<span class="pc bpc" id="L891" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L892">      FilesystemBasedFileParameterImpl.useNio = value.getBoolean();</span>
+    }
+<span class="fc" id="L894">    value = hashConfig.get(XML_TIMEOUTCON);</span>
+<span class="pc bpc" id="L895" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L896">      config.setTimeoutCon((value.getLong() / 10) * 10);</span>
+<span class="fc" id="L897">      config.getShutdownConfiguration().timeout = config.getTimeoutCon();</span>
+    }
+<span class="fc" id="L899">  }</span>
+
+  /**
+   * @param config
+   * @param hashRootConfig
+   *
+   * @return True if the SSL configuration is correctly loaded
+   */
+  public static boolean loadSsl(Configuration config,
+                                XmlRootHash hashRootConfig) {
+<span class="fc" id="L909">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_SSL));</span>
+    try {
+      // StoreKey for Server
+<span class="fc" id="L912">      XmlValue value = hashConfig.get(XML_PATH_KEYPATH);</span>
+<span class="pc bpc" id="L913" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L914">        logger.info(&quot;Unable to find Key Path&quot;);</span>
+        try {
+<span class="nc" id="L916">          NetworkSslServerInitializer.setWaarpSecureKeyStore(</span>
+              new WaarpSecureKeyStore(&quot;secret&quot;, &quot;secret&quot;));//NOSONAR
+<span class="nc" id="L918">        } catch (final CryptoException e) {</span>
+<span class="nc" id="L919">          logger.error(&quot;Bad SecureKeyStore construction&quot;);</span>
+<span class="nc" id="L920">          return false;</span>
+<span class="nc" id="L921">        }</span>
+      } else {
+<span class="fc" id="L923">        final String keypath = value.getString();</span>
+<span class="pc bpc" id="L924" title="2 of 4 branches missed.">        if (keypath == null || keypath.isEmpty()) {</span>
+<span class="nc" id="L925">          logger.error(&quot;Bad Key Path&quot;);</span>
+<span class="nc" id="L926">          return false;</span>
+        }
+<span class="fc" id="L928">        value = hashConfig.get(XML_PATH_KEYSTOREPASS);</span>
+<span class="pc bpc" id="L929" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L930">          logger.error(&quot;Unable to find KeyStore Passwd&quot;);</span>
+<span class="nc" id="L931">          return false;</span>
+        }
+<span class="fc" id="L933">        final String keystorepass = value.getString();</span>
+<span class="pc bpc" id="L934" title="2 of 4 branches missed.">        if (keystorepass == null || keystorepass.isEmpty()) {</span>
+<span class="nc" id="L935">          logger.error(&quot;Bad KeyStore Passwd&quot;);</span>
+<span class="nc" id="L936">          return false;</span>
+        }
+<span class="fc" id="L938">        value = hashConfig.get(XML_PATH_KEYPASS);</span>
+<span class="pc bpc" id="L939" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L940">          logger.error(&quot;Unable to find Key Passwd&quot;);</span>
+<span class="nc" id="L941">          return false;</span>
+        }
+<span class="fc" id="L943">        final String keypass = value.getString();</span>
+<span class="pc bpc" id="L944" title="2 of 4 branches missed.">        if (keypass == null || keypass.isEmpty()) {</span>
+<span class="nc" id="L945">          logger.error(&quot;Bad Key Passwd&quot;);</span>
+<span class="nc" id="L946">          return false;</span>
+        }
+        try {
+<span class="fc" id="L949">          NetworkSslServerInitializer.setWaarpSecureKeyStore(</span>
+              new WaarpSecureKeyStore(keypath, keystorepass, keypass));
+<span class="nc" id="L951">        } catch (final CryptoException e) {</span>
+<span class="nc" id="L952">          logger.error(&quot;Bad SecureKeyStore construction&quot;);</span>
+<span class="nc" id="L953">          return false;</span>
+<span class="fc" id="L954">        }</span>
+      }
+      // TrustedKey for OpenR66 server
+<span class="fc" id="L957">      value = hashConfig.get(XML_PATH_TRUSTKEYPATH);</span>
+<span class="pc bpc" id="L958" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L959">        logger.info(&quot;Unable to find TRUST Key Path&quot;);</span>
+<span class="nc" id="L960">        NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="nc" id="L961">                                   .initEmptyTrustStore();</span>
+      } else {
+<span class="fc" id="L963">        final String keypath = value.getString();</span>
+<span class="pc bpc" id="L964" title="2 of 4 branches missed.">        if (keypath == null || keypath.isEmpty()) {</span>
+<span class="nc" id="L965">          logger.error(&quot;Bad TRUST Key Path&quot;);</span>
+<span class="nc" id="L966">          return false;</span>
+        }
+<span class="fc" id="L968">        value = hashConfig.get(XML_PATH_TRUSTKEYSTOREPASS);</span>
+<span class="pc bpc" id="L969" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L970">          logger.error(&quot;Unable to find TRUST KeyStore Passwd&quot;);</span>
+<span class="nc" id="L971">          return false;</span>
+        }
+<span class="fc" id="L973">        final String keystorepass = value.getString();</span>
+<span class="pc bpc" id="L974" title="2 of 4 branches missed.">        if (keystorepass == null || keystorepass.isEmpty()) {</span>
+<span class="nc" id="L975">          logger.error(&quot;Bad TRUST KeyStore Passwd&quot;);</span>
+<span class="nc" id="L976">          return false;</span>
+        }
+<span class="fc" id="L978">        boolean useClientAuthent = false;</span>
+<span class="fc" id="L979">        value = hashConfig.get(XML_USECLIENT_AUTHENT);</span>
+<span class="pc bpc" id="L980" title="2 of 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L981">          useClientAuthent = value.getBoolean();</span>
+        }
+        try {
+<span class="fc" id="L984">          NetworkSslServerInitializer.getWaarpSecureKeyStore()</span>
+<span class="fc" id="L985">                                     .initTrustStore(keypath, keystorepass,</span>
+                                                     useClientAuthent);
+<span class="nc" id="L987">        } catch (final CryptoException e) {</span>
+<span class="nc" id="L988">          logger.error(&quot;Bad TrustKeyStore construction&quot;);</span>
+<span class="nc" id="L989">          return false;</span>
+<span class="fc" id="L990">        }</span>
+      }
+<span class="fc" id="L992">      NetworkSslServerInitializer.setWaarpSslContextFactory(</span>
+          new WaarpSslContextFactory(
+<span class="fc" id="L994">              NetworkSslServerInitializer.getWaarpSecureKeyStore()));</span>
+<span class="fc" id="L995">      return true;</span>
+    } finally {
+<span class="fc" id="L997">      hashConfig.clear();</span>
+<span class="fc" id="L998">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * @param config
+   *
+   * @return True if the network configuration is correctly loaded
+   */
+  private static boolean loadNetworkServer(Configuration config) {
+<span class="fc" id="L1008">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_NETWORK));</span>
+    try {
+<span class="fc" id="L1010">      XmlValue value = hashConfig.get(XML_SERVER_PORT);</span>
+<span class="fc" id="L1011">      int port = 6666;</span>
+<span class="pc bpc" id="L1012" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1013">        port = value.getInteger();</span>
+      } else {
+<span class="nc" id="L1015">        port = 6666;</span>
+      }
+<span class="fc" id="L1017">      config.setServerPort(port);</span>
+<span class="fc" id="L1018">      value = hashConfig.get(XML_SERVER_SSLPORT);</span>
+<span class="fc" id="L1019">      int sslport = 6667;</span>
+<span class="pc bpc" id="L1020" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1021">        sslport = value.getInteger();</span>
+      } else {
+<span class="nc" id="L1023">        sslport = 6667;</span>
+      }
+<span class="fc" id="L1025">      config.setServerSslPort(sslport);</span>
+<span class="fc" id="L1026">      value = hashConfig.get(XML_SERVER_HTTPPORT);</span>
+<span class="fc" id="L1027">      int httpport = 8066;</span>
+<span class="pc bpc" id="L1028" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1029">        httpport = value.getInteger();</span>
+      }
+<span class="fc" id="L1031">      config.setServerHttpport(httpport);</span>
+<span class="fc" id="L1032">      value = hashConfig.get(XML_SERVER_HTTPSPORT);</span>
+<span class="fc" id="L1033">      int httpsport = 8067;</span>
+<span class="pc bpc" id="L1034" title="2 of 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1035">        httpsport = value.getInteger();</span>
+      }
+<span class="fc" id="L1037">      config.setServerHttpsPort(httpsport);</span>
+<span class="fc" id="L1038">      return true;</span>
+    } finally {
+<span class="fc" id="L1040">      hashConfig.clear();</span>
+<span class="fc" id="L1041">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * @param configuration
+   *
+   * @return True if the REST configuration is correctly loaded
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private static boolean loadRest(Configuration configuration) {
+<span class="fc" id="L1052">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_REST));</span>
+    try {
+<span class="fc" id="L1054">      final XmlValue valueRest = hashConfig.get(XML_REST);</span>
+<span class="pc bpc" id="L1055" title="2 of 4 branches missed.">      if (valueRest != null &amp;&amp; valueRest.getList() != null) {</span>
+<span class="fc bfc" id="L1056" title="All 2 branches covered.">        for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) valueRest</span>
+<span class="fc" id="L1057">            .getList()) {</span>
+<span class="fc" id="L1058">          final RestConfiguration config = new RestConfiguration();</span>
+<span class="fc" id="L1059">          final XmlHash subHash = new XmlHash(xml);</span>
+<span class="fc" id="L1060">          XmlValue value = subHash.get(XML_SERVER_REST_PORT);</span>
+<span class="fc" id="L1061">          int restPort = -1;</span>
+<span class="pc bpc" id="L1062" title="2 of 4 branches missed.">          if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1063">            restPort = value.getInteger();</span>
+          }
+<span class="fc" id="L1065">          config.setRestPort(restPort);</span>
+<span class="pc bpc" id="L1066" title="1 of 2 branches missed.">          if (config.getRestPort() &gt; 0) {</span>
+<span class="fc" id="L1067">            value = subHash.get(XML_REST_ADDRESS);</span>
+<span class="fc" id="L1068">            String restAddress = null;</span>
+<span class="pc bpc" id="L1069" title="2 of 4 branches missed.">            if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1070">              restAddress = value.getString();</span>
+            }
+<span class="fc" id="L1072">            config.setRestAddress(restAddress);</span>
+<span class="fc" id="L1073">            value = subHash.get(XML_REST_SSL);</span>
+<span class="fc" id="L1074">            boolean restSsl = false;</span>
+<span class="pc bpc" id="L1075" title="2 of 4 branches missed.">            if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1076">              restSsl = value.getBoolean();</span>
+            }
+<span class="fc" id="L1078">            config.setRestSsl(restSsl);</span>
+<span class="fc" id="L1079">            value = subHash.get(XML_REST_AUTHENTICATED);</span>
+<span class="fc" id="L1080">            boolean restAuthent = false;</span>
+<span class="pc bpc" id="L1081" title="2 of 4 branches missed.">            if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1082">              restAuthent = value.getBoolean();</span>
+            }
+<span class="fc" id="L1084">            config.setRestAuthenticated(restAuthent);</span>
+<span class="fc" id="L1085">            value = subHash.get(XML_REST_SIGNATURE);</span>
+<span class="fc" id="L1086">            boolean restSignature = true;</span>
+<span class="pc bpc" id="L1087" title="2 of 4 branches missed.">            if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1088">              restSignature = value.getBoolean();</span>
+            }
+<span class="fc" id="L1090">            config.setRestSignature(restSignature);</span>
+<span class="pc bpc" id="L1091" title="1 of 4 branches missed.">            if (config.isRestSignature() || config.isRestAuthenticated()) {</span>
+<span class="fc" id="L1092">              final XmlValue valueKey = subHash.get(XML_REST_AUTH_KEY);</span>
+<span class="pc bpc" id="L1093" title="2 of 4 branches missed.">              if (valueKey != null &amp;&amp; !valueKey.isEmpty()) {</span>
+<span class="fc" id="L1094">                String fileKey = valueKey.getString();</span>
+<span class="fc" id="L1095">                File file = new File(fileKey);</span>
+<span class="pc bpc" id="L1096" title="1 of 2 branches missed.">                if (!file.canRead()) {</span>
+<span class="nc" id="L1097">                  file = new File(</span>
+<span class="nc" id="L1098">                      configuration.getConfigPath() + DirInterface.SEPARATOR +</span>
+                      fileKey);
+<span class="nc bnc" id="L1100" title="All 2 branches missed.">                  if (!file.canRead()) {</span>
+<span class="nc" id="L1101">                    logger.error(&quot;Unable to find REST Key in Config file&quot;);</span>
+<span class="nc" id="L1102">                    return false;</span>
+                  }
+<span class="nc" id="L1104">                  fileKey =</span>
+<span class="nc" id="L1105">                      configuration.getConfigPath() + DirInterface.SEPARATOR +</span>
+                      fileKey;
+                }
+                try {
+<span class="fc" id="L1109">                  config.initializeKey(file);</span>
+<span class="nc" id="L1110">                } catch (final CryptoException e) {</span>
+<span class="nc" id="L1111">                  logger.error(</span>
+                      &quot;Unable to load REST Key from Config file: &quot; + fileKey,
+                      e);
+<span class="nc" id="L1114">                  return false;</span>
+<span class="nc" id="L1115">                } catch (final IOException e) {</span>
+<span class="nc" id="L1116">                  logger.error(</span>
+                      &quot;Unable to load REST Key from Config file: &quot; + fileKey,
+                      e);
+<span class="nc" id="L1119">                  return false;</span>
+<span class="fc" id="L1120">                }</span>
+              }
+            }
+<span class="fc" id="L1123">            value = subHash.get(XML_REST_TIME_LIMIT);</span>
+<span class="fc" id="L1124">            long restTimeLimit = -1;</span>
+<span class="pc bpc" id="L1125" title="2 of 4 branches missed.">            if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1126">              restTimeLimit = value.getLong();</span>
+            }
+<span class="fc" id="L1128">            config.setRestTimeLimit(restTimeLimit);</span>
+
+<span class="fc" id="L1130">            final XmlValue valueMethod = subHash.get(XML_REST_METHOD);</span>
+<span class="pc bpc" id="L1131" title="2 of 4 branches missed.">            if (valueMethod != null &amp;&amp; valueMethod.getList() != null) {</span>
+<span class="fc" id="L1132">              boolean found = false;</span>
+<span class="fc" id="L1133">              config</span>
+<span class="fc" id="L1134">                  .setResthandlersCrud(new byte[RESTHANDLERS.values().length]);</span>
+<span class="pc bpc" id="L1135" title="1 of 2 branches missed.">              for (final XmlValue[] xmlmethod : (Iterable&lt;XmlValue[]&gt;) valueMethod</span>
+<span class="fc" id="L1136">                  .getList()) {</span>
+<span class="fc" id="L1137">                final XmlHash subHashMethod = new XmlHash(xmlmethod);</span>
+<span class="fc" id="L1138">                value = subHashMethod.get(XML_REST_METHOD_NAME);</span>
+                String name;
+<span class="pc bpc" id="L1140" title="2 of 4 branches missed.">                if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1141">                  name = value.getString();</span>
+                } else {
+<span class="nc" id="L1143">                  logger.warn(&quot;Restmethod entry ignore since name is empty&quot;);</span>
+<span class="nc" id="L1144">                  continue;</span>
+                }
+<span class="fc" id="L1146">                value = subHashMethod.get(XML_REST_CRUD);</span>
+                String crud;
+<span class="pc bpc" id="L1148" title="2 of 4 branches missed.">                if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1149">                  crud = value.getString().toUpperCase();</span>
+                } else {
+<span class="nc" id="L1151">                  logger.warn(</span>
+                      &quot;Restmethod entry ignore since crud field is empty&quot;);
+<span class="nc" id="L1153">                  continue;</span>
+                }
+<span class="fc" id="L1155">                found = true;</span>
+<span class="fc" id="L1156">                byte def = 0x0;</span>
+<span class="fc" id="L1157">                def |=</span>
+<span class="pc bpc" id="L1158" title="1 of 2 branches missed.">                    crud.contains(&quot;C&quot;)? RestConfiguration.CRUD.CREATE.mask : 0;</span>
+<span class="pc bpc" id="L1159" title="1 of 2 branches missed.">                def |= crud.contains(&quot;R&quot;)? RestConfiguration.CRUD.READ.mask : 0;</span>
+<span class="fc" id="L1160">                def |=</span>
+<span class="pc bpc" id="L1161" title="1 of 2 branches missed.">                    crud.contains(&quot;U&quot;)? RestConfiguration.CRUD.UPDATE.mask : 0;</span>
+<span class="fc" id="L1162">                def |=</span>
+<span class="pc bpc" id="L1163" title="1 of 2 branches missed.">                    crud.contains(&quot;D&quot;)? RestConfiguration.CRUD.DELETE.mask : 0;</span>
+<span class="pc bpc" id="L1164" title="1 of 2 branches missed.">                if (&quot;all&quot;.equalsIgnoreCase(name)) {</span>
+<span class="fc" id="L1165">                  Arrays.fill(config.getResthandlersCrud(), def);</span>
+                  // No more restmethod since ALL was selected
+<span class="fc" id="L1167">                  break;</span>
+                } else {
+<span class="nc" id="L1169">                  final String[] handlers = name.split(&quot; |\\|&quot;);</span>
+<span class="nc bnc" id="L1170" title="All 2 branches missed.">                  for (final String string : handlers) {</span>
+<span class="nc" id="L1171">                    final RESTHANDLERS handler = RESTHANDLERS.valueOf(string);</span>
+<span class="nc" id="L1172">                    config.getResthandlersCrud()[handler.ordinal()] = def;</span>
+                  }
+                }
+<span class="nc" id="L1175">              }</span>
+<span class="pc bpc" id="L1176" title="1 of 2 branches missed.">              if (!found) {</span>
+                // no METHOD !!!
+<span class="nc" id="L1178">                logger.error(</span>
+                    &quot;No active METHOD defined for REST in Config file: &quot; +
+                    config);
+<span class="nc" id="L1181">                return false;</span>
+              }
+<span class="fc" id="L1183">            } else {</span>
+              // no METHOD !!!
+<span class="nc" id="L1185">              logger.error(&quot;No METHOD defined for REST in Config file&quot;);</span>
+<span class="nc" id="L1186">              return false;</span>
+            }
+<span class="fc" id="L1188">            Configuration.configuration.getRestConfigurations().add(config);</span>
+<span class="fc" id="L1189">            logger.info(config.toString());</span>
+          }
+<span class="fc" id="L1191">        }</span>
+      }
+<span class="fc" id="L1193">      return true;</span>
+    } finally {
+<span class="fc" id="L1195">      hashConfig.clear();</span>
+<span class="fc" id="L1196">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * Set the Crypto Key from the Document
+   *
+   * @param config
+   *
+   * @return True if OK
+   */
+  private static boolean setCryptoKey(Configuration config,
+                                      XmlHash hashConfig) {
+<span class="fc" id="L1209">    final XmlValue value = hashConfig.get(XML_PATH_CRYPTOKEY);</span>
+<span class="pc bpc" id="L1210" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1211">      logger.error(&quot;Unable to find CryptoKey in Config file&quot;);</span>
+<span class="nc" id="L1212">      return false;</span>
+    }
+<span class="fc" id="L1214">    final String filename = value.getString();</span>
+<span class="fc" id="L1215">    config.setCryptoFile(filename);</span>
+<span class="fc" id="L1216">    final File key = new File(filename);</span>
+<span class="fc" id="L1217">    final Des des = new Des();</span>
+    try {
+<span class="fc" id="L1219">      des.setSecretKey(key);</span>
+<span class="nc" id="L1220">    } catch (final CryptoException e) {</span>
+<span class="nc" id="L1221">      logger.error(&quot;Unable to load CryptoKey from Config file {}&quot;, filename);</span>
+<span class="nc" id="L1222">      return false;</span>
+<span class="nc" id="L1223">    } catch (final IOException e) {</span>
+<span class="nc" id="L1224">      logger.error(&quot;Unable to load CryptoKey from Config file&quot;);</span>
+<span class="nc" id="L1225">      return false;</span>
+<span class="fc" id="L1226">    }</span>
+<span class="fc" id="L1227">    config.setCryptoKey(des);</span>
+<span class="fc" id="L1228">    return true;</span>
+  }
+
+  /**
+   * Load data from database or from files if not connected
+   *
+   * @param config
+   *
+   * @return True if OK
+   */
+  private static boolean loadFromDatabase(Configuration config) {
+<span class="pc bpc" id="L1239" title="1 of 2 branches missed.">    if (!config.isSaveTaskRunnerWithNoDb()) {</span>
+      // load from database the limit to apply
+      try {
+<span class="fc" id="L1242">        final DbConfiguration configuration =</span>
+<span class="fc" id="L1243">            new DbConfiguration(config.getHostId());</span>
+<span class="fc" id="L1244">        configuration.updateConfiguration();</span>
+<span class="nc" id="L1245">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1246">        logger.info(Messages.getString(&quot;FileBasedConfiguration.NoBandwidth&quot;) +</span>
+<span class="nc" id="L1247">                    e.getMessage()); //$NON-NLS-1$</span>
+<span class="pc" id="L1248">      }</span>
+    } else {
+<span class="nc bnc" id="L1250" title="All 4 branches missed.">      if (config.getBaseDirectory() != null &amp;&amp; config.getConfigPath() != null) {</span>
+        // load Rules from files
+<span class="nc" id="L1252">        final File dirConfig =</span>
+<span class="nc" id="L1253">            new File(config.getBaseDirectory() + config.getConfigPath());</span>
+<span class="nc bnc" id="L1254" title="All 2 branches missed.">        if (dirConfig.isDirectory()) {</span>
+          try {
+<span class="nc" id="L1256">            RuleFileBasedConfiguration.importRules(dirConfig);</span>
+<span class="nc" id="L1257">          } catch (final OpenR66ProtocolSystemException e) {</span>
+<span class="nc" id="L1258">            logger.error(Messages.getString(&quot;FileBasedConfiguration.NoRule&quot;),</span>
+                         e); //$NON-NLS-1$
+<span class="nc" id="L1260">            return false;</span>
+<span class="nc" id="L1261">          } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1262">            logger.error(Messages.getString(&quot;FileBasedConfiguration.NoRule&quot;),</span>
+                         e); //$NON-NLS-1$
+<span class="nc" id="L1264">            return false;</span>
+<span class="nc" id="L1265">          }</span>
+        } else {
+<span class="nc" id="L1267">          logger.error(&quot;Config Directory is not a directory: &quot; +</span>
+<span class="nc" id="L1268">                       config.getBaseDirectory() + config.getConfigPath());</span>
+<span class="nc" id="L1269">          return false;</span>
+        }
+      }
+      // load if possible the limit to apply
+<span class="nc" id="L1273">      loadLimit(config, false);</span>
+    }
+<span class="fc" id="L1275">    return true;</span>
+  }
+
+  public static boolean autoupgrade;
+
+  /**
+   * Load database parameter
+   *
+   * @param config
+   * @param initdb
+   *
+   * @return True if OK
+   */
+  private static boolean loadDatabase(Configuration config, boolean initdb) {
+<span class="fc" id="L1289">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DB));</span>
+    try {
+<span class="fc" id="L1291">      XmlValue value = hashConfig.get(XML_SAVE_TASKRUNNERNODB);</span>
+<span class="pc bpc" id="L1292" title="4 of 6 branches missed.">      if (value != null &amp;&amp; !value.isEmpty() &amp;&amp; value.getBoolean()) {</span>
+<span class="nc" id="L1293">        config.setSaveTaskRunnerWithNoDb(value.getBoolean());</span>
+<span class="nc" id="L1294">        logger.info(</span>
+<span class="nc" id="L1295">            Messages.getString(&quot;FileBasedConfiguration.NoDB&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L1296">        admin = new DbAdmin(); // no database support</span>
+<span class="nc" id="L1297">        noCommitAdmin = admin;</span>
+<span class="nc" id="L1298">        DAOFactory.initialize();</span>
+<span class="nc" id="L1299">        return true;</span>
+      }
+<span class="fc" id="L1301">      value = hashConfig.get(XML_DBDRIVER);</span>
+<span class="pc bpc" id="L1302" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc bnc" id="L1303" title="All 2 branches missed.">        if (config.isWarnOnStartup()) {</span>
+<span class="nc" id="L1304">          logger.warn(Messages.getString(&quot;FileBasedConfiguration.NoDB&quot;));</span>
+          //$NON-NLS-1$
+        } else {
+<span class="nc" id="L1307">          logger.info(</span>
+<span class="nc" id="L1308">              Messages.getString(&quot;FileBasedConfiguration.NoDB&quot;)); //$NON-NLS-1$</span>
+        }
+<span class="nc" id="L1310">        admin = new DbAdmin(); // no database support</span>
+<span class="nc" id="L1311">        noCommitAdmin = admin;</span>
+<span class="nc" id="L1312">        DAOFactory.initialize();</span>
+      } else {
+<span class="fc" id="L1314">        final String dbdriver = value.getString();</span>
+<span class="fc" id="L1315">        value = hashConfig.get(XML_DBSERVER);</span>
+<span class="pc bpc" id="L1316" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1317">          logger.error(</span>
+<span class="nc" id="L1318">              Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+              &quot;DBServer&quot;); //$NON-NLS-1$
+<span class="nc" id="L1320">          return false;</span>
+        }
+<span class="fc" id="L1322">        final String dbserver = value.getString();</span>
+<span class="fc" id="L1323">        value = hashConfig.get(XML_DBUSER);</span>
+<span class="pc bpc" id="L1324" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1325">          logger.error(</span>
+<span class="nc" id="L1326">              Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+              &quot;DBUser&quot;); //$NON-NLS-1$
+<span class="nc" id="L1328">          return false;</span>
+        }
+<span class="fc" id="L1330">        final String dbuser = value.getString();</span>
+<span class="fc" id="L1331">        value = hashConfig.get(XML_DBPASSWD);</span>
+<span class="pc bpc" id="L1332" title="2 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1333">          logger.error(</span>
+<span class="nc" id="L1334">              Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+              &quot;DBPassword&quot;); //$NON-NLS-1$
+<span class="nc" id="L1336">          return false;</span>
+        }
+<span class="fc" id="L1338">        final String dbpasswd = value.getString();</span>
+<span class="pc bpc" id="L1339" title="4 of 8 branches missed.">        if (dbdriver == null || dbserver == null || dbuser == null ||</span>
+<span class="pc bpc" id="L1340" title="2 of 4 branches missed.">            dbpasswd == null || dbdriver.isEmpty() || dbserver.isEmpty() ||</span>
+<span class="pc bpc" id="L1341" title="2 of 4 branches missed.">            dbuser.isEmpty() || dbpasswd.isEmpty()) {</span>
+<span class="nc" id="L1342">          logger.error(</span>
+<span class="nc" id="L1343">              Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +</span>
+              &quot;Correct DB data&quot;); //$NON-NLS-1$
+<span class="nc" id="L1345">          return false;</span>
+        }
+        try {
+<span class="fc" id="L1348">          admin = DbModelFactoryR66</span>
+<span class="fc" id="L1349">              .initialize(dbdriver, dbserver, dbuser, dbpasswd, true);</span>
+          // New way of initializing database services
+          try {
+<span class="fc" id="L1352">            ConnectionFactory.initialize(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L1353">          } catch (final UnsupportedOperationException e) {</span>
+<span class="nc" id="L1354">            logger.error(e);</span>
+<span class="nc" id="L1355">            return false;</span>
+<span class="nc" id="L1356">          } catch (final SQLException e) {</span>
+<span class="nc" id="L1357">            logger.error(&quot;Cannot create ConnectionFactory&quot;, e);</span>
+<span class="nc" id="L1358">            return false;</span>
+<span class="fc" id="L1359">          }</span>
+<span class="fc" id="L1360">          DAOFactory.initialize(ConnectionFactory.getInstance());</span>
+
+<span class="pc bpc" id="L1362" title="1 of 2 branches missed.">          if (config.getMultipleMonitors() &gt; 1) {</span>
+<span class="nc" id="L1363">            noCommitAdmin = DbModelFactoryR66</span>
+<span class="nc" id="L1364">                .initialize(dbdriver, dbserver, dbuser, dbpasswd, true);</span>
+<span class="nc" id="L1365">            Configuration.setNbDbSession(Configuration.getNbDbSession() + 1);</span>
+<span class="nc" id="L1366">            noCommitAdmin.getSession().setAutoCommit(false);</span>
+          } else {
+<span class="fc" id="L1368">            noCommitAdmin = admin;</span>
+          }
+<span class="pc bpc" id="L1370" title="2 of 4 branches missed.">          logger.info(&quot;Database connection: Admin:&quot; + (admin != null) +</span>
+                      &quot; NoCommitAdmin:&quot; + (noCommitAdmin != null));
+
+          try {
+<span class="fc" id="L1374">            logger.info(&quot;DefaultTransactionIsolation: &quot; +</span>
+<span class="fc" id="L1375">                        admin.getSession().getConn().getMetaData()</span>
+<span class="fc" id="L1376">                             .getDefaultTransactionIsolation() +</span>
+                        &quot; MaxConnections: &quot; +
+<span class="fc" id="L1378">                        admin.getSession().getConn().getMetaData()</span>
+<span class="fc" id="L1379">                             .getMaxConnections() + &quot; MaxStatements: &quot; +</span>
+<span class="fc" id="L1380">                        admin.getSession().getConn().getMetaData()</span>
+<span class="fc" id="L1381">                             .getMaxStatements());</span>
+<span class="nc" id="L1382">          } catch (final SQLException e) {</span>
+<span class="nc" id="L1383">            SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="fc" id="L1384">          }</span>
+<span class="nc" id="L1385">        } catch (final WaarpDatabaseNoConnectionException e2) {</span>
+<span class="nc" id="L1386">          logger.error(Messages.getString(&quot;Database.CannotConnect&quot;),</span>
+                       e2); //$NON-NLS-1$
+<span class="nc" id="L1388">          return false;</span>
+<span class="fc" id="L1389">        }</span>
+        // Check if the database is ready (initdb already done before)
+        DbRequest request;
+<span class="fc bfc" id="L1392" title="All 2 branches covered.">        if (!initdb) {</span>
+          try {
+<span class="fc" id="L1394">            request = new DbRequest(admin.getSession());</span>
+            try {
+<span class="fc" id="L1396">              request.select(&quot;SELECT * FROM &quot; + DbConfiguration.table);</span>
+<span class="nc" id="L1397">            } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L1398">              logger.warn(Messages.getString(&quot;Database.DbNotInitiated&quot;),</span>
+                          e); //$NON-NLS-1$
+<span class="nc" id="L1400">              return true;</span>
+            } finally {
+<span class="fc" id="L1402">              request.close();</span>
+            }
+<span class="nc" id="L1404">          } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+            // ignore
+            /*
+             * TODO: Why Ignore? throwing bad configuration seems better
+             */
+<span class="fc" id="L1409">          }</span>
+        }
+        // TODO to remove when &lt;dbcheck&gt; is drop from config file
+<span class="fc" id="L1412">        value = hashConfig.get(XML_DBCHECK);</span>
+<span class="pc bpc" id="L1413" title="1 of 4 branches missed.">        if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L1414">          logger.warn(</span>
+              &quot;&lt;{}&gt; is deprecated in configuration file &quot; + &quot;use &lt;{}&gt; instead&quot;,
+              XML_DBCHECK, XML_DBAUTOUPGRADE);
+<span class="fc" id="L1417">          autoupgrade = value.getBoolean();</span>
+        } else {
+          // Keep this part
+<span class="fc" id="L1420">          value = hashConfig.get(XML_DBAUTOUPGRADE);</span>
+<span class="pc bpc" id="L1421" title="2 of 4 branches missed.">          if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L1422">            autoupgrade = value.getBoolean();</span>
+          }
+        }
+<span class="pc bpc" id="L1425" title="3 of 4 branches missed.">        if (autoupgrade &amp;&amp; !initdb) {</span>
+          // Check if the database is up to date
+          try {
+<span class="nc bnc" id="L1428" title="All 2 branches missed.">            if (!ServerInitDatabase.upgradedb()) {</span>
+<span class="nc" id="L1429">              return false;</span>
+            }
+<span class="nc" id="L1431">          } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1432">            logger.error(e);</span>
+<span class="nc" id="L1433">            return false;</span>
+<span class="nc" id="L1434">          }</span>
+        }
+      }
+<span class="fc" id="L1437">      return true;</span>
+    } finally {
+<span class="fc" id="L1439">      hashConfig.clear();</span>
+<span class="fc" id="L1440">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * Load white list for Business if any
+   *
+   * @param config
+   */
+  private static void loadBusinessWhiteList(Configuration config) {
+<span class="fc" id="L1450">    XmlHash hashConfig =</span>
+<span class="fc" id="L1451">        new XmlHash(hashRootConfig.get(DbHostConfiguration.XML_BUSINESS));</span>
+    try {
+<span class="fc" id="L1453">      final XmlValue value = hashConfig.get(DbHostConfiguration.XML_BUSINESS);</span>
+<span class="pc bpc" id="L1454" title="2 of 4 branches missed.">      if (value != null &amp;&amp; value.getList() != null) {</span>
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L1456">        List&lt;String&gt; ids = (List&lt;String&gt;) value.getList();</span>
+<span class="pc bpc" id="L1457" title="1 of 2 branches missed.">        if (ids != null) {</span>
+<span class="fc bfc" id="L1458" title="All 2 branches covered.">          for (final String sval : ids) {</span>
+<span class="pc bpc" id="L1459" title="1 of 2 branches missed.">            if (sval.isEmpty()) {</span>
+<span class="nc" id="L1460">              continue;</span>
+            }
+<span class="fc" id="L1462">            logger.info(&quot;Business Allow: &quot; + sval);</span>
+<span class="fc" id="L1463">            config.getBusinessWhiteSet().add(sval.trim());</span>
+<span class="fc" id="L1464">          }</span>
+<span class="fc" id="L1465">          ids.clear();</span>
+<span class="fc" id="L1466">          ids = null;</span>
+        }
+      }
+<span class="fc" id="L1469">      loadAliases(config);</span>
+<span class="fc" id="L1470">      setSelfVersion(config);</span>
+    } finally {
+<span class="fc" id="L1472">      hashConfig.clear();</span>
+<span class="fc" id="L1473">      hashConfig = null;</span>
+    }
+<span class="fc" id="L1475">  }</span>
+
+  /**
+   * Load the aliases configuration
+   *
+   * @param config
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private static void loadAliases(Configuration config) {
+<span class="fc" id="L1484">    XmlHash hashConfig =</span>
+<span class="fc" id="L1485">        new XmlHash(hashRootConfig.get(DbHostConfiguration.XML_ALIASES));</span>
+    try {
+<span class="fc" id="L1487">      XmlValue value = hashConfig.get(DbHostConfiguration.XML_ALIASES);</span>
+<span class="pc bpc" id="L1488" title="2 of 4 branches missed.">      if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="fc bfc" id="L1489" title="All 2 branches covered.">        for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
+<span class="fc" id="L1490">          final XmlHash subHash = new XmlHash(xml);</span>
+<span class="fc" id="L1491">          value = subHash.get(DbHostConfiguration.XML_REALID);</span>
+<span class="pc bpc" id="L1492" title="2 of 4 branches missed.">          if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1493">            continue;</span>
+          }
+<span class="fc" id="L1495">          final String refHostId = value.getString();</span>
+<span class="fc" id="L1496">          value = subHash.get(DbHostConfiguration.XML_ALIASID);</span>
+<span class="pc bpc" id="L1497" title="2 of 4 branches missed.">          if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1498">            continue;</span>
+          }
+<span class="fc" id="L1500">          final String aliasset = value.getString();</span>
+<span class="fc" id="L1501">          final String[] alias = aliasset.split(&quot; |\\|&quot;);</span>
+<span class="fc bfc" id="L1502" title="All 2 branches covered.">          for (final String namealias : alias) {</span>
+<span class="fc" id="L1503">            config.getAliases().put(namealias, refHostId);</span>
+          }
+<span class="fc" id="L1505">          config.getReverseAliases().put(refHostId, alias);</span>
+<span class="fc" id="L1506">          logger.info(&quot;Aliases for: &quot; + refHostId + &quot; = &quot; + aliasset);</span>
+<span class="fc" id="L1507">        }</span>
+      }
+    } finally {
+<span class="fc" id="L1510">      hashConfig.clear();</span>
+<span class="fc" id="L1511">      hashConfig = null;</span>
+    }
+<span class="fc" id="L1513">  }</span>
+
+  /**
+   * Add the local host in Versions
+   *
+   * @param config
+   */
+  private static void setSelfVersion(Configuration config) {
+<span class="pc bpc" id="L1521" title="1 of 2 branches missed.">    if (config.getHostId() != null) {</span>
+<span class="fc" id="L1522">      config.getVersions().putIfAbsent(config.getHostId(),</span>
+                                       new PartnerConfiguration(
+<span class="fc" id="L1524">                                           config.getHostId()));</span>
+    }
+<span class="pc bpc" id="L1526" title="1 of 2 branches missed.">    if (config.getHostSslId() != null) {</span>
+<span class="fc" id="L1527">      config.getVersions().putIfAbsent(config.getHostSslId(),</span>
+                                       new PartnerConfiguration(
+<span class="fc" id="L1529">                                           config.getHostSslId()));</span>
+    }
+<span class="fc" id="L1531">    logger.debug(&quot;Partners: {}&quot;, config.getVersions());</span>
+<span class="fc" id="L1532">  }</span>
+
+  /**
+   * Load Role list if any
+   *
+   * @param config
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private static void loadRolesList(Configuration config) {
+<span class="fc" id="L1541">    XmlHash hashConfig =</span>
+<span class="fc" id="L1542">        new XmlHash(hashRootConfig.get(DbHostConfiguration.XML_ROLES));</span>
+    try {
+<span class="fc" id="L1544">      XmlValue value = hashConfig.get(DbHostConfiguration.XML_ROLES);</span>
+<span class="pc bpc" id="L1545" title="2 of 4 branches missed.">      if (value != null &amp;&amp; value.getList() != null) {</span>
+<span class="fc bfc" id="L1546" title="All 2 branches covered.">        for (final XmlValue[] xml : (Iterable&lt;XmlValue[]&gt;) value.getList()) {</span>
+<span class="fc" id="L1547">          final XmlHash subHash = new XmlHash(xml);</span>
+<span class="fc" id="L1548">          value = subHash.get(DbHostConfiguration.XML_ROLEID);</span>
+<span class="pc bpc" id="L1549" title="2 of 4 branches missed.">          if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1550">            continue;</span>
+          }
+<span class="fc" id="L1552">          final String refHostId = value.getString();</span>
+<span class="fc" id="L1553">          value = subHash.get(DbHostConfiguration.XML_ROLESET);</span>
+<span class="pc bpc" id="L1554" title="2 of 4 branches missed.">          if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1555">            continue;</span>
+          }
+<span class="fc" id="L1557">          final String roleset = value.getString();</span>
+<span class="fc" id="L1558">          final String[] roles = roleset.split(&quot; |\\|&quot;);</span>
+<span class="fc" id="L1559">          final RoleDefault newrole = new RoleDefault();</span>
+<span class="fc bfc" id="L1560" title="All 2 branches covered.">          for (final String role : roles) {</span>
+            try {
+<span class="fc" id="L1562">              final RoleDefault.ROLE roletype =</span>
+<span class="fc" id="L1563">                  RoleDefault.ROLE.valueOf(role.toUpperCase());</span>
+<span class="pc bpc" id="L1564" title="1 of 2 branches missed.">              if (roletype == ROLE.NOACCESS) {</span>
+                // reset
+<span class="nc" id="L1566">                newrole.setRole(roletype);</span>
+              } else {
+<span class="fc" id="L1568">                newrole.addRole(roletype);</span>
+              }
+<span class="nc" id="L1570">            } catch (final IllegalArgumentException e) {</span>
+              // ignore
+<span class="fc" id="L1572">            }</span>
+          }
+<span class="fc" id="L1574">          logger.info(&quot;New Role: &quot; + refHostId + ':' + newrole);</span>
+<span class="fc" id="L1575">          config.getRoles().put(refHostId, newrole);</span>
+<span class="fc" id="L1576">        }</span>
+      }
+    } finally {
+<span class="fc" id="L1579">      hashConfig.clear();</span>
+<span class="fc" id="L1580">      hashConfig = null;</span>
+    }
+<span class="fc" id="L1582">  }</span>
+
+  /**
+   * Finalize configuration for Server on DbHostConfiguration
+   *
+   * @param config
+   */
+  private static void finalizeDbHostConfiguration(Configuration config) {
+    // now check in DB
+<span class="pc bpc" id="L1591" title="1 of 2 branches missed.">    if (admin != null) {</span>
+<span class="fc" id="L1592">      DbHostConfiguration hostconfiguration = null;</span>
+      try {
+<span class="fc" id="L1594">        hostconfiguration = new DbHostConfiguration(config.getHostId());</span>
+<span class="nc" id="L1595">      } catch (final WaarpDatabaseException e) {</span>
+        // ignore
+<span class="nc" id="L1597">        Business business = new Business();</span>
+<span class="nc" id="L1598">        business.setHostid(config.getHostId());</span>
+<span class="nc" id="L1599">        hostconfiguration = new DbHostConfiguration(business);</span>
+<span class="fc" id="L1600">      }</span>
+<span class="pc bpc" id="L1601" title="1 of 2 branches missed.">      if (hostconfiguration != null) {</span>
+<span class="fc" id="L1602">        hostconfiguration.updateFromConfiguration(config);</span>
+      }
+    }
+
+<span class="fc" id="L1606">  }</span>
+
+  /**
+   * @param config
+   * @param fromXML
+   *
+   * @return the new subpath
+   *
+   * @throws OpenR66ProtocolSystemException
+   */
+  private static String getSubPath(Configuration config, String fromXML)
+      throws OpenR66ProtocolSystemException {
+<span class="fc" id="L1618">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DIRECTORY));</span>
+    try {
+<span class="fc" id="L1620">      final XmlValue value = hashConfig.get(fromXML);</span>
+<span class="pc bpc" id="L1621" title="2 of 4 branches missed.">      if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L1622">        logger.error(Messages.getString(&quot;FileBasedConfiguration.NoXmlPath&quot;) +</span>
+                     fromXML); //$NON-NLS-1$
+<span class="nc" id="L1624">        throw new OpenR66ProtocolSystemException(</span>
+<span class="nc" id="L1625">            Messages.getString(&quot;FileBasedConfiguration.NoXmlPath&quot;) +</span>
+            fromXML); //$NON-NLS-1$
+      }
+
+<span class="fc" id="L1629">      String path = value.getString();</span>
+<span class="pc bpc" id="L1630" title="2 of 4 branches missed.">      if (path == null || path.isEmpty()) {</span>
+<span class="nc" id="L1631">        throw new OpenR66ProtocolSystemException(</span>
+<span class="nc" id="L1632">            Messages.getString(&quot;FileBasedConfiguration.NotCorrectPath&quot;) +</span>
+            fromXML); //$NON-NLS-1$
+      }
+<span class="fc" id="L1635">      path = DirInterface.SEPARATOR + path;</span>
+<span class="fc" id="L1636">      final String newpath = config.getBaseDirectory() + path;</span>
+<span class="fc" id="L1637">      final File file = new File(newpath);</span>
+<span class="pc bpc" id="L1638" title="1 of 2 branches missed.">      if (!file.isDirectory()) {</span>
+<span class="nc" id="L1639">        FileUtils.createDir(file);</span>
+      }
+<span class="fc" id="L1641">      return path;</span>
+    } finally {
+<span class="fc" id="L1643">      hashConfig.clear();</span>
+<span class="fc" id="L1644">      hashConfig = null;</span>
+    }
+  }
+
+  /**
+   * Load minimalistic Limit configuration
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationLoadLimitFromXml(Configuration config,
+                                                         String filename) {
+    Document document;
+<span class="fc" id="L1659">    alreadySetLimit = false;</span>
+    // Open config file
+    try {
+<span class="fc" id="L1662">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1663">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1664">      logger.error(</span>
+<span class="nc" id="L1665">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L1667">      return false;</span>
+<span class="fc" id="L1668">    }</span>
+<span class="pc bpc" id="L1669" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1670">      logger.error(</span>
+<span class="nc" id="L1671">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L1673">      return false;</span>
+    }
+<span class="fc" id="L1675">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L1676">    hashRootConfig = new XmlRootHash(configuration);</span>
+<span class="fc" id="L1677">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_IDENTITY));</span>
+    try {
+<span class="fc" id="L1679">      loadLocale(hashConfig);</span>
+    } finally {
+<span class="fc" id="L1681">      hashConfig.clear();</span>
+<span class="fc" id="L1682">      hashConfig = null;</span>
+    }
+<span class="pc bpc" id="L1684" title="1 of 2 branches missed.">    if (!loadLimit(config, true)) {</span>
+<span class="nc" id="L1685">      logger.error(Messages.getString(&quot;FileBasedConfiguration.NoLimit&quot;) +</span>
+                   filename); //$NON-NLS-1$
+<span class="nc" id="L1687">      return false;</span>
+    }
+<span class="fc" id="L1689">    hashRootConfig.clear();</span>
+<span class="fc" id="L1690">    hashRootConfig = null;</span>
+<span class="fc" id="L1691">    configuration = null;</span>
+<span class="fc" id="L1692">    return true;</span>
+  }
+
+  /**
+   * Load configuration for init database
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationInitDatabase(Configuration config,
+                                                     String filename,
+                                                     boolean initdb) {
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L1709">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1710">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1711">      logger.error(</span>
+<span class="nc" id="L1712">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L1714">      return false;</span>
+<span class="fc" id="L1715">    }</span>
+<span class="pc bpc" id="L1716" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1717">      logger.error(</span>
+<span class="nc" id="L1718">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L1720">      return false;</span>
+    }
+<span class="fc" id="L1722">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L1723">    hashRootConfig = new XmlRootHash(configuration);</span>
+<span class="pc bpc" id="L1724" title="1 of 2 branches missed.">    if (!loadIdentity(config, hashRootConfig)) {</span>
+<span class="nc" id="L1725">      logger.error(CANNOT_LOAD_IDENTITY);</span>
+<span class="nc" id="L1726">      return false;</span>
+    }
+<span class="pc bpc" id="L1728" title="1 of 2 branches missed.">    if (!loadDatabase(config, initdb)) {</span>
+<span class="nc" id="L1729">      logger.error(CANNOT_LOAD_DATABASE_CONFIGURATION);</span>
+<span class="nc" id="L1730">      return false;</span>
+    }
+<span class="pc bpc" id="L1732" title="1 of 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L1733">      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);</span>
+<span class="nc" id="L1734">      return false;</span>
+    }
+<span class="pc bpc" id="L1736" title="1 of 2 branches missed.">    if (!loadLimit(config, false)) {</span>
+<span class="nc" id="L1737">      logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);</span>
+<span class="nc" id="L1738">      return false;</span>
+    }
+<span class="pc bpc" id="L1740" title="1 of 2 branches missed.">    if (config.isSaveTaskRunnerWithNoDb()) {</span>
+      // if no database, must load authentication from file
+<span class="nc bnc" id="L1742" title="All 2 branches missed.">      if (!loadAuthentication(config)) {</span>
+<span class="nc" id="L1743">        logger.error(CANNOT_LOAD_AUTHENTICATION_CONFIGURATION);</span>
+<span class="nc" id="L1744">        return false;</span>
+      }
+    }
+<span class="fc" id="L1747">    hashRootConfig.clear();</span>
+<span class="fc" id="L1748">    hashRootConfig = null;</span>
+<span class="fc" id="L1749">    configuration = null;</span>
+<span class="fc" id="L1750">    return true;</span>
+  }
+
+  /**
+   * Load minimalistic configuration
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationServerMinimalFromXml(
+      Configuration config, String filename) {
+<span class="nc" id="L1763">    if (!SystemPropertyUtil</span>
+<span class="nc" id="L1764">        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, &quot;&quot;)</span>
+<span class="nc bnc" id="L1765" title="All 2 branches missed.">        .isEmpty()) {</span>
+<span class="nc" id="L1766">      logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,</span>
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
+<span class="nc" id="L1769">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L1770">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,</span>
+                      false);
+    } else {
+<span class="nc" id="L1773">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L1774">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,</span>
+                      false);
+    }
+
+    Document document;
+    // Open config file
+    try {
+<span class="nc" id="L1781">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1782">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1783">      logger.error(</span>
+<span class="nc" id="L1784">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L1786">      return false;</span>
+<span class="nc" id="L1787">    }</span>
+<span class="nc bnc" id="L1788" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1789">      logger.error(</span>
+<span class="nc" id="L1790">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L1792">      return false;</span>
+    }
+<span class="nc" id="L1794">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="nc" id="L1795">    hashRootConfig = new XmlRootHash(configuration);</span>
+<span class="nc bnc" id="L1796" title="All 2 branches missed.">    if (!loadIdentity(config, hashRootConfig)) {</span>
+<span class="nc" id="L1797">      logger.error(CANNOT_LOAD_IDENTITY);</span>
+<span class="nc" id="L1798">      return false;</span>
+    }
+<span class="nc bnc" id="L1800" title="All 2 branches missed.">    if (!loadDatabase(config, false)) {</span>
+<span class="nc" id="L1801">      logger.error(CANNOT_LOAD_DATABASE_CONFIGURATION);</span>
+<span class="nc" id="L1802">      return false;</span>
+    }
+<span class="nc bnc" id="L1804" title="All 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L1805">      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);</span>
+<span class="nc" id="L1806">      return false;</span>
+    }
+<span class="nc bnc" id="L1808" title="All 2 branches missed.">    if (!loadLimit(config, false)) {</span>
+<span class="nc" id="L1809">      logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);</span>
+<span class="nc" id="L1810">      return false;</span>
+    }
+<span class="nc bnc" id="L1812" title="All 2 branches missed.">    if (config.isSaveTaskRunnerWithNoDb()) {</span>
+      // if no database, must load authentication from file
+<span class="nc bnc" id="L1814" title="All 2 branches missed.">      if (!loadAuthentication(config)) {</span>
+<span class="nc" id="L1815">        logger.error(CANNOT_LOAD_AUTHENTICATION_CONFIGURATION);</span>
+<span class="nc" id="L1816">        return false;</span>
+      }
+    }
+<span class="nc" id="L1819">    config.setHostAuth(R66Auth.getServerAuth(config.getHostId()));</span>
+<span class="nc bnc" id="L1820" title="All 4 branches missed.">    if (config.getHostAuth() == null &amp;&amp; config.isUseNOSSL()) {</span>
+<span class="nc" id="L1821">      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L1822">      return false;</span>
+    }
+<span class="nc bnc" id="L1824" title="All 2 branches missed.">    if (config.getHostSslId() != null) {</span>
+<span class="nc" id="L1825">      config.setHostSslAuth(R66Auth.getServerAuth(config.getHostSslId()));</span>
+<span class="nc bnc" id="L1826" title="All 4 branches missed.">      if (config.getHostSslAuth() == null &amp;&amp; config.isUseSSL()) {</span>
+<span class="nc" id="L1827">        logger.error(CANNOT_FIND_SSL_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L1828">        return false;</span>
+      }
+    }
+<span class="nc" id="L1831">    hashRootConfig.clear();</span>
+<span class="nc" id="L1832">    hashRootConfig = null;</span>
+<span class="nc" id="L1833">    configuration = null;</span>
+<span class="nc" id="L1834">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for server shutdown
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationServerShutdownFromXml(
+      Configuration config, String filename) {
+<span class="nc" id="L1847">    if (!SystemPropertyUtil</span>
+<span class="nc" id="L1848">        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, &quot;&quot;)</span>
+<span class="nc bnc" id="L1849" title="All 2 branches missed.">        .isEmpty()) {</span>
+<span class="nc" id="L1850">      logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,</span>
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
+<span class="nc" id="L1853">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L1854">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,</span>
+                      false);
+    } else {
+<span class="nc" id="L1857">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L1858">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,</span>
+                      false);
+    }
+
+    Document document;
+    // Open config file
+    try {
+<span class="nc" id="L1865">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1866">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1867">      logger.error(</span>
+<span class="nc" id="L1868">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L1870">      return false;</span>
+<span class="nc" id="L1871">    }</span>
+<span class="nc bnc" id="L1872" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1873">      logger.error(</span>
+<span class="nc" id="L1874">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L1876">      return false;</span>
+    }
+<span class="nc" id="L1878">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="nc" id="L1879">    hashRootConfig = new XmlRootHash(configuration);</span>
+    // Now read the configuration
+<span class="nc bnc" id="L1881" title="All 2 branches missed.">    if (!loadIdentity(config, hashRootConfig)) {</span>
+<span class="nc" id="L1882">      logger.error(CANNOT_LOAD_IDENTITY);</span>
+<span class="nc" id="L1883">      return false;</span>
+    }
+<span class="nc bnc" id="L1885" title="All 2 branches missed.">    if (!loadDatabase(config, false)) {</span>
+<span class="nc" id="L1886">      logger.error(CANNOT_LOAD_DATABASE_CONFIGURATION);</span>
+<span class="nc" id="L1887">      return false;</span>
+    }
+<span class="nc bnc" id="L1889" title="All 2 branches missed.">    if (!loadServerParam(config)) {</span>
+<span class="nc" id="L1890">      logger.error(&quot;Cannot load Server Parameters&quot;);</span>
+<span class="nc" id="L1891">      return false;</span>
+    }
+<span class="nc bnc" id="L1893" title="All 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L1894">      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);</span>
+<span class="nc" id="L1895">      return false;</span>
+    }
+<span class="nc bnc" id="L1897" title="All 2 branches missed.">    if (!loadLimit(config, false)) {</span>
+<span class="nc" id="L1898">      logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);</span>
+<span class="nc" id="L1899">      return false;</span>
+    }
+<span class="nc bnc" id="L1901" title="All 4 branches missed.">    if (config.isUseSSL() &amp;&amp; !loadSsl(config, hashRootConfig)) {</span>
+<span class="nc" id="L1902">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L1903">      return false;</span>
+    }
+<span class="nc bnc" id="L1905" title="All 2 branches missed.">    if (!loadNetworkServer(config)) {</span>
+<span class="nc" id="L1906">      logger.error(&quot;Cannot load Network configuration&quot;);</span>
+<span class="nc" id="L1907">      return false;</span>
+    }
+<span class="nc bnc" id="L1909" title="All 2 branches missed.">    if (config.isSaveTaskRunnerWithNoDb()) {</span>
+      // if no database, must load authentication from file
+<span class="nc bnc" id="L1911" title="All 2 branches missed.">      if (!loadAuthentication(config)) {</span>
+<span class="nc" id="L1912">        logger.error(CANNOT_LOAD_AUTHENTICATION_CONFIGURATION);</span>
+<span class="nc" id="L1913">        return false;</span>
+      }
+    }
+<span class="nc" id="L1916">    config.setHostAuth(R66Auth.getServerAuth(config.getHostId()));</span>
+<span class="nc bnc" id="L1917" title="All 4 branches missed.">    if (config.getHostAuth() == null &amp;&amp; config.isUseNOSSL()) {</span>
+<span class="nc" id="L1918">      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L1919">      return false;</span>
+    }
+<span class="nc bnc" id="L1921" title="All 2 branches missed.">    if (config.getHostSslId() != null) {</span>
+<span class="nc" id="L1922">      config.setHostSslAuth(R66Auth.getServerAuth(config.getHostSslId()));</span>
+<span class="nc bnc" id="L1923" title="All 4 branches missed.">      if (config.getHostSslAuth() == null &amp;&amp; config.isUseSSL()) {</span>
+<span class="nc" id="L1924">        logger.error(CANNOT_FIND_SSL_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L1925">        return false;</span>
+      }
+    }
+<span class="nc" id="L1928">    loadBusinessWhiteList(config);</span>
+<span class="nc" id="L1929">    hashRootConfig.clear();</span>
+<span class="nc" id="L1930">    hashRootConfig = null;</span>
+<span class="nc" id="L1931">    configuration = null;</span>
+<span class="nc" id="L1932">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for server
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setConfigurationServerFromXml(Configuration config,
+                                                      String filename) {
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L1948">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L1949">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L1950">      logger.error(</span>
+<span class="nc" id="L1951">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L1953">      return false;</span>
+<span class="fc" id="L1954">    }</span>
+<span class="pc bpc" id="L1955" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L1956">      logger.error(</span>
+<span class="nc" id="L1957">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L1959">      return false;</span>
+    }
+<span class="fc" id="L1961">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L1962">    hashRootConfig = new XmlRootHash(configuration);</span>
+    // Now read the configuration
+<span class="pc bpc" id="L1964" title="1 of 2 branches missed.">    if (!loadIdentity(config, hashRootConfig)) {</span>
+<span class="nc" id="L1965">      logger.error(CANNOT_LOAD_IDENTITY);</span>
+<span class="nc" id="L1966">      return false;</span>
+    }
+<span class="pc bpc" id="L1968" title="1 of 2 branches missed.">    if (!loadDatabase(config, false)) {</span>
+<span class="nc" id="L1969">      logger.error(CANNOT_LOAD_DATABASE_CONFIGURATION);</span>
+<span class="nc" id="L1970">      return false;</span>
+    }
+<span class="pc bpc" id="L1972" title="1 of 2 branches missed.">    if (!loadServerParam(config)) {</span>
+<span class="nc" id="L1973">      logger.error(&quot;Cannot load Server Parameters&quot;);</span>
+<span class="nc" id="L1974">      return false;</span>
+    }
+<span class="pc bpc" id="L1976" title="1 of 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L1977">      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);</span>
+<span class="nc" id="L1978">      return false;</span>
+    }
+<span class="pc bpc" id="L1980" title="1 of 2 branches missed.">    if (!loadLimit(config, false)) {</span>
+<span class="nc" id="L1981">      logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);</span>
+<span class="nc" id="L1982">      return false;</span>
+    }
+<span class="pc bpc" id="L1984" title="2 of 4 branches missed.">    if (config.isUseSSL() &amp;&amp; !loadSsl(config, hashRootConfig)) {</span>
+<span class="nc" id="L1985">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L1986">      return false;</span>
+    }
+<span class="pc bpc" id="L1988" title="1 of 2 branches missed.">    if (!loadNetworkServer(config)) {</span>
+<span class="nc" id="L1989">      logger.error(&quot;Cannot load Network configuration&quot;);</span>
+<span class="nc" id="L1990">      return false;</span>
+    }
+<span class="pc bpc" id="L1992" title="1 of 2 branches missed.">    if (!loadRest(config)) {</span>
+<span class="nc" id="L1993">      logger.error(&quot;Cannot load REST configuration&quot;);</span>
+<span class="nc" id="L1994">      return false;</span>
+    }
+<span class="pc bpc" id="L1996" title="1 of 2 branches missed.">    if (!loadFromDatabase(config)) {</span>
+<span class="nc" id="L1997">      logger.error(&quot;Cannot load configuration from Database&quot;);</span>
+<span class="nc" id="L1998">      return false;</span>
+    }
+<span class="pc bpc" id="L2000" title="1 of 2 branches missed.">    if (config.isSaveTaskRunnerWithNoDb()) {</span>
+      // if no database, must load authentication from file
+<span class="nc bnc" id="L2002" title="All 2 branches missed.">      if (!loadAuthentication(config)) {</span>
+<span class="nc" id="L2003">        logger.error(CANNOT_LOAD_AUTHENTICATION_CONFIGURATION);</span>
+<span class="nc" id="L2004">        return false;</span>
+      }
+    }
+<span class="fc" id="L2007">    config.setHostAuth(R66Auth.getServerAuth(config.getHostId()));</span>
+<span class="pc bpc" id="L2008" title="3 of 4 branches missed.">    if (config.getHostAuth() == null &amp;&amp; config.isUseNOSSL()) {</span>
+<span class="nc" id="L2009">      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L2010">      return false;</span>
+    }
+<span class="pc bpc" id="L2012" title="1 of 2 branches missed.">    if (config.getHostSslId() != null) {</span>
+<span class="fc" id="L2013">      config.setHostSslAuth(R66Auth.getServerAuth(config.getHostSslId()));</span>
+<span class="pc bpc" id="L2014" title="3 of 4 branches missed.">      if (config.getHostSslAuth() == null &amp;&amp; config.isUseSSL()) {</span>
+<span class="nc" id="L2015">        logger.error(CANNOT_FIND_SSL_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L2016">        return false;</span>
+      }
+    }
+<span class="fc" id="L2019">    loadBusinessWhiteList(config);</span>
+<span class="fc" id="L2020">    loadRolesList(config);</span>
+<span class="fc" id="L2021">    finalizeDbHostConfiguration(config);</span>
+<span class="fc" id="L2022">    hashRootConfig.clear();</span>
+<span class="fc" id="L2023">    hashRootConfig = null;</span>
+<span class="fc" id="L2024">    configuration = null;</span>
+<span class="fc" id="L2025">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for database client
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setClientConfigurationFromXml(Configuration config,
+                                                      String filename) {
+<span class="fc" id="L2038">    if (!SystemPropertyUtil</span>
+<span class="fc" id="L2039">        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, &quot;&quot;)</span>
+<span class="pc bpc" id="L2040" title="1 of 2 branches missed.">        .isEmpty()) {</span>
+<span class="nc" id="L2041">      logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,</span>
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
+<span class="nc" id="L2044">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L2045">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,</span>
+                      false);
+    } else {
+<span class="fc" id="L2048">      autoupgrade = SystemPropertyUtil</span>
+<span class="fc" id="L2049">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,</span>
+                      false);
+    }
+
+    Document document;
+    // Open config file
+    try {
+<span class="fc" id="L2056">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L2057">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L2058">      logger.error(</span>
+<span class="nc" id="L2059">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L2061">      return false;</span>
+<span class="fc" id="L2062">    }</span>
+<span class="pc bpc" id="L2063" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L2064">      logger.error(</span>
+<span class="nc" id="L2065">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L2067">      return false;</span>
+    }
+<span class="fc" id="L2069">    configuration = XmlUtil.read(document, configClient);</span>
+<span class="fc" id="L2070">    hashRootConfig = new XmlRootHash(configuration);</span>
+    // Client enables SSL by default but could be reverted later on
+<span class="fc" id="L2072">    config.setUseSSL(true);</span>
+<span class="pc bpc" id="L2073" title="1 of 2 branches missed.">    if (!loadIdentity(config, hashRootConfig)) {</span>
+<span class="nc" id="L2074">      logger.error(CANNOT_LOAD_IDENTITY);</span>
+<span class="nc" id="L2075">      return false;</span>
+    }
+<span class="pc bpc" id="L2077" title="1 of 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L2078">      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);</span>
+<span class="nc" id="L2079">      return false;</span>
+    }
+<span class="pc bpc" id="L2081" title="1 of 2 branches missed.">    if (!loadDatabase(config, false)) {</span>
+<span class="nc" id="L2082">      logger.error(CANNOT_LOAD_DATABASE_CONFIGURATION);</span>
+<span class="nc" id="L2083">      return false;</span>
+    }
+<span class="pc bpc" id="L2085" title="1 of 2 branches missed.">    if (!loadClientParam(config)) {</span>
+<span class="nc" id="L2086">      logger.error(&quot;Cannot load Client Parameters&quot;);</span>
+<span class="nc" id="L2087">      return false;</span>
+    }
+<span class="pc bpc" id="L2089" title="1 of 2 branches missed.">    if (!loadLimit(config, false)) {</span>
+<span class="nc" id="L2090">      logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);</span>
+<span class="nc" id="L2091">      return false;</span>
+    }
+<span class="pc bpc" id="L2093" title="2 of 4 branches missed.">    if (config.isUseSSL() &amp;&amp; !loadSsl(config, hashRootConfig)) {</span>
+<span class="nc" id="L2094">      logger.error(&quot;Cannot load SSL configuration&quot;);</span>
+<span class="nc" id="L2095">      return false;</span>
+    }
+<span class="pc bpc" id="L2097" title="1 of 2 branches missed.">    if (!loadFromDatabase(config)) {</span>
+<span class="nc" id="L2098">      logger.error(&quot;Cannot load configuration from Database&quot;);</span>
+<span class="nc" id="L2099">      return false;</span>
+    }
+<span class="pc bpc" id="L2101" title="1 of 2 branches missed.">    if (config.isSaveTaskRunnerWithNoDb()) {</span>
+      // if no database, must load authentication from file
+<span class="nc bnc" id="L2103" title="All 2 branches missed.">      if (!loadAuthentication(config)) {</span>
+<span class="nc" id="L2104">        logger.error(CANNOT_LOAD_AUTHENTICATION_CONFIGURATION);</span>
+<span class="nc" id="L2105">        return false;</span>
+      }
+    }
+    try {
+<span class="fc" id="L2109">      config.setHostAuth(new DbHostAuth(config.getHostId()));</span>
+<span class="nc" id="L2110">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L2111">      logger.error(&quot;Current Host is {}&quot;, config.getHostId());</span>
+<span class="nc" id="L2112">      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST, e);</span>
+<span class="nc" id="L2113">      return false;</span>
+<span class="fc" id="L2114">    }</span>
+<span class="pc bpc" id="L2115" title="1 of 2 branches missed.">    if (config.getHostAuth() == null) {</span>
+<span class="nc" id="L2116">      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L2117">      return false;</span>
+    }
+<span class="pc bpc" id="L2119" title="1 of 2 branches missed.">    if (config.getHostSslId() != null) {</span>
+<span class="fc" id="L2120">      config.setHostSslAuth(R66Auth.getServerAuth(config.getHostSslId()));</span>
+<span class="pc bpc" id="L2121" title="1 of 2 branches missed.">      if (config.getHostSslAuth() == null) {</span>
+<span class="nc" id="L2122">        logger.error(CANNOT_FIND_SSL_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L2123">        return false;</span>
+      }
+    }
+<span class="fc" id="L2126">    loadBusinessWhiteList(config);</span>
+<span class="fc" id="L2127">    hashRootConfig.clear();</span>
+<span class="fc" id="L2128">    hashRootConfig = null;</span>
+<span class="fc" id="L2129">    configuration = null;</span>
+<span class="fc" id="L2130">    return true;</span>
+  }
+
+  /**
+   * Initiate the configuration from the xml file for submit database client
+   *
+   * @param config
+   * @param filename
+   *
+   * @return True if OK
+   */
+  public static boolean setSubmitClientConfigurationFromXml(
+      Configuration config, String filename) {
+<span class="nc" id="L2143">    if (!SystemPropertyUtil</span>
+<span class="nc" id="L2144">        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, &quot;&quot;)</span>
+<span class="nc bnc" id="L2145" title="All 2 branches missed.">        .isEmpty()) {</span>
+<span class="nc" id="L2146">      logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,</span>
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
+                  R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
+<span class="nc" id="L2149">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L2150">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,</span>
+                      false);
+    } else {
+<span class="nc" id="L2153">      autoupgrade = SystemPropertyUtil</span>
+<span class="nc" id="L2154">          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,</span>
+                      false);
+    }
+
+    Document document;
+    // Open config file
+    try {
+<span class="nc" id="L2161">      document = XmlUtil.getNewSaxReader().read(filename);</span>
+<span class="nc" id="L2162">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L2163">      logger.error(</span>
+<span class="nc" id="L2164">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename, e); //$NON-NLS-1$
+<span class="nc" id="L2166">      return false;</span>
+<span class="nc" id="L2167">    }</span>
+<span class="nc bnc" id="L2168" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L2169">      logger.error(</span>
+<span class="nc" id="L2170">          Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +</span>
+          filename); //$NON-NLS-1$
+<span class="nc" id="L2172">      return false;</span>
+    }
+<span class="nc" id="L2174">    configuration = XmlUtil.read(document, configSubmitClient);</span>
+<span class="nc" id="L2175">    hashRootConfig = new XmlRootHash(configuration);</span>
+    // Client enables SSL by default but could be reverted later on
+<span class="nc" id="L2177">    config.setUseSSL(true);</span>
+<span class="nc bnc" id="L2178" title="All 2 branches missed.">    if (!loadIdentity(config, hashRootConfig)) {</span>
+<span class="nc" id="L2179">      logger.error(CANNOT_LOAD_IDENTITY);</span>
+<span class="nc" id="L2180">      return false;</span>
+    }
+<span class="nc bnc" id="L2182" title="All 2 branches missed.">    if (!loadDatabase(config, false)) {</span>
+<span class="nc" id="L2183">      logger.error(CANNOT_LOAD_DATABASE_CONFIGURATION);</span>
+<span class="nc" id="L2184">      return false;</span>
+    }
+<span class="nc bnc" id="L2186" title="All 2 branches missed.">    if (!loadDirectory(config)) {</span>
+<span class="nc" id="L2187">      logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);</span>
+<span class="nc" id="L2188">      return false;</span>
+    }
+<span class="nc" id="L2190">    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_LIMIT));</span>
+    try {
+<span class="nc" id="L2192">      final XmlValue value = hashConfig.get(XML_BLOCKSIZE);</span>
+<span class="nc bnc" id="L2193" title="All 4 branches missed.">      if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="nc" id="L2194">        config.setBlockSize(value.getInteger());</span>
+      }
+    } finally {
+<span class="nc" id="L2197">      hashConfig.clear();</span>
+<span class="nc" id="L2198">      hashConfig = null;</span>
+    }
+<span class="nc" id="L2200">    config.setHostAuth(R66Auth.getServerAuth(config.getHostId()));</span>
+<span class="nc bnc" id="L2201" title="All 2 branches missed.">    if (config.getHostAuth() == null) {</span>
+<span class="nc" id="L2202">      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L2203">      return false;</span>
+    }
+<span class="nc bnc" id="L2205" title="All 2 branches missed.">    if (config.getHostSslId() != null) {</span>
+<span class="nc" id="L2206">      config.setHostSslAuth(R66Auth.getServerAuth(config.getHostSslId()));</span>
+<span class="nc bnc" id="L2207" title="All 2 branches missed.">      if (config.getHostSslAuth() == null) {</span>
+<span class="nc" id="L2208">        logger.error(CANNOT_FIND_SSL_AUTHENTICATION_FOR_CURRENT_HOST);</span>
+<span class="nc" id="L2209">        return false;</span>
+      }
+    }
+<span class="nc" id="L2212">    loadBusinessWhiteList(config);</span>
+<span class="nc" id="L2213">    hashRootConfig.clear();</span>
+<span class="nc" id="L2214">    hashRootConfig = null;</span>
+<span class="nc" id="L2215">    configuration = null;</span>
+<span class="nc" id="L2216">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

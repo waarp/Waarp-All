@@ -93,8 +93,8 @@ public class RestHandlerHook implements HandlerHook {
   /**
    * The logger for all events.
    */
-<span class="nc" id="L96">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L97">      WaarpLoggerFactory.getLogger(RestHandlerHook.class);</span>
+<span class="fc" id="L96">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L97">      WaarpLoggerFactory.getLogger(RestHandlerHook.class);</span>
 
   /**
    * Hook called before a request handler is called. Checks if the REST method
@@ -117,43 +117,43 @@ public class RestHandlerHook implements HandlerHook {
                          HandlerInfo handlerInfo) {
 
     try {
-<span class="nc" id="L120">      final AbstractRestDbHandler handler = getHandler(handlerInfo);</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (!handler.checkCRUD(request)) {</span>
+<span class="fc" id="L120">      final AbstractRestDbHandler handler = getHandler(handlerInfo);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">      if (!handler.checkCRUD(request)) {</span>
 <span class="nc" id="L122">        responder.sendStatus(METHOD_NOT_ALLOWED);</span>
 <span class="nc" id="L123">        return false;</span>
       }
 
-<span class="nc" id="L126">      final Method handleMethod = getMethod(handler, handlerInfo);</span>
-<span class="nc bnc" id="L127" title="All 4 branches missed.">      if (authenticated &amp;&amp; !request.method().equals(OPTIONS)) {</span>
-<span class="nc" id="L128">        final String user = checkCredentials(request);</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (!checkAuthorization(user, handleMethod)) {</span>
+<span class="fc" id="L126">      final Method handleMethod = getMethod(handler, handlerInfo);</span>
+<span class="pc bpc" id="L127" title="1 of 4 branches missed.">      if (authenticated &amp;&amp; !request.method().equals(OPTIONS)) {</span>
+<span class="fc" id="L128">        final String user = checkCredentials(request);</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (!checkAuthorization(user, handleMethod)) {</span>
 <span class="nc" id="L130">          responder.sendStatus(FORBIDDEN);</span>
 <span class="nc" id="L131">          return false;</span>
         }
       }
 
-<span class="nc" id="L135">      final List&lt;MediaType&gt; expectedTypes = getExpectedMediaTypes(handleMethod);</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">      if (!checkContentType(request, expectedTypes)) {</span>
+<span class="fc" id="L135">      final List&lt;MediaType&gt; expectedTypes = getExpectedMediaTypes(handleMethod);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">      if (!checkContentType(request, expectedTypes)) {</span>
 <span class="nc" id="L137">        final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
 <span class="nc" id="L138">        headers.add(ACCEPT, convertToString(expectedTypes));</span>
 <span class="nc" id="L139">        responder.sendStatus(UNSUPPORTED_MEDIA_TYPE, headers);</span>
 <span class="nc" id="L140">        return false;</span>
       }
 
-<span class="nc" id="L143">      return true;</span>
-<span class="nc" id="L144">    } catch (final NotAllowedException e) {</span>
-<span class="nc" id="L145">      logger.info(e.getMessage());</span>
-<span class="nc" id="L146">      final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
-<span class="nc" id="L147">      headers.add(WWW_AUTHENTICATE, &quot;Basic, HMAC&quot;);</span>
-<span class="nc" id="L148">      responder.sendStatus(UNAUTHORIZED, headers);</span>
+<span class="fc" id="L143">      return true;</span>
+<span class="fc" id="L144">    } catch (final NotAllowedException e) {</span>
+<span class="fc" id="L145">      logger.info(e.getMessage());</span>
+<span class="fc" id="L146">      final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="fc" id="L147">      headers.add(WWW_AUTHENTICATE, &quot;Basic, HMAC&quot;);</span>
+<span class="fc" id="L148">      responder.sendStatus(UNAUTHORIZED, headers);</span>
 <span class="nc" id="L149">    } catch (final InternalServerErrorException e) {</span>
 <span class="nc" id="L150">      logger.error(e);</span>
 <span class="nc" id="L151">      responder.sendStatus(INTERNAL_SERVER_ERROR);</span>
 <span class="nc" id="L152">    } catch (final Throwable t) {</span>
 <span class="nc" id="L153">      logger.error(&quot;RESTv2 Unexpected exception caught -&gt;&quot;, t);</span>
 <span class="nc" id="L154">      responder.sendStatus(INTERNAL_SERVER_ERROR);</span>
-<span class="nc" id="L155">    }</span>
-<span class="nc" id="L156">    return false;</span>
+<span class="pc" id="L155">    }</span>
+<span class="fc" id="L156">    return false;</span>
   }
 
   /**
@@ -168,11 +168,11 @@ public class RestHandlerHook implements HandlerHook {
    *     exist.
    */
   private AbstractRestDbHandler getHandler(HandlerInfo handlerInfo) {
-<span class="nc bnc" id="L171" title="All 2 branches missed.">    for (final AbstractRestDbHandler h : RestServiceInitializer.handlers) {</span>
-<span class="nc bnc" id="L172" title="All 2 branches missed.">      if (h.getClass().getName().equals(handlerInfo.getHandlerName())) {</span>
-<span class="nc" id="L173">        return h;</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">    for (final AbstractRestDbHandler h : RestServiceInitializer.handlers) {</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">      if (h.getClass().getName().equals(handlerInfo.getHandlerName())) {</span>
+<span class="fc" id="L173">        return h;</span>
       }
-<span class="nc" id="L175">    }</span>
+<span class="fc" id="L175">    }</span>
 <span class="nc" id="L176">    throw new IllegalArgumentException(</span>
 <span class="nc" id="L177">        &quot;The handler &quot; + handlerInfo.getHandlerName() + &quot; does not exist.&quot;);</span>
   }
@@ -192,21 +192,21 @@ public class RestHandlerHook implements HandlerHook {
    */
   private Method getMethod(AbstractRestDbHandler handler,
                            HandlerInfo handlerInfo) {
-<span class="nc" id="L195">    Method method = null;</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">    for (final Method m : handler.getClass().getMethods()) {//NOSONAR</span>
-<span class="nc bnc" id="L197" title="All 2 branches missed.">      if (m.getName().equals(handlerInfo.getMethodName()) &amp;&amp;</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">          m.getParameterTypes()[0] == HttpRequest.class &amp;&amp;</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">          m.getParameterTypes()[1] == HttpResponder.class) {</span>
-<span class="nc" id="L200">        method = m;</span>
-<span class="nc" id="L201">        break;</span>
+<span class="fc" id="L195">    Method method = null;</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">    for (final Method m : handler.getClass().getMethods()) {//NOSONAR</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">      if (m.getName().equals(handlerInfo.getMethodName()) &amp;&amp;</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">          m.getParameterTypes()[0] == HttpRequest.class &amp;&amp;</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">          m.getParameterTypes()[1] == HttpResponder.class) {</span>
+<span class="fc" id="L200">        method = m;</span>
+<span class="fc" id="L201">        break;</span>
       }
     }
-<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (method == null) {</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (method == null) {</span>
 <span class="nc" id="L205">      throw new IllegalArgumentException(</span>
 <span class="nc" id="L206">          &quot;The handler &quot; + handlerInfo.getHandlerName() +</span>
 <span class="nc" id="L207">          &quot; does not have a method &quot; + handlerInfo.getMethodName());</span>
     }
-<span class="nc" id="L209">    return method;</span>
+<span class="fc" id="L209">    return method;</span>
   }
 
   /**
@@ -221,10 +221,10 @@ public class RestHandlerHook implements HandlerHook {
    * @return the list of all acceptable MediaType
    */
   private List&lt;MediaType&gt; getExpectedMediaTypes(Method method) {
-<span class="nc" id="L224">    List&lt;MediaType&gt; consumedTypes = WILDCARD_TYPE_SINGLETON_LIST;</span>
+<span class="fc" id="L224">    List&lt;MediaType&gt; consumedTypes = WILDCARD_TYPE_SINGLETON_LIST;</span>
 
-<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (method.isAnnotationPresent(Consumes.class)) {</span>
-<span class="nc" id="L227">      consumedTypes = createFrom(method.getAnnotation(Consumes.class));</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">    if (method.isAnnotationPresent(Consumes.class)) {</span>
+<span class="fc" id="L227">      consumedTypes = createFrom(method.getAnnotation(Consumes.class));</span>
     } else {
 <span class="nc" id="L229">      logger.warn(String.format(</span>
           &quot;[RESTv2] The method %s of handler %s is missing &quot; +
@@ -234,7 +234,7 @@ public class RestHandlerHook implements HandlerHook {
 <span class="nc" id="L234">          Consumes.class.getSimpleName(), WILDCARD));</span>
     }
 
-<span class="nc" id="L237">    return consumedTypes;</span>
+<span class="fc" id="L237">    return consumedTypes;</span>
   }
 
   /**
@@ -253,9 +253,9 @@ public class RestHandlerHook implements HandlerHook {
   private boolean checkContentType(HttpRequest request,
                                    List&lt;MediaType&gt; consumedTypes) {
 
-<span class="nc" id="L256">    final String contentTypeHeader = request.headers().get(CONTENT_TYPE);</span>
-<span class="nc bnc" id="L257" title="All 4 branches missed.">    if (contentTypeHeader == null || contentTypeHeader.isEmpty()) {</span>
-<span class="nc" id="L258">      return true;</span>
+<span class="fc" id="L256">    final String contentTypeHeader = request.headers().get(CONTENT_TYPE);</span>
+<span class="pc bpc" id="L257" title="3 of 4 branches missed.">    if (contentTypeHeader == null || contentTypeHeader.isEmpty()) {</span>
+<span class="fc" id="L258">      return true;</span>
     }
 
     MediaType requestType;
@@ -288,55 +288,55 @@ public class RestHandlerHook implements HandlerHook {
    */
   protected String checkCredentials(HttpRequest request) {
 
-<span class="nc" id="L291">    final String authorization = request.headers().get(AUTHORIZATION);</span>
+<span class="fc" id="L291">    final String authorization = request.headers().get(AUTHORIZATION);</span>
 
-<span class="nc bnc" id="L293" title="All 2 branches missed.">    if (authorization == null) {</span>
-<span class="nc" id="L294">      throw new NotAllowedException(&quot;Missing header for authentication.&quot;);</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">    if (authorization == null) {</span>
+<span class="fc" id="L294">      throw new NotAllowedException(&quot;Missing header for authentication.&quot;);</span>
     }
 
-<span class="nc" id="L297">    final Pattern basicPattern = Pattern.compile(&quot;(Basic) (\\w+=*)&quot;);</span>
-<span class="nc" id="L298">    final Matcher basicMatcher = basicPattern.matcher(authorization);</span>
+<span class="fc" id="L297">    final Pattern basicPattern = Pattern.compile(&quot;(Basic) (\\w+=*)&quot;);</span>
+<span class="fc" id="L298">    final Matcher basicMatcher = basicPattern.matcher(authorization);</span>
 
-<span class="nc bnc" id="L300" title="All 2 branches missed.">    if (basicMatcher.find()) {</span>
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">    if (basicMatcher.find()) {</span>
 
       String[] credentials;
-<span class="nc" id="L303">      credentials =</span>
-<span class="nc" id="L304">          new String(BaseXx.getFromBase64(basicMatcher.group(2))).split(&quot;:&quot;, 2);</span>
-<span class="nc bnc" id="L305" title="All 2 branches missed.">      if (credentials.length != 2) {</span>
+<span class="fc" id="L303">      credentials =</span>
+<span class="fc" id="L304">          new String(BaseXx.getFromBase64(basicMatcher.group(2))).split(&quot;:&quot;, 2);</span>
+<span class="pc bpc" id="L305" title="1 of 2 branches missed.">      if (credentials.length != 2) {</span>
 <span class="nc" id="L306">        throw new NotAllowedException(</span>
             &quot;Invalid header for Basic authentication.&quot;);
       }
-<span class="nc" id="L309">      final String user = credentials[0];</span>
-<span class="nc" id="L310">      final String pswd = credentials[1];</span>
+<span class="fc" id="L309">      final String user = credentials[0];</span>
+<span class="fc" id="L310">      final String pswd = credentials[1];</span>
 
-<span class="nc" id="L312">      HostDAO hostDAO = null;</span>
+<span class="fc" id="L312">      HostDAO hostDAO = null;</span>
       Host host;
       try {
-<span class="nc" id="L315">        hostDAO = DAO_FACTORY.getHostDAO();</span>
-<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (!hostDAO.exist(user)) {</span>
-<span class="nc" id="L317">          throw new NotAllowedException(&quot;User does not exist.&quot;);</span>
+<span class="fc" id="L315">        hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="fc bfc" id="L316" title="All 2 branches covered.">        if (!hostDAO.exist(user)) {</span>
+<span class="fc" id="L317">          throw new NotAllowedException(&quot;User does not exist.&quot;);</span>
         }
-<span class="nc" id="L319">        host = hostDAO.select(user);</span>
+<span class="fc" id="L319">        host = hostDAO.select(user);</span>
 <span class="nc" id="L320">      } catch (final DAOConnectionException e) {</span>
 <span class="nc" id="L321">        throw new InternalServerErrorException(e);</span>
 <span class="nc" id="L322">      } catch (final DAONoDataException e) {</span>
 <span class="nc" id="L323">        throw new InternalServerErrorException(e);</span>
       } finally {
-<span class="nc" id="L325">        DAOFactory.closeDAO(hostDAO);</span>
+<span class="fc" id="L325">        DAOFactory.closeDAO(hostDAO);</span>
       }
 
       String key;
       try {
-<span class="nc" id="L330">        key = configuration.getCryptoKey().cryptToHex(pswd);</span>
+<span class="fc" id="L330">        key = configuration.getCryptoKey().cryptToHex(pswd);</span>
 <span class="nc" id="L331">      } catch (final Exception e) {</span>
 <span class="nc" id="L332">        throw new InternalServerErrorException(</span>
             &quot;An error occurred when encrypting the password&quot;, e);
-<span class="nc" id="L334">      }</span>
-<span class="nc bnc" id="L335" title="All 2 branches missed.">      if (!Arrays.equals(host.getHostkey(), key.getBytes())) {</span>
+<span class="fc" id="L334">      }</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">      if (!Arrays.equals(host.getHostkey(), key.getBytes())) {</span>
 <span class="nc" id="L336">        throw new NotAllowedException(&quot;Invalid password.&quot;);</span>
       }
 
-<span class="nc" id="L339">      return user;</span>
+<span class="fc" id="L339">      return user;</span>
     }
 
 <span class="nc" id="L342">    final String authUser = request.headers().get(AUTH_USER);</span>
@@ -384,28 +384,28 @@ public class RestHandlerHook implements HandlerHook {
   }
 
   protected void validateHMACCredentials(Host host, String authDate,
-                                       String authUser, String authKey)
+                                         String authUser, String authKey)
       throws InternalServerErrorException {
     String pswd;
     try {
-<span class="nc" id="L391">      pswd = configuration.getCryptoKey().decryptHexInString(host.getHostkey());</span>
+<span class="fc" id="L391">      pswd = configuration.getCryptoKey().decryptHexInString(host.getHostkey());</span>
 <span class="nc" id="L392">    } catch (final Exception e) {</span>
 <span class="nc" id="L393">      throw new InternalServerErrorException(</span>
           &quot;An error occurred when decrypting the password&quot;, e);
-<span class="nc" id="L395">    }</span>
+<span class="fc" id="L395">    }</span>
 
     String key;
     try {
-<span class="nc" id="L399">      key = hmac.cryptToHex(authDate + authUser + pswd);</span>
+<span class="fc" id="L399">      key = hmac.cryptToHex(authDate + authUser + pswd);</span>
 <span class="nc" id="L400">    } catch (final Exception e) {</span>
 <span class="nc" id="L401">      throw new InternalServerErrorException(</span>
           &quot;An error occurred when hashing the key&quot;, e);
-<span class="nc" id="L403">    }</span>
+<span class="fc" id="L403">    }</span>
 
-<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (!key.equals(authKey)) {</span>
+<span class="pc bpc" id="L405" title="1 of 2 branches missed.">    if (!key.equals(authKey)) {</span>
 <span class="nc" id="L406">      throw new NotAllowedException(&quot;Invalid password.&quot;);</span>
     }
-<span class="nc" id="L408">  }</span>
+<span class="fc" id="L408">  }</span>
 
   /**
    * Checks if the user given as argument is authorized to call the given
@@ -419,17 +419,17 @@ public class RestHandlerHook implements HandlerHook {
    */
   protected boolean checkAuthorization(String user, Method method) {
     try {
-<span class="nc" id="L422">      DbHostAuth hostAuth = new DbHostAuth(user);</span>
-<span class="nc bnc" id="L423" title="All 2 branches missed.">      if (hostAuth.isAdminrole()) {</span>
-<span class="nc" id="L424">        return true;</span>
+<span class="fc" id="L422">      DbHostAuth hostAuth = new DbHostAuth(user);</span>
+<span class="fc bfc" id="L423" title="All 2 branches covered.">      if (hostAuth.isAdminrole()) {</span>
+<span class="fc" id="L424">        return true;</span>
       }
 <span class="nc" id="L426">    } catch (WaarpDatabaseException e) {</span>
       // ignore and continue
-<span class="nc" id="L428">    }</span>
+<span class="fc" id="L428">    }</span>
 
-<span class="nc" id="L430">    ROLE requiredRole = NOACCESS;</span>
-<span class="nc bnc" id="L431" title="All 2 branches missed.">    if (method.isAnnotationPresent(RequiredRole.class)) {</span>
-<span class="nc" id="L432">      requiredRole = method.getAnnotation(RequiredRole.class).value();</span>
+<span class="fc" id="L430">    ROLE requiredRole = NOACCESS;</span>
+<span class="pc bpc" id="L431" title="1 of 2 branches missed.">    if (method.isAnnotationPresent(RequiredRole.class)) {</span>
+<span class="fc" id="L432">      requiredRole = method.getAnnotation(RequiredRole.class).value();</span>
     } else {
 <span class="nc" id="L434">      logger.warn(String.format(&quot;[RESTv2] The method %s of handler %s is &quot; +</span>
                                 &quot;missing a '%s' annotation for the minimum required role, &quot; +
@@ -438,21 +438,21 @@ public class RestHandlerHook implements HandlerHook {
 <span class="nc" id="L438">                                method.getDeclaringClass().getSimpleName(),</span>
 <span class="nc" id="L439">                                RequiredRole.class.getSimpleName(), NOACCESS));</span>
     }
-<span class="nc bnc" id="L441" title="All 2 branches missed.">    if (requiredRole == NOACCESS) {</span>
-<span class="nc" id="L442">      return true;</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">    if (requiredRole == NOACCESS) {</span>
+<span class="fc" id="L442">      return true;</span>
     }
 
-<span class="nc" id="L445">    final List&lt;ROLE&gt; roles = HostConfigConverter.getRoles(user);</span>
-<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (roles != null) {</span>
-<span class="nc" id="L447">      RoleDefault roleDefault = new RoleDefault();</span>
-<span class="nc bnc" id="L448" title="All 2 branches missed.">      for (final ROLE roleType : roles) {</span>
-<span class="nc" id="L449">        roleDefault.addRole(roleType);</span>
-<span class="nc" id="L450">      }</span>
-<span class="nc bnc" id="L451" title="All 2 branches missed.">      if (roleDefault.isContaining(requiredRole)) {</span>
-<span class="nc" id="L452">        return true;</span>
+<span class="fc" id="L445">    final List&lt;ROLE&gt; roles = HostConfigConverter.getRoles(user);</span>
+<span class="pc bpc" id="L446" title="1 of 2 branches missed.">    if (roles != null) {</span>
+<span class="fc" id="L447">      RoleDefault roleDefault = new RoleDefault();</span>
+<span class="fc bfc" id="L448" title="All 2 branches covered.">      for (final ROLE roleType : roles) {</span>
+<span class="fc" id="L449">        roleDefault.addRole(roleType);</span>
+<span class="fc" id="L450">      }</span>
+<span class="fc bfc" id="L451" title="All 2 branches covered.">      if (roleDefault.isContaining(requiredRole)) {</span>
+<span class="fc" id="L452">        return true;</span>
       }
     }
-<span class="nc" id="L455">    return false;</span>
+<span class="fc" id="L455">    return false;</span>
   }
 
   /**
@@ -469,7 +469,7 @@ public class RestHandlerHook implements HandlerHook {
                        HttpResponseStatus httpResponseStatus,
                        HandlerInfo handlerInfo) {
     // ignore
-<span class="nc" id="L472">  }</span>
+<span class="fc" id="L472">  }</span>
 
   /**
    * Creates a HandlerHook which will check for authentication and signature
@@ -481,10 +481,10 @@ public class RestHandlerHook implements HandlerHook {
    * @param hmac the key used for HMAC authentication
    * @param delay the delay for which a HMAC signed request is valid
    */
-<span class="nc" id="L484">  public RestHandlerHook(boolean authenticated, HmacSha256 hmac, long delay) {</span>
-<span class="nc" id="L485">    this.authenticated = authenticated;</span>
-<span class="nc" id="L486">    this.hmac = hmac;</span>
-<span class="nc" id="L487">    this.delay = delay;</span>
-<span class="nc" id="L488">  }</span>
+<span class="fc" id="L484">  public RestHandlerHook(boolean authenticated, HmacSha256 hmac, long delay) {</span>
+<span class="fc" id="L485">    this.authenticated = authenticated;</span>
+<span class="fc" id="L486">    this.hmac = hmac;</span>
+<span class="fc" id="L487">    this.delay = delay;</span>
+<span class="fc" id="L488">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

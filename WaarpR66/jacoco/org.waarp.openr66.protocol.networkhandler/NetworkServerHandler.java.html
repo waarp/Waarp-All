@@ -136,7 +136,7 @@ public class NetworkServerHandler
 <span class="nc" id="L136">        }</span>
       }
       // Now force the close of the database after a wait
-<span class="pc bpc" id="L139" title="3 of 6 branches missed.">      if (dbSession != null &amp;&amp; admin != null &amp;&amp; admin.getSession() != null &amp;&amp;</span>
+<span class="pc bpc" id="L139" title="2 of 6 branches missed.">      if (dbSession != null &amp;&amp; admin != null &amp;&amp; admin.getSession() != null &amp;&amp;</span>
 <span class="fc bfc" id="L140" title="All 2 branches covered.">          !dbSession.equals(admin.getSession())) {</span>
 <span class="fc" id="L141">        dbSession.forceDisconnect();</span>
 <span class="fc" id="L142">        dbSession = null;</span>
@@ -207,21 +207,21 @@ public class NetworkServerHandler
 <span class="fc" id="L207">        keepAlivedSent.set(0);</span>
 <span class="fc" id="L208">        return;</span>
       }
-<span class="pc bpc" id="L210" title="1 of 2 branches missed.">      if (keepAlivedSent.get() &gt; 0) {</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (networkChannelReference != null &amp;&amp;</span>
-<span class="nc bnc" id="L212" title="All 2 branches missed.">            networkChannelReference.nbLocalChannels() &gt; 0 &amp;&amp;</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">      if (keepAlivedSent.get() &gt; 0) {</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (networkChannelReference != null &amp;&amp;</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">            networkChannelReference.nbLocalChannels() &gt; 0 &amp;&amp;</span>
 <span class="nc bnc" id="L213" title="All 2 branches missed.">            keepAlivedSent.get() &lt; 5) {</span>
           // ignore this time
 <span class="nc" id="L215">          keepAlivedSent.getAndIncrement();</span>
 <span class="nc" id="L216">          return;</span>
         }
-<span class="nc" id="L218">        logger.error(&quot;Not getting KAlive: closing channel&quot;);</span>
-<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (Configuration.configuration.getR66Mib() != null) {</span>
+<span class="fc" id="L218">        logger.error(&quot;Not getting KAlive: closing channel&quot;);</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">        if (Configuration.configuration.getR66Mib() != null) {</span>
 <span class="nc" id="L220">          Configuration.configuration.getR66Mib()</span>
 <span class="nc" id="L221">                                     .notifyWarning(&quot;KeepAlive get no answer&quot;,</span>
                                                     &quot;Closing network connection&quot;);
         }
-<span class="nc" id="L224">        ChannelCloseTimer.closeFutureChannel(ctx.channel());</span>
+<span class="fc" id="L224">        ChannelCloseTimer.closeFutureChannel(ctx.channel());</span>
       } else {
 <span class="fc" id="L226">        keepAlivedSent.set(1);</span>
 <span class="fc" id="L227">        final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();</span>
@@ -394,15 +394,15 @@ public class NetworkServerHandler
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-<span class="nc" id="L397">    final Channel channel = ctx.channel();</span>
-<span class="nc bnc" id="L398" title="All 2 branches missed.">    if (isBlackListed) {</span>
+<span class="fc" id="L397">    final Channel channel = ctx.channel();</span>
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (isBlackListed) {</span>
 <span class="nc" id="L399">      logger.info(&quot;While partner is blacklisted, Network Channel Exception: {}&quot;,</span>
 <span class="nc" id="L400">                  channel.id(), cause.getClass().getName() + &quot; : &quot; + cause);</span>
       // ignore
 <span class="nc" id="L402">      return;</span>
     }
-<span class="nc" id="L404">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
-<span class="nc bnc" id="L405" title="All 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
+<span class="fc" id="L404">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
+<span class="pc bpc" id="L405" title="1 of 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
 <span class="nc" id="L406">      final ReadTimeoutException exception = (ReadTimeoutException) cause;</span>
       // No read for too long
 <span class="nc" id="L408">      logger.error(&quot;ReadTimeout so Will close NETWORK channel {}&quot;,</span>
@@ -411,25 +411,25 @@ public class NetworkServerHandler
 <span class="nc" id="L411">      ChannelCloseTimer.closeFutureChannel(channel);</span>
 <span class="nc" id="L412">      return;</span>
     }
-<span class="nc bnc" id="L414" title="All 2 branches missed.">    if (cause instanceof BindException) {</span>
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">    if (cause instanceof BindException) {</span>
       // received when not yet connected
 <span class="nc" id="L416">      logger.debug(&quot;BindException&quot;);</span>
 <span class="nc" id="L417">      ChannelCloseTimer.closeFutureChannel(channel);</span>
 <span class="nc" id="L418">      return;</span>
     }
-<span class="nc" id="L420">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
-<span class="nc" id="L421">        .getExceptionFromTrappedException(channel, cause);</span>
-<span class="nc bnc" id="L422" title="All 2 branches missed.">    if (exception != null) {</span>
-<span class="nc bnc" id="L423" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
-<span class="nc bnc" id="L424" title="All 2 branches missed.">        if (networkChannelReference != null &amp;&amp;</span>
-<span class="nc bnc" id="L425" title="All 2 branches missed.">            networkChannelReference.nbLocalChannels() &gt; 0) {</span>
+<span class="fc" id="L420">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
+<span class="fc" id="L421">        .getExceptionFromTrappedException(channel, cause);</span>
+<span class="pc bpc" id="L422" title="1 of 2 branches missed.">    if (exception != null) {</span>
+<span class="pc bpc" id="L423" title="1 of 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">        if (networkChannelReference != null &amp;&amp;</span>
+<span class="pc bpc" id="L425" title="1 of 2 branches missed.">            networkChannelReference.nbLocalChannels() &gt; 0) {</span>
 <span class="nc" id="L426">          logger.debug(&quot;Network Channel Exception: {} {}&quot;, channel.id(),</span>
 <span class="nc" id="L427">                       exception.getClass().getName() + &quot; : &quot; +</span>
 <span class="nc" id="L428">                       exception.getMessage());</span>
         }
-<span class="nc" id="L430">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
-<span class="nc" id="L431">        ChannelCloseTimer.closeFutureChannel(channel);</span>
-<span class="nc" id="L432">        return;</span>
+<span class="fc" id="L430">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
+<span class="fc" id="L431">        ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="fc" id="L432">        return;</span>
 <span class="nc bnc" id="L433" title="All 2 branches missed.">      } else if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
 <span class="nc" id="L434">        logger.debug(&quot;Connection impossible with NETWORK channel {}&quot;,</span>
 <span class="nc" id="L435">                     exception.getClass().getName() + &quot; : &quot; +</span>

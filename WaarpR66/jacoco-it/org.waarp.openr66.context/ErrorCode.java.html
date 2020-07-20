@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context</a> &gt; <span class="el_source">ErrorCode.java</span></div><h1>ErrorCode.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+import org.waarp.openr66.protocol.configuration.Messages;
+
+/**
+ * This enum class keeps all code that will be returned into the result and
+ * store (char representation) into
+ * the runner.
+ */
+<span class="fc" id="L30">public enum ErrorCode {</span>
+  /**
+   * Code stands for initialization ok (internal connection, authentication)
+   */
+<span class="fc" id="L34">  InitOk('i'),</span>
+  /**
+   * Code stands for pre processing ok
+   */
+<span class="fc" id="L38">  PreProcessingOk('B'),</span>
+  /**
+   * Code stands for transfer OK
+   */
+<span class="fc" id="L42">  TransferOk('X'),</span>
+  /**
+   * Code stands for post processing ok
+   */
+<span class="fc" id="L46">  PostProcessingOk('P'),</span>
+  /**
+   * Code stands for All action are completed ok
+   */
+<span class="fc" id="L50">  CompleteOk('O'),</span>
+  /**
+   * Code stands for connection is impossible (remote or local reason)
+   */
+<span class="fc" id="L54">  ConnectionImpossible('C'),</span>
+  /**
+   * Code stands for connection is impossible now due to limits(remote or
+   * local
+   * reason)
+   */
+<span class="fc" id="L60">  ServerOverloaded('l'),</span>
+  /**
+   * Code stands for bad authentication (remote or local)
+   */
+<span class="fc" id="L64">  BadAuthent('A'),</span>
+  /**
+   * Code stands for External operation in error (pre, post or error
+   * processing)
+   */
+<span class="fc" id="L69">  ExternalOp('E'),</span>
+  /**
+   * Code stands for Transfer is in error
+   */
+<span class="fc" id="L73">  TransferError('T'),</span>
+  /**
+   * Code stands for Transfer in error due to MD5
+   */
+<span class="fc" id="L77">  MD5Error('M'),</span>
+  /**
+   * Code stands for Network disconnection
+   */
+<span class="fc" id="L81">  Disconnection('D'),</span>
+  /**
+   * Code stands for Remote Shutdown
+   */
+<span class="fc" id="L85">  RemoteShutdown('r'),</span>
+  /**
+   * Code stands for final action (like moving file) is in error
+   */
+<span class="fc" id="L89">  FinalOp('F'),</span>
+  /**
+   * Code stands for unimplemented feature
+   */
+<span class="fc" id="L93">  Unimplemented('U'),</span>
+  /**
+   * Code stands for shutdown is in progress
+   */
+<span class="fc" id="L97">  Shutdown('S'),</span>
+  /**
+   * Code stands for a remote error is received
+   */
+<span class="fc" id="L101">  RemoteError('R'),</span>
+  /**
+   * Code stands for an internal error
+   */
+<span class="fc" id="L105">  Internal('I'),</span>
+  /**
+   * Code stands for a request of stopping transfer
+   */
+<span class="fc" id="L109">  StoppedTransfer('H'),</span>
+  /**
+   * Code stands for a request of canceling transfer
+   */
+<span class="fc" id="L113">  CanceledTransfer('K'),</span>
+  /**
+   * Warning in execution
+   */
+<span class="fc" id="L117">  Warning('W'),</span>
+  /**
+   * Code stands for unknown type of error
+   */
+<span class="fc" id="L121">  Unknown('-'),</span>
+  /**
+   * Code stands for a request that is already remotely finished
+   */
+<span class="fc" id="L125">  QueryAlreadyFinished('Q'),</span>
+  /**
+   * Code stands for request that is still running
+   */
+<span class="fc" id="L129">  QueryStillRunning('s'),</span>
+  /**
+   * Code stands for not known host
+   */
+<span class="fc" id="L133">  NotKnownHost('N'),</span>
+  /**
+   * Code stands for self requested host starting request is invalid
+   */
+<span class="fc" id="L137">  LoopSelfRequestedHost('L'),</span>
+  /**
+   * Code stands for request should exist but is not found on remote host
+   */
+<span class="fc" id="L141">  QueryRemotelyUnknown('u'),</span>
+  /**
+   * Code stands for File not found error
+   */
+<span class="fc" id="L145">  FileNotFound('f'),</span>
+  /**
+   * Code stands for Command not found error
+   */
+<span class="fc" id="L149">  CommandNotFound('c'),</span>
+  /**
+   * Code stands for a request in PassThroughMode and required action is
+   * incompatible with this mode
+   */
+<span class="fc" id="L154">  PassThroughMode('p'),</span>
+  /**
+   * Code stands for running step
+   */
+<span class="fc" id="L158">  Running('z'),</span>
+  /**
+   * Code stands for Incorrect command
+   */
+<span class="fc" id="L162">  IncorrectCommand('n'),</span>
+  /**
+   * Code stands for File not allowed
+   */
+<span class="fc" id="L166">  FileNotAllowed('a'),</span>
+  /**
+   * Code stands for Size not allowed
+   */
+<span class="fc" id="L170">  SizeNotAllowed('d');</span>
+
+  /**
+   * Code could be used to switch case operations
+   */
+  public final char code;
+
+<span class="fc" id="L177">  ErrorCode(char code) {</span>
+<span class="fc" id="L178">    this.code = code;</span>
+<span class="fc" id="L179">  }</span>
+
+  @JsonValue
+  public String getJsonRepr() {
+<span class="fc" id="L183">    return String.valueOf(code) + &quot;  &quot;;</span>
+  }
+
+  public String getCode() {
+<span class="fc" id="L187">    return String.valueOf(code);</span>
+  }
+
+  public String getMesg() {
+<span class="fc" id="L191">    return Messages.getString(&quot;ErrorCode.&quot; + code);</span>
+  }
+
+  /**
+   * Code is either the 1 char code or the exact name in Enum
+   *
+   * @param code
+   *
+   * @return the ErrorCode according to the code
+   */
+  public static ErrorCode getFromCode(String code) {
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">    if (code.isEmpty()) {</span>
+<span class="nc" id="L203">      return Unknown;</span>
+    }
+<span class="pc bpc" id="L205" title="30 of 35 branches missed.">    switch (code.charAt(0)) {</span>
+      case 'i':
+<span class="nc" id="L207">        return InitOk;</span>
+      case 'B':
+<span class="fc" id="L209">        return PreProcessingOk;</span>
+      case 'P':
+<span class="nc" id="L211">        return PostProcessingOk;</span>
+      case 'X':
+<span class="fc" id="L213">        return TransferOk;</span>
+      case 'O':
+<span class="fc" id="L215">        return CompleteOk;</span>
+      case 'C':
+<span class="nc" id="L217">        return ConnectionImpossible;</span>
+      case 'A':
+<span class="nc" id="L219">        return BadAuthent;</span>
+      case 'E':
+<span class="nc" id="L221">        return ExternalOp;</span>
+      case 'T':
+<span class="nc" id="L223">        return TransferError;</span>
+      case 'M':
+<span class="nc" id="L225">        return MD5Error;</span>
+      case 'D':
+<span class="nc" id="L227">        return Disconnection;</span>
+      case 'r':
+<span class="nc" id="L229">        return RemoteShutdown;</span>
+      case 'F':
+<span class="nc" id="L231">        return FinalOp;</span>
+      case 'U':
+<span class="nc" id="L233">        return Unimplemented;</span>
+      case 'S':
+<span class="nc" id="L235">        return Shutdown;</span>
+      case 'R':
+<span class="nc" id="L237">        return RemoteError;</span>
+      case 'I':
+<span class="nc" id="L239">        return Internal;</span>
+      case 'H':
+<span class="nc" id="L241">        return StoppedTransfer;</span>
+      case 'K':
+<span class="nc" id="L243">        return CanceledTransfer;</span>
+      case 'W':
+<span class="nc" id="L245">        return Warning;</span>
+      case '-':
+<span class="fc" id="L247">        return Unknown;</span>
+      case 'Q':
+<span class="nc" id="L249">        return QueryAlreadyFinished;</span>
+      case 's':
+<span class="nc" id="L251">        return QueryStillRunning;</span>
+      case 'N':
+<span class="nc" id="L253">        return NotKnownHost;</span>
+      case 'L':
+<span class="nc" id="L255">        return LoopSelfRequestedHost;</span>
+      case 'u':
+<span class="nc" id="L257">        return QueryRemotelyUnknown;</span>
+      case 'f':
+<span class="nc" id="L259">        return FileNotFound;</span>
+      case 'z':
+<span class="fc" id="L261">        return Running;</span>
+      case 'c':
+<span class="nc" id="L263">        return CommandNotFound;</span>
+      case 'p':
+<span class="nc" id="L265">        return PassThroughMode;</span>
+      case 'l':
+<span class="nc" id="L267">        return ServerOverloaded;</span>
+      case 'n':
+<span class="nc" id="L269">        return IncorrectCommand;</span>
+      case 'a':
+<span class="nc" id="L271">        return FileNotAllowed;</span>
+      case 'd':
+<span class="nc" id="L273">        return SizeNotAllowed;</span>
+      default:
+        ErrorCode ecode;
+        try {
+<span class="nc" id="L277">          ecode = valueOf(code.trim());</span>
+<span class="nc" id="L278">        } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L279">          return Unknown;</span>
+<span class="nc" id="L280">        }</span>
+<span class="nc" id="L281">        return ecode;</span>
+    }
+  }
+
+  public static boolean isErrorCode(ErrorCode code) {
+<span class="nc bnc" id="L286" title="All 3 branches missed.">    switch (code) {</span>
+      case BadAuthent:
+      case CanceledTransfer:
+      case CommandNotFound:
+      case ConnectionImpossible:
+      case Disconnection:
+      case ExternalOp:
+      case FileNotFound:
+      case FinalOp:
+      case Internal:
+      case LoopSelfRequestedHost:
+      case MD5Error:
+      case NotKnownHost:
+      case PassThroughMode:
+      case QueryAlreadyFinished:
+      case QueryRemotelyUnknown:
+      case QueryStillRunning:
+      case RemoteError:
+      case RemoteShutdown:
+      case ServerOverloaded:
+      case Shutdown:
+      case StoppedTransfer:
+      case TransferError:
+      case Unimplemented:
+      case IncorrectCommand:
+      case FileNotAllowed:
+      case SizeNotAllowed:
+<span class="nc" id="L313">        return true;</span>
+      case CompleteOk:
+      case InitOk:
+      case PostProcessingOk:
+      case PreProcessingOk:
+      case Running:
+      case TransferOk:
+      case Unknown:
+      case Warning:
+<span class="nc" id="L322">        return false;</span>
+      default:
+        break;
+    }
+<span class="nc" id="L326">    return true;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -43,9 +43,9 @@ public class ChannelCloseTimer implements TimerTask {
   private ConnectionActions connectionActions;
   private DbSession noconcurrencyDbSession;
 
-<span class="nc" id="L46">  public ChannelCloseTimer(Channel channel) {</span>
-<span class="nc" id="L47">    this.channel = channel;</span>
-<span class="nc" id="L48">  }</span>
+<span class="fc" id="L46">  public ChannelCloseTimer(Channel channel) {</span>
+<span class="fc" id="L47">    this.channel = channel;</span>
+<span class="fc" id="L48">  }</span>
 
 <span class="nc" id="L50">  public ChannelCloseTimer(Channel channel, ChannelFuture future) {</span>
 <span class="nc" id="L51">    this.channel = channel;</span>
@@ -61,8 +61,8 @@ public class ChannelCloseTimer implements TimerTask {
 <span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (future != null) {</span>
 <span class="nc" id="L62">      WaarpNettyUtil.awaitOrInterrupted(future);</span>
     }
-<span class="pc bpc" id="L64" title="1 of 2 branches missed.">    if (channel != null) {</span>
-<span class="nc" id="L65">      WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">    if (channel != null) {</span>
+<span class="fc" id="L65">      WaarpSslUtility.closingSslChannel(channel);</span>
 <span class="pc bpc" id="L66" title="1 of 2 branches missed.">    } else if (connectionActions != null) {</span>
 <span class="pc bpc" id="L67" title="3 of 4 branches missed.">      if (noconcurrencyDbSession != null &amp;&amp; admin != null &amp;&amp;</span>
 <span class="nc bnc" id="L68" title="All 2 branches missed.">          admin.getSession() != null &amp;&amp;</span>
@@ -115,13 +115,13 @@ public class ChannelCloseTimer implements TimerTask {
    * @param channel
    */
   public static void closeFutureChannel(Channel channel) {
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
-<span class="nc" id="L119">      Configuration.configuration.getTimerClose()</span>
-<span class="nc" id="L120">                                 .newTimeout(new ChannelCloseTimer(channel),</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">    if (Configuration.configuration.isTimerCloseReady()) {</span>
+<span class="fc" id="L119">      Configuration.configuration.getTimerClose()</span>
+<span class="fc" id="L120">                                 .newTimeout(new ChannelCloseTimer(channel),</span>
                                              Configuration.WAITFORNETOP,
                                              TimeUnit.MILLISECONDS);
     }
-<span class="nc" id="L124">  }</span>
+<span class="fc" id="L124">  }</span>
 
   /**
    * Close in the future this channel

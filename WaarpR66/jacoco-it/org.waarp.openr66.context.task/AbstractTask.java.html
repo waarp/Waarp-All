@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.context.task</a> &gt; <span class="el_source">AbstractTask.java</span></div><h1>AbstractTask.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.context.task;
+
+import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.filesystem.R66Dir;
+import org.waarp.openr66.context.filesystem.R66File;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
+import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.regex.Pattern;
+
+/**
+ * Abstract implementation of task
+ */
+public abstract class AbstractTask implements Runnable {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L48">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L49">      WaarpLoggerFactory.getLogger(AbstractTask.class);</span>
+<span class="fc" id="L50">  protected static final Pattern BLANK = WaarpStringUtils.BLANK;</span>
+  /**
+   * Current full path of current FILENAME
+   */
+  public static final String TRUEFULLPATH = &quot;#TRUEFULLPATH#&quot;;
+
+  /**
+   * Current FILENAME (basename) (change in retrieval part)
+   */
+  public static final String TRUEFILENAME = &quot;#TRUEFILENAME#&quot;;
+  /**
+   * Current full path of Original FILENAME (as transmitted) (before changing
+   * in
+   * retrieval part)
+   */
+  public static final String ORIGINALFULLPATH = &quot;#ORIGINALFULLPATH#&quot;;
+
+  /**
+   * Original FILENAME (basename) (before changing in retrieval part)
+   */
+  public static final String ORIGINALFILENAME = &quot;#ORIGINALFILENAME#&quot;;
+
+  /**
+   * Size of the current FILE
+   */
+  public static final String FILESIZE = &quot;#FILESIZE#&quot;;
+
+  /**
+   * Current full path of current RULE
+   */
+  public static final String RULE = &quot;#RULE#&quot;;
+
+  /**
+   * Date in yyyyMMdd format
+   */
+  public static final String DATE = &quot;#DATE#&quot;;
+
+  /**
+   * Hour in HHmmss format
+   */
+  public static final String HOUR = &quot;#HOUR#&quot;;
+
+  /**
+   * Remote host id (if not the initiator of the call)
+   */
+  public static final String REMOTEHOST = &quot;#REMOTEHOST#&quot;;
+
+  /**
+   * Remote host address
+   */
+  public static final String REMOTEHOSTADDR = &quot;#REMOTEHOSTADDR#&quot;;
+
+  /**
+   * Local host id
+   */
+  public static final String LOCALHOST = &quot;#LOCALHOST#&quot;;
+
+  /**
+   * Local host address
+   */
+  public static final String LOCALHOSTADDR = &quot;#LOCALHOSTADDR#&quot;;
+
+  /**
+   * Transfer id
+   */
+  public static final String TRANSFERID = &quot;#TRANSFERID#&quot;;
+
+  /**
+   * Requester Host
+   */
+  public static final String REQUESTERHOST = &quot;#REQUESTERHOST#&quot;;
+
+  /**
+   * Requested Host
+   */
+  public static final String REQUESTEDHOST = &quot;#REQUESTEDHOST#&quot;;
+
+  /**
+   * Full Transfer id (TRANSFERID_REQUESTERHOST_REQUESTEDHOST)
+   */
+  public static final String FULLTRANSFERID = &quot;#FULLTRANSFERID#&quot;;
+
+  /**
+   * Current or final RANK of block
+   */
+  public static final String RANKTRANSFER = &quot;#RANKTRANSFER#&quot;;
+
+  /**
+   * Block size used
+   */
+  public static final String BLOCKSIZE = &quot;#BLOCKSIZE#&quot;;
+
+  /**
+   * IN Path used
+   */
+  public static final String INPATH = &quot;#INPATH#&quot;;
+
+  /**
+   * OUT Path used
+   */
+  public static final String OUTPATH = &quot;#OUTPATH#&quot;;
+
+  /**
+   * WORK Path used
+   */
+  public static final String WORKPATH = &quot;#WORKPATH#&quot;;
+
+  /**
+   * ARCH Path used
+   */
+  public static final String ARCHPATH = &quot;#ARCHPATH#&quot;;
+
+  /**
+   * HOME Path used
+   */
+  public static final String HOMEPATH = &quot;#HOMEPATH#&quot;;
+  /**
+   * Last Current Error Message
+   */
+  public static final String ERRORMSG = &quot;#ERRORMSG#&quot;;
+  /**
+   * Last Current Error Code
+   */
+  public static final String ERRORCODE = &quot;#ERRORCODE#&quot;;
+  /**
+   * Last Current Error Code in Full String
+   */
+  public static final String ERRORSTRCODE = &quot;#ERRORSTRCODE#&quot;;
+  /**
+   * If specified, no Wait for Task Validation (default is wait)
+   */
+  public static final String NOWAIT = &quot;#NOWAIT#&quot;;
+  /**
+   * If specified, use the LocalExec Daemon specified in the global
+   * configuration (default no usage of
+   * LocalExec)
+   */
+  public static final String LOCALEXEC = &quot;#LOCALEXEC#&quot;;
+
+  /**
+   * Type of operation
+   */
+  final TaskType type;
+
+  /**
+   * Argument from Rule
+   */
+  final String argRule;
+
+  /**
+   * Delay from Rule (if applicable)
+   */
+  final int delay;
+
+  /**
+   * Argument from Transfer
+   */
+  final String argTransfer;
+
+  /**
+   * Current session
+   */
+  final R66Session session;
+
+  /**
+   * R66Future of completion
+   */
+  final R66Future futureCompletion;
+  /**
+   * Do we wait for a validation of the task ? Default = True
+   */
+<span class="fc" id="L221">  boolean waitForValidation = true;</span>
+  /**
+   * Do we need to use LocalExec for an Exec Task ? Default = False
+   */
+  boolean useLocalExec;
+
+  /**
+   * Constructor
+   *
+   * @param type
+   * @param delay
+   * @param argRule
+   * @param argTransfer
+   * @param session
+   */
+  AbstractTask(TaskType type, int delay, String argRule, String argTransfer,
+<span class="fc" id="L237">               R66Session session) {</span>
+<span class="fc" id="L238">    this.type = type;</span>
+<span class="fc" id="L239">    this.delay = delay;</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (argRule != null) {</span>
+<span class="fc" id="L241">      this.argRule = argRule.replaceAll(WaarpStringUtils.BLANK_REGEX, &quot; &quot;);</span>
+    } else {
+<span class="nc" id="L243">      this.argRule = null;</span>
+    }
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    if (argTransfer != null) {</span>
+<span class="fc" id="L246">      this.argTransfer =</span>
+<span class="fc" id="L247">          argTransfer.replaceAll(WaarpStringUtils.BLANK_REGEX, &quot; &quot;);</span>
+    } else {
+<span class="nc" id="L249">      this.argTransfer = null;</span>
+    }
+<span class="fc" id="L251">    this.session = session;</span>
+<span class="fc" id="L252">    futureCompletion = new R66Future(true);</span>
+<span class="fc" id="L253">  }</span>
+
+  /**
+   * @return the TaskType of this AbstractTask
+   */
+  public TaskType getType() {
+<span class="fc" id="L259">    return type;</span>
+  }
+
+  /**
+   * This is the only interface to execute an operator.
+   */
+  @Override
+  public abstract void run();
+
+  /**
+   * @return True if the operation is in success status
+   */
+  public boolean isSuccess() {
+<span class="nc" id="L272">    futureCompletion.awaitOrInterruptible();</span>
+<span class="nc" id="L273">    return futureCompletion.isSuccess();</span>
+  }
+
+  /**
+   * @return the R66Future of completion
+   */
+  public R66Future getFutureCompletion() {
+<span class="fc" id="L280">    return futureCompletion;</span>
+  }
+
+  /**
+   * @param arg as the Format string where FIXED items will be
+   *     replaced by
+   *     context values and next using
+   *     argFormat as format second argument; this arg comes from the
+   *     rule
+   *     itself
+   * @param argFormat as format second argument; this argFormat comes
+   *     from
+   *     the transfer Information itself
+   *
+   * @return The string with replaced values from context and second argument
+   */
+  protected String getReplacedValue(String arg, Object[] argFormat) {
+<span class="fc" id="L297">    final StringBuilder builder = new StringBuilder(arg);</span>
+    // check NOWAIT and LOCALEXEC
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">    if (arg.contains(NOWAIT)) {</span>
+<span class="nc" id="L300">      waitForValidation = false;</span>
+<span class="nc" id="L301">      WaarpStringUtils.replaceAll(builder, NOWAIT, &quot;&quot;);</span>
+    }
+<span class="pc bpc" id="L303" title="1 of 2 branches missed.">    if (arg.contains(LOCALEXEC)) {</span>
+<span class="nc" id="L304">      useLocalExec = true;</span>
+<span class="nc" id="L305">      WaarpStringUtils.replaceAll(builder, LOCALEXEC, &quot;&quot;);</span>
+    }
+<span class="fc" id="L307">    File trueFile = null;</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">    if (session.getFile() != null) {</span>
+<span class="fc" id="L309">      trueFile = session.getFile().getTrueFile();</span>
+    }
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">    if (trueFile != null) {</span>
+<span class="fc" id="L312">      WaarpStringUtils</span>
+<span class="fc" id="L313">          .replaceAll(builder, TRUEFULLPATH, trueFile.getAbsolutePath());</span>
+<span class="fc" id="L314">      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, R66Dir</span>
+<span class="fc" id="L315">          .getFinalUniqueFilename(session.getFile()));</span>
+<span class="fc" id="L316">      WaarpStringUtils</span>
+<span class="fc" id="L317">          .replaceAll(builder, FILESIZE, Long.toString(trueFile.length()));</span>
+    } else {
+<span class="nc" id="L319">      WaarpStringUtils.replaceAll(builder, TRUEFULLPATH, &quot;nofile&quot;);</span>
+<span class="nc" id="L320">      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, &quot;nofile&quot;);</span>
+<span class="nc" id="L321">      WaarpStringUtils.replaceAll(builder, FILESIZE, &quot;0&quot;);</span>
+    }
+<span class="fc" id="L323">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="pc bpc" id="L324" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="fc" id="L325">      WaarpStringUtils</span>
+<span class="fc" id="L326">          .replaceAll(builder, ORIGINALFULLPATH, runner.getOriginalFilename());</span>
+<span class="fc" id="L327">      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME, R66File</span>
+<span class="fc" id="L328">          .getBasename(runner.getOriginalFilename()));</span>
+<span class="fc" id="L329">      WaarpStringUtils.replaceAll(builder, RULE, runner.getRuleId());</span>
+    }
+<span class="fc" id="L331">    DateFormat dateFormat = new SimpleDateFormat(&quot;yyyyMMdd&quot;);</span>
+<span class="fc" id="L332">    final Date date = new Date();</span>
+<span class="fc" id="L333">    WaarpStringUtils.replaceAll(builder, DATE, dateFormat.format(date));</span>
+<span class="fc" id="L334">    dateFormat = new SimpleDateFormat(&quot;HHmmss&quot;);</span>
+<span class="fc" id="L335">    WaarpStringUtils.replaceAll(builder, HOUR, dateFormat.format(date));</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">    if (session.getAuth() != null) {</span>
+<span class="fc" id="L337">      WaarpStringUtils</span>
+<span class="fc" id="L338">          .replaceAll(builder, REMOTEHOST, session.getAuth().getUser());</span>
+      try {
+<span class="fc" id="L340">        WaarpStringUtils.replaceAll(builder, LOCALHOST,</span>
+                                    Configuration.configuration
+<span class="fc" id="L342">                                        .getHostId(session.getAuth().isSsl()));</span>
+<span class="nc" id="L343">      } catch (final OpenR66ProtocolNoSslException e) {</span>
+        // replace by standard name
+<span class="nc" id="L345">        WaarpStringUtils.replaceAll(builder, LOCALHOST,</span>
+<span class="nc" id="L346">                                    Configuration.configuration.getHostId());</span>
+<span class="fc" id="L347">      }</span>
+    }
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">    if (session.getRemoteAddress() != null) {</span>
+<span class="fc" id="L350">      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR,</span>
+<span class="fc" id="L351">                                  session.getRemoteAddress().toString());</span>
+<span class="fc" id="L352">      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR,</span>
+<span class="fc" id="L353">                                  session.getLocalAddress().toString());</span>
+    } else {
+<span class="nc" id="L355">      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR, &quot;unknown&quot;);</span>
+<span class="nc" id="L356">      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR, &quot;unknown&quot;);</span>
+    }
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="fc" id="L359">      WaarpStringUtils.replaceAll(builder, TRANSFERID,</span>
+<span class="fc" id="L360">                                  Long.toString(runner.getSpecialId()));</span>
+<span class="fc" id="L361">      final String requester = runner.getRequester();</span>
+<span class="fc" id="L362">      WaarpStringUtils.replaceAll(builder, REQUESTERHOST, requester);</span>
+<span class="fc" id="L363">      final String requested = runner.getRequested();</span>
+<span class="fc" id="L364">      WaarpStringUtils.replaceAll(builder, REQUESTEDHOST, requested);</span>
+<span class="fc" id="L365">      WaarpStringUtils.replaceAll(builder, FULLTRANSFERID,</span>
+<span class="fc" id="L366">                                  runner.getSpecialId() + &quot;_&quot; + requester +</span>
+                                  '_' + requested);
+<span class="fc" id="L368">      WaarpStringUtils.replaceAll(builder, RANKTRANSFER,</span>
+<span class="fc" id="L369">                                  Integer.toString(runner.getRank()));</span>
+    }
+<span class="fc" id="L371">    WaarpStringUtils.replaceAll(builder, BLOCKSIZE,</span>
+<span class="fc" id="L372">                                Integer.toString(session.getBlockSize()));</span>
+<span class="fc" id="L373">    R66Dir dir = new R66Dir(session);</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="pc bpc" id="L375" title="1 of 4 branches missed.">      if (runner.isRecvThrough() || runner.isSendThrough()) {</span>
+        try {
+<span class="fc" id="L377">          dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());</span>
+<span class="fc" id="L378">          WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
+<span class="nc" id="L379">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="fc" id="L381">        }</span>
+<span class="fc" id="L382">        dir = new R66Dir(session);</span>
+        try {
+<span class="fc" id="L384">          dir.changeDirectoryNotChecked(runner.getRule().getSendPath());</span>
+<span class="fc" id="L385">          WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
+<span class="nc" id="L386">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="fc" id="L388">        }</span>
+<span class="fc" id="L389">        dir = new R66Dir(session);</span>
+        try {
+<span class="fc" id="L391">          dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());</span>
+<span class="fc" id="L392">          WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
+<span class="nc" id="L393">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="fc" id="L395">        }</span>
+<span class="fc" id="L396">        dir = new R66Dir(session);</span>
+        try {
+<span class="fc" id="L398">          dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());</span>
+<span class="fc" id="L399">          WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
+<span class="nc" id="L400">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="pc" id="L402">        }</span>
+      } else {
+        try {
+<span class="fc" id="L405">          dir.changeDirectory(runner.getRule().getRecvPath());</span>
+<span class="fc" id="L406">          WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
+<span class="nc" id="L407">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="fc" id="L409">        }</span>
+<span class="fc" id="L410">        dir = new R66Dir(session);</span>
+        try {
+<span class="fc" id="L412">          dir.changeDirectory(runner.getRule().getSendPath());</span>
+<span class="fc" id="L413">          WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
+<span class="nc" id="L414">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="fc" id="L416">        }</span>
+<span class="fc" id="L417">        dir = new R66Dir(session);</span>
+        try {
+<span class="fc" id="L419">          dir.changeDirectory(runner.getRule().getWorkPath());</span>
+<span class="fc" id="L420">          WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
+<span class="nc" id="L421">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="fc" id="L423">        }</span>
+<span class="fc" id="L424">        dir = new R66Dir(session);</span>
+        try {
+<span class="fc" id="L426">          dir.changeDirectory(runner.getRule().getArchivePath());</span>
+<span class="fc" id="L427">          WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
+<span class="nc" id="L428">        } catch (final CommandAbstractException ignored) {</span>
+          // nothing
+<span class="pc" id="L430">        }</span>
+      }
+    } else {
+      try {
+<span class="nc" id="L434">        dir.changeDirectory(Configuration.configuration.getInPath());</span>
+<span class="nc" id="L435">        WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
+<span class="nc" id="L436">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="nc" id="L438">      }</span>
+<span class="nc" id="L439">      dir = new R66Dir(session);</span>
+      try {
+<span class="nc" id="L441">        dir.changeDirectory(Configuration.configuration.getOutPath());</span>
+<span class="nc" id="L442">        WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
+<span class="nc" id="L443">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="nc" id="L445">      }</span>
+<span class="nc" id="L446">      dir = new R66Dir(session);</span>
+      try {
+<span class="nc" id="L448">        dir.changeDirectory(Configuration.configuration.getWorkingPath());</span>
+<span class="nc" id="L449">        WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
+<span class="nc" id="L450">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="nc" id="L452">      }</span>
+<span class="nc" id="L453">      dir = new R66Dir(session);</span>
+      try {
+<span class="nc" id="L455">        dir.changeDirectory(Configuration.configuration.getArchivePath());</span>
+<span class="nc" id="L456">        WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
+<span class="nc" id="L457">      } catch (final CommandAbstractException ignored) {</span>
+        // nothing
+<span class="nc" id="L459">      }</span>
+    }
+<span class="fc" id="L461">    WaarpStringUtils.replaceAll(builder, HOMEPATH,</span>
+<span class="fc" id="L462">                                Configuration.configuration.getBaseDirectory());</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">    if (session.getLocalChannelReference() == null) {</span>
+<span class="nc" id="L464">      WaarpStringUtils.replaceAll(builder, ERRORMSG, &quot;NoError&quot;);</span>
+<span class="nc" id="L465">      WaarpStringUtils.replaceAll(builder, ERRORCODE, &quot;-&quot;);</span>
+<span class="nc" id="L466">      WaarpStringUtils</span>
+<span class="nc" id="L467">          .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());</span>
+    } else {
+      try {
+<span class="fc" id="L470">        WaarpStringUtils.replaceAll(builder, ERRORMSG,</span>
+<span class="fc" id="L471">                                    session.getLocalChannelReference()</span>
+<span class="fc" id="L472">                                           .getErrorMessage());</span>
+<span class="nc" id="L473">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L474">        WaarpStringUtils.replaceAll(builder, ERRORMSG, &quot;NoError&quot;);</span>
+<span class="fc" id="L475">      }</span>
+      try {
+<span class="fc" id="L477">        WaarpStringUtils.replaceAll(builder, ERRORCODE,</span>
+<span class="fc" id="L478">                                    session.getLocalChannelReference()</span>
+<span class="fc" id="L479">                                           .getCurrentCode().getCode());</span>
+<span class="nc" id="L480">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L481">        WaarpStringUtils.replaceAll(builder, ERRORCODE, &quot;-&quot;);</span>
+<span class="fc" id="L482">      }</span>
+      try {
+<span class="fc" id="L484">        WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,</span>
+<span class="fc" id="L485">                                    session.getLocalChannelReference()</span>
+<span class="fc" id="L486">                                           .getCurrentCode().name());</span>
+<span class="nc" id="L487">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L488">        WaarpStringUtils</span>
+<span class="nc" id="L489">            .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());</span>
+<span class="fc" id="L490">      }</span>
+    }
+    // finalname
+<span class="pc bpc" id="L493" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
+      try {
+<span class="fc" id="L495">        return String.format(builder.toString(), argFormat);</span>
+<span class="nc" id="L496">      } catch (final Exception e) {</span>
+        // ignored error since bad argument in static rule info
+<span class="nc" id="L498">        logger.error(&quot;Bad format in Rule: {&quot; + builder + &quot;} &quot; + e.getMessage());</span>
+      }
+    }
+<span class="nc" id="L501">    return builder.toString();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

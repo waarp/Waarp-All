@@ -46,11 +46,11 @@ public abstract class AbstractLocalPacket {
 <span class="nc" id="L46">    this.end = end;</span>
 <span class="nc" id="L47">  }</span>
 
-<span class="nc" id="L49">  protected AbstractLocalPacket() {</span>
-<span class="nc" id="L50">    header = null;</span>
-<span class="nc" id="L51">    middle = null;</span>
-<span class="nc" id="L52">    end = null;</span>
-<span class="nc" id="L53">  }</span>
+<span class="fc" id="L49">  protected AbstractLocalPacket() {</span>
+<span class="fc" id="L50">    header = null;</span>
+<span class="fc" id="L51">    middle = null;</span>
+<span class="fc" id="L52">    end = null;</span>
+<span class="fc" id="L53">  }</span>
 
   /**
    * Prepare the Header buffer
@@ -93,52 +93,52 @@ public abstract class AbstractLocalPacket {
    */
   public ByteBuf getLocalPacket(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L96">    final ByteBuf buf = Unpooled.buffer(4 * 3 + 1);// 3 header</span>
+<span class="fc" id="L96">    final ByteBuf buf = Unpooled.buffer(4 * 3 + 1);// 3 header</span>
     // lengths+type
-<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (header == null) {</span>
-<span class="nc" id="L99">      createHeader(lcr);</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">    if (header == null) {</span>
+<span class="fc" id="L99">      createHeader(lcr);</span>
     }
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L102">    final int headerLength = 4 * 2 + 1 + newHeader.readableBytes();</span>
-<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (middle == null) {</span>
-<span class="nc" id="L104">      createMiddle(lcr);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">    final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L102">    final int headerLength = 4 * 2 + 1 + newHeader.readableBytes();</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">    if (middle == null) {</span>
+<span class="fc" id="L104">      createMiddle(lcr);</span>
     }
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L107">    final int middleLength = newMiddle.readableBytes();</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">    if (end == null) {</span>
-<span class="nc" id="L109">      createEnd(lcr);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L107">    final int middleLength = newMiddle.readableBytes();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">    if (end == null) {</span>
+<span class="fc" id="L109">      createEnd(lcr);</span>
     }
-<span class="nc bnc" id="L111" title="All 2 branches missed.">    final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L112">    final int endLength = newEnd.readableBytes();</span>
-<span class="nc" id="L113">    buf.writeInt(headerLength);</span>
-<span class="nc" id="L114">    buf.writeInt(middleLength);</span>
-<span class="nc" id="L115">    buf.writeInt(endLength);</span>
-<span class="nc" id="L116">    buf.writeByte(getType());</span>
-<span class="nc" id="L117">    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L112">    final int endLength = newEnd.readableBytes();</span>
+<span class="fc" id="L113">    buf.writeInt(headerLength);</span>
+<span class="fc" id="L114">    buf.writeInt(middleLength);</span>
+<span class="fc" id="L115">    buf.writeInt(endLength);</span>
+<span class="fc" id="L116">    buf.writeByte(getType());</span>
+<span class="fc" id="L117">    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);</span>
   }
 
   public void clear() {
-<span class="nc bnc" id="L121" title="All 4 branches missed.">    if (header != null &amp;&amp; header.release()) {</span>
+<span class="pc bpc" id="L121" title="3 of 4 branches missed.">    if (header != null &amp;&amp; header.release()) {</span>
 <span class="nc" id="L122">      header = null;</span>
     }
-<span class="nc bnc" id="L124" title="All 4 branches missed.">    if (middle != null &amp;&amp; middle.release()) {</span>
+<span class="pc bpc" id="L124" title="3 of 4 branches missed.">    if (middle != null &amp;&amp; middle.release()) {</span>
 <span class="nc" id="L125">      middle = null;</span>
     }
-<span class="nc bnc" id="L127" title="All 4 branches missed.">    if (end != null &amp;&amp; end.release()) {</span>
+<span class="pc bpc" id="L127" title="3 of 4 branches missed.">    if (end != null &amp;&amp; end.release()) {</span>
 <span class="nc" id="L128">      end = null;</span>
     }
-<span class="nc" id="L130">  }</span>
+<span class="fc" id="L130">  }</span>
 
   public void retain() {
-<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (header != null) {</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (header != null) {</span>
 <span class="nc" id="L134">      header.retain();</span>
     }
-<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (middle != null) {</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (middle != null) {</span>
 <span class="nc" id="L137">      middle.retain();</span>
     }
-<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (end != null) {</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (end != null) {</span>
 <span class="nc" id="L140">      end.retain();</span>
     }
-<span class="nc" id="L142">  }</span>
+<span class="fc" id="L142">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

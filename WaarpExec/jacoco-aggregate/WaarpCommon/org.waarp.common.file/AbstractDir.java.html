@@ -43,8 +43,8 @@ import java.util.List;
   /**
    * Internal Logger
    */
-<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(AbstractDir.class);</span>
+<span class="fc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L47">      WaarpLoggerFactory.getLogger(AbstractDir.class);</span>
   /**
    * Current Directory
    */
@@ -72,13 +72,13 @@ import java.util.List;
    * Init Windows Support
    */
   static {
-<span class="nc bnc" id="L75" title="All 2 branches missed.">    ISUNIX = !DetectionUtils.isWindows();</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (!ISUNIX) {</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    ISUNIX = !DetectionUtils.isWindows();</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">    if (!ISUNIX) {</span>
 <span class="nc" id="L77">      roots = File.listRoots();</span>
     } else {
-<span class="nc" id="L79">      roots = new File[] { new File(&quot;/&quot;) };</span>
+<span class="fc" id="L79">      roots = new File[] { new File(&quot;/&quot;) };</span>
     }
-<span class="nc" id="L81">  }</span>
+<span class="fc" id="L81">  }</span>
 
   /**
    * @param file
@@ -108,7 +108,7 @@ import java.util.List;
    * @return the normalized path
    */
   public static String normalizePath(String path) {
-<span class="nc" id="L111">    return path.replace('\\', SEPARATORCHAR);</span>
+<span class="fc" id="L111">    return path.replace('\\', SEPARATORCHAR);</span>
   }
 
   /**
@@ -122,25 +122,25 @@ import java.util.List;
    */
   public static String pathFromURI(String path) {
 
-<span class="nc bnc" id="L125" title="All 2 branches missed.">    if (path.startsWith(&quot;file://&quot;)) {</span>
-<span class="nc" id="L126">      int charToRemove = 7;</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">    if (path.startsWith(&quot;file://&quot;)) {</span>
+<span class="fc" id="L126">      int charToRemove = 7;</span>
 
-<span class="nc bnc" id="L128" title="All 4 branches missed.">      if (path.charAt(7) == '/' &amp;&amp; path.charAt(9) == ':') {</span>
-<span class="nc" id="L129">        charToRemove++;</span>
+<span class="fc bfc" id="L128" title="All 4 branches covered.">      if (path.charAt(7) == '/' &amp;&amp; path.charAt(9) == ':') {</span>
+<span class="fc" id="L129">        charToRemove++;</span>
       }
 
-<span class="nc" id="L132">      path = path.substring(charToRemove);</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (path.contains(&quot;%&quot;)) {</span>
+<span class="fc" id="L132">      path = path.substring(charToRemove);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">      if (path.contains(&quot;%&quot;)) {</span>
         try {
-<span class="nc" id="L135">          path = URLDecoder.decode(path, WaarpStringUtils.UTF8.name());</span>
+<span class="fc" id="L135">          path = URLDecoder.decode(path, WaarpStringUtils.UTF8.name());</span>
 <span class="nc" id="L136">        } catch (final UnsupportedEncodingException e) {</span>
 <span class="nc" id="L137">          logger.warn(&quot;Cannot convert filename to UTF-8: &quot; + path);</span>
-<span class="nc" id="L138">        } catch (final IllegalArgumentException e) {</span>
+<span class="fc" id="L138">        } catch (final IllegalArgumentException e) {</span>
           // ignore: it was propably not url-encoded!
-<span class="nc" id="L140">        }</span>
+<span class="pc" id="L140">        }</span>
       }
     }
-<span class="nc" id="L143">    return path;</span>
+<span class="fc" id="L143">    return path;</span>
   }
 
   /**

@@ -57,41 +57,42 @@ import java.net.InetSocketAddress;
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-<span class="nc" id="L60">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc" id="L61">    int port = 9999;</span>
+<span class="nc" id="L60">    WaarpLoggerFactory</span>
+<span class="nc" id="L61">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L62">    int port = 9999;</span>
     InetAddress addr;
-<span class="nc" id="L63">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (args.length &gt;= 2) {</span>
-<span class="nc" id="L65">      addr = InetAddress.getByName(args[0]);</span>
-<span class="nc" id="L66">      port = Integer.parseInt(args[1]);</span>
-<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (args.length &gt; 2) {</span>
-<span class="nc" id="L68">        delay = Long.parseLong(args[2]);</span>
+<span class="nc" id="L64">    long delay = LocalExecDefaultResult.MAXWAITPROCESS;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (args.length &gt;= 2) {</span>
+<span class="nc" id="L66">      addr = InetAddress.getByName(args[0]);</span>
+<span class="nc" id="L67">      port = Integer.parseInt(args[1]);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">      if (args.length &gt; 2) {</span>
+<span class="nc" id="L69">        delay = Long.parseLong(args[2]);</span>
       }
     } else {
-<span class="nc" id="L71">      final byte[] loop = { 127, 0, 0, 1 };</span>
-<span class="nc" id="L72">      addr = InetAddress.getByAddress(loop);</span>
+<span class="nc" id="L72">      final byte[] loop = { 127, 0, 0, 1 };</span>
+<span class="nc" id="L73">      addr = InetAddress.getByAddress(loop);</span>
     }
     // Configure the server.
     try {
-<span class="nc" id="L76">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
-<span class="nc" id="L77">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);</span>
+<span class="nc" id="L77">      final ServerBootstrap bootstrap = new ServerBootstrap();</span>
+<span class="nc" id="L78">      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);</span>
 
       // Configure the pipeline factory.
-<span class="nc" id="L80">      bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));</span>
+<span class="nc" id="L81">      bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));</span>
 
       // Bind and start to accept incoming connections only on local address.
-<span class="nc" id="L83">      final ChannelFuture future =</span>
-<span class="nc" id="L84">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
+<span class="nc" id="L84">      final ChannelFuture future =</span>
+<span class="nc" id="L85">          bootstrap.bind(new InetSocketAddress(addr, port));</span>
 
       // Wait until the server socket is closed.
-<span class="nc" id="L87">      future.channel().closeFuture().sync();</span>
+<span class="nc" id="L88">      future.channel().closeFuture().sync();</span>
     } finally {
       // Shut down all event loops to terminate all threads.
-<span class="nc" id="L90">      workerGroup.shutdownGracefully();</span>
+<span class="nc" id="L91">      workerGroup.shutdownGracefully();</span>
 
       // Wait until all threads are terminated.
-<span class="nc" id="L93">      workerGroup.terminationFuture().sync();</span>
+<span class="nc" id="L94">      workerGroup.terminationFuture().sync();</span>
     }
-<span class="nc" id="L95">  }</span>
+<span class="nc" id="L96">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

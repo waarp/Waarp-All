@@ -53,49 +53,50 @@ import org.waarp.ftp.simpleimpl.data.FileSystemBasedDataBusinessHandler;
           &quot; &lt;config-file&gt; &lt;ssl-config-file&gt; SSL|AUTH&quot;);
 <span class="nc" id="L54">      return;</span>
     }
-<span class="nc" id="L56">    WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc" id="L57">    logger = WaarpLoggerFactory.getLogger(SimpleGatewaySslFtpServer.class);</span>
-<span class="nc" id="L58">    final String config = args[0];</span>
-<span class="nc" id="L59">    final FileBasedConfiguration configuration =</span>
+<span class="nc" id="L56">    WaarpLoggerFactory</span>
+<span class="nc" id="L57">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc" id="L58">    logger = WaarpLoggerFactory.getLogger(SimpleGatewaySslFtpServer.class);</span>
+<span class="nc" id="L59">    final String config = args[0];</span>
+<span class="nc" id="L60">    final FileBasedConfiguration configuration =</span>
         new FileBasedConfiguration(SimpleGatewaySslFtpServer.class,
                                    SimpleBusinessHandler.class,
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (!configuration.setConfigurationFromXml(config)) {</span>
-<span class="nc" id="L65">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad configuration&quot;);</span>
-<span class="nc" id="L66">      return;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (!configuration.setConfigurationFromXml(config)) {</span>
+<span class="nc" id="L66">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad configuration&quot;);</span>
+<span class="nc" id="L67">      return;</span>
     }
-<span class="nc" id="L68">    if (!FileBasedSslConfiguration</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        .setConfigurationServerFromXml(configuration, args[1])) {</span>
-<span class="nc" id="L70">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad Ssl configuration&quot;);</span>
-<span class="nc" id="L71">      return;</span>
+<span class="nc" id="L69">    if (!FileBasedSslConfiguration</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        .setConfigurationServerFromXml(configuration, args[1])) {</span>
+<span class="nc" id="L71">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Bad Ssl configuration&quot;);</span>
+<span class="nc" id="L72">      return;</span>
     }
-<span class="nc bnc" id="L73" title="All 2 branches missed.">    if (&quot;SSL&quot;.equalsIgnoreCase(args[2])) {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (&quot;SSL&quot;.equalsIgnoreCase(args[2])) {</span>
       // native SSL support
-<span class="nc" id="L75">      configuration.getFtpInternalConfiguration().setUsingNativeSsl(true);</span>
-<span class="nc" id="L76">      configuration.getFtpInternalConfiguration().setAcceptAuthProt(false);</span>
-<span class="nc bnc" id="L77" title="All 2 branches missed.">    } else if (&quot;AUTH&quot;.equalsIgnoreCase(args[2])) {</span>
+<span class="nc" id="L76">      configuration.getFtpInternalConfiguration().setUsingNativeSsl(true);</span>
+<span class="nc" id="L77">      configuration.getFtpInternalConfiguration().setAcceptAuthProt(false);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">    } else if (&quot;AUTH&quot;.equalsIgnoreCase(args[2])) {</span>
       // AUTH, PROT, ... support
-<span class="nc" id="L79">      configuration.getFtpInternalConfiguration().setUsingNativeSsl(false);</span>
-<span class="nc" id="L80">      configuration.getFtpInternalConfiguration().setAcceptAuthProt(true);</span>
+<span class="nc" id="L80">      configuration.getFtpInternalConfiguration().setUsingNativeSsl(false);</span>
+<span class="nc" id="L81">      configuration.getFtpInternalConfiguration().setAcceptAuthProt(true);</span>
     } else {
       // unknown option
-<span class="nc" id="L83">      SysErrLogger.FAKE_LOGGER.syserr(</span>
+<span class="nc" id="L84">      SysErrLogger.FAKE_LOGGER.syserr(</span>
           &quot;Bad Ssl Option configuration: SSL ot AUTH &quot; + &quot;but &quot; + args[2]);
-<span class="nc" id="L85">      return;</span>
+<span class="nc" id="L86">      return;</span>
     }
     // Start server.
     try {
-<span class="nc" id="L89">      configuration.serverStartup();</span>
-<span class="nc" id="L90">    } catch (final FtpNoConnectionException e) {</span>
-<span class="nc" id="L91">      logger.error(&quot;FTP not started: Mode &quot; +</span>
-<span class="nc" id="L92">                   (configuration.getFtpInternalConfiguration()</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">                                 .isUsingNativeSsl()? &quot;SSL&quot; : &quot;AUTH&quot;), e);</span>
-<span class="nc" id="L94">    }</span>
-<span class="nc" id="L95">    logger.info(&quot;FTP started: Mode &quot; +</span>
-<span class="nc bnc" id="L96" title="All 2 branches missed.">                (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?</span>
+<span class="nc" id="L90">      configuration.serverStartup();</span>
+<span class="nc" id="L91">    } catch (final FtpNoConnectionException e) {</span>
+<span class="nc" id="L92">      logger.error(&quot;FTP not started: Mode &quot; +</span>
+<span class="nc" id="L93">                   (configuration.getFtpInternalConfiguration()</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">                                 .isUsingNativeSsl()? &quot;SSL&quot; : &quot;AUTH&quot;), e);</span>
+<span class="nc" id="L95">    }</span>
+<span class="nc" id="L96">    logger.info(&quot;FTP started: Mode &quot; +</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?</span>
                     &quot;SSL&quot; : &quot;AUTH&quot;));
-<span class="nc" id="L98">  }</span>
+<span class="nc" id="L99">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -56,22 +56,22 @@ public class EndTransferPacket extends AbstractLocalPacket {
                                                    int middleLength,
                                                    int endLength, ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (headerLength - 1 != 1) {</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">    if (headerLength - 1 != 1) {</span>
 <span class="nc" id="L60">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
 <span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="nc" id="L65">    final byte bheader = buf.readByte();</span>
-<span class="nc" id="L66">    final byte valid = buf.readByte();</span>
+<span class="fc" id="L65">    final byte bheader = buf.readByte();</span>
+<span class="fc" id="L66">    final byte valid = buf.readByte();</span>
     String optional;
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (endLength &gt; 0) {</span>
-<span class="nc" id="L69">      optional =</span>
-<span class="nc" id="L70">          buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());</span>
-<span class="nc" id="L71">      buf.skipBytes(endLength);</span>
-<span class="nc" id="L72">      return new EndTransferPacket(bheader, valid, optional);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">    if (endLength &gt; 0) {</span>
+<span class="fc" id="L69">      optional =</span>
+<span class="fc" id="L70">          buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());</span>
+<span class="fc" id="L71">      buf.skipBytes(endLength);</span>
+<span class="fc" id="L72">      return new EndTransferPacket(bheader, valid, optional);</span>
     }
-<span class="nc" id="L74">    return new EndTransferPacket(bheader, valid);</span>
+<span class="fc" id="L74">    return new EndTransferPacket(bheader, valid);</span>
   }
 
   /**
@@ -79,63 +79,63 @@ public class EndTransferPacket extends AbstractLocalPacket {
    * @param valid
    * @param hashOptional
    */
-<span class="nc" id="L82">  private EndTransferPacket(byte request, byte valid, String hashOptional) {</span>
-<span class="nc" id="L83">    this.request = request;</span>
-<span class="nc" id="L84">    way = valid;</span>
-<span class="nc" id="L85">    this.hashOptional = hashOptional;</span>
-<span class="nc" id="L86">  }</span>
+<span class="fc" id="L82">  private EndTransferPacket(byte request, byte valid, String hashOptional) {</span>
+<span class="fc" id="L83">    this.request = request;</span>
+<span class="fc" id="L84">    way = valid;</span>
+<span class="fc" id="L85">    this.hashOptional = hashOptional;</span>
+<span class="fc" id="L86">  }</span>
 
   /**
    * @param request
    * @param valid
    */
-<span class="nc" id="L92">  private EndTransferPacket(byte request, byte valid) {</span>
-<span class="nc" id="L93">    this.request = request;</span>
-<span class="nc" id="L94">    way = valid;</span>
-<span class="nc" id="L95">  }</span>
+<span class="fc" id="L92">  private EndTransferPacket(byte request, byte valid) {</span>
+<span class="fc" id="L93">    this.request = request;</span>
+<span class="fc" id="L94">    way = valid;</span>
+<span class="fc" id="L95">  }</span>
 
   /**
    * @param request
    */
-<span class="nc" id="L100">  public EndTransferPacket(byte request) {</span>
-<span class="nc" id="L101">    this.request = request;</span>
-<span class="nc" id="L102">    way = ASKVALIDATE;</span>
-<span class="nc" id="L103">  }</span>
+<span class="fc" id="L100">  public EndTransferPacket(byte request) {</span>
+<span class="fc" id="L101">    this.request = request;</span>
+<span class="fc" id="L102">    way = ASKVALIDATE;</span>
+<span class="fc" id="L103">  }</span>
 
   /**
    * @param request
    * @param hashOptional
    */
-<span class="nc" id="L109">  public EndTransferPacket(byte request, String hashOptional) {</span>
-<span class="nc" id="L110">    this.request = request;</span>
-<span class="nc" id="L111">    way = ASKVALIDATE;</span>
-<span class="nc" id="L112">    this.hashOptional = hashOptional;</span>
-<span class="nc" id="L113">  }</span>
+<span class="fc" id="L109">  public EndTransferPacket(byte request, String hashOptional) {</span>
+<span class="fc" id="L110">    this.request = request;</span>
+<span class="fc" id="L111">    way = ASKVALIDATE;</span>
+<span class="fc" id="L112">    this.hashOptional = hashOptional;</span>
+<span class="fc" id="L113">  }</span>
 
   @Override
   public void createEnd(LocalChannelReference lcr) {
-<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (hashOptional == null) {</span>
-<span class="nc" id="L118">      end = Unpooled.EMPTY_BUFFER;</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">    if (hashOptional == null) {</span>
+<span class="fc" id="L118">      end = Unpooled.EMPTY_BUFFER;</span>
     } else {
-<span class="nc" id="L120">      end = Unpooled.copiedBuffer(hashOptional, Charset.defaultCharset());</span>
+<span class="fc" id="L120">      end = Unpooled.copiedBuffer(hashOptional, Charset.defaultCharset());</span>
     }
-<span class="nc" id="L122">  }</span>
+<span class="fc" id="L122">  }</span>
 
   @Override
   public void createHeader(LocalChannelReference lcr) {
-<span class="nc" id="L126">    final byte[] newbytes = { request };</span>
-<span class="nc" id="L127">    header = Unpooled.wrappedBuffer(newbytes);</span>
-<span class="nc" id="L128">  }</span>
+<span class="fc" id="L126">    final byte[] newbytes = { request };</span>
+<span class="fc" id="L127">    header = Unpooled.wrappedBuffer(newbytes);</span>
+<span class="fc" id="L128">  }</span>
 
   @Override
   public void createMiddle(LocalChannelReference lcr) {
-<span class="nc" id="L132">    final byte[] newbytes = { way };</span>
-<span class="nc" id="L133">    middle = Unpooled.wrappedBuffer(newbytes);</span>
-<span class="nc" id="L134">  }</span>
+<span class="fc" id="L132">    final byte[] newbytes = { way };</span>
+<span class="fc" id="L133">    middle = Unpooled.wrappedBuffer(newbytes);</span>
+<span class="fc" id="L134">  }</span>
 
   @Override
   public byte getType() {
-<span class="nc" id="L138">    return LocalPacketFactory.ENDTRANSFERPACKET;</span>
+<span class="fc" id="L138">    return LocalPacketFactory.ENDTRANSFERPACKET;</span>
   }
 
   @Override
@@ -155,24 +155,24 @@ public class EndTransferPacket extends AbstractLocalPacket {
    * @return True if this packet is to be validated
    */
   public boolean isToValidate() {
-<span class="nc bnc" id="L158" title="All 2 branches missed.">    return way == ASKVALIDATE;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
   public void validate() {
-<span class="nc" id="L165">    way = ANSWERVALIDATE;</span>
-<span class="nc" id="L166">    header = null;</span>
-<span class="nc" id="L167">    middle = null;</span>
-<span class="nc" id="L168">    end = null;</span>
-<span class="nc" id="L169">  }</span>
+<span class="fc" id="L165">    way = ANSWERVALIDATE;</span>
+<span class="fc" id="L166">    header = null;</span>
+<span class="fc" id="L167">    middle = null;</span>
+<span class="fc" id="L168">    end = null;</span>
+<span class="fc" id="L169">  }</span>
 
   /**
    * @return the optional
    */
   public String getOptional() {
-<span class="nc" id="L175">    return hashOptional;</span>
+<span class="fc" id="L175">    return hashOptional;</span>
   }
 
   /**

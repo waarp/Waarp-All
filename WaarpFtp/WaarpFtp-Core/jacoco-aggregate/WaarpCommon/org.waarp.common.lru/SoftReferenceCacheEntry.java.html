@@ -40,14 +40,14 @@ class SoftReferenceCacheEntry&lt;V&gt; implements InterfaceLruCacheEntry&lt;V&gt
    *
    * @throws IllegalArgumentException if ttl is not positive
    */
-<span class="nc" id="L43">  SoftReferenceCacheEntry(V value, long ttl) {</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">    if (ttl &lt;= 0) {</span>
-<span class="nc" id="L45">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
+<span class="fc" id="L43">  SoftReferenceCacheEntry(V value, long ttl) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">    if (ttl &lt;= 0) {</span>
+<span class="fc" id="L45">      throw new IllegalArgumentException(&quot;ttl must be positive&quot;);</span>
     }
 
-<span class="nc" id="L48">    valueReference = new SoftReference&lt;V&gt;(value);</span>
-<span class="nc" id="L49">    expirationTime = System.currentTimeMillis() + ttl;</span>
-<span class="nc" id="L50">  }</span>
+<span class="fc" id="L48">    valueReference = new SoftReference&lt;V&gt;(value);</span>
+<span class="fc" id="L49">    expirationTime = System.currentTimeMillis() + ttl;</span>
+<span class="fc" id="L50">  }</span>
 
   /**
    * Returns value if entry is valid, null otherwise.
@@ -58,25 +58,25 @@ class SoftReferenceCacheEntry&lt;V&gt; implements InterfaceLruCacheEntry&lt;V&gt
    */
   @Override
   public V getValue() {
-<span class="nc" id="L61">    V value = null;</span>
+<span class="fc" id="L61">    V value = null;</span>
 
     // check expiration time
-<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (System.currentTimeMillis() &lt;= expirationTime) {</span>
-<span class="nc" id="L65">      value = valueReference.get();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">    if (System.currentTimeMillis() &lt;= expirationTime) {</span>
+<span class="fc" id="L65">      value = valueReference.get();</span>
     }
 
-<span class="nc" id="L68">    return value;</span>
+<span class="fc" id="L68">    return value;</span>
   }
 
   @Override
   public boolean isStillValid(long timeRef) {
-<span class="nc bnc" id="L73" title="All 2 branches missed.">    return timeRef &lt;= expirationTime;</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    return timeRef &lt;= expirationTime;</span>
   }
 
   @Override
   public boolean resetTime(long ttl) {
-<span class="nc" id="L78">    expirationTime = System.currentTimeMillis() + ttl;</span>
-<span class="nc" id="L79">    return true;</span>
+<span class="fc" id="L78">    expirationTime = System.currentTimeMillis() + ttl;</span>
+<span class="fc" id="L79">    return true;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

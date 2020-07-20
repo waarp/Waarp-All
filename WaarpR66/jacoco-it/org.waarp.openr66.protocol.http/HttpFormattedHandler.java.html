@@ -1,0 +1,969 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpFormattedHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Waarp OpenR66</a> &gt; <a href="index.source.html" class="el_package">org.waarp.openr66.protocol.http</a> &gt; <span class="el_source">HttpFormattedHandler.java</span></div><h1>HttpFormattedHandler.java</h1><pre class="source lang-java linenums">/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package org.waarp.openr66.protocol.http;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.handler.traffic.TrafficCounter;
+import org.waarp.common.database.DbAdmin;
+import org.waarp.common.database.DbSession;
+import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.exception.FileTransferException;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
+import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.SpooledInformTask;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.TransferDAO;
+import org.waarp.openr66.dao.database.DBTransferDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
+import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.exception.OpenR66Exception;
+import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
+import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static org.waarp.common.database.DbConstant.*;
+
+/**
+ * Handler for HTTP information support
+ */
+<span class="nc" id="L89">public class HttpFormattedHandler</span>
+    extends SimpleChannelInboundHandler&lt;FullHttpRequest&gt; {
+  private static final String OPEN_R66_WEB_ERROR = &quot;OpenR66 Web Error {}&quot;;
+  /**
+   * Internal Logger
+   */
+<span class="nc" id="L95">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L96">      WaarpLoggerFactory.getLogger(HttpFormattedHandler.class);</span>
+
+  private static final String MONITORING_HEADER_HTML = &quot;monitoring_header.html&quot;;
+  private static final String MONITORING_END_HTML = &quot;monitoring_end.html&quot;;
+
+<span class="nc" id="L101">  private enum REQUEST {</span>
+<span class="nc" id="L102">    index(&quot;index.html&quot;), active(MONITORING_HEADER_HTML, MONITORING_END_HTML),</span>
+<span class="nc" id="L103">    error(MONITORING_HEADER_HTML, MONITORING_END_HTML),</span>
+<span class="nc" id="L104">    done(MONITORING_HEADER_HTML, MONITORING_END_HTML),</span>
+<span class="nc" id="L105">    all(MONITORING_HEADER_HTML, MONITORING_END_HTML),</span>
+<span class="nc" id="L106">    status(MONITORING_HEADER_HTML, MONITORING_END_HTML), statusxml(&quot;&quot;),</span>
+<span class="nc" id="L107">    statusjson(&quot;&quot;);</span>
+
+    private static final String MONITOR = &quot;monitor/&quot;;
+    private final String header;
+    private final String end;
+
+    /**
+     * Constructor for a unique file
+     *
+     * @param uniquefile
+     */
+<span class="nc" id="L118">    REQUEST(String uniquefile) {</span>
+<span class="nc" id="L119">      header = uniquefile;</span>
+<span class="nc" id="L120">      end = uniquefile;</span>
+<span class="nc" id="L121">    }</span>
+
+    /**
+     * @param header
+     * @param end
+     */
+<span class="nc" id="L127">    REQUEST(String header, String end) {</span>
+<span class="nc" id="L128">      this.header = header;</span>
+<span class="nc" id="L129">      this.end = end;</span>
+<span class="nc" id="L130">    }</span>
+
+    /**
+     * Reader for a unique file
+     *
+     * @return the content of the unique file
+     */
+    public String readFileUnique(HttpFormattedHandler handler) {
+<span class="nc" id="L138">      return handler.readFileHeader(</span>
+<span class="nc" id="L139">          Configuration.configuration.getHttpBasePath() + MONITOR + header);</span>
+    }
+
+    public String readHeader(HttpFormattedHandler handler) {
+<span class="nc" id="L143">      return handler.readFileHeader(</span>
+<span class="nc" id="L144">          Configuration.configuration.getHttpBasePath() + MONITOR + header);</span>
+    }
+
+    public String readEnd() {
+<span class="nc" id="L148">      return WaarpStringUtils.readFile(</span>
+<span class="nc" id="L149">          Configuration.configuration.getHttpBasePath() + MONITOR + end);</span>
+    }
+  }
+
+<span class="nc" id="L153">  protected enum REPLACEMENT {</span>
+<span class="nc" id="L154">    XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX,</span>
+<span class="nc" id="L155">    XXXLANGXXX</span>
+  }
+
+  public static final int LIMITROW = 60; // better if it can be divided by 4
+  private static final String I18NEXT = &quot;i18next&quot;;
+
+<span class="nc" id="L161">  private final R66Session authentHttp = new R66Session();</span>
+
+<span class="nc" id="L163">  protected String lang = Messages.getSlocale();</span>
+
+  protected FullHttpRequest request;
+
+<span class="nc" id="L167">  protected final StringBuilder responseContent = new StringBuilder();</span>
+
+  protected HttpResponseStatus status;
+
+  protected String uriRequest;
+
+  private static final String sINFO = &quot;INFO&quot;;
+  private static final String sNB = &quot;NB&quot;;
+  private static final String sDETAIL = &quot;DETAIL&quot;;
+
+  /**
+   * The Database connection attached to this NetworkChannelReference shared
+   * among all associated LocalChannels
+   */
+<span class="nc" id="L181">  private DbSession dbSession = admin.getSession();</span>
+
+  /**
+   * Does this dbSession is private and so should be closed
+   */
+<span class="nc" id="L186">  private final boolean isPrivateDbSession = false;</span>
+  protected boolean isCurrentRequestXml;
+  protected boolean isCurrentRequestJson;
+
+  protected Map&lt;String, List&lt;String&gt;&gt; params;
+
+  private String readFileHeader(String filename) {
+    String value;
+    try {
+<span class="nc" id="L195">      value = WaarpStringUtils.readFileException(filename);</span>
+<span class="nc" id="L196">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L197">      logger.error(&quot;Error while trying to open: &quot; + filename, e);</span>
+<span class="nc" id="L198">      return &quot;&quot;;</span>
+<span class="nc" id="L199">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L200">      logger.error(&quot;Error while trying to read: &quot; + filename, e);</span>
+<span class="nc" id="L201">      return &quot;&quot;;</span>
+<span class="nc" id="L202">    }</span>
+<span class="nc" id="L203">    final StringBuilder builder = new StringBuilder(value);</span>
+
+<span class="nc" id="L205">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),</span>
+<span class="nc" id="L206">                             new Date().toString());</span>
+<span class="nc" id="L207">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),</span>
+<span class="nc" id="L208">                             Integer.toString(Configuration.configuration</span>
+<span class="nc" id="L209">                                                  .getLocalTransaction()</span>
+<span class="nc" id="L210">                                                  .getNumberLocalChannel()));</span>
+<span class="nc" id="L211">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),</span>
+<span class="nc" id="L212">                             Integer.toString(DbAdmin.getNbConnection()));</span>
+<span class="nc" id="L213">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),</span>
+<span class="nc" id="L214">                             Configuration.configuration.getHostId());</span>
+<span class="nc" id="L215">    final TrafficCounter trafficCounter =</span>
+<span class="nc" id="L216">        Configuration.configuration.getGlobalTrafficShapingHandler()</span>
+<span class="nc" id="L217">                                   .trafficCounter();</span>
+<span class="nc" id="L218">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),</span>
+                             &quot;IN:&quot; +
+<span class="nc" id="L220">                             trafficCounter.lastReadThroughput() / 131072 +</span>
+                             &quot;Mbits&amp;nbsp;&amp;nbsp;OUT:&quot; +
+<span class="nc" id="L222">                             trafficCounter.lastWriteThroughput() / 131072 +</span>
+                             &quot;Mbits&quot;);
+<span class="nc" id="L224">    WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);</span>
+<span class="nc" id="L225">    return builder.toString();</span>
+  }
+
+  protected String getTrimValue(String varname) {
+    String value;
+    try {
+<span class="nc" id="L231">      value = params.get(varname).get(0).trim();</span>
+<span class="nc" id="L232">    } catch (final NullPointerException e) {</span>
+<span class="nc" id="L233">      return null;</span>
+<span class="nc" id="L234">    }</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">    if (value.isEmpty()) {</span>
+<span class="nc" id="L236">      value = null;</span>
+    }
+<span class="nc" id="L238">    return value;</span>
+  }
+
+  @Override
+  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
+      throws Exception {
+<span class="nc" id="L244">    isCurrentRequestXml = false;</span>
+<span class="nc" id="L245">    isCurrentRequestJson = false;</span>
+<span class="nc" id="L246">    status = HttpResponseStatus.OK;</span>
+<span class="nc" id="L247">    final FullHttpRequest httpRequest = this.request = msg;</span>
+<span class="nc" id="L248">    QueryStringDecoder queryStringDecoder =</span>
+<span class="nc" id="L249">        new QueryStringDecoder(httpRequest.uri());</span>
+<span class="nc" id="L250">    uriRequest = queryStringDecoder.path();</span>
+<span class="nc" id="L251">    logger.debug(&quot;Msg: &quot; + uriRequest);</span>
+<span class="nc bnc" id="L252" title="All 4 branches missed.">    if (uriRequest.contains(&quot;gre/&quot;) || uriRequest.contains(&quot;img/&quot;) ||</span>
+<span class="nc bnc" id="L253" title="All 4 branches missed.">        uriRequest.contains(&quot;res/&quot;) || uriRequest.contains(&quot;favicon.ico&quot;)) {</span>
+<span class="nc" id="L254">      HttpWriteCacheEnable.writeFile(httpRequest, ctx,</span>
+                                     Configuration.configuration
+<span class="nc" id="L256">                                         .getHttpBasePath() + uriRequest,</span>
+                                     &quot;XYZR66NOSESSION&quot;);
+<span class="nc" id="L258">      return;</span>
+    }
+
+<span class="nc" id="L261">    char cval = 'z';</span>
+<span class="nc" id="L262">    long nb = LIMITROW;</span>
+    // check the URI
+<span class="nc bnc" id="L264" title="All 2 branches missed.">    if (&quot;/active&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L265">      cval = '0';</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">    } else if (&quot;/error&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L267">      cval = '1';</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">    } else if (&quot;/done&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L269">      cval = '2';</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">    } else if (&quot;/all&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L271">      cval = '3';</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">    } else if (&quot;/status&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L273">      cval = '4';</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    } else if (&quot;/statusxml&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L275">      cval = '5';</span>
+<span class="nc" id="L276">      nb = 0; // since it could be the default or setup by request</span>
+<span class="nc" id="L277">      isCurrentRequestXml = true;</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">    } else if (uriRequest.toLowerCase().startsWith(&quot;/spooled&quot;)) {</span>
+<span class="nc" id="L279">      cval = '6';</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">    } else if (&quot;/statusjson&quot;.equalsIgnoreCase(uriRequest)) {</span>
+<span class="nc" id="L281">      cval = '7';</span>
+<span class="nc" id="L282">      nb = 0; // since it could be the default or setup by request</span>
+<span class="nc" id="L283">      isCurrentRequestJson = true;</span>
+    }
+    // Get the params according to get or post
+<span class="nc bnc" id="L286" title="All 2 branches missed.">    if (httpRequest.method() == HttpMethod.GET) {</span>
+<span class="nc" id="L287">      params = queryStringDecoder.parameters();</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">    } else if (httpRequest.method() == HttpMethod.POST) {</span>
+<span class="nc" id="L289">      final ByteBuf content = httpRequest.content();</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">      if (content.isReadable()) {</span>
+<span class="nc" id="L291">        final String param = content.toString(WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L292">        queryStringDecoder = new QueryStringDecoder(&quot;/?&quot; + param);</span>
+<span class="nc" id="L293">      } else {</span>
+<span class="nc" id="L294">        responseContent.append(REQUEST.index.readFileUnique(this));</span>
+<span class="nc" id="L295">        writeResponse(ctx);</span>
+<span class="nc" id="L296">        return;</span>
+      }
+<span class="nc" id="L298">      params = queryStringDecoder.parameters();</span>
+<span class="nc" id="L299">      boolean invalidEntry = false;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">      for (Entry&lt;String, List&lt;String&gt;&gt; paramCheck : params.entrySet()) {</span>
+        try {
+<span class="nc" id="L302">          ParametersChecker.checkSanityString(paramCheck.getValue().toArray(</span>
+              ParametersChecker.ZERO_ARRAY_STRING));
+<span class="nc" id="L304">        } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L305">          logger.error(</span>
+<span class="nc" id="L306">              &quot;Arguments incompatible with Security: &quot; + paramCheck.getKey(),</span>
+              e);
+<span class="nc" id="L308">          invalidEntry = true;</span>
+<span class="nc" id="L309">        }</span>
+<span class="nc" id="L310">      }</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">      if (invalidEntry) {</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        for (Entry&lt;String, List&lt;String&gt;&gt; paramCheck : params.entrySet()) {</span>
+<span class="nc" id="L313">          paramCheck.getValue().clear();</span>
+<span class="nc" id="L314">        }</span>
+<span class="nc" id="L315">        params.clear();</span>
+<span class="nc" id="L316">        logger.error(&quot;No parameter validated since security issue found&quot;);</span>
+      }
+    }
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    boolean getMenu = cval == 'z';</span>
+<span class="nc" id="L320">    boolean extraBoolean = false;</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">    if (!params.isEmpty()) {</span>
+      // if not uri, from get or post
+<span class="nc bnc" id="L323" title="All 2 branches missed.">      if (getMenu) {</span>
+<span class="nc" id="L324">        final String info = getTrimValue(sINFO);</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">        if (info != null) {</span>
+<span class="nc" id="L326">          getMenu = false;</span>
+<span class="nc" id="L327">          cval = info.charAt(0);</span>
+        } else {
+<span class="nc" id="L329">          getMenu = true;</span>
+        }
+      }
+      // search the nb param
+<span class="nc" id="L333">      final String snb = getTrimValue(sNB);</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">      if (snb != null) {</span>
+        try {
+<span class="nc" id="L336">          nb = Long.parseLong(snb);</span>
+<span class="nc" id="L337">        } catch (final Exception ignored) {</span>
+<span class="nc" id="L338">          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L339">        }</span>
+      }
+      // search the detail param
+<span class="nc" id="L342">      final String sdetail = getTrimValue(sDETAIL);</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">      if (sdetail != null) {</span>
+        try {
+<span class="nc bnc" id="L345" title="All 2 branches missed.">          if (Integer.parseInt(sdetail) &gt; 0) {</span>
+<span class="nc" id="L346">            extraBoolean = true;</span>
+          }
+<span class="nc" id="L348">        } catch (final Exception ignored) {</span>
+<span class="nc" id="L349">          SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L350">        }</span>
+      }
+<span class="nc" id="L352">      final String langarg = getTrimValue(&quot;setLng&quot;);</span>
+<span class="nc bnc" id="L353" title="All 4 branches missed.">      if (langarg != null &amp;&amp; !langarg.isEmpty()) {</span>
+<span class="nc" id="L354">        lang = langarg;</span>
+      }
+    }
+<span class="nc bnc" id="L357" title="All 2 branches missed.">    if (getMenu) {</span>
+<span class="nc" id="L358">      responseContent.append(REQUEST.index.readFileUnique(this));</span>
+    } else {
+      // Use value 0=Active 1=Error 2=Done 3=All
+<span class="nc bnc" id="L361" title="All 9 branches missed.">      switch (cval) {</span>
+        case '0':
+<span class="nc" id="L363">          active(ctx, (int) nb);</span>
+<span class="nc" id="L364">          break;</span>
+        case '1':
+<span class="nc" id="L366">          error(ctx, (int) nb);</span>
+<span class="nc" id="L367">          break;</span>
+        case '2':
+<span class="nc" id="L369">          done(ctx, (int) nb);</span>
+<span class="nc" id="L370">          break;</span>
+        case '3':
+<span class="nc" id="L372">          all(ctx, (int) nb);</span>
+<span class="nc" id="L373">          break;</span>
+        case '4':
+<span class="nc" id="L375">          status(ctx, (int) nb);</span>
+<span class="nc" id="L376">          break;</span>
+        case '5':
+<span class="nc" id="L378">          statusxml(ctx, nb, extraBoolean);</span>
+<span class="nc" id="L379">          break;</span>
+        case '6':
+<span class="nc" id="L381">          String name = null;</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">          if (params.containsKey(&quot;name&quot;)) {</span>
+<span class="nc" id="L383">            name = getTrimValue(&quot;name&quot;);</span>
+          }
+<span class="nc" id="L385">          int istatus = 0;</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">          if (params.containsKey(&quot;status&quot;)) {</span>
+<span class="nc" id="L387">            final String statusNew = getTrimValue(&quot;status&quot;);</span>
+            try {
+<span class="nc" id="L389">              istatus = Integer.parseInt(statusNew);</span>
+<span class="nc" id="L390">            } catch (final NumberFormatException e1) {</span>
+<span class="nc" id="L391">              istatus = 0;</span>
+<span class="nc" id="L392">            }</span>
+          }
+<span class="nc bnc" id="L394" title="All 2 branches missed.">          if (uriRequest.toLowerCase().startsWith(&quot;/spooleddetail&quot;)) {</span>
+<span class="nc" id="L395">            extraBoolean = true;</span>
+          }
+<span class="nc" id="L397">          spooled(ctx, extraBoolean, name, istatus);</span>
+<span class="nc" id="L398">          break;</span>
+        case '7':
+<span class="nc" id="L400">          statusjson(ctx, nb, extraBoolean);</span>
+<span class="nc" id="L401">          break;</span>
+        default:
+<span class="nc" id="L403">          responseContent.append(REQUEST.index.readFileUnique(this));</span>
+      }
+    }
+<span class="nc" id="L406">    writeResponse(ctx);</span>
+<span class="nc" id="L407">  }</span>
+
+  /**
+   * Add all runners from preparedStatement for type
+   *
+   * @param type
+   * @param nb
+   *
+   * @throws WaarpDatabaseNoConnectionException
+   * @throws WaarpDatabaseSqlException
+   */
+  private void addRunners(List&lt;Transfer&gt; transfers, String type, int nb) {
+<span class="nc" id="L419">    responseContent</span>
+<span class="nc" id="L420">        .append(&quot;&lt;style&gt;td{font-size: 8pt;}&lt;/style&gt;&lt;table border=\&quot;2\&quot;&gt;&quot;)</span>
+<span class="nc" id="L421">        .append(&quot;&lt;tr&gt;&lt;td&gt;&quot;).append(type).append(&quot;&lt;/td&gt;&quot;)</span>
+<span class="nc" id="L422">        .append(DbTaskRunner.headerHtml()).append(&quot;&lt;/tr&gt;\r\n&quot;);</span>
+
+<span class="nc" id="L424">    int i = 0;</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">    for (final Transfer transfer : transfers) {</span>
+<span class="nc" id="L426">      final DbTaskRunner taskRunner = new DbTaskRunner(transfer);</span>
+<span class="nc" id="L427">      responseContent.append(&quot;&lt;tr&gt;&lt;td&gt;&quot;)</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">                     .append(taskRunner.isSender()? &quot;S&quot; : &quot;R&quot;).append(&quot;&lt;/td&gt;&quot;);</span>
+<span class="nc" id="L429">      final LocalChannelReference lcr =</span>
+<span class="nc" id="L430">          Configuration.configuration.getLocalTransaction()</span>
+<span class="nc" id="L431">                                     .getFromRequest(taskRunner.getKey());</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">      responseContent.append(taskRunner.toHtml(getAuthentHttp(), lcr != null?</span>
+<span class="nc" id="L433">          Messages.getString(&quot;HttpSslHandler.Active&quot;) :</span>
+<span class="nc" id="L434">          Messages.getString(&quot;HttpSslHandler.NotActive&quot;))).append(&quot;&lt;/tr&gt;\r\n&quot;);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">      if (nb &gt; 0) {</span>
+<span class="nc" id="L436">        i++;</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">        if (i &gt;= nb) {</span>
+<span class="nc" id="L438">          break;</span>
+        }
+      }
+<span class="nc" id="L441">    }</span>
+<span class="nc" id="L442">    responseContent.append(&quot;&lt;/table&gt;&lt;br&gt;\r\n&quot;);</span>
+<span class="nc" id="L443">  }</span>
+
+  /**
+   * print all active transfers
+   *
+   * @param ctx
+   * @param nb
+   */
+  private void active(ChannelHandlerContext ctx, int nb) {
+<span class="nc" id="L452">    responseContent.append(REQUEST.active.readHeader(this));</span>
+
+<span class="nc" id="L454">    TransferDAO transferAccess = null;</span>
+<span class="nc" id="L455">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+    List&lt;Transfer&gt; transfers;
+    try {
+<span class="nc" id="L458">      transferAccess = DAOFactory.getInstance().getTransferDAO();</span>
+
+      // Find Status = RUNNING transfer
+<span class="nc" id="L461">      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L462">                             ErrorCode.Running.getCode()));</span>
+<span class="nc" id="L463">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L464">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L465">      transfers = transferAccess</span>
+<span class="nc" id="L466">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L467">      addRunners(transfers, ErrorCode.Running.getMesg(), nb);</span>
+
+<span class="nc" id="L469">      transfers.clear();</span>
+<span class="nc" id="L470">      filters.clear();</span>
+      // Find UpdatedInfo = INTERUPTED transfer
+<span class="nc" id="L472">      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L473">                             UpdatedInfo.INTERRUPTED.ordinal()));</span>
+<span class="nc" id="L474">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L475">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L476">      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, &quot;&lt;&quot;,</span>
+<span class="nc" id="L477">                             new Timestamp(System.currentTimeMillis())));</span>
+<span class="nc" id="L478">      transfers = transferAccess</span>
+<span class="nc" id="L479">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L480">      addRunners(transfers, UpdatedInfo.INTERRUPTED.name(), nb);</span>
+
+<span class="nc" id="L482">      transfers.clear();</span>
+<span class="nc" id="L483">      filters.clear();</span>
+      // Find UpdatedInfo = TOSUBMIT transfer
+<span class="nc" id="L485">      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L486">                             UpdatedInfo.TOSUBMIT.ordinal()));</span>
+<span class="nc" id="L487">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L488">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L489">      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, &quot;&lt;&quot;,</span>
+<span class="nc" id="L490">                             new Timestamp(System.currentTimeMillis())));</span>
+<span class="nc" id="L491">      transfers = transferAccess</span>
+<span class="nc" id="L492">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L493">      addRunners(transfers, UpdatedInfo.TOSUBMIT.name(), nb);</span>
+
+<span class="nc" id="L495">      transfers.clear();</span>
+<span class="nc" id="L496">      filters.clear();</span>
+      // Find Status = INITOK transfer
+<span class="nc" id="L498">      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L499">                             ErrorCode.InitOk.getCode()));</span>
+<span class="nc" id="L500">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L501">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L502">      transfers = transferAccess</span>
+<span class="nc" id="L503">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L504">      addRunners(transfers, ErrorCode.InitOk.getMesg(), nb);</span>
+
+<span class="nc" id="L506">      transfers.clear();</span>
+<span class="nc" id="L507">      filters.clear();</span>
+      // Find Status = PREPROCESSINGOK transfer
+<span class="nc" id="L509">      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L510">                             ErrorCode.PreProcessingOk.getCode()));</span>
+<span class="nc" id="L511">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L512">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L513">      transfers = transferAccess</span>
+<span class="nc" id="L514">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L515">      addRunners(transfers, ErrorCode.PreProcessingOk.getMesg(), nb);</span>
+
+<span class="nc" id="L517">      transfers.clear();</span>
+<span class="nc" id="L518">      filters.clear();</span>
+      // Find Status = TRANSFEROK transfer
+<span class="nc" id="L520">      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L521">                             ErrorCode.TransferOk.getCode()));</span>
+<span class="nc" id="L522">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L523">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L524">      transfers = transferAccess</span>
+<span class="nc" id="L525">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L526">      addRunners(transfers, ErrorCode.TransferOk.getMesg(), nb);</span>
+
+<span class="nc" id="L528">      transfers.clear();</span>
+<span class="nc" id="L529">      filters.clear();</span>
+      // Find Status = POSTPROCESSING transfer
+<span class="nc" id="L531">      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L532">                             ErrorCode.PostProcessingOk.getCode()));</span>
+<span class="nc" id="L533">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L534">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L535">      transfers = transferAccess</span>
+<span class="nc" id="L536">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L537">      addRunners(transfers, ErrorCode.PostProcessingOk.getMesg(), nb);</span>
+<span class="nc" id="L538">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L539">      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="nc" id="L540">      sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);</span>
+    } finally {
+<span class="nc" id="L542">      DAOFactory.closeDAO(transferAccess);</span>
+    }
+<span class="nc" id="L544">    responseContent.append(REQUEST.active.readEnd());</span>
+<span class="nc" id="L545">  }</span>
+
+  /**
+   * print all transfers in error
+   *
+   * @param ctx
+   * @param nb
+   */
+  private void error(ChannelHandlerContext ctx, int nb) {
+<span class="nc" id="L554">    responseContent.append(REQUEST.error.readHeader(this));</span>
+<span class="nc" id="L555">    TransferDAO transferAccess = null;</span>
+<span class="nc" id="L556">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+    List&lt;Transfer&gt; transfers;
+    try {
+<span class="nc" id="L559">      transferAccess = DAOFactory.getInstance().getTransferDAO();</span>
+
+      // Find UpdatedInfo = INERROR transfer
+<span class="nc" id="L562">      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L563">                             UpdatedInfo.INERROR.ordinal()));</span>
+<span class="nc" id="L564">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L565">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L566">      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, &quot;&lt;&quot;,</span>
+<span class="nc" id="L567">                             new Timestamp(System.currentTimeMillis())));</span>
+<span class="nc" id="L568">      transfers = transferAccess</span>
+<span class="nc" id="L569">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 2);</span>
+<span class="nc" id="L570">      addRunners(transfers, UpdatedInfo.INERROR.name(), nb / 2);</span>
+
+<span class="nc" id="L572">      transfers.clear();</span>
+<span class="nc" id="L573">      filters.clear();</span>
+      // Find UpdatedInfo = INTERUPTED transfer
+<span class="nc" id="L575">      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L576">                             UpdatedInfo.INTERRUPTED.ordinal()));</span>
+<span class="nc" id="L577">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L578">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L579">      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, &quot;&lt;&quot;,</span>
+<span class="nc" id="L580">                             new Timestamp(System.currentTimeMillis())));</span>
+<span class="nc" id="L581">      transfers = transferAccess</span>
+<span class="nc" id="L582">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 2);</span>
+<span class="nc" id="L583">      addRunners(transfers, UpdatedInfo.INTERRUPTED.name(), nb / 2);</span>
+
+<span class="nc" id="L585">      transfers.clear();</span>
+<span class="nc" id="L586">      filters.clear();</span>
+      // Find GlobalStep = ERRORTASK transfer
+<span class="nc" id="L588">      filters.add(new Filter(DBTransferDAO.GLOBAL_STEP_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L589">                             Transfer.TASKSTEP.ERRORTASK.ordinal()));</span>
+<span class="nc" id="L590">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L591">                             Configuration.configuration.getHostId()));</span>
+<span class="nc" id="L592">      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, &quot;&lt;&quot;,</span>
+<span class="nc" id="L593">                             new Timestamp(System.currentTimeMillis())));</span>
+<span class="nc" id="L594">      transfers = transferAccess</span>
+<span class="nc" id="L595">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 4);</span>
+<span class="nc" id="L596">      addRunners(transfers, TASKSTEP.ERRORTASK.name(), nb / 4);</span>
+<span class="nc" id="L597">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L598">      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="nc" id="L599">      sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);</span>
+<span class="nc" id="L600">      return;</span>
+    } finally {
+<span class="nc" id="L602">      DAOFactory.closeDAO(transferAccess);</span>
+    }
+<span class="nc" id="L604">    responseContent.append(REQUEST.error.readEnd());</span>
+<span class="nc" id="L605">  }</span>
+
+  /**
+   * Print all done transfers
+   *
+   * @param ctx
+   * @param nb
+   */
+  private void done(ChannelHandlerContext ctx, int nb) {
+<span class="nc" id="L614">    responseContent.append(REQUEST.done.readHeader(this));</span>
+
+<span class="nc" id="L616">    TransferDAO transferAccess = null;</span>
+    List&lt;Transfer&gt; transfers;
+    try {
+<span class="nc" id="L619">      transferAccess = DAOFactory.getInstance().getTransferDAO();</span>
+
+<span class="nc" id="L621">      final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc" id="L622">      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L623">                             ErrorCode.CompleteOk.getCode()));</span>
+<span class="nc" id="L624">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L625">                             Configuration.configuration.getHostId()));</span>
+
+<span class="nc" id="L627">      transfers = transferAccess</span>
+<span class="nc" id="L628">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L629">      addRunners(transfers, &quot;ALL RUNNERS: &quot; + nb, nb);</span>
+<span class="nc" id="L630">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L631">      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="nc" id="L632">      sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);</span>
+<span class="nc" id="L633">      return;</span>
+    } finally {
+<span class="nc" id="L635">      DAOFactory.closeDAO(transferAccess);</span>
+    }
+<span class="nc" id="L637">    responseContent.append(REQUEST.done.readEnd());</span>
+<span class="nc" id="L638">  }</span>
+
+  /**
+   * Print all nb last transfers
+   *
+   * @param ctx
+   * @param nb
+   */
+  private void all(ChannelHandlerContext ctx, int nb) {
+<span class="nc" id="L647">    responseContent.append(REQUEST.all.readHeader(this));</span>
+
+<span class="nc" id="L649">    TransferDAO transferAccess = null;</span>
+    List&lt;Transfer&gt; transfers;
+    try {
+<span class="nc" id="L652">      transferAccess = DAOFactory.getInstance().getTransferDAO();</span>
+
+<span class="nc" id="L654">      final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc" id="L655">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L656">                             Configuration.configuration.getHostId()));</span>
+
+<span class="nc" id="L658">      transfers = transferAccess</span>
+<span class="nc" id="L659">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);</span>
+<span class="nc" id="L660">      addRunners(transfers, &quot;ALL RUNNERS: &quot; + nb, nb);</span>
+<span class="nc" id="L661">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L662">      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="nc" id="L663">      sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);</span>
+<span class="nc" id="L664">      return;</span>
+    } finally {
+<span class="nc" id="L666">      DAOFactory.closeDAO(transferAccess);</span>
+    }
+<span class="nc" id="L668">    responseContent.append(REQUEST.all.readEnd());</span>
+<span class="nc" id="L669">  }</span>
+
+  /**
+   * print only status
+   *
+   * @param ctx
+   * @param nb
+   */
+  private void status(ChannelHandlerContext ctx, int nb) {
+<span class="nc" id="L678">    responseContent.append(REQUEST.status.readHeader(this));</span>
+
+<span class="nc" id="L680">    TransferDAO transferAccess = null;</span>
+<span class="nc" id="L681">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+    List&lt;Transfer&gt; transfers;
+    try {
+<span class="nc" id="L684">      transferAccess = DAOFactory.getInstance().getTransferDAO();</span>
+
+      // Find UpdatedInfo = INERROR transfer
+<span class="nc" id="L687">      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L688">                             UpdatedInfo.INERROR.ordinal()));</span>
+<span class="nc" id="L689">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L690">                             Configuration.configuration.getHostId()));</span>
+
+<span class="nc" id="L692">      transfers = transferAccess</span>
+<span class="nc" id="L693">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);</span>
+<span class="nc bnc" id="L694" title="All 2 branches missed.">      if (!transfers.isEmpty()) {</span>
+<span class="nc" id="L695">        responseContent.append(&quot;&lt;p&gt;Some Transfers are in ERROR&lt;/p&gt;&lt;br&gt;&quot;);</span>
+<span class="nc" id="L696">        status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+      }
+
+<span class="nc" id="L699">      filters.clear();</span>
+<span class="nc" id="L700">      transfers.clear();</span>
+      // Find UpdatedInfo = INTERUPTED transfer
+<span class="nc" id="L702">      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L703">                             UpdatedInfo.INTERRUPTED.ordinal()));</span>
+<span class="nc" id="L704">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L705">                             Configuration.configuration.getHostId()));</span>
+
+<span class="nc" id="L707">      transfers = transferAccess</span>
+<span class="nc" id="L708">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);</span>
+<span class="nc bnc" id="L709" title="All 2 branches missed.">      if (!transfers.isEmpty()) {</span>
+<span class="nc" id="L710">        responseContent.append(&quot;&lt;p&gt;Some Transfers are INTERRUPTED&lt;/p&gt;&lt;br&gt;&quot;);</span>
+<span class="nc" id="L711">        status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+      }
+<span class="nc" id="L713">      filters.clear();</span>
+<span class="nc" id="L714">      transfers.clear();</span>
+
+      // Find GLOBAL_STEP = Error transfer
+<span class="nc" id="L717">      filters.add(new Filter(DBTransferDAO.GLOBAL_STEP_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L718">                             Transfer.TASKSTEP.ERRORTASK.ordinal()));</span>
+<span class="nc" id="L719">      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L720">                             Configuration.configuration.getHostId()));</span>
+
+<span class="nc" id="L722">      transfers = transferAccess</span>
+<span class="nc" id="L723">          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);</span>
+<span class="nc bnc" id="L724" title="All 2 branches missed.">      if (!transfers.isEmpty()) {</span>
+<span class="nc" id="L725">        responseContent.append(&quot;&lt;p&gt;Some Transfers are in ERRORTASK&lt;/p&gt;&lt;br&gt;&quot;);</span>
+<span class="nc" id="L726">        status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+      }
+<span class="nc" id="L728">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L729">      logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());</span>
+<span class="nc" id="L730">      sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);</span>
+<span class="nc" id="L731">      return;</span>
+    } finally {
+<span class="nc" id="L733">      DAOFactory.closeDAO(transferAccess);</span>
+    }
+<span class="nc bnc" id="L735" title="All 2 branches missed.">    if (status != HttpResponseStatus.INTERNAL_SERVER_ERROR) {</span>
+<span class="nc" id="L736">      responseContent.append(&quot;&lt;p&gt;No problem is found in Transfers&lt;/p&gt;&lt;br&gt;&quot;);</span>
+    }
+<span class="nc" id="L738">    responseContent.append(REQUEST.status.readEnd());</span>
+<span class="nc" id="L739">  }</span>
+
+  /**
+   * print only status
+   *
+   * @param ctx
+   * @param nb
+   */
+  protected void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
+<span class="nc" id="L748">    Configuration.configuration.getMonitoring().run(nb, detail);</span>
+<span class="nc" id="L749">    responseContent</span>
+<span class="nc" id="L750">        .append(Configuration.configuration.getMonitoring().exportXml(detail));</span>
+<span class="nc" id="L751">  }</span>
+
+  /**
+   * print only status
+   *
+   * @param ctx
+   * @param nb
+   */
+  protected void statusjson(ChannelHandlerContext ctx, long nb,
+                            boolean detail) {
+<span class="nc" id="L761">    Configuration.configuration.getMonitoring().run(nb, detail);</span>
+<span class="nc" id="L762">    responseContent</span>
+<span class="nc" id="L763">        .append(Configuration.configuration.getMonitoring().exportJson(detail));</span>
+<span class="nc" id="L764">  }</span>
+
+  private void spooled(ChannelHandlerContext ctx, boolean detail, String name,
+                       int istatus) {
+<span class="nc" id="L768">    responseContent.append(REQUEST.status.readHeader(this)).append(</span>
+<span class="nc" id="L769">        &quot;&lt;p&gt;&lt;table border='0' cellpadding='0' cellspacing='0' &gt;&quot;).append(</span>
+        &quot;&lt;tr style='background-image:url(gre/gresm.png);background-repeat:repeat-x;background-position:left top;'&gt;&lt;td class='col_MenuHaut'&gt;&quot;)
+<span class="nc" id="L771">                   .append(</span>
+                       &quot;&lt;a data-i18n='menu2.sous-menu4a' href='Spooled.html' style='display:block;width:100%;height:100%;line-height:15px;'&gt;&quot;)
+<span class="nc" id="L773">                   .append(</span>
+                       &quot;SPOOLED DIRECTORY no detail&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;img src='gre/gre11.png' height='15' width='1' style='border: none; display: block;' alt='' /&gt;&lt;/td&gt;&quot;)
+<span class="nc" id="L775">                   .append(</span>
+                       &quot;&lt;td&gt;&lt;/td&gt;&lt;td class='col_MenuHaut'&gt;&lt;a data-i18n='menu2.sous-menu4c' href='Spooled.html?status=-1' style='display:block;width:100%;height:100%;line-height:15px;'&gt;&quot;)
+<span class="nc" id="L777">                   .append(</span>
+                       &quot;SPOOLED DIRECTORY no detail KO&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;img src='gre/gre11.png' height='15' width='1' style='border: none; display: block;' alt='' /&gt;&lt;/td&gt;&quot;)
+<span class="nc" id="L779">                   .append(</span>
+                       &quot;&lt;td&gt;&lt;/td&gt;&lt;td class='col_MenuHaut'&gt;&lt;a data-i18n='menu2.sous-menu4d' href='Spooled.html?status=1' style='display:block;width:100%;height:100%;line-height:15px;'&gt;&quot;)
+<span class="nc" id="L781">                   .append(</span>
+                       &quot;SPOOLED DIRECTORY no detail OK&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style='background-image:url(gre/gre11.png);background-repeat:repeat-x;background-position:left top;'&gt;&quot;)
+<span class="nc" id="L783">                   .append(</span>
+                       &quot;&lt;td&gt;&lt;img src='gre/gre11.png' height='1' width='100%' style='border: none; display: block;' alt='' /&gt;&lt;/td&gt;&lt;/tr&gt;&quot;)
+<span class="nc" id="L785">                   .append(</span>
+                       &quot;&lt;tr style='background-image:url(gre/gresm.png);background-repeat:repeat-x;background-position:left top;'&gt;&quot;)
+<span class="nc" id="L787">                   .append(</span>
+                       &quot;&lt;td class='col_MenuHaut'&gt;&lt;a data-i18n='menu2.sous-menu4b' href='SpooledDetailed.html' style='display:block;width:100%;height:100%;line-height:15px;'&gt;&quot;)
+<span class="nc" id="L789">                   .append(</span>
+                       &quot;SPOOLED DIRECTORY detailed&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;img src='gre/gre11.png' height='15' width='1' style='border: none; display: block;' alt='' /&gt;&lt;/td&gt;&quot;)
+<span class="nc" id="L791">                   .append(</span>
+                       &quot;&lt;td&gt;&lt;/td&gt;&lt;td class='col_MenuHaut'&gt;&lt;a data-i18n='menu2.sous-menu4e' href='SpooledDetailed.html?status=-1' style='display:block;width:100%;height:100%;line-height:15px;'&gt;&quot;)
+<span class="nc" id="L793">                   .append(</span>
+                       &quot;SPOOLED DIRECTORY detailed KO&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;img src='gre/gre11.png' height='15' width='1' style='border: none; display: block;' alt='' /&gt;&lt;/td&gt;&quot;)
+<span class="nc" id="L795">                   .append(</span>
+                       &quot;&lt;td&gt;&lt;/td&gt;&lt;td class='col_MenuHaut'&gt;&lt;a data-i18n='menu2.sous-menu4f' href='SpooledDetailed.html?status=1' style='display:block;width:100%;height:100%;line-height:15px;'&gt;&quot;)
+<span class="nc" id="L797">                   .append(</span>
+                       &quot;SPOOLED DIRECTORY detailed OK&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/p&gt;&quot;);
+    String uri;
+<span class="nc bnc" id="L800" title="All 2 branches missed.">    if (detail) {</span>
+<span class="nc" id="L801">      uri = &quot;SpooledDetailed.html&quot;;</span>
+    } else {
+<span class="nc" id="L803">      uri = &quot;Spooled.html&quot;;</span>
+    }
+<span class="nc bnc" id="L805" title="All 4 branches missed.">    if (name != null &amp;&amp; !name.isEmpty()) {</span>
+      // name is specified
+<span class="nc" id="L807">      uri = request.uri();</span>
+<span class="nc bnc" id="L808" title="All 2 branches missed.">      if (istatus != 0) {</span>
+<span class="nc" id="L809">        uri += &quot;&amp;status=&quot; + istatus;</span>
+      }
+<span class="nc" id="L811">      responseContent</span>
+<span class="nc" id="L812">          .append(SpooledInformTask.buildSpooledUniqueTable(uri, name));</span>
+    } else {
+<span class="nc bnc" id="L814" title="All 2 branches missed.">      if (istatus != 0) {</span>
+<span class="nc" id="L815">        uri += &quot;&amp;status=&quot; + istatus;</span>
+      }
+<span class="nc" id="L817">      responseContent</span>
+<span class="nc" id="L818">          .append(SpooledInformTask.buildSpooledTable(detail, istatus, uri));</span>
+    }
+<span class="nc" id="L820">    responseContent.append(REQUEST.status.readEnd());</span>
+<span class="nc" id="L821">  }</span>
+
+  /**
+   * Write the response
+   *
+   * @param ctx
+   */
+  protected void writeResponse(ChannelHandlerContext ctx) {
+    // Convert the response content to a ByteBuf.
+<span class="nc" id="L830">    final ByteBuf buf = Unpooled</span>
+<span class="nc" id="L831">        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L832">    responseContent.setLength(0);</span>
+    // Decide whether to close the connection or not.
+<span class="nc" id="L834">    final boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
+<span class="nc bnc" id="L835" title="All 4 branches missed.">    final boolean close = HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(</span>
+<span class="nc" id="L836">        request.headers().get(HttpHeaderNames.CONNECTION)) || !keepAlive;</span>
+
+    // Build the response object.
+<span class="nc" id="L839">    final FullHttpResponse response =</span>
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buf);
+<span class="nc" id="L841">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="nc" id="L842">                           response.content().readableBytes());</span>
+<span class="nc bnc" id="L843" title="All 2 branches missed.">    if (isCurrentRequestXml) {</span>
+<span class="nc" id="L844">      response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/xml&quot;);</span>
+<span class="nc bnc" id="L845" title="All 2 branches missed.">    } else if (isCurrentRequestJson) {</span>
+<span class="nc" id="L846">      response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+    } else {
+<span class="nc" id="L848">      response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+    }
+<span class="nc bnc" id="L850" title="All 2 branches missed.">    if (keepAlive) {</span>
+<span class="nc" id="L851">      response.headers()</span>
+<span class="nc" id="L852">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+    }
+<span class="nc bnc" id="L854" title="All 2 branches missed.">    if (!close) {</span>
+      // There's no need to add 'Content-Length' header
+      // if this is the last response.
+<span class="nc" id="L857">      response.headers().set(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="nc" id="L858">                             String.valueOf(buf.readableBytes()));</span>
+    }
+
+<span class="nc" id="L861">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="nc bnc" id="L862" title="All 2 branches missed.">    if (cookieString != null) {</span>
+<span class="nc" id="L863">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="nc" id="L864">      boolean i18nextFound = false;</span>
+<span class="nc bnc" id="L865" title="All 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+        // Reset the cookies if necessary.
+<span class="nc bnc" id="L867" title="All 2 branches missed.">        for (final Cookie cookie : cookies) {</span>
+<span class="nc bnc" id="L868" title="All 2 branches missed.">          if (cookie.name().equalsIgnoreCase(I18NEXT)) {</span>
+<span class="nc" id="L869">            i18nextFound = true;</span>
+<span class="nc" id="L870">            cookie.setValue(lang);</span>
+<span class="nc" id="L871">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L872">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+          } else {
+<span class="nc" id="L874">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L875">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+          }
+<span class="nc" id="L877">        }</span>
+<span class="nc bnc" id="L878" title="All 2 branches missed.">        if (!i18nextFound) {</span>
+<span class="nc" id="L879">          final Cookie cookie = new DefaultCookie(I18NEXT, lang);</span>
+<span class="nc" id="L880">          response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L881">                                 ServerCookieEncoder.LAX.encode(cookie));</span>
+        }
+      }
+<span class="nc bnc" id="L884" title="All 2 branches missed.">      if (!i18nextFound) {</span>
+<span class="nc" id="L885">        final Cookie cookie = new DefaultCookie(I18NEXT, lang);</span>
+<span class="nc" id="L886">        response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L887">                               ServerCookieEncoder.LAX.encode(cookie));</span>
+      }
+    }
+
+    // Write the response.
+<span class="nc" id="L892">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+    // Close the connection after the write operation is done if necessary.
+<span class="nc bnc" id="L894" title="All 2 branches missed.">    if (close) {</span>
+<span class="nc" id="L895">      future.addListener(ChannelFutureListener.CLOSE);</span>
+    }
+<span class="nc" id="L897">  }</span>
+
+  /**
+   * Send an error and close
+   *
+   * @param ctx
+   * @param status
+   */
+  protected void sendError(ChannelHandlerContext ctx,
+                           HttpResponseStatus status) {
+<span class="nc" id="L907">    responseContent.setLength(0);</span>
+<span class="nc" id="L908">    responseContent.append(REQUEST.error.readHeader(this))</span>
+<span class="nc" id="L909">                   .append(&quot;OpenR66 Web Failure: &quot;).append(status)</span>
+<span class="nc" id="L910">                   .append(REQUEST.error.readEnd());</span>
+<span class="nc" id="L911">    final ByteBuf buf = Unpooled</span>
+<span class="nc" id="L912">        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);</span>
+<span class="nc" id="L913">    final FullHttpResponse response =</span>
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buf);
+<span class="nc" id="L915">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="nc" id="L916">                           response.content().readableBytes());</span>
+<span class="nc" id="L917">    response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+<span class="nc" id="L918">    responseContent.setLength(0);</span>
+    // Close the connection as soon as the error message is sent.
+<span class="nc" id="L920">    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);</span>
+<span class="nc" id="L921">  }</span>
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+      throws Exception {
+<span class="nc" id="L926">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
+<span class="nc" id="L927">        .getExceptionFromTrappedException(ctx.channel(), cause);</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc bnc" id="L929" title="All 2 branches missed.">      if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {</span>
+<span class="nc bnc" id="L930" title="All 2 branches missed.">        if (cause instanceof IOException) {</span>
+          // Nothing to do
+<span class="nc" id="L932">          return;</span>
+        }
+<span class="nc" id="L934">        logger.warn(&quot;Exception in HttpHandler {}&quot;, exception.getMessage());</span>
+      }
+<span class="nc bnc" id="L936" title="All 2 branches missed.">      if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L937">        sendError(ctx, HttpResponseStatus.BAD_REQUEST);</span>
+      }
+    }
+<span class="nc" id="L940">  }</span>
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+<span class="nc" id="L944">    super.channelInactive(ctx);</span>
+<span class="nc" id="L945">    logger.debug(&quot;Closed&quot;);</span>
+<span class="nc" id="L946">  }</span>
+
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+<span class="nc" id="L950">    logger.debug(&quot;Connected&quot;);</span>
+<span class="nc" id="L951">    getAuthentHttp().getAuth().specialNoSessionAuth(false,</span>
+                                                    Configuration.configuration
+<span class="nc" id="L953">                                                        .getHostId());</span>
+<span class="nc" id="L954">    super.channelActive(ctx);</span>
+<span class="nc" id="L955">    final ChannelGroup group =</span>
+<span class="nc" id="L956">        Configuration.configuration.getHttpChannelGroup();</span>
+<span class="nc bnc" id="L957" title="All 2 branches missed.">    if (group != null) {</span>
+<span class="nc" id="L958">      group.add(ctx.channel());</span>
+    }
+<span class="nc" id="L960">  }</span>
+
+  /**
+   * @return the authentHttp
+   */
+  public R66Session getAuthentHttp() {
+<span class="nc" id="L966">    return authentHttp;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

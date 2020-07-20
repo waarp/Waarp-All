@@ -34,12 +34,12 @@ import org.waarp.ftp.core.utils.FtpChannelUtils;
 /**
  * Internal shutdown command that will shutdown the FTP service with a password
  */
-<span class="nc" id="L37">public class INTERNALSHUTDOWN extends AbstractCommand {</span>
+<span class="fc" id="L37">public class INTERNALSHUTDOWN extends AbstractCommand {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L41">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L42">      WaarpLoggerFactory.getLogger(INTERNALSHUTDOWN.class);</span>
+<span class="fc" id="L41">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L42">      WaarpLoggerFactory.getLogger(INTERNALSHUTDOWN.class);</span>
 
   /**
    *
@@ -49,38 +49,38 @@ import org.waarp.ftp.core.utils.FtpChannelUtils;
 
     private final FtpConfiguration configuration;
 
-<span class="nc" id="L52">    protected ShutdownChannelFutureListener(FtpConfiguration configuration) {</span>
-<span class="nc" id="L53">      this.configuration = configuration;</span>
-<span class="nc" id="L54">    }</span>
+<span class="fc" id="L52">    protected ShutdownChannelFutureListener(FtpConfiguration configuration) {</span>
+<span class="fc" id="L53">      this.configuration = configuration;</span>
+<span class="fc" id="L54">    }</span>
 
     @Override
     public void operationComplete(ChannelFuture arg0) throws Exception {
-<span class="nc" id="L58">      WaarpSslUtility.closingSslChannel(arg0.channel());</span>
-<span class="nc" id="L59">      FtpChannelUtils.teminateServer(configuration);</span>
-<span class="nc" id="L60">    }</span>
+<span class="fc" id="L58">      WaarpSslUtility.closingSslChannel(arg0.channel());</span>
+<span class="fc" id="L59">      FtpChannelUtils.teminateServer(configuration);</span>
+<span class="fc" id="L60">    }</span>
 
   }
 
   @Override
   public void exec() throws Reply501Exception, Reply500Exception {
-<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (!getSession().getAuth().isAdmin()) {</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">    if (!getSession().getAuth().isAdmin()) {</span>
       // not admin
 <span class="nc" id="L68">      throw new Reply500Exception(&quot;Command Not Allowed&quot;);</span>
     }
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (!hasArg()) {</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (!hasArg()) {</span>
 <span class="nc" id="L71">      throw new Reply501Exception(&quot;Shutdown Need password&quot;);</span>
     }
-<span class="nc" id="L73">    final String password = getArg();</span>
-<span class="nc" id="L74">    logger.debug(&quot;{} {}&quot;, password, getConfiguration().checkPassword(password));</span>
-<span class="nc bnc" id="L75" title="All 2 branches missed.">    if (!getConfiguration().checkPassword(password)) {</span>
+<span class="fc" id="L73">    final String password = getArg();</span>
+<span class="fc" id="L74">    logger.debug(&quot;{} {}&quot;, password, getConfiguration().checkPassword(password));</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    if (!getConfiguration().checkPassword(password)) {</span>
 <span class="nc" id="L76">      throw new Reply501Exception(&quot;Shutdown Need a correct password&quot;);</span>
     }
-<span class="nc" id="L78">    logger.warn(&quot;Shutdown...&quot;);</span>
-<span class="nc" id="L79">    getSession().setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION,</span>
+<span class="fc" id="L78">    logger.warn(&quot;Shutdown...&quot;);</span>
+<span class="fc" id="L79">    getSession().setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION,</span>
                               &quot;System shutdown&quot;);
-<span class="nc" id="L81">    getSession().getNetworkHandler().writeIntermediateAnswer().addListener(</span>
-<span class="nc" id="L82">        new ShutdownChannelFutureListener(getConfiguration()));</span>
-<span class="nc" id="L83">  }</span>
+<span class="fc" id="L81">    getSession().getNetworkHandler().writeIntermediateAnswer().addListener(</span>
+<span class="fc" id="L82">        new ShutdownChannelFutureListener(getConfiguration()));</span>
+<span class="fc" id="L83">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

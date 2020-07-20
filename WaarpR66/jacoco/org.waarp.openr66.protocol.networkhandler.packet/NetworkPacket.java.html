@@ -19,11 +19,11 @@
  */
 package org.waarp.openr66.protocol.networkhandler.packet;
 
-import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
@@ -123,11 +123,11 @@ public class NetworkPacket {
 
   @Override
   public String toString() {
-<span class="fc" id="L126">    return &quot;RId: &quot; + remoteId + &quot; LId: &quot; + localId + &quot; Code: &quot; + code +</span>
-<span class="pc bpc" id="L127" title="1 of 2 branches missed.">           &quot; Length: &quot; + buffer.readableBytes() +</span>
-           (code == LocalPacketFactory.REQUESTPACKET? buffer
-<span class="pc" id="L129">               .toString(buffer.readerIndex(), buffer.readableBytes(),</span>
-                         Charsets.UTF_8) : &quot;&quot;);
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    return &quot;RId: &quot; + remoteId + &quot; LId: &quot; + localId + &quot; Code: &quot; + code +</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">           &quot; Length: &quot; + (buffer != null? (buffer.readableBytes() + (code ==</span>
+                                                                     LocalPacketFactory.REQUESTPACKET?
+<span class="pc" id="L129">        buffer.toString(buffer.readerIndex(), buffer.readableBytes(),</span>
+                        WaarpStringUtils.UTF8) : &quot;&quot;)) : &quot;no buffer&quot;);
   }
 
   public void clear() {

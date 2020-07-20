@@ -53,7 +53,7 @@ import java.util.Random;
  *
  * @since 1.7
  */
-<span class="nc" id="L56">public final class ThreadLocalRandom extends Random {</span>
+<span class="fc" id="L56">public final class ThreadLocalRandom extends Random {</span>
   // same constants as Random, but must be redeclared because private
   private static final long MULTIPLIER = 0x5DEECE66DL;
   private static final long ADDEND = 0xBL;
@@ -76,11 +76,11 @@ import java.util.Random;
   /**
    * The actual ThreadLocal
    */
-<span class="nc" id="L79">  private static final ThreadLocal&lt;ThreadLocalRandom&gt; localRandom =//NOSONAR</span>
-<span class="nc" id="L80">      new ThreadLocal&lt;ThreadLocalRandom&gt;() {</span>
+<span class="fc" id="L79">  private static final ThreadLocal&lt;ThreadLocalRandom&gt; localRandom =//NOSONAR</span>
+<span class="fc" id="L80">      new ThreadLocal&lt;ThreadLocalRandom&gt;() {</span>
         @Override
         protected ThreadLocalRandom initialValue() {
-<span class="nc" id="L83">          return new ThreadLocalRandom();</span>
+<span class="fc" id="L83">          return new ThreadLocalRandom();</span>
         }
       };//NOSONAR
 
@@ -90,7 +90,7 @@ import java.util.Random;
    * @return the current thread's {@code ThreadLocalRandom}
    */
   public static ThreadLocalRandom current() {
-<span class="nc" id="L93">    return localRandom.get();</span>
+<span class="fc" id="L93">    return localRandom.get();</span>
   }
 
   /**
@@ -103,17 +103,17 @@ import java.util.Random;
   public void setSeed(long seed) {//NOSONAR
     // We rely on the fact that the superclass no-arg constructor
     // invokes setSeed exactly once to initialize.
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (initialized) {</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">    if (initialized) {</span>
 <span class="nc" id="L107">      throw new UnsupportedOperationException();</span>
     }
-<span class="nc" id="L109">    initialized = true;</span>
-<span class="nc" id="L110">    rnd = (seed ^ MULTIPLIER) &amp; MASK;</span>
-<span class="nc" id="L111">  }</span>
+<span class="fc" id="L109">    initialized = true;</span>
+<span class="fc" id="L110">    rnd = (seed ^ MULTIPLIER) &amp; MASK;</span>
+<span class="fc" id="L111">  }</span>
 
   @Override
   protected int next(int bits) {
-<span class="nc" id="L115">    rnd = rnd * MULTIPLIER + ADDEND &amp; MASK;</span>
-<span class="nc" id="L116">    return (int) (rnd &gt;&gt;&gt; 48 - bits);</span>
+<span class="fc" id="L115">    rnd = rnd * MULTIPLIER + ADDEND &amp; MASK;</span>
+<span class="fc" id="L116">    return (int) (rnd &gt;&gt;&gt; 48 - bits);</span>
   }
 
   private static final long serialVersionUID = -5851777807851030925L;

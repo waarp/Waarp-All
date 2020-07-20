@@ -240,7 +240,7 @@ public class ServerHandler extends AbstractRestDbHandler {
 <span class="nc" id="L240">    HostDAO hostDAO = null;</span>
     try {
 <span class="nc" id="L242">      hostDAO = DAO_FACTORY.getHostDAO();</span>
-<span class="nc" id="L243">      final Host host = hostDAO.select(SERVER_NAME);</span>
+<span class="nc" id="L243">      final Host host = hostDAO.select(serverName());</span>
 <span class="nc bnc" id="L244" title="All 2 branches missed.">      host.setActive(!host.isActive());</span>
 <span class="nc" id="L245">      hostDAO.update(host);</span>
 
@@ -349,8 +349,8 @@ public class ServerHandler extends AbstractRestDbHandler {
 <span class="nc" id="L349">    RestUtils.getLocale(request);</span>
 <span class="nc" id="L350">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
 <span class="nc" id="L351">    final String filePath =</span>
-<span class="nc" id="L352">        ARCH_PATH + File.separator + SERVER_NAME + &quot;_export_&quot; + DateTime.now() +</span>
-        &quot;.xml&quot;;
+<span class="nc" id="L352">        ARCH_PATH + File.separator + serverName() + &quot;_export_&quot; +</span>
+<span class="nc" id="L353">        DateTime.now() + &quot;.xml&quot;;</span>
 
 <span class="nc" id="L355">    boolean purge = false;</span>
 <span class="nc" id="L356">    boolean clean = false;</span>
@@ -532,15 +532,15 @@ public class ServerHandler extends AbstractRestDbHandler {
     }
 
 <span class="nc" id="L534">    final String hostsFilePath =</span>
-        CONFIGS_PATH + File.separator + SERVER_NAME + &quot;_hosts.xml&quot;;
+<span class="nc" id="L535">        CONFIGS_PATH + File.separator + serverName() + &quot;_hosts.xml&quot;;</span>
 <span class="nc" id="L536">    final String rulesFilePath =</span>
-        CONFIGS_PATH + File.separator + SERVER_NAME + &quot;_rules.xml&quot;;
+<span class="nc" id="L537">        CONFIGS_PATH + File.separator + serverName() + &quot;_rules.xml&quot;;</span>
 <span class="nc" id="L538">    final String businessFilePath =</span>
-        CONFIGS_PATH + File.separator + SERVER_NAME + &quot;_business.xml&quot;;
+<span class="nc" id="L539">        CONFIGS_PATH + File.separator + serverName() + &quot;_business.xml&quot;;</span>
 <span class="nc" id="L540">    final String aliasFilePath =</span>
-        CONFIGS_PATH + File.separator + SERVER_NAME + &quot;_aliases.xml&quot;;
+<span class="nc" id="L541">        CONFIGS_PATH + File.separator + serverName() + &quot;_aliases.xml&quot;;</span>
 <span class="nc" id="L542">    final String rolesFilePath =</span>
-        CONFIGS_PATH + File.separator + SERVER_NAME + &quot;_roles.xml&quot;;
+<span class="nc" id="L543">        CONFIGS_PATH + File.separator + serverName() + &quot;_roles.xml&quot;;</span>
 
 <span class="nc" id="L545">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
 
@@ -565,7 +565,7 @@ public class ServerHandler extends AbstractRestDbHandler {
 <span class="nc" id="L565">        responseObject.put(&quot;fileRule&quot;, rulesFilePath);</span>
       }
 <span class="nc" id="L567">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="nc" id="L568">      final Business businessEntry = businessDAO.select(SERVER_NAME);</span>
+<span class="nc" id="L568">      final Business businessEntry = businessDAO.select(serverName());</span>
 <span class="nc bnc" id="L569" title="All 2 branches missed.">      if (business) {</span>
 <span class="nc" id="L570">        final String businessXML = businessEntry.getBusiness();</span>
 
@@ -744,7 +744,7 @@ public class ServerHandler extends AbstractRestDbHandler {
 
 <span class="nc" id="L745">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
 <span class="nc bnc" id="L746" title="All 2 branches missed.">      if (purgeBusiness) {</span>
-<span class="nc" id="L747">        final Business business = businessDAO.select(SERVER_NAME);</span>
+<span class="nc" id="L747">        final Business business = businessDAO.select(serverName());</span>
 
 <span class="nc" id="L749">        final String new_business = XmlUtils.loadXML(businessFile);</span>
 <span class="nc" id="L750">        business.setBusiness(new_business);</span>
@@ -752,13 +752,13 @@ public class ServerHandler extends AbstractRestDbHandler {
 <span class="nc" id="L752">        responseObject.put(&quot;purgedBusiness&quot;, TRUE.toString());</span>
       }
 <span class="nc bnc" id="L754" title="All 2 branches missed.">      if (purgeAlias) {</span>
-<span class="nc" id="L755">        final Business business = businessDAO.select(SERVER_NAME);</span>
+<span class="nc" id="L755">        final Business business = businessDAO.select(serverName());</span>
 <span class="nc" id="L756">        business.setAliases(XmlUtils.loadXML(aliasFile));</span>
 <span class="nc" id="L757">        businessDAO.update(business);</span>
 <span class="nc" id="L758">        responseObject.put(&quot;purgedAlias&quot;, TRUE.toString());</span>
       }
 <span class="nc bnc" id="L760" title="All 2 branches missed.">      if (purgeRole) {</span>
-<span class="nc" id="L761">        final Business business = businessDAO.select(SERVER_NAME);</span>
+<span class="nc" id="L761">        final Business business = businessDAO.select(serverName());</span>
 <span class="nc" id="L762">        business.setRoles(XmlUtils.loadXML(roleFile));</span>
 <span class="nc" id="L763">        businessDAO.update(business);</span>
 <span class="nc" id="L764">        responseObject.put(&quot;purgedRoles&quot;, TRUE.toString());</span>
