@@ -938,6 +938,10 @@ Tâches exécutant un transfert
 TRANSFER
 """"""""
 
+.. versionadded:: 3.4.0
+   
+   option ``-nofollow``
+
 Soumet un nouveau transfert basé sur des arguments ``Path`` et ``Transfer Information``.
 
 - Une fois le ``Path`` transformé selon les remplacements dynamiques, il est utilisé comme

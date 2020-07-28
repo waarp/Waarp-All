@@ -3,6 +3,8 @@
 Configuration de la tâche ICAP
 ##############################
 
+.. versionadded:: 3.4.0
+
 .. seealso::
 
   La documentation de la tâche ``ICAP`` est disponible
@@ -12,9 +14,9 @@ Configuration de la tâche ICAP
 Mode opératoire préconisé pour l'installation et la configuration
 -----------------------------------------------------------------
 
-La commande ``IcapScanFile`` est disponible
-(``java -classpath WaarpR66-3.4.0-jar-with-dependencies.jar org.waarp.icap.IcapScanFile``)
-en mode ligne de commande afin de valider le bon fonctionnement avec le serveur ICAP cible.
+La commande ``icaptest`` est disponible en tant que sous commande du script
+:any:`waarp-r66client` afin de valider le bon fonctionnement avec le serveur
+ICAP cible.
 
 Prérequis :
 """""""""""
@@ -32,54 +34,59 @@ Etape 1 : Permettre la connexion et l'envoi d'un fichier sain (nommé fichier)
 
 La commande sera de la forme :
 
-::
+.. code-block:: sh
 
-   java -classpath WaarpR66-3.4.0-jar-with-dependencies.jar \
-    org.waarp.icap.IcapScanFile -file fichier \
-    -to hosticap [-port porticap] \
-    (-service nom | -model nom) -logger DEBUG
+   ./bin/waarp-r66client.sh HOSTID -file fichier \
+         -to hosticap [-port porticap] \
+         (-service nom | -model nom) -logger DEBUG
 
-Cette commande va réaliser une requête OPTIONS puis RESPMOD avec le serveur pour le service nommé (ou selon
-le modèle choisi) et afficher toutes les étapes en mode DEBUG.
+Cette commande va réaliser une requête OPTIONS puis ``RESPMOD`` avec le serveur
+pour le service nommé (ou selon le modèle choisi) et afficher toutes les étapes
+en mode ``DEBUG``.
 
-Si le retour est 0 (sans erreur), il n'y a a priori pas d'autres options à positionner pour un cas sain.
+Si le retour est 0 (sans erreur), il n'y a a priori pas d'autres options à
+positionner pour un cas sain.
 
 Si le retour est en erreur, il faut analyser le code erreur et le log produit.
 
-- code 1: Bad arguments ; Veuillez vérifier vos paramètres car il s'agit d'une erreur dans la ligne de
-  commande
-- code 2: ICAP protocol error ; Le serveur a mal répondu aux requêtes (le protocole ICAP est sans doute a
-  adapter côté client, si possible)
-- code 3: Network error ; Il s'agit d'un problème purement réseau (un parefeu peut bloquer le flux par
-  exemple)
-- code 4: Scan KO ; Soit le serveur ou le service est mal configuré, soit il faut adapter le client au code
-  retourné par le serveur
-- code 5: Scan KO but post action required in error ; En l'état, sauf si vous avez spécifié une des options
-  concernées (``-errorMove path`` | ``-errorDelete`` | ``-sendOnError``), cette erreur ne devrait jamais
+- code 1: Bad arguments ; Veuillez vérifier vos paramètres car il s'agit d'une
+  erreur dans la ligne de commande
+- code 2: ICAP protocol error ; Le serveur a mal répondu aux requêtes (le
+  protocole ICAP est sans doute a adapter côté client, si possible)
+- code 3: Network error ; Il s'agit d'un problème purement réseau (un parefeu
+  peut bloquer le flux par exemple)
+- code 4: Scan KO ; Soit le serveur ou le service est mal configuré, soit il
+  faut adapter le client au code retourné par le serveur
+- code 5: Scan KO but post action required in error ; En l'état, sauf si vous
+  avez spécifié une des options concernées (``-errorMove path`` |
+  ``-errorDelete`` | ``-sendOnError``), cette erreur ne devrait jamais
   apparaître à cette étape du test
 
-Dans les cas 2 et 4, il faut analyser ce que reçoit le client du serveur ICAP et le cas échéant adapter les
-modalités de traitement du client en fonction de ces retours.
+Dans les cas 2 et 4, il faut analyser ce que reçoit le client du serveur ICAP et
+le cas échéant adapter les modalités de traitement du client en fonction de ces
+retours.
 
 Cela peut concerner les tailles limites :
 
-* [``-previewSize size``, défaut aucun] spécifie la taille de Preview à utiliser (défaut négociée)
-* [``-blockSize size``, défaut 8192] spécifie la taille en émission à utiliser (défaut 8192)
-* [``-receiveSize size``, défaut 65536] spécifie la taille en réception à utiliser (défaut
-  65536)
-* [``-maxSize size``, défaut MAX_INTEGER] spécifie la taille Max d'un fichier à utiliser (défaut
-  MAX_INTEGER)
+* [``-previewSize size``, défaut aucun] spécifie la taille de Preview à utiliser
+  (défaut négociée)
+* [``-blockSize size``, défaut 8192] spécifie la taille en émission à utiliser
+  (défaut 8192)
+* [``-receiveSize size``, défaut 65536] spécifie la taille en réception à
+  utiliser (défaut 65536)
+* [``-maxSize size``, défaut MAX_INTEGER] spécifie la taille Max d'un fichier à
+  utiliser (défaut MAX_INTEGER)
 
 Cela peut concerner les valeurs de statut et les retours associés :
 
-* [``-keyPreview key -stringPreview string``, défaut aucun] spécifie la clef et la chaîne associée pour
-  Options à valider (défaut aucun)
-* [``-key204 key -string204 string``, défaut aucun] spécifie la clef et la chaîne associée pour 204 ICAP
-  à valider (défaut aucun)
-* [``-key200 key -string200 string``, défaut aucun] spécifie la clef et la chaîne associée pour 200 ICAP
-  à valider (défaut aucun)
-* [``-stringHttp string``, défaut aucun] spécifie la chaîne pour HTTP 200 ICAP à valider
-  (défaut aucun)
+* [``-keyPreview key -stringPreview string``, défaut aucun] spécifie la clef et
+  la chaîne associée pour Options à valider (défaut aucun)
+* [``-key204 key -string204 string``, défaut aucun] spécifie la clef et la
+  chaîne associée pour 204 ICAP à valider (défaut aucun)
+* [``-key200 key -string200 string``, défaut aucun] spécifie la clef et la
+  chaîne associée pour 200 ICAP à valider (défaut aucun)
+* [``-stringHttp string``, défaut aucun] spécifie la chaîne pour HTTP 200 ICAP à
+  valider (défaut aucun)
 
 Pour rappel, la norme ICAP indique :
 
@@ -107,36 +114,35 @@ Etape 2 : Permettre la connexion et l'envoi d'un fichier malsain de test
 Si vous ne disposez pas d'un tel fichier, vous pouvez spécifier un test interne basé sur EICAR en précisant
 l'option ``-file EICARTEST``.
 
-::
+.. code-block:: sh
 
-   java -classpath \
-    WaarpR66-3.4.0-jar-with-dependencies.jar \
-    org.waarp.icap.IcapScanFile -file EICARTEST \
-    -to hosticap [-port porticap] \
-    (-service nom | -model nom) -logger DEBUG
+   ./bin/waarp-r66client.sh HOSTID -file fichier EICARTEST \
+           -to hosticap [-port porticap] \
+          (-service nom | -model nom) -logger DEBUG
 
-Veillez à conserver les options que vous avez introduites dans l'étape 1, y compris celles correctives.
+Veillez à conserver les options que vous avez introduites dans l'étape 1, y
+compris celles correctives.
 
 Normalement, le retour devrait être de la valeur 4 (Scan KO).
 
 Si tel n'est pas le cas, il faut à nouveau analyser les logs et le retour.
 
-Par exemple, si le retour est 204, il est possible qu'une clef ICAP dise autrement
-(``-key204``/``-string204``).
+Par exemple, si le retour est 204, il est possible qu'une clef ICAP dise
+autrement (``-key204``/``-string204``).
 
-Si le code était déjà 200 pour un fichier sain, il est possible qu'il faille modifier les options
-précédemment mises en place pour fonctionner tant avec un fichier sain qu'un fichier malsain
-(``-key200``/``-string200`` et/ou ``-stringHttp``).
+Si le code était déjà 200 pour un fichier sain, il est possible qu'il faille
+modifier les options précédemment mises en place pour fonctionner tant avec un
+fichier sain qu'un fichier malsain (``-key200``/``-string200`` et/ou
+``-stringHttp``).
 
 
 Etape 3 : Configurer une règle pour utiliser ces paramètres
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-Il s'agit maintenant de créer ou modifier une règle pour y ajouter une tâche ICAP avec les paramètres
-valides pour votre configuration.
+Il s'agit maintenant de créer ou modifier une règle pour y ajouter une tâche
+ICAP avec les paramètres valides pour votre configuration.
 
 Par exemple :
-
 
 .. code-block:: xml
 
@@ -148,7 +154,8 @@ Par exemple :
     <delay>10000</delay>
   </task>
 
-Puis de tester, en mode DEBUG, l'exécution de cette règle suite à un transfert l'utilisant.
+Puis de tester, en mode DEBUG, l'exécution de cette règle suite à un transfert
+l'utilisant.
 
 .. seealso::
 
@@ -157,9 +164,11 @@ Puis de tester, en mode DEBUG, l'exécution de cette règle suite à un transfer
 Options spécifiques
 """""""""""""""""""
 
-Ces options sont plus spécifiques au traitement comme tâche dans R66. Elles permettent de gérer les cas
-d'erreurs, en assurant ce que devient le fichier (déplacé, effacer ou renvoyer vers un autre serveur) ou en
-ignorant des comportements réseaux instables (sur une erreur réseau) ou en ignorant les trop gros fichiers.
+Ces options sont plus spécifiques au traitement comme tâche dans R66. Elles
+permettent de gérer les cas d'erreurs, en assurant ce que devient le fichier
+(déplacé, effacer ou renvoyer vers un autre serveur) ou en ignorant des
+comportements réseaux instables (sur une erreur réseau) ou en ignorant les trop
+gros fichiers.
 
 * [``-errorMove path`` | ``-errorDelete`` | ``-sendOnError``] spécifie l'action
   en cas de scan erronné : un répertoire de quarantaine, l'effacement du
