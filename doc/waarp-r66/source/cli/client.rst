@@ -84,6 +84,13 @@ Cette commande accepte les arguments suivants :
 
    Loggue les messages INFO avec un niveau INFO
 
+.. option:: -nofollow
+
+   .. versionadded:: 3.4.0
+
+   Désactive l'assignation d'un identifiant de suivi de transfert pour ce
+   fichier
+
 
 Codes de retour :
 
@@ -171,6 +178,13 @@ Cette commande accepte les arguments suivants :
    partir de l'exécution de la commande après lequel le transfert doit
    démarrer
 
+.. option:: -nofollow
+
+   .. versionadded:: 3.4.0
+
+   Désactive l'assignation d'un identifiant de suivi de transfert pour ce
+   fichier
+
 Codes de retour :
 
 ====== =============
@@ -250,6 +264,13 @@ Cette commande accepte les arguments suivants :
 .. option:: -notlogWarn
 
    Loggue les messages INFO avec un niveau INFO
+
+.. option:: -nofollow
+
+   .. versionadded:: 3.4.0
+
+   Désactive l'assignation d'un identifiant de suivi de transfert pour ce
+   fichier
 
 
 Codes de retour :
@@ -349,6 +370,13 @@ Cette commande accepte les arguments suivants :
    Si une valeur de la forme +NNN est fournie, délais en seconde à
    partir de l'exécution de la commande après lequel le transfert doit
    démarrer
+
+.. option:: -nofollow
+
+   .. versionadded:: 3.4.0
+
+   Désactive l'assignation d'un identifiant de suivi de transfert pour ce
+   fichier
 
 Codes de retour :
 
@@ -478,8 +506,6 @@ Cette commande permet d'obtenir sur les fichiers disponibles sur un
 partenaire distant.
 
 Elle accepte les arguments suivants :
-
-::
 
 .. option:: -to PARTNER
 
@@ -769,6 +795,152 @@ Code   Signification
 ``10`` Le serveur WaarpR66 associé au client n'est pas trouvé
 ``20`` Warning
 ``N``  Les autres codes de sortie correspondent à une erreur de transfert. Il s'agit de la valeur numérique du :ref:`code d'erreur <error-codes>`
+====== =============
+
+
+Commande ``waarp-r66client icaptest``
+-------------------------------------
+
+.. program:: waarp-r66client icaptest
+
+.. versionadded:: 3.4.0
+
+Cette commande permet de tester les arguments d'une tâche ICAP en envoyant un
+fichier local à un serveur ICAP.
+
+Cette commande accepte les arguments suivants :
+
+.. option:: -file FILENAME
+
+   :Obligatoire:
+
+   Spécifie le chemin du fichier à envoyer au serveur ICAP. 
+
+   Si la valeur donnée est ``EICARTEST``, un faux virus basé sur le test EICAR
+   sera envoyé).
+
+.. option:: -to HOST
+
+   :Obligatoire:
+
+   L'adresse du serveur ICAP.
+
+.. option:: -port PORT
+
+   Le port du serveur ICAP.
+
+.. option:: -service SERVICE
+
+   *Au moins l'un des arguments ``-service`` ou ``-model`` doit être donné*
+
+   Le nom du service à utiliser sur le serveur distant.
+
+.. option:: -model MODEL
+
+   *Au moins l'un des arguments ``-service`` ou ``-model`` doit être donné*
+
+   Le Modèle de service à utiliser pour le serveur distant.
+
+.. option:: -maxSize SIZE
+
+   :Défaut: 2147483647
+
+   La taille maximale du fichier à envoyer. Si le fichier donné à l'option
+   ``-file`` a une taille supérieure à cette valeur, rien ne sera transmis au
+   serveur.
+
+.. option:: -previewSize SIZE
+
+   :Défaut: Négocié avec le serveur
+
+   La taille de *preview* à utiliser.
+
+.. option:: -blockSize SIZE
+
+   :Défaut: 8192
+
+   Spécifie la taille de bloc utilisée.
+
+.. option:: -receiveSize SIZE
+
+   :Défaut: 65536
+
+   Spécifie la taille à recevoir
+
+.. option:: -timeout DURATION
+
+   Délais d'attente de réponse (en ms).
+
+.. option:: -keyPreview
+
+   Spécifie la clef à chercher dans la réponse d'un *preview* pour valider le
+   fichier.
+
+.. option:: -stringPreview
+
+   Spécifie la valeur associée à la clef ``-keyPreview`` à chercher dans la
+   réponse pour valider le fichier.
+
+.. option:: -key204
+
+   Spécifie la clef à chercher dans une réponse 204 du serveur pour valider le
+   fichier.
+
+.. option:: -string204
+
+   Spécifie la valeur associée à la clef ``-key204`` à chercher dans une
+   réponse 204 du serveur pour valider le fichier.
+
+.. option:: -key200
+
+   Spécifie la clef à chercher dans une réponse 200 du serveur pour valider le
+   fichier.
+
+.. option:: -string200
+
+   Spécifie la valeur associée à la clef ``-key200`` à chercher dans une
+   réponse 200 du serveur pour valider le fichier.
+
+.. option:: -stringHttp
+
+   Spécifie une valeur à rechercher dans le statut d'une réponse 200 du serveur
+   pour valider le fichier.
+
+.. option:: -errorDelete
+
+   Supprime les fichiers considérés invalides
+
+.. option:: -errorMove PATH
+
+   Déplace les fichiers considérés invalides dans le dossier spécifié 
+
+.. option:: -sendOnError
+
+   Retransfère les fichiers considérés comme invalides avec R66. Les arguments
+   de lancement du transfert doivent arriver à la fin de la commande, précédés
+   du marqueur ``--``.
+
+.. option:: -ignoreNetworkError
+
+   Ignore les erreurs réseau lors de l'envoi de la requête vers le serveur ICAP.
+   Si une se produit, le fichier est considéré comme valide.
+
+.. option:: -logger LEVEL
+
+   Spécifie le niveau de logs. Les valeurs possibles sont ``DEBUG``, ``INFO``,
+   ``WARN`` et ``ERROR``.
+
+Codes de retour :
+
+====== =============
+Code   Signification
+====== =============
+0      Le fichier est valide
+1      Mauvais arguments dans la ligne de commande
+2      Erreur de protocole ICAP
+3      Erreur réseau
+4      Le fichier est invalide
+5      Le fichier est invalide, et une erreur s'est produite durant les post-traitements
 ====== =============
 
 

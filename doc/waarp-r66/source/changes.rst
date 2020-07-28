@@ -11,7 +11,7 @@ Waarp R66 3.4.0 (2020-07-17)
 ============================
 
 Nouvelles fonctionnalités
-=========================
+-------------------------
 
 - [`#49 <https://github.com/waarp/Waarp-All/pull/49>`__]
   Pour les transferts, une nouvelle fonctionnalité permet de gérer le suivi
@@ -40,10 +40,12 @@ Nouvelles fonctionnalités
   un serveur répondant à la norme RFC 3507 dite ``ICAP``.
   Elle permet de transférer le contenu du fichier vers un service ICAP via une
   commande ``RESPMOD`` et d'obtenir la validation de ce fichier par le service
-  (status ``204``).
+  (statut ``204``).
+- Packaging : ajout de la commande ``icaptest`` aux scripts ``waarp-r66client``
+  pour tester les paramètres ICAP
 
 Évolutions
-==========
+----------
 
 - [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] Les valeurs par défaut
   des limitations de bande passante ont changées : La limitation globale par
@@ -55,7 +57,7 @@ Nouvelles fonctionnalités
   configuration).
 
 Correctifs
-==========
+----------
 
 - [`#50 <https://github.com/waarp/Waarp-All/pull/50>`__]
   Le log géré par LogBack génère parfois des logs au démarrage d'information
@@ -68,7 +70,8 @@ Correctifs
   <statusListener
     class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
 
-
+- Packaging : les modèles de configuration intègrent le nouveau
+  ``StatusListener`` dans la configuration des logs
 - [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__]
   Diminution de l'empreinte mémoire pour le cas des clients simples et diminution
   de la mémoire côté serveur pour les parties Web et REST.
@@ -80,25 +83,20 @@ Correctifs
   correcte du filtrage par expression régulière dans le *file watcher* (il
   était impossible de filtrer juste sur le nom d'un fichier situé dans un
   sous-dossier).
-- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] Les valeurs par défaut
-  des limitations de bande passante ont changées : La limitation globale par
-  défaut est maintenant de 100Gbps, et celle par connexion est de 1Gbps (ces
-  valeurs peuvent être ajustées dans les fichiers de configuration).
-- [`#51 <https://github.com/waarp/Waarp-All/pull/51>`__] La valeur par défaut
-  de la RAM maximale utilisée par les services WEB et REST a été abaissée à 1Go
-  (au lieu de 4Go) (cette valeur peut être ajustée dans les fichiers de
-  configuration).
 - [`#57 <https://github.com/waarp/Waarp-All/pull/57>`__] Certaines commandes
   ne fonctionnaient plus suite à un bug sur les logs.
   (issue [`#56 <https://github.com/waarp/Waarp-All/issues/56>`__])
 - Mise à jour des dépendances
+- Packaging : les scripts ``waarp-r66server`` utilisaient la configuration
+  client pour certaines sous-commandes
+- Packaging : Arrêt des serveurs avec le signal ``HUP`` plutôt que ``INT``
 
 
 Waarp R66 3.3.4 (2020-06-02)
 ============================
 
 Correctifs
-==========
+----------
 
 - [`#31 <https://github.com/waarp/Waarp-All/pull/31>`__]
   Corrige la régression sur la sélection d'un transfert à partir de son ID
@@ -128,7 +126,7 @@ Waarp R66 3.3.3 (2020-05-07)
 ============================
 
 Correctifs
-==========
+----------
 
 - [`#20 <https://github.com/waarp/Waarp-All/pull/20>`__] Corrige l'affichage
   d'un transfert dont la règle n'existe plus dans l'interface
@@ -155,7 +153,7 @@ Waarp R66 3.3.2 (2020-04-21)
 ============================
 
 Correctifs
-==========
+----------
 
 - Corrige les tests Rest V1
 - Corrige des méthodes manquantes dans le module WaarpHttp
@@ -175,7 +173,7 @@ Waarp R66 3.3.1 (2020-02-17)
 ============================
 
 Correctifs
-==========
+----------
 
 - [`#13 <https://github.com/waarp/Waarp-All/pull/13>`__] Corrige l'oubli du
   module WaarpPassword dans les autres modules dans les packages
