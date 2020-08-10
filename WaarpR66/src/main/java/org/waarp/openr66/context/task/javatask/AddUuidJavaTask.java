@@ -87,9 +87,6 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
                      Matcher.quoteReplacement(uuid.toString()));
     }
     session.getRunner().setFileInformation(fileInfo);
-    session.getRunner().setTransferInfo(session.getRunner().getTransferInfo()
-                                               .replaceAll(sUUID,
-                                                           uuid.toString()));
     session.getRunner().addToTransferMap("uuid", uuid.toString());
     try {
       session.getRunner().update();

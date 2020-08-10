@@ -178,6 +178,39 @@ public class StringUtilsTest {
     voidOS.write(buffer, 0, buffer.length);
     voidOS.flush();
     voidOS.close();
+  }
 
+  @Test
+  public void testStringForHtml() {
+    String test = "[{\"@model\":\"DbTaskRunner\"," +
+                  "\"SPECIALID\":\"-9223372036854775807\"," +
+                  "\"RETRIEVEMODE\":true,\"IDRULE\":\"loop\",\"MODETRANS\":3," +
+                  "\"FILENAME\":\"/out/hello524288000\"," +
+                  "\"ORIGINALNAME\":\"/out/hello524288000\"," +
+                  "\"FILEINFO\":\"Test Loop Send\",\"ISMOVED\":false," +
+                  "\"BLOCKSZ\":65536,\"OWNERREQ\":\"server1\"," +
+                  "\"REQUESTER\":\"server1\",\"REQUESTED\":\"server2\"," +
+                  "\"TRANSFERINFO\":\"{\\\"ORIGINALSIZE\\\":524288000}\"," +
+                  "\"GLOBALSTEP\":2,\"GLOBALLASTSTEP\":2,\"STEP\":0," +
+                  "\"STEPSTATUS\":\"z  \",\"INFOSTATUS\":\"B  \"," +
+                  "\"RANK\":5040,\"STARTTRANS\":1598554054886," +
+                  "\"STOPTRANS\":1598554064796,\"UPDATEDINFO\":5," +
+                  "\"ORIGINALSIZE\":-1,\"Running\":true}]";
+    String format = WaarpStringUtils.cleanJsonForHtml(test);
+    String expected = "[{\"@model\":\"DbTaskRunner\"," +
+                      "\"SPECIALID\":\"-9223372036854775807\"," +
+                      "\"RETRIEVEMODE\":true,\"IDRULE\":\"loop\"," +
+                      "\"MODETRANS\":3,\"FILENAME\":\"/out/hello524288000\"," +
+                      "\"ORIGINALNAME\":\"/out/hello524288000\"," +
+                      "\"FILEINFO\":\"Test Loop Send\",\"ISMOVED\":false," +
+                      "\"BLOCKSZ\":65536,\"OWNERREQ\":\"server1\"," +
+                      "\"REQUESTER\":\"server1\",\"REQUESTED\":\"server2\"," +
+                      "\"TRANSFERINFO\":\"{\\\"ORIGINALSIZE\\\":524288000}\"," +
+                      "\"GLOBALSTEP\":2,\"GLOBALLASTSTEP\":2,\"STEP\":0," +
+                      "\"STEPSTATUS\":\"z  \",\"INFOSTATUS\":\"B  \"," +
+                      "\"RANK\":5040,\"STARTTRANS\":1598554054886," +
+                      "\"STOPTRANS\":1598554064796,\"UPDATEDINFO\":5," +
+                      "\"ORIGINALSIZE\":-1,\"Running\":true}]";
+    assertEquals(expected, format);
   }
 }

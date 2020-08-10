@@ -285,7 +285,7 @@ public final class WaarpStringUtils {
   }
 
   /**
-   * Clean the String that could contain '\' or '\n', '\r' into something
+   * Clean the String that could contain '\n' or '\r' into something
    * compatible with HTML
    *
    * @param json
@@ -294,7 +294,7 @@ public final class WaarpStringUtils {
    */
   public static String cleanJsonForHtml(String json) {
     return json.replaceAll("([^\\\\])\\\\n", "$1")
-               .replaceAll("([^\\\\])\\\\r", "$1")
-               .replaceAll("([^\\\\])\\\\\"", "$1").replace("\\\\", "\\\\\\\\");
+               .replaceAll("([^\\\\])\\\\r", "$1");
+    // Was replace("\\\\", "\\\\\\\\")
   }
 }

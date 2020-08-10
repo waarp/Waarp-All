@@ -829,7 +829,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       preparedStatement.realClose();
     }
     // \n is not correctly parsed within HTML so put double \\n in fine
-    return WaarpStringUtils.cleanJsonForHtml(arrayNode.toString());
+    return WaarpStringUtils
+        .cleanJsonForHtml(JsonHandler.writeAsString(arrayNode));
   }
 
   private ObjectNode getInternalJson() {
@@ -875,9 +876,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    */
   public String getJsonAsString() {
     final ObjectNode node = getInternalJson();
-    return JsonHandler.writeAsString(node).replaceAll("([^\\\\])\\\\n", "$1")
-                      .replaceAll("([^\\\\])\\\\r", "$1")
-                      .replace("\\\\", "\\\\\\\\");
+    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(node));
   }
 
   /**
