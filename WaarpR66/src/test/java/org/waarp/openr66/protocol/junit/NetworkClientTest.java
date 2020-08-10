@@ -903,6 +903,43 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
+  public void test5_DirectTransferWrongExecOutput() throws Exception {
+    File commandLine = new File("/tmp/R66/conf/bin/wrong-exec.sh");
+    if (!commandLine.setExecutable(true)) {
+      logger.warn("Cannot set executable property to {}", commandLine);
+      return;
+    }
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransfer");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt", "rulewrongexec",
+                             "Test SendDirect Small", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    Thread.sleep(5000);
+    totest.delete();
+    Thread.sleep(3000);
+    assertEquals("Success should be 0", 0, success);
+    assertEquals("Errors should be 1", 1, error);
+  }
+
+  @Test
   public void test5_DirectTransferWrongHost() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     final R66Future future = new R66Future(true);

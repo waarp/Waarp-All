@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
 /**
  * Execute an external command
  * <p>
- * It provides some common functionnalities.
+ * It provides some common functionalities.
  */
 public abstract class AbstractExecTask extends AbstractTask {
   /**

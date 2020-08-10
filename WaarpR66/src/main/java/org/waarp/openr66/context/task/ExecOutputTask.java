@@ -117,14 +117,13 @@ public class ExecOutputTask extends AbstractExecTask {
     ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
 
     final AllLineReader allLineReader = new AllLineReader(inputStream);
-    final Thread thread = new Thread(allLineReader, "ExecRename" +
-                                                    session.getRunner()
-                                                           .getSpecialId());
-    thread.setDaemon(true);
-    Configuration.configuration.getExecutorService().execute(thread);
+    allLineReader.setName("ExecRename" + session.getRunner().getSpecialId());
+    allLineReader.setDaemon(true);
+    Configuration.configuration.getExecutorService().execute(allLineReader);
     ExecuteCommand executeCommand =
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
-                           outputStream, pumpStreamHandler, thread).invoke();
+                           outputStream, pumpStreamHandler, allLineReader)
+            .invoke();
     if (executeCommand.isError()) {
       return;
     }

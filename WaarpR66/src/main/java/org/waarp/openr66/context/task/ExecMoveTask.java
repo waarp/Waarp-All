@@ -107,14 +107,13 @@ public class ExecMoveTask extends AbstractExecTask {
         prepareCommandExec.getPumpStreamHandler();
     ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
     final LastLineReader lastLineReader = new LastLineReader(inputStream);
-    final Thread thread = new Thread(lastLineReader, "ExecRename" +
-                                                     session.getRunner()
-                                                            .getSpecialId());
-    thread.setDaemon(true);
-    Configuration.configuration.getExecutorService().execute(thread);
+    lastLineReader.setName("ExecRename" + session.getRunner().getSpecialId());
+    lastLineReader.setDaemon(true);
+    Configuration.configuration.getExecutorService().execute(lastLineReader);
     ExecuteCommand executeCommand =
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
-                           outputStream, pumpStreamHandler, thread).invoke();
+                           outputStream, pumpStreamHandler, lastLineReader)
+            .invoke();
     if (executeCommand.isError()) {
       return;
     }

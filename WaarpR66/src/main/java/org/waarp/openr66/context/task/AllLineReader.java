@@ -30,7 +30,7 @@ import java.io.PipedInputStream;
  * This class is used with external process in order to get the All echo from
  * the stdout of the process.
  */
-class AllLineReader implements Runnable {
+class AllLineReader extends Thread {
   private final BufferedReader reader;
   /**
    * This will be the result at the end
