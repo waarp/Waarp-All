@@ -505,7 +505,7 @@ public class FileMonitorTest {
       throws Exception {
     WaarpLoggerFactory.setLogLevel(WaarpLogLevel.WARN);
     logger.warn("Start test ignoreAlreadyUsed={} regex={} recursive={}",
-        ignoreAlreadyUsed, regex, recursive);
+                ignoreAlreadyUsed, regex, recursive);
     final File statusFile = new File("/tmp/status.txt");
     final File stopFile = new File("/tmp/stop.txt");
     final File directory = new File("/tmp/monitor");
@@ -517,7 +517,8 @@ public class FileMonitorTest {
     final File fileTest3 = new File(directory2, "test.txt");
     final File fileTest4 = new File(directory2, "test.csv");
 
-    final Set<String> filesSeen = Collections.synchronizedSet(new HashSet<String>());
+    final Set<String> filesSeen =
+        Collections.synchronizedSet(new HashSet<String>());
 
     final AtomicInteger countNew = new AtomicInteger();
     final FileMonitorCommandRunnableFuture commandValidFile =
@@ -558,8 +559,9 @@ public class FileMonitorTest {
         };
     final FileMonitor fileMonitor =
         new FileMonitor("testDaemon", statusFile, stopFile, directory, null,
-                        SMALL_WAIT, new RegexFileFilter(regex), recursive, commandValidFile,
-                        commandRemovedFile, commandCheckIteration);
+                        SMALL_WAIT, new RegexFileFilter(regex), recursive,
+                        commandValidFile, commandRemovedFile,
+                        commandCheckIteration);
     fileMonitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
     commandValidFile.setMonitor(fileMonitor);
     fileMonitor.setCheckDelay(-1);
