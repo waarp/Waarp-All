@@ -117,7 +117,8 @@ public class ExecOutputTask extends AbstractExecTask {
     ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
 
     final AllLineReader allLineReader = new AllLineReader(inputStream);
-    allLineReader.setName("LastLineReader" + session.getRunner().getSpecialId());
+    allLineReader
+        .setName("LastLineReader" + session.getRunner().getSpecialId());
     allLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(allLineReader);
     ExecuteCommand executeCommand =

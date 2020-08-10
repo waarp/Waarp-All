@@ -2313,7 +2313,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public static Map<String, Object> getMapFromString(String smap) {
     Pattern pattern = Pattern.compile("\\{[^\\}]*\\}");
-    Matcher matcher = pattern.matcher(smap);
+    Matcher matcher = pattern.matcher(JsonHandler.unEscape(smap));
     StringBuilder map = new StringBuilder("{");
     while (matcher.find()) {
       String temp = matcher.group(0);
@@ -2354,17 +2354,26 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param map the Map to add as Json string to transferInformation
    */
   public void setTransferMap(Map<String, Object> map) {
-    pojo.setTransferInfo(
-        getOtherInfoOutOfMap().trim() + " " + JsonHandler.writeAsString(map));
+    String noMap = getOtherInfoOutOfMap().trim();
+    internalSetNoMapMap(map, noMap);
+  }
+
+  private void internalSetNoMapMap(final Map<String, Object> map,
+                                   final String noMap) {
+    if (noMap.isEmpty()) {
+      pojo.setTransferInfo(JsonHandler.writeAsStringEscaped(map));
+    } else {
+      pojo.setTransferInfo(noMap + " " + JsonHandler.writeAsStringEscaped(map));
+    }
   }
 
   /**
    * @param transferInfo the transfer Information to set
    */
   public void setTransferInfo(String transferInfo) {
-    pojo.setTransferInfo(getOutOfMapFromString(transferInfo).trim() + " " +
-                         JsonHandler
-                             .writeAsString(getMapFromString(transferInfo)));
+    String noMap = getOutOfMapFromString(transferInfo).trim();
+    Map<String, Object> map = getMapFromString(transferInfo);
+    internalSetNoMapMap(map, noMap);
   }
 
   /**
@@ -2399,7 +2408,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the size set in TransferMap
    */
   private long getOriginalSizeTransferMap() {
-    final Object size = getTransferMap().get(JSON_ORIGINALSIZE);
+    final Object size = getFromTransferMap(JSON_ORIGINALSIZE);
     if (size == null) {
       return -1;
     }
@@ -2414,7 +2423,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the Follow Id or null if not exists
    */
   public String getFollowId() {
-    return getTransferMap().get(TransferArgs.FOLLOW_JSON_KEY).toString();
+    Object followId = getFromTransferMap(TransferArgs.FOLLOW_JSON_KEY);
+    if (followId != null) {
+      return followId.toString();
+    }
+    return null;
   }
 
   /**
@@ -3788,9 +3801,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       preparedStatement.realClose();
     }
     return WaarpStringUtils.cleanJsonForHtml(
-        arrayNode.toString().replaceAll("(\\\"\\{)([^}]+)(\\}\\\")", "{$2}")
-                 .replaceAll("([^\\\\])(\\\\\")([a-zA-Z_0-9]+)(\\\\\")",
-                             "$1\"$3\""));
+        JsonHandler.writeAsString(arrayNode)
+                   .replaceAll("(\\\"\\{)([^}]+)(\\}\\\")", "\"{$2}\"")
+                   .replaceAll("([^\\\\])(\\\\\")([a-zA-Z_0-9]+)(\\\\\")",
+                               "$1\\\\\"$3\\\\\""));
   }
 
   /**
@@ -3919,6 +3933,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   @Override
   public ObjectNode getJson() {
     final ObjectNode node = super.getJson();
+    JsonNode value = node.get(Columns.FILEINFO.name());
+    node.put(Columns.FILEINFO.name(), value.asText().replaceAll("[\\\\]+", ""));
+    value = node.get(Columns.TRANSFERINFO.name());
+    node.put(Columns.TRANSFERINFO.name(),
+             value.asText().replaceAll("[\\\\]+", ""));
     if (rescheduledTransfer) {
       node.put(JSON_RESCHEDULE, true);
     }
@@ -3926,6 +3945,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       node.put(JSON_THROUGHMODE, true);
     }
     node.put(JSON_ORIGINALSIZE, originalSize);
+    String followId = getFollowId();
+    if (followId != null) {
+      node.put(TransferArgs.FOLLOW_JSON_KEY, followId);
+    } else {
+      node.put(TransferArgs.FOLLOW_JSON_KEY, "none");
+    }
     return node;
   }
 

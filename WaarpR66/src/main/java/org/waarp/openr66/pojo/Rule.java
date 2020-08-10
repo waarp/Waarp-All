@@ -285,7 +285,7 @@ public class Rule {
     if (path == null || path.trim().isEmpty()) {
       return "";
     }
-    return path.replace("//", "/").replace("\\\\", "\\");
+    return path.replace("//", "/").replaceAll("[\\\\]+", "\\\\");
   }
 
   public String getRecvPath() {

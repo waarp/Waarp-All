@@ -494,10 +494,13 @@ public class TransferArgsTest extends TestAbstract {
         .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncludedAndMore,
                     null);
     logger.warn(transferArgs.getTransferInfo());
+    String compare = "no_information " + FOLLOWARGJSON + " 1234}" +
+                     " {'key': 'value'} test after";
     assertEquals("1234", transferArgs.getFollowId());
-    assertTrue(transferArgs.getTransferInfo()
-                           .startsWith("no_information   test after {"));
+    assertTrue(transferArgs.getTransferInfo().startsWith(compare));
     assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
+    logger.warn("{}",
+                DbTaskRunner.getMapFromString(transferArgs.getTransferInfo()));
     assertTrue(DbTaskRunner.getMapFromString(transferArgs.getTransferInfo())
                            .containsKey("key"));
     assertTrue(DbTaskRunner.getMapFromString(transferArgs.getTransferInfo())
@@ -527,8 +530,37 @@ public class TransferArgsTest extends TestAbstract {
                             FOLLOWARGJSON + " 1234}");
     logger.warn(transferArgs.getTransferInfo());
     assertEquals("1234", transferArgs.getFollowId());
-    assertTrue(
-        transferArgs.getTransferInfo().startsWith("no_information extra-info"));
+    assertTrue(transferArgs.getTransferInfo().startsWith(
+        FOLLOWARGJSON + " 1234} no_information extra-info"));
+    assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
+
+    String[] argsCompleteWithFollowCopied2 = {
+        TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG, "testTaskBig.txt",
+        TransferArgs.RULE_ARG, "rule3", TransferArgs.HASH_ARG,
+        TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
+        "extra-info"
+    };
+    transferArgs =
+        TransferArgs.getParamsInternal(0, argsCompleteWithFollowCopied2, false);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getTransferInfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertFalse(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(transferArgs.getFollowId().isEmpty());
+    assertNotEquals("1234", transferArgs.getFollowId());
+    TransferArgs.getAllInfo(transferArgs, 0, argsCompleteWithFollowCopied2,
+                            FOLLOWARGJSON + " 1234} other {'test': 'test2'}");
+    logger.warn(transferArgs.getTransferInfo());
+    assertEquals("1234", transferArgs.getFollowId());
+    assertTrue(transferArgs.getTransferInfo().startsWith(
+        FOLLOWARGJSON + " 1234} other {'test': 'test2'} no_information " +
+        "extra-info"));
     assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
   }
 } 

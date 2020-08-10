@@ -29,10 +29,13 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.SystemPropertyUtil;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import static org.waarp.openr66.protocol.it.ScenarioBase.*;
 
 /**
  *
@@ -53,7 +56,9 @@ public abstract class TestAbstractMinimal {
       throws Exception {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
-    ResourceLeakDetector.setLevel(Level.PARANOID);
+    if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      ResourceLeakDetector.setLevel(Level.PARANOID);
+    }
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);
     }

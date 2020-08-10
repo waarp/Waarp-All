@@ -1179,6 +1179,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     assertEquals("test", res.getString("filename"));
     assertEquals("testOrig", res.getString("originalname"));
     assertEquals("testInfo", res.getString("fileinfo"));
+    assertEquals("transferInfo", res.getString("transferinfo"));
     assertTrue(res.getBoolean("ismoved"));
     assertEquals(42, res.getInt("blocksz"));
     assertTrue(res.getBoolean("retrievemode"));

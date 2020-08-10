@@ -114,6 +114,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
+    Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
   }
@@ -302,6 +303,10 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     tearDownAfterClassServer();
   }
 
+  private static void checkNotOnlyClient() {
+    Assume.assumeTrue(SERVER1_IN_JUNIT);
+  }
+
   private static void checkBigIt() {
     Assume.assumeTrue("If the Long term tests are allowed",
                       SystemPropertyUtil.get(IT_LONG_TEST, false));
@@ -345,7 +350,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
       Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 100000);
     }
     File baseDir;
-    if (recv) {
+    if (recv && !"server1".equals(serverName)) {
       baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R2/out/");
     } else {
       baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R1/out/");
@@ -492,6 +497,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test03_BigRecvSubmitNoLimit()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server2", false, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -500,6 +506,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test04_BigSendSubmitNoLimit()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server2", false, false);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -524,6 +531,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test07_BigRecvSubmitSslNoLimit()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server2-ssl", false, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -532,6 +540,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test08_BigSendSubmitSslNoLimit()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server2-ssl", false, false);
     logger.warn("End {}", Processes.getCurrentMethodName());

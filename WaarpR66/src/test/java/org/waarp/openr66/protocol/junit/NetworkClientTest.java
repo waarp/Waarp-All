@@ -253,7 +253,9 @@ public class NetworkClientTest extends TestAbstract {
     // Simple check of version
     logger.warn(Version.fullIdentifier());
     assertNotNull(Version.fullIdentifier());
-    assertTrue(Version.artifactId().equals("WaarpR66"));
+    if (!Version.artifactId().equals("WaarpR66")) {
+      logger.warn("Not started as WaarpR66 model - not launched from Maven -");
+    }
     final int nb = 11;
     logger.warn("Start Test Json");
     DbPreparedStatement preparedStatement;
@@ -382,7 +384,7 @@ public class NetworkClientTest extends TestAbstract {
   @Test
   public void test2_ThriftClient() throws IOException {
     logger.warn("Start Test Thrift Client");
-    final int PORT = 4266;
+    final int PORT = Configuration.configuration.getThriftport();
     final int tries = 1000;
     TTransport transport = null;
     try {
@@ -564,10 +566,8 @@ public class NetworkClientTest extends TestAbstract {
                         "no file") + " delay: " + delay + " kbps: " +
                     size * 8 / delay);
       }
-      if (result.getRunner().shallIgnoreSave()) {
-        // In case of success, delete the runner
-        dbTaskRunners.add(result.getRunner());
-      }
+      // In case of success, delete the runner
+      dbTaskRunners.add(result.getRunner());
     } else {
       if (result == null || result.getRunner() == null) {
         logger.warn("Transfer in Error with no Id", future.getCause());

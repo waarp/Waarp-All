@@ -107,7 +107,8 @@ public class ExecMoveTask extends AbstractExecTask {
         prepareCommandExec.getPumpStreamHandler();
     ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
     final LastLineReader lastLineReader = new LastLineReader(inputStream);
-    lastLineReader.setName("LastLineReader" + session.getRunner().getSpecialId());
+    lastLineReader
+        .setName("LastLineReader" + session.getRunner().getSpecialId());
     lastLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(lastLineReader);
     ExecuteCommand executeCommand =

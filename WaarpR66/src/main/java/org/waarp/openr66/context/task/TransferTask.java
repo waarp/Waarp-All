@@ -20,6 +20,7 @@
 package org.waarp.openr66.context.task;
 
 import org.apache.commons.exec.CommandLine;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.client.SubmitTransfer;
@@ -29,6 +30,8 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.utils.R66Future;
+
+import java.util.Map;
 
 /**
  * Transfer task:<br>
@@ -110,6 +113,13 @@ public class TransferTask extends AbstractExecTask {
           copied = argTransfer;
           break;
         }
+      }
+      // Force to get follow Id if present (and other elements from map) if
+      // not already copied
+      if (copied == null &&
+          argTransfer.contains(TransferArgs.FOLLOW_JSON_KEY)) {
+        Map<String, Object> map = DbTaskRunner.getMapFromString(argTransfer);
+        copied = JsonHandler.writeAsStringEscaped(map);
       }
       TransferArgs.getAllInfo(transferArgs, 0, args, copied);
     } else {
