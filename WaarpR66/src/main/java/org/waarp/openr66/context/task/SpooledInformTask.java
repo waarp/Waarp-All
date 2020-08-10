@@ -393,7 +393,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
         buildSpooledJsonElement(detailed, status, array, name);
       }
     }
-    return WaarpStringUtils.cleanJsonForHtml(array.toString());
+    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(array));
   }
 
   /**
@@ -410,8 +410,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       // per Name
       buildSpooledJsonElement(true, 0, array, name);
     }
-    logger.warn(array.toString());
-    return WaarpStringUtils.cleanJsonForHtml(array.toString());
+    logger.warn(JsonHandler.writeAsString(array));
+    return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(array));
   }
 
   /**

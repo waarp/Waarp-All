@@ -129,4 +129,30 @@ public class JsonHandlerTest {
 
     JsonHandler.getFromStringExc(badFormat);
   }
+
+  @Test
+  public void testMapRendering() {
+    final String maps = "{\"foo\": \"bar\", \"foo2\": true}";
+    final String maps2 = "{\"foo\":\"bar\",\"foo2\":true}";
+    String unescaped = JsonHandler.unEscape(maps);
+    assertEquals(maps, unescaped);
+    Map<String, Object> map = JsonHandler.getMapFromString(maps);
+    assertEquals(true, map.get("foo2"));
+    assertEquals("bar", map.get("foo"));
+    String escaped = JsonHandler.writeAsStringEscaped(map);
+    assertEquals("{\\\"foo\\\":\\\"bar\\\",\\\"foo2\\\":true}", escaped);
+    String unescaped2 = JsonHandler.unEscape(escaped);
+    assertEquals(maps2, unescaped2);
+
+    final String maps3 = "{\\\\\"foo\": \"bar\", \"foo2\": true}";
+    unescaped = JsonHandler.unEscape(maps3);
+    assertEquals(maps, unescaped);
+    map = JsonHandler.getMapFromString(maps);
+    assertEquals(true, map.get("foo2"));
+    assertEquals("bar", map.get("foo"));
+    escaped = JsonHandler.writeAsStringEscaped(map);
+    assertEquals("{\\\"foo\\\":\\\"bar\\\",\\\"foo2\\\":true}", escaped);
+    unescaped2 = JsonHandler.unEscape(escaped);
+    assertEquals(maps2, unescaped2);
+  }
 }

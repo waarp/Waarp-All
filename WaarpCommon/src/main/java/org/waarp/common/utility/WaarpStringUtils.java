@@ -295,6 +295,7 @@ public final class WaarpStringUtils {
   public static String cleanJsonForHtml(String json) {
     return json.replaceAll("([^\\\\])\\\\n", "$1")
                .replaceAll("([^\\\\])\\\\r", "$1")
-               .replaceAll("([^\\\\])\\\\\"", "$1").replace("\\\\", "\\\\\\\\");
+               .replaceAll("([^\\\\])\\\\\"", "$1").replaceAll("\\(\\)+", "\\");
+    // Was replace("\\\\", "\\\\\\\\")
   }
 }

@@ -2313,7 +2313,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public static Map<String, Object> getMapFromString(String smap) {
     Pattern pattern = Pattern.compile("\\{[^\\}]*\\}");
-    Matcher matcher = pattern.matcher(smap);
+    Matcher matcher = pattern.matcher(JsonHandler.unEscape(smap));
     StringBuilder map = new StringBuilder("{");
     while (matcher.find()) {
       String temp = matcher.group(0);
@@ -2354,8 +2354,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param map the Map to add as Json string to transferInformation
    */
   public void setTransferMap(Map<String, Object> map) {
-    pojo.setTransferInfo(
-        getOtherInfoOutOfMap().trim() + " " + JsonHandler.writeAsString(map));
+    pojo.setTransferInfo(getOtherInfoOutOfMap().trim() + " " +
+                         JsonHandler.writeAsStringEscaped(map));
   }
 
   /**
@@ -2363,8 +2363,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void setTransferInfo(String transferInfo) {
     pojo.setTransferInfo(getOutOfMapFromString(transferInfo).trim() + " " +
-                         JsonHandler
-                             .writeAsString(getMapFromString(transferInfo)));
+                         JsonHandler.writeAsStringEscaped(
+                             getMapFromString(transferInfo)));
   }
 
   /**
@@ -3788,9 +3788,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       preparedStatement.realClose();
     }
     return WaarpStringUtils.cleanJsonForHtml(
-        arrayNode.toString().replaceAll("(\\\"\\{)([^}]+)(\\}\\\")", "{$2}")
-                 .replaceAll("([^\\\\])(\\\\\")([a-zA-Z_0-9]+)(\\\\\")",
-                             "$1\"$3\""));
+        JsonHandler.writeAsString(arrayNode)
+                   .replaceAll("(\\\"\\{)" + "([^}]+)(\\}\\\")", "{$2}")
+                   .replaceAll("([^\\\\])(\\\\\")([a-zA-Z_0-9]+)(\\\\\")",
+                               "$1\"$3\""));
   }
 
   /**

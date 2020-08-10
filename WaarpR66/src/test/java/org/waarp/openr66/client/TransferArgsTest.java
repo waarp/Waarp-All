@@ -498,6 +498,8 @@ public class TransferArgsTest extends TestAbstract {
     assertTrue(transferArgs.getTransferInfo()
                            .startsWith("no_information   test after {"));
     assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
+    logger.warn("{}",
+                DbTaskRunner.getMapFromString(transferArgs.getTransferInfo()));
     assertTrue(DbTaskRunner.getMapFromString(transferArgs.getTransferInfo())
                            .containsKey("key"));
     assertTrue(DbTaskRunner.getMapFromString(transferArgs.getTransferInfo())

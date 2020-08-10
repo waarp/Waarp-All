@@ -174,6 +174,31 @@ public class JsonHandler {
 
   /**
    * @param object
+   *
+   * @return the Json escaped representation of the object
+   */
+  public static String writeAsStringEscaped(Object object) {
+    try {
+      String temp = mapper.writeValueAsString(object);
+      return temp.replace("\"", "\\\"").replaceAll("\\(\\)+", "\\");
+    } catch (final JsonProcessingException e) {
+      return "{}";
+    }
+  }
+
+  /**
+   * Unespace source string before analyzing it as Json
+   *
+   * @param source
+   *
+   * @return the unescaped source
+   */
+  public static String unEscape(String source) {
+    return source.replace("\\", "");
+  }
+
+  /**
+   * @param object
    * @param file
    *
    * @return True if correctly written

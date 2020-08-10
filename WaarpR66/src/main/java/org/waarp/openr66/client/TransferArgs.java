@@ -551,14 +551,14 @@ public class TransferArgs {
         map.put(FOLLOW_JSON_KEY, longUuid.getLong());
         String originalWithoutMap =
             DbTaskRunner.getOutOfMapFromString(transferArgs1.getTransferInfo());
-        transferArgs1.setTransferInfo(
-            originalWithoutMap.trim() + " " + JsonHandler.writeAsString(map));
+        transferArgs1.setTransferInfo(originalWithoutMap.trim() + " " +
+                                      JsonHandler.writeAsStringEscaped(map));
         transferArgs1.setFollowId("" + longUuid.getLong());
       } else {
         String originalWithoutMap =
             DbTaskRunner.getOutOfMapFromString(transferArgs1.getTransferInfo());
-        transferArgs1.setTransferInfo(
-            originalWithoutMap.trim() + " " + JsonHandler.writeAsString(map));
+        transferArgs1.setTransferInfo(originalWithoutMap.trim() + " " +
+                                      JsonHandler.writeAsStringEscaped(map));
       }
     }
   }
