@@ -19,12 +19,12 @@
  */
 package org.waarp.common.filemonitor;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * RegexFileFilterTest regroups unit tests for {@link RegexFileFilter}.
@@ -34,17 +34,19 @@ public class RegexFileFilterTest {
   public void testRegexFilename() {
     String rx = "test.csv";
     RegexFileFilter rff = new RegexFileFilter(rx);
-    String[] shouldMatch = {"test.csv", "subdir/test.csv"};
-    String[] shouldNotMatch = {"foo.csv", "subdir/foo.csv"};
+    String[] shouldMatch = { "test.csv", "subdir/test.csv" };
+    String[] shouldNotMatch = { "foo.csv", "subdir/foo.csv" };
 
-    for (String s: shouldMatch) {
-      assertTrue("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                 doTestOnPath(rff, s));
+    for (String s : shouldMatch) {
+      assertTrue(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
 
-    for (String s: shouldNotMatch) {
-      assertFalse("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                  doTestOnPath(rff, s));
+    for (String s : shouldNotMatch) {
+      assertFalse(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
   }
 
@@ -52,17 +54,19 @@ public class RegexFileFilterTest {
   public void testRegexFilenameWildcard() {
     String rx = ".*\\.csv";
     RegexFileFilter rff = new RegexFileFilter(rx);
-    String[] shouldMatch = {"test.csv", "subdir/test.csv"};
-    String[] shouldNotMatch = {"foo.txt", "subdir/foo.txt"};
+    String[] shouldMatch = { "test.csv", "subdir/test.csv" };
+    String[] shouldNotMatch = { "foo.txt", "subdir/foo.txt" };
 
-    for (String s: shouldMatch) {
-      assertTrue("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                 doTestOnPath(rff, s));
+    for (String s : shouldMatch) {
+      assertTrue(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
 
-    for (String s: shouldNotMatch) {
-      assertFalse("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                  doTestOnPath(rff, s));
+    for (String s : shouldNotMatch) {
+      assertFalse(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
   }
 
@@ -71,20 +75,21 @@ public class RegexFileFilterTest {
     String rx = "subdir/.*";
     RegexFileFilter rff = new RegexFileFilter(rx);
     String[] shouldMatch = {
-      "subdir/test.csv", "subdir/foo.csv",
-      "dir/subdir/foo.txt", "othersubdir/test.csv",
-      "subdir/otherdir/test.csv",
+        "subdir/test.csv", "subdir/foo.csv", "dir/subdir/foo.txt",
+        "othersubdir/test.csv", "subdir/otherdir/test.csv",
     };
-    String[] shouldNotMatch = {"foo.csv", "otherdir/foo.csv"};
+    String[] shouldNotMatch = { "foo.csv", "otherdir/foo.csv" };
 
-    for (String s: shouldMatch) {
-      assertTrue("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                 doTestOnPath(rff, s));
+    for (String s : shouldMatch) {
+      assertTrue(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
 
-    for (String s: shouldNotMatch) {
-      assertFalse("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                  doTestOnPath(rff, s));
+    for (String s : shouldNotMatch) {
+      assertFalse(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
   }
 
@@ -93,25 +98,23 @@ public class RegexFileFilterTest {
     String rx = "^subdir/.*";
     RegexFileFilter rff = new RegexFileFilter(rx);
     String[] shouldMatch = {
-      "subdir/test.csv",
-      "subdir/foo.csv",
-      "subdir/otherdir/test.csv",
+        "subdir/test.csv", "subdir/foo.csv", "subdir/otherdir/test.csv",
     };
     String[] shouldNotMatch = {
-      "foo.csv",
-      "otherdir/foo.csv",
-      "dir/subdir/foo.txt",
-      "othersubdir/test.csv",
+        "foo.csv", "otherdir/foo.csv", "dir/subdir/foo.txt",
+        "othersubdir/test.csv",
     };
 
-    for (String s: shouldMatch) {
-      assertTrue("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                 doTestOnPath(rff, s));
+    for (String s : shouldMatch) {
+      assertTrue(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
 
-    for (String s: shouldNotMatch) {
-      assertFalse("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                  doTestOnPath(rff, s));
+    for (String s : shouldNotMatch) {
+      assertFalse(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
   }
 
@@ -120,23 +123,22 @@ public class RegexFileFilterTest {
     String rx = "(?i)subdir/.*";
     RegexFileFilter rff = new RegexFileFilter(rx);
     String[] shouldMatch = {
-      "subdir/test.csv",
-      "SUBDIR/foo.csv",
-      "subDiR/otherdir/test.csv",
+        "subdir/test.csv", "SUBDIR/foo.csv", "subDiR/otherdir/test.csv",
     };
     String[] shouldNotMatch = {
-      "foo.csv",
-      "otherdir/foo.csv",
+        "foo.csv", "otherdir/foo.csv",
     };
 
-    for (String s: shouldMatch) {
-      assertTrue("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                 doTestOnPath(rff, s));
+    for (String s : shouldMatch) {
+      assertTrue(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
 
-    for (String s: shouldNotMatch) {
-      assertFalse("RegexFileFilter with regex '"+rx+"' should match '"+ s +"'",
-                  doTestOnPath(rff, s));
+    for (String s : shouldNotMatch) {
+      assertFalse(
+          "RegexFileFilter with regex '" + rx + "' should match '" + s + "'",
+          doTestOnPath(rff, s));
     }
   }
 
@@ -148,7 +150,7 @@ public class RegexFileFilterTest {
       return rff.accept(new File(path));
 
     } catch (IOException e) {
-      fail("cannot create stub test file '"+path+"':"+e);
+      fail("cannot create stub test file '" + path + "':" + e);
     } finally {
       tearDownStubFile(path);
     }

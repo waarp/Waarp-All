@@ -56,7 +56,7 @@ public class OutputFormat extends JsonHandler {
    *
    * @param args
    */
-  public static void getParams(String[] args) {
+  public static void getParams(final String[] args) {
     for (int i = 1; i < args.length; i++) {
       if ("-quiet".equalsIgnoreCase(args[i])) {
         defaultOutput = OUTPUTFORMAT.QUIET;
@@ -72,6 +72,15 @@ public class OutputFormat extends JsonHandler {
     }
   }
 
+  /**
+   * To set the default OutputFormat
+   *
+   * @param outputformat
+   */
+  public static void setDefaultOutput(final OUTPUTFORMAT outputformat) {
+    defaultOutput = outputformat;
+  }
+
   private OUTPUTFORMAT format = defaultOutput;
   private final ObjectNode node = createObjectNode();
 
@@ -82,7 +91,7 @@ public class OutputFormat extends JsonHandler {
    * @param command
    * @param args
    */
-  public OutputFormat(String command, String[] args) {
+  public OutputFormat(final String command, final String[] args) {
     setValue(FIELDS.command.name(), command);
     if (args != null) {
       final StringBuilder builder = new StringBuilder();
@@ -98,14 +107,18 @@ public class OutputFormat extends JsonHandler {
    *
    * @param format
    */
-  public void setFormat(OUTPUTFORMAT format) {
+  public void setFormat(final OUTPUTFORMAT format) {
     this.format = format;
+  }
+
+  public OUTPUTFORMAT getFormat() {
+    return format;
   }
 
   /**
    * @param values
    */
-  public void setValue(Map<String, Object> values) {
+  public void setValue(final Map<String, Object> values) {
     final String json = writeAsString(values);
     final ObjectNode temp = getFromString(json);
     node.setAll(temp);
@@ -114,7 +127,7 @@ public class OutputFormat extends JsonHandler {
   /**
    * @param values
    */
-  public void setValueString(Map<String, String> values) {
+  public void setValueString(final Map<String, String> values) {
     final String json = writeAsString(values);
     final ObjectNode temp = getFromString(json);
     node.setAll(temp);
@@ -123,7 +136,7 @@ public class OutputFormat extends JsonHandler {
   /**
    * @param node
    */
-  public void setValueString(ObjectNode node) {
+  public void setValueString(final ObjectNode node) {
     node.setAll(node);
   }
 
@@ -131,7 +144,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public void setValue(String field, boolean value) {
+  public void setValue(final String field, final boolean value) {
     setValue(node, field, value);
   }
 
@@ -139,7 +152,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(String field, double value) {
+  public final void setValue(final String field, final double value) {
     setValue(node, field, value);
   }
 
@@ -147,7 +160,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(String field, int value) {
+  public final void setValue(final String field, final int value) {
     setValue(node, field, value);
   }
 
@@ -155,7 +168,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(String field, long value) {
+  public final void setValue(final String field, final long value) {
     setValue(node, field, value);
   }
 
@@ -163,7 +176,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(String field, String value) {
+  public final void setValue(final String field, final String value) {
     setValue(node, field, value);
   }
 
@@ -171,7 +184,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(String field, byte[] value) {
+  public final void setValue(final String field, final byte[] value) {
     setValue(node, field, value);
   }
 
@@ -180,7 +193,7 @@ public class OutputFormat extends JsonHandler {
    *
    * @return True if all fields exist
    */
-  public final boolean exist(String... field) {
+  public final boolean exist(final String... field) {
     return exist(node, field);
   }
 
@@ -189,6 +202,34 @@ public class OutputFormat extends JsonHandler {
    */
   public static boolean isQuiet() {
     return defaultOutput == OUTPUTFORMAT.QUIET;
+  }
+
+  /**
+   * @return True if the current default output format is on XML
+   */
+  public static boolean isXml() {
+    return defaultOutput == OUTPUTFORMAT.XML;
+  }
+
+  /**
+   * @return True if the current default output format is on CSV
+   */
+  public static boolean isCsv() {
+    return defaultOutput == OUTPUTFORMAT.CSV;
+  }
+
+  /**
+   * @return True if the current default output format is on JSON
+   */
+  public static boolean isJson() {
+    return defaultOutput == OUTPUTFORMAT.JSON;
+  }
+
+  /**
+   * @return True if the current default output format is on PROPERTY
+   */
+  public static boolean isProperty() {
+    return defaultOutput == OUTPUTFORMAT.PROPERTY;
   }
 
   /**
@@ -220,6 +261,26 @@ public class OutputFormat extends JsonHandler {
     return toString(format);
   }
 
+  private String commonEscaped(final String toEscape) {
+    return toEscape.replace('\n', ' ').replace('\r', ' ');
+  }
+
+  private String escapedCSV(final String toEscape) {
+    String escaped = commonEscaped(toEscape);
+    if (escaped.indexOf(';') >= 0) {
+      escaped = "\"" + escaped + "\"";
+    }
+    return escaped;
+  }
+
+  private String escapedXML(final String toEscape) {
+    return toEscape.replace('<', '[').replace('>', ']').replace('&', ':');
+  }
+
+  private String escapedProperty(final String toEscape) {
+    return commonEscaped(toEscape);
+  }
+
   /**
    * Helper to get string representation of the current object
    *
@@ -227,7 +288,7 @@ public class OutputFormat extends JsonHandler {
    *
    * @return the String representation
    */
-  public String toString(OUTPUTFORMAT format) {
+  public String toString(final OUTPUTFORMAT format) {
     final String inString = writeAsString(node);
     switch (format) {
       case CSV:
@@ -246,7 +307,9 @@ public class OutputFormat extends JsonHandler {
               next = true;
             }
             builderKeys.append(entry.getKey());
-            builderValues.append(entry.getValue());
+            String value = entry.getValue().toString();
+            value = escapedCSV(value);
+            builderValues.append(value);
           }
           return builderKeys + "\n" + builderValues;
         } catch (final JsonParseException e) {
@@ -269,7 +332,9 @@ public class OutputFormat extends JsonHandler {
             } else {
               next = true;
             }
-            builder.append(entry.getKey()).append('=').append(entry.getValue());
+            String value = entry.getValue().toString();
+            value = escapedProperty(value);
+            builder.append(entry.getKey()).append('=').append(value);
           }
           return builder.toString();
         } catch (final JsonParseException e) {
@@ -286,9 +351,10 @@ public class OutputFormat extends JsonHandler {
               });
           final StringBuilder builder = new StringBuilder("<xml>");
           for (final Entry<String, Object> entry : map.entrySet()) {
-            builder.append('<').append(entry.getKey()).append('>')
-                   .append(entry.getValue()).append("</").append(entry.getKey())
-                   .append('>');
+            String value = entry.getValue().toString();
+            value = escapedXML(value);
+            builder.append('<').append(entry.getKey()).append('>').append(value)
+                   .append("</").append(entry.getKey()).append('>');
           }
           builder.append("</xml>");
           return builder.toString();
@@ -302,7 +368,7 @@ public class OutputFormat extends JsonHandler {
       case QUIET:
       case JSON:
       default:
-        return inString;
+        return commonEscaped(inString);
     }
   }
 }

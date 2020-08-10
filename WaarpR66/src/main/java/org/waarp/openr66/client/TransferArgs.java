@@ -35,6 +35,8 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.client.utils.OutputFormat;
+import org.waarp.openr66.client.utils.OutputFormat.OUTPUTFORMAT;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -147,13 +149,48 @@ public class TransferArgs {
       new OptionGroup().addOption(LOGWARN_OPTION).addOption(NOTLOGWARN_OPTION);
   private static final OptionGroup DELAY_OPTIONS =
       new OptionGroup().addOption(DELAY_OPTION).addOption(START_OPTION);
+
+  private static final String QUIET = "quiet";
+  private static final String CSV = "csv";
+  private static final String XML = "xml";
+  private static final String JSON = "json";
+  private static final String PROPERTY = "property";
+  public static final String QUIET_ARG = "-" + QUIET;
+  public static final String CSV_ARG = "-" + CSV;
+  public static final String XML_ARG = "-" + XML;
+  public static final String JSON_ARG = "-" + JSON;
+  public static final String PROPERTY_ARG = "-" + PROPERTY;
+  private static final Option QUIET_OPTION =
+      Option.builder(QUIET).required(false).hasArg(false).desc(
+          "meaning no output at all (logs are not changed, exit value still " +
+          "uses 0 as Success, 1 as Warning and others as Failure)").build();
+  private static final Option CSV_OPTION =
+      Option.builder(CSV).required(false).hasArg(false).desc(
+          "meaning output will be in CSV format (2 lines, 1 with title, 1 " +
+          "with content, separator is ';')").build();
+  private static final Option XML_OPTION =
+      Option.builder(XML).required(false).hasArg(false)
+            .desc("meaning output will be in XML").build();
+  private static final Option JSON_OPTION =
+      Option.builder(JSON).required(false).hasArg(false)
+            .desc("meaning output will be in JSON").build();
+  private static final Option PROPERTY_OPTION =
+      Option.builder(PROPERTY).required(false).hasArg(false)
+            .desc("meaning output will be in Property format (name=value)")
+            .build();
+  private static final OptionGroup OUTPUT_OPTIONS =
+      new OptionGroup().addOption(QUIET_OPTION).addOption(CSV_OPTION)
+                       .addOption(XML_OPTION).addOption(JSON_OPTION)
+                       .addOption(PROPERTY_OPTION);
+
   private static final Options TRANSFER_OPTIONS =
       new Options().addOption(FILE_OPTION).addOption(TO_OPTION)
                    .addOption(NO_FOLLOW_OPTION).addOption(RULE_OPTION)
                    .addOption(ID_OPTION).addOption(INFO_OPTION)
                    .addOption(HASH_OPTION).addOption(BLOCK_OPTION)
                    .addOptionGroup(DELAY_OPTIONS).addOption(NOTLOG_OPTION)
-                   .addOptionGroup(LOGWARN_OPTIONS);
+                   .addOptionGroup(LOGWARN_OPTIONS)
+                   .addOptionGroup(OUTPUT_OPTIONS);
 
   public static final String SEPARATOR_SEND = "--";
 
@@ -219,6 +256,7 @@ public class TransferArgs {
         return null;
       }
       checkLog(transferArgs1, cmd);
+      checkOutput(cmd);
     } catch (ParseException e) {
       printHelp();
       logger.error("Arguments are incorrect", e);
@@ -395,6 +433,25 @@ public class TransferArgs {
     }
     if (cmd.hasOption(NOTLOG)) {
       transferArgs1.setNolog(true);
+    }
+  }
+
+  /**
+   * Check if any output format specification is set
+   *
+   * @param cmd
+   */
+  private static void checkOutput(final CommandLine cmd) {
+    if (cmd.hasOption(QUIET)) {
+      OutputFormat.setDefaultOutput(OUTPUTFORMAT.QUIET);
+    } else if (cmd.hasOption(CSV)) {
+      OutputFormat.setDefaultOutput(OUTPUTFORMAT.CSV);
+    } else if (cmd.hasOption(XML)) {
+      OutputFormat.setDefaultOutput(OUTPUTFORMAT.XML);
+    } else if (cmd.hasOption(JSON)) {
+      OutputFormat.setDefaultOutput(OUTPUTFORMAT.JSON);
+    } else if (cmd.hasOption(PROPERTY)) {
+      OutputFormat.setDefaultOutput(OUTPUTFORMAT.PROPERTY);
     }
   }
 
