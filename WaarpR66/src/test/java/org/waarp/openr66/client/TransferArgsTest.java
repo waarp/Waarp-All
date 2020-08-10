@@ -28,6 +28,7 @@ import org.junit.rules.TestWatcher;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -190,6 +191,88 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals(1000, transferArgs.getBlockSize());
     assertNull(transferArgs.getStartTime());
     assertEquals(ILLEGALVALUE, transferArgs.getId());
+
+    // Check example on outputs
+    String[] argsCompleteWithFormatQuiet = {
+        "FakeConfigFile", TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG,
+        "testTaskBig.txt", TransferArgs.RULE_ARG, "rule3",
+        TransferArgs.NO_FOLLOW_ARG, "-quiet", TransferArgs.INFO_ARG,
+        "no_information", "otherNotTaken"
+    };
+    transferArgs =
+        AbstractTransfer.getParamsInternal(1, argsCompleteWithFormatQuiet);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getTransferInfo());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(OutputFormat.isQuiet());
+    String[] argsCompleteWithFormatXml = {
+        "FakeConfigFile", TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG,
+        "testTaskBig.txt", TransferArgs.RULE_ARG, "rule3",
+        TransferArgs.NO_FOLLOW_ARG, "-xml", TransferArgs.INFO_ARG,
+        "no_information", "otherNotTaken"
+    };
+    transferArgs =
+        AbstractTransfer.getParamsInternal(1, argsCompleteWithFormatXml);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getTransferInfo());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(OutputFormat.isXml());
+    String[] argsCompleteWithFormatCsv = {
+        "FakeConfigFile", TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG,
+        "testTaskBig.txt", TransferArgs.RULE_ARG, "rule3",
+        TransferArgs.NO_FOLLOW_ARG, "-csv", TransferArgs.INFO_ARG,
+        "no_information", "otherNotTaken"
+    };
+    transferArgs =
+        AbstractTransfer.getParamsInternal(1, argsCompleteWithFormatCsv);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getTransferInfo());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(OutputFormat.isCsv());
+    String[] argsCompleteWithFormatJson = {
+        "FakeConfigFile", TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG,
+        "testTaskBig.txt", TransferArgs.RULE_ARG, "rule3",
+        TransferArgs.NO_FOLLOW_ARG, "-json", TransferArgs.INFO_ARG,
+        "no_information", "otherNotTaken"
+    };
+    transferArgs =
+        AbstractTransfer.getParamsInternal(1, argsCompleteWithFormatJson);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getTransferInfo());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(OutputFormat.isJson());
+    String[] argsCompleteWithFormatProp = {
+        "FakeConfigFile", TransferArgs.TO_ARG, "hosta", TransferArgs.FILE_ARG,
+        "testTaskBig.txt", TransferArgs.RULE_ARG, "rule3",
+        TransferArgs.NO_FOLLOW_ARG, "-property", TransferArgs.INFO_ARG,
+        "no_information", "otherNotTaken"
+    };
+    transferArgs =
+        AbstractTransfer.getParamsInternal(1, argsCompleteWithFormatProp);
+    assertNotNull(transferArgs);
+    assertEquals("hosta", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig.txt", transferArgs.getFilename());
+    assertEquals("rule3", transferArgs.getRulename());
+    assertEquals("no_information", transferArgs.getTransferInfo());
+    assertNull(transferArgs.getStartTime());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(OutputFormat.isProperty());
 
     // Check complete example
     String[] argsCompleteSeparator = {

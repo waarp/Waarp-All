@@ -72,6 +72,15 @@ public class OutputFormat extends JsonHandler {
     }
   }
 
+  /**
+   * To set the default OutputFormat
+   *
+   * @param outputformat
+   */
+  public static void setDefaultOutput(OUTPUTFORMAT outputformat) {
+    defaultOutput = outputformat;
+  }
+
   private OUTPUTFORMAT format = defaultOutput;
   private final ObjectNode node = createObjectNode();
 
@@ -189,6 +198,34 @@ public class OutputFormat extends JsonHandler {
    */
   public static boolean isQuiet() {
     return defaultOutput == OUTPUTFORMAT.QUIET;
+  }
+
+  /**
+   * @return True if the current default output format is on XML
+   */
+  public static boolean isXml() {
+    return defaultOutput == OUTPUTFORMAT.XML;
+  }
+
+  /**
+   * @return True if the current default output format is on CSV
+   */
+  public static boolean isCsv() {
+    return defaultOutput == OUTPUTFORMAT.CSV;
+  }
+
+  /**
+   * @return True if the current default output format is on JSON
+   */
+  public static boolean isJson() {
+    return defaultOutput == OUTPUTFORMAT.JSON;
+  }
+
+  /**
+   * @return True if the current default output format is on PROPERTY
+   */
+  public static boolean isProperty() {
+    return defaultOutput == OUTPUTFORMAT.PROPERTY;
   }
 
   /**
