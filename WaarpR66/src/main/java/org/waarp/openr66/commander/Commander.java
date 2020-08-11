@@ -440,6 +440,7 @@ public class Commander implements CommanderInterface {
               return;
             }
             final DbTaskRunner taskRunner = tasks[i];
+            i++;
 
             logger.debug("get a task: {}", taskRunner);
             // Launch if possible this task
@@ -462,7 +463,6 @@ public class Commander implements CommanderInterface {
               continue;
             }
             internalRunner.submitTaskRunner(taskRunner);
-            i++;
             totalRuns++;
           }
         }
