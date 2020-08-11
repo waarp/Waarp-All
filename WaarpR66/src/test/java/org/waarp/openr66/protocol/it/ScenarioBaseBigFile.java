@@ -522,6 +522,22 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   }
 
   @Test
+  public void test03_BigRecvSubmitNoLimitSelf()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    testBigTransfer(false, "server1", false, true);
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
+  public void test04_BigSendSubmitNoLimitSelf()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    testBigTransfer(false, "server1", false, false);
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
   public void test05_BigRecvSyncSslNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);

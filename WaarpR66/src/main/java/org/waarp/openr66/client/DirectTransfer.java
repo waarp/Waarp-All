@@ -203,7 +203,7 @@ public class DirectTransfer extends AbstractTransfer {
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
         }
-        if (nolog || result.getRunner().shallIgnoreSave()) {
+        if (nolog) {
           // In case of success, delete the runner
           try {
             result.getRunner().delete();

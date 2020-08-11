@@ -566,10 +566,8 @@ public class NetworkClientTest extends TestAbstract {
                         "no file") + " delay: " + delay + " kbps: " +
                     size * 8 / delay);
       }
-      if (result.getRunner().shallIgnoreSave()) {
-        // In case of success, delete the runner
-        dbTaskRunners.add(result.getRunner());
-      }
+      // In case of success, delete the runner
+      dbTaskRunners.add(result.getRunner());
     } else {
       if (result == null || result.getRunner() == null) {
         logger.warn("Transfer in Error with no Id", future.getCause());

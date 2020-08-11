@@ -111,7 +111,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
                           result.getFile() + "</FILEFINAL>" : "no file") +
                       "     delay: " + delay);
         }
-        if (nolog || result.getRunner().shallIgnoreSave()) {
+        if (nolog) {
           // In case of success, delete the runner
           try {
             result.getRunner().delete();
