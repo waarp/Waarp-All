@@ -345,7 +345,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
       Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 100000);
     }
     File baseDir;
-    if (recv) {
+    if (recv && !"server1".equals(serverName)) {
       baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R2/out/");
     } else {
       baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R1/out/");
@@ -472,6 +472,22 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
+
+  @Test
+  public void test01_BigRecvSyncNoLimitSelf()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    testBigTransfer(false, "server1", true, true);
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
+  public void test02_BigSendSyncNoLimitSelf()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    testBigTransfer(false, "server1", true, false);
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
 
   @Test
   public void test01_BigRecvSyncNoLimit()
