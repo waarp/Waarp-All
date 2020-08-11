@@ -38,6 +38,11 @@ import org.waarp.common.xml.XmlType;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
 import org.waarp.openr66.context.task.TaskType;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.xml.XMLDAOFactory;
+import org.waarp.openr66.dao.xml.XMLRuleDAO;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
@@ -142,6 +147,24 @@ public final class RuleFileBasedConfiguration {
    */
   public static void importRules(File configDirectory)
       throws OpenR66ProtocolSystemException, WaarpDatabaseException {
+    DAOFactory daoFactory = DAOFactory.getInstance();
+    if (daoFactory instanceof XMLDAOFactory) {
+      RuleDAO ruleDAO = null;
+      try {
+        ruleDAO = daoFactory.getRuleDAO();
+        if (ruleDAO instanceof XMLDAOFactory) {
+          XMLRuleDAO xmlRuleDAO = (XMLRuleDAO) ruleDAO;
+          // To allow loading into cache all Rules
+          xmlRuleDAO.getAll();
+        }
+      } catch (DAOConnectionException e) {
+        e.printStackTrace();
+      } finally {
+        if (ruleDAO != null) {
+          ruleDAO.close();
+        }
+      }
+    }
     File[] files =
         FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULE));
     for (final File file : files) {
