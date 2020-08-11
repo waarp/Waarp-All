@@ -1367,7 +1367,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       }
     }
     if (params == null) {
-      final String system = systemLimitedSource();
+      final String system = REQUEST.System.read(this);
       final StringBuilder builder = new StringBuilder(system);
       replaceStringSystem(config, builder);
       langHandle(builder);
