@@ -247,7 +247,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
       // now start the send from external data
       return true;
     } finally {
-      if (taskRunner != null && future.isFailed()) {
+      if (taskRunner != null && future.isFailed() || nolog) {
         try {
           taskRunner.delete();
         } catch (final WaarpDatabaseException ignored) {
@@ -317,8 +317,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
       }
     } finally {
       if (taskRunner != null) {
-        if (future.isDone() && !future.isSuccess() || nolog ||
-            taskRunner.shallIgnoreSave()) {
+        if (future.isDone() && !future.isSuccess() || nolog) {
           try {
             taskRunner.delete();
           } catch (final WaarpDatabaseException ignored) {

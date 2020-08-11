@@ -135,7 +135,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
               } else {
                 logger.info(outputFormat.loggerOut());
               }
-              if (nolog || result.getRunner().shallIgnoreSave()) {
+              if (nolog) {
                 // In case of success, delete the runner
                 try {
                   result.getRunner().delete();
