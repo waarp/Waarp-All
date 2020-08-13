@@ -108,6 +108,11 @@ public class NetworkServerHandler
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     try {
+      if (Configuration.configuration.getServerConnectedChannelGroup() !=
+          null) {
+        Configuration.configuration.getServerConnectedChannelGroup()
+                                   .remove(ctx.channel());
+      }
       if (networkChannelReference != null) {
         if (networkChannelReference.nbLocalChannels() > 0) {
           logger.info("Network Channel Closed: {} LocalChannels Left: {}",
@@ -149,6 +154,10 @@ public class NetworkServerHandler
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     final Channel netChannel = ctx.channel();
+    if (Configuration.configuration.getServerConnectedChannelGroup() != null) {
+      Configuration.configuration.getServerConnectedChannelGroup()
+                                 .add(netChannel);
+    }
     remoteAddress = netChannel.remoteAddress();
     logger.debug(
         "Will the Connection be refused if Partner is BlackListed from " +

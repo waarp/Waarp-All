@@ -1015,6 +1015,15 @@ public class FileBasedConfiguration {
         port = 6666;
       }
       config.setServerPort(port);
+      value = hashConfig.get(XML_SERVER_ADDRESSES);
+      String[] ips = null;
+      if (value != null && !value.isEmpty()) {
+        String temp = value.getString();
+        ips = temp.split(",");
+      } else {
+        ips = null;
+      }
+      config.setServerAddresses(ips);
       value = hashConfig.get(XML_SERVER_SSLPORT);
       int sslport = 6667;
       if (value != null && !value.isEmpty()) {
@@ -1023,18 +1032,45 @@ public class FileBasedConfiguration {
         sslport = 6667;
       }
       config.setServerSslPort(sslport);
+      value = hashConfig.get(XML_SERVER_SSL_ADDRESSES);
+      String[] ipsTls = null;
+      if (value != null && !value.isEmpty()) {
+        String temp = value.getString();
+        ipsTls = temp.split(",");
+      } else {
+        ipsTls = null;
+      }
+      config.setServerSslAddresses(ipsTls);
       value = hashConfig.get(XML_SERVER_HTTPPORT);
       int httpport = 8066;
       if (value != null && !value.isEmpty()) {
         httpport = value.getInteger();
       }
       config.setServerHttpport(httpport);
+      value = hashConfig.get(XML_SERVER_HTTP_ADDRESSES);
+      String[] ipsHttp = null;
+      if (value != null && !value.isEmpty()) {
+        String temp = value.getString();
+        ipsHttp = temp.split(",");
+      } else {
+        ipsHttp = null;
+      }
+      config.setServerHttpAddresses(ipsHttp);
       value = hashConfig.get(XML_SERVER_HTTPSPORT);
       int httpsport = 8067;
       if (value != null && !value.isEmpty()) {
         httpsport = value.getInteger();
       }
       config.setServerHttpsPort(httpsport);
+      value = hashConfig.get(XML_SERVER_HTTPS_ADDRESSES);
+      String[] ipsHttpTls = null;
+      if (value != null && !value.isEmpty()) {
+        String temp = value.getString();
+        ipsHttpTls = temp.split(",");
+      } else {
+        ipsHttpTls = null;
+      }
+      config.setServerHttpsAddresses(ipsHttpTls);
       return true;
     } finally {
       hashConfig.clear();

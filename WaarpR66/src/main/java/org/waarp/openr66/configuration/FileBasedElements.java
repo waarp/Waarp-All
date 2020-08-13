@@ -147,6 +147,23 @@ public class FileBasedElements {
    */
   public static final String XML_SERVER_HTTPSPORT = "serverhttpsport";
   /**
+   * SERVER PORT
+   */
+  public static final String XML_SERVER_ADDRESSES = "serveraddresses";
+  /**
+   * SERVER SSL PORT
+   */
+  public static final String XML_SERVER_SSL_ADDRESSES = "serverssladdresses";
+  /**
+   * SERVER HTTP PORT
+   */
+  public static final String XML_SERVER_HTTP_ADDRESSES = "serverhttpaddresses";
+  /**
+   * SERVER HTTPS PORT
+   */
+  public static final String XML_SERVER_HTTPS_ADDRESSES =
+      "serverhttpsaddresses";
+  /**
    * Structure of the Configuration file
    */
   private static final XmlDecl[] configNetworkServerDecls = {
@@ -154,7 +171,11 @@ public class FileBasedElements {
       new XmlDecl(XmlType.INTEGER, XML_SERVER_PORT),
       new XmlDecl(XmlType.INTEGER, XML_SERVER_SSLPORT),
       new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPPORT),
-      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPSPORT)
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPSPORT),
+      new XmlDecl(XmlType.STRING, XML_SERVER_ADDRESSES),
+      new XmlDecl(XmlType.STRING, XML_SERVER_SSL_ADDRESSES),
+      new XmlDecl(XmlType.STRING, XML_SERVER_HTTP_ADDRESSES),
+      new XmlDecl(XmlType.STRING, XML_SERVER_HTTPS_ADDRESSES)
   };
   /**
    * SERVER SSL STOREKEY PATH
