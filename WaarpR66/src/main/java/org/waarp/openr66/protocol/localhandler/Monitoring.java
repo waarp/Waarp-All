@@ -37,6 +37,7 @@ import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.snmp.R66PrivateMib;
+import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.snmp.WaarpSnmpAgent;
 import org.waarp.snmp.interf.WaarpInterfaceMonitor;
 import org.waarp.snmp.r66.WaarpPrivateMib.MibLevel;
@@ -375,8 +376,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
       }
       if (dbSession == null || dbSession.isDisActive()) {
         nbNetworkConnection =
-            Configuration.configuration.getHttpChannelGroup().size() +
-            Configuration.configuration.getServerChannelGroup().size();
+            ChannelUtils.nbCommandChannels(Configuration.configuration);
         bandwidthIn = trafficCounter.lastReadThroughput() >> 7;// B/s -> Kb/s
         bandwidthOut = trafficCounter.lastWriteThroughput() >> 7;
         nbThread = Thread.activeCount();
@@ -395,8 +395,15 @@ public class Monitoring implements WaarpInterfaceMonitor {
           nbCountInfoRunning = Configuration.configuration.getInternalRunner()
                                                           .nbInternalRunner();
         } else {
-          nbCountInfoRunning =
-              Configuration.configuration.getServerChannelGroup().size();
+          if (Configuration.configuration.getServerConnectedChannelGroup() !=
+              null) {
+            nbCountInfoRunning =
+                Configuration.configuration.getServerConnectedChannelGroup()
+                                           .size();
+          } else {
+            nbCountInfoRunning =
+                Configuration.configuration.getServerChannelGroup().size();
+          }
         }
         // Current situation of all transfers, running or not
         nbCountAllRunningStep = nbCountInfoRunning;
@@ -1012,8 +1019,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
             return;
           case nbNetworkConnection:
             nbNetworkConnection =
-                Configuration.configuration.getHttpChannelGroup().size() +
-                Configuration.configuration.getServerChannelGroup().size();
+                ChannelUtils.nbCommandChannels(Configuration.configuration);
             updateGlobalValue(entry.ordinal(), nbNetworkConnection);
             return;
         }

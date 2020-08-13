@@ -86,11 +86,53 @@ Section ``network``
 Balise             Type    Obl. Défaut    Signification
 ================== ======= ==== ========= =============
 serverport         integer N    6666      Port utilisé pour le protocole R66
+serverips          string  N    null      Adresses utilisées pour le protocole R66 (séparées par des virgules)
 serversslport      integer N    6667      Port utilisé pour le protocole R66 en SSL
+serversslips       string  N    null      Adresses utilisées pour le protocole R66 en SSL (séparées par des virgules)
 serverhttpport     integer N    8066      Port utilisé pour l'interface web de supervision (la valeur ``0`` désactive l'interface)
+serverhttpips      string  N    null      Adresses utilisées pour l'interface web de supervision (séparées par des virgules)
 serverhttpsport    integer N    8067      Port utilisé pour l'interface web HTTPS d'administration (la valeur ``0`` désactive l'interface)
+serverhttpsips     string  N    null      Adresses utilisées pour l'interface web HTTPS d'administration (séparées par des virgules)
 ================== ======= ==== ========= =============
 
+.. versionadded:: 3.4.1
+
+  Il est possible de définir avec précision les interfaces (IP) utilisées pour
+  chacun des ports via les options serverips, serversslips, serverhttpips,
+  serverhttpsips. Chacune spécifie optionnellement la liste des IP à associer
+  (avec le port défini optionnellement) avec la virgule comme séparateur.
+
+  Si cette option n'est pas spécifiée ou vide pour un port de service, toutes
+  les interfaces disponibles seront associées à ce service avec ce port.
+
+  Exemple :
+
+.. code-block:: xml
+
+  <network>
+    <serverport>6666</serverport>
+    <!-- 1 adresse définie en loop -->
+    <serverips>127.0.0.1</serverips>
+    <serversslport>6667</serversslport>
+    <!-- 2 adresses définies -->
+    <serversslips>192.168.0.2,10.1.0.10</serversslips>
+    <serverhttpport>8066</serverhttpport>
+    <!-- Toutes les interfaces seront utilisées -->
+    <serverhttpips/>
+    <serverhttpsport>8067</serverhttpsport>
+    <!-- 1 adresse définie en local -->
+    <serverhttpsips>192.168.0.2</serverhttpsips>
+  </network>
+
+.. code-block:: xml
+
+  <network>
+    <!-- Toutes les interfaces seront utilisées -->
+    <serverport>6666</serverport>
+    <serversslport>6667</serversslport>
+    <serverhttpport>8066</serverhttpport>
+    <serverhttpsport>8067</serverhttpsport>
+  </network>
 
 .. _server-xml-ssl:
 

@@ -141,6 +141,23 @@ public class ChannelUtils extends Thread {
   }
 
   /**
+   * Terminate all registered connected client channels
+   *
+   * @return the number of previously registered network connected client
+   *     channels
+   */
+  private static int terminateClientChannels() {
+    if (Configuration.configuration.getServerConnectedChannelGroup() == null) {
+      return 0;
+    }
+    final int result =
+        Configuration.configuration.getServerConnectedChannelGroup().size();
+    logger.info("ServerConnectedChannelGroup: " + result);
+    Configuration.configuration.getServerConnectedChannelGroup().close();
+    return result;
+  }
+
+  /**
    * Terminate all registered Http channels
    *
    * @return the number of previously registered http network channels
@@ -163,7 +180,14 @@ public class ChannelUtils extends Thread {
    * @return the current number of network connections
    */
   public static final int nbCommandChannels(Configuration configuration) {
-    return configuration.getServerChannelGroup().size();
+    int nb = 0;
+    if (Configuration.configuration.getServerConnectedChannelGroup() != null) {
+      nb += configuration.getServerConnectedChannelGroup().size();
+    }
+    if (configuration.getHttpChannelGroup() != null) {
+      nb += configuration.getHttpChannelGroup().size();
+    }
+    return nb;
   }
 
   /**
@@ -311,6 +335,8 @@ public class ChannelUtils extends Thread {
     }
     logger.info("Unbind server network services");
     Configuration.configuration.unbindServer();
+    logger.info("Exit Shutdown Command");
+    terminateCommandChannels();
     logger.warn(
         Messages.getString("ChannelUtils.7") + delay + " ms"); //$NON-NLS-1$
     try {
@@ -336,8 +362,8 @@ public class ChannelUtils extends Thread {
     if (Configuration.configuration.isUseLocalExec()) {
       LocalExecClient.releaseResources();
     }
-    logger.info("Exit Shutdown Command");
-    terminateCommandChannels();
+    logger.info("Exit Shutdown Connected Client");
+    terminateClientChannels();
     logger.info("Exit Shutdown Db Connection");
     DbAdmin.closeAllConnection();
     logger.info("Exit Shutdown ServerStop");

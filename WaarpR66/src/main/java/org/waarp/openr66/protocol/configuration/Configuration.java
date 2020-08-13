@@ -293,6 +293,26 @@ public class Configuration {
   private int serverHttpsPort = 8067;
 
   /**
+   * Default server IPs
+   */
+  private String[] serverIps = null;
+
+  /**
+   * Default SSL server IPs
+   */
+  private String[] serverSslIps = null;
+
+  /**
+   * Default HTTP server IPs
+   */
+  private String[] serverHttpIps = null;
+
+  /**
+   * Default HTTP server IPs
+   */
+  private String[] serverHttpsIps = null;
+
+  /**
    * Nb of milliseconds after connection is in timeout
    */
   private long timeoutCon = 30000;
@@ -426,6 +446,12 @@ public class Configuration {
    * ChannelGroup
    */
   protected ChannelGroup serverChannelGroup;
+
+  /**
+   * List of all Server Channels connected to remote to enable the close call
+   * on them using Netty ChannelGroup
+   */
+  protected ChannelGroup serverConnectedChannelGroup;
   /**
    * Main bind address in no ssl mode
    */
@@ -681,6 +707,20 @@ public class Configuration {
     }
   }
 
+  private String arrayToString(String[] array) {
+    String ip;
+    if (array != null && array.length > 0) {
+      ip = "[" + array[0];
+      for (int i = 1; i < array.length; i++) {
+        ip += "," + array[i];
+      }
+      ip += "]";
+    } else {
+      ip = "[All Interfaces]";
+    }
+    return ip;
+  }
+
   @Override
   public String toString() {
     StringBuilder rest = null;
@@ -696,9 +736,16 @@ public class Configuration {
             .append('\'');
       }
     }
-    return "Config: { ServerPort: " + getServerPort() + ", ServerSslPort: " +
-           getServerSslPort() + ", ServerView: " + getServerHttpport() +
-           ", ServerAdmin: " + getServerHttpsPort() + ", ThriftPort: " +
+    String serverIp = arrayToString(getServerIps());
+    String serverSslIp = arrayToString(getServerSslIps());
+    String serverHttpIp = arrayToString(getServerHttpIps());
+    String serverHttpsIp = arrayToString(getServerHttpsIps());
+    return "Config: { ServerIp: " + serverIp + ", ServerPort: " +
+           getServerPort() + ", ServerSslIp: " + serverSslIp +
+           ", ServerSslPort: " + getServerSslPort() + ", ServerViewIp: " +
+           serverHttpIp + ", ServerView: " + getServerHttpport() +
+           ", ServerAdminIp: " + serverHttpsIp + ", ServerAdmin: " +
+           getServerHttpsPort() + ", ThriftPort: " +
            (getThriftport() > 0? getThriftport() : "'NoThriftSupport'") +
            ", RestAddress: [" +
            (rest != null? rest.toString() : "'NoRestSupport'") + ']' +
@@ -837,34 +884,62 @@ public class Configuration {
     }
   }
 
+  private Channel bindTo(String ip, int port,
+                         ServerBootstrap serverBootstrapToBind,
+                         String messageError) throws ServerException {
+    InetSocketAddress inetSocketAddress =
+        ip == null? new InetSocketAddress(port) :
+            new InetSocketAddress(ip, port);
+    final ChannelFuture future =
+        serverBootstrapToBind.bind(inetSocketAddress).awaitUninterruptibly();
+    if (future.isSuccess()) {
+      Channel channel = future.channel();
+      serverChannelGroup.add(channel);
+      return channel;
+    } else {
+      throw new ServerException(messageError + " [" + ip + ":" + port + "]",
+                                future.cause());
+    }
+  }
+
+  private Channel bindTo(String[] ips, int port,
+                         ServerBootstrap serverBootstrapToBind,
+                         String messageError) throws ServerException {
+    if (ips == null || ips.length == 0) {
+      return bindTo((String) null, port, serverBootstrapToBind, messageError);
+    } else {
+      Channel channel = null;
+      for (String ip : ips) {
+        channel = bindTo(ip, port, serverBootstrapToBind, messageError);
+      }
+      return channel;
+    }
+  }
+
   public void r66Startup()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              ServerException {
-    logger.info(
-        Messages.getString("Configuration.Start") + getServerPort() + ':' +
-        isUseNOSSL() + ':' + getHostId() + //$NON-NLS-1$
-        ' ' + getServerSslPort() + ':' + isUseSSL() + ':' + getHostSslId());
+    logger.info(Messages.getString("Configuration.Start") +
+                arrayToString(getServerIps()) + ':' + getServerPort() + ':' +
+                isUseNOSSL() + ':' + getHostId() + //$NON-NLS-1$
+                ' ' + arrayToString(getServerSslIps()) + ':' +
+                getServerSslPort() + ':' + isUseSSL() + ':' + getHostSslId());
     // add into configuration
     getConstraintLimitHandler().setServer(true);
     // Global Server
     serverChannelGroup =
         new DefaultChannelGroup("OpenR66", subTaskGroup.next());
+    serverConnectedChannelGroup =
+        new DefaultChannelGroup("OpenR66Connected", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
                                         (int) getTimeoutCon());
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
-      final ChannelFuture future =
-          serverBootstrap.bind(new InetSocketAddress(getServerPort()))
-                         .awaitUninterruptibly();
-      if (future.isSuccess()) {
-        bindNoSSL = future.channel();
-        serverChannelGroup.add(bindNoSSL);
-      } else {
-        throw new ServerException(
-            Messages.getString("Configuration.R66NotBound"), future.cause());
-      }
+      String[] serverIps = getServerIps();
+      bindNoSSL = bindTo(serverIps, getServerPort(), serverBootstrap,
+                         Messages.getString("Configuration.R66NotBound"));
     } else {
       networkServerInitializer = null;
       logger.warn(
@@ -877,16 +952,9 @@ public class Configuration {
                                         (int) getTimeoutCon());
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
-      final ChannelFuture future =
-          serverSslBootstrap.bind(new InetSocketAddress(getServerSslPort()))
-                            .awaitUninterruptibly();
-      if (future.isSuccess()) {
-        bindSSL = future.channel();
-        serverChannelGroup.add(bindSSL);
-      } else {
-        throw new ServerException(
-            Messages.getString("Configuration.R66SSLNotBound"), future.cause());
-      }
+      String[] serverIps = getServerSslIps();
+      bindSSL = bindTo(serverIps, getServerSslPort(), serverSslBootstrap,
+                       Messages.getString("Configuration.R66SSLNotBound"));
     } else {
       networkSslServerInitializer = null;
       logger.warn(
@@ -925,14 +993,9 @@ public class Configuration {
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
     // Bind and start to accept incoming connections.
     if (getServerHttpport() > 0) {
-      final ChannelFuture future =
-          httpBootstrap.bind(new InetSocketAddress(getServerHttpport()))
-                       .awaitUninterruptibly();
-      if (future.isSuccess()) {
-        httpChannelGroup.add(future.channel());
-      } else {
-        throw new ServerException("Can't start HTTP service");
-      }
+      String[] serverIps = getServerHttpIps();
+      bindTo(serverIps, getServerHttpport(), httpBootstrap,
+             "Can't start HTTP service");
     }
     // Now start the HTTPS support
     // Configure the server.
@@ -950,14 +1013,9 @@ public class Configuration {
     }
     // Bind and start to accept incoming connections.
     if (getServerHttpsPort() > 0) {
-      final ChannelFuture future =
-          httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))
-                        .awaitUninterruptibly();
-      if (future.isSuccess()) {
-        httpChannelGroup.add(future.channel());
-      } else {
-        throw new ServerException("Can't start HTTPS service");
-      }
+      String[] serverIps = getServerHttpsIps();
+      bindTo(serverIps, getServerHttpsPort(), httpsBootstrap,
+             "Can't start HTTPS service");
     }
   }
 
@@ -1300,6 +1358,13 @@ public class Configuration {
    */
   public ChannelGroup getServerChannelGroup() {
     return serverChannelGroup;
+  }
+
+  /**
+   * @return the server connected channels group
+   */
+  public ChannelGroup getServerConnectedChannelGroup() {
+    return serverConnectedChannelGroup;
   }
 
   /**
@@ -1776,6 +1841,62 @@ public class Configuration {
    */
   public void setServerHttpsPort(int serverHTTPSPORT) {
     serverHttpsPort = serverHTTPSPORT;
+  }
+
+  /**
+   * @return the sERVER_IPs
+   */
+  public String[] getServerIps() {
+    return serverIps;
+  }
+
+  /**
+   * @param serverIPS the sERVER_IPs to set
+   */
+  public void setServerIps(String[] serverIPS) {
+    serverIps = serverIPS;
+  }
+
+  /**
+   * @return the sERVER_SSLIPS
+   */
+  public String[] getServerSslIps() {
+    return serverSslIps;
+  }
+
+  /**
+   * @param serverSSLIPS the sERVER_SSLIPS to set
+   */
+  public void setServerSslIps(String[] serverSSLIPS) {
+    serverSslIps = serverSSLIPS;
+  }
+
+  /**
+   * @return the sERVER_HTTPIPS
+   */
+  public String[] getServerHttpIps() {
+    return serverHttpIps;
+  }
+
+  /**
+   * @param serverHTTPIPS the sERVER_HTTPIPS to set
+   */
+  public void setServerHttpIps(String[] serverHTTPIPS) {
+    serverHttpIps = serverHTTPIPS;
+  }
+
+  /**
+   * @return the sERVER_HTTPSIPS
+   */
+  public String[] getServerHttpsIps() {
+    return serverHttpsIps;
+  }
+
+  /**
+   * @param serverHTTPSIPS the sERVER_HTTPSIPS to set
+   */
+  public void setServerHttpsIps(String[] serverHTTPSIPS) {
+    serverHttpsIps = serverHTTPSIPS;
   }
 
   /**

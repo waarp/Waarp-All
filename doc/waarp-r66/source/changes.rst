@@ -10,6 +10,13 @@ Non publié
 Waarp R66 3.4.1 (2020-08-18)
 ============================
 
+Nouvelles fonctionnalités
+-------------------------
+
+- [`#74 <https://github.com/waarp/Waarp-All/pull/74>`__]
+  Les interfaces réseaux sont spécifiables en plus du port à utiliser.
+  Plusieurs interfaces sont possibles (séparées par une virgule).
+
 Correctifs
 ----------
 
