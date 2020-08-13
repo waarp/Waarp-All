@@ -7,6 +7,48 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.5.0 (2020-09-01)
+============================
+
+Nouvelles fonctionnalités
+-------------------------
+
+- [`#74 <https://github.com/waarp/Waarp-All/pull/74>`__]
+  Les interfaces réseaux sont spécifiables en plus du port à utiliser.
+  Plusieurs interfaces sont possibles (séparées par une virgule).
+
+Correctifs
+----------
+
+- [`#72 <https://github.com/waarp/Waarp-All/pull/72>`__]
+  Le commander pouvait être bloqué dans certains cas.
+  (issue [`#65 <https://github.com/waarp/Waarp-All/issues/65>`__])
+- [`#71 <https://github.com/waarp/Waarp-All/pull/71>`__]
+  XMLRuleDAO ne prenait pas en compte les règles de transferts (cas d'un
+  client sans base comme le FileMonitor)
+  (issue [`#64 <https://github.com/waarp/Waarp-All/issues/64>`__])
+- [`#69 <https://github.com/waarp/Waarp-All/pull/69>`__]
+  Des actions dans le menu Système de l'interface d'administration
+  étaient manquantes.
+  (issue [`#63 <https://github.com/waarp/Waarp-All/issues/63>`__])
+- [`#70 <https://github.com/waarp/Waarp-All/pull/70>`__]
+  Un transfert d'un client vers lui-même (self-transfert) provoquait
+  un effacement du transfert.
+  (issue [`#62 <https://github.com/waarp/Waarp-All/issues/62>`__])
+- [`#68 <https://github.com/waarp/Waarp-All/pull/68>`__]
+  La page Web admin était cassée avec les map dans le champ Information
+  de transfert.
+  (issue [`#61 <https://github.com/waarp/Waarp-All/issues/61>`__])
+- [`#67 <https://github.com/waarp/Waarp-All/pull/67>`__]
+  Les options de sorties (csv, xml, json, property) sont rétablies
+  et dans un format approprié.
+  (issue [`#60 <https://github.com/waarp/Waarp-All/issues/60>`__],
+  issue [`#78 <https://github.com/waarp/Waarp-All/issues/78>`__])
+- [`#66 <https://github.com/waarp/Waarp-All/pull/66>`__]
+  EXECOUTPUT provoquait une erreur de mappage de classe
+  (issue [`#59 <https://github.com/waarp/Waarp-All/issues/59>`__])
+
+
 Waarp R66 3.4.0 (2020-07-17)
 ============================
 

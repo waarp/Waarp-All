@@ -82,15 +82,58 @@ businessfactorynetwork string   N    null     Indique la classe Factory pour les
 Section ``network``
 -------------------
 
-================== ======= ==== ========= =============
-Balise             Type    Obl. Défaut    Signification
-================== ======= ==== ========= =============
-serverport         integer N    6666      Port utilisé pour le protocole R66
-serversslport      integer N    6667      Port utilisé pour le protocole R66 en SSL
-serverhttpport     integer N    8066      Port utilisé pour l'interface web de supervision (la valeur ``0`` désactive l'interface)
-serverhttpsport    integer N    8067      Port utilisé pour l'interface web HTTPS d'administration (la valeur ``0`` désactive l'interface)
-================== ======= ==== ========= =============
+==================== ======= ==== ========= =============
+Balise               Type    Obl. Défaut    Signification
+==================== ======= ==== ========= =============
+serverport           integer N    6666      Port utilisé pour le protocole R66
+serveraddresses      string  N    null      Adresses utilisées pour le protocole R66 (séparées par des virgules)
+serversslport        integer N    6667      Port utilisé pour le protocole R66 en SSL
+serverssladdresses   string  N    null      Adresses utilisées pour le protocole R66 en SSL (séparées par des virgules)
+serverhttpport       integer N    8066      Port utilisé pour l'interface web de supervision (la valeur ``0`` désactive l'interface)
+serverhttpips        string  N    null      Adresses utilisées pour l'interface web de supervision (séparées par des virgules)
+serverhttpsport      integer N    8067      Port utilisé pour l'interface web HTTPS d'administration (la valeur ``0`` désactive l'interface)
+serverhttpsaddresses string  N    null      Adresses utilisées pour l'interface web HTTPS d'administration (séparées par des virgules)
+==================== ======= ==== ========= =============
 
+.. versionadded:: 3.5.0
+
+  Il est possible de définir avec précision les interfaces (IP) utilisées pour
+  chacun des ports via les options serveraddresses, serverssladdresses,
+  serverhttpaddresses, serverhttpsaddresses. Chacune spécifie optionnellement
+  la liste des IP à associer (avec le port défini optionnellement) avec la
+  virgule comme séparateur.
+
+  Si cette option n'est pas spécifiée ou vide pour un port de service, toutes
+  les interfaces disponibles seront associées à ce service avec ce port.
+
+  Exemple :
+
+.. code-block:: xml
+
+  <network>
+    <serverport>6666</serverport>
+    <!-- 1 adresse définie en loop -->
+    <serveraddresses>127.0.0.1</serveraddresses>
+    <serversslport>6667</serversslport>
+    <!-- 2 adresses définies -->
+    <serverssladdresses>192.168.0.2,10.1.0.10</serverssladdresses>
+    <serverhttpport>8066</serverhttpport>
+    <!-- Toutes les interfaces seront utilisées, idem si non spécifié -->
+    <serverhttpaddresses/>
+    <serverhttpsport>8067</serverhttpsport>
+    <!-- 1 adresse définie en local -->
+    <serverhttpsaddresses>192.168.0.2</serverhttpsaddresses>
+  </network>
+
+.. code-block:: xml
+
+  <network>
+    <!-- Toutes les interfaces seront utilisées -->
+    <serverport>6666</serverport>
+    <serversslport>6667</serversslport>
+    <serverhttpport>8066</serverhttpport>
+    <serverhttpsport>8067</serverhttpsport>
+  </network>
 
 .. _server-xml-ssl:
 
