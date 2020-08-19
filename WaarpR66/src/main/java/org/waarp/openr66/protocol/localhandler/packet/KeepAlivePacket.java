@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -72,6 +74,22 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + 1, GLOBAL_HEADER_SIZE + 1);
+    middle = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, 1);
+    middle.writeByte(way);
+    end = Unpooled.EMPTY_BUFFER;
+    header = Unpooled.EMPTY_BUFFER;
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr) {
     end = Unpooled.EMPTY_BUFFER;
   }
@@ -109,8 +127,6 @@ public class KeepAlivePacket extends AbstractLocalPacket {
    */
   public void validate() {
     way = ANSWERVALIDATE;
-    header = null;
-    middle = null;
-    end = null;
+    clear();
   }
 }

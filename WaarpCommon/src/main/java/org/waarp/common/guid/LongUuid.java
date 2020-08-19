@@ -50,7 +50,7 @@ public final class LongUuid {
   /**
    * real UUID
    */
-  private final byte[] uuid;
+  private final byte[] uuid = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
   /**
    * Constructor that generates a new UUID using the current process id, MAC
@@ -58,8 +58,6 @@ public final class LongUuid {
    */
   public LongUuid() {
     final long time = System.currentTimeMillis();
-    uuid = new byte[UUIDSIZE];
-
     // atomically
     final int count;
     synchronized (COUNTER) {
@@ -94,12 +92,10 @@ public final class LongUuid {
       throw new RuntimeException(
           "Attempted to parse malformed UUID: " + Arrays.toString(bytes));
     }
-
-    uuid = Arrays.copyOf(bytes, UUIDSIZE);
+    System.arraycopy(bytes, 0, uuid, 0, UUIDSIZE);
   }
 
   public LongUuid(final long value) {
-    uuid = new byte[UUIDSIZE];
     uuid[0] = (byte) (value >> 56);
     uuid[1] = (byte) (value >> 48);
     uuid[2] = (byte) (value >> 40);
@@ -116,8 +112,7 @@ public final class LongUuid {
     if (id.length() != UUIDSIZE * 2) {
       throw new RuntimeException("Attempted to parse malformed UUID: " + id);
     }
-
-    uuid = Hexa.fromHex(id);
+    System.arraycopy(Hexa.fromHex(id), 0, uuid, 0, UUIDSIZE);
   }
 
   @Override

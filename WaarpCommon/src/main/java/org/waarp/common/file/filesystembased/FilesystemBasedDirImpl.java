@@ -53,6 +53,8 @@ import java.util.Locale;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import static org.waarp.common.file.FileUtils.*;
+
 /**
  * Directory implementation for Filesystem Based
  */
@@ -721,7 +723,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       } catch (final FileNotFoundException e) {
         throw new Reply550Exception("File not found: " + path);
       }
-      final byte[] buf = new byte[session.getBlockSize()];
+      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
       while (cis.read(buf) >= 0) {
         // nothing
       }

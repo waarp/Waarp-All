@@ -79,6 +79,7 @@ import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket.TRANSFERMODE;
+import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.NbAndSpecialId;
 import org.waarp.openr66.protocol.utils.R66Future;
@@ -2726,10 +2727,23 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (tasks.length <= getStep()) {
       throw new OpenR66RunnerEndTasksException();
     }
+    // Possible long task
+    LocalChannelReference lcr = session.getLocalChannelReference();
+    NetworkServerHandler nsh = null;
+    if (lcr != null) {
+      nsh = lcr.getNetworkServerHandler();
+      if (nsh != null) {
+        nsh.resetKeepAlive();
+      }
+    }
     final AbstractTask task = getTask(tasks[getStep()], tempSession);
     logger.debug(toLogRunStep() + " Task: " + task.getClass().getName());
     task.run();
     task.getFutureCompletion().awaitOrInterruptible();
+    // Possible long task
+    if (nsh != null) {
+      nsh.resetKeepAlive();
+    }
     if (task.getType() == TaskType.RESCHEDULE) {
       // Special case : must test if exec is OK since it must be the last
       if (isRescheduledTransfer()) {

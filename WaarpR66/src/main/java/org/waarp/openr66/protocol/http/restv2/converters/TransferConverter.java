@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.waarp.common.file.FileUtils.*;
 import static org.waarp.openr66.dao.database.DBTransferDAO.*;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.TransferFields.*;
@@ -170,7 +171,7 @@ public final class TransferConverter {
    */
   public static Transfer nodeToNewTransfer(ObjectNode object) {
     final Transfer defaultTransfer =
-        new Transfer(null, null, -1, false, null, null, 65536);
+        new Transfer(null, null, -1, false, null, null, ZERO_COPY_CHUNK_SIZE);
     defaultTransfer.setRequester(serverName());
     defaultTransfer.setOwnerRequest(serverName());
     defaultTransfer.setBlockSize(Configuration.configuration.getBlockSize());

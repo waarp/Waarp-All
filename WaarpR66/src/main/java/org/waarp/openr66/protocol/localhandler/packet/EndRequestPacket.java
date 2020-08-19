@@ -20,7 +20,10 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -103,6 +106,35 @@ public class EndRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    final int headerSize = 4;
+    final int middleSize = 1;
+    final byte[] endBytes =
+        optional != null? optional.getBytes(WaarpStringUtils.UTF8) :
+            EMPTY_ARRAY;
+    final int endSize = endBytes.length;
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
+                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    header.writeInt(code);
+    middle = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    middle.writeByte(way);
+    end = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize + middleSize, endSize);
+    if (optional != null) {
+      end.writeBytes(endBytes);
+    }
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr) {
     if (optional == null) {
       end = Unpooled.EMPTY_BUFFER;
@@ -113,7 +145,7 @@ public class EndRequestPacket extends AbstractLocalPacket {
 
   @Override
   public void createHeader(LocalChannelReference lcr) {
-    header = Unpooled.buffer(4);
+    header = ByteBufAllocator.DEFAULT.buffer(4, 4);
     header.writeInt(code);
   }
 
@@ -153,9 +185,7 @@ public class EndRequestPacket extends AbstractLocalPacket {
    */
   public void validate() {
     way = ANSWERVALIDATE;
-    header = null;
-    middle = null;
-    end = null;
+    clear();
   }
 
   /**

@@ -22,7 +22,9 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
@@ -99,9 +101,40 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    final byte[] headerBytes =
+        request != null? request.getBytes() : EMPTY_ARRAY;
+    final int headerSize = headerBytes.length;
+    final byte[] middleBytes = result != null? result.getBytes() : EMPTY_ARRAY;
+    final int middleSize = middleBytes.length;
+    final int endSize = 1;
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
+                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    if (request != null) {
+      header.writeBytes(headerBytes);
+    }
+    middle = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    if (result != null) {
+      middle.writeBytes(middleBytes);
+    }
+    end = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize + middleSize, endSize);
+    end.writeByte(send);
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    end = Unpooled.buffer(1);
+    end = ByteBufAllocator.DEFAULT.buffer(1, 1);
     end.writeByte(send);
   }
 

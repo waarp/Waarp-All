@@ -724,8 +724,8 @@ public final class Base64 {
    * @since 2.3
    */
   public static void encode(ByteBuffer raw, ByteBuffer encoded) {
-    final byte[] raw3 = new byte[3];
-    final byte[] enc4 = new byte[4];
+    final byte[] raw3 = { 0, 0, 0 };
+    final byte[] enc4 = { 0, 0, 0, 0 };
 
     while (raw.hasRemaining()) {
       final int rem = Math.min(3, raw.remaining());
@@ -748,8 +748,8 @@ public final class Base64 {
    * @since 2.3
    */
   public static void encode(ByteBuffer raw, CharBuffer encoded) {
-    final byte[] raw3 = new byte[3];
-    final byte[] enc4 = new byte[4];
+    final byte[] raw3 = { 0, 0, 0 };
+    final byte[] enc4 = { 0, 0, 0, 0 };
 
     while (raw.hasRemaining()) {
       final int rem = Math.min(3, raw.remaining());
@@ -1332,7 +1332,7 @@ public final class Base64 {
     int outBuffPosn = 0; // Keep track of where we're writing
 
     final byte[] b4 =
-        new byte[4]; // Four byte buffer from source, eliminating white space
+        { 0, 0, 0, 0 }; // Four byte buffer from source, eliminating white space
     int b4Posn = 0; // Keep track of four byte input buffer
     int i; // Source array counter
     byte sbiDecode; // Special value from decodabet
@@ -1793,6 +1793,8 @@ public final class Base64 {
     private final boolean encode; // Encoding or decoding
     private int position; // Current position in the buffer
     private final byte[] buffer; // Small buffer holding converted data
+    private final byte[] bsize3 = { 0, 0, 0 };
+    private final byte[] bsize4 = { 0, 0, 0, 0 };
     private final int bufferLength; // Length of buffer (3 or 4)
     private int numSigBytes; // Number of meaningful bytes in the buffer
     private int lineLength;
@@ -1844,7 +1846,7 @@ public final class Base64 {
       breakLines = (options & DO_BREAK_LINES) > 0;
       encode = (options & ENCODE) > 0;
       bufferLength = encode? 4 : 3;
-      buffer = new byte[bufferLength];
+      buffer = encode? bsize4 : bsize3;
       position = -1;
       lineLength = 0;
       decodabet = getDecodabet(options);
@@ -1864,7 +1866,7 @@ public final class Base64 {
       // Do we need to get data?
       if (position < 0) {
         if (encode) {
-          final byte[] b3 = new byte[3];
+          final byte[] b3 = { 0, 0, 0 };
           int numBinaryBytes = 0;
           for (int i = 0; i < 3; i++) {
             final int b = in.read();
@@ -1891,7 +1893,7 @@ public final class Base64 {
 
         // Else decoding
         else {
-          final byte[] b4 = new byte[4];
+          final byte[] b4 = { 0, 0, 0, 0 };
           int i;
           for (i = 0; i < 4; i++) {
             // Read four "meaningful" bytes:
@@ -2004,10 +2006,12 @@ public final class Base64 {
     private final boolean encode;
     private int position;
     private byte[] buffer;
+    private final byte[] bsize3 = { 0, 0, 0 };
+    private final byte[] bsize4 = { 0, 0, 0, 0 };
     private final int bufferLength;
     private int lineLength;
     private final boolean breakLines;
-    private final byte[] b4; // Scratch used in a few places
+    private final byte[] b4 = { 0, 0, 0, 0 }; // Scratch used in a few places
     private boolean suspendEncoding;
     private final int options; // Record for later
     private final byte[] decodabet;
@@ -2053,11 +2057,10 @@ public final class Base64 {
       breakLines = (options & DO_BREAK_LINES) != 0;
       encode = (options & ENCODE) != 0;
       bufferLength = encode? 3 : 4;
-      buffer = new byte[bufferLength];
+      buffer = encode? bsize3 : bsize4;
       position = 0;
       lineLength = 0;
       suspendEncoding = false;
-      b4 = new byte[4];
       this.options = options;
       decodabet = getDecodabet(options);
     } // end constructor

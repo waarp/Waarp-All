@@ -20,6 +20,7 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -45,6 +46,21 @@ public class NoOpPacket extends AbstractLocalPacket {
                                             int endLength, ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     return new NoOpPacket();
+  }
+
+  @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    global =
+        ByteBufAllocator.DEFAULT.buffer(GLOBAL_HEADER_SIZE, GLOBAL_HEADER_SIZE);
+    end = Unpooled.EMPTY_BUFFER;
+    header = Unpooled.EMPTY_BUFFER;
+    middle = Unpooled.EMPTY_BUFFER;
   }
 
   @Override

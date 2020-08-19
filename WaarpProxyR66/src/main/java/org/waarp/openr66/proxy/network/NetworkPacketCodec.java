@@ -59,8 +59,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     final int localId = buf.readInt();
     final byte code = buf.readByte();
     final int readerInder = buf.readerIndex();
-    final ByteBuf buffer = buf.slice(readerInder, length - 9);
-    buffer.retain();
+    final ByteBuf buffer = buf.retainedSlice(readerInder, length - 9);
     buf.skipBytes(length - 9);
     NetworkPacket networkPacket =
         new NetworkPacket(localId, remoteId, code, buffer);
@@ -80,7 +79,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
           new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
       final NetworkServerHandler nsh =
           (NetworkServerHandler) ctx.pipeline().last();
-      nsh.setKeepAlivedSent();
+      nsh.resetKeepAlive();
     }
     out.add(networkPacket);
   }

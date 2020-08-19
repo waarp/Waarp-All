@@ -420,10 +420,12 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         Unpooled.wrappedBuffer(message.getBytes(WaarpStringUtils.UTF8));
     dataBlock.setBlock(buffer);
     ChannelFuture future;
-    logger.debug("Will write: " + buffer.toString(WaarpStringUtils.UTF8));
+    if (logger.isDebugEnabled()) {
+      logger.debug("Will write: {}", buffer.toString(WaarpStringUtils.UTF8));
+    }
     future = dataChannel.writeAndFlush(dataBlock);
     WaarpNettyUtil.awaitOrInterrupted(future);
-    logger.debug("Write result: " + future.isSuccess(), future.cause());
+    logger.debug("Write result: {} {}", future.isSuccess(), future.cause());
     return future.isSuccess();
   }
 

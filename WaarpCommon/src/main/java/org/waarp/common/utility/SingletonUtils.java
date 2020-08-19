@@ -31,7 +31,7 @@ import java.util.Set;
  * Singleton utility class
  */
 public final class SingletonUtils {
-  private static final byte[] SINGLETON_BYTE_ARRAY = new byte[0];
+  private static final byte[] SINGLETON_BYTE_ARRAY = {};
   private static final InputStream SINGLETON_INPUTSTREAM =
       new NullInputStream();
   private static final OutputStream SINGLETON_OUTPUTSTREAM =

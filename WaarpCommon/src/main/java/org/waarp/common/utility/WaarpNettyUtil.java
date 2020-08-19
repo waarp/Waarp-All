@@ -21,6 +21,7 @@ package org.waarp.common.utility;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -147,5 +148,51 @@ public final class WaarpNettyUtil {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     return false;
+  }
+
+  /**
+   * Shortcut to release a ByteByf
+   *
+   * @param byteBuf
+   *
+   * @return True if the ByteBuf is released
+   */
+  public static boolean release(final ByteBuf byteBuf) {
+    if (byteBuf != null && byteBuf.refCnt() > 0) {
+      return byteBuf.release();
+    }
+    return false;
+  }
+
+  /**
+   * Shortcut to release completely a ByteByf
+   *
+   * @param byteBuf
+   */
+  public static void releaseCompletely(final ByteBuf byteBuf) {
+    if (byteBuf != null) {
+      if (byteBuf.refCnt() != 0) {
+        while (!byteBuf.release()) {
+          // Nothing
+        }
+      }
+    }
+  }
+
+  /**
+   * Utility method to return a ByteBuf slice with Write ready.
+   * No retain is called on this slice.
+   *
+   * @param byteBuf
+   * @param start
+   * @param size
+   *
+   * @return the ByteBuf sliced
+   */
+  public static ByteBuf slice(final ByteBuf byteBuf, final int start,
+                              final int size) {
+    final ByteBuf bufSliced = byteBuf.slice(start, size);
+    bufSliced.writerIndex(0);
+    return bufSliced;
   }
 }

@@ -25,6 +25,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacketCodec;
@@ -36,6 +38,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class NetworkServerInitializer
     extends ChannelInitializer<SocketChannel> {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(NetworkServerInitializer.class);
 
   public static final String TIMEOUT = "timeout";
   public static final String LIMITGLOBAL = "GLOBALLIMIT";
@@ -52,7 +59,9 @@ public class NetworkServerInitializer
   @Override
   protected void initChannel(SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
-    pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0,
+    logger.debug("Create IdleStateHandler with {} ms",
+                 Configuration.configuration.getTimeoutCon());
+    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0,
                                                    Configuration.configuration
                                                        .getTimeoutCon(),
                                                    TimeUnit.MILLISECONDS));
