@@ -27,7 +27,10 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
@@ -223,6 +226,23 @@ public class NetworkChannelReference {
 
   public int nbLocalChannels() {
     return localChannelReferences.size();
+  }
+
+  /**
+   * @return True if at least one LocalChannel is not yet finished (OK or Error)
+   */
+  public boolean isSomeLocalChannelsActive() {
+    for (LocalChannelReference localChannelReference : localChannelReferences) {
+      R66Session session = localChannelReference.getSession();
+      if (session != null) {
+        DbTaskRunner runner = session.getRunner();
+        if (runner != null && !runner.isFinished() &&
+            runner.getGlobalStep() != TASKSTEP.NOTASK) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override

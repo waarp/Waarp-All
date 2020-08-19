@@ -32,6 +32,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.SessionInterface;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,6 +86,28 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * Is this file in append mode
    */
   protected boolean isAppend;
+
+  /**
+   * Valid Position of this file
+   */
+  private long position;
+
+  /**
+   * FileOutputStream Out
+   */
+  private FileOutputStream fileOutputStream;
+  /**
+   * FileChannel In
+   */
+  private FileChannel bfileChannelIn;
+
+  /**
+   * Associated ByteBuffer
+   */
+  private ByteBuffer byteBufferIn;
+  private ByteBuf byteBufIn;
+
+  private byte[] reusableBytes;
 
   /**
    * @param session
@@ -212,7 +235,16 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (bfileChannelIn != null) {
       FileUtils.close(bfileChannelIn);
       bfileChannelIn = null;
-      bbyteBuffer = null;
+    }
+    if (byteBufferIn != null) {
+      byteBufferIn = null;
+    }
+    if (byteBufIn != null) {
+      WaarpNettyUtil.releaseCompletely(byteBufIn);
+      byteBufIn = null;
+    }
+    if (reusableBytes != null) {
+      reusableBytes = null;
     }
     if (fileOutputStream != null) {
       FileUtils.close(fileOutputStream);
@@ -394,25 +426,6 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   /**
-   * Valid Position of this file
-   */
-  private long position;
-
-  /**
-   * FileOutputStream Out
-   */
-  private FileOutputStream fileOutputStream;
-  /**
-   * FileChannel In
-   */
-  private FileChannel bfileChannelIn;
-
-  /**
-   * Associated ByteBuffer
-   */
-  private ByteBuffer bbyteBuffer;
-
-  /**
    * Return the current position in the FileInterface. In write mode, it is
    * the
    * current file length.
@@ -444,8 +457,6 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
     }
   }
-
-  private byte[] reusableBytes;
 
   /**
    * Write the current FileInterface with the given ByteBuf. The file is not
@@ -523,6 +534,30 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     }
   }
 
+  private void checkByteBufSize(int size) {
+    if (reusableBytes != null) {
+      if (reusableBytes.length != size) {
+        reusableBytes = new byte[size];
+        byteBufferIn = ByteBuffer.wrap(reusableBytes);
+        WaarpNettyUtil.releaseCompletely(byteBufIn);
+        byteBufIn = Unpooled.wrappedBuffer(reusableBytes);
+      }
+    } else {
+      if (reusableBytes == null || reusableBytes.length != size) {
+        reusableBytes = new byte[size];
+      }
+      byteBufferIn = ByteBuffer.wrap(reusableBytes);
+      byteBufIn = Unpooled.wrappedBuffer(reusableBytes);
+    }
+    resetBuffers();
+  }
+
+  private void resetBuffers() {
+    byteBufIn.clear();
+    byteBufIn.readerIndex(0);
+    byteBufIn.writerIndex(0);
+  }
+
   /**
    * Get the current block ByteBuf of the current FileInterface. There is
    * therefore no limitation of the file
@@ -539,31 +574,24 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @throws FileTransferException
    * @throws FileEndOfTransferException
    */
-  private ByteBuf getBlock(int sizeblock)
+  private ByteBuf getBlock(final int sizeblock)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
     }
     if (bfileChannelIn == null) {
       bfileChannelIn = getFileChannel();
-      if (bfileChannelIn != null) {
-        if (bbyteBuffer != null) {
-          if (bbyteBuffer.capacity() != sizeblock) {
-            bbyteBuffer = null;
-            bbyteBuffer = ByteBuffer.allocateDirect(sizeblock);
-          }
-        } else {
-          bbyteBuffer = ByteBuffer.allocateDirect(sizeblock);
-        }
+      if (bfileChannelIn == null) {
+        throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
       }
-    }
-    if (bfileChannelIn == null) {
-      throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
+      checkByteBufSize(sizeblock);
+    } else {
+      resetBuffers();
     }
     int sizeout = 0;
     while (sizeout < sizeblock) {
       try {
-        final int sizeread = bfileChannelIn.read(bbyteBuffer);
+        final int sizeread = bfileChannelIn.read(byteBufferIn);
         if (sizeread <= 0) {
           break;
         }
@@ -587,17 +615,22 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       isReady = false;
       throw new FileEndOfTransferException("End of file");
     }
-    bbyteBuffer.flip();
+    byteBufferIn.flip();
     position += sizeout;
-    final ByteBuf buffer = Unpooled.wrappedBuffer(bbyteBuffer);
-    bbyteBuffer.clear();
+    byteBufferIn.clear();
+    byteBufIn.readerIndex(0);
+    byteBufIn.writerIndex(sizeout);
+    ByteBuf buffer = byteBufIn;
     if (sizeout < sizeblock) {// last block
+      buffer = buffer.copy();
       try {
         closeFile();
       } catch (final CommandAbstractException ignored) {
         // nothing
       }
       isReady = false;
+    } else {
+      buffer.retain();
     }
     return buffer;
   }
@@ -640,7 +673,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       long chunkSize;
       while (transfert < size) {
-        chunkSize = size - transfert;
+        chunkSize = Math.min(size - transfert, FileUtils.ZERO_COPY_CHUNK_SIZE);
         transfert +=
             fileChannelOut.transferFrom(fileChannelIn, transfert, chunkSize);
       }

@@ -74,6 +74,8 @@ public class FilesystemBasedDigest {
    */
   public static final Charset UTF8 = Charset.forName("UTF-8");
   private static final byte[] EMPTY = {};
+  public static final int ZERO_COPY_CHUNK_SIZE = 64 * 1024;
+  protected static final int MINIMAL_BUFFER = 512;
 
   static {
     initializedTlsContext();
@@ -179,13 +181,20 @@ public class FilesystemBasedDigest {
 
   private byte[] reusableBytes;
 
+  /**
+   * One should call getOffset since offset within array could not 0
+   *
+   * @param buffer
+   *
+   * @return the array corresponding to this buffer (may be copied)
+   */
   public final byte[] getBytes(final ByteBuf buffer) {
     byte[] bytes;
     final int length = buffer.readableBytes();
     if (buffer.hasArray()) {
       bytes = buffer.array();
     } else {
-      if (reusableBytes == null || reusableBytes.length < length) {
+      if (reusableBytes == null || reusableBytes.length != length) {
         reusableBytes = new byte[length];
       }
       bytes = reusableBytes;
@@ -194,6 +203,11 @@ public class FilesystemBasedDigest {
     return bytes;
   }
 
+  /**
+   * @param buffer
+   *
+   * @return the offset for the getBytes array
+   */
   public final int getOffset(final ByteBuf buffer) {
     if (buffer.hasArray()) {
       return buffer.arrayOffset();
@@ -501,11 +515,11 @@ public class FilesystemBasedDigest {
     FileInputStream in = null;
     try {
       long bufSize = f.length();
-      if (bufSize < 512) {
-        bufSize = 512;
+      if (bufSize < MINIMAL_BUFFER) {
+        bufSize = MINIMAL_BUFFER;
       }
-      if (bufSize > 65536) {
-        bufSize = 65536;
+      if (bufSize > ZERO_COPY_CHUNK_SIZE) {
+        bufSize = ZERO_COPY_CHUNK_SIZE;
       }
       byte[] buf = new byte[(int) bufSize];
       in = new FileInputStream(f);
@@ -601,8 +615,7 @@ public class FilesystemBasedDigest {
       return MD5.getHash(stream);
     }
     try {
-      final int buf_size = 65536;
-      byte[] buf = new byte[buf_size];
+      byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
       // Not NIO
       return getHashNoNio(stream, algo, buf);
     } catch (final IOException e) {

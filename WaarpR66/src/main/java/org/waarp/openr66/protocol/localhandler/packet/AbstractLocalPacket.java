@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -34,11 +36,16 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * End: (End length field bytes) = code status field (4 bytes), ...<br>
  */
 public abstract class AbstractLocalPacket {
+  protected static final byte[] EMPTY_ARRAY = {};
+  protected static final int GLOBAL_HEADER_SIZE = 4 * 3 + 1;
+
   protected ByteBuf header;
 
   protected ByteBuf middle;
 
   protected ByteBuf end;
+
+  protected ByteBuf global = null;
 
   protected AbstractLocalPacket(ByteBuf header, ByteBuf middle, ByteBuf end) {
     this.header = header;
@@ -51,6 +58,19 @@ public abstract class AbstractLocalPacket {
     middle = null;
     end = null;
   }
+
+  /**
+   * @return True if all buffers fit in one piece
+   */
+  public abstract boolean hasGlobalBuffer();
+
+  /**
+   * Prepare the 2 buffers Header, Middle and End
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public abstract void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException;
 
   /**
    * Prepare the Header buffer
@@ -93,43 +113,69 @@ public abstract class AbstractLocalPacket {
    */
   public ByteBuf getLocalPacket(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    final ByteBuf buf = Unpooled.buffer(4 * 3 + 1);// 3 header
-    // lengths+type
-    if (header == null) {
-      createHeader(lcr);
+    final ByteBuf buf;
+    if (hasGlobalBuffer()) {
+      if (global == null) {
+        createAllBuffers(lcr);
+      } else {
+        global.writerIndex(0);
+      }
+      buf = global;
+    } else {
+      buf = ByteBufAllocator.DEFAULT.buffer(GLOBAL_HEADER_SIZE,
+                                            GLOBAL_HEADER_SIZE);// 3 header lengths+type
+      if (header == null) {
+        createHeader(lcr);
+      }
+      if (middle == null) {
+        createMiddle(lcr);
+      }
+      if (end == null) {
+        createEnd(lcr);
+      }
     }
     final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;
     final int headerLength = 4 * 2 + 1 + newHeader.readableBytes();
-    if (middle == null) {
-      createMiddle(lcr);
-    }
     final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;
     final int middleLength = newMiddle.readableBytes();
-    if (end == null) {
-      createEnd(lcr);
-    }
     final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;
     final int endLength = newEnd.readableBytes();
     buf.writeInt(headerLength);
     buf.writeInt(middleLength);
     buf.writeInt(endLength);
     buf.writeByte(getType());
+    if (hasGlobalBuffer()) {
+      buf.writerIndex(buf.capacity());
+      return buf;
+    }
     return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);
   }
 
   public void clear() {
-    if (header != null && header.release()) {
+    if (WaarpNettyUtil.release(global)) {
+      global = null;
+    }
+    if (hasGlobalBuffer()) {
+      return;
+    }
+    if (WaarpNettyUtil.release(header)) {
       header = null;
     }
-    if (middle != null && middle.release()) {
+    if (WaarpNettyUtil.release(middle)) {
       middle = null;
     }
-    if (end != null && end.release()) {
+    if (WaarpNettyUtil.release(end)) {
       end = null;
     }
   }
 
   public void retain() {
+    if (global != null) {
+      global.retain();
+    }
+    if (hasGlobalBuffer()) {
+      return;
+    }
     if (header != null) {
       header.retain();
     }

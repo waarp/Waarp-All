@@ -20,9 +20,11 @@
 package org.waarp.openr66.protocol.networkhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -112,7 +114,7 @@ public class NetworkPacket {
    * @return The corresponding ByteBuf
    */
   public ByteBuf getNetworkPacket() {
-    final ByteBuf buf = Unpooled.buffer(13);
+    final ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(13, 13);
     buf.writeInt(buffer.readableBytes() + 9);
     buf.writeInt(remoteId);
     buf.writeInt(localId);
@@ -131,7 +133,7 @@ public class NetworkPacket {
   }
 
   public void clear() {
-    if (buffer != null && buffer.release()) {
+    if (WaarpNettyUtil.release(buffer)) {
       buffer = null;
     }
   }

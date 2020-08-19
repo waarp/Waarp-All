@@ -32,11 +32,14 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * File Utils
  */
 public final class FileUtils {
+
+  private final static byte[] EMPTY_ARRAY = {};
 
   private FileUtils() {
   }
@@ -118,8 +121,8 @@ public final class FileUtils {
    *
    * @return the hash from the given Buffer
    */
-  public static final ByteBuf getHash(ByteBuf buffer, DigestAlgo algo,
-                                      FilesystemBasedDigest digestGlobal) {
+  public static final byte[] getHash(ByteBuf buffer, DigestAlgo algo,
+                                     FilesystemBasedDigest digestGlobal) {
     byte[] newkey;
     try {
       if (digestGlobal == null) {
@@ -134,11 +137,11 @@ public final class FileUtils {
         digestGlobal.Update(bytes, start, length);
       }
     } catch (final IOException e) {
-      return Unpooled.EMPTY_BUFFER;
+      return EMPTY_ARRAY;
     } catch (NoSuchAlgorithmException e) {
-      return Unpooled.EMPTY_BUFFER;
+      return EMPTY_ARRAY;
     }
-    return Unpooled.wrappedBuffer(newkey);
+    return newkey;
   }
 
   /**
@@ -167,8 +170,8 @@ public final class FileUtils {
                                        final ByteBuf buffer) {
     if (digestGlobal != null && digestLocal != null) {
       final byte[] bytes = digestGlobal.getBytes(buffer);
-      final int length = buffer.readableBytes();
       final int offset = digestGlobal.getOffset(buffer);
+      final int length = buffer.readableBytes();
       digestGlobal.Update(bytes, offset, length);
       digestLocal.Update(bytes, offset, length);
       return;
@@ -181,4 +184,22 @@ public final class FileUtils {
     }
   }
 
+  /**
+   * @param buf
+   * @param array
+   *
+   * @return True if buffer content is equals to byte array
+   */
+  public static boolean checkEquals(final ByteBuf buf, final byte[] array) {
+    final boolean check;
+    if (buf.hasArray() && buf.arrayOffset() == 0) {
+      final byte[] arrayFrom = buf.array();
+      check = Arrays.equals(arrayFrom, array);
+    } else {
+      final ByteBuf bufTo = Unpooled.wrappedBuffer(array);
+      check = buf.equals(bufTo);
+      bufTo.release();
+    }
+    return check;
+  }
 }

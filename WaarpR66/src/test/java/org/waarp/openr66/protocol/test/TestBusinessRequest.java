@@ -86,6 +86,8 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     final ExecutorService executorService = Executors.newCachedThreadPool();
 
     final R66Future[] arrayFuture = new R66Future[nbToDo];
+    BusinessRequestPacket[] businessRequestPackets =
+        new BusinessRequestPacket[nbToDo];
     logger.info("Start Test of Transaction");
     long time1 = System.currentTimeMillis();
     for (int i = 0; i < nbToDo; i++) {
@@ -93,6 +95,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
       final BusinessRequestPacket packet = new BusinessRequestPacket(
           TestExecJavaTask.class.getName() +
           " business 0 simple business request", 0);
+      businessRequestPackets[i] = packet;
       final TestBusinessRequest transaction =
           new TestBusinessRequest(networkTransaction, arrayFuture[i],
                                   host.getHostid(), packet);
@@ -107,6 +110,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
       } else {
         error++;
       }
+      businessRequestPackets[i].clear();
     }
     long time2 = System.currentTimeMillis();
     logger.warn(
@@ -127,6 +131,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     } else {
       error++;
     }
+    packet.clear();
     final long time3 = System.currentTimeMillis();
     logger.warn(
         "Simple DefaultClass LOG Success: " + success + " Error: " + error +
@@ -147,6 +152,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
     } else {
       error++;
     }
+    packet.clear();
     final long time4 = System.currentTimeMillis();
     logger.warn(
         "Simple ExecJava Success: " + success + " Error: " + error + " NB/s: " +
@@ -172,6 +178,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
       packet =
           new BusinessRequestPacket(TestExecJavaTask.class.getName() + value,
                                     0);
+      businessRequestPackets[i] = packet;
       final TestBusinessRequest transaction2 =
           new TestBusinessRequest(networkTransaction, arrayFuture[i],
                                   host.getHostid(), packet);
@@ -186,6 +193,7 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
       } else {
         error2++;
       }
+      businessRequestPackets[i].clear();
     }
     time2 = System.currentTimeMillis();
     logger.warn(

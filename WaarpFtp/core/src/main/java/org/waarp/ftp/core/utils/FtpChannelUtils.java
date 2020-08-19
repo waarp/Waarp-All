@@ -109,7 +109,7 @@ public class FtpChannelUtils implements Runnable {
     if (elements.length != 6) {
       return null;
     }
-    final byte[] address = new byte[4];
+    final byte[] address = { 0, 0, 0, 0 };
     final int[] iElements = new int[6];
     for (int i = 0; i < 6; i++) {
       try {

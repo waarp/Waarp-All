@@ -19,6 +19,7 @@
  */
 package org.waarp.common.utility;
 
+import com.google.common.base.Strings;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.SysErrLogger;
 
@@ -48,6 +49,9 @@ public final class SystemPropertyUtil {
    */
   public static final String WAARP_DATABASE_CONNECTION_MAX =
       "waarp.database.connection.max";
+  private static final String IO_NETTY_ALLOCATOR_TYPE =
+      "io.netty.allocator.type";
+  private static final String IO_POOLED = "pooled";
 
   private static final Properties PROPS = new Properties();
   private static final String INVALID_PROPERTY = "Invalid property ";
@@ -81,6 +85,18 @@ public final class SystemPropertyUtil {
     synchronized (PROPS) {
       PROPS.clear();
       PROPS.putAll(newProps);
+    }
+    if (!contains(IO_NETTY_ALLOCATOR_TYPE) ||
+        Strings.isNullOrEmpty(get(IO_NETTY_ALLOCATOR_TYPE))) {
+      try {
+        System.setProperty(IO_NETTY_ALLOCATOR_TYPE, IO_POOLED);
+        synchronized (PROPS) {
+          PROPS.clear();
+          PROPS.putAll(newProps);
+        }
+      } catch (final Throwable e1) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+      }
     }
     if (!contains(FILE_ENCODING) ||
         !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {

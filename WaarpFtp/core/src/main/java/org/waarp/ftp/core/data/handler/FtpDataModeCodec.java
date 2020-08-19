@@ -125,7 +125,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   }
 
   protected DataBlock decodeRecordStandard(ByteBuf buf, int length) {
-    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length);
+    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);
     if (lastbyte == 0xFF) {
       if (readByteForDataBlock(buf, newbuf)) {
         lastbyte = 0;
@@ -174,7 +174,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     } catch (final SeekAheadNoBackArrayException e1) {
       return decodeRecordStandard(buf, length);
     }
-    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length);
+    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);
     if (lastbyte == 0xFF) {
       if (readBytesFromSad(sad, newbuf)) {
         lastbyte = 0;
@@ -305,7 +305,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   }
 
   protected ByteBuf encodeRecordStandard(DataBlock msg, ByteBuf buffer) {
-    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(msg.getByteCount());
+    final int size = msg.getByteCount();
+    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
     int newbyte;
     try {
       while (true) { //NOSONAR
@@ -340,7 +341,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     } catch (final SeekAheadNoBackArrayException e1) {
       return encodeRecordStandard(msg, buffer);
     }
-    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(msg.getByteCount());
+    final int size = msg.getByteCount();
+    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
     int newbyte;
     try {
       while (sad.pos < sad.limit) {
@@ -392,9 +394,9 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       return buffer;
     } else if (mode == TransferMode.BLOCK) {
       int length = msg.getByteCount();
-      final ByteBuf newbuf = ByteBufAllocator.DEFAULT
-          .buffer(length > 0xFFFF? 0xFFFF + 3 : length + 3);
-      final byte[] header = new byte[3];
+      final int size = length > 0xFFFF? 0xFFFF + 3 : length + 3;
+      final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
+      final byte[] header = { 0, 0, 0 };
       // Is there any data left
       if (length == 0) {
         // It could be an empty block for EOR or EOF

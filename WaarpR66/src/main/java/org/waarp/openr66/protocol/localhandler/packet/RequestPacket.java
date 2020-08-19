@@ -349,6 +349,17 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return false;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    throw new IllegalStateException("Should not be called");
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (transferInformation != null) {
@@ -383,8 +394,7 @@ public class RequestPacket extends AbstractLocalPacket {
     if (filename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
-    final byte[] away = new byte[1];
-    away[0] = way;
+    final byte[] away = { way };
     if (lcr.getPartner() != null && lcr.getPartner().useJson()) {
       logger.debug("Request {} will use JSON {}", specialId, lcr.getPartner());
       final ObjectNode node = JsonHandler.createObjectNode();

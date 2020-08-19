@@ -2013,6 +2013,7 @@ public class FileBasedConfiguration {
       logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);
       return false;
     }
+    logger.warn("Load Limit");
     if (!loadLimit(config, false)) {
       logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);
       return false;

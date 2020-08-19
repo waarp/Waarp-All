@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -77,9 +79,20 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return false;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    throw new IllegalStateException("Should not be called");
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    end = Unpooled.buffer(1);
+    end = ByteBufAllocator.DEFAULT.buffer(1, 1);
     end.writeByte(way);
     end.retain();
   }
@@ -94,7 +107,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   @Override
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    middle = Unpooled.buffer(4);
+    middle = ByteBufAllocator.DEFAULT.buffer(4, 4);
     middle.writeInt(delay);
     middle.retain();
   }
@@ -121,9 +134,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
    */
   public void validate() {
     way = ANSWERVALIDATE;
-    header = null;
-    middle = null;
-    end = null;
+    clear();
   }
 
   /**
@@ -131,9 +142,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
    */
   public void invalidate() {
     way = ANSWERINVALIDATE;
-    header = null;
-    middle = null;
-    end = null;
+    clear();
   }
 
   /**
@@ -155,6 +164,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
    */
   public void setDelay(int delay) {
     this.delay = delay;
+    WaarpNettyUtil.release(middle);
     middle = null;
   }
 }

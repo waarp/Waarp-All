@@ -20,8 +20,10 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
@@ -136,10 +138,44 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    if (hostId == null || key == null) {
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
+    }
+    byte[] hostIdByte = hostId.getBytes();
+    final int hostIdSize = hostIdByte.length;
+    final int keySize = key.length;
+    final byte[] bversion = version != null? version.getBytes() : null;
+    final int endSize = 5 + (version != null? bversion.length : 0);
+    global = ByteBufAllocator.DEFAULT
+        .buffer(hostIdSize + keySize + endSize + GLOBAL_HEADER_SIZE,
+                hostIdSize + keySize + endSize + GLOBAL_HEADER_SIZE);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, hostIdSize);
+    header.writeBytes(hostIdByte);
+    middle =
+        WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE + hostIdSize, keySize);
+    middle.writeBytes(key);
+    end = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + hostIdSize + keySize, endSize);
+    end.writeInt(localId);
+    end.writeByte(way);
+    if (version != null) {
+      end.writeBytes(bversion);
+    }
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     final byte[] bversion = version != null? version.getBytes() : null;
-    end = Unpooled.buffer(5 + (version != null? bversion.length : 0));
+    final int size = 5 + (version != null? bversion.length : 0);
+    end = ByteBufAllocator.DEFAULT.buffer(size, size);
     end.writeInt(localId);
     end.writeByte(way);
     if (version != null) {
@@ -222,8 +258,6 @@ public class AuthentPacket extends AbstractLocalPacket {
                                                           new PartnerConfiguration(
                                                               hostId));
     version = Configuration.configuration.getVersions().get(hostId).toString();
-    header = null;
-    middle = null;
-    end = null;
+    clear();
   }
 }

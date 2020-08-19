@@ -20,9 +20,11 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.utils.FileUtils;
@@ -86,6 +88,17 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return false;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    throw new IllegalStateException("Should not be called");
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = key;
@@ -94,7 +107,7 @@ public class DataPacket extends AbstractLocalPacket {
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    header = Unpooled.buffer(4);
+    header = ByteBufAllocator.DEFAULT.buffer(4, 4);
     header.writeInt(packetRank);
   }
 
@@ -149,10 +162,8 @@ public class DataPacket extends AbstractLocalPacket {
     if (key == null || key == Unpooled.EMPTY_BUFFER) {
       return true;
     }
-    final ByteBuf newbufkey = FileUtils.getHash(data, algo, null);
-    final boolean check = key.equals(newbufkey);
-    newbufkey.release();
-    return check;
+    final byte[] newkey = FileUtils.getHash(data, algo, null);
+    return FileUtils.checkEquals(key, newkey);
   }
 
   /**
@@ -166,7 +177,7 @@ public class DataPacket extends AbstractLocalPacket {
       }
       return true;
     }
-    final ByteBuf newbufkey;
+    final byte[] newbufkey;
     if (digestGlobal != null && digestLocal != null) {
       newbufkey = FileUtils.getHash(data, algo, null);
       FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
@@ -177,18 +188,16 @@ public class DataPacket extends AbstractLocalPacket {
     } else {
       newbufkey = FileUtils.getHash(data, algo, digestLocal);
     }
-    final boolean check = key.equals(newbufkey);
-    newbufkey.release();
-    return check;
+    return FileUtils.checkEquals(key, newbufkey);
   }
 
   @Override
   public void clear() {
     super.clear();
-    if (data != null && data.release()) {
+    if (WaarpNettyUtil.release(data)) {
       data = null;
     }
-    if (key != null && key.release()) {
+    if (WaarpNettyUtil.release(key)) {
       key = null;
     }
   }

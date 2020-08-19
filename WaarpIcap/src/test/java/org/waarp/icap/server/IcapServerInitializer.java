@@ -34,6 +34,8 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.waarp.common.utility.WaarpStringUtils;
 
+import static org.waarp.common.file.FileUtils.*;
+
 public class IcapServerInitializer extends ChannelInitializer<SocketChannel> {
   private static final ByteBuf RNRN = Unpooled.wrappedBuffer(new byte[] {
       '\r', '\n', '\r', '\n'
@@ -63,8 +65,9 @@ public class IcapServerInitializer extends ChannelInitializer<SocketChannel> {
     final ChannelPipeline pipeline = ch.pipeline();
 
     // Add the text line codec combination first,
-    pipeline
-        .addLast("framer", new DelimiterBasedFrameDecoder(65536, false, RNRN));
+    pipeline.addLast("framer",
+                     new DelimiterBasedFrameDecoder(ZERO_COPY_CHUNK_SIZE, false,
+                                                    RNRN));
     pipeline.addLast(eventExecutorGroup, "decoder",
                      new StringDecoder(WaarpStringUtils.UTF8));
     pipeline.addLast(eventExecutorGroup, "encoder",

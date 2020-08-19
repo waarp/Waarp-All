@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -69,6 +71,24 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    end = Unpooled.EMPTY_BUFFER;
+    middle = Unpooled.EMPTY_BUFFER;
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + 1 + key.length,
+                GLOBAL_HEADER_SIZE + 1 + key.length);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, 1 + key.length);
+    header.writeByte(block? 1 : 0);
+    header.writeBytes(key);
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
@@ -77,7 +97,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    header = Unpooled.buffer(1 + key.length);
+    header = ByteBufAllocator.DEFAULT.buffer(1 + key.length, 1 + key.length);
     header.writeByte(block? 1 : 0);
     header.writeBytes(key);
   }

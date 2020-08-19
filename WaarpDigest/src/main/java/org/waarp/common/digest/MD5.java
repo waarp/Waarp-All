@@ -59,6 +59,8 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import static org.waarp.common.digest.FilesystemBasedDigest.*;
+
 /**
  * Fast implementation of RSA's MD5 hash generator in Java JDK Beta-2 or
  * higher.
@@ -469,8 +471,7 @@ class MD5 {
    * @param b Single byte to update the hash
    */
   void Update(byte b) {
-    final byte[] buffer = new byte[1];
-    buffer[0] = b;
+    final byte[] buffer = { b };
 
     Update(buffer, 1);
   }
@@ -685,11 +686,11 @@ class MD5 {
     FileInputStream in = null;
     try {
       long bufSize = f.length();
-      if (bufSize < 512) {
-        bufSize = 512;
+      if (bufSize < MINIMAL_BUFFER) {
+        bufSize = MINIMAL_BUFFER;
       }
-      if (bufSize > 65536) {
-        bufSize = 65536;
+      if (bufSize > ZERO_COPY_CHUNK_SIZE) {
+        bufSize = ZERO_COPY_CHUNK_SIZE;
       }
       byte[] buf = new byte[(int) bufSize];
       in = new FileInputStream(f);
@@ -730,11 +731,11 @@ class MD5 {
     FileChannel fileChannel = null;
     try {
       long bufSize = f.length();
-      if (bufSize < 512) {
-        bufSize = 512;
+      if (bufSize < MINIMAL_BUFFER) {
+        bufSize = MINIMAL_BUFFER;
       }
-      if (bufSize > 65536) {
-        bufSize = 65536;
+      if (bufSize > ZERO_COPY_CHUNK_SIZE) {
+        bufSize = ZERO_COPY_CHUNK_SIZE;
       }
       byte[] buf = new byte[(int) bufSize];
 
@@ -779,7 +780,7 @@ class MD5 {
    **/
   static byte[] getHash(InputStream stream) throws IOException {
     try {
-      final long buf_size = 65536;
+      final long buf_size = ZERO_COPY_CHUNK_SIZE;
       byte[] buf = new byte[(int) buf_size];
       final MD5 md5 = new MD5();
       int read;

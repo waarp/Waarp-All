@@ -200,7 +200,7 @@ public class NetworkServerHandler
     }
   }
 
-  public void setKeepAlivedSent() {
+  public void resetKeepAlive() {
     keepAlivedSent.set(0);
   }
 
@@ -208,6 +208,7 @@ public class NetworkServerHandler
   public void channelRead0(ChannelHandlerContext ctx, NetworkPacket msg)
       throws Exception {
     if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {
+      resetKeepAlive();
       // Will forward
     } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
       logger.debug("NetworkRecv: {}", msg);
@@ -223,7 +224,7 @@ public class NetworkServerHandler
         return;
       }
     } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
-      keepAlivedSent.set(0);
+      resetKeepAlive();
       try {
         final KeepAlivePacket keepAlivePacket =
             (KeepAlivePacket) LocalPacketCodec
@@ -245,6 +246,7 @@ public class NetworkServerHandler
       return;
     }
     // forward message
+    resetKeepAlive();
     if (proxyChannel != null) {
       proxyChannel.writeAndFlush(msg);
     } else {

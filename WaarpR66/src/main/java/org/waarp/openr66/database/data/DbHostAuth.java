@@ -72,7 +72,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbHostAuth.class);
-  private static final byte[] VALUE_0_BYTE = new byte[0];
+  private static final byte[] VALUE_0_BYTE = {};
   private static final DbHostAuth[] DBHOSTAUTH_0_SIZE = new DbHostAuth[0];
   private static final Pattern BACKSLASH =
       Pattern.compile("\"", Pattern.LITERAL);

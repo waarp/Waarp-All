@@ -20,7 +20,7 @@
 package org.waarp.gateway.kernel.http;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -148,7 +148,7 @@ public final class HttpWriteCacheEnable {
       }
     }
     int fileLength = (int) file.length();
-    ByteBuf byteBuf = Unpooled.buffer(fileLength);
+    ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(fileLength, fileLength);
     FileInputStream inputStream = null;
     try {
       inputStream = new FileInputStream(file);
