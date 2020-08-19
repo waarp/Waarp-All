@@ -1016,7 +1016,7 @@ public class FileBasedConfiguration {
       }
       config.setServerPort(port);
       value = hashConfig.get(XML_SERVER_IPS);
-      String [] ips = null;
+      String[] ips = null;
       if (value != null && !value.isEmpty()) {
         String temp = value.getString();
         ips = temp.split(",");
@@ -1033,7 +1033,7 @@ public class FileBasedConfiguration {
       }
       config.setServerSslPort(sslport);
       value = hashConfig.get(XML_SERVER_SSL_IPS);
-      String [] ipsTls = null;
+      String[] ipsTls = null;
       if (value != null && !value.isEmpty()) {
         String temp = value.getString();
         ipsTls = temp.split(",");
@@ -1048,7 +1048,7 @@ public class FileBasedConfiguration {
       }
       config.setServerHttpport(httpport);
       value = hashConfig.get(XML_SERVER_HTTP_IPS);
-      String [] ipsHttp = null;
+      String[] ipsHttp = null;
       if (value != null && !value.isEmpty()) {
         String temp = value.getString();
         ipsHttp = temp.split(",");
@@ -1063,7 +1063,7 @@ public class FileBasedConfiguration {
       }
       config.setServerHttpsPort(httpsport);
       value = hashConfig.get(XML_SERVER_HTTPS_IPS);
-      String [] ipsHttpTls = null;
+      String[] ipsHttpTls = null;
       if (value != null && !value.isEmpty()) {
         String temp = value.getString();
         ipsHttpTls = temp.split(",");
@@ -2013,6 +2013,7 @@ public class FileBasedConfiguration {
       logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);
       return false;
     }
+    logger.warn("Load Limit");
     if (!loadLimit(config, false)) {
       logger.error(CANNOT_LOAD_LIMIT_CONFIGURATION);
       return false;

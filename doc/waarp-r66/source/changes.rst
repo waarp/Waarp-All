@@ -20,6 +20,9 @@ Nouvelles fonctionnalités
 Correctifs
 ----------
 
+- [`#76 <https://github.com/waarp/Waarp-All/pull/76>`__]
+  Le risque de dépassement de capacité mémoire directe est
+  largement diminué au profit de l'usage du Pool de mémoire Netty.
 - [`#72 <https://github.com/waarp/Waarp-All/pull/72>`__]
   Le commander pouvait être bloqué dans certains cas.
   (issue [`#65 <https://github.com/waarp/Waarp-All/issues/65>`__])

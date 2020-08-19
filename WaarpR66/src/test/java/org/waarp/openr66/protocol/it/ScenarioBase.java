@@ -121,6 +121,7 @@ public abstract class ScenarioBase extends TestAbstract {
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
+    Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
   }

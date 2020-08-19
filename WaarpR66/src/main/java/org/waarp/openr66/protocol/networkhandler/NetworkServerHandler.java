@@ -213,18 +213,33 @@ public class NetworkServerHandler
                                                      Configuration.configuration
                                                          .getTimeoutCon() *
                                                      2) <= 0) {
-        keepAlivedSent.set(0);
+        resetKeepAlive();
         return;
       }
       if (keepAlivedSent.get() > 0) {
-        if (networkChannelReference != null &&
-            networkChannelReference.nbLocalChannels() > 0 &&
-            keepAlivedSent.get() < 5) {
+        final int nbLocalChannels = networkChannelReference != null?
+            networkChannelReference.nbLocalChannels() : 0;
+        if (nbLocalChannels > 0 && keepAlivedSent.get() < 5) {
           // ignore this time
           keepAlivedSent.getAndIncrement();
           return;
         }
-        logger.error("Not getting KAlive: closing channel");
+        if (networkChannelReference != null &&
+            networkChannelReference.isSomeLocalChannelsActive()) {
+          // Reset counter but still waiting for a KA
+          logger.info(
+              "No KAlive yet while {} LocalChannels and {} tentatives, reset " +
+              "KA to 1", nbLocalChannels, keepAlivedSent.get());
+          keepAlivedSent.set(1);
+          return;
+        }
+        if (keepAlivedSent.get() < 5) {
+          keepAlivedSent.getAndIncrement();
+          return;
+        }
+        logger.error(
+            "Not getting KAlive: closing channel while {} LocalChannels" +
+            " and {} tentatives", nbLocalChannels, keepAlivedSent.get());
         if (Configuration.configuration.getR66Mib() != null) {
           Configuration.configuration.getR66Mib()
                                      .notifyWarning("KeepAlive get no answer",
@@ -239,12 +254,18 @@ public class NetworkServerHandler
                               keepAlivePacket, null);
         logger.info("Write KAlive");
         ctx.channel().writeAndFlush(response);
+        if (networkChannelReference != null) {
+          networkChannelReference.useIfUsed();
+        }
       }
     }
   }
 
-  public void setKeepAlivedSent() {
+  public void resetKeepAlive() {
     keepAlivedSent.set(0);
+    if (networkChannelReference != null) {
+      networkChannelReference.useIfUsed();
+    }
   }
 
   @Override
@@ -255,11 +276,9 @@ public class NetworkServerHandler
       msg.clear();
       return;
     }
+    resetKeepAlive();
     final Channel channel = ctx.channel();
     if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {
-      if (networkChannelReference != null) {
-        networkChannelReference.useIfUsed();
-      }
       msg.clear();
       // Do nothing
       return;
@@ -286,10 +305,6 @@ public class NetworkServerHandler
         return;
       }
     } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
-      if (networkChannelReference != null) {
-        networkChannelReference.useIfUsed();
-      }
-      keepAlivedSent.set(0);
       try {
         final KeepAlivePacket keepAlivePacket =
             (KeepAlivePacket) LocalPacketCodec

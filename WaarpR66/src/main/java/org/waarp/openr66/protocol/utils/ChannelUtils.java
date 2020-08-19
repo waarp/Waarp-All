@@ -50,6 +50,7 @@ import org.waarp.openr66.protocol.localhandler.packet.EndTransferPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 
@@ -206,9 +207,10 @@ public class ChannelUtils extends Thread {
     ByteBuf md5 = Unpooled.EMPTY_BUFFER;
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
     if (RequestPacket.isMD5Mode(runner.getMode())) {
-      md5 = FileUtils
+      byte[] md5b = FileUtils
           .getHash(block.getBlock(), Configuration.configuration.getDigest(),
                    digestGlobal);
+      md5 = Unpooled.wrappedBuffer(md5b);
     } else if (digestGlobal != null) {
       digestGlobal.Update(block.getBlock());
     }
@@ -217,8 +219,8 @@ public class ChannelUtils extends Thread {
       localChannelReference.sessionNewState(R66FiniteDualStates.DATAS);
     }
     logger.trace("sending data block {}", runner.getRank());
-    final DataPacket data = new DataPacket(runner.getRank(), block.getBlock(),
-                                           md5);// was block.getBlock().copy()
+    final DataPacket data =
+        new DataPacket(runner.getRank(), block.getBlock(), md5);
     final ChannelFuture future =
         writeAbstractLocalPacket(localChannelReference, data, false);
     runner.incrementRank();
@@ -302,7 +304,11 @@ public class ChannelUtils extends Thread {
       });
     }
     if (wait) {
-      localChannelReference.getNetworkChannelObject().use();
+      NetworkServerHandler nsh =
+          localChannelReference.getNetworkServerHandler();
+      if (nsh != null) {
+        nsh.resetKeepAlive();
+      }
       WaarpNettyUtil.awaitOrInterrupted(future);
     }
     return future;

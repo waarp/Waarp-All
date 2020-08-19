@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -58,6 +60,28 @@ public class StartupPacket extends AbstractLocalPacket {
   }
 
   @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    final int headerSize = 4;
+    final int middleSize = 1;
+    final int endSize = 0;
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
+                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    header.writeInt(localId);
+    middle = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    middle.writeBoolean(fromSsl);
+    end = Unpooled.EMPTY_BUFFER;
+  }
+
+  @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
@@ -66,15 +90,15 @@ public class StartupPacket extends AbstractLocalPacket {
   @Override
   public void createHeader(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    header = Unpooled.buffer(4);
+    header = ByteBufAllocator.DEFAULT.buffer(4, 4);
     header.writeInt(localId);
   }
 
   @Override
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    middle = Unpooled.buffer(1);
-    header.writeBoolean(fromSsl);
+    middle = ByteBufAllocator.DEFAULT.buffer(1, 1);
+    middle.writeBoolean(fromSsl);
   }
 
   @Override

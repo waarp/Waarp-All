@@ -384,7 +384,7 @@ public class NetworkClientTest extends TestAbstract {
   @Test
   public void test2_ThriftClient() throws IOException {
     logger.warn("Start Test Thrift Client");
-    final int PORT = 4266;
+    final int PORT = Configuration.configuration.getThriftport();
     final int tries = 1000;
     TTransport transport = null;
     try {

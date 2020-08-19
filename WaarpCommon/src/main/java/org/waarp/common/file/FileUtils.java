@@ -19,8 +19,6 @@
  */
 package org.waarp.common.file;
 
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.waarp.common.command.exception.Reply550Exception;
@@ -38,14 +36,20 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static com.google.common.base.Preconditions.*;
 
 /**
  * File Utils
  */
 public final class FileUtils {
+  public static final int ZERO_COPY_CHUNK_SIZE = 64 * 1024;
 
   private static final File[] FILE_0_LENGTH = new File[0];
 
@@ -104,6 +108,25 @@ public final class FileUtils {
     } catch (Exception ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
+  }
+
+  /**
+   * Force the stream to flush (FileChannel for Output
+   *
+   * @param stream
+   * @param force
+   */
+  public static final void close(FileChannel stream, boolean force) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.force(force);
+    } catch (IOException ignored) {
+      // Ignore
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+    close(stream);
   }
 
   public static final void close(FileChannel stream) {
@@ -263,22 +286,7 @@ public final class FileUtils {
     }
     if (createDir(directoryTo)) {
       final File to = new File(directoryTo, from.getName());
-      if (move && from.renameTo(to)) {
-        return to;
-      }
-      if (move) {
-        try {
-          Files.move(from, to);
-        } catch (IOException e) {
-          throw new Reply550Exception("Cannot write destination file");
-        }
-      } else {
-        try {
-          Files.copy(from, to);
-        } catch (IOException e) {
-          throw new Reply550Exception("Cannot write destination file");
-        }
-      }
+      copy(from, to, move, false);
       return to;
     }
     throw new Reply550Exception("Cannot access to parent dir of destination");
@@ -354,13 +362,51 @@ public final class FileUtils {
       throw new Reply550Exception("FileChannelOut is null");
     }
     try {
-      return ByteStreams.copy(fileChannelIn, fileChannelOut);
+      return copy(fileChannelIn, fileChannelOut);
     } catch (IOException e) {
       throw new Reply550Exception("An error during copy occurs", e);
     } finally {
       close(fileChannelIn);
-      close(fileChannelOut);
+      close(fileChannelOut, true);
     }
+  }
+
+  /**
+   * Inspired from Google Guava copy within ByteStreams
+   *
+   * @param from ByteChannel will not be closed
+   * @param to ByteChannel will not be closed
+   *
+   * @return the size read
+   *
+   * @throws IOException
+   */
+  private static long copy(ReadableByteChannel from, WritableByteChannel to)
+      throws IOException {
+    if (from instanceof FileChannel) {
+      FileChannel sourceChannel = (FileChannel) from;
+      long oldPosition = sourceChannel.position();
+      long size = sourceChannel.size();
+      long position = oldPosition;
+      long copied;
+      do {
+        copied = sourceChannel.transferTo(position, ZERO_COPY_CHUNK_SIZE, to);
+        position += copied;
+        sourceChannel.position(position);
+      } while (copied > 0 || position < size);
+      return position - oldPosition;
+    }
+
+    final ByteBuffer buf = ByteBuffer.wrap(new byte[ZERO_COPY_CHUNK_SIZE]);
+    long total = 0;
+    while (from.read(buf) != -1) {
+      buf.flip();
+      while (buf.hasRemaining()) {
+        total += to.write(buf);
+      }
+      buf.clear();
+    }
+    return total;
   }
 
   /**
@@ -600,19 +646,24 @@ public final class FileUtils {
     if (digest == null) {
       return;
     }
-    final byte[] bytes = new byte[65536];
+    final byte[] bytes = new byte[ZERO_COPY_CHUNK_SIZE];
     int still = length;
-    int len = Math.min(still, 65536);
+    int len = Math.min(still, ZERO_COPY_CHUNK_SIZE);
     FileInputStream inputStream = null;
     try {
       inputStream = new FileInputStream(file);
-      while (inputStream.read(bytes, 0, len) > 0) {
-        digest.Update(bytes, 0, len);
-        still -= length;
+      int read = 1;
+      while (read > 0) {
+        read = inputStream.read(bytes, 0, len);
+        if (read <= 0) {
+          break;
+        }
+        digest.Update(bytes, 0, read);
+        still -= read;
         if (still <= 0) {
           break;
         }
-        len = Math.min(still, 65536);
+        len = Math.min(still, ZERO_COPY_CHUNK_SIZE);
       }
     } catch (final FileNotFoundException e) {
       // error
@@ -657,7 +708,7 @@ public final class FileUtils {
       fin = new FileInputStream(fileIn);
       input = new BZip2CompressorInputStream(fin);
       output = new FileOutputStream(fileOut);
-      return ByteStreams.copy(input, output);
+      return copy(input, output);
     } catch (IOException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       return -1;
@@ -666,5 +717,36 @@ public final class FileUtils {
       FileUtils.close(input);
       FileUtils.close(fin);
     }
+  }
+
+
+  /**
+   * From Google Guava copy within ByteStreams
+   *
+   * Copies all bytes from the input stream to the output stream. Does not close or flush either
+   * stream.
+   *
+   * @param from the input stream to read from
+   * @param to the output stream to write to
+   *
+   * @return the number of bytes copied
+   *
+   * @throws IOException if an I/O error occurs
+   */
+  public static long copy(InputStream from, OutputStream to)
+      throws IOException {
+    checkNotNull(from);
+    checkNotNull(to);
+    final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
+    long total = 0;
+    while (true) {
+      int r = from.read(buf);
+      if (r == -1) {
+        break;
+      }
+      to.write(buf, 0, r);
+      total += r;
+    }
+    return total;
   }
 }

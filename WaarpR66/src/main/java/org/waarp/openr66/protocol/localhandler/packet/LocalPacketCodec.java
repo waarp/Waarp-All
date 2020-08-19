@@ -88,6 +88,7 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
     final ByteBuf buf = msg.getLocalPacket(null);
     out.writeBytes(buf);
     buf.release();
+    msg.clear();
   }
 
 }

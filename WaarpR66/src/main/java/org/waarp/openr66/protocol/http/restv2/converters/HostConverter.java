@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.waarp.common.file.FileUtils.*;
 import static org.waarp.openr66.protocol.configuration.Configuration.*;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.HostFields.*;
 import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
@@ -193,7 +194,7 @@ public final class HostConverter {
         }
       } else if (name.equalsIgnoreCase(PORT)) {
         if (value.canConvertToInt() && value.asInt() >= 0 &&
-            value.asInt() < 65536) {
+            value.asInt() < ZERO_COPY_CHUNK_SIZE) {
           oldHost.setPort(value.asInt());
         } else {
           errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));

@@ -20,6 +20,15 @@
 
 package org.waarp.openr66.protocol.it;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
@@ -30,6 +39,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -60,9 +70,9 @@ import static org.junit.Assert.*;
 import static org.waarp.openr66.protocol.it.ScenarioBase.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public abstract class ScenarioBaseBigFile extends TestAbstract {
+public abstract class ScenarioBaseLoop extends TestAbstract {
 
-  protected static ScenarioBaseBigFile scenarioBase;
+  protected static ScenarioBaseLoop scenarioBase;
   private static final ArrayList<DbTaskRunner> dbTaskRunners =
       new ArrayList<DbTaskRunner>();
   private static final String SERVER_1_XML = "R1/conf/server_1_SQLDB.xml";
@@ -78,10 +88,9 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   private static final String TMP_R66_CONFIG_R1 =
       "/tmp/R66/scenario_big_file_limitbdw/" + SERVER_1_REWRITTEN_XML;
   public static int NUMBER_FILES = 1;
-  public static int LARGE_SIZE = 500000000;
-  public static int BANDWIDTH = 10000000;
+  public static int BANDWIDTH = 100000000;
   public static int BLOCK_SIZE = 65536;
-  public static long MAX_USED_MEMORY = 536870912;
+  public static long MAX_USED_MEMORY = 2048 * 1024 * 1024;
 
   private static int r66Pid1 = 999999;
   private static int r66Pid2 = 999999;
@@ -91,7 +100,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   private long usedMemory;
 
   public static void setUpBeforeClass() throws Exception {
-    final ClassLoader classLoader = ScenarioBaseBigFile.class.getClassLoader();
+    final ClassLoader classLoader = ScenarioBaseLoop.class.getClassLoader();
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     dirResources = file.getParentFile().getParentFile().getParentFile();
@@ -102,8 +111,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     File r2 = new File(dirResources, "R2/conf");
     createBaseR66Directory(r2, "/tmp/R66/scenario_big_file_limitbdw/R2");
     setUp3DbBeforeClass();
-    Configuration.configuration.setTimeoutCon(100);
-    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    Configuration.configuration.setTimeoutCon(30000);
+    Processes.setJvmArgsDefault(" -Xms1024m -Xmx1024m ");
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
     }
@@ -111,6 +120,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     if (SERVER1_IN_JUNIT) {
       R66Server.main(new String[] { configFile.getAbsolutePath() });
       setUpBeforeClassClient();
+      Configuration.configuration.setTimeoutCon(30000);
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
@@ -125,7 +135,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
       return configFile.getAbsolutePath();
     }
     logger.warn("Build configFile");
-    ClassLoader classLoader = ScenarioBaseBigFile.class.getClassLoader();
+    ClassLoader classLoader = ScenarioBaseLoop.class.getClassLoader();
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     if (!file.exists()) {
@@ -192,7 +202,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
 
   public static void setUp3DbBeforeClass() throws Exception {
     deleteBase();
-    final ClassLoader classLoader = ScenarioBaseBigFile.class.getClassLoader();
+    final ClassLoader classLoader = ScenarioBaseLoop.class.getClassLoader();
     DetectionUtils.setJunit(true);
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
@@ -259,7 +269,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     };
     Processes
         .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
-    Configuration.configuration.setTimeoutCon(100);
+    Configuration.configuration.setTimeoutCon(30000);
     // For debug only ServerInitDatabase.main(args);
   }
 
@@ -295,6 +305,41 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    CloseableHttpClient httpClient = null;
+    try {
+      httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
+                                    .disableAutomaticRetries().build();
+      HttpGet request =
+          new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=1000");
+      CloseableHttpResponse response = null;
+      try {
+        int nb = 0;
+        int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 60 : 20;
+        while (nb < max) {
+          response = httpClient.execute(request);
+          assertEquals(200, response.getStatusLine().getStatusCode());
+          String content = EntityUtils.toString(response.getEntity());
+          ObjectNode node = JsonHandler.getFromString(content);
+          if (node != null) {
+            JsonNode number = node.findValue("totalResults");
+            nb = number.asInt();
+            logger.warn("Found {} transfers", nb);
+          }
+          Thread.sleep(1000);
+        }
+      } finally {
+        if (response != null) {
+          response.close();
+        }
+      }
+    } catch (ExecuteException e) {
+      // ignore
+    } finally {
+      if (httpClient != null) {
+        httpClient.close();
+      }
+    }
+    Configuration.configuration.setTimeoutCon(100);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }
@@ -303,35 +348,29 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     tearDownAfterClassServer();
   }
 
-  private static void checkBigIt() {
-    Assume.assumeTrue("If the Long term tests are allowed",
-                      SystemPropertyUtil.get(IT_LONG_TEST, false));
-    Runtime runtime = Runtime.getRuntime();
-    boolean isMemory512 = runtime.totalMemory() <= MAX_USED_MEMORY;
-    if (!isMemory512) {
-      logger.warn("If the Long term tests are allowed, memory must be 512M: {}",
-                  runtime.totalMemory());
-    }
-  }
-
   @Before
   public void setUp() throws Exception {
-    Configuration.configuration.setTimeoutCon(10000);
+    Configuration.configuration.setTimeoutCon(30000);
     Runtime runtime = Runtime.getRuntime();
     usedMemory = runtime.totalMemory() - runtime.freeMemory();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // Nothing
   }
 
   private void checkMemory() {
     Runtime runtime = Runtime.getRuntime();
     long newUsedMemory = runtime.totalMemory() - runtime.freeMemory();
     if (newUsedMemory > MAX_USED_MEMORY) {
-      logger.warn("Used Memory > 512MB {} {}", usedMemory / 1048576.0,
+      logger.warn("Used Memory > 2GB {} {}", usedMemory / 1048576.0,
                   newUsedMemory / 1048576.0);
     }
   }
 
   private void testBigTransfer(boolean limit, String serverName, boolean direct,
-                               boolean recv)
+                               boolean recv, int size)
       throws IOException, InterruptedException {
     if (!SERVER1_IN_JUNIT && !direct) {
       logger.warn("Only Direct is enabled in Client mode");
@@ -351,24 +390,24 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     } else {
       baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R1/out/");
     }
-    File fileOut = new File(baseDir, "hello");
-    final File outHello =
-        generateOutFile(fileOut.getAbsolutePath(), LARGE_SIZE);
+    File fileOut = new File(baseDir, "hello" + size);
+    final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
     long timestart = System.currentTimeMillis();
     final R66Future future = new R66Future(true);
     if (direct) {
       if (recv) {
         final TestRecvThroughHandler handler = new TestRecvThroughHandler();
         final TestRecvThroughClient transaction =
-            new TestRecvThroughClient(future, handler, serverName, "hello",
-                                      "recvthrough", "Test Big RecvThrough",
-                                      true, BLOCK_SIZE, networkTransaction);
+            new TestRecvThroughClient(future, handler, serverName,
+                                      "hello" + size, "recvthrough",
+                                      "Test Big RecvThrough", true, BLOCK_SIZE,
+                                      networkTransaction);
         transaction.setNormalInfoAsWarn(false);
         transaction.run();
       } else {
         final TestTransferNoDb transaction =
-            new TestTransferNoDb(future, serverName, "hello", "sendany",
-                                 "Test Big Send", true, BLOCK_SIZE,
+            new TestTransferNoDb(future, serverName, "hello" + size, "loop",
+                                 "Test Loop Send", true, BLOCK_SIZE,
                                  DbConstantR66.ILLEGALVALUE,
                                  networkTransaction);
         transaction.setNormalInfoAsWarn(false);
@@ -379,7 +418,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     } else {
       String ruleName = recv? "recv" : "sendany";
       final SubmitTransfer transaction =
-          new SubmitTransfer(future, serverName, "hello", ruleName,
+          new SubmitTransfer(future, serverName, "hello" + size, ruleName,
                              "Test Big " + ruleName, true, BLOCK_SIZE,
                              DbConstantR66.ILLEGALVALUE, null);
       transaction.run();
@@ -397,152 +436,23 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
                 "({} seconds,  {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", direct, recv, limit,
                 (timestop - timestart) / 1000,
-                LARGE_SIZE / 1000.0 / (timestop - timestart),
+                size / 1000.0 / (timestop - timestart),
                 Configuration.configuration.getServerGlobalReadLimit() /
                 1000000.0,
                 Configuration.configuration.getServerChannelReadLimit() /
-                1000000.0, LARGE_SIZE, BLOCK_SIZE);
-    outHello.delete();
-    FileUtils.forceDeleteRecursiveDir(baseDir);
+                1000000.0, size, BLOCK_SIZE);
     checkMemory();
-  }
-
-  @Test
-  public void test01_BigRecvSync() throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2", true, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test02_BigSendSync() throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2", true, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test03_BigRecvSubmit() throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2", false, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test04_BigSendSubmit() throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2", false, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test05_BigRecvSyncSsl() throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2-ssl", true, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test06_BigSendSyncSsl() throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2-ssl", true, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test07_BigRecvSubmitSsl()
-      throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2-ssl", false, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test08_BigSendSubmitSsl()
-      throws IOException, InterruptedException {
-    checkBigIt();
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(true, "server2-ssl", false, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-
-  @Test
-  public void test01_BigRecvSyncNoLimitSelf()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server1", true, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test02_BigSendSyncNoLimitSelf()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server1", true, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test01_BigRecvSyncNoLimit()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2", true, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
   @Test
   public void test02_BigSendSyncNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2", true, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test03_BigRecvSubmitNoLimit()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2", false, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test04_BigSendSubmitNoLimit()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2", false, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test03_BigRecvSubmitNoLimitSelf()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server1", false, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test04_BigSendSubmitNoLimitSelf()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server1", false, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test05_BigRecvSyncSslNoLimit()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2-ssl", true, true);
+    testBigTransfer(false, "server2", true, false, 1024 * 500 * 1024);
+    testBigTransfer(false, "server2", true, false, 1024 * 1024 * 1024);
+    if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      testBigTransfer(false, "server2", true, false, 1024 * 502 * 1024);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -550,23 +460,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test06_BigSendSyncSslNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2-ssl", true, false);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test07_BigRecvSubmitSslNoLimit()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2-ssl", false, true);
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-  @Test
-  public void test08_BigSendSubmitSslNoLimit()
-      throws IOException, InterruptedException {
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2-ssl", false, false);
+    testBigTransfer(false, "server2-ssl", true, false, 1024 * 501 * 1024);
+    if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      testBigTransfer(false, "server2-ssl", true, false, 1024 * 1025 * 1024);
+      testBigTransfer(false, "server2-ssl", true, false, 1024 * 503 * 1024);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 

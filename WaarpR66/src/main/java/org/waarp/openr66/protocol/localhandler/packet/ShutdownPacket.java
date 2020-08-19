@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -76,6 +78,36 @@ public class ShutdownPacket extends AbstractLocalPacket {
   public ShutdownPacket(byte[] spassword, byte restart) {
     key = spassword;
     this.restart = restart;
+  }
+
+  @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(final LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    end = Unpooled.EMPTY_BUFFER;
+    int sizeKey = key != null? key.length : 0;
+    int sizeMiddle = restart != 0? 1 : 0;
+    global = sizeKey + sizeMiddle == 0? Unpooled.EMPTY_BUFFER :
+        ByteBufAllocator.DEFAULT
+            .buffer(GLOBAL_HEADER_SIZE + sizeKey + sizeMiddle,
+                    GLOBAL_HEADER_SIZE + sizeKey + sizeMiddle);
+    if (key != null) {
+      header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, sizeKey);
+      header.writeBytes(key);
+    } else {
+      header = Unpooled.EMPTY_BUFFER;
+    }
+    if (restart != 0) {
+      middle = WaarpNettyUtil
+          .slice(global, GLOBAL_HEADER_SIZE + sizeKey, sizeMiddle);
+      middle.writeByte(restart);
+    } else {
+      middle = Unpooled.EMPTY_BUFFER;
+    }
   }
 
   @Override

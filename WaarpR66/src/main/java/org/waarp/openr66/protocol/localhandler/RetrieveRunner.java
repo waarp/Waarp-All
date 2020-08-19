@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.protocol.localhandler;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.DataBlock;
@@ -294,24 +293,6 @@ public class RetrieveRunner extends Thread {
              OpenR66ProtocolSystemException {
     return ChannelUtils
         .writeBackDataBlock(localChannelReference, digestGlobal, block);
-  }
-
-  /**
-   * Utility method for send through mode
-   *
-   * @param data the data byte, if null it is the last block
-   *
-   * @return the DataBlock associated to the data
-   */
-  public static DataBlock transformToDataBlock(byte[] data) {
-    final DataBlock block = new DataBlock();
-    if (data == null) {
-      // last block
-      block.setEOF(true);
-    } else {
-      block.setBlock(Unpooled.wrappedBuffer(data));
-    }
-    return block;
   }
 
   public int getLocalId() {

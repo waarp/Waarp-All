@@ -28,6 +28,8 @@ import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
@@ -40,6 +42,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class NetworkSslServerInitializer
     extends ChannelInitializer<SocketChannel> {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(NetworkSslServerInitializer.class);
   public static final String SSL_HANDLER = "ssl";
   protected final boolean isClient;
   private static WaarpSslContextFactory waarpSslContextFactory;
@@ -67,10 +74,14 @@ public class NetworkSslServerInitializer
                                                                    .needClientAuthentication());
     }
     pipeline.addLast(SSL_HANDLER, sslHandler);
+    logger.debug("Create IdleStateHandler with {} ms",
+                 Configuration.configuration.getTimeoutCon());
 
     pipeline.addLast(NetworkServerInitializer.TIMEOUT,
-                     new IdleStateHandler(0, 0, Configuration.configuration
-                         .getTimeoutCon(), TimeUnit.MILLISECONDS));
+                     new IdleStateHandler(true, 0, 0,
+                                          Configuration.configuration
+                                              .getTimeoutCon(),
+                                          TimeUnit.MILLISECONDS));
 
     // Global limitation
     final GlobalTrafficShapingHandler handler =

@@ -706,10 +706,10 @@ public abstract class HttpRestHandler
       final ByteBuf buffer = chunk.content();
       if (cumulativeBody != null) {
         if (buffer.isReadable()) {
-          cumulativeBody.writeBytes(buffer);
+          cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, buffer);
         }
       } else {
-        cumulativeBody = Unpooled.buffer().writeBytes(buffer);
+        cumulativeBody = buffer.duplicate();
       }
     } else {
       try {

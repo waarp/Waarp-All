@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -86,6 +88,40 @@ public class InformationPacket extends AbstractLocalPacket {
     this.rulename = rulename;
     requestedInfo = request;
     this.filename = filename;
+  }
+
+  @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    if (rulename == null) {
+      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
+    }
+    final byte[] headerBytes =
+        rulename != null? rulename.getBytes() : EMPTY_ARRAY;
+    final int headerSize = headerBytes.length;
+    final int middleSize = 1;
+    final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;
+    final int endSize = endBytes.length;
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
+                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    if (rulename != null) {
+      header.writeBytes(headerBytes);
+    }
+    middle = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    middle.writeByte(requestedInfo);
+    end = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize + middleSize, endSize);
+    if (filename != null) {
+      end.writeBytes(endBytes);
+    }
   }
 
   @Override

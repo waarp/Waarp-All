@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -68,6 +70,36 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   public ConnectionErrorPacket(String header, String middle) {
     sheader = header;
     smiddle = middle;
+  }
+
+  @Override
+  public boolean hasGlobalBuffer() {
+    return true;
+  }
+
+  @Override
+  public void createAllBuffers(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    end = Unpooled.EMPTY_BUFFER;
+    final byte[] sheaderByte =
+        sheader != null? sheader.getBytes() : EMPTY_ARRAY;
+    final int headerSize = sheaderByte.length;
+    final byte[] smiddleByte =
+        smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;
+    final int middleSize = smiddleByte.length;
+
+    global = ByteBufAllocator.DEFAULT
+        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize,
+                GLOBAL_HEADER_SIZE + headerSize + middleSize);
+    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    if (sheader != null) {
+      header.writeBytes(sheaderByte);
+    }
+    middle = WaarpNettyUtil
+        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    if (smiddle != null) {
+      middle.writeBytes(smiddleByte);
+    }
   }
 
   @Override
