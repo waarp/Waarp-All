@@ -22,6 +22,7 @@ package org.waarp.openr66.proxy.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
@@ -58,14 +59,15 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     final int remoteId = buf.readInt();
     final int localId = buf.readInt();
     final byte code = buf.readByte();
-    final int readerInder = buf.readerIndex();
-    final ByteBuf buffer = buf.retainedSlice(readerInder, length - 9);
+    final int index = buf.readerIndex();
+    final ByteBuf buffer = buf.retainedSlice(index, length - 9);
     buf.skipBytes(length - 9);
     NetworkPacket networkPacket =
         new NetworkPacket(localId, remoteId, code, buffer);
     if (code == LocalPacketFactory.KEEPALIVEPACKET) {
-      final KeepAlivePacket keepAlivePacket = (KeepAlivePacket) LocalPacketCodec
-          .decodeNetworkPacket(networkPacket.getBuffer());
+      final KeepAlivePacket keepAlivePacket =
+          (KeepAlivePacket) LocalPacketCodec.decodeNetworkPacket(buffer);
+      buffer.release();
       if (keepAlivePacket.isToValidate()) {
         keepAlivePacket.validate();
         final NetworkPacket response =
@@ -73,7 +75,6 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
                               keepAlivePacket, null);
         ctx.writeAndFlush(response.getNetworkPacket());
       }
-      buffer.release();
       // Replaced by a NoOp packet
       networkPacket =
           new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
@@ -89,6 +90,6 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
                         ByteBuf out) throws Exception {
     final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
-    finalBuf.release();
+    WaarpNettyUtil.releaseCompletely(finalBuf);
   }
 }

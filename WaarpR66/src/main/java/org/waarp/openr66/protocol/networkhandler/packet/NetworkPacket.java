@@ -44,6 +44,7 @@ public class NetworkPacket {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(NetworkPacket.class);
+  public static final int NETWORK_HEADER_SIZE = 4 * 3 + 1;
   private ByteBuf buffer;
 
   private final int remoteId;
@@ -51,6 +52,8 @@ public class NetworkPacket {
   private final int localId;
 
   private final byte code;
+
+  private boolean uniqueBuffer;
 
   /**
    * @param localId
@@ -63,6 +66,7 @@ public class NetworkPacket {
     this.localId = localId;
     this.code = code;
     this.buffer = buffer;
+    this.uniqueBuffer = false;
   }
 
   /**
@@ -79,7 +83,8 @@ public class NetworkPacket {
     this.remoteId = remoteId;
     this.localId = localId;
     code = packet.getType();
-    buffer = packet.getLocalPacket(lcr);
+    uniqueBuffer = true;
+    buffer = packet.getLocalPacketForNetworkPacket(lcr, this);
   }
 
   /**
@@ -110,17 +115,30 @@ public class NetworkPacket {
     return code;
   }
 
-  /**
-   * @return The corresponding ByteBuf
-   */
-  public ByteBuf getNetworkPacket() {
-    final ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(13, 13);
-    buf.writeInt(buffer.readableBytes() + 9);
+  public void writeNetworkHeader(ByteBuf buf, int capacity) {
+    buf.writerIndex(0);
+    buf.writeInt(capacity + NETWORK_HEADER_SIZE - 4);
     buf.writeInt(remoteId);
     buf.writeInt(localId);
     buf.writeByte(code);
     logger.trace("TRACE ID Before sending NetworkPacket {}", this);
-    return Unpooled.wrappedBuffer(buf, buffer);
+  }
+
+  /**
+   * @return The corresponding ByteBuf
+   */
+  public ByteBuf getNetworkPacket() {
+    if (uniqueBuffer) {
+      writeNetworkHeader(buffer, buffer.capacity() - NETWORK_HEADER_SIZE);
+      buffer.writerIndex(buffer.capacity());
+      return buffer;
+    }
+    final ByteBuf buf = ByteBufAllocator.DEFAULT
+        .buffer(NETWORK_HEADER_SIZE, NETWORK_HEADER_SIZE);
+    writeNetworkHeader(buf, buffer.capacity());
+    buffer = Unpooled.wrappedBuffer(buf, buffer);
+    uniqueBuffer = true;
+    return buffer;
   }
 
   @Override

@@ -75,6 +75,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.waarp.common.utility.WaarpShutdownHook.*;
 import static org.waarp.openr66.context.R66FiniteDualStates.*;
+import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
 /**
  * This class handles Network Transaction connections
@@ -145,14 +146,17 @@ public class NetworkTransaction {
                                                   Configuration.configuration
                                                       .getHandlerGroup()
                                                       .next());
-    final NetworkServerInitializer networkServerInitializer =
-        new NetworkServerInitializer(false);
-    clientBootstrap = new Bootstrap();
-    WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration
-        .getNetworkWorkerGroup(), (int) Configuration.configuration
-        .getTimeoutCon());
-    clientBootstrap.handler(networkServerInitializer);
     Configuration.configuration.setupLimitHandler();
+    clientBootstrap = new Bootstrap();
+    if (Configuration.configuration.isUseNOSSL() &&
+        Configuration.configuration.getHostId() != null) {
+      final NetworkServerInitializer networkServerInitializer =
+          new NetworkServerInitializer(false);
+      WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration
+          .getNetworkWorkerGroup(), (int) Configuration.configuration
+          .getTimeoutCon(), configuration.getBlockSize() + 64);
+      clientBootstrap.handler(networkServerInitializer);
+    }
     clientSslBootstrap = new Bootstrap();
     if (Configuration.configuration.isUseSSL() &&
         Configuration.configuration.getHostSslId() != null) {
@@ -162,7 +166,8 @@ public class NetworkTransaction {
                                   Configuration.configuration
                                       .getNetworkWorkerGroup(),
                                   (int) Configuration.configuration
-                                      .getTimeoutCon());
+                                      .getTimeoutCon(),
+                                  configuration.getBlockSize() + 64);
       clientSslBootstrap.handler(networkSslServerInitializer);
     } else {
       if (Configuration.configuration.isWarnOnStartup()) {

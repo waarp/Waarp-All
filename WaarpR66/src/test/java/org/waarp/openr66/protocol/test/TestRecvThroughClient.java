@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.protocol.test;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -133,10 +132,8 @@ public class TestRecvThroughClient extends RecvThroughClient {
 
   public static class TestRecvThroughHandler extends RecvThroughHandler {
     @Override
-    public void writeByteBuf(ByteBuf buffer)
+    public void writeBytes(byte[] buffer)
         throws OpenR66ProtocolBusinessException {
-      buffer.skipBytes(buffer.readableBytes());
-      // byte [] array = this.getByte(buffer);
       // one should use the array for its own goal
       // logger.debug("Write {}", array.length);
     }

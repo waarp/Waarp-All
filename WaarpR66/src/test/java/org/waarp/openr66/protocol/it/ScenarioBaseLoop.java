@@ -112,7 +112,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     createBaseR66Directory(r2, "/tmp/R66/scenario_big_file_limitbdw/R2");
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(30000);
-    Processes.setJvmArgsDefault(" -Xms1024m -Xmx1024m ");
+    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
     }
@@ -314,6 +314,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       CloseableHttpResponse response = null;
       try {
         int nb = 0;
+        int every10sec = 10;
         int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 60 : 20;
         while (nb < max) {
           response = httpClient.execute(request);
@@ -322,8 +323,13 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
             JsonNode number = node.findValue("totalResults");
-            nb = number.asInt();
-            logger.warn("Found {} transfers", nb);
+            int newNb = number.asInt();
+            if (newNb != nb || every10sec == 0) {
+              every10sec = 10;
+              nb = newNb;
+              logger.warn("Found {} transfers", nb);
+            }
+            every10sec--;
           }
           Thread.sleep(1000);
         }
@@ -382,7 +388,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
           .changeNetworkLimit(BANDWIDTH * 2, BANDWIDTH * 2, BANDWIDTH,
                               BANDWIDTH, 1000);
     } else {
-      Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 100000);
+      Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     }
     File baseDir;
     if (recv && !"server1".equals(serverName)) {
@@ -445,25 +451,25 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
   }
 
   @Test
-  public void test02_BigSendSyncNoLimit()
+  public void test01_LoopBigSendsSyncNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server2", true, false, 1024 * 500 * 1024);
     testBigTransfer(false, "server2", true, false, 1024 * 1024 * 1024);
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       testBigTransfer(false, "server2", true, false, 1024 * 502 * 1024);
+      testBigTransfer(false, "server2", true, false, 1024 * 1026 * 1024);
     }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
   @Test
-  public void test06_BigSendSyncSslNoLimit()
+  public void test02_LoopBigSendsSyncSslNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server2-ssl", true, false, 1024 * 501 * 1024);
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       testBigTransfer(false, "server2-ssl", true, false, 1024 * 1025 * 1024);
-      testBigTransfer(false, "server2-ssl", true, false, 1024 * 503 * 1024);
     }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }

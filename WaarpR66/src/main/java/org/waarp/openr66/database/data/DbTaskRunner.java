@@ -58,6 +58,7 @@ import org.waarp.openr66.context.task.AbstractTask;
 import org.waarp.openr66.context.task.TaskType;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerEndTasksException;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
@@ -2719,8 +2720,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
     }
     session = tempSession;
-    if (session.getLocalChannelReference().getCurrentCode() ==
-        ErrorCode.Unknown) {
+    LocalChannelReference lcr = session.getLocalChannelReference();
+    if (lcr != null && lcr.getCurrentCode() == ErrorCode.Unknown) {
       session.getLocalChannelReference()
              .setErrorMessage(getErrorInfo().getMesg(), getErrorInfo());
     }
@@ -2728,7 +2729,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       throw new OpenR66RunnerEndTasksException();
     }
     // Possible long task
-    LocalChannelReference lcr = session.getLocalChannelReference();
     NetworkServerHandler nsh = null;
     if (lcr != null) {
       nsh = lcr.getNetworkServerHandler();
@@ -2961,6 +2961,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                 if (localChannelReference != null) {
                   localChannelReference.invalidateRequest(result);
                 }
+                error.setException(result.getException());
                 errorTransfer(error, file, localChannelReference);
                 throw e;
               }
@@ -2972,6 +2973,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
               if (localChannelReference != null) {
                 localChannelReference.invalidateRequest(result);
               }
+              error.setException(result.getException());
               errorTransfer(error, file, localChannelReference);
               throw e;
             } catch (final CommandAbstractException e) {
@@ -2983,6 +2985,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
               if (localChannelReference != null) {
                 localChannelReference.invalidateRequest(result);
               }
+              error.setException(result.getException());
               errorTransfer(error, file, localChannelReference);
               throw (OpenR66RunnerErrorException) result.getException();
             }
@@ -3013,6 +3016,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                   if (localChannelReference != null) {
                     localChannelReference.invalidateRequest(result);
                   }
+                  error.setException(result.getException());
                   errorTransfer(error, file, localChannelReference);
                   throw (OpenR66RunnerErrorException) result.getException();
                 }
@@ -3026,6 +3030,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                 if (localChannelReference != null) {
                   localChannelReference.invalidateRequest(result);
                 }
+                error.setException(result.getException());
                 errorTransfer(error, file, localChannelReference);
                 throw (OpenR66RunnerErrorException) result.getException();
               }
@@ -3041,18 +3046,18 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         try {
           if (!file.exists()) {
             // error
-            final R66Result error =
-                new R66Result(session, finalValue.isAnswered(),
-                              ErrorCode.FileNotFound, this);
+            final R66Result error = new R66Result(
+                new OpenR66RunnerException(ErrorCode.FileNotFound.getMesg()),
+                session, finalValue.isAnswered(), ErrorCode.FileNotFound, this);
             setErrorExecutionStatus(ErrorCode.FileNotFound);
             errorTransfer(error, file, localChannelReference);
             return;
           }
         } catch (final CommandAbstractException e) {
           // error
-          final R66Result error =
-              new R66Result(session, finalValue.isAnswered(),
-                            ErrorCode.FileNotFound, this);
+          final R66Result error = new R66Result(
+              new OpenR66RunnerException(ErrorCode.FileNotFound.getMesg()),
+              session, finalValue.isAnswered(), ErrorCode.FileNotFound, this);
           setErrorExecutionStatus(ErrorCode.FileNotFound);
           errorTransfer(error, file, localChannelReference);
           return;
@@ -3067,6 +3072,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         result.setRunner(this);
         changeUpdatedInfo(UpdatedInfo.INERROR);
         saveStatus();
+        result.setException(e1);
         errorTransfer(result, file, localChannelReference);
         if (localChannelReference != null) {
           localChannelReference.invalidateRequest(result);
@@ -3086,6 +3092,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       logger.debug(
           "ContinueTransfer: " + continueTransfer + " status:" + status + ':' +
           finalValue);
+      if (finalValue.getException() == null) {
+        finalValue.setException(new OpenR66RunnerException("Trace for error"));
+      }
       errorTransfer(finalValue, file, localChannelReference);
     }
   }

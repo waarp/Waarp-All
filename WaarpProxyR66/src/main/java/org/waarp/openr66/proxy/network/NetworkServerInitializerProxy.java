@@ -42,9 +42,8 @@ public class NetworkServerInitializerProxy extends NetworkServerInitializer {
   @Override
   protected void initChannel(SocketChannel ch) {
     final ChannelPipeline pipeline = ch.pipeline();
-    pipeline.addLast(TIMEOUT,
-                     new IdleStateHandler(0, 0, configuration.getTimeoutCon(),
-                                          TimeUnit.MILLISECONDS));
+    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0, configuration
+        .getTimeoutCon(), TimeUnit.MILLISECONDS));
     final GlobalTrafficShapingHandler handler =
         configuration.getGlobalTrafficShapingHandler();
     if (handler != null) {

@@ -63,8 +63,10 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    * Server side method to validate the request
    *
    * @param packet
+   *
+   * @return True if feedback is done
    */
-  public void validate(BusinessRequestPacket packet) {
+  public boolean validate(BusinessRequestPacket packet) {
     status = 0;
     packet.validate();
     if (callFromBusiness) {
@@ -80,10 +82,12 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
+        return true;
       } else {
         finalInformation = packet.toString();
       }
     }
+    return false;
   }
 
   /**

@@ -686,8 +686,8 @@ class MD5 {
     FileInputStream in = null;
     try {
       long bufSize = f.length();
-      if (bufSize < MINIMAL_BUFFER) {
-        bufSize = MINIMAL_BUFFER;
+      if (bufSize == 0) {
+        return EMPTY;
       }
       if (bufSize > ZERO_COPY_CHUNK_SIZE) {
         bufSize = ZERO_COPY_CHUNK_SIZE;
@@ -731,8 +731,8 @@ class MD5 {
     FileChannel fileChannel = null;
     try {
       long bufSize = f.length();
-      if (bufSize < MINIMAL_BUFFER) {
-        bufSize = MINIMAL_BUFFER;
+      if (bufSize == 0) {
+        return EMPTY;
       }
       if (bufSize > ZERO_COPY_CHUNK_SIZE) {
         bufSize = ZERO_COPY_CHUNK_SIZE;

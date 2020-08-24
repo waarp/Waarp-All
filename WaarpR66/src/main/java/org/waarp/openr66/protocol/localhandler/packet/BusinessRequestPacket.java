@@ -80,13 +80,29 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
 
   @Override
   public boolean hasGlobalBuffer() {
-    return false;
+    return true;
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr)
+  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
       throws OpenR66ProtocolPacketException {
-    throw new IllegalStateException("Should not be called");
+    final byte[] headerBytes = sheader.getBytes();
+    final int headerSize = headerBytes.length;
+    final int middleSize = 4;
+    final int endSize = 1;
+    final int globalSize =
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    header = WaarpNettyUtil.slice(global, offset, headerSize);
+    header.writeBytes(headerBytes);
+    offset += headerSize;
+    middle = WaarpNettyUtil.slice(global, offset, middleSize);
+    middle.writeInt(delay);
+    offset += middleSize;
+    end = WaarpNettyUtil.slice(global, offset, endSize);
+    end.writeByte(way);
+    global.retain();
   }
 
   @Override

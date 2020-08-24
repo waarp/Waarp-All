@@ -276,20 +276,19 @@ public class LocalTransaction {
                             true, ErrorCode.Shutdown, runner);
           result.setOther(packet);
           try {
-            buffer = packet.getLocalPacket(localChannelReference);
+            final NetworkPacket message =
+                new NetworkPacket(localChannelReference.getLocalId(),
+                                  localChannelReference.getRemoteId(), packet,
+                                  localChannelReference);
+            localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);
+            try {
+              localChannelReference.getNetworkChannel().writeAndFlush(message)
+                                   .await(Configuration.WAITFORNETOP);
+            } catch (final InterruptedException e1) {//NOSONAR
+              SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+            }
           } catch (final OpenR66ProtocolPacketException ignored) {
             // ignore
-          }
-          localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);
-          final NetworkPacket message =
-              new NetworkPacket(localChannelReference.getLocalId(),
-                                localChannelReference.getRemoteId(),
-                                packet.getType(), buffer);
-          try {
-            localChannelReference.getNetworkChannel().writeAndFlush(message)
-                                 .await(Configuration.WAITFORNETOP);
-          } catch (final InterruptedException e1) {//NOSONAR
-            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
           try {
             session.setFinalizeTransfer(false, result);
@@ -303,15 +302,14 @@ public class LocalTransaction {
         continue;
       }
       try {
-        buffer = packet.getLocalPacket(localChannelReference);
+        final NetworkPacket message =
+            new NetworkPacket(localChannelReference.getLocalId(),
+                              localChannelReference.getRemoteId(), packet,
+                              localChannelReference);
+        localChannelReference.getNetworkChannel().writeAndFlush(message);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
-      final NetworkPacket message =
-          new NetworkPacket(localChannelReference.getLocalId(),
-                            localChannelReference.getRemoteId(),
-                            packet.getType(), buffer);
-      localChannelReference.getNetworkChannel().writeAndFlush(message);
       localChannelReference.close();
     }
   }

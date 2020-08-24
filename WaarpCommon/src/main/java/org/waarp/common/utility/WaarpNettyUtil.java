@@ -37,13 +37,22 @@ import org.waarp.common.logging.SysErrLogger;
 public final class WaarpNettyUtil {
 
   private static final int TIMEOUT_MILLIS = 1000;
-  // Default optimal value for Waarp
-  private static final int BUFFER_SIZE_1MB = 1048576;
   // Default optimal value from Netty (tested as correct for Waarp)
   private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;
-  private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024;
+  private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024 + 64;
+  // Default optimal value for Waarp (in particular R66)
+  private static final int BUFFER_SIZE_1MB = DEFAULT_HIGH_WATER_MARK * 16;
 
   private WaarpNettyUtil() {
+  }
+
+  private static int getSoBufSize(final int maxBufSize) {
+    int so_buf =
+        maxBufSize * 16 < BUFFER_SIZE_1MB? maxBufSize * 16 : BUFFER_SIZE_1MB;
+    if (so_buf < maxBufSize * 4) {
+      so_buf = maxBufSize * 4;
+    }
+    return so_buf;
   }
 
   /**
@@ -53,19 +62,37 @@ public final class WaarpNettyUtil {
    * @param group
    * @param timeout
    */
-  public static void setBootstrap(Bootstrap bootstrap, EventLoopGroup group,
-                                  int timeout) {
+  public static void setBootstrap(final Bootstrap bootstrap,
+                                  final EventLoopGroup group,
+                                  final int timeout) {
+    setBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK);
+  }
+
+  /**
+   * Add default configuration for client bootstrap
+   *
+   * @param bootstrap
+   * @param group
+   * @param timeout
+   * @param maxBufSize
+   */
+  public static void setBootstrap(final Bootstrap bootstrap,
+                                  final EventLoopGroup group, final int timeout,
+                                  final int maxBufSize) {
     bootstrap.channel(NioSocketChannel.class);
     bootstrap.group(group);
     bootstrap.option(ChannelOption.TCP_NODELAY, false);
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
     bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
-    bootstrap.option(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
-    bootstrap.option(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
+    final int so_buf = getSoBufSize(maxBufSize);
+    final int lowWaterMark =
+        DEFAULT_LOW_WATER_MARK > maxBufSize / 2? maxBufSize / 2 :
+            DEFAULT_LOW_WATER_MARK;
+    bootstrap.option(ChannelOption.SO_RCVBUF, so_buf);
+    bootstrap.option(ChannelOption.SO_SNDBUF, so_buf);
     bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,
-                     new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK,
-                                              DEFAULT_HIGH_WATER_MARK));
+                     new WriteBufferWaterMark(lowWaterMark, maxBufSize));
     bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }
 
@@ -76,8 +103,24 @@ public final class WaarpNettyUtil {
    * @param group
    * @param timeout
    */
-  public static void setServerBootstrap(ServerBootstrap bootstrap,
-                                        EventLoopGroup group, int timeout) {
+  public static void setServerBootstrap(final ServerBootstrap bootstrap,
+                                        final EventLoopGroup group,
+                                        final int timeout) {
+    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK);
+  }
+
+  /**
+   * Add default configuration for server bootstrap
+   *
+   * @param bootstrap
+   * @param group
+   * @param timeout
+   * @param maxBufSize
+   */
+  public static void setServerBootstrap(final ServerBootstrap bootstrap,
+                                        final EventLoopGroup group,
+                                        final int timeout,
+                                        final int maxBufSize) {
     bootstrap.channel(NioServerSocketChannel.class);
     bootstrap.group(group);
     // bootstrap.option(ChannelOption.TCP_NODELAY, true)
@@ -86,11 +129,14 @@ public final class WaarpNettyUtil {
     bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
-    bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);
-    bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);
+    final int so_buf = getSoBufSize(maxBufSize);
+    final int lowWaterMark =
+        DEFAULT_LOW_WATER_MARK > maxBufSize / 2? maxBufSize / 2 :
+            DEFAULT_LOW_WATER_MARK;
+    bootstrap.childOption(ChannelOption.SO_RCVBUF, so_buf);
+    bootstrap.childOption(ChannelOption.SO_SNDBUF, so_buf);
     bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
-                          new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK,
-                                                   DEFAULT_HIGH_WATER_MARK));
+                          new WriteBufferWaterMark(lowWaterMark, maxBufSize));
     bootstrap
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
   }
@@ -158,10 +204,10 @@ public final class WaarpNettyUtil {
    * @return True if the ByteBuf is released
    */
   public static boolean release(final ByteBuf byteBuf) {
-    if (byteBuf != null && byteBuf.refCnt() > 0) {
-      return byteBuf.release();
+    if (byteBuf == null || byteBuf.refCnt() == 0) {
+      return true;
     }
-    return false;
+    return byteBuf.release();
   }
 
   /**
@@ -170,11 +216,9 @@ public final class WaarpNettyUtil {
    * @param byteBuf
    */
   public static void releaseCompletely(final ByteBuf byteBuf) {
-    if (byteBuf != null) {
-      if (byteBuf.refCnt() != 0) {
-        while (!byteBuf.release()) {
-          // Nothing
-        }
+    if (byteBuf != null && byteBuf.refCnt() != 0) {
+      while (!byteBuf.release()) {
+        // Nothing
       }
     }
   }

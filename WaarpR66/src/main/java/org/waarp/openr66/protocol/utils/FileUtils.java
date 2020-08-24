@@ -19,8 +19,6 @@
  */
 package org.waarp.openr66.protocol.utils;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
@@ -32,7 +30,6 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * File Utils
@@ -121,20 +118,20 @@ public final class FileUtils {
    *
    * @return the hash from the given Buffer
    */
-  public static final byte[] getHash(ByteBuf buffer, DigestAlgo algo,
+  public static final byte[] getHash(byte[] buffer, DigestAlgo algo,
                                      FilesystemBasedDigest digestGlobal) {
+    if (buffer == null || buffer.length == 0) {
+      return EMPTY_ARRAY;
+    }
     byte[] newkey;
     try {
       if (digestGlobal == null) {
         newkey = FilesystemBasedDigest.getHash(buffer, algo);
       } else {
         FilesystemBasedDigest digestPacket = new FilesystemBasedDigest(algo);
-        byte[] bytes = digestGlobal.getBytes(buffer);
-        int start = digestGlobal.getOffset(buffer);
-        int length = buffer.readableBytes();
-        digestPacket.Update(bytes, start, length);
+        digestPacket.Update(buffer, 0, buffer.length);
         newkey = digestPacket.Final();
-        digestGlobal.Update(bytes, start, length);
+        digestGlobal.Update(buffer, 0, buffer.length);
       }
     } catch (final IOException e) {
       return EMPTY_ARRAY;
@@ -142,20 +139,6 @@ public final class FileUtils {
       return EMPTY_ARRAY;
     }
     return newkey;
-  }
-
-  /**
-   * Compute global hash (if possible)
-   *
-   * @param digest
-   * @param buffer
-   */
-  public static void computeGlobalHash(final FilesystemBasedDigest digest,
-                                       final ByteBuf buffer) {
-    if (digest == null) {
-      return;
-    }
-    digest.Update(buffer);
   }
 
   /**
@@ -167,39 +150,21 @@ public final class FileUtils {
    */
   public static void computeGlobalHash(final FilesystemBasedDigest digestGlobal,
                                        final FilesystemBasedDigest digestLocal,
-                                       final ByteBuf buffer) {
+                                       final byte[] buffer) {
+    if (buffer == null || buffer.length == 0) {
+      return;
+    }
     if (digestGlobal != null && digestLocal != null) {
-      final byte[] bytes = digestGlobal.getBytes(buffer);
-      final int offset = digestGlobal.getOffset(buffer);
-      final int length = buffer.readableBytes();
-      digestGlobal.Update(bytes, offset, length);
-      digestLocal.Update(bytes, offset, length);
+      final int length = buffer.length;
+      digestGlobal.Update(buffer, 0, length);
+      digestLocal.Update(buffer, 0, length);
       return;
     }
     if (digestGlobal != null) {
-      digestGlobal.Update(buffer);
+      digestGlobal.Update(buffer, 0, buffer.length);
     }
     if (digestLocal != null) {
-      digestLocal.Update(buffer);
+      digestLocal.Update(buffer, 0, buffer.length);
     }
-  }
-
-  /**
-   * @param buf
-   * @param array
-   *
-   * @return True if buffer content is equals to byte array
-   */
-  public static boolean checkEquals(final ByteBuf buf, final byte[] array) {
-    final boolean check;
-    if (buf.hasArray() && buf.arrayOffset() == 0) {
-      final byte[] arrayFrom = buf.array();
-      check = Arrays.equals(arrayFrom, array);
-    } else {
-      final ByteBuf bufTo = Unpooled.wrappedBuffer(array);
-      check = buf.equals(bufTo);
-      bufTo.release();
-    }
-    return check;
   }
 }

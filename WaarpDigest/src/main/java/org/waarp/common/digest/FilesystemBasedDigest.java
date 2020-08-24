@@ -73,9 +73,8 @@ public class FilesystemBasedDigest {
    * Format used for Files
    */
   public static final Charset UTF8 = Charset.forName("UTF-8");
-  private static final byte[] EMPTY = {};
+  protected static final byte[] EMPTY = {};
   public static final int ZERO_COPY_CHUNK_SIZE = 64 * 1024;
-  protected static final int MINIMAL_BUFFER = 512;
 
   static {
     initializedTlsContext();
@@ -223,6 +222,13 @@ public class FilesystemBasedDigest {
     int start = getOffset(buffer);
     final int length = buffer.readableBytes();
     Update(bytes, start, length);
+  }
+
+  /**
+   * Update the digest with new buffer
+   */
+  public void Update(final byte[] buffer) {
+    Update(buffer, 0, buffer.length);
   }
 
   /**
@@ -515,8 +521,8 @@ public class FilesystemBasedDigest {
     FileInputStream in = null;
     try {
       long bufSize = f.length();
-      if (bufSize < MINIMAL_BUFFER) {
-        bufSize = MINIMAL_BUFFER;
+      if (bufSize == 0) {
+        return EMPTY;
       }
       if (bufSize > ZERO_COPY_CHUNK_SIZE) {
         bufSize = ZERO_COPY_CHUNK_SIZE;
@@ -671,6 +677,45 @@ public class FilesystemBasedDigest {
       case SHA384:
       case SHA512:
         return getBytesVarious(algo, bytes, start, length);
+      default:
+        throw new IOException(
+            algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);
+    }
+  }
+
+  /**
+   * Get hash with given byte array
+   *
+   * @param buffer this buffer will not be changed
+   * @param algo
+   *
+   * @return the hash
+   *
+   * @throws IOException
+   */
+  public static byte[] getHash(final byte[] buffer, final DigestAlgo algo)
+      throws IOException {
+    Checksum checksum = null;
+    final int length = buffer.length;
+    switch (algo) {
+      case ADLER32:
+        checksum = new Adler32();
+        return getBytesCrcByteBuf(checksum, buffer, 0, length);
+      case CRC32:
+        return getBytesCrcByteBuf(checksum, buffer, 0, length);
+      case MD5:
+        if (isUseFastMd5()) {
+          MD5 md5 = new MD5();
+          md5.Update(buffer, 0, length);
+          return md5.Final();
+        }
+        return getBytesVarious(algo, buffer, 0, length);
+      case MD2:
+      case SHA1:
+      case SHA256:
+      case SHA384:
+      case SHA512:
+        return getBytesVarious(algo, buffer, 0, length);
       default:
         throw new IOException(
             algo.algoName + ALGORITHM_NOT_SUPPORTED_BY_THIS_JVM);

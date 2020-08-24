@@ -35,6 +35,8 @@ import org.waarp.common.utility.WaarpThreadFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
+import static org.waarp.common.file.FileUtils.*;
+
 public class IcapServer {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(IcapServer.class);
@@ -77,7 +79,8 @@ public class IcapServer {
     executor = new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),
                                              new WaarpThreadFactory(
                                                  "IcapServer"));
-    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000,
+                                      ZERO_COPY_CHUNK_SIZE);
 
     // Configure the pipeline factory.
     icapServerInitializer = new IcapServerInitializer(delay, executor);

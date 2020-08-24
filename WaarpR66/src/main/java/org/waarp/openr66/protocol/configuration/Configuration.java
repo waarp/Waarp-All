@@ -934,7 +934,8 @@ public class Configuration {
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
-                                        (int) getTimeoutCon());
+                                        (int) getTimeoutCon(),
+                                        getBlockSize() + 64);
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
       String[] serverIps = getServerIpsAddresses();
@@ -949,7 +950,8 @@ public class Configuration {
     if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
-                                        (int) getTimeoutCon());
+                                        (int) getTimeoutCon(),
+                                        getBlockSize() + 64);
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       String[] serverIps = getServerSslAddresses();
@@ -2272,7 +2274,7 @@ public class Configuration {
                   runnerTHREAD, Commander.LIMIT_SUBMIT);
       runnerThread = Commander.LIMIT_SUBMIT;
     } else {
-      runnerThread = runnerTHREAD;
+      runnerThread = runnerTHREAD <= 1? 2 : runnerTHREAD;
     }
   }
 

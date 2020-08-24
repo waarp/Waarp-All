@@ -156,8 +156,8 @@ public class TestSendThroughClient extends SendThroughClient {
   public boolean sendFile() {
     final R66File r66file = localChannelReference.getSession().getFile();
     boolean retrieveDone = false;
+    DataBlock block = null;
     try {
-      DataBlock block = null;
       try {
         block = r66file.readDataBlock();
       } catch (final FileEndOfTransferException e) {
@@ -172,7 +172,6 @@ public class TestSendThroughClient extends SendThroughClient {
       }
       ChannelFuture future1 = null, future2 = null;
       if (block != null) {
-        block.getBlock().retain();
         future1 = writeWhenPossible(block);
       }
       // While not last block
@@ -189,7 +188,6 @@ public class TestSendThroughClient extends SendThroughClient {
           WaarpNettyUtil.awaitOrInterrupted(future1);
           return future1.isSuccess();
         }
-        block.getBlock().retain();
         future2 = writeWhenPossible(block);
         future1 = future2;
       }
@@ -216,6 +214,10 @@ public class TestSendThroughClient extends SendThroughClient {
       // An error occurs!
       transferInError(e);
       return false;
+    } finally {
+      if (block != null) {
+        block.clear();
+      }
     }
   }
 

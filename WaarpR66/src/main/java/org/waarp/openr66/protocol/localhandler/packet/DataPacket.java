@@ -24,10 +24,15 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.utils.FileUtils;
+
+import java.util.Arrays;
 
 /**
  * Data packet
@@ -35,13 +40,17 @@ import org.waarp.openr66.protocol.utils.FileUtils;
  * header = packetRank middle = data end = key
  */
 public class DataPacket extends AbstractLocalPacket {
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(DataPacket.class);
+
   private final int packetRank;
 
   private final int lengthPacket;
 
-  private ByteBuf data;
+  private byte[] data;
+  private ByteBuf dataRecv;
 
-  private ByteBuf key;
+  private byte[] key;
 
   /**
    * @param headerLength
@@ -63,16 +72,14 @@ public class DataPacket extends AbstractLocalPacket {
       throw new OpenR66ProtocolPacketException("Not enough data");
     }
     final int packetRank = buf.readInt();
-    final ByteBuf data = buf.readSlice(middleLength);
-    data.retain();
-    ByteBuf key;
+    final int index = buf.readerIndex();
+    final ByteBuf recvData = buf.retainedSlice(index, middleLength);
+    buf.skipBytes(middleLength);
+    final byte[] key = endLength > 0? new byte[endLength] : EMPTY_ARRAY;
     if (endLength > 0) {
-      key = buf.readSlice(endLength);
-      key.retain();
-    } else {
-      key = Unpooled.EMPTY_BUFFER;
+      buf.readBytes(key);
     }
-    return new DataPacket(packetRank, data, key);
+    return new DataPacket(packetRank, recvData, key);
   }
 
   /**
@@ -80,11 +87,25 @@ public class DataPacket extends AbstractLocalPacket {
    * @param data
    * @param key
    */
-  public DataPacket(int packetRank, ByteBuf data, ByteBuf key) {
+  private DataPacket(int packetRank, ByteBuf data, byte[] key) {
+    this.packetRank = packetRank;
+    this.dataRecv = data;
+    this.data = null;
+    this.key = key == null? EMPTY_ARRAY : key;
+    lengthPacket = dataRecv.readableBytes();
+  }
+
+  /**
+   * @param packetRank
+   * @param data
+   * @param key
+   */
+  public DataPacket(int packetRank, byte[] data, byte[] key) {
     this.packetRank = packetRank;
     this.data = data;
-    this.key = key == null? Unpooled.EMPTY_BUFFER : key;
-    lengthPacket = data.readableBytes();
+    this.dataRecv = null;
+    this.key = key == null? EMPTY_ARRAY : key;
+    lengthPacket = data.length;
   }
 
   @Override
@@ -93,7 +114,7 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr)
+  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
       throws OpenR66ProtocolPacketException {
     throw new IllegalStateException("Should not be called");
   }
@@ -101,7 +122,7 @@ public class DataPacket extends AbstractLocalPacket {
   @Override
   public void createEnd(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    end = key;
+    end = Unpooled.wrappedBuffer(key);
   }
 
   @Override
@@ -114,7 +135,11 @@ public class DataPacket extends AbstractLocalPacket {
   @Override
   public void createMiddle(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-    middle = data;
+    if (dataRecv != null) {
+      middle = dataRecv;
+    } else {
+      middle = Unpooled.wrappedBuffer(data);
+    }
   }
 
   @Override
@@ -142,16 +167,31 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   /**
+   * Only for Network incoming buffer
+   *
+   * @return the Data ByteBuf
+   */
+  public ByteBuf getRecvData() {
+    return dataRecv;
+  }
+
+  public void createByteBufFromRecv(byte[] buffer) {
+    dataRecv.getBytes(dataRecv.readerIndex(), buffer);
+    data = buffer;
+  }
+
+  /**
    * @return the data
    */
-  public ByteBuf getData() {
+  public byte[] getData() {
+    ParametersChecker.checkParameter("Data is not setup correctly", data);
     return data;
   }
 
   /**
    * @return the key
    */
-  public ByteBuf getKey() {
+  public byte[] getKey() {
     return key;
   }
 
@@ -159,11 +199,20 @@ public class DataPacket extends AbstractLocalPacket {
    * @return True if the Hashed key is valid (or no key is set)
    */
   public boolean isKeyValid(DigestAlgo algo) {
-    if (key == null || key == Unpooled.EMPTY_BUFFER) {
-      return true;
+    ParametersChecker.checkParameter("Data is not setup correctly", data);
+    if (key == null || key.length == 0) {
+      logger.error("Should received a Digest but don't");
+      return false;
     }
     final byte[] newkey = FileUtils.getHash(data, algo, null);
-    return FileUtils.checkEquals(key, newkey);
+    final boolean equal = Arrays.equals(key, newkey);
+    if (!equal) {
+      logger.error("DIGEST {} != {} for {} bytes using {} at rank {}",
+                   FilesystemBasedDigest.getHex(key),
+                   FilesystemBasedDigest.getHex(newkey), data.length, algo,
+                   packetRank);
+    }
+    return equal;
   }
 
   /**
@@ -171,34 +220,41 @@ public class DataPacket extends AbstractLocalPacket {
    */
   public boolean isKeyValid(DigestAlgo algo, FilesystemBasedDigest digestGlobal,
                             FilesystemBasedDigest digestLocal) {
-    if (key == null || key == Unpooled.EMPTY_BUFFER) {
+    ParametersChecker.checkParameter("Data is not setup correctly", data);
+    if (key == null || key.length == 0) {
       if (digestGlobal != null || digestLocal != null) {
         FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
       }
-      return true;
+      logger.error("Should received a Digest but don't");
+      return false;
     }
-    final byte[] newbufkey;
+    final byte[] newkey;
     if (digestGlobal != null && digestLocal != null) {
-      newbufkey = FileUtils.getHash(data, algo, null);
+      newkey = FileUtils.getHash(data, algo, null);
       FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
     } else if (digestGlobal == null && digestLocal == null) {
-      newbufkey = FileUtils.getHash(data, algo, null);
+      newkey = FileUtils.getHash(data, algo, null);
     } else if (digestGlobal != null) {
-      newbufkey = FileUtils.getHash(data, algo, digestGlobal);
+      newkey = FileUtils.getHash(data, algo, digestGlobal);
     } else {
-      newbufkey = FileUtils.getHash(data, algo, digestLocal);
+      newkey = FileUtils.getHash(data, algo, digestLocal);
     }
-    return FileUtils.checkEquals(key, newbufkey);
+    final boolean equal = Arrays.equals(key, newkey);
+    if (!equal) {
+      logger.error("DIGEST {} != {} for {} bytes using {} at rank {}",
+                   FilesystemBasedDigest.getHex(key),
+                   FilesystemBasedDigest.getHex(newkey), data.length, algo,
+                   packetRank);
+    }
+    return equal;
   }
 
   @Override
   public void clear() {
     super.clear();
-    if (WaarpNettyUtil.release(data)) {
-      data = null;
-    }
-    if (WaarpNettyUtil.release(key)) {
-      key = null;
-    }
+    WaarpNettyUtil.release(dataRecv);
+    dataRecv = null;
+    data = null;
+    key = null;
   }
 }

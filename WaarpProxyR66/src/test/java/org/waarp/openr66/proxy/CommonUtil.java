@@ -385,10 +385,12 @@ public abstract class CommonUtil {
       fail("Needs a correct configuration file as first argument");
     }
     proxyConfiguration = Configuration.configuration;
+    proxyConfiguration.setDigest(r66Configuration.getDigest());
   }
 
   static void shutdownProxy() {
     Configuration.configuration.setTimeoutCon(100);
+    proxyConfiguration.setTimeoutCon(100);
     proxyConfiguration.serverStop();
   }
 

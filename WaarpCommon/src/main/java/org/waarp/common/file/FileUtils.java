@@ -36,10 +36,6 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -102,36 +98,6 @@ public final class FileUtils {
       stream.flush();
     } catch (Exception ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-    try {
-      stream.close();
-    } catch (Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-  }
-
-  /**
-   * Force the stream to flush (FileChannel for Output
-   *
-   * @param stream
-   * @param force
-   */
-  public static final void close(FileChannel stream, boolean force) {
-    if (stream == null) {
-      return;
-    }
-    try {
-      stream.force(force);
-    } catch (IOException ignored) {
-      // Ignore
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-    close(stream);
-  }
-
-  public static final void close(FileChannel stream) {
-    if (stream == null) {
-      return;
     }
     try {
       stream.close();
@@ -293,123 +259,6 @@ public final class FileUtils {
   }
 
   /**
-   * Returns the FileChannel in Out MODE (if isOut is True) or in In MODE (if
-   * isOut is False) associated with
-   * the file. In out MODE, it can be in append MODE.
-   *
-   * @param isOut
-   * @param append
-   *
-   * @return the FileChannel (OUT or IN)
-   *
-   * @throws Reply550Exception
-   */
-  private static FileChannel getFileChannel(File file, boolean isOut,
-                                            boolean append)
-      throws Reply550Exception {
-    FileChannel fileChannel;
-    try {
-      if (isOut) {
-        @SuppressWarnings("resource")
-        final FileOutputStream fileOutputStream =
-            new FileOutputStream(file.getPath(), append);//NOSONAR
-        fileChannel = fileOutputStream.getChannel();
-        if (append) {
-          // Bug in JVM since it does not respect the API (position
-          // should be set as length)
-          try {
-            fileChannel.position(file.length());
-          } catch (final IOException ignored) {
-            // nothing
-          }
-        }
-      } else {
-        if (!file.exists()) {
-          throw new Reply550Exception("File does not exist");
-        }
-        @SuppressWarnings("resource")
-        final FileInputStream fileInputStream =
-            new FileInputStream(file.getPath());//NOSONAR
-        fileChannel = fileInputStream.getChannel();
-      }
-    } catch (final FileNotFoundException e) {
-      throw new Reply550Exception("File not found", e);
-    }
-    return fileChannel;
-  }
-
-  /**
-   * Write one fileChannel to another one. Close the fileChannels
-   *
-   * @param fileChannelIn source of file
-   * @param fileChannelOut destination of file
-   *
-   * @return The size of copy if is OK
-   *
-   * @throws Reply550Exception
-   */
-  private static long write(FileChannel fileChannelIn,
-                            FileChannel fileChannelOut)
-      throws Reply550Exception {
-    if (fileChannelIn == null) {
-      if (fileChannelOut != null) {
-        close(fileChannelOut);
-      }
-      throw new Reply550Exception("FileChannelIn is null");
-    }
-    if (fileChannelOut == null) {
-      close(fileChannelIn);
-      throw new Reply550Exception("FileChannelOut is null");
-    }
-    try {
-      return copy(fileChannelIn, fileChannelOut);
-    } catch (IOException e) {
-      throw new Reply550Exception("An error during copy occurs", e);
-    } finally {
-      close(fileChannelIn);
-      close(fileChannelOut, true);
-    }
-  }
-
-  /**
-   * Inspired from Google Guava copy within ByteStreams
-   *
-   * @param from ByteChannel will not be closed
-   * @param to ByteChannel will not be closed
-   *
-   * @return the size read
-   *
-   * @throws IOException
-   */
-  private static long copy(ReadableByteChannel from, WritableByteChannel to)
-      throws IOException {
-    if (from instanceof FileChannel) {
-      FileChannel sourceChannel = (FileChannel) from;
-      long oldPosition = sourceChannel.position();
-      long size = sourceChannel.size();
-      long position = oldPosition;
-      long copied;
-      do {
-        copied = sourceChannel.transferTo(position, ZERO_COPY_CHUNK_SIZE, to);
-        position += copied;
-        sourceChannel.position(position);
-      } while (copied > 0 || position < size);
-      return position - oldPosition;
-    }
-
-    final ByteBuffer buf = ByteBuffer.wrap(new byte[ZERO_COPY_CHUNK_SIZE]);
-    long total = 0;
-    while (from.read(buf) != -1) {
-      buf.flip();
-      while (buf.hasRemaining()) {
-        total += to.write(buf);
-      }
-      buf.clear();
-    }
-    return total;
-  }
-
-  /**
    * Copy one file to another one
    *
    * @param from
@@ -432,23 +281,33 @@ public final class FileUtils {
       if (move && from.renameTo(to)) {
         return;
       }
-      final FileChannel fileChannelIn = getFileChannel(from, false, false);
-      if (fileChannelIn == null) {
-        throw new Reply550Exception("Cannot read source file");
-      }
-      final FileChannel fileChannelOut = getFileChannel(to, true, append);
-      if (fileChannelOut == null) {
-        close(fileChannelIn);
-        throw new Reply550Exception("Cannot write destination file");
-      }
-      if (write(fileChannelIn, fileChannelOut) > -1) {
-        if (move) {
-          // do not test the delete
-          from.delete();
+      FileInputStream inputStream = null;
+      FileOutputStream outputStream = null;
+      try {
+        try {
+          inputStream = new FileInputStream(from.getPath());
+        } catch (FileNotFoundException e) {
+          throw new Reply550Exception("Cannot read source file");
         }
-        return;
+        try {
+          outputStream = new FileOutputStream(to.getPath(), append);
+        } catch (FileNotFoundException e) {
+          throw new Reply550Exception("Cannot write destination file");
+        }
+        try {
+          copy(inputStream, outputStream);
+        } catch (IOException e) {
+          throw new Reply550Exception("Cannot copy");
+        }
+      } finally {
+        close(outputStream);
+        close(inputStream);
       }
-      throw new Reply550Exception("Cannot copy");
+      if (move) {
+        // do not test the delete
+        from.delete(); // NOSONAR
+      }
+      return;
     }
     throw new Reply550Exception("Cannot access to parent dir of destination");
   }

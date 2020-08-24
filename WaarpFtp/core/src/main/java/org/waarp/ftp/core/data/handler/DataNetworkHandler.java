@@ -19,8 +19,6 @@
  */
 package org.waarp.ftp.core.data.handler;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
@@ -382,27 +380,23 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         return;
       }
     }
-    try {
-      if (isStillAlive()) {
-        try {
-          ftpTransfer.getFtpFile().writeDataBlock(dataBlock);
-        } catch (final FtpNoFileException e1) {
-          logger.debug(e1);
-          session.getDataConn().getFtpTransferControl()
-                 .setTransferAbortedFromInternal(true);
-        } catch (final FileTransferException e1) {
-          logger.debug(e1);
-          session.getDataConn().getFtpTransferControl()
-                 .setTransferAbortedFromInternal(true);
-        }
-      } else {
-        // Shutdown
+    if (isStillAlive()) {
+      try {
+        ftpTransfer.getFtpFile().writeDataBlock(dataBlock);
+      } catch (final FtpNoFileException e1) {
+        logger.debug(e1);
         session.getDataConn().getFtpTransferControl()
                .setTransferAbortedFromInternal(true);
-        WaarpSslUtility.closingSslChannel(ctx.channel());
+      } catch (final FileTransferException e1) {
+        logger.debug(e1);
+        session.getDataConn().getFtpTransferControl()
+               .setTransferAbortedFromInternal(true);
       }
-    } finally {
-      dataBlock.getBlock().release();
+    } else {
+      // Shutdown
+      session.getDataConn().getFtpTransferControl()
+             .setTransferAbortedFromInternal(true);
+      WaarpSslUtility.closingSslChannel(ctx.channel());
     }
   }
 
@@ -416,12 +410,10 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   public boolean writeMessage(String message) {
     final DataBlock dataBlock = new DataBlock();
     dataBlock.setEOF(true);
-    final ByteBuf buffer =
-        Unpooled.wrappedBuffer(message.getBytes(WaarpStringUtils.UTF8));
-    dataBlock.setBlock(buffer);
+    dataBlock.setBlock(message.getBytes(WaarpStringUtils.UTF8));
     ChannelFuture future;
     if (logger.isDebugEnabled()) {
-      logger.debug("Will write: {}", buffer.toString(WaarpStringUtils.UTF8));
+      logger.debug("Will write: {}", message);
     }
     future = dataChannel.writeAndFlush(dataBlock);
     WaarpNettyUtil.awaitOrInterrupted(future);
