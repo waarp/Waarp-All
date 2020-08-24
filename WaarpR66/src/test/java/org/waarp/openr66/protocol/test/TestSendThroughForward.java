@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.protocol.test;
 
-import io.netty.buffer.ByteBuf;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -249,10 +248,10 @@ public class TestSendThroughForward extends SendThroughClient {
     protected TestSendThroughForward client;
 
     @Override
-    public void writeByteBuf(ByteBuf buffer)
+    public void writeBytes(byte[] buffer)
         throws OpenR66ProtocolBusinessException {
       final DataBlock block = new DataBlock();
-      if (buffer.readableBytes() <= 0) {
+      if (buffer.length == 0) {
         // last block
         block.setEOF(true);
       } else {

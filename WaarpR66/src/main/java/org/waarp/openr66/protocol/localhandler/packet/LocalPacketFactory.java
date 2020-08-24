@@ -22,6 +22,8 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
+import static org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket.*;
+
 /**
  * Factory to create Packet according to type from a buffer
  */
@@ -174,7 +176,7 @@ public final class LocalPacketFactory {
     }
     final AbstractLocalPacket packet = (AbstractLocalPacket) o;
     return packet.header.readableBytes() + packet.middle.readableBytes() +
-           packet.end.readableBytes();
+           packet.end.readableBytes() + LOCAL_HEADER_SIZE;
   }
 
 }

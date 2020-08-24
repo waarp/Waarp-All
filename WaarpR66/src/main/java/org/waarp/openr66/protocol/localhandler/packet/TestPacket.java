@@ -66,7 +66,8 @@ public class TestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               int networkHeader)
       throws OpenR66ProtocolPacketException {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes() : EMPTY_ARRAY;
@@ -75,16 +76,17 @@ public class TestPacket extends AbstractLocalPacket {
         smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;
     final int middleSize = middleBytes.length;
     final int endSize = 4;
-    global = ByteBufAllocator.DEFAULT
-        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
-                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
-    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    final int globalSize =
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    header = WaarpNettyUtil.slice(global, offset, headerSize);
     header.writeBytes(headerBytes);
-    middle = WaarpNettyUtil
-        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    offset += headerSize;
+    middle = WaarpNettyUtil.slice(global, offset, middleSize);
     middle.writeBytes(middleBytes);
-    end = WaarpNettyUtil
-        .slice(global, GLOBAL_HEADER_SIZE + headerSize + middleSize, endSize);
+    offset += middleSize;
+    end = WaarpNettyUtil.slice(global, offset, endSize);
     end.writeInt(code);
   }
 

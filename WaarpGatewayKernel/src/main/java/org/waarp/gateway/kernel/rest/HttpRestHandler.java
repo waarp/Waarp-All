@@ -709,7 +709,7 @@ public abstract class HttpRestHandler
           cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, buffer);
         }
       } else {
-        cumulativeBody = buffer.duplicate();
+        cumulativeBody = buffer.slice();
       }
     } else {
       try {

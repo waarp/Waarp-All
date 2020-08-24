@@ -539,6 +539,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test04_BigSendSubmitNoLimitSelf()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server1", false, false);
     logger.warn("End {}", Processes.getCurrentMethodName());

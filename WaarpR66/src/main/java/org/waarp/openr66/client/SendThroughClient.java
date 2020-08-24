@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.client;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.file.DataBlock;
@@ -386,7 +385,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
       // last block
       block.setEOF(true);
     } else {
-      block.setBlock(Unpooled.wrappedBuffer(data));
+      block.setBlock(data);
     }
     return block;
   }

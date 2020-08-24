@@ -22,9 +22,14 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
+
+import static org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket.*;
 
 /**
  * This class represents Abstract Packet with its header, middle and end parts.
@@ -36,8 +41,13 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * End: (End length field bytes) = code status field (4 bytes), ...<br>
  */
 public abstract class AbstractLocalPacket {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(AbstractLocalPacket.class);
   protected static final byte[] EMPTY_ARRAY = {};
-  protected static final int GLOBAL_HEADER_SIZE = 4 * 3 + 1;
+  protected static final int LOCAL_HEADER_SIZE = 4 * 3 + 1;
 
   protected ByteBuf header;
 
@@ -69,7 +79,8 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createAllBuffers(LocalChannelReference lcr)
+  public abstract void createAllBuffers(LocalChannelReference lcr,
+                                        int networkHeader)
       throws OpenR66ProtocolPacketException;
 
   /**
@@ -113,17 +124,38 @@ public abstract class AbstractLocalPacket {
    */
   public ByteBuf getLocalPacket(LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
+    return getLocalPacketForNetworkPacket(lcr, null);
+  }
+
+  /**
+   * @param lcr the LocalChannelReference in use
+   *
+   * @return the ByteBuf as LocalPacket
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public ByteBuf getLocalPacketForNetworkPacket(LocalChannelReference lcr,
+                                                NetworkPacket packet)
+      throws OpenR66ProtocolPacketException {
     final ByteBuf buf;
+    final int globalHeader;
+    if (packet != null) {
+      globalHeader = NETWORK_HEADER_SIZE;
+    } else {
+      globalHeader = 0;
+    }
     if (hasGlobalBuffer()) {
       if (global == null) {
-        createAllBuffers(lcr);
+        createAllBuffers(lcr, globalHeader);
       } else {
+        global.readerIndex(0);
         global.writerIndex(0);
       }
       buf = global;
     } else {
-      buf = ByteBufAllocator.DEFAULT.buffer(GLOBAL_HEADER_SIZE,
-                                            GLOBAL_HEADER_SIZE);// 3 header lengths+type
+      // 3 header lengths+type
+      buf = ByteBufAllocator.DEFAULT.buffer(globalHeader + LOCAL_HEADER_SIZE,
+                                            globalHeader + LOCAL_HEADER_SIZE);
       if (header == null) {
         createHeader(lcr);
       }
@@ -134,8 +166,19 @@ public abstract class AbstractLocalPacket {
         createEnd(lcr);
       }
     }
+    if (packet != null) {
+      int capacity =
+          LOCAL_HEADER_SIZE + (header != null? header.capacity() : 0) +
+          (middle != null? middle.capacity() : 0) +
+          (end != null? end.capacity() : 0);
+      packet.writeNetworkHeader(buf, capacity);
+    }
+    return getByteBuf(buf);
+  }
+
+  private ByteBuf getByteBuf(final ByteBuf buf) {
     final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;
-    final int headerLength = 4 * 2 + 1 + newHeader.readableBytes();
+    final int headerLength = LOCAL_HEADER_SIZE - 4 + newHeader.readableBytes();
     final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;
     final int middleLength = newMiddle.readableBytes();
     final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;

@@ -65,18 +65,20 @@ public class StartupPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               int networkHeader)
       throws OpenR66ProtocolPacketException {
     final int headerSize = 4;
     final int middleSize = 1;
     final int endSize = 0;
-    global = ByteBufAllocator.DEFAULT
-        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
-                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
-    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    final int globalSize =
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    header = WaarpNettyUtil.slice(global, offset, headerSize);
     header.writeInt(localId);
-    middle = WaarpNettyUtil
-        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    offset += headerSize;
+    middle = WaarpNettyUtil.slice(global, offset, middleSize);
     middle.writeBoolean(fromSsl);
     end = Unpooled.EMPTY_BUFFER;
   }

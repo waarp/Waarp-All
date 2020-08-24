@@ -54,9 +54,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
     }
     final byte isblock = buf.readByte();
     final byte[] bpassword = new byte[headerLength - 2];
-    if (headerLength - 2 > 0) {
-      buf.readBytes(bpassword);
-    }
+    buf.readBytes(bpassword);
     final boolean block = isblock == 1;
     return new BlockRequestPacket(block, bpassword);
   }
@@ -76,14 +74,14 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr)
+  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
     middle = Unpooled.EMPTY_BUFFER;
-    global = ByteBufAllocator.DEFAULT
-        .buffer(GLOBAL_HEADER_SIZE + 1 + key.length,
-                GLOBAL_HEADER_SIZE + 1 + key.length);
-    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, 1 + key.length);
+    final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1 + key.length;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    header = WaarpNettyUtil.slice(global, offset, 1 + key.length);
     header.writeByte(block? 1 : 0);
     header.writeBytes(key);
   }

@@ -291,8 +291,7 @@ public class NetworkServerHandler
           logger.warn(
               "Temptative of connection failed but still some connection are there so not closing the server channel immediately: " +
               nb);
-          NetworkTransaction
-              .shuttingDownNetworkChannel(networkChannelReference);
+          msg.clear();
           return;
         }
         // No way to know what is wrong: close all connections with
@@ -300,8 +299,8 @@ public class NetworkServerHandler
         logger.error(
             "Will close NETWORK channel, Cannot continue connection with remote Host: " +
             msg + " : " + channel.remoteAddress() + " : " + nb);
-        WaarpSslUtility.closingSslChannel(channel);
         msg.clear();
+        WaarpSslUtility.closingSslChannel(channel);
         return;
       }
     } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
@@ -321,8 +320,9 @@ public class NetworkServerHandler
         }
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
+      } finally {
+        msg.clear();
       }
-      msg.clear();
       return;
     }
     logger.trace("TRACE ID GET MSG: {}", msg);

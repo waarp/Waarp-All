@@ -122,6 +122,7 @@ public class R66Session implements SessionInterface {
 
   private final HashMap<String, R66Dir> dirsFromSession =
       new HashMap<String, R66Dir>();
+  private byte[] reusableBuffer;
 
   /**
    * Create the session
@@ -279,6 +280,19 @@ public class R66Session implements SessionInterface {
   @Override
   public int getBlockSize() {
     return blockSize;
+  }
+
+  /**
+   * @param blockSize
+   *
+   * @return the reusable buffer per Session
+   */
+  public byte[] getReusableBuffer(int blockSize) {
+    if (reusableBuffer == null || reusableBuffer.length != blockSize) {
+      reusableBuffer = null;
+      reusableBuffer = new byte[blockSize];
+    }
+    return reusableBuffer;
   }
 
   /**

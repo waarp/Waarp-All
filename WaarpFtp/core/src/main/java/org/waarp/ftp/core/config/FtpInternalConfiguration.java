@@ -258,7 +258,8 @@ public class FtpInternalConfiguration {
     // Passive Data Connections
     passiveBootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(passiveBootstrap, execDataWorker,
-                                      (int) configuration.getTimeoutCon());
+                                      (int) configuration.getTimeoutCon(),
+                                      configuration.getBlocksize() + 1024);
     if (usingNativeSsl) {
       passiveBootstrap.childHandler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
@@ -271,7 +272,8 @@ public class FtpInternalConfiguration {
     if (acceptAuthProt) {
       passiveSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(passiveSslBootstrap, execDataWorker,
-                                        (int) configuration.getTimeoutCon());
+                                        (int) configuration.getTimeoutCon(),
+                                        configuration.getBlocksize() + 1024);
       passiveSslBootstrap.childHandler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, false));
@@ -282,7 +284,8 @@ public class FtpInternalConfiguration {
     // Active Data Connections
     activeBootstrap = new Bootstrap();
     WaarpNettyUtil.setBootstrap(activeBootstrap, execDataWorker,
-                                (int) configuration.getTimeoutCon());
+                                (int) configuration.getTimeoutCon(),
+                                configuration.getBlocksize() + 1024);
     if (usingNativeSsl) {
       activeBootstrap.handler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
@@ -295,7 +298,8 @@ public class FtpInternalConfiguration {
     if (acceptAuthProt) {
       activeSslBootstrap = new Bootstrap();
       WaarpNettyUtil.setBootstrap(activeSslBootstrap, execDataWorker,
-                                  (int) configuration.getTimeoutCon());
+                                  (int) configuration.getTimeoutCon(),
+                                  configuration.getBlocksize() + 1024);
       activeSslBootstrap.handler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
                                   configuration, true));
@@ -307,7 +311,8 @@ public class FtpInternalConfiguration {
     // Main Command server
     serverBootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(serverBootstrap, execWorker,
-                                      (int) configuration.getTimeoutCon());
+                                      (int) configuration.getTimeoutCon(),
+                                      configuration.getBlocksize());
     if (usingNativeSsl) {
       serverBootstrap.childHandler(
           new FtpsInitializer(configuration.businessHandler, configuration));

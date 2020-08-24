@@ -894,9 +894,15 @@ public class TransferActions extends ServerActions {
       }
     }
     // if MD5 check MD5
+    // Get reusable buffer and set internal content to byte Array
+    final byte[] reusableBuffer =
+        session.getReusableBuffer(packet.getLengthPacket());
+    packet.createByteBufFromRecv(reusableBuffer);
     if (RequestPacket.isMD5Mode(session.getRunner().getMode())) {
-      logger.debug("AlgoDigest: " + (localChannelReference.getPartner() != null?
-          localChannelReference.getPartner().getDigestAlgo() : "usual algo"));
+      logger.debug("AlgoDigest: {}",
+                   (localChannelReference.getPartner() != null?
+                       localChannelReference.getPartner().getDigestAlgo() :
+                       "usual algo"));
       if (Configuration.configuration.isGlobalDigest()) {
         prepareGlobalDigests();
         // Cumulate all three digests
@@ -908,7 +914,8 @@ public class TransferActions extends ServerActions {
                        //$NON-NLS-1$
                        localChannelReference.getPartner()
                                             .getDigestAlgo().algoName);
-          errorToSend("Transfer in error due to bad Hash on data packet (" +
+          errorToSend("Transfer in error due to bad Hash on data packet " +
+                      "during multiple Digests (" +
                       localChannelReference.getPartner()
                                            .getDigestAlgo().algoName + ')',
                       ErrorCode.MD5Error, 21);
@@ -935,12 +942,11 @@ public class TransferActions extends ServerActions {
       prepareGlobalDigests();
       FileUtils.computeGlobalHash(globalDigest, localDigest, packet.getData());
     }
-    final DataBlock dataBlock = new DataBlock();
     if (session.getRunner().isRecvThrough() &&
         localChannelReference.isRecvThroughMode()) {
       try {
         localChannelReference.getRecvThroughHandler()
-                             .writeByteBuf(packet.getData());
+                             .writeBytes(packet.getData());
         session.getRunner().incrementRank();
         if (packet.getPacketRank() % 100 == 1) {
           logger.debug("Good RANK: " + packet.getPacketRank() + " : " +
@@ -950,6 +956,7 @@ public class TransferActions extends ServerActions {
         packet.clear();
       }
     } else {
+      DataBlock dataBlock = new DataBlock();
       dataBlock.setBlock(packet.getData());
       try {
         session.getFile().writeDataBlock(dataBlock);

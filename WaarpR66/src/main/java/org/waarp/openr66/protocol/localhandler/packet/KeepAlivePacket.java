@@ -79,11 +79,12 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr)
+  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
       throws OpenR66ProtocolPacketException {
-    global = ByteBufAllocator.DEFAULT
-        .buffer(GLOBAL_HEADER_SIZE + 1, GLOBAL_HEADER_SIZE + 1);
-    middle = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, 1);
+    final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    middle = WaarpNettyUtil.slice(global, offset, 1);
     middle.writeByte(way);
     end = Unpooled.EMPTY_BUFFER;
     header = Unpooled.EMPTY_BUFFER;

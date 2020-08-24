@@ -36,7 +36,7 @@ public abstract class RecvThroughHandler {
    *     if any error occurs during write
    *     in business process.
    */
-  public abstract void writeByteBuf(ByteBuf buffer)
+  public abstract void writeBytes(byte[] buffer)
       throws OpenR66ProtocolBusinessException;
 
   /**
@@ -46,7 +46,7 @@ public abstract class RecvThroughHandler {
    *
    * @return the array of bytes
    */
-  protected byte[] getByte(ByteBuf buffer) {
+  protected byte[] getBytes(ByteBuf buffer) {
     final byte[] dst = new byte[buffer.readableBytes()];
     buffer.readBytes(dst, 0, dst.length);
     return dst;

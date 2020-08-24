@@ -20,8 +20,6 @@
 package org.waarp.openr66.protocol.utils;
 
 import ch.qos.logback.classic.LoggerContext;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
@@ -29,6 +27,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -204,15 +203,14 @@ public class ChannelUtils extends Thread {
       LocalChannelReference localChannelReference,
       FilesystemBasedDigest digestGlobal, DataBlock block)
       throws OpenR66ProtocolPacketException {
-    ByteBuf md5 = Unpooled.EMPTY_BUFFER;
+    byte[] md5 = {};
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
     if (RequestPacket.isMD5Mode(runner.getMode())) {
-      byte[] md5b = FileUtils
-          .getHash(block.getBlock(), Configuration.configuration.getDigest(),
-                   digestGlobal);
-      md5 = Unpooled.wrappedBuffer(md5b);
+      final DigestAlgo algo =
+          localChannelReference.getPartner().getDigestAlgo();
+      md5 = FileUtils.getHash(block.getByteBlock(), algo, digestGlobal);
     } else if (digestGlobal != null) {
-      digestGlobal.Update(block.getBlock());
+      digestGlobal.Update(block.getByteBlock());
     }
     if (runner.getRank() % 100 == 1 ||
         localChannelReference.getSessionState() != R66FiniteDualStates.DATAS) {
@@ -220,7 +218,7 @@ public class ChannelUtils extends Thread {
     }
     logger.trace("sending data block {}", runner.getRank());
     final DataPacket data =
-        new DataPacket(runner.getRank(), block.getBlock(), md5);
+        new DataPacket(runner.getRank(), block.getByteBlock(), md5);
     final ChannelFuture future =
         writeAbstractLocalPacket(localChannelReference, data, false);
     runner.incrementRank();

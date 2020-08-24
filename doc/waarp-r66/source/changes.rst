@@ -20,9 +20,11 @@ Nouvelles fonctionnalités
 Correctifs
 ----------
 
-- [`#76 <https://github.com/waarp/Waarp-All/pull/76>`__]
+- [`#77 <https://github.com/waarp/Waarp-All/pull/77>`__]
   Le risque de dépassement de capacité mémoire directe est
-  largement diminué au profit de l'usage du Pool de mémoire Netty.
+  largement diminué au profit de l'usage du Pool de mémoire Netty
+  au sein de la JVM. Des optimisations majeures en termes
+  d'allocations/désallocations ont également été effectuées.
 - [`#72 <https://github.com/waarp/Waarp-All/pull/72>`__]
   Le commander pouvait être bloqué dans certains cas.
   (issue [`#65 <https://github.com/waarp/Waarp-All/issues/65>`__])
@@ -50,6 +52,7 @@ Correctifs
 - [`#66 <https://github.com/waarp/Waarp-All/pull/66>`__]
   EXECOUTPUT provoquait une erreur de mappage de classe
   (issue [`#59 <https://github.com/waarp/Waarp-All/issues/59>`__])
+- Mise à jour des dépendances
 
 
 Waarp R66 3.4.0 (2020-07-17)

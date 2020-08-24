@@ -351,6 +351,7 @@ public abstract class ConnectionActions {
    */
   public void authent(AuthentPacket packet, boolean isSsl)
       throws OpenR66ProtocolPacketException {
+    logger.debug("AUTHENT {}", packet);
     if (packet.isToValidate()) {
       session.newState(AUTHENTR);
     }

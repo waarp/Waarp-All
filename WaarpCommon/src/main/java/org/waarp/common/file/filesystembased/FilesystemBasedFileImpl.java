@@ -19,8 +19,6 @@
  */
 package org.waarp.common.file.filesystembased;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.exception.FileEndOfTransferException;
 import org.waarp.common.exception.FileTransferException;
@@ -32,7 +30,6 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.SessionInterface;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpNettyUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,8 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.util.Arrays;
 
 /**
  * File implementation for Filesystem Based
@@ -97,15 +93,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    */
   private FileOutputStream fileOutputStream;
   /**
-   * FileChannel In
+   * FileInputStream In
    */
-  private FileChannel bfileChannelIn;
-
-  /**
-   * Associated ByteBuffer
-   */
-  private ByteBuffer byteBufferIn;
-  private ByteBuf byteBufIn;
+  private FileInputStream fileInputStream;
 
   private byte[] reusableBytes;
 
@@ -232,16 +222,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
 
   @Override
   public boolean closeFile() throws CommandAbstractException {
-    if (bfileChannelIn != null) {
-      FileUtils.close(bfileChannelIn);
-      bfileChannelIn = null;
-    }
-    if (byteBufferIn != null) {
-      byteBufferIn = null;
-    }
-    if (byteBufIn != null) {
-      WaarpNettyUtil.releaseCompletely(byteBufIn);
-      byteBufIn = null;
+    if (fileInputStream != null) {
+      FileUtils.close(fileInputStream);
+      fileInputStream = null;
     }
     if (reusableBytes != null) {
       reusableBytes = null;
@@ -283,7 +266,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return false;
     }
-    return bfileChannelIn != null;
+    return fileInputStream != null;
   }
 
   @Override
@@ -359,25 +342,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       if (newFile.getParentFile().canWrite()) {
         if (!file.renameTo(newFile)) {
-          FileOutputStream fileOutputStreamNew = null;
-          try {
-            try {
-              fileOutputStreamNew = new FileOutputStream(newFile);
-            } catch (final FileNotFoundException e) {
-              logger.warn("Cannot find file: " + newFile.getName(), e);
-              return false;
-            }
-            final FileChannel fileChannelOut = fileOutputStreamNew.getChannel();
-            if (get(fileChannelOut)) {
-              delete();
-            } else {
-              FileUtils.close(fileChannelOut);
-              logger.warn("Cannot write file: {}", newFile);
-              return false;
-            }
-          } finally {
-            FileUtils.close(fileOutputStreamNew);
-          }
+          FileUtils.copy(file, newFile, true, false);
         }
         currentFile = getRelativePath(newFile);
         isReady = true;
@@ -398,8 +363,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       final DataBlock dataBlock = new DataBlock();
-      ByteBuf buffer;
-      buffer = getBlock(getSession().getBlockSize());
+      byte[] buffer = getByteBlock(getSession().getBlockSize());
       if (buffer != null) {
         dataBlock.setBlock(buffer);
         if (dataBlock.getByteCount() < getSession().getBlockSize()) {
@@ -415,10 +379,12 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   public void writeDataBlock(DataBlock dataBlock) throws FileTransferException {
     if (isReady) {
       if (dataBlock.isEOF()) {
-        writeBlockEnd(dataBlock.getBlock());
+        writeBlockEnd(dataBlock.getByteBlock(), dataBlock.getOffset(),
+                      dataBlock.getByteCount());
         return;
       }
-      writeBlock(dataBlock.getBlock());
+      writeBlock(dataBlock.getByteBlock(), dataBlock.getOffset(),
+                 dataBlock.getByteCount());
       return;
     }
     throw new FileTransferException(
@@ -445,21 +411,24 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    */
   @Override
   public void setPosition(long position) throws IOException {
-    this.position = position;
-    if (bfileChannelIn != null) {
-      bfileChannelIn = bfileChannelIn.position(position);
-    }
-    if (fileOutputStream != null) {
-      FileUtils.close(fileOutputStream);
-      fileOutputStream = getFileOutputStream(true);
-      if (fileOutputStream == null) {
-        throw new IOException("File cannot changed of Position");
+    if (this.position != position) {
+      this.position = position;
+      if (fileInputStream != null) {
+        FileUtils.close(fileInputStream);
+        fileInputStream = getFileInputStream();
+      }
+      if (fileOutputStream != null) {
+        FileUtils.close(fileOutputStream);
+        fileOutputStream = getFileOutputStream(true);
+        if (fileOutputStream == null) {
+          throw new IOException("File cannot changed of Position");
+        }
       }
     }
   }
 
   /**
-   * Write the current FileInterface with the given ByteBuf. The file is not
+   * Write the current FileInterface with the given byte array. The file is not
    * limited to 2^32 bytes since this
    * write operation is in add mode.
    * <p>
@@ -471,12 +440,13 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws FileTransferException
    */
-  private void writeBlock(ByteBuf buffer) throws FileTransferException {
-    if (!isReady) {
+  private void writeBlock(byte[] buffer, int offset, int length)
+      throws FileTransferException {
+    if (length > 0 && !isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
     }
     // An empty buffer is allowed
-    if (buffer == null) {
+    if (buffer == null || length == 0) {
       return;// could do FileEndOfTransfer ?
     }
     if (fileOutputStream == null) {
@@ -485,22 +455,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (fileOutputStream == null) {
       throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
     }
-    final int bufferSize = buffer.readableBytes();
-    int start = 0;
-    byte[] newbuf;
-    if (buffer.hasArray()) {
-      start = buffer.arrayOffset();
-      newbuf = buffer.array();
-      buffer.readerIndex(buffer.readerIndex() + bufferSize);
-    } else {
-      if (reusableBytes == null || reusableBytes.length != bufferSize) {
-        reusableBytes = new byte[bufferSize];
-      }
-      newbuf = reusableBytes;
-      buffer.readBytes(newbuf);
-    }
+    final int bufferSize = length;
     try {
-      fileOutputStream.write(newbuf, start, bufferSize);
+      fileOutputStream.write(buffer, offset, bufferSize);
     } catch (final IOException e2) {
       logger.error("Error during write:", e2);
       try {
@@ -516,7 +473,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   /**
-   * End the Write of the current FileInterface with the given ByteBuf. The
+   * End the Write of the current FileInterface with the given byte array. The
    * file
    * is not limited to 2^32 bytes
    * since this write operation is in add mode.
@@ -525,8 +482,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws FileTransferException
    */
-  private void writeBlockEnd(ByteBuf buffer) throws FileTransferException {
-    writeBlock(buffer);
+  private void writeBlockEnd(byte[] buffer, int offset, int length)
+      throws FileTransferException {
+    writeBlock(buffer, offset, length);
     try {
       closeFile();
     } catch (final CommandAbstractException e) {
@@ -535,31 +493,13 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   private void checkByteBufSize(int size) {
-    if (reusableBytes != null) {
-      if (reusableBytes.length != size) {
-        reusableBytes = new byte[size];
-        byteBufferIn = ByteBuffer.wrap(reusableBytes);
-        WaarpNettyUtil.releaseCompletely(byteBufIn);
-        byteBufIn = Unpooled.wrappedBuffer(reusableBytes);
-      }
-    } else {
-      if (reusableBytes == null || reusableBytes.length != size) {
-        reusableBytes = new byte[size];
-      }
-      byteBufferIn = ByteBuffer.wrap(reusableBytes);
-      byteBufIn = Unpooled.wrappedBuffer(reusableBytes);
+    if (reusableBytes == null || reusableBytes.length != size) {
+      reusableBytes = new byte[size];
     }
-    resetBuffers();
-  }
-
-  private void resetBuffers() {
-    byteBufIn.clear();
-    byteBufIn.readerIndex(0);
-    byteBufIn.writerIndex(0);
   }
 
   /**
-   * Get the current block ByteBuf of the current FileInterface. There is
+   * Get the current block of bytes of the current FileInterface. There is
    * therefore no limitation of the file
    * size to 2^32 bytes.
    * <p>
@@ -569,29 +509,28 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @param sizeblock is the limit size for the block array
    *
-   * @return the resulting block ByteBuf (even empty)
+   * @return the resulting block of bytes (even empty)
    *
    * @throws FileTransferException
    * @throws FileEndOfTransferException
    */
-  private ByteBuf getBlock(final int sizeblock)
+  private byte[] getByteBlock(final int sizeblock)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
     }
-    if (bfileChannelIn == null) {
-      bfileChannelIn = getFileChannel();
-      if (bfileChannelIn == null) {
+    if (fileInputStream == null) {
+      fileInputStream = getFileInputStream();
+      if (fileInputStream == null) {
         throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
       }
       checkByteBufSize(sizeblock);
-    } else {
-      resetBuffers();
     }
     int sizeout = 0;
     while (sizeout < sizeblock) {
       try {
-        final int sizeread = bfileChannelIn.read(byteBufferIn);
+        final int sizeread =
+            fileInputStream.read(reusableBytes, sizeout, sizeblock - sizeout);
         if (sizeread <= 0) {
           break;
         }
@@ -615,89 +554,21 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       isReady = false;
       throw new FileEndOfTransferException("End of file");
     }
-    byteBufferIn.flip();
     position += sizeout;
-    byteBufferIn.clear();
-    byteBufIn.readerIndex(0);
-    byteBufIn.writerIndex(sizeout);
-    ByteBuf buffer = byteBufIn;
+    byte[] buffer = reusableBytes;
     if (sizeout < sizeblock) {// last block
-      buffer = buffer.copy();
+      buffer = Arrays.copyOfRange(reusableBytes, 0, sizeout);
       try {
         closeFile();
       } catch (final CommandAbstractException ignored) {
         // nothing
       }
       isReady = false;
-    } else {
-      buffer.retain();
     }
     return buffer;
   }
 
-  /**
-   * Write the FileInterface to the fileChannelOut, thus bypassing the
-   * limitation of the file size to 2^32
-   * bytes.
-   * <p>
-   * This call closes the fileChannelOut with fileChannelOut.close() if the
-   * operation is in success.
-   *
-   * @param fileChannelOut
-   *
-   * @return True if OK, False in error.
-   */
-  protected boolean get(FileChannel fileChannelOut) {
-    if (!isReady) {
-      return false;
-    }
-    FileChannel fileChannelIn = getFileChannel();
-    if (fileChannelIn == null) {
-      return false;
-    }
-    long size;
-    long transfert = 0;
-    try {
-      size = fileChannelIn.size();
-      if (size < 0) {
-        try {
-          size = length();
-        } catch (final CommandAbstractException e) {
-          logger.error(ERROR_DURING_GET, e);
-          return false;
-        }
-        if (size < 0) {
-          logger.error("Error during get, wrong size: " + size);
-          return false;
-        }
-      }
-      long chunkSize;
-      while (transfert < size) {
-        chunkSize = Math.min(size - transfert, FileUtils.ZERO_COPY_CHUNK_SIZE);
-        transfert +=
-            fileChannelOut.transferFrom(fileChannelIn, transfert, chunkSize);
-      }
-      fileChannelOut.force(true);
-    } catch (final IOException e) {
-      logger.error(ERROR_DURING_GET, e);
-      return false;
-    } finally {
-      FileUtils.close(fileChannelOut);
-      FileUtils.close(fileChannelIn);
-      fileChannelIn = null;
-    }
-    if (transfert == size) {
-      position += size;
-    }
-    return transfert == size;
-  }
-
-  /**
-   * Returns the FileChannel in In mode associated with the current file.
-   *
-   * @return the FileChannel (IN mode)
-   */
-  protected FileChannel getFileChannel() {
+  protected FileInputStream getFileInputStream() {
     if (!isReady) {
       return null;
     }
@@ -707,24 +578,22 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     } catch (final CommandAbstractException e1) {
       return null;
     }
-    FileChannel fileChannel = null;
+    @SuppressWarnings("resource")
+    FileInputStream fileInputStream = null;
     try {
-      @SuppressWarnings("resource")
-      final FileInputStream fileInputStream =//NOSONAR
-          new FileInputStream(trueFile);//NOSONAR
-      fileChannel = fileInputStream.getChannel();
+      fileInputStream = new FileInputStream(trueFile);//NOSONAR
       if (position != 0) {
-        fileChannel = fileChannel.position(position);
+        fileInputStream.skip(position);
       }
     } catch (final FileNotFoundException e) {
-      logger.error("File not found in getFileChannel:", e);
+      logger.error("File not found in getFileInputStream:", e);
       return null;
     } catch (final IOException e) {
-      FileUtils.close(fileChannel);
-      logger.error("Change position in getFileChannel:", e);
+      FileUtils.close(fileInputStream);
+      logger.error("Change position in getFileInputStream:", e);
       return null;
     }
-    return fileChannel;
+    return fileInputStream;
   }
 
   /**

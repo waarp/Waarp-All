@@ -142,13 +142,15 @@ public class SpooledInformTask extends AbstractExecJavaTask {
         }
         final BusinessRequestPacket packet =
             new BusinessRequestPacket(getClass().getName() + " informed", 0);
-        validate(packet);
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(session.getLocalChannelReference(),
-                                        packet, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // nothing
+        if (!validate(packet)) {
+          // No Validation therefore send the new packet back
+          try {
+            ChannelUtils
+                .writeAbstractLocalPacket(session.getLocalChannelReference(),
+                                          packet, true);
+          } catch (final OpenR66ProtocolPacketException ignored) {
+            // nothing
+          }
         }
         status = 0;
       }

@@ -81,12 +81,8 @@ public class AuthentPacket extends AbstractLocalPacket {
     }
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
-    if (headerLength - 1 > 0) {
-      buf.readBytes(bheader);
-    }
-    if (middleLength > 0) {
-      buf.readBytes(bmiddle);
-    }
+    buf.readBytes(bheader);
+    buf.readBytes(bmiddle);
     // end part
     final Integer newId = buf.readInt();
     final byte valid = buf.readByte();
@@ -143,7 +139,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr)
+  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (hostId == null || key == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -153,16 +149,17 @@ public class AuthentPacket extends AbstractLocalPacket {
     final int keySize = key.length;
     final byte[] bversion = version != null? version.getBytes() : null;
     final int endSize = 5 + (version != null? bversion.length : 0);
-    global = ByteBufAllocator.DEFAULT
-        .buffer(hostIdSize + keySize + endSize + GLOBAL_HEADER_SIZE,
-                hostIdSize + keySize + endSize + GLOBAL_HEADER_SIZE);
-    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, hostIdSize);
+    final int globalSize =
+        networkHeader + hostIdSize + keySize + endSize + LOCAL_HEADER_SIZE;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    header = WaarpNettyUtil.slice(global, offset, hostIdSize);
     header.writeBytes(hostIdByte);
-    middle =
-        WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE + hostIdSize, keySize);
+    offset += hostIdSize;
+    middle = WaarpNettyUtil.slice(global, offset, keySize);
     middle.writeBytes(key);
-    end = WaarpNettyUtil
-        .slice(global, GLOBAL_HEADER_SIZE + hostIdSize + keySize, endSize);
+    offset += keySize;
+    end = WaarpNettyUtil.slice(global, offset, endSize);
     end.writeInt(localId);
     end.writeByte(way);
     if (version != null) {

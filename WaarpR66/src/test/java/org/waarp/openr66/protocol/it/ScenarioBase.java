@@ -404,7 +404,7 @@ public abstract class ScenarioBase extends TestAbstract {
   }
 
   @Test
-  public void test012_MultipleSendsSync()
+  public void test012_MultipleRecvsSync()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     Assume.assumeNotNull(networkTransaction);
@@ -536,7 +536,7 @@ public abstract class ScenarioBase extends TestAbstract {
     int lastNumber = NUMBER_FILES;
     NUMBER_FILES = 800;
     BLOCK_SIZE = 16 * 1024;
-    test012_MultipleSendsSync();
+    test012_MultipleRecvsSync();
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     // Ensure the last send is ok
@@ -544,7 +544,7 @@ public abstract class ScenarioBase extends TestAbstract {
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     BLOCK_SIZE = 64 * 1024;
-    test012_MultipleSendsSync();
+    test012_MultipleRecvsSync();
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     // Ensure the last send is ok
@@ -552,7 +552,7 @@ public abstract class ScenarioBase extends TestAbstract {
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     BLOCK_SIZE = 128 * 1024;
-    test012_MultipleSendsSync();
+    test012_MultipleRecvsSync();
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     // Ensure the last send is ok
@@ -560,7 +560,7 @@ public abstract class ScenarioBase extends TestAbstract {
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     BLOCK_SIZE = 512 * 1024;
-    test012_MultipleSendsSync();
+    test012_MultipleRecvsSync();
     // Extra sleep to check correctness if necessary on Logs
     Thread.sleep(1000);
     // Ensure the last send is ok

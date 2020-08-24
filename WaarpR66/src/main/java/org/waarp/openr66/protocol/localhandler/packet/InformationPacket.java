@@ -67,9 +67,7 @@ public class InformationPacket extends AbstractLocalPacket {
     }
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bend = new byte[endLength];
-    if (headerLength - 1 > 0) {
-      buf.readBytes(bheader);
-    }
+    buf.readBytes(bheader);
     final byte request = buf.readByte();
     if (endLength > 0) {
       buf.readBytes(bend);
@@ -96,7 +94,7 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr)
+  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (rulename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -107,18 +105,19 @@ public class InformationPacket extends AbstractLocalPacket {
     final int middleSize = 1;
     final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;
     final int endSize = endBytes.length;
-    global = ByteBufAllocator.DEFAULT
-        .buffer(GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize,
-                GLOBAL_HEADER_SIZE + headerSize + middleSize + endSize);
-    header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, headerSize);
+    final int globalSize =
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    header = WaarpNettyUtil.slice(global, offset, headerSize);
     if (rulename != null) {
       header.writeBytes(headerBytes);
     }
-    middle = WaarpNettyUtil
-        .slice(global, GLOBAL_HEADER_SIZE + headerSize, middleSize);
+    offset += headerSize;
+    middle = WaarpNettyUtil.slice(global, offset, middleSize);
     middle.writeByte(requestedInfo);
-    end = WaarpNettyUtil
-        .slice(global, GLOBAL_HEADER_SIZE + headerSize + middleSize, endSize);
+    offset += middleSize;
+    end = WaarpNettyUtil.slice(global, offset, endSize);
     if (filename != null) {
       end.writeBytes(endBytes);
     }

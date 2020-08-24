@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
@@ -71,14 +72,15 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     final int localId = buf.readInt();
     final int remoteId = buf.readInt();
     final byte code = buf.readByte();
-    final int readerInder = buf.readerIndex();
-    final ByteBuf buffer = buf.retainedSlice(readerInder, length - 9);
+    final int index = buf.readerIndex();
+    final ByteBuf buffer = buf.retainedSlice(index, length - 9);
     buf.skipBytes(length - 9);
     NetworkPacket networkPacket =
         new NetworkPacket(localId, remoteId, code, buffer);
     if (code == LocalPacketFactory.KEEPALIVEPACKET) {
       final KeepAlivePacket keepAlivePacket = (KeepAlivePacket) LocalPacketCodec
           .decodeNetworkPacket(networkPacket.getBuffer());
+      buffer.release();
       if (keepAlivePacket.isToValidate()) {
         keepAlivePacket.validate();
         final NetworkPacket response =
@@ -91,7 +93,6 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
         }
         ctx.writeAndFlush(response.getNetworkPacket());
       }
-      buffer.release();
       final NetworkServerHandler nsh =
           (NetworkServerHandler) ctx.pipeline().last();
       nsh.resetKeepAlive();
@@ -106,7 +107,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     logger.trace("TRACE ID sending network packet {}", msg);
     final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
-    finalBuf.release();
+    WaarpNettyUtil.releaseCompletely(finalBuf);
     // DO NOT clear msg
   }
 

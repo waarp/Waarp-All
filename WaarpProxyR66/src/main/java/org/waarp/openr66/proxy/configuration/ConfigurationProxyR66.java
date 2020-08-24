@@ -102,7 +102,8 @@ public class ConfigurationProxyR66 extends Configuration {
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
-                                        (int) getTimeoutCon());
+                                        (int) getTimeoutCon(),
+                                        getBlockSize() + 64);
       networkServerInitializer = new NetworkServerInitializerProxy(true);
       serverBootstrap.childHandler(networkServerInitializer);
       // FIXME take into account multiple address
@@ -134,7 +135,8 @@ public class ConfigurationProxyR66 extends Configuration {
     if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
-                                        (int) getTimeoutCon());
+                                        (int) getTimeoutCon(),
+                                        getBlockSize() + 64);
       networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       // FIXME take into account multiple address

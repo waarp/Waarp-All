@@ -52,6 +52,20 @@ public final class SystemPropertyUtil {
   private static final String IO_NETTY_ALLOCATOR_TYPE =
       "io.netty.allocator.type";
   private static final String IO_POOLED = "pooled";
+  private static final String IO_NETTY_NOPREFERDIRECT =
+      "io.netty.noPreferDirect";
+  /**
+   * Recommended value is 0. Giving too small valud (>0) coud cause issues.
+   * Value of -1 is default behavior of Netty.
+   * Value of 0 allows Netty to allocate more memory but still
+   * stable.
+   * If <0, means Netty use twice Direct memory from JDK and don't use cleaner.
+   * If 0, means Netty use the max JDK Direct ram and use Cleaner (recommended).
+   * If >0, means Netty use this max Direct, not related to max of JDK, and
+   * don't use cleaner.
+   */
+  private static final String IO_NETTY_MAXDIRECTMEMORY =
+      "io.netty.maxDirectMemory";
 
   private static final Properties PROPS = new Properties();
   private static final String INVALID_PROPERTY = "Invalid property ";
@@ -62,8 +76,8 @@ public final class SystemPropertyUtil {
   // security exceptions on every system property access or introducing more complexity
   // just because of less verbose logging.
   static {
-    initializedTlsContext();
     refresh();
+    initializedTlsContext();
   }
 
   /**
@@ -86,6 +100,7 @@ public final class SystemPropertyUtil {
       PROPS.clear();
       PROPS.putAll(newProps);
     }
+    // Ensure Pooled allocator except if something different set
     if (!contains(IO_NETTY_ALLOCATOR_TYPE) ||
         Strings.isNullOrEmpty(get(IO_NETTY_ALLOCATOR_TYPE))) {
       try {
@@ -94,6 +109,41 @@ public final class SystemPropertyUtil {
           PROPS.clear();
           PROPS.putAll(newProps);
         }
+        SysErrLogger.FAKE_LOGGER.syserr(IO_NETTY_ALLOCATOR_TYPE + ":" +
+                                        io.netty.util.internal.SystemPropertyUtil
+                                            .get(IO_NETTY_ALLOCATOR_TYPE));
+      } catch (final Throwable e1) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+      }
+    }
+    // Ensure minimize DIRECT except if something different set
+    if (!contains(IO_NETTY_NOPREFERDIRECT) ||
+        Strings.isNullOrEmpty(get(IO_NETTY_NOPREFERDIRECT))) {
+      try {
+        System.setProperty(IO_NETTY_NOPREFERDIRECT, "true");
+        synchronized (PROPS) {
+          PROPS.clear();
+          PROPS.putAll(newProps);
+        }
+        SysErrLogger.FAKE_LOGGER.syserr(IO_NETTY_NOPREFERDIRECT + ":" +
+                                        io.netty.util.internal.SystemPropertyUtil
+                                            .get(IO_NETTY_NOPREFERDIRECT));
+      } catch (final Throwable e1) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+      }
+    }
+    // Ensure minimize Direct except if something different set
+    if (!contains(IO_NETTY_MAXDIRECTMEMORY) ||
+        Strings.isNullOrEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {
+      try {
+        System.setProperty(IO_NETTY_MAXDIRECTMEMORY, "0");
+        synchronized (PROPS) {
+          PROPS.clear();
+          PROPS.putAll(newProps);
+        }
+        SysErrLogger.FAKE_LOGGER.syserr(IO_NETTY_MAXDIRECTMEMORY + ":" +
+                                        io.netty.util.internal.SystemPropertyUtil
+                                            .get(IO_NETTY_MAXDIRECTMEMORY));
       } catch (final Throwable e1) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }

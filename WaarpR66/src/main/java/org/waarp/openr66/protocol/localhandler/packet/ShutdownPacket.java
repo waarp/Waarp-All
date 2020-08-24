@@ -53,9 +53,7 @@ public class ShutdownPacket extends AbstractLocalPacket {
       throw new OpenR66ProtocolPacketException("Not enough data");
     }
     final byte[] bpassword = new byte[headerLength - 1];
-    if (headerLength - 1 > 0) {
-      buf.readBytes(bpassword);
-    }
+    buf.readBytes(bpassword);
     byte torestart = 0;
     if (middleLength > 0) {
       torestart = buf.readByte();
@@ -86,24 +84,25 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               int networkHeader)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
     int sizeKey = key != null? key.length : 0;
     int sizeMiddle = restart != 0? 1 : 0;
-    global = sizeKey + sizeMiddle == 0? Unpooled.EMPTY_BUFFER :
-        ByteBufAllocator.DEFAULT
-            .buffer(GLOBAL_HEADER_SIZE + sizeKey + sizeMiddle,
-                    GLOBAL_HEADER_SIZE + sizeKey + sizeMiddle);
+    final int globalSize =
+        networkHeader + LOCAL_HEADER_SIZE + sizeKey + sizeMiddle;
+    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
     if (key != null) {
-      header = WaarpNettyUtil.slice(global, GLOBAL_HEADER_SIZE, sizeKey);
+      header = WaarpNettyUtil.slice(global, offset, sizeKey);
       header.writeBytes(key);
     } else {
       header = Unpooled.EMPTY_BUFFER;
     }
+    offset += sizeKey;
     if (restart != 0) {
-      middle = WaarpNettyUtil
-          .slice(global, GLOBAL_HEADER_SIZE + sizeKey, sizeMiddle);
+      middle = WaarpNettyUtil.slice(global, offset, sizeMiddle);
       middle.writeByte(restart);
     } else {
       middle = Unpooled.EMPTY_BUFFER;

@@ -20,6 +20,7 @@
 package org.waarp.common.file;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 /**
  * Main object implementing Data Block whaveter the mode, type, structure used.
@@ -51,7 +52,9 @@ public class DataBlock {
   /**
    * Byte Array
    */
-  private ByteBuf block;
+  private byte[] block;
+  private ByteBuf blockBuf;
+  private int offsetBuf;
 
   /**
    * is EOF
@@ -84,7 +87,25 @@ public class DataBlock {
    * @return the block
    */
   public ByteBuf getBlock() {
+    if (blockBuf == null) {
+      blockBuf = Unpooled.wrappedBuffer(block);
+      offsetBuf = 0;
+    }
+    return blockBuf;
+  }
+
+  /**
+   * @return the block
+   */
+  public byte[] getByteBlock() {
     return block;
+  }
+
+  /**
+   * @return the offset of the ByteBlock
+   */
+  public int getOffset() {
+    return offsetBuf;
   }
 
   /**
@@ -102,12 +123,43 @@ public class DataBlock {
       byteCount = 6;
       return;
     }
+    byteCount = block.readableBytes();
+    if (block.hasArray()) {
+      blockBuf = block;
+      this.block = block.array();
+      this.offsetBuf = block.arrayOffset();
+    } else {
+      this.block = new byte[byteCount];
+      offsetBuf = 0;
+      blockBuf = null;
+      block.readBytes(this.block);
+      block.release();
+    }
+  }
+
+  /**
+   * Set the block and the byte count according to the block
+   *
+   * @param block the block to set
+   */
+  public void setBlock(byte[] block) {
+    if (isRESTART) {
+      this.block = null;
+      markers = new int[6];
+      for (int i = 0; i < 6; i++) {
+        markers[i] = block[i];
+      }
+      byteCount = 6;
+      return;
+    }
     this.block = block;
     if (this.block == null) {
       byteCount = 0;
     } else {
-      byteCount = this.block.readableBytes();
+      byteCount = this.block.length;
     }
+    blockBuf = null;
+    offsetBuf = 0;
   }
 
   /**
