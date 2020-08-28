@@ -27,6 +27,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.DirectTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.DbConstantR66;
@@ -54,6 +55,9 @@ public class TestTransferNoDb extends DirectTransfer {
                           NetworkTransaction networkTransaction) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           id, networkTransaction);
+    if (!fileinfo.contains("-nofollow")) {
+      TransferArgs.forceAnalyzeFollow(this);
+    }
   }
 
   public static void main(String[] args) {

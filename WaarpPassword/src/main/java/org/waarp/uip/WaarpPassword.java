@@ -85,7 +85,7 @@ public class WaarpPassword {
     final WaarpPassword waarpPassword = new WaarpPassword();
     if (po == null && pi == null) {
       // stop
-      SysErrLogger.FAKE_LOGGER.syserr("Key written");
+      SysErrLogger.FAKE_LOGGER.sysout("Key written");
       if (DetectionUtils.isJunit()) {
         return;
       }
@@ -93,7 +93,7 @@ public class WaarpPassword {
     }
     if (waarpPassword.clearPassword == null ||
         waarpPassword.clearPassword.length() == 0) {
-      SysErrLogger.FAKE_LOGGER.syserr("Password to crypt:");
+      SysErrLogger.FAKE_LOGGER.sysout("Password to crypt:");
       final String newp = waarpPassword.readString();
       if (newp == null || newp.length() == 0) {
         SysErrLogger.FAKE_LOGGER.syserr("No password as input");
@@ -109,9 +109,9 @@ public class WaarpPassword {
       }
       if (clearPasswordView) {
         SysErrLogger.FAKE_LOGGER
-            .syserr("ClearPwd: " + waarpPassword.getClearPassword());
+            .sysout("ClearPwd: " + waarpPassword.getClearPassword());
         SysErrLogger.FAKE_LOGGER
-            .syserr("CryptedPwd: " + waarpPassword.getCryptedPassword());
+            .sysout("CryptedPwd: " + waarpPassword.getCryptedPassword());
       }
     }
   }
@@ -249,9 +249,9 @@ public class WaarpPassword {
     }
     if (clearPassword != null) {
       if (clearPasswordView) {
-        SysErrLogger.FAKE_LOGGER.syserr("ClearPwd: " + getClearPassword());
+        SysErrLogger.FAKE_LOGGER.sysout("ClearPwd: " + getClearPassword());
       }
-      SysErrLogger.FAKE_LOGGER.syserr("CryptedPwd: " + getCryptedPassword());
+      SysErrLogger.FAKE_LOGGER.sysout("CryptedPwd: " + getCryptedPassword());
     }
   }
 

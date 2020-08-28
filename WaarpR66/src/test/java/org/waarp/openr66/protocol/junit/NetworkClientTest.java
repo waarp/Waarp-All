@@ -20,6 +20,15 @@
 
 package org.waarp.openr66.protocol.junit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -45,6 +54,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.TestWatcherJunit4;
@@ -116,7 +126,9 @@ import java.lang.reflect.Method;
 import java.net.SocketAddress;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -714,6 +726,138 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
+  public void test5_DirectTransferFollowCheck() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransferFollowCheck");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt", "retransfer",
+                             "Test SendDirect Retransfer", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    String followId = null;
+    if (future.getRunner() != null) {
+      followId = future.getRunner().getFollowId();
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    if (followId != null) {
+      CloseableHttpClient httpClient = null;
+      try {
+        httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
+                                      .disableAutomaticRetries().build();
+        HttpGet request =
+            new HttpGet("http://127.0.0.1:8088/v2/transfers?limit=1000");
+        CloseableHttpResponse response = null;
+        try {
+          int nb = 0;
+          int max = 2;
+          while (nb < max) {
+            response = httpClient.execute(request);
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(response.getEntity());
+            ObjectNode node = JsonHandler.getFromString(content);
+            if (node != null) {
+              Iterator<Entry<String, JsonNode>> iterator = node.fields();
+              while (iterator.hasNext()) {
+                Entry<String, JsonNode> entry = iterator.next();
+                if (entry.getKey().equals("results")) {
+                  ArrayNode arrayNode = (ArrayNode) entry.getValue();
+                  Iterator<JsonNode> iterator1 = arrayNode.elements();
+                  while (iterator1.hasNext()) {
+                    JsonNode internalNode = iterator1.next();
+                    JsonNode value = internalNode.findValue("fileInfo");
+                    if (value != null) {
+                      if (value.asText().contains(followId)) {
+                        nb++;
+                        logger.warn("FileInfo found: {}", value.asText());
+                      }
+                    }
+                  }
+                  if (nb >= max) {
+                    success++;
+                    break;
+                  } else {
+                    nb = 0;
+                  }
+                }
+              }
+            }
+            Thread.sleep(100);
+          }
+        } finally {
+          if (response != null) {
+            response.close();
+          }
+        }
+      } catch (ExecuteException e) {
+        // ignore
+      } finally {
+        if (httpClient != null) {
+          httpClient.close();
+        }
+      }
+    } else {
+      logger.warn("Cannot check FollowId");
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    totest.delete();
+
+    assertEquals("Success should be total", 2, success);
+
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  @Test
+  public void test5_DirectTransferNoFollowCheck() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransferNoFollowCheck");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3",
+                             "Test SendDirect Retransfer -nofollow", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    String followId = null;
+    if (future.getRunner() != null) {
+      followId = future.getRunner().getFollowId();
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    if (followId == null || followId.isEmpty()) {
+      success++;
+    } else {
+      logger.warn("Cannot check FollowId");
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    totest.delete();
+
+    assertEquals("Success should be total", 2, success);
+
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  @Test
   public void test5_DirectTransferMultipleBlockSize() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 1000000);
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -849,9 +993,7 @@ public class NetworkClientTest extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner =
-            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-                             runner.getRequested());
+        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
         if (checkedRunner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;
@@ -1356,9 +1498,7 @@ public class NetworkClientTest extends TestAbstract {
                       dbTaskRunner.toShortString());
           waitForAllDone(dbTaskRunner);
           DbTaskRunner checkedRunner =
-              new DbTaskRunner(dbTaskRunner.getSpecialId(),
-                               dbTaskRunner.getRequester(),
-                               dbTaskRunner.getRequested());
+              DbTaskRunner.reloadFromDatabase(dbTaskRunner);
           logger.warn("End wait for re-transfer: {}",
                       checkedRunner.toShortString());
           if (checkedRunner.isAllDone()) {
@@ -1449,9 +1589,7 @@ public class NetworkClientTest extends TestAbstract {
                       dbTaskRunner.toShortString());
           waitForAllDone(dbTaskRunner);
           DbTaskRunner checkedRunner =
-              new DbTaskRunner(dbTaskRunner.getSpecialId(),
-                               dbTaskRunner.getRequester(),
-                               dbTaskRunner.getRequested());
+              DbTaskRunner.reloadFromDatabase(dbTaskRunner);
           logger.warn("End wait for re-transfer: {}",
                       checkedRunner.toShortString());
           if (checkedRunner.isAllDone()) {
@@ -2074,6 +2212,9 @@ public class NetworkClientTest extends TestAbstract {
                               final Timestamp starttime) {
       super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
             id, starttime);
+      if (!fileinfo.contains("-nofollow")) {
+        TransferArgs.forceAnalyzeFollow(this);
+      }
     }
 
     static public void clearInternal() {

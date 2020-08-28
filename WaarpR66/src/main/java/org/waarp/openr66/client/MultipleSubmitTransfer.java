@@ -133,6 +133,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
                                    transferArgs.getBlockSize(),
                                    transferArgs.getId(),
                                    transferArgs.getStartTime());
+            transaction.transferArgs.setFollowId(transferArgs.getFollowId());
             transaction.normalInfoAsWarn = normalInfoAsWarn;
             transaction.run();
             future.awaitOrInterruptible();

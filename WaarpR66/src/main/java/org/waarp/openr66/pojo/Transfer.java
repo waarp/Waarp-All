@@ -140,7 +140,7 @@ public class Transfer {
   @JsonProperty("REQUESTED")
   private String requested = "";
 
-  @XmlTransient
+  @XmlElement(name = TRANSFER_INFO_FIELD)
   @JsonProperty("TRANSFERINFO")
   private String transferInfo = "";
 

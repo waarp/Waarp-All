@@ -26,6 +26,7 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.RecvThroughClient;
 import org.waarp.openr66.client.RecvThroughHandler;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.DbConstantR66;
@@ -55,6 +56,9 @@ public class TestRecvThroughClient extends RecvThroughClient {
                                NetworkTransaction networkTransaction) {
     super(future, handler, remoteHost, filename, rulename, fileinfo, isMD5,
           blocksize, DbConstantR66.ILLEGALVALUE, networkTransaction);
+    if (!fileinfo.contains("-nofollow")) {
+      TransferArgs.forceAnalyzeFollow(this);
+    }
   }
 
   /**

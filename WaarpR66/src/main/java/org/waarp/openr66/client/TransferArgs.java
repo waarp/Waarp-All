@@ -45,6 +45,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.waarp.common.database.DbConstant.*;
@@ -534,7 +535,33 @@ public class TransferArgs {
   }
 
   /**
-   * Analyze Follow option
+   * Mainly Junit, but also special command where Follow Id might be lost or
+   * not set
+   *
+   * @param abstractTransfer
+   */
+  public static void forceAnalyzeFollow(
+      final AbstractTransfer abstractTransfer) {
+    if (abstractTransfer.transferArgs.getFollowId() == null) {
+      abstractTransfer.transferArgs.setFollowId("");
+      analyzeFollow(abstractTransfer.transferArgs);
+    } else if (!abstractTransfer.transferArgs.getFollowId().isEmpty() &&
+               abstractTransfer.transferArgs.getTransferInfo() != null) {
+      if (!abstractTransfer.transferArgs.getTransferInfo()
+                                        .contains(FOLLOW_JSON_KEY)) {
+        // Add FOLLOW ID to transferArgs
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(FOLLOW_JSON_KEY, abstractTransfer.transferArgs.getFollowId());
+        abstractTransfer.transferArgs.setTransferInfo(
+            abstractTransfer.transferArgs.getTransferInfo() + " " +
+            JsonHandler.writeAsStringEscaped(map));
+      }
+    }
+  }
+
+  /**
+   * Analyze Follow option: fill it if Follow is "" (do not if null).
+   * It corrects argument of information if needed.
    *
    * @param transferArgs1 the current TransferArgs
    */

@@ -202,7 +202,7 @@ public abstract class AbstractTransfer implements Runnable {
       taskRunner.setSenderByRequestToValidate(true);
       if (transferArgs.getTransferInfo() != null &&
           !transferArgs.getTransferInfo().equals(NO_INFO_ARGS)) {
-        taskRunner.setTransferInfo(transferArgs.getTransferInfo());
+        taskRunner.setFileInformation(transferArgs.getTransferInfo());
       }
       if (transferArgs.getStartTime() != null) {
         taskRunner.setStart(transferArgs.getStartTime());
@@ -259,6 +259,16 @@ public abstract class AbstractTransfer implements Runnable {
         return null;
       }
     }
+    try {
+      taskRunner.saveStatus();
+    } catch (OpenR66RunnerErrorException e) {
+      logger.error("Cannot save task", e);
+      future.setResult(
+          new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
+                        ErrorCode.Internal, null));
+      future.setFailure(e);
+      return null;
+    }
     return taskRunner;
   }
 
@@ -274,6 +284,7 @@ public abstract class AbstractTransfer implements Runnable {
   protected static long idt = ILLEGALVALUE;
   protected static Timestamp ttimestart;
   protected static boolean snormalInfoAsWarn = true;
+  protected static String sFollowId;
 
   protected static void clear() {
     rhost = null;
@@ -286,6 +297,7 @@ public abstract class AbstractTransfer implements Runnable {
     idt = ILLEGALVALUE;
     ttimestart = null;
     snormalInfoAsWarn = true;
+    sFollowId = null;
   }
 
   /**
@@ -331,6 +343,7 @@ public abstract class AbstractTransfer implements Runnable {
     block = transferArgsLocal.getBlockSize();
     idt = transferArgsLocal.getId();
     ttimestart = transferArgsLocal.getStartTime();
+    sFollowId = transferArgsLocal.getFollowId();
     return true;
   }
 
@@ -607,6 +620,8 @@ public abstract class AbstractTransfer implements Runnable {
     outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
     outputFormat
         .setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
+    outputFormat
+        .setValue(FIELDS.transferInformation.name(), runner.getTransferInfo());
     outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
     outputFormat
         .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());

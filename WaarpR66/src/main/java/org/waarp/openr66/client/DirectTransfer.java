@@ -182,6 +182,7 @@ public class DirectTransfer extends AbstractTransfer {
       final DirectTransfer transaction =
           new DirectTransfer(future, rhost, localFilename, rule, transferInfo,
                              ismd5, block, idt, networkTransaction);
+      transaction.transferArgs.setFollowId(sFollowId);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
       logger.debug(
           "rhost: " + rhost + ':' + transaction.transferArgs.getRemoteHost());

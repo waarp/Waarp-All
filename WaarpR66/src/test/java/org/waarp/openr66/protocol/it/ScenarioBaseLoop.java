@@ -49,6 +49,7 @@ import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -144,7 +145,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
-    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getJdbcUrl());
+    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getJdbcUrl());
     String driver = getJDC().getDriverClassName();
     String target = "notfound";
     String jdbcUrl = getJDC().getJdbcUrl();
@@ -168,8 +169,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     }
     content = content.replace("XXXJDBCXXX", jdbcUrl);
     content = content.replace("XXXDRIVERXXX", target);
-    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getDriverClassName());
-    SysErrLogger.FAKE_LOGGER.syserr(target);
+    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.sysout(target);
     File fileTo = new File(TMP_R66_CONFIG_R1);
     fileTo.getParentFile().mkdirs();
     FileWriter writer = null;
@@ -421,12 +422,14 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       }
       future.awaitOrInterruptible();
       assertTrue(future.isSuccess());
+      logger.info("Runner: {}", future.getRunner());
     } else {
       String ruleName = recv? "recv" : "sendany";
       final SubmitTransfer transaction =
           new SubmitTransfer(future, serverName, "hello" + size, ruleName,
                              "Test Big " + ruleName, true, BLOCK_SIZE,
                              DbConstantR66.ILLEGALVALUE, null);
+      TransferArgs.forceAnalyzeFollow(transaction);
       transaction.run();
       future.awaitOrInterruptible();
       assertTrue(future.isSuccess());
@@ -477,9 +480,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner =
-            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-                             runner.getRequested());
+        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
         if (checkedRunner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;

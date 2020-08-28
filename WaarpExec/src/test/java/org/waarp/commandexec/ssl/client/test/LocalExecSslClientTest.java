@@ -198,10 +198,10 @@ public class LocalExecSslClientTest extends Thread {
       }
       long second = System.currentTimeMillis();
       // print time for one exec
-      SysErrLogger.FAKE_LOGGER.syserr(
+      SysErrLogger.FAKE_LOGGER.sysout(
           "1=Total time in ms: " + (second - first) + " or " +
           1 * 1000 / (second - first) + " exec/s");
-      SysErrLogger.FAKE_LOGGER.syserr("Result: " + ok + ':' + ko);
+      SysErrLogger.FAKE_LOGGER.sysout("Result: " + ok + ':' + ko);
       ok = 0;
       ko = 0;
 

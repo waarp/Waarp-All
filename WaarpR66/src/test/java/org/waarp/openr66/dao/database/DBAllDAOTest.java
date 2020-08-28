@@ -208,7 +208,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
-    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getJdbcUrl());
+    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getJdbcUrl());
     String driver = getJDC().getDriverClassName();
     String target = "notfound";
     String jdbcUrl = getJDC().getJdbcUrl();
@@ -232,8 +232,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
     content = content.replace("XXXJDBCXXX", jdbcUrl);
     content = content.replace("XXXDRIVERXXX", target);
-    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getDriverClassName());
-    SysErrLogger.FAKE_LOGGER.syserr(target);
+    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.sysout(target);
     File fileTo = new File(TMP_R_66_CONF_CONFIG_XML);
     fileTo.getParentFile().mkdirs();
     FileWriter writer = null;

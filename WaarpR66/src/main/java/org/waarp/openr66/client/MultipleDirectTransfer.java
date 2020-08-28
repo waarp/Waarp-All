@@ -115,6 +115,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
                                    transferArgs.isMD5(),
                                    transferArgs.getBlockSize(),
                                    transferArgs.getId(), networkTransaction);
+            transaction.transferArgs.setFollowId(transferArgs.getFollowId());
             transaction.normalInfoAsWarn = normalInfoAsWarn;
             logger.debug("rhost: " + host + ':' +
                          transaction.transferArgs.getRemoteHost());
