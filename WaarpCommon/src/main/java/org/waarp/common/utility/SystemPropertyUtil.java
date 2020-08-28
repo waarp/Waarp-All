@@ -109,7 +109,7 @@ public final class SystemPropertyUtil {
           PROPS.clear();
           PROPS.putAll(newProps);
         }
-        SysErrLogger.FAKE_LOGGER.syserr(IO_NETTY_ALLOCATOR_TYPE + ":" +
+        SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_ALLOCATOR_TYPE + ":" +
                                         io.netty.util.internal.SystemPropertyUtil
                                             .get(IO_NETTY_ALLOCATOR_TYPE));
       } catch (final Throwable e1) {//NOSONAR
@@ -125,7 +125,7 @@ public final class SystemPropertyUtil {
           PROPS.clear();
           PROPS.putAll(newProps);
         }
-        SysErrLogger.FAKE_LOGGER.syserr(IO_NETTY_NOPREFERDIRECT + ":" +
+        SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_NOPREFERDIRECT + ":" +
                                         io.netty.util.internal.SystemPropertyUtil
                                             .get(IO_NETTY_NOPREFERDIRECT));
       } catch (final Throwable e1) {//NOSONAR
@@ -141,7 +141,7 @@ public final class SystemPropertyUtil {
           PROPS.clear();
           PROPS.putAll(newProps);
         }
-        SysErrLogger.FAKE_LOGGER.syserr(IO_NETTY_MAXDIRECTMEMORY + ":" +
+        SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_MAXDIRECTMEMORY + ":" +
                                         io.netty.util.internal.SystemPropertyUtil
                                             .get(IO_NETTY_MAXDIRECTMEMORY));
       } catch (final Throwable e1) {//NOSONAR

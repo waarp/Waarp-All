@@ -530,6 +530,9 @@ public class SpooledDirectoryTransfer implements Runnable {
                   new SubmitTransfer(r66Future, host, filename, ruleName,
                                      fileInfo, isMD5, blocksize, specialId,
                                      null);
+              if (!fileInfo.contains("-nofollow")) {
+                TransferArgs.forceAnalyzeFollow(transaction);
+              }
               transaction.normalInfoAsWarn = normalInfoAsWarn;
               logger.info(text + host);
               transaction.run();
@@ -566,6 +569,9 @@ public class SpooledDirectoryTransfer implements Runnable {
                   new DirectTransfer(r66Future, host, filename, ruleName,
                                      fileInfo, isMD5, blocksize, ILLEGALVALUE,
                                      networkTransaction);
+              if (!fileInfo.contains("-nofollow")) {
+                TransferArgs.forceAnalyzeFollow(transaction);
+              }
               // If retry indefinitely is useful transaction.setLimitRetryConnection(true)
               transaction.normalInfoAsWarn = normalInfoAsWarn;
               logger.info(text + host);

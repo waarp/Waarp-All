@@ -43,7 +43,7 @@ public class CpuManagementTest {
       return;
     }
     double max = 0.0;
-    SysErrLogger.FAKE_LOGGER.syserr("LA: " + cpuManagement.getLoadAverage());
+    SysErrLogger.FAKE_LOGGER.sysout("LA: " + cpuManagement.getLoadAverage());
     for (int i = 0; i < 1000 * 1000 * 1000; i++) {
       // keep ourselves busy for a while ...
       // note: we had to add some "work" into the loop or Java 6
@@ -55,7 +55,7 @@ public class CpuManagementTest {
     if (total <= 0) {
       System.out.println(total);
     }
-    SysErrLogger.FAKE_LOGGER.syserr("LA: " + cpuManagement.getLoadAverage());
+    SysErrLogger.FAKE_LOGGER.sysout("LA: " + cpuManagement.getLoadAverage());
     total = 0;
     for (int i = 0; i < 1000 * 1000 * 1000; i++) {
       // keep ourselves busy for a while ...
@@ -69,7 +69,7 @@ public class CpuManagementTest {
       System.out.println(total);
     }
     max = cpuManagement.getLoadAverage();
-    SysErrLogger.FAKE_LOGGER.syserr("LA: " + max);
+    SysErrLogger.FAKE_LOGGER.sysout("LA: " + max);
     try {
       Thread.sleep(5000);
     } catch (final InterruptedException ignored) {//NOSONAR

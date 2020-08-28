@@ -385,9 +385,7 @@ public class TestTasks {
   private static void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner =
-            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-                             runner.getRequested());
+        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
         if (checkedRunner.isAllDone()) {
           SysErrLogger.FAKE_LOGGER.sysout("DbTaskRunner done");
           return;

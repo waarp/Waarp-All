@@ -261,7 +261,7 @@ public abstract class RestMethodHandler {
     final ChannelFuture future = ctx.writeAndFlush(response);
     if (handler.isWillClose()) {
       SysErrLogger.FAKE_LOGGER
-          .syserr("Will close session in RestMethodHandler");
+          .sysout("Will close session in RestMethodHandler");
       return future;
     }
     return null;

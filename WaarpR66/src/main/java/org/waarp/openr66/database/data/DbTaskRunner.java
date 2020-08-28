@@ -348,6 +348,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           "Argument in constructor cannot be null");
     }
     this.pojo = transfer;
+    checkMapInfo();
   }
 
   /**
@@ -400,6 +401,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         pojo.setTransferMode(rule.getMode());
       }
     }
+    checkMapInfo();
     checkThroughMode();
     insert();
     requestPacket.setSpecialId(pojo.getId());
@@ -436,7 +438,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     }
     originalSize = requestPacket.getOriginalSize();
     setOriginalSizeTransferMap(originalSize);
-
+    checkMapInfo();
     checkThroughMode();
     insert();
     requestPacket.setSpecialId(pojo.getId());
@@ -532,6 +534,31 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public DbTaskRunner(ObjectNode source) throws WaarpDatabaseException {
     pojo = new Transfer();
     setFromJson(source, false);
+  }
+
+  /**
+   * Reload the given TaskRunner
+   *
+   * @param taskRunner
+   *
+   * @return the reloaded TaskRunner
+   *
+   * @throws WaarpDatabaseException
+   */
+  public static DbTaskRunner reloadFromDatabase(DbTaskRunner taskRunner)
+      throws WaarpDatabaseException {
+    if (taskRunner == null) {
+      throw new WaarpDatabaseNoDataException("TaskRunner is no defined");
+    }
+    return new DbTaskRunner(taskRunner.getSpecialId(),
+                            taskRunner.getRequester(),
+                            taskRunner.getRequested());
+  }
+
+  private void checkMapInfo() {
+    if (getFileInformation() != null) {
+      setMapFromFileInfo();
+    }
   }
 
   @Override
@@ -635,6 +662,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       }
     }
+    setMapFromFileInfo();
     JsonNode node = source.path(JSON_RESCHEDULE);
     if (!node.isMissingNode() || !node.isNull()) {
       rescheduledTransfer = node.asBoolean(false);
@@ -2301,10 +2329,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
-   * @return the fileInformation
+   * Utility to get possible Json from File information to Transfer information
    */
-  public String getFileInformation() {
-    return pojo.getFileInfo();
+  private void setMapFromFileInfo() {
+    Map<String, Object> mapFileInfo = getMapFromString(getFileInformation());
+    Map<String, Object> mapTransferInfo = getMapFromString(getTransferInfo());
+    mapTransferInfo.putAll(mapFileInfo);
+    setTransferMap(mapTransferInfo);
   }
 
   /**
@@ -2432,11 +2463,15 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     return null;
   }
 
+  public String getTransferInfo() {
+    return pojo.getTransferInfo();
+  }
+
   /**
-   * @param followId the Follow Id to add to transfer information
+   * @return the fileInformation
    */
-  public void setFollowId(long followId) {
-    addToTransferMap(TransferArgs.FOLLOW_JSON_KEY, followId);
+  public String getFileInformation() {
+    return pojo.getFileInfo();
   }
 
   /**
@@ -2446,10 +2481,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void setFileInformation(String newFileInformation) {
     pojo.setFileInfo(newFileInformation);
-  }
-
-  public String getTransferInfo() {
-    return pojo.getTransferInfo();
+    setMapFromFileInfo();
   }
 
   /**
@@ -3502,7 +3534,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                                  " <em>(rule not found)</em></p>");
     WaarpStringUtils.replace(builder, "XXXFileXXX", getFilename());
     WaarpStringUtils.replace(builder, "XXXInfoXXX", getFileInformation());
-    WaarpStringUtils.replace(builder, "XXXTransXXX", pojo.getFileInfo());
+    WaarpStringUtils.replace(builder, "XXXTransXXX", getTransferInfo());
     WaarpStringUtils.replace(builder, "XXXStepXXX",
                              getGlobalStep() + " (" + getGloballaststep() +
                              ')');
@@ -4072,6 +4104,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       }
     }
+    setMapFromFileInfo();
   }
 
   /**

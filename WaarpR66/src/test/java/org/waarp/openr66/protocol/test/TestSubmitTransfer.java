@@ -25,6 +25,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.utils.R66Future;
 
@@ -43,6 +44,9 @@ public class TestSubmitTransfer extends SubmitTransfer {
                             boolean isMD5, int blocksize, Timestamp starttime) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           DbConstantR66.ILLEGALVALUE, starttime);
+    if (!fileinfo.contains("-nofollow")) {
+      TransferArgs.forceAnalyzeFollow(this);
+    }
   }
 
   public static void main(String[] args) {

@@ -31,6 +31,7 @@ import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.utils.R66Future;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -90,8 +91,7 @@ public class TransferTask extends AbstractExecTask {
 
   @Override
   public void run() {
-    logger.info("Transfer with " + argRule + ':' + argTransfer + " and {}",
-                session);
+    logger.info("Transfer with {}}:{} and {}", argRule, argTransfer, session);
     String finalname = applyTransferSubstitutions(argRule);
 
     finalname = finalname.replaceAll("#([A-Z]+)#", "\\${$1}");
@@ -116,10 +116,16 @@ public class TransferTask extends AbstractExecTask {
       }
       // Force to get follow Id if present (and other elements from map) if
       // not already copied
-      if (copied == null &&
-          argTransfer.contains(TransferArgs.FOLLOW_JSON_KEY)) {
-        Map<String, Object> map = DbTaskRunner.getMapFromString(argTransfer);
-        copied = JsonHandler.writeAsStringEscaped(map);
+      DbTaskRunner taskRunner = session.getRunner();
+      String follow = taskRunner.getFollowId();
+      if (copied == null && follow != null && !follow.isEmpty() &&
+          !transferArgs.getTransferInfo()
+                       .contains(TransferArgs.FOLLOW_JSON_KEY)) {
+        transferArgs.setFollowId(follow);
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(TransferArgs.FOLLOW_JSON_KEY, follow);
+        final String smap = JsonHandler.writeAsStringEscaped(map);
+        copied = smap;
       }
       TransferArgs.getAllInfo(transferArgs, 0, args, copied);
     } else {

@@ -102,14 +102,18 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
     }
     logger.debug("Replace Digest in {} way: {} digest: {} key: {}", format, way,
                  algo, key);
-    if (way < 0) {
-      fileInfo = DIGEST_PATTERN.matcher(format)
-                               .replaceAll(Matcher.quoteReplacement(key)) +
-                 ' ' + session.getRunner().getFileInformation();
+    if (format == null || format.isEmpty()) {
+      fileInfo = session.getRunner().getFileInformation();
     } else {
-      fileInfo = session.getRunner().getFileInformation() + ' ' +
-                 DIGEST_PATTERN.matcher(format)
-                               .replaceAll(Matcher.quoteReplacement(key));
+      if (way < 0) {
+        fileInfo = DIGEST_PATTERN.matcher(format)
+                                 .replaceAll(Matcher.quoteReplacement(key)) +
+                   ' ' + session.getRunner().getFileInformation();
+      } else {
+        fileInfo = session.getRunner().getFileInformation() + ' ' +
+                   DIGEST_PATTERN.matcher(format)
+                                 .replaceAll(Matcher.quoteReplacement(key));
+      }
     }
     session.getRunner().setFileInformation(fileInfo);
     session.getRunner().addToTransferMap("digest", key);

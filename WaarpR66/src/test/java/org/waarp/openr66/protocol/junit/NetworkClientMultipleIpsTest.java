@@ -35,6 +35,7 @@ import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
@@ -324,9 +325,7 @@ public class NetworkClientMultipleIpsTest extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner =
-            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-                             runner.getRequested());
+        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
         if (checkedRunner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;
@@ -450,6 +449,9 @@ public class NetworkClientMultipleIpsTest extends TestAbstract {
                               final Timestamp starttime) {
       super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
             id, starttime);
+      if (!fileinfo.contains("-nofollow")) {
+        TransferArgs.forceAnalyzeFollow(this);
+      }
     }
 
     static public void clearInternal() {

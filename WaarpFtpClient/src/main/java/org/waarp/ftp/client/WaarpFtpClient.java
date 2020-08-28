@@ -365,7 +365,7 @@ public class WaarpFtpClient {
    */
   public boolean featureEnabled(String feature) {
     try {
-      SysErrLogger.FAKE_LOGGER.syserr(ftpClient.features());
+      SysErrLogger.FAKE_LOGGER.sysout(ftpClient.features());
       if (ftpClient.featureValue(feature) == null) {
         final String resultNew = ftpClient.getReplyString();
         return resultNew.contains(feature.toUpperCase());
@@ -386,7 +386,7 @@ public class WaarpFtpClient {
   public String[] executeCommand(String params) {
     result = null;
     try {
-      SysErrLogger.FAKE_LOGGER.syserr(params);
+      SysErrLogger.FAKE_LOGGER.sysout(params);
       final int pos = params.indexOf(' ');
       String command = params;
       String args = null;
@@ -415,7 +415,7 @@ public class WaarpFtpClient {
   public String[] executeSiteCommand(String params) {
     result = null;
     try {
-      SysErrLogger.FAKE_LOGGER.syserr("SITE " + params);
+      SysErrLogger.FAKE_LOGGER.sysout("SITE " + params);
       String[] results = ftpClient.doCommandAsStrings("SITE", params);
       if (results == null) {
         results = new String[1];

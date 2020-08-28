@@ -77,14 +77,18 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
       }
     }
     logger.debug("Replace UUID in {} way: {}", format, way);
-    if (way < 0) {
-      fileInfo = UUID_COMPILE.matcher(format).replaceAll(
-          Matcher.quoteReplacement(uuid.toString())) + ' ' +
-                 session.getRunner().getFileInformation();
+    if (format == null || format.isEmpty()) {
+      fileInfo = session.getRunner().getFileInformation();
     } else {
-      fileInfo = session.getRunner().getFileInformation() + ' ' +
-                 UUID_COMPILE.matcher(format).replaceAll(
-                     Matcher.quoteReplacement(uuid.toString()));
+      if (way < 0) {
+        fileInfo = UUID_COMPILE.matcher(format).replaceAll(
+            Matcher.quoteReplacement(uuid.toString())) + ' ' +
+                   session.getRunner().getFileInformation();
+      } else {
+        fileInfo = session.getRunner().getFileInformation() + ' ' +
+                   UUID_COMPILE.matcher(format).replaceAll(
+                       Matcher.quoteReplacement(uuid.toString()));
+      }
     }
     session.getRunner().setFileInformation(fileInfo);
     session.getRunner().addToTransferMap("uuid", uuid.toString());

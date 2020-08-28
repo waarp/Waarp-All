@@ -139,7 +139,7 @@ public abstract class ScenarioBase extends TestAbstract {
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
-    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getJdbcUrl());
+    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getJdbcUrl());
     String driver = getJDC().getDriverClassName();
     String target = "notfound";
     String jdbcUrl = getJDC().getJdbcUrl();
@@ -163,8 +163,8 @@ public abstract class ScenarioBase extends TestAbstract {
     }
     content = content.replace("XXXJDBCXXX", jdbcUrl);
     content = content.replace("XXXDRIVERXXX", target);
-    SysErrLogger.FAKE_LOGGER.syserr(getJDC().getDriverClassName());
-    SysErrLogger.FAKE_LOGGER.syserr(target);
+    SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.sysout(target);
     File fileTo = new File(TMP_R66_CONFIG_R1);
     fileTo.getParentFile().mkdirs();
     FileWriter writer = null;
@@ -573,9 +573,7 @@ public abstract class ScenarioBase extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner =
-            new DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-                             runner.getRequested());
+        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
         if (checkedRunner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;

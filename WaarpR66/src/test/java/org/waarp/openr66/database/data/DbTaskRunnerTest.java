@@ -45,10 +45,10 @@ public class DbTaskRunnerTest {
   public void testJsonSerialisation() {
     Transfer transfer =
         new Transfer(12345L, "myrule", 2, "myfile.dat", "myoriginalfile.dat",
-                     "myfileinfo", true, 42, false, "me", "me", "other",
-                     "my-transfer-info", Transfer.TASKSTEP.POSTTASK,
-                     Transfer.TASKSTEP.TRANSFERTASK, 53, ErrorCode.MD5Error,
-                     ErrorCode.Unimplemented, 72, new Timestamp(1581092031000L),
+                     "myfileinfo", true, 42, false, "me", "me", "other", "",
+                     Transfer.TASKSTEP.POSTTASK, Transfer.TASKSTEP.TRANSFERTASK,
+                     53, ErrorCode.MD5Error, ErrorCode.Unimplemented, 72,
+                     new Timestamp(1581092031000L),
                      new Timestamp(1581092131000L), UpdatedInfo.RUNNING);
     DbTaskRunner dbTransfer = new DbTaskRunner(transfer);
 
@@ -59,7 +59,7 @@ public class DbTaskRunnerTest {
         "\"ORIGINALNAME\":\"myoriginalfile.dat\"," +
         "\"FILEINFO\":\"myfileinfo\"," + "\"ISMOVED\":true," +
         "\"BLOCKSZ\":42," + "\"OWNERREQ\":\"me\"," + "\"REQUESTER\":\"me\"," +
-        "\"REQUESTED\":\"other\"," + "\"TRANSFERINFO\":\"my-transfer-info\"," +
+        "\"REQUESTED\":\"other\"," + "\"TRANSFERINFO\":\"{}\"," +
         "\"GLOBALSTEP\":3," + "\"GLOBALLASTSTEP\":2," + "\"STEP\":53," +
         "\"STEPSTATUS\":\"M  \"," + "\"INFOSTATUS\":\"U  \"," + "\"RANK\":72," +
         "\"STARTTRANS\":1581092031000," + "\"STOPTRANS\":1581092131000," +

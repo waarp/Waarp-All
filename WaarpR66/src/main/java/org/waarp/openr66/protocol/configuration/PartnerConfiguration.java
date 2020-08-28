@@ -136,7 +136,7 @@ public class PartnerConfiguration {
       Configuration.configuration.setBlacklistBadAuthent(false);
     }
     digestAlgo = getDigestAlgoInternal();
-    logger.info("HostId: " + root);
+    logger.debug("Info on HostId: " + root);
   }
 
   /**
@@ -158,7 +158,7 @@ public class PartnerConfiguration {
     JsonHandler.setValue(root, FIELDS.SEPARATOR, getSEPARATOR_FIELD());
     useJson = true;
     digestAlgo = getDigestAlgoInternal();
-    logger.info("HostId: " + root);
+    logger.debug("Info on HostId: " + root);
   }
 
   /**

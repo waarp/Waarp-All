@@ -196,7 +196,8 @@ public final class TransferConverter {
     transfer.setRetrieveMode(
         mode == ModeTrans.receive || mode == ModeTrans.receiveMD5);
     transfer.setTransferMode(mode.code);
-    transfer.setFileInfo("");
+    // FIXME was setFileInfo("")
+    // transfer.setTransferInfo("{}");
     transfer.setStop(transfer.getStart());
     transfer.setUpdatedInfo(UpdatedInfo.TOSUBMIT);
 
