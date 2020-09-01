@@ -114,8 +114,7 @@ public abstract class BusinessHandler {
   public abstract String getFeatMessage();
 
   protected String getSslFeatMessage() {
-    final String builder = "AUTH TLS\nAUTH SSL\nCCC\nPROT P\nPROT C";
-    return builder;
+    return "AUTH TLS\nAUTH SSL\nCCC\nPROT P\nPROT C";
   }
 
   /**

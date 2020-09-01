@@ -661,7 +661,7 @@ public class HttpSslHandler
                                      FTPSESSIONString);
       return;
     }
-    checkSession(ctx.channel());
+    checkSession();
     try {
       if (!authentHttp.isIdentified()) {
         logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
@@ -703,7 +703,7 @@ public class HttpSslHandler
     }
   }
 
-  private void checkSession(final Channel channel) {
+  private void checkSession() {
     final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
     if (cookieString != null) {
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);

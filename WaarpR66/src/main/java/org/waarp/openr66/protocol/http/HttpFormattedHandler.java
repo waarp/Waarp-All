@@ -372,7 +372,7 @@ public class HttpFormattedHandler
           all(ctx, (int) nb);
           break;
         case '4':
-          status(ctx, (int) nb);
+          status(ctx);
           break;
         case '5':
           statusxml(ctx, nb, extraBoolean);
@@ -394,7 +394,7 @@ public class HttpFormattedHandler
           if (uriRequest.toLowerCase().startsWith("/spooleddetail")) {
             extraBoolean = true;
           }
-          spooled(ctx, extraBoolean, name, istatus);
+          spooled(extraBoolean, name, istatus);
           break;
         case '7':
           statusjson(ctx, nb, extraBoolean);
@@ -675,7 +675,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void status(final ChannelHandlerContext ctx, final int nb) {
+  private void status(final ChannelHandlerContext ctx) {
     responseContent.append(REQUEST.status.readHeader(this));
 
     TransferDAO transferAccess = null;
@@ -765,7 +765,7 @@ public class HttpFormattedHandler
         .append(Configuration.configuration.getMonitoring().exportJson(detail));
   }
 
-  private void spooled(final ChannelHandlerContext ctx, final boolean detail,
+  private void spooled(final boolean detail,
                        final String name, final int istatus) {
     responseContent.append(REQUEST.status.readHeader(this)).append(
         "<p><table border='0' cellpadding='0' cellspacing='0' >").append(

@@ -940,7 +940,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   private String createExport(final String head, String errorText,
-                              final String rule, final int limit) {
+                              final String rule) {
     DbPreparedStatement preparedStatement = null;
     try {
       preparedStatement = DbRule.getFilterPrepareStament(dbSession, rule, -1);
@@ -974,7 +974,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     String errorText = "";
     if (params == null) {
       head = resetOptionRules(head, "", null, -3);
-      head = createExport(head, errorText, null, getLimitRow());
+      head = createExport(head, errorText, null);
       return head.replace(XXXRESULTXXX, errorText)
                  .replace(XXXDATAJSONXXX, "[]");
     }
@@ -999,7 +999,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           errorText = Messages.getString("HttpSslHandler.26") + parm + Messages
               .getString("HttpSslHandler.27"); //$NON-NLS-1$ //$NON-NLS-2$
           head = resetOptionRules(head, "", null, -3);
-          head = createExport(head, errorText, null, getLimitRow());
+          head = createExport(head, errorText, null);
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
@@ -1056,7 +1056,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                       //$NON-NLS-1$
                       + B_CENTER_P2;
           head = resetOptionRules(head, "", null, -3);
-          head = createExport(head, errorText, null, getLimitRow());
+          head = createExport(head, errorText, null);
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
@@ -1192,7 +1192,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         if (rule == null || rule.isEmpty()) {
           errorText = Messages.getString("HttpSslHandler.29"); //$NON-NLS-1$
           head = resetOptionRules(head, "", null, -3);
-          head = createExport(head, errorText, null, getLimitRow());
+          head = createExport(head, errorText, null);
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
@@ -1204,7 +1204,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                       //$NON-NLS-1$
                       + B_CENTER_P2;
           head = resetOptionRules(head, "", null, -3);
-          head = createExport(head, errorText, null, getLimitRow());
+          head = createExport(head, errorText, null);
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
@@ -1215,7 +1215,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                       //$NON-NLS-1$
                       + B_CENTER_P2;
           head = resetOptionRules(head, "", null, -3);
-          head = createExport(head, errorText, null, getLimitRow());
+          head = createExport(head, errorText, null);
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
@@ -1228,11 +1228,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                    .replace(XXXDATAJSONXXX, "[]");
       } else {
         head = resetOptionRules(head, "", null, -3);
-        head = createExport(head, errorText, null, getLimitRow());
+        head = createExport(head, errorText, null);
       }
     } else {
       head = resetOptionRules(head, "", null, -3);
-      head = createExport(head, errorText, null, getLimitRow());
+      head = createExport(head, errorText, null);
     }
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
@@ -1324,14 +1324,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGFRXXX.name(),
                              "fr".equalsIgnoreCase(Messages.getSlocale())?
                                  "checked" : "");
-  }
-
-  private String systemLimitedSource() {
-    final String system = REQUEST.SystemLimited.read(this);
-    if (system == null || system.isEmpty()) {
-      return REQUEST.System.read(this);
-    }
-    return system;
   }
 
   private void fillHostIds(final StringBuilder builder) {

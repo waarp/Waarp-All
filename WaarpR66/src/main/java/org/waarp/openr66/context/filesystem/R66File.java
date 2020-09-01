@@ -338,7 +338,10 @@ public class R66File extends FilesystemBasedFileImpl {
       fileInputStream = new FileInputStream(trueFile);//NOSONAR
       final long pos = getPosition();
       if (pos > 0) {
-        fileInputStream.skip(pos);
+        long read = fileInputStream.skip(pos);
+        if (read != pos) {
+          logger.warn("Cannot ensure position: {} while is {}", pos, read);
+        }
       }
     } catch (final FileNotFoundException e) {
       logger.error("FileInterface not found in getFileInputStream:", e);

@@ -52,6 +52,7 @@ Correctifs
 - [`#66 <https://github.com/waarp/Waarp-All/pull/66>`__]
   EXECOUTPUT provoquait une erreur de mappage de classe
   (issue [`#59 <https://github.com/waarp/Waarp-All/issues/59>`__])
+- Nettoyage du code (styles)
 - Mise à jour des dépendances
 
 
